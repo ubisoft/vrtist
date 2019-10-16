@@ -10,9 +10,15 @@ namespace VRtist
         private Assimp.Scene scene;
         private string directoryName;
         private List<Material> materials = new List<Material>();
-        private List<GameObject> meshes = new List<GameObject>();
+        private List<SubMeshComponent> meshes = new List<SubMeshComponent>();
         private Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
+        private class SubMeshComponent
+        {
+            public Mesh mesh;
+            public string name;
+            public int materialIndex;
+        }
         private struct MeshStruct
         {
             public Vector3[] Vertices;
@@ -20,7 +26,7 @@ namespace VRtist
             public Vector2[] Uv;
             public int[] Triangles;
         }
-        private Mesh ImportMesh(Assimp.Mesh assimpMesh)
+        private SubMeshComponent ImportMesh(Assimp.Mesh assimpMesh)
         {
             MeshStruct meshs = new MeshStruct();
 
@@ -65,15 +71,20 @@ namespace VRtist
                 i+=3;
             }
 
+            SubMeshComponent subMeshComponent = new SubMeshComponent();
             Mesh mesh = new Mesh();
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.vertices = meshs.Vertices;
             mesh.uv = meshs.Uv;
             mesh.normals = meshs.Normals;
             mesh.triangles = meshs.Triangles;
-
             mesh.RecalculateBounds();
-            return mesh;
+
+            subMeshComponent.mesh = mesh;
+            subMeshComponent.name = assimpMesh.Name;
+            subMeshComponent.materialIndex = assimpMesh.MaterialIndex;
+
+            return subMeshComponent;
         }
 
         private void ImportMeshes()
@@ -81,13 +92,8 @@ namespace VRtist
             int i = 0;
             foreach(Assimp.Mesh assimpMesh in scene.Meshes)
             {
-                meshes.Add(new GameObject());
-                meshes[i].name = assimpMesh.Name;
-                var filter = meshes[i].AddComponent<MeshFilter>();
-                filter.mesh = ImportMesh(assimpMesh);
-                MeshRenderer renderer = meshes[i].AddComponent<MeshRenderer>();
-                renderer.sharedMaterial = materials[assimpMesh.MaterialIndex];
-
+                SubMeshComponent subMeshComponent = ImportMesh(assimpMesh);
+                meshes.Add(subMeshComponent);
                 i++;
             }
         }
@@ -117,6 +123,15 @@ namespace VRtist
                 materials.Add(new Material(hdrplit));
 
                 var material = materials[i];
+                material.SetFloat("_Smoothness", 0.2f);
+
+                if (assimpMaterial.IsTwoSided)
+                {
+                    // does not work...
+                    material.SetInt("_DoubleSidedEnable", 1);
+                    material.EnableKeyword("_DOUBLESIDED_ON");
+                }
+
                 material.name = assimpMaterial.Name;
                 if (assimpMaterial.HasColorDiffuse)
                 {
@@ -137,24 +152,35 @@ namespace VRtist
                         Debug.LogError("File not found : " + tslot.FilePath);
                     }
                 }
-                // does not work...
-                material.SetInt("_DoubleSidedEnable", 1);
-                material.EnableKeyword("_DOUBLESIDED_ON");
                 i++;
             }            
         }
 
         private void AssignMeshes(Assimp.Node node, GameObject parent)
         {
-            foreach(int indice in node.MeshIndices)
+            if (node.MeshIndices.Count == 0)
+                return;
+
+            MeshFilter meshFilter = parent.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = parent.AddComponent<MeshRenderer>();
+
+            Material[] mats = new Material[node.MeshIndices.Count];
+
+            CombineInstance[] combine = new CombineInstance[node.MeshIndices.Count];
+
+            int i = 0;
+            foreach (int indice in node.MeshIndices)
             {
-                GameObject mesh = GameObject.Instantiate(meshes[indice]);
-                mesh.name = meshes[indice].name;
-                mesh.transform.parent = parent.transform;
-                mesh.transform.localPosition = Vector3.zero;
-                mesh.transform.localScale = Vector3.one;
-                mesh.transform.localRotation = Quaternion.identity;
+                combine[i].mesh = meshes[indice].mesh;
+                combine[i].transform = Matrix4x4.identity;
+                mats[i] = materials[meshes[indice].materialIndex];
+                i++;
             }
+
+            meshFilter.mesh = new Mesh();
+            meshFilter.mesh.CombineMeshes(combine, false);
+            meshFilter.name = meshes[node.MeshIndices[0]].name;
+            meshRenderer.sharedMaterials = mats;
         }
 
         private void DecomposeMatrix(Matrix4x4 m, out Vector3 scale, out Quaternion rotation, out Vector3 position)
@@ -182,6 +208,8 @@ namespace VRtist
             if(parent != null)
                 go.transform.parent = parent;
 
+            // Do not use Assimp Decompose function, it does not work properly
+            // use unity decomposition instead
             Matrix4x4 mat = new Matrix4x4(
                 new Vector4(node.Transform.A1, node.Transform.B1, node.Transform.C1, node.Transform.D1),
                 new Vector4(node.Transform.A2, node.Transform.B2, node.Transform.C2, node.Transform.D2),
@@ -222,9 +250,7 @@ namespace VRtist
             ImportMeshes();
             GameObject objectRoot = ImportHierarchy(scene.RootNode, root);
 
-            foreach (GameObject o in meshes)
-                GameObject.Destroy(o);
-
+            // Right handed to Left Handed
             objectRoot.transform.localScale = new Vector3(-1, 1, 1);
             objectRoot.transform.localRotation = Quaternion.Euler(0, 180, 0);
 
