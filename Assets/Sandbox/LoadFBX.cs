@@ -1,31 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Assimp;
 
-public class LoadFBX : MonoBehaviour
+namespace VRtist
 {
-    [SerializeField]
-    private int meshCount = 0;
-
-    [SerializeField]
-    private GameObject cube = null;
-
-    // Start is called before the first frame update
-    void Start()
+    public class LoadFBX : MonoBehaviour
     {
-        Assimp.AssimpContext ctx = new AssimpContext();
-        Assimp.Scene aScene = ctx.ImportFile("C:\\Texel_4M.FBX", Assimp.PostProcessSteps.None);
-        if (aScene.HasMeshes)
+        // Start is called before the first frame update
+        void Start()
         {
-            meshCount = aScene.MeshCount;
-            cube.SetActive(true);
+            GameObject o = new GameObject();
+            o.name = "ROOT";
+
+            //AssimpIO.Import(@"D:\unity\VRSamples\Assets\Models\Cabane\cabane.fbx", o.transform);
+            AssimpIO.Import(@"D:\FBX\bidule\faces.fbx", o.transform);
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

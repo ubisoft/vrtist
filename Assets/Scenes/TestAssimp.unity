@@ -186,7 +186,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &719648594
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -358,8 +358,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b666e43f93c3a94fafcf26ea11ab71f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meshCount: 0
-  cube: {fileID: 719648593}
 --- !u!114 &813982099
 MonoBehaviour:
   m_ObjectHideFlags: 0
