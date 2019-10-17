@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace VRtist
 {
-    public class AssimpIO
+    public class AssimpIO : MonoBehaviour
     {
         private Assimp.Scene scene;
         private string directoryName;
@@ -29,6 +30,78 @@ namespace VRtist
             public Vector4[] Tangents;
             public Color[] VertexColors;
         }
+
+        private struct ImportTaskData
+        {
+            public string fileName;
+            public GameObject root;
+        }
+
+        List<ImportTaskData> taskData = new List<ImportTaskData>();
+        Task<Assimp.Scene> currentTask = null;
+        bool unityDataInCoroutineCreated = false;
+
+        enum ImporterState
+        {
+            Ready,
+            Initialized,
+            Processing,
+        };
+
+        ImporterState importerState = ImporterState.Ready;
+
+        public void Import(string fileName, GameObject root)
+        {
+            ImportTaskData d = new ImportTaskData();
+            d.fileName = fileName;
+            d.root = root;
+            taskData.Add(d);
+        }
+
+        void Update()
+        {         
+            switch(importerState)
+            {
+                case ImporterState.Ready:
+                    if(taskData.Count > 0)
+                    {
+                        ImportTaskData d = taskData[0];
+                        currentTask = Task.Run(async () => await ImportAssimpFile(d.fileName));
+                        importerState = ImporterState.Initialized;
+                    }
+                    break;
+
+                case ImporterState.Initialized:
+                    if(currentTask.IsCompleted)
+                    {
+                        var scene = currentTask.Result;
+                        ImportTaskData d = taskData[0];
+                        StartCoroutine(CreateUnityDataFromAssimp(d.fileName, scene, d.root.transform));
+                        importerState = ImporterState.Processing;
+                    }
+                    break;
+
+                case ImporterState.Processing:
+                    if (unityDataInCoroutineCreated)
+                    {
+                        taskData.RemoveAt(0);
+                        currentTask = null;
+                        unityDataInCoroutineCreated = false;
+                        Clear();
+                        importerState = ImporterState.Ready;
+                    }
+                    break;
+            }
+        }
+
+        private void Clear()
+        {
+            scene = null;
+            materials = new List<Material>();
+            meshes = new List<SubMeshComponent>();
+            textures = new Dictionary<string, Texture2D>();   
+        }
+
         private SubMeshComponent ImportMesh(Assimp.Mesh assimpMesh)
         {
             int i;
@@ -115,7 +188,8 @@ namespace VRtist
             Mesh mesh = new Mesh();
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.vertices = meshs.Vertices;
-            mesh.uv = meshs.Uv[0];
+            if(assimpMesh.TextureCoordinateChannelCount > 0)
+                mesh.uv = meshs.Uv[0];
             if (assimpMesh.TextureCoordinateChannelCount > 1)
                 mesh.uv2 = meshs.Uv[1];
             if (assimpMesh.TextureCoordinateChannelCount > 2)
@@ -319,29 +393,33 @@ namespace VRtist
             return objectRoot;
         }
 
-        public static GameObject Import(string fileName, Transform root = null)
+        private async Task<Assimp.Scene> ImportAssimpFile(string fileName)
+        {
+            Assimp.Scene aScene = null;
+            await Task<Assimp.Scene>.Run(() =>
+            {
+               Assimp.AssimpContext ctx = new Assimp.AssimpContext();
+               aScene = ctx.ImportFile(fileName,
+                   Assimp.PostProcessSteps.Triangulate |
+                   Assimp.PostProcessSteps.GenerateNormals |
+                   Assimp.PostProcessSteps.GenerateUVCoords);
+            });
+            return aScene;
+        }
+
+        private IEnumerator CreateUnityDataFromAssimp(string fileName, Assimp.Scene aScene, Transform root)
         {
             GameObject go = null;
-            try
-            {
-                Assimp.AssimpContext ctx = new Assimp.AssimpContext();
-                Assimp.Scene aScene = ctx.ImportFile(fileName,
-                    Assimp.PostProcessSteps.Triangulate | 
-                    Assimp.PostProcessSteps.GenerateNormals |
-                    Assimp.PostProcessSteps.GenerateUVCoords);
+            scene = aScene;
+            directoryName = Path.GetDirectoryName(fileName);
+            go = ImportScene(root);
+            go.name = Path.GetFileNameWithoutExtension(fileName);
 
-                AssimpIO assimpIO = new AssimpIO();
-                assimpIO.scene = aScene;
-                assimpIO.directoryName = Path.GetDirectoryName(fileName);
-                go = assimpIO.ImportScene(root);
-            }
-            catch(Assimp.AssimpException e)
-            {
-                Debug.LogError(e.Message);
-            }
-
-            return go;
+            unityDataInCoroutineCreated = true;
+            yield return null;
         }
+
+
     }
 
 }
