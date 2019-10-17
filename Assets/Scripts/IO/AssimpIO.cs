@@ -23,19 +23,24 @@ namespace VRtist
         {
             public Vector3[] Vertices;
             public Vector3[] Normals;
-            public Vector2[] Uv;
+            public Vector2[][] Uv;
             public int[] Triangles;
         }
         private SubMeshComponent ImportMesh(Assimp.Mesh assimpMesh)
         {
+            int i;
             MeshStruct meshs = new MeshStruct();
 
             meshs.Vertices = new Vector3[assimpMesh.VertexCount];
-            meshs.Uv = new Vector2[assimpMesh.VertexCount];
+            meshs.Uv = new Vector2[assimpMesh.TextureCoordinateChannelCount][];
+            for( i = 0; i < assimpMesh.TextureCoordinateChannelCount; i++ )
+            {
+                meshs.Uv[i] = new Vector2[assimpMesh.VertexCount];
+            }
             meshs.Normals = new Vector3[assimpMesh.VertexCount];
             meshs.Triangles = new int[assimpMesh.FaceCount * 3];
 
-            int i = 0;
+            i = 0;
             foreach (Assimp.Vector3D v in assimpMesh.Vertices)
             {
                 meshs.Vertices[i].x = v.X;
@@ -44,13 +49,15 @@ namespace VRtist
                 i++;
             }
 
-            // TODO handle multiple UV set
-            i = 0;
-            foreach (Assimp.Vector3D uv in assimpMesh.TextureCoordinateChannels[0])
+            for (int UVlayer = 0; UVlayer < assimpMesh.TextureCoordinateChannelCount; UVlayer++)
             {
-                meshs.Uv[i].x = uv.X;
-                meshs.Uv[i].y = uv.Y;
-                i++;
+                i = 0;
+                foreach (Assimp.Vector3D uv in assimpMesh.TextureCoordinateChannels[UVlayer])
+                {
+                    meshs.Uv[UVlayer][i].x = uv.X;
+                    meshs.Uv[UVlayer][i].y = uv.Y;
+                    i++;
+                }
             }
 
             i = 0;
@@ -75,7 +82,21 @@ namespace VRtist
             Mesh mesh = new Mesh();
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.vertices = meshs.Vertices;
-            mesh.uv = meshs.Uv;
+            mesh.uv = meshs.Uv[0];
+            if (assimpMesh.TextureCoordinateChannelCount > 1)
+                mesh.uv2 = meshs.Uv[1];
+            if (assimpMesh.TextureCoordinateChannelCount > 2)
+                mesh.uv3 = meshs.Uv[2];
+            if (assimpMesh.TextureCoordinateChannelCount > 3)
+                mesh.uv4 = meshs.Uv[3];
+            if (assimpMesh.TextureCoordinateChannelCount > 4)
+                mesh.uv5 = meshs.Uv[4];
+            if (assimpMesh.TextureCoordinateChannelCount > 5)
+                mesh.uv6 = meshs.Uv[5];
+            if (assimpMesh.TextureCoordinateChannelCount > 6)
+                mesh.uv7 = meshs.Uv[6];
+            if (assimpMesh.TextureCoordinateChannelCount > 7)
+                mesh.uv8 = meshs.Uv[7];
             mesh.normals = meshs.Normals;
             mesh.triangles = meshs.Triangles;
             mesh.RecalculateBounds();
