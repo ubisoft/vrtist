@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using UnityEngine;
 
@@ -25,6 +26,8 @@ namespace VRtist
             public Vector3[] Normals;
             public Vector2[][] Uv;
             public int[] Triangles;
+            public Vector4[] Tangents;
+            public Color[] VertexColors;
         }
         private SubMeshComponent ImportMesh(Assimp.Mesh assimpMesh)
         {
@@ -39,6 +42,8 @@ namespace VRtist
             }
             meshs.Normals = new Vector3[assimpMesh.VertexCount];
             meshs.Triangles = new int[assimpMesh.FaceCount * 3];
+            meshs.Tangents = null;
+            meshs.VertexColors = null;
 
             i = 0;
             foreach (Assimp.Vector3D v in assimpMesh.Vertices)
@@ -67,6 +72,34 @@ namespace VRtist
                 meshs.Normals[i].y = n.Y;
                 meshs.Normals[i].z = n.Z;
                 i++;
+            }
+
+            if (assimpMesh.HasTangentBasis)
+            {
+                i = 0;
+                meshs.Tangents = new Vector4[assimpMesh.VertexCount];
+                foreach (Assimp.Vector3D t in assimpMesh.Tangents)
+                {
+                    meshs.Tangents[i].x = t.X;
+                    meshs.Tangents[i].y = t.Y;
+                    meshs.Tangents[i].z = t.Z;
+                    meshs.Tangents[i].w = 1f;
+                    i++;
+                }
+            }
+
+            if (assimpMesh.VertexColorChannelCount >= 1)
+            {
+                i = 0;
+                meshs.VertexColors = new Color[assimpMesh.VertexCount];
+                foreach (Assimp.Color4D c in assimpMesh.VertexColorChannels[0])
+                {
+                    meshs.VertexColors[i].r = c.R;
+                    meshs.VertexColors[i].g = c.G;
+                    meshs.VertexColors[i].b = c.B;
+                    meshs.VertexColors[i].a = c.A;
+                    i++;
+                }
             }
 
             i = 0;
@@ -98,6 +131,10 @@ namespace VRtist
             if (assimpMesh.TextureCoordinateChannelCount > 7)
                 mesh.uv8 = meshs.Uv[7];
             mesh.normals = meshs.Normals;
+            if (meshs.Tangents != null)
+                mesh.tangents = meshs.Tangents;
+            if (meshs.VertexColors != null)
+                mesh.colors = meshs.VertexColors;
             mesh.triangles = meshs.Triangles;
             mesh.RecalculateBounds();
 
@@ -121,7 +158,11 @@ namespace VRtist
 
         private Texture2D GetOrCreateTextureFromFile(string filename)
         {
-            if (!filename.EndsWith(".jpg") && !filename.EndsWith(".png"))
+            CultureInfo ci = new CultureInfo("en-US");
+            if (!filename.EndsWith(".jpg", false, ci) && 
+                !filename.EndsWith(".png", false, ci) && 
+                !filename.EndsWith(".exr", false, ci) && 
+                !filename.EndsWith(".tga", false, ci))
                 return null;
 
             Texture2D texture;
