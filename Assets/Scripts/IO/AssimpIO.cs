@@ -219,7 +219,7 @@ namespace VRtist
             return subMeshComponent;
         }
 
-        private void ImportMeshes()
+        private IEnumerator ImportMeshes()
         {
             int i = 0;
             foreach(Assimp.Mesh assimpMesh in scene.Meshes)
@@ -227,6 +227,7 @@ namespace VRtist
                 SubMeshComponent subMeshComponent = ImportMesh(assimpMesh);
                 meshes.Add(subMeshComponent);
                 i++;
+                yield return null;
             }
         }
 
@@ -250,7 +251,7 @@ namespace VRtist
             return texture;
         }
 
-        private void ImportMaterials()
+        private IEnumerator ImportMaterials()
         {            
             int i = 0;
             Shader hdrplit = Shader.Find("HDRP/Lit");
@@ -289,6 +290,8 @@ namespace VRtist
                     }
                 }
                 i++;
+
+                yield return null;
             }            
         }
 
@@ -338,10 +341,23 @@ namespace VRtist
             );
         }
 
-        private GameObject ImportHierarchy(Assimp.Node node, Transform parent)
+        public class Ref<T>
         {
-            GameObject go = new GameObject();
-            if(parent != null)
+            private T backing;
+            public T Value 
+            { 
+                get { return backing; }
+                set { backing = value; }
+            }
+            public Ref(T reference)
+            {
+                backing = reference;
+            }
+        }
+
+        private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
+        {            
+            if (parent != null)
                 go.transform.parent = parent;
 
             // Do not use Assimp Decompose function, it does not work properly
@@ -357,23 +373,24 @@ namespace VRtist
             Quaternion rotation;
             DecomposeMatrix(mat, out scale, out rotation, out position);
 
-            go.transform.localPosition = position;
-            go.transform.localRotation = rotation;
-            go.transform.localScale = scale;
-
-            go.name = node.Name;
+            if (node.Parent != null)
+            {
+                go.transform.localPosition = position;
+                go.transform.localRotation = rotation;
+                go.transform.localScale = scale;
+                go.name = node.Name;
+            }
 
             AssignMeshes(node, go);
 
             foreach (Assimp.Node assimpChild in node.Children)
             {
-                GameObject child = ImportHierarchy(assimpChild, go.transform);
+                GameObject child = new GameObject();
+                yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child));
             }
-
-            return go;
         }
 
-        private GameObject ImportScene(Transform root = null)
+        private IEnumerator ImportScene(string fileName, Transform root = null)
         {
             Debug.Log("Mesh count : " + scene.MeshCount);
             Debug.Log("Texture count : " + scene.TextureCount);
@@ -382,15 +399,16 @@ namespace VRtist
             Debug.Log("Light count : " + scene.LightCount);
             Debug.Log("Material count : " + scene.MaterialCount);
 
-            ImportMaterials();
-            ImportMeshes();
-            GameObject objectRoot = ImportHierarchy(scene.RootNode, root);
+            yield return StartCoroutine(ImportMaterials());
+            yield return StartCoroutine(ImportMeshes());
 
+            GameObject objectRoot = new GameObject();
             // Right handed to Left Handed
             objectRoot.transform.localScale = new Vector3(-1, 1, 1);
             objectRoot.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            objectRoot.name = Path.GetFileNameWithoutExtension(fileName);
 
-            return objectRoot;
+            yield return StartCoroutine(ImportHierarchy(scene.RootNode, root, objectRoot));
         }
 
         private async Task<Assimp.Scene> ImportAssimpFile(string fileName)
@@ -412,14 +430,10 @@ namespace VRtist
             GameObject go = null;
             scene = aScene;
             directoryName = Path.GetDirectoryName(fileName);
-            go = ImportScene(root);
-            go.name = Path.GetFileNameWithoutExtension(fileName);
+            yield return StartCoroutine(ImportScene(fileName, root));
 
             unityDataInCoroutineCreated = true;
             yield return null;
         }
-
-
     }
-
 }
