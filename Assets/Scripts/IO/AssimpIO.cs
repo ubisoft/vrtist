@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -21,16 +22,6 @@ namespace VRtist
             public string name;
             public int materialIndex;
         }
-        private struct MeshStruct
-        {
-            public Vector3[] Vertices;
-            public Vector3[] Normals;
-            public Vector2[][] Uv;
-            public int[] Triangles;
-            public Vector4[] Tangents;
-            public Color[] VertexColors;
-        }
-
         private struct ImportTaskData
         {
             public string fileName;
@@ -40,6 +31,27 @@ namespace VRtist
         List<ImportTaskData> taskData = new List<ImportTaskData>();
         Task<Assimp.Scene> currentTask = null;
         bool unityDataInCoroutineCreated = false;
+
+        public class ImportTaskEventArgs : EventArgs
+        {
+            public ImportTaskEventArgs(GameObject r, string fn)
+            {
+                data.root = r;
+                data.fileName = fn;
+            }
+
+            public string Filename
+            {
+                get { return data.fileName; }
+            }
+            public GameObject Root
+            {
+                get { return data.root; }
+            }
+            ImportTaskData data = new ImportTaskData();
+        }
+
+        public event EventHandler<ImportTaskEventArgs> importEventTask;
 
         enum ImporterState
         {
@@ -65,6 +77,7 @@ namespace VRtist
                 case ImporterState.Ready:
                     if(taskData.Count > 0)
                     {
+                        // Assimp loading
                         ImportTaskData d = taskData[0];
                         currentTask = Task.Run(async () => await ImportAssimpFile(d.fileName));
                         importerState = ImporterState.Initialized;
@@ -74,6 +87,7 @@ namespace VRtist
                 case ImporterState.Initialized:
                     if(currentTask.IsCompleted)
                     {
+                        // Convert assimp structures into unity
                         var scene = currentTask.Result;
                         ImportTaskData d = taskData[0];
                         StartCoroutine(CreateUnityDataFromAssimp(d.fileName, scene, d.root.transform));
@@ -84,11 +98,16 @@ namespace VRtist
                 case ImporterState.Processing:
                     if (unityDataInCoroutineCreated)
                     {
+                        // task done
+                        var data = taskData[0];
                         taskData.RemoveAt(0);
                         currentTask = null;
                         unityDataInCoroutineCreated = false;
                         Clear();
                         importerState = ImporterState.Ready;
+
+                        ImportTaskEventArgs args = new ImportTaskEventArgs(data.root, data.fileName);
+                        importEventTask.Invoke(this, args);
                     }
                     break;
             }
@@ -99,41 +118,40 @@ namespace VRtist
             scene = null;
             materials = new List<Material>();
             meshes = new List<SubMeshComponent>();
-            textures = new Dictionary<string, Texture2D>();   
+            //textures = new Dictionary<string, Texture2D>();   
         }
 
         private SubMeshComponent ImportMesh(Assimp.Mesh assimpMesh)
         {
             int i;
-            MeshStruct meshs = new MeshStruct();
 
-            meshs.Vertices = new Vector3[assimpMesh.VertexCount];
-            meshs.Uv = new Vector2[assimpMesh.TextureCoordinateChannelCount][];
+            Vector3[] vertices = new Vector3[assimpMesh.VertexCount];
+            Vector2[][] uv = new Vector2[assimpMesh.TextureCoordinateChannelCount][];
             for( i = 0; i < assimpMesh.TextureCoordinateChannelCount; i++ )
             {
-                meshs.Uv[i] = new Vector2[assimpMesh.VertexCount];
+                uv[i] = new Vector2[assimpMesh.VertexCount];
             }
-            meshs.Normals = new Vector3[assimpMesh.VertexCount];
-            meshs.Triangles = new int[assimpMesh.FaceCount * 3];
-            meshs.Tangents = null;
-            meshs.VertexColors = null;
+            Vector3[] normals = new Vector3[assimpMesh.VertexCount];
+            int[] triangles = new int[assimpMesh.FaceCount * 3];
+            Vector4[] tangents = null;
+            Color[] vertexColors = null;
 
             i = 0;
             foreach (Assimp.Vector3D v in assimpMesh.Vertices)
             {
-                meshs.Vertices[i].x = v.X;
-                meshs.Vertices[i].y = v.Y;
-                meshs.Vertices[i].z = v.Z;
+                vertices[i].x = v.X;
+                vertices[i].y = v.Y;
+                vertices[i].z = v.Z;
                 i++;
             }
 
             for (int UVlayer = 0; UVlayer < assimpMesh.TextureCoordinateChannelCount; UVlayer++)
             {
                 i = 0;
-                foreach (Assimp.Vector3D uv in assimpMesh.TextureCoordinateChannels[UVlayer])
+                foreach (Assimp.Vector3D UV in assimpMesh.TextureCoordinateChannels[UVlayer])
                 {
-                    meshs.Uv[UVlayer][i].x = uv.X;
-                    meshs.Uv[UVlayer][i].y = uv.Y;
+                    uv[UVlayer][i].x = UV.X;
+                    uv[UVlayer][i].y = UV.Y;
                     i++;
                 }
             }
@@ -141,22 +159,22 @@ namespace VRtist
             i = 0;
             foreach (Assimp.Vector3D n in assimpMesh.Normals)
             {
-                meshs.Normals[i].x = n.X;
-                meshs.Normals[i].y = n.Y;
-                meshs.Normals[i].z = n.Z;
+                normals[i].x = n.X;
+                normals[i].y = n.Y;
+                normals[i].z = n.Z;
                 i++;
             }
 
             if (assimpMesh.HasTangentBasis)
             {
                 i = 0;
-                meshs.Tangents = new Vector4[assimpMesh.VertexCount];
+                tangents = new Vector4[assimpMesh.VertexCount];
                 foreach (Assimp.Vector3D t in assimpMesh.Tangents)
                 {
-                    meshs.Tangents[i].x = t.X;
-                    meshs.Tangents[i].y = t.Y;
-                    meshs.Tangents[i].z = t.Z;
-                    meshs.Tangents[i].w = 1f;
+                    tangents[i].x = t.X;
+                    tangents[i].y = t.Y;
+                    tangents[i].z = t.Z;
+                    tangents[i].w = 1f;
                     i++;
                 }
             }
@@ -164,13 +182,13 @@ namespace VRtist
             if (assimpMesh.VertexColorChannelCount >= 1)
             {
                 i = 0;
-                meshs.VertexColors = new Color[assimpMesh.VertexCount];
+                vertexColors = new Color[assimpMesh.VertexCount];
                 foreach (Assimp.Color4D c in assimpMesh.VertexColorChannels[0])
                 {
-                    meshs.VertexColors[i].r = c.R;
-                    meshs.VertexColors[i].g = c.G;
-                    meshs.VertexColors[i].b = c.B;
-                    meshs.VertexColors[i].a = c.A;
+                    vertexColors[i].r = c.R;
+                    vertexColors[i].g = c.G;
+                    vertexColors[i].b = c.B;
+                    vertexColors[i].a = c.A;
                     i++;
                 }
             }
@@ -178,38 +196,38 @@ namespace VRtist
             i = 0;
             foreach (Assimp.Face face in assimpMesh.Faces)
             {
-                meshs.Triangles[i + 0] = face.Indices[0];
-                meshs.Triangles[i + 1] = face.Indices[1];
-                meshs.Triangles[i + 2] = face.Indices[2];
+                triangles[i + 0] = face.Indices[0];
+                triangles[i + 1] = face.Indices[1];
+                triangles[i + 2] = face.Indices[2];
                 i+=3;
             }
 
             SubMeshComponent subMeshComponent = new SubMeshComponent();
             Mesh mesh = new Mesh();
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-            mesh.vertices = meshs.Vertices;
+            mesh.vertices = vertices;
             if(assimpMesh.TextureCoordinateChannelCount > 0)
-                mesh.uv = meshs.Uv[0];
+                mesh.uv = uv[0];
             if (assimpMesh.TextureCoordinateChannelCount > 1)
-                mesh.uv2 = meshs.Uv[1];
+                mesh.uv2 = uv[1];
             if (assimpMesh.TextureCoordinateChannelCount > 2)
-                mesh.uv3 = meshs.Uv[2];
+                mesh.uv3 = uv[2];
             if (assimpMesh.TextureCoordinateChannelCount > 3)
-                mesh.uv4 = meshs.Uv[3];
+                mesh.uv4 = uv[3];
             if (assimpMesh.TextureCoordinateChannelCount > 4)
-                mesh.uv5 = meshs.Uv[4];
+                mesh.uv5 = uv[4];
             if (assimpMesh.TextureCoordinateChannelCount > 5)
-                mesh.uv6 = meshs.Uv[5];
+                mesh.uv6 = uv[5];
             if (assimpMesh.TextureCoordinateChannelCount > 6)
-                mesh.uv7 = meshs.Uv[6];
+                mesh.uv7 = uv[6];
             if (assimpMesh.TextureCoordinateChannelCount > 7)
-                mesh.uv8 = meshs.Uv[7];
-            mesh.normals = meshs.Normals;
-            if (meshs.Tangents != null)
-                mesh.tangents = meshs.Tangents;
-            if (meshs.VertexColors != null)
-                mesh.colors = meshs.VertexColors;
-            mesh.triangles = meshs.Triangles;
+                mesh.uv8 = uv[7];
+            mesh.normals = normals;
+            if (tangents != null)
+                mesh.tangents = tangents;
+            if (vertexColors != null)
+                mesh.colors = vertexColors;
+            mesh.triangles = triangles;
             mesh.RecalculateBounds();
 
             subMeshComponent.mesh = mesh;
@@ -341,20 +359,6 @@ namespace VRtist
             );
         }
 
-        public class Ref<T>
-        {
-            private T backing;
-            public T Value 
-            { 
-                get { return backing; }
-                set { backing = value; }
-            }
-            public Ref(T reference)
-            {
-                backing = reference;
-            }
-        }
-
         private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
         {            
             if (parent != null)
@@ -427,7 +431,6 @@ namespace VRtist
 
         private IEnumerator CreateUnityDataFromAssimp(string fileName, Assimp.Scene aScene, Transform root)
         {
-            GameObject go = null;
             scene = aScene;
             directoryName = Path.GetDirectoryName(fileName);
             yield return StartCoroutine(ImportScene(fileName, root));

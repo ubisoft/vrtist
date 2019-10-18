@@ -11,18 +11,30 @@ namespace VRtist
         public AssimpIO importer;
         void Start()
         {
-            importer.Import(@"D:\FBX\Batman\batman.obj", gameObject);
-            importer.Import(@"D:\unity\VRSamples\Assets\Models\Cabane\cabane.fbx", gameObject);
-            importer.Import(@"D:\FBX\bidule\faces.fbx", gameObject);
-            importer.Import(@"D:\FBX\fireTruck.fbx", gameObject);
+            importer.importEventTask += OnGeometryLoaded;
+            Import(@"D:\FBX\Batman\batman.obj");
+            Import(@"D:\unity\VRSamples\Assets\Models\Cabane\cabane.fbx");
+            Import(@"D:\FBX\bidule\faces.fbx");
+            Import(@"D:\FBX\fireTruck.fbx");
+        }
+
+        void Import(string fileName)
+        {
+            GameObject go = new GameObject();
+            go.transform.parent = gameObject.transform;
+            //go.SetActive(false);
+            importer.Import(fileName, go);
+        }
+
+        static void OnGeometryLoaded(object sender, AssimpIO.ImportTaskEventArgs e)
+        {
+            e.Root.SetActive(true);
         }
 
         // Update is called once per frame
         void Update()
         {
-        }
-
-        
+        }        
     }
 
 }
