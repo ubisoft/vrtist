@@ -1,34 +1,37 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace VRtist
 {
-    public class LoadFBX : MonoBehaviour
+    public class GeometryImporter : MonoBehaviour
     {
-        public AssimpIO importer;
-
-        public string filename = @"D:\unity\VRSamples\Assets\Models\Cabane\cabane.fbx";
-        public bool load = false;
-        public bool undo = false;
-        public bool redo = false;
-
-        public float progress = 0f;
+        private AssimpIO importer = null;
 
         void Start()
         {
-            importer.importEventTask += OnGeometryLoaded;            
+            importer = GetComponent<AssimpIO>();
+            importer.importEventTask += OnGeometryLoaded;
         }
 
-
         static void OnGeometryLoaded(object sender, AssimpIO.ImportTaskEventArgs e)
-        {           
+        {
+            if (e.Error)
+                return;
+
             CommandImportGeometry cmd = new CommandImportGeometry(e.Filename, e.Root);
             cmd.Submit();
         }
 
-        // Update is called once per frame
+
+        // This is for debug purpose
+        //===========================
+        public string filename = @"D:\unity\VRtist\Build\cabane.fbx";
+        public bool load = false;
+        public bool undo = false;
+        public bool redo = false;
+        public float progress = 0f;
+
         void Update()
         {
             progress = importer.Progress;
@@ -49,6 +52,7 @@ namespace VRtist
                 redo = false;
             }
         }
-    }
+        //===========================
 
+    }
 }

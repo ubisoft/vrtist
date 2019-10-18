@@ -198,6 +198,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   importer: {fileID: 909750279}
+  filename: D:\unity\VRSamples\Assets\Models\Cabane\cabane.fbx
+  load: 0
+  undo: 0
+  redo: 0
+  progress: 0
 --- !u!4 &605832790
 Transform:
   m_ObjectHideFlags: 0
@@ -206,7 +211,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 605832788}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 15.81439, y: 13.426124, z: -4.0687866}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

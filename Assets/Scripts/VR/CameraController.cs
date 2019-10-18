@@ -8,9 +8,9 @@ namespace VRtist
     public class CameraController : MonoBehaviour
     {
         [Header("Base Parameters")]
-        [SerializeField] private Transform world;
-        [SerializeField] private float playerSpeed = 0.2f;
-        [SerializeField] private Transform leftHandle = null;
+        public Transform world = null;
+        public float playerSpeed = 0.2f;
+        public Transform leftHandle = null;
 
         Vector3 initControllerPosition;
         Quaternion initControllerRotation;
