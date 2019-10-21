@@ -323,6 +323,8 @@ namespace VRtist
                 materials.Add(new Material(hdrplit));
 
                 var material = materials[i];
+                material.enableInstancing = true;
+
                 material.SetFloat("_Smoothness", 0.2f);
 
                 if (assimpMaterial.IsTwoSided)
@@ -383,7 +385,8 @@ namespace VRtist
             meshFilter.mesh.CombineMeshes(combine, false);
             meshFilter.name = meshes[node.MeshIndices[0]].name;
             meshRenderer.sharedMaterials = mats;
-
+            MeshCollider collider = parent.AddComponent<MeshCollider>();
+            
             progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
         }
 
@@ -437,6 +440,7 @@ namespace VRtist
             foreach (Assimp.Node assimpChild in node.Children)
             {
                 GameObject child = new GameObject();
+                child.tag = "PhysicObject";
                 yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child));
             }
         }
