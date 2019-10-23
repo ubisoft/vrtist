@@ -5,12 +5,14 @@ using UnityEditor;
 
 public class WizardCreatePanel : ScriptableWizard
 {
-    public Material uiMaterial = null;
-    public Color color = Color.white;
+    public UIPanel parentPanel = null;
+    public string panelName = "Panel";
     public float width = 4.0f;
     public float height = 6.0f;
     public float margin = 0.2f;
     public float radius = 0.1f;
+    public Material uiMaterial = null;
+    public Color color = Color.white;
 
     [MenuItem("VRtist/Create UI Panel")]
     static void CreateWizard()
@@ -34,10 +36,11 @@ public class WizardCreatePanel : ScriptableWizard
 
     private void OnWizardCreate()
     {
-        GameObject go = new GameObject("Panel");
+        GameObject go = new GameObject(panelName);
 
         // NOTE: also creates a MeshFilter and MeshRenderer
         UIPanel uiPanel = go.AddComponent<UIPanel>();
+        uiPanel.transform.parent = parentPanel ? parentPanel.transform : null;
         uiPanel.width = width;
         uiPanel.height = height;
         uiPanel.margin = margin;
@@ -52,9 +55,19 @@ public class WizardCreatePanel : ScriptableWizard
         MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
         if (meshRenderer != null && uiMaterial != null)
         {
-            Material material = uiMaterial;
+            // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
+            //       to make the error disappear;
+
+            // Get an instance of the same material
+            // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
+            //meshRenderer.sharedMaterial = uiMaterial;
+            //Material material = meshRenderer.material; // instance of the sharedMaterial
+
+            // Clone the material.
+            meshRenderer.sharedMaterial = Instantiate(uiMaterial);
+            Material material = meshRenderer.sharedMaterial;
+
             material.SetColor("_BaseColor", color);
-            meshRenderer.sharedMaterial = material;
         }
     }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
  RequireComponent(typeof(MeshRenderer))]
 public class UIPanel : MonoBehaviour
@@ -18,18 +19,55 @@ public class UIPanel : MonoBehaviour
     public int nbSubdivCornerFixed = 3;
     public int nbSubdivCornerPerUnit = 3;
 
-    private bool isStarted = false; // used in OnValidate to NOT be called too soon.
+    private bool needRebuild = false;
 
     private void Start()
     {
-        isStarted = true;
+        
     }
 
     private void OnValidate()
     {
-        if (isStarted)
+        const float min_width = 0.01f;
+        const float min_height = 0.01f;
+        const float min_radius = 0.01f;
+        const int min_circleSubdiv = 3;
+        const int min_nbSubdivPerUnit = 1;
+        const int min_nbSubdivCornerFixed = 1;
+        const int min_nbSubdivCornerPerUnit = 1;
+
+        if (width < min_width)
+            width = min_width;
+        if (height < min_height)
+            height = min_height;
+        if (radius < min_radius)
+            radius = min_radius;
+        if (margin > width / 2.0f || margin > height / 2.0f)
+            margin = Mathf.Min(width / 2.0f, height / 2.0f);
+        if (radius > width / 2.0f || radius > height / 2.0f)
+            radius = Mathf.Min(width / 2.0f, height / 2.0f);
+        if (margin < radius)
+            margin = radius;
+        if (circleSubdiv < min_circleSubdiv)
+            circleSubdiv = min_circleSubdiv;
+        if (nbSubdivPerUnit < min_nbSubdivPerUnit)
+            nbSubdivPerUnit = min_nbSubdivPerUnit;
+        if (nbSubdivCornerFixed < min_nbSubdivCornerFixed)
+            nbSubdivCornerFixed = min_nbSubdivCornerFixed;
+        if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
+            nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
+
+        needRebuild = true;
+
+        // NOTE: RebuildMesh() cannot be called in OnValidate().
+    }
+
+    private void Update()
+    {
+        if (needRebuild)
         {
             RebuildMesh();
+            needRebuild = false;
         }
     }
 
@@ -60,14 +98,18 @@ public class UIPanel : MonoBehaviour
     }
 
     public static Mesh BuildRoundedRectEx(
-        float width, float height, float margin, float radius, 
-        int circleSubdiv, int nbSubdivPerUnit, int nbSubdivCornerFixed, int nbSubdivCornerPerUnit)
+        float width, 
+        float height, 
+        float margin, 
+        float radius, 
+        int circleSubdiv, 
+        int nbSubdivPerUnit,
+        int nbSubdivCornerFixed, 
+        int nbSubdivCornerPerUnit)
     {
-        List<Vector3> vertices = new List<Vector3>();
-        //Vector3[] vertices;
-        List<Vector3> normals = new List<Vector3>();
-        //int[] indices = new int[1024];
-        List<int> indices = new List<int>();
+        List<Vector3> vertices = new List<Vector3>(); // TODO: use Vector3[] vertices = new Vector3[computed_size];
+        List<Vector3> normals = new List<Vector3>(); // TODO: use Vector3[] normals = new Vector3[computed_size];
+        List<int> indices = new List<int>(); // TODO: use int[] indices = new int[computed_size];
 
         float hTubeWidth = width - 2.0f * margin;
         float vTubeHeight = height - 2.0f * margin;
