@@ -29,13 +29,16 @@ namespace VRtist
             selectionColor = gameObject.GetComponent<MeshRenderer>().material.GetColor("_BaseColor");
         }
 
+        protected CommandGroup undoGroup = null;
+
         void Update()
         {
             //if (uiTools.isOverUI()) { return; }
 
             // Clear selection on trigger click on nothing
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () => {
-                selectionHasChanged = false;                
+                selectionHasChanged = false;
+                undoGroup = new CommandGroup();
             },
             () => {
                 if (!selectionHasChanged && !VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
@@ -44,6 +47,8 @@ namespace VRtist
                     grippedGameObject = false;
                     multiSelecting = false;
                 }
+                undoGroup.Submit();
+                undoGroup = null;
             });
 
             int count = collidedObjects.Count;

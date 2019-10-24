@@ -19,8 +19,7 @@ namespace VRtist
             if (e.Error)
                 return;
 
-            CommandImportGeometry cmd = new CommandImportGeometry(e.Filename, e.Root);
-            cmd.Submit();
+            new CommandAddGameObject(e.Root).Submit();
         }
 
 

@@ -35,7 +35,9 @@ namespace VRtist
     public static class CommandManager
     {
         static Stack<ICommand> undoStack = new Stack<ICommand>();
-        static Stack<ICommand> redoStack = new Stack<ICommand>();        
+        static Stack<ICommand> redoStack = new Stack<ICommand>();
+        static Stack<CommandGroup> groupStack = new Stack<CommandGroup>();
+        static CommandGroup currentGroup = null;
 
         public static void Undo()
         {
@@ -56,9 +58,28 @@ namespace VRtist
         }
 
         public static void AddCommand(ICommand command)
-        {            
-            undoStack.Push(command);
-            redoStack.Clear();
+        {
+            if (currentGroup != null)
+            {
+                currentGroup.AddCommand(command);
+            }
+            else
+            {
+                undoStack.Push(command);
+                redoStack.Clear();
+            }
+        }
+
+        public static void BeginGroup(CommandGroup command)
+        {
+            groupStack.Push(command);
+            currentGroup = command;
+        }
+
+        public static void EndGroup()
+        {
+            CommandGroup groupCommand = groupStack.Pop();
+            currentGroup = groupStack.Count == 0 ? null : groupStack.Peek();
         }
 
     }

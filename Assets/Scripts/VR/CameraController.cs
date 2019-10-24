@@ -44,6 +44,17 @@ namespace VRtist
             if (VRInput.TryGetDevices())
             {
                 UpdateNavigation();
+
+                VRInput.ButtonEvent(VRInput.leftController, CommonUsages.primaryButton, () => { },
+                () =>
+                {
+                    CommandManager.Undo();
+                });
+                VRInput.ButtonEvent(VRInput.leftController, CommonUsages.secondaryButton, () => { },
+                () =>
+                {
+                    CommandManager.Redo();
+                });
             }
 
         }

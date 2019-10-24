@@ -17,6 +17,7 @@ namespace VRtist
         float selectorRadius = 0.03f;
         Color selectionColor = new Color(0f, 167f/255f, 1f);
 
+        Dictionary<GameObject, Matrix4x4> initParentMatrix = new Dictionary<GameObject, Matrix4x4>();
         Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
         Dictionary<GameObject, Quaternion> initRotations = new Dictionary<GameObject, Quaternion>();
         Dictionary<GameObject, Vector3> initScales = new Dictionary<GameObject, Vector3>();
@@ -83,29 +84,66 @@ namespace VRtist
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
             initControllerMatrix = (transform.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
 
+            initParentMatrix.Clear();
             initPositions.Clear();
             initRotations.Clear();
             initScales.Clear();
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
-                initPositions[data.Value] = data.Value.transform.position;
-                initRotations[data.Value] = data.Value.transform.rotation;
-                initScales[data.Value] = data.Value.transform.lossyScale;
+                initParentMatrix[data.Value] = data.Value.transform.parent.localToWorldMatrix;
+                initPositions[data.Value] = data.Value.transform.localPosition;
+                initRotations[data.Value] = data.Value.transform.localRotation;
+                initScales[data.Value] = data.Value.transform.localScale;
             }
             scale = 1f;            
         }
 
         bool outOfDeadZone = false;
         protected bool gripped = false;
+        protected CommandGroup undoGroup = null;
 
         protected void OnStartGrip()
-        {            
+        {
+            undoGroup = new CommandGroup();
+
             InitDuplicateMoveTransforms();
             outOfDeadZone = false;
             gripped = true;
         }
+
+        private void ManageMoveObjectsUndo()
+        {
+            List<GameObject> objects = new List<GameObject>();
+            List<Vector3> beginPositions = new List<Vector3>();
+            List<Quaternion> beginRotations = new List<Quaternion>();
+            List<Vector3> beginScales = new List<Vector3>();
+            List<Vector3> endPositions = new List<Vector3>();
+            List<Quaternion> endRotations = new List<Quaternion>();
+            List<Vector3> endScales = new List<Vector3>();
+
+            int i = 0;
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            {
+                GameObject gObject = data.Value;
+                objects.Add(gObject);
+                beginPositions.Add(initPositions[gObject]);
+                beginRotations.Add(initRotations[gObject]);
+                beginScales.Add(initScales[gObject]);
+
+                endPositions.Add(gObject.transform.localPosition);
+                endRotations.Add(gObject.transform.localRotation);
+                endScales.Add(gObject.transform.localScale);
+            }
+
+            new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
+
+        }
         protected void OnEndGrip()
-        {            
+        {
+            ManageMoveObjectsUndo();
+            undoGroup.Submit();
+            undoGroup = null;
+
             gripped = false;
         }
 
@@ -127,17 +165,6 @@ namespace VRtist
                 });
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
-
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.primaryButton, () => { }, 
-                ()=>
-                {
-                    CommandManager.Undo();
-                });
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.secondaryButton, () => { },
-                () =>
-                {
-                    CommandManager.Redo();
-                });
 
             SetControllerVisible(!gripped || Selection.selection.Count == 0);
 
@@ -180,7 +207,7 @@ namespace VRtist
                         meshParentMatrixInverse = meshParentTransform.worldToLocalMatrix;
                     else
                         meshParentMatrixInverse = Matrix4x4.identity;
-                    Matrix4x4 transformed = meshParentMatrixInverse * controllerMatrix * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
+                    Matrix4x4 transformed = meshParentMatrixInverse * controllerMatrix * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
                     data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
                     data.Value.transform.localRotation = transformed.rotation;
                     data.Value.transform.localScale = transformed.lossyScale;
@@ -228,6 +255,8 @@ namespace VRtist
             {
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.1f);
             }
+
+            new CommandAddToSelection(objects).Submit();
         }
         public bool RemoveFromSelection(GameObject gObject)
         {
@@ -247,11 +276,20 @@ namespace VRtist
             {
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.1f);
             }
+
+            new CommandRemoveFromSelection(objects).Submit();
         }
 
         public void ClearSelection()
         {
-            Selection.ClearSelection();
+            List<GameObject> objects = new List<GameObject>();
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            {
+                objects.Add(data.Value);
+            }
+            new CommandRemoveFromSelection(objects).Submit();
+
+            Selection.ClearSelection();           
         }
 
         protected GameObject CreateInstance(GameObject gObject, Transform parent)
@@ -265,6 +303,8 @@ namespace VRtist
 
         public void DuplicateSelection()
         {
+            ManageMoveObjectsUndo();
+
             List<GameObject> clones = new List<GameObject>();
 
             Dictionary<Transform, Transform> groups = new Dictionary<Transform, Transform>();
@@ -295,11 +335,17 @@ namespace VRtist
                         newGroup.transform.localScale = parent.localScale;
                     }
 
-                    clones.Add(CreateInstance(selectedObjects[i], groups[parent]));
+                    GameObject clone = CreateInstance(selectedObjects[i], groups[parent]);
+                    clones.Add(clone);
+
+                    new CommandAddGameObject(clone).Submit();
                 }
                 else
                 {
-                    clones.Add(CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent));
+                    GameObject clone = CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent);
+                    clones.Add(clone);
+
+                    new CommandAddGameObject(clone).Submit();
                 }
             }
 
