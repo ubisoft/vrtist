@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
@@ -19,11 +20,14 @@ public class UIPanel : MonoBehaviour
     public int nbSubdivCornerFixed = 3;
     public int nbSubdivCornerPerUnit = 3;
 
+    public float Width { get { return width; } set { width = value; RebuildMesh(); } }
+    public float Height { get { return height; } set { height = value; RebuildMesh(); } }
+
     private bool needRebuild = false;
 
     private void Start()
     {
-        
+
     }
 
     private void OnValidate()
@@ -69,6 +73,23 @@ public class UIPanel : MonoBehaviour
             RebuildMesh();
             needRebuild = false;
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 labelPosition = transform.localToWorldMatrix * new Vector3(-width / 2.0f + margin + radius, height / 2.0f - margin - radius, 0.0f);
+        Vector3 posTopLeft     = transform.localToWorldMatrix * new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, 0);
+        Vector3 posTopRight    = transform.localToWorldMatrix * new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, 0);
+        Vector3 posBottomLeft  = transform.localToWorldMatrix * new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, 0);
+        Vector3 posBottomRight = transform.localToWorldMatrix * new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, 0);
+
+        //Gizmos.DrawWireCube(transform.position + Vector3.zero, new Vector3(width - 2.0f * margin, height - 2.0f * margin, 2.0f * radius));
+        Gizmos.color = Color.white;
+        Gizmos.DrawLine(posTopLeft, posTopRight);
+        Gizmos.DrawLine(posTopRight, posBottomRight);
+        Gizmos.DrawLine(posBottomRight, posBottomLeft);
+        Gizmos.DrawLine(posBottomLeft, posTopLeft);
+        UnityEditor.Handles.Label(transform.position + labelPosition, gameObject.name);
     }
 
     public void RebuildMesh()
