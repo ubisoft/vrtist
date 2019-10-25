@@ -6,7 +6,7 @@ using UnityEditor;
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
  RequireComponent(typeof(MeshRenderer))]
-public class UIPanel : MonoBehaviour
+public class UIPanel : UIElement
 {
     [Header("Panel Shape Parmeters")]
     public float width = 4.0f;
@@ -88,7 +88,7 @@ public class UIPanel : MonoBehaviour
         Gizmos.DrawLine(posTopRight, posBottomRight);
         Gizmos.DrawLine(posBottomRight, posBottomLeft);
         Gizmos.DrawLine(posBottomLeft, posTopLeft);
-        UnityEditor.Handles.Label(transform.position + labelPosition, gameObject.name);
+        UnityEditor.Handles.Label(labelPosition, gameObject.name);
     }
 
     public void RebuildMesh()
