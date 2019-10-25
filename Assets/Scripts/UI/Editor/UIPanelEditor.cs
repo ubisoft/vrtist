@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEditor;
 
 [CustomEditor(typeof(UIPanel))]
-public class SomeScriptEditor : Editor
+public class UIPanelEditor : Editor
 {
     public override void OnInspectorGUI()
     {
@@ -25,11 +25,11 @@ public class SomeScriptEditor : Editor
         UIPanel uiPanel = target as UIPanel;
         
         Transform T = uiPanel.transform;
-        
-        Vector3 posLeft   = T.position + (Vector3)(T.localToWorldMatrix * -new Vector4(uiPanel.width / 2.0f, 0, 0, 1));
-        Vector3 posRight  = T.position + (Vector3)(T.localToWorldMatrix *  new Vector4(uiPanel.width / 2.0f, 0, 0, 1));
-        Vector3 posBottom = T.position + (Vector3)(T.localToWorldMatrix * -new Vector4(0, uiPanel.height / 2.0f, 0, 1));
-        Vector3 posTop    = T.position + (Vector3)(T.localToWorldMatrix *  new Vector4(0, uiPanel.height / 2.0f, 0, 1));
+
+        Vector3 posLeft   = T.TransformPoint(new Vector3(-uiPanel.width / 2.0f, 0, 0));
+        Vector3 posRight  = T.TransformPoint(new Vector3(+uiPanel.width / 2.0f, 0, 0));
+        Vector3 posBottom = T.TransformPoint(new Vector3(0, -uiPanel.height / 2.0f, 0));
+        Vector3 posTop    = T.TransformPoint(new Vector3(0, +uiPanel.height / 2.0f, 0));
         float handleSize = uiPanel.radius * 2.0f;
         Vector3 snap = Vector3.one * 0.1f;
 
@@ -54,19 +54,19 @@ public class SomeScriptEditor : Editor
 
             if (Vector3.SqrMagnitude(deltaLeft) > Mathf.Epsilon)
             {
-                uiPanel.Width = 2.0f * Vector3.Magnitude(T.position - newTargetPosition_left) / T.localScale.x;
+                uiPanel.Width = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_left));
             }
             else if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
             {
-                uiPanel.Width = 2.0f * Vector3.Magnitude(T.position - newTargetPosition_right) / T.localScale.x;
+                uiPanel.Width = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_right));
             }
             else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
             {
-                uiPanel.Height = 2.0f * Vector3.Magnitude(T.position - newTargetPosition_bottom) / T.localScale.y;
+                uiPanel.Height = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_bottom));
             }
             else if (Vector3.SqrMagnitude(deltaTop) > Mathf.Epsilon)
             {
-                uiPanel.Height = 2.0f * Vector3.Magnitude(T.position - newTargetPosition_top) / T.localScale.y;
+                uiPanel.Height = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_top));
             }
         }
     }

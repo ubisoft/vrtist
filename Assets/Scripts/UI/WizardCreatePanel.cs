@@ -14,10 +14,28 @@ public class WizardCreatePanel : ScriptableWizard
     public Material uiMaterial = null;
     public Color color = Color.white;
 
+    private static readonly float default_width = 4.0f;
+    private static readonly float default_height = 6.0f;
+    private static readonly float default_margin = 0.2f;
+    private static readonly float default_radius = 0.1f;
+
     [MenuItem("VRtist/Create UI Panel")]
     static void CreateWizard()
     {
         ScriptableWizard.DisplayWizard<WizardCreatePanel>("Create UI Panel", "Create");//, "OtherButton");
+    }
+
+    [MenuItem("GameObject/VRtist/UIPanel", false, 49)]
+    public static void OnCreateFromHierarchy()
+    {
+        Transform parent = null;
+        Transform T = Selection.activeTransform;
+        if (T != null)// && T.GetComponent<UIPanel>() != null)
+        {
+            parent = T;
+        }
+
+        CreateUIPanel("Panel", parent, default_width, default_height, default_margin, default_radius, LoadDefaultUIMaterial(), Color.white);
     }
 
     private void OnWizardUpdate()
@@ -26,21 +44,46 @@ public class WizardCreatePanel : ScriptableWizard
 
         if (uiMaterial == null)
         {
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Materials" });
-            if (uiMaterialAssetPath.Length == 1)
-            {
-                uiMaterial = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
-            }
+            uiMaterial = LoadDefaultUIMaterial();
+        }
+    }
+
+    static Material LoadDefaultUIMaterial()
+    {
+        string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Materials" });
+        if (uiMaterialAssetPath.Length == 1)
+        {
+            return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
+        }
+        else
+        {
+            return null;
         }
     }
 
     private void OnWizardCreate()
     {
+        CreateUIPanel(panelName, parentPanel ? parentPanel.transform : null, width, height, margin, radius, uiMaterial, color);
+    }
+
+    private static void CreateUIPanel(
+        string panelName, 
+        Transform parent,
+        float width,
+        float height,
+        float margin,
+        float radius,
+        Material material,
+        Color color)
+    {
         GameObject go = new GameObject(panelName);
 
         // NOTE: also creates a MeshFilter and MeshRenderer
         UIPanel uiPanel = go.AddComponent<UIPanel>();
-        uiPanel.transform.parent = parentPanel ? parentPanel.transform : null;
+        uiPanel.transform.parent = parent;
+        uiPanel.transform.localPosition = Vector3.zero;
+        uiPanel.transform.localRotation = Quaternion.identity;
+        uiPanel.transform.localScale = Vector3.one;
         uiPanel.width = width;
         uiPanel.height = height;
         uiPanel.margin = margin;
@@ -53,7 +96,7 @@ public class WizardCreatePanel : ScriptableWizard
         }
 
         MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-        if (meshRenderer != null && uiMaterial != null)
+        if (meshRenderer != null && material != null)
         {
             // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
             //       to make the error disappear;
@@ -64,10 +107,10 @@ public class WizardCreatePanel : ScriptableWizard
             //Material material = meshRenderer.material; // instance of the sharedMaterial
 
             // Clone the material.
-            meshRenderer.sharedMaterial = Instantiate(uiMaterial);
-            Material material = meshRenderer.sharedMaterial;
+            meshRenderer.sharedMaterial = Instantiate(material);
+            Material sharedMaterial = meshRenderer.sharedMaterial;
 
-            material.SetColor("_BaseColor", color);
+            sharedMaterial.SetColor("_BaseColor", color);
         }
     }
 
