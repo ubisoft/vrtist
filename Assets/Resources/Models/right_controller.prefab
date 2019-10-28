@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8963359263424194244}
   m_Layer: 0
-  m_Name: TriggerButtonAnchor.001
+  m_Name: TriggerButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40,7 +40,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7436425200469493868}
   m_Layer: 0
-  m_Name: JoystickBaseAnchor.001
+  m_Name: JoystickBaseAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -70,7 +70,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2695028327862055074}
   m_Layer: 0
-  m_Name: FrontAnchor.001
+  m_Name: FrontAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -137,7 +137,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2615182598446650709}
-  m_Mesh: {fileID: 6268245010596013373, guid: c6e28e44704b98e4980757a791157f5a, type: 3}
+  m_Mesh: {fileID: 6268245010596013373, guid: a6fb5bb57c14ba9479f4062bf490c49b, type: 3}
 --- !u!23 &4356714473665339785
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -188,7 +188,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8290722191147671450}
   m_Layer: 0
-  m_Name: SystemButtonAnchor.001
+  m_Name: SystemButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -218,7 +218,7 @@ GameObject:
   m_Component:
   - component: {fileID: 690528257228539451}
   m_Layer: 0
-  m_Name: JoystickTopAnchor.001
+  m_Name: JoystickTopAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -248,7 +248,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3805285124001588731}
   m_Layer: 0
-  m_Name: SecondaryButtonAnchor.001
+  m_Name: SecondaryButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -278,7 +278,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3176385943211652442}
   m_Layer: 0
-  m_Name: GripButtonAnchor.001
+  m_Name: GripButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -308,7 +308,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5032824688476346012}
   m_Layer: 0
-  m_Name: PrimaryButtonAnchor.001
+  m_Name: PrimaryButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

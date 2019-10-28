@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -8,7 +6,6 @@ namespace VRtist
     public abstract class ToolBase : MonoBehaviour
     {
         [Header("UI")]
-        //[SerializeField] protected ToolsUIManager uiTools = null;
         [SerializeField] protected Transform panel = null;
 
         static GameObject previousTool = null;
@@ -26,12 +23,6 @@ namespace VRtist
             {
                 Debug.LogError("Panel must be set!");
             }
-            /*
-            if(uiTools == null)
-            {
-                Debug.LogError("uiTools must be set to 'Camera Rig > Pivot > leftHandle > UI'");
-            }
-            */
         }
 
         // Update is called once per frame
@@ -55,7 +46,7 @@ namespace VRtist
                         // Leave selection mode
                         if (ToolsManager.Instance.currentToolRef.name == "Selector" && previousTool != null)
                         {
-                            //uiTools.ChangeTool(previousTool.name);
+                            ToolsUIManager.Instance.ChangeTool(previousTool.name);
                             previousTool = null;
                         }
                         // Go to selection mode
@@ -65,12 +56,12 @@ namespace VRtist
                             {
                                 previousTool = ToolsManager.Instance.currentToolRef;
                             }
-                            //uiTools.ChangeTool("Selector");
+                            ToolsUIManager.Instance.ChangeTool("Selector");
                         }
                     });
                 }
 
-                //uiTools.UpdateProxy3D();
+                ToolsUIManager.Instance.UpdateProxy3D();
                 // Custom tool update
                 DoUpdate(position, rotation); // call children DoUpdate
             }

@@ -24,7 +24,7 @@ namespace VRtist
 
         static void OnGeometryLoaded(object sender, AssimpIO.ImportTaskEventArgs e)
         {
-            new CommandAddGameObject(e.Root).Submit(); 
+            new CommandAddGameObject(e.Root.gameObject).Submit(); 
         }
 
         // Update is called once per frame
@@ -34,7 +34,7 @@ namespace VRtist
 
             if (load)
             {
-                importer.Import(filename, gameObject);
+                importer.Import(filename, gameObject.transform);
                 load = false;
             }
             if (undo == true)

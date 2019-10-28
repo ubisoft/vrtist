@@ -34,7 +34,7 @@ namespace VRtist
         private struct ImportTaskData
         {
             public string fileName;
-            public GameObject root;
+            public Transform root;
         }
 
         List<ImportTaskData> taskData = new List<ImportTaskData>();
@@ -43,7 +43,7 @@ namespace VRtist
 
         public class ImportTaskEventArgs : EventArgs
         {
-            public ImportTaskEventArgs(GameObject r, string fn, bool e)
+            public ImportTaskEventArgs(Transform r, string fn, bool e)
             {
                 data.root = r;
                 data.fileName = fn;
@@ -58,7 +58,7 @@ namespace VRtist
             {
                 get { return data.fileName; }
             }
-            public GameObject Root
+            public Transform Root
             {
                 get { return data.root; }
             }
@@ -78,7 +78,7 @@ namespace VRtist
 
         ImporterState importerState = ImporterState.Ready;
 
-        public void Import(string fileName, GameObject root)
+        public void Import(string fileName, Transform root)
         {
             ImportTaskData d = new ImportTaskData();
             d.fileName = fileName;
@@ -142,10 +142,10 @@ namespace VRtist
                         Clear();
                         importerState = ImporterState.Ready;
 
-                        GameObject root = null;
+                        Transform root = null;
                         if (tdata.root.transform.childCount > 0)
                             // Get last child
-                            root = tdata.root.transform.GetChild(tdata.root.transform.childCount - 1).gameObject;
+                            root = tdata.root.transform.GetChild(tdata.root.transform.childCount - 1);
 
                         ImportTaskEventArgs args = new ImportTaskEventArgs(root, tdata.fileName, false);
                         progress = 1f;

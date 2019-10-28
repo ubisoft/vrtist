@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -65,8 +62,7 @@ namespace VRtist
         {
             ToolsManager.Instance.MainGameObject = this;
         }
-
-        /*
+        
         public void OnChangeTool(object sender, ToolChangedArgs args)
         {
             Instance.currentToolRef.SetActive(false);
@@ -82,7 +78,6 @@ namespace VRtist
 
         public void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)
         {
-        }
-        */
+        }        
     }
 }

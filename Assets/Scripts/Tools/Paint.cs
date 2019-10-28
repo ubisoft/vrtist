@@ -40,6 +40,9 @@ namespace VRtist
             freeDraw = new FreeDraw();
             updateButtonsColor();
 
+            brushSize = paintBrush.localScale.x;
+            OnPaintColor(paintColor);
+
             /*
             Transform picker = panel.Find("Picker 2.0");
             ColorPickerControl pickerControl = picker.GetComponent<ColorPickerControl>();
@@ -124,7 +127,7 @@ namespace VRtist
             {
                 // Add a point (the current world position) to the line renderer                        
 
-                float ratio = (triggerValue - deadZone) / (1f - deadZone);
+                float ratio = 0.5f * (triggerValue - deadZone) / (1f - deadZone);
 
                 // make some vibration feedback
                 //OVRInput.SetControllerVibration(1, ratio, OVRInput.Controller.RTouch);
@@ -168,6 +171,7 @@ namespace VRtist
         public void OnPaintColor(Color color)
         {
             paintColor = color;
+            paintBrush.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", color);
         }
 
         public void OnPaintOnSurface(bool value)

@@ -6,6 +6,7 @@ namespace VRtist
 {
     public class GeometryImporter : MonoBehaviour
     {
+        [SerializeField] private Transform root;
         private AssimpIO importer = null;
 
         void Start()
@@ -19,7 +20,7 @@ namespace VRtist
             if (e.Error)
                 return;
 
-            new CommandAddGameObject(e.Root).Submit();
+            new CommandAddGameObject(e.Root.gameObject).Submit();
         }
 
 
@@ -37,7 +38,7 @@ namespace VRtist
 
             if (load)
             {
-                importer.Import(filename, gameObject);
+                importer.Import(filename, root);
                 load = false;
             }
             if (undo == true)

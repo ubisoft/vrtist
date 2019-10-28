@@ -36,6 +36,13 @@ namespace VRtist
 
             initCameraPosition = transform.position;
             initCameraRotation = transform.rotation;
+            UpdateCameraClipPlanes();
+        }
+
+        void UpdateCameraClipPlanes()
+        {
+            Camera.main.nearClipPlane = 0.1f * world.localScale.x;
+            Camera.main.farClipPlane = 5000f * world.localScale.x;
         }
 
         // Update is called once per frame
@@ -147,8 +154,7 @@ namespace VRtist
                     scale = prevScale;
                 }
 
-                Camera.main.nearClipPlane = 0.1f * world.localScale.x;
-                Camera.main.farClipPlane = 5000f * world.localScale.x;
+                UpdateCameraClipPlanes();
             }
         }
     }
