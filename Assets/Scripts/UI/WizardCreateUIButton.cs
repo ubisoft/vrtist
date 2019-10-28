@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class WizardCreatePanel : ScriptableWizard
+public class WizardCreateUIButton : ScriptableWizard
 {
     public UIPanel parentPanel = null;
-    public string panelName = "Panel";
-    public float width = 4.0f;
-    public float height = 6.0f;
-    public float margin = 0.2f;
-    public float radius = 0.1f;
+    public string panelName = "Button";
+    public float width = 1.5f;
+    public float height = 0.5f;
+    public float margin = 0.05f;
+    public float thickness = 0.05f;
     public Material uiMaterial = null;
     public Color color = Color.white;
 
-    private static readonly float default_width = 4.0f;
-    private static readonly float default_height = 6.0f;
-    private static readonly float default_margin = 0.2f;
-    private static readonly float default_radius = 0.1f;
+    private static readonly float default_width = 1.5f;
+    private static readonly float default_height = 0.5f;
+    private static readonly float default_margin = 0.05f;
+    private static readonly float default_thickness = 0.05f;
 
-    [MenuItem("VRtist/Create UI Panel")]
+    [MenuItem("VRtist/Create UI Button")]
     static void CreateWizard()
     {
-        ScriptableWizard.DisplayWizard<WizardCreatePanel>("Create UI Panel", "Create");//, "OtherButton");
+        ScriptableWizard.DisplayWizard<WizardCreateUIButton>("Create UI Button", "Create");//, "OtherButton");
     }
 
-    [MenuItem("GameObject/VRtist/UIPanel", false, 49)]
+    [MenuItem("GameObject/VRtist/UIButton", false, 49)]
     public static void OnCreateFromHierarchy()
     {
         Transform parent = null;
@@ -35,12 +35,12 @@ public class WizardCreatePanel : ScriptableWizard
             parent = T;
         }
 
-        CreateUIPanel("Panel", parent, default_width, default_height, default_margin, default_radius, LoadDefaultUIMaterial(), Color.white);
+        CreateUIButton("Button", parent, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), Color.white);
     }
 
     private void OnWizardUpdate()
     {
-        helpString = "Create a new UIPanel";
+        helpString = "Create a new UIButton";
 
         if (uiMaterial == null)
         {
@@ -63,36 +63,36 @@ public class WizardCreatePanel : ScriptableWizard
 
     private void OnWizardCreate()
     {
-        CreateUIPanel(panelName, parentPanel ? parentPanel.transform : null, width, height, margin, radius, uiMaterial, color);
+        CreateUIButton(panelName, parentPanel ? parentPanel.transform : null, width, height, margin, thickness, uiMaterial, color);
     }
 
-    private static void CreateUIPanel(
-        string panelName, 
+    private static void CreateUIButton(
+        string panelName,
         Transform parent,
         float width,
         float height,
         float margin,
-        float radius,
+        float thickness,
         Material material,
         Color color)
     {
         GameObject go = new GameObject(panelName);
 
         // NOTE: also creates a MeshFilter and MeshRenderer
-        UIPanel uiPanel = go.AddComponent<UIPanel>();
-        uiPanel.transform.parent = parent;
-        uiPanel.transform.localPosition = Vector3.zero;
-        uiPanel.transform.localRotation = Quaternion.identity;
-        uiPanel.transform.localScale = Vector3.one;
-        uiPanel.width = width;
-        uiPanel.height = height;
-        uiPanel.margin = margin;
-        uiPanel.radius = radius;
+        UIButton uiButton = go.AddComponent<UIButton>();
+        uiButton.transform.parent = parent;
+        uiButton.transform.localPosition = Vector3.zero;
+        uiButton.transform.localRotation = Quaternion.identity;
+        uiButton.transform.localScale = Vector3.one;
+        uiButton.width = width;
+        uiButton.height = height;
+        uiButton.margin = margin;
+        uiButton.thickness = thickness;
 
         MeshFilter meshFilter = go.GetComponent<MeshFilter>();
         if (meshFilter != null)
         {
-            meshFilter.mesh = UIPanel.BuildRoundedRect(width, height, margin, radius);
+            meshFilter.mesh = UIButton.BuildRoundedRect(width, height, margin);
         }
 
         MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();

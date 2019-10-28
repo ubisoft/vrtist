@@ -6,7 +6,7 @@ using UnityEditor;
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
  RequireComponent(typeof(MeshRenderer))]
-public class UIPanel : MonoBehaviour
+public class UIPanel : UIElement
 {
     [Header("Panel Shape Parmeters")]
     public float width = 4.0f;
@@ -77,19 +77,18 @@ public class UIPanel : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Vector3 labelPosition = transform.localToWorldMatrix * new Vector3(-width / 2.0f + margin + radius, height / 2.0f - margin - radius, 0.0f);
-        Vector3 posTopLeft     = transform.localToWorldMatrix * new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, 0);
-        Vector3 posTopRight    = transform.localToWorldMatrix * new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, 0);
-        Vector3 posBottomLeft  = transform.localToWorldMatrix * new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, 0);
-        Vector3 posBottomRight = transform.localToWorldMatrix * new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, 0);
+        Vector3 labelPosition  = transform.TransformPoint(new Vector3(-width / 2.0f + margin + radius, height / 2.0f - margin - radius, 0.0f));
+        Vector3 posTopLeft     = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, 0));
+        Vector3 posTopRight    = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, 0));
+        Vector3 posBottomLeft  = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, 0));
+        Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, 0));
 
-        //Gizmos.DrawWireCube(transform.position + Vector3.zero, new Vector3(width - 2.0f * margin, height - 2.0f * margin, 2.0f * radius));
         Gizmos.color = Color.white;
         Gizmos.DrawLine(posTopLeft, posTopRight);
         Gizmos.DrawLine(posTopRight, posBottomRight);
         Gizmos.DrawLine(posBottomRight, posBottomLeft);
         Gizmos.DrawLine(posBottomLeft, posTopLeft);
-        UnityEditor.Handles.Label(transform.position + labelPosition, gameObject.name);
+        UnityEditor.Handles.Label(labelPosition, gameObject.name);
     }
 
     public void RebuildMesh()
