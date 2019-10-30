@@ -300,16 +300,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1533606685}
     m_Modifications:
-    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
-        type: 3}
-      propertyPath: m_Name
-      value: right_controller
-      objectReference: {fileID: 0}
-    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
-        type: 3}
-      propertyPath: m_TagString
-      value: UIObject
-      objectReference: {fileID: 0}
     - target: {fileID: 1302005863621650246, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -364,6 +354,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
+        type: 3}
+      propertyPath: m_Name
+      value: right_controller
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 28d3dcbf7e881e8429d337a52d94ce4f, type: 3}
@@ -1207,16 +1202,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1223377292}
     m_Modifications:
-    - target: {fileID: 6081963715641033310, guid: a26e42992a8eb4f48960972b2bb61d9a,
-        type: 3}
-      propertyPath: m_Name
-      value: left_controller
-      objectReference: {fileID: 0}
-    - target: {fileID: 6081963715641033310, guid: a26e42992a8eb4f48960972b2bb61d9a,
-        type: 3}
-      propertyPath: m_TagString
-      value: UIObject
-      objectReference: {fileID: 0}
     - target: {fileID: 7078568029554978893, guid: a26e42992a8eb4f48960972b2bb61d9a,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1272,6 +1257,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6081963715641033310, guid: a26e42992a8eb4f48960972b2bb61d9a,
+        type: 3}
+      propertyPath: m_Name
+      value: left_controller
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a26e42992a8eb4f48960972b2bb61d9a, type: 3}
 --- !u!1001 &1986243660
@@ -1281,16 +1271,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 147974123}
     m_Modifications:
-    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
-        type: 3}
-      propertyPath: m_Name
-      value: right_controller
-      objectReference: {fileID: 0}
-    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
-        type: 3}
-      propertyPath: m_TagString
-      value: UIObject
-      objectReference: {fileID: 0}
     - target: {fileID: 1302005863621650246, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1345,6 +1325,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
+        type: 3}
+      propertyPath: m_Name
+      value: right_controller
+      objectReference: {fileID: 0}
+    - target: {fileID: 2615182598446650709, guid: 28d3dcbf7e881e8429d337a52d94ce4f,
+        type: 3}
+      propertyPath: m_TagString
+      value: UIObject
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 28d3dcbf7e881e8429d337a52d94ce4f, type: 3}

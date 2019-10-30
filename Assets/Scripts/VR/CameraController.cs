@@ -37,6 +37,15 @@ namespace VRtist
             initCameraPosition = transform.position;
             initCameraRotation = transform.rotation;
             UpdateCameraClipPlanes();
+
+            // Create tooltips
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Trigger");
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Primary");
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Secondary, "Secondary");
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Joystick left / right");
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip");
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Pointer, "Pointer");
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.System, "The System Button");
         }
 
         void UpdateCameraClipPlanes()
