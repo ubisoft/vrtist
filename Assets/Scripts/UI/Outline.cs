@@ -2,37 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Outline : MonoBehaviour
+namespace VRtist
 {
-    private Material[] materials = null;
-    private Transform world;
-
-    // Start is called before the first frame update
-    void Start()
+    public class Outline : MonoBehaviour
     {
-        MeshRenderer renderer = GetComponent<MeshRenderer>();
-        if(!renderer)
-            renderer = GetComponentInChildren<MeshRenderer>();
-        if(renderer)
-            materials = renderer.materials;
+        private Material[] materials = null;
+        private Transform world;
 
-        world = transform.parent;
-        while (world.parent)
+        // Start is called before the first frame update
+        void Start()
         {
-            world = world.parent;
+            MeshRenderer renderer = GetComponent<MeshRenderer>();
+            if (!renderer)
+                renderer = GetComponentInChildren<MeshRenderer>();
+            if (renderer)
+                materials = renderer.materials;
+
+            world = transform.parent;
+            while (world.parent)
+            {
+                world = world.parent;
+            }
+            Update();
         }
-        Update();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (materials == null)
-            return;
-        for (int i = 0; i < materials.Length; i++)
+        // Update is called once per frame
+        void Update()
         {
-            materials[i].SetFloat("_ScaleFactor", world.localScale.x);
-            //materials[i].SetFloat("_Thickness", transform.parent.localScale.x * 1f);
+            if (materials == null)
+                return;
+            for (int i = 0; i < materials.Length; i++)
+            {
+                materials[i].SetFloat("_ScaleFactor", world.localScale.x);
+                //materials[i].SetFloat("_Thickness", transform.parent.localScale.x * 1f);
+            }
         }
     }
 }
