@@ -83,7 +83,7 @@ namespace VRtist
             ToolsUIManager.instance = this;
         }
 
-        private void Start()
+        void Start()
         {
             currentToolName = ToolsManager.Instance.CurrentTool().name;
 

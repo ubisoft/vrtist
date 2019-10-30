@@ -61,7 +61,9 @@ namespace VRtist
                     });
                 }
 
+                /*
                 ToolsUIManager.Instance.UpdateProxy3D();
+                */
                 // Custom tool update
                 DoUpdate(position, rotation); // call children DoUpdate
             }

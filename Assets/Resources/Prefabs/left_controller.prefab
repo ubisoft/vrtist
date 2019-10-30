@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9161431428943990059}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: GripButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -39,7 +39,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7211396978510992588}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PrimaryButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -69,7 +69,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3062919892301934032}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: JoystickBaseAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 303091764917635461}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: SecondaryButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -129,7 +129,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2754225916643598823}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: JoystickTopAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -161,7 +161,7 @@ GameObject:
   - component: {fileID: 7078568029554978893}
   - component: {fileID: 2262819812566665851}
   - component: {fileID: 5502184652452624002}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: left_controller
   m_TagString: UIObject
   m_Icon: {fileID: 0}
@@ -247,7 +247,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 181635154525678404}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: FrontAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -277,7 +277,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7645697358440982839}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: SystemButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -307,7 +307,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2214333176523620964}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: TriggerButtonAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
