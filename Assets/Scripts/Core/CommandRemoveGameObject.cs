@@ -49,5 +49,11 @@ namespace VRtist
             scale = gObject.transform.localScale;
             CommandManager.AddCommand(this);
         }
+
+        public override void Serialize(SceneSerializer serializer)
+        {
+
+        }
+
     }
 }

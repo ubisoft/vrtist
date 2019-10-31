@@ -877,6 +877,9 @@ MonoBehaviour:
   undo: 0
   redo: 0
   progress: 0
+  json: D:\test.json
+  serialize: 0
+  deserialize: 0
 --- !u!114 &1046805903
 MonoBehaviour:
   m_ObjectHideFlags: 0

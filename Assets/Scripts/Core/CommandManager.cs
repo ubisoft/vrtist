@@ -10,6 +10,7 @@ namespace VRtist
         abstract public void Undo();
         abstract public void Redo();
         abstract public void Submit();
+        abstract public void Serialize(SceneSerializer serializer);
         protected static void SplitPropertyPath(string propertyPath, out string gameObjectPath, out string componentName, out string fieldName)
         {
             string [] values = propertyPath.Split('/');
@@ -80,6 +81,13 @@ namespace VRtist
         {
             CommandGroup groupCommand = groupStack.Pop();
             currentGroup = groupStack.Count == 0 ? null : groupStack.Peek();
+        }
+
+        public static void Serialize(SceneSerializer serializer)
+        {
+            ICommand[] undos = undoStack.ToArray();
+            for (int i = undos.Length - 1; i >= 0 ; i--)
+                undos[i].Serialize(serializer);
         }
 
     }

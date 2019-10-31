@@ -41,5 +41,12 @@ namespace VRtist
             if(commands.Count > 0)
                 CommandManager.AddCommand(this);
         }
+
+        public override void Serialize(SceneSerializer serializer)
+        {
+            for (int i = 0; i < commands.Count; i++)
+                commands[i].Serialize(serializer);
+        }
+
     }
 }

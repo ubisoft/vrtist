@@ -32,6 +32,10 @@ namespace VRtist
         public bool redo = false;
         public float progress = 0f;
 
+        public string json = @"D:\test.json";
+        public bool serialize = false;
+        public bool deserialize = false;
+
         void Update()
         {
             progress = importer.Progress;
@@ -50,6 +54,17 @@ namespace VRtist
             {
                 CommandManager.Redo();
                 redo = false;
+            }
+
+            if (serialize == true)
+            {
+                SceneSerializer sceneSerializer = new SceneSerializer();
+                sceneSerializer.Save(json);
+                serialize = false;
+            }
+            if (deserialize == true)
+            {
+                SceneSerializer sceneSerializer = SceneSerializer.Load(json);
             }
         }
         //===========================

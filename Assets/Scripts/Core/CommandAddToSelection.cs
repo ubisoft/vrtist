@@ -27,5 +27,11 @@ namespace VRtist
             if(objects.Count > 0)
                 CommandManager.AddCommand(this);
         }
+
+        public override void Serialize(SceneSerializer serializer)
+        {
+
+        }
+
     }
 }

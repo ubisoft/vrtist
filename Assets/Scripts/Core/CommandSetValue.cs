@@ -69,6 +69,12 @@ namespace VRtist
             //OnValueChange();
         }
 
+        public override void Serialize(SceneSerializer serializer)
+        {
+
+        }
+
+
     }
 
 }

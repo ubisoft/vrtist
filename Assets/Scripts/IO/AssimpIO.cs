@@ -10,6 +10,8 @@ namespace VRtist
 {
     public class AssimpIO : MonoBehaviour
     {
+        bool blocking = false;
+
         private Assimp.Scene scene;
         private string directoryName;
         private List<Material> materials = new List<Material>();
@@ -78,14 +80,29 @@ namespace VRtist
 
         ImporterState importerState = ImporterState.Ready;
 
-        public void Import(string fileName, Transform root)
+        public void Import(string fileName, Transform root, bool synchronous = false)
         {
-            ImportTaskData d = new ImportTaskData();
-            d.fileName = fileName;
-            d.root = root;
-            taskData.Add(d);
+            blocking = synchronous;
+            if (synchronous)
+            {
+                Assimp.AssimpContext ctx = new Assimp.AssimpContext();
+                var aScene = ctx.ImportFile(fileName,
+                    Assimp.PostProcessSteps.Triangulate |
+                    Assimp.PostProcessSteps.GenerateNormals |
+                    Assimp.PostProcessSteps.GenerateUVCoords);
+                CreateUnityDataFromAssimp(fileName, aScene, root).MoveNext();
+                Clear();
+                progress = 1.0f;
+            }
+            else
+            {
+                ImportTaskData d = new ImportTaskData();
+                d.fileName = fileName;
+                d.root = root;
+                taskData.Add(d);
+            }
         }
-
+        
         void Update()
         {         
             switch(importerState)
@@ -144,8 +161,12 @@ namespace VRtist
 
                         Transform root = null;
                         if (tdata.root.transform.childCount > 0)
+                        {
                             // Get last child
                             root = tdata.root.transform.GetChild(tdata.root.transform.childCount - 1);
+                            Filename fn = root.gameObject.AddComponent<Filename>();
+                            fn.filename = tdata.fileName;
+                        }
 
                         ImportTaskEventArgs args = new ImportTaskEventArgs(root, tdata.fileName, false);
                         progress = 1f;
@@ -290,7 +311,8 @@ namespace VRtist
 
                 progress += 0.25f / scene.MeshCount;
 
-                yield return null;
+                if(!blocking)
+                    yield return null;
             }
         }
 
@@ -356,7 +378,8 @@ namespace VRtist
                 }
                 i++;
 
-                yield return null;
+                if (!blocking)
+                    yield return null;
             }            
         }
 
@@ -441,18 +464,25 @@ namespace VRtist
             {
                 GameObject child = new GameObject();
                 child.tag = "PhysicObject";
-                yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child));
+                if (blocking)
+                    ImportHierarchy(assimpChild, go.transform, child).MoveNext();
+                else
+                    yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child));
             }
         }
 
         private IEnumerator ImportScene(string fileName, Transform root = null)
-        {            
-            Debug.Log("Importing Materials");
-            yield return StartCoroutine(ImportMaterials());
-            Debug.Log("Importing Meshes");
-            yield return StartCoroutine(ImportMeshes());
+        {
+            if (blocking)
+                ImportMaterials().MoveNext();
+            else
+                yield return StartCoroutine(ImportMaterials());
 
-            Debug.Log("Building hierarchy");
+            if (blocking)
+                ImportMeshes().MoveNext();
+            else
+                yield return StartCoroutine(ImportMeshes());
+
             GameObject objectRoot = new GameObject();
             // Right handed to Left Handed
             objectRoot.name = Path.GetFileNameWithoutExtension(fileName);
@@ -461,7 +491,10 @@ namespace VRtist
             objectRoot.transform.localScale = new Vector3(-1, 1, 1);
             objectRoot.transform.localRotation = Quaternion.Euler(0, 180, 0);
 
-            yield return StartCoroutine(ImportHierarchy(scene.RootNode, root, objectRoot));
+            if (blocking)
+                ImportHierarchy(scene.RootNode, root, objectRoot).MoveNext();
+            else
+                yield return StartCoroutine(ImportHierarchy(scene.RootNode, root, objectRoot));
         }
 
         private async Task<Assimp.Scene> ImportAssimpFile(string fileName)
@@ -490,10 +523,13 @@ namespace VRtist
         {
             scene = aScene;
             directoryName = Path.GetDirectoryName(fileName);
-            yield return StartCoroutine(ImportScene(fileName, root));
+
+            if (blocking)
+                ImportScene(fileName, root).MoveNext();
+            else
+                yield return StartCoroutine(ImportScene(fileName, root));
 
             unityDataInCoroutineCreated = true;
-            yield return null;
         }
     }
 }

@@ -50,5 +50,14 @@ namespace VRtist
             CommandManager.AddCommand(this);
         }
 
+        public override void Serialize(SceneSerializer serializer)
+        {
+            Filename filename = gObject.GetComponent<Filename>();
+            if(filename)
+            {
+                serializer.AddAsset(filename.filename, filename.id);
+            }
+        }
+
     }
 }
