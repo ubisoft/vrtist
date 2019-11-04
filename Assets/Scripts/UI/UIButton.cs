@@ -210,7 +210,7 @@ public class UIButton : UIElement
 
         #endregion
 
-        #region side-rect-face
+        #region side-rect-4-faces
 
         vertices.Add(innerTopLeft_front + new Vector3(0, margin, 0));
         vertices.Add(innerTopRight_front + new Vector3(0, margin, 0));
@@ -320,7 +320,6 @@ public class UIButton : UIElement
 
         #endregion
 
-        // TODO: good, copy/adapt pour les autres coins.
         #region side-top-left-corner
 
         for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
@@ -412,6 +411,35 @@ public class UIButton : UIElement
 
         #endregion
 
+        #region side-top-right-corner
+
+        for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
+        {
+            float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+            Vector3 outerCirclePos = new Vector3(
+                +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
+                +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
+                0);
+            vertices.Add(innerTopRight_front + outerCirclePos);
+            vertices.Add(innerTopRight_back + outerCirclePos);
+            normals.Add(outerCirclePos.normalized);
+            normals.Add(outerCirclePos.normalized);
+        }
+
+        for (int i = 0; i < nbTrianglesOnCorner; ++i)
+        {
+            indices.Add(indexOffset + 2 * i + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+        }
+
+        indexOffset = vertices.Count;
+
+        #endregion
+
 
 
         #region front-bottom-left-corner
@@ -474,6 +502,34 @@ public class UIButton : UIElement
 
         #endregion
 
+        #region side-bottom-left-corner
+
+        for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
+        {
+            float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+            Vector3 outerCirclePos = new Vector3(
+                -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
+                -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
+                0);
+            vertices.Add(innerBottomLeft_front + outerCirclePos);
+            vertices.Add(innerBottomLeft_back + outerCirclePos);
+            normals.Add(outerCirclePos.normalized);
+            normals.Add(outerCirclePos.normalized);
+        }
+
+        for (int i = 0; i < nbTrianglesOnCorner; ++i)
+        {
+            indices.Add(indexOffset + 2 * i + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+        }
+
+        indexOffset = vertices.Count;
+
+        #endregion
 
 
         #region front-bottom-right-corner
@@ -535,6 +591,36 @@ public class UIButton : UIElement
         indexOffset = vertices.Count;
 
         #endregion
+
+        #region side-bottom-right-corner
+
+        for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
+        {
+            float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+            Vector3 outerCirclePos = new Vector3(
+                +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
+                -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
+                0);
+            vertices.Add(innerBottomRight_front + outerCirclePos);
+            vertices.Add(innerBottomRight_back + outerCirclePos);
+            normals.Add(outerCirclePos.normalized);
+            normals.Add(outerCirclePos.normalized);
+        }
+
+        for (int i = 0; i < nbTrianglesOnCorner; ++i)
+        {
+            indices.Add(indexOffset + 2 * i + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+        }
+
+        indexOffset = vertices.Count;
+
+        #endregion
+
 
         Mesh mesh = new Mesh();
         mesh.SetVertices(vertices);
