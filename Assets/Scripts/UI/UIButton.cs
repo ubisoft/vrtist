@@ -1,26 +1,40 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
- RequireComponent(typeof(MeshRenderer))]
+ RequireComponent(typeof(MeshRenderer)),
+ RequireComponent(typeof(BoxCollider))]
 public class UIButton : UIElement
 {
-    [Header("Panel Shape Parmeters")]
+    [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
     public float width = 1.5f;
     public float height = 0.5f;
     public float margin = 0.05f;
     public float thickness = 0.05f;
 
-    [Header("Subdivision Parameters")]
+    [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
     public int nbSubdivCornerFixed = 3;
     public int nbSubdivCornerPerUnit = 3;
+
+    [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
+    public UnityEvent onHoverEvent = null;
+    public UnityEvent onClickEvent = null;
+    public UnityEvent onReleaseEvent = null;
 
     public float Width { get { return width; } set { width = value; RebuildMesh(); } }
     public float Height { get { return height; } set { height = value; RebuildMesh(); } }
 
     private bool needRebuild = false;
+
+    void Start()
+    {
+        // test
+        onClickEvent.AddListener(onPushButton);
+        onReleaseEvent.AddListener(onReleaseButton);
+    }
 
     private void OnValidate()
     {
@@ -77,6 +91,18 @@ public class UIButton : UIElement
         Mesh theNewMesh = UIButton.BuildRoundedRectEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
         theNewMesh.name = "UIButton_GeneratedMesh";
         meshFilter.sharedMesh = theNewMesh;
+        UpdateColliderDimensions();
+    }
+
+    private void UpdateColliderDimensions()
+    {
+        MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
+        BoxCollider coll = gameObject.GetComponent<BoxCollider>();
+        if (meshFilter != null && coll != null)
+        {
+            coll.center = meshFilter.sharedMesh.bounds.center;
+            coll.size = meshFilter.sharedMesh.bounds.size;
+        }
     }
 
     public static Mesh BuildRoundedRect(float width, float height, float margin)
@@ -89,7 +115,6 @@ public class UIButton : UIElement
             width, height, margin, default_thickness,
             default_nbSubdivCornerFixed, default_nbSubdivCornerPerUnit);
     }
-
 
     public static Mesh BuildRoundedRectEx(
         float width,
@@ -628,5 +653,45 @@ public class UIButton : UIElement
         mesh.SetIndices(indices, MeshTopology.Triangles, 0);
 
         return mesh;
+    }
+
+    private void OnTriggerEnter(Collider otherCollider)
+    {
+        Debug.Log("Trigger Collision with " + otherCollider.gameObject.name);
+        onClickEvent.Invoke();
+    }
+
+    private void OnTriggerExit(Collider otherCollider)
+    {
+        Debug.Log("Trigger EXIT Collision with " + otherCollider.gameObject.name);
+        onReleaseEvent.Invoke();
+    }
+
+    private void OnTriggerStay(Collider otherCollider)
+    {
+        Debug.Log("Trigger STAY Collision with " + otherCollider.gameObject.name);
+        onHoverEvent.Invoke();
+    }
+
+
+
+    // test
+    private Color savedColor = Color.white;
+
+    public void onPushButton()
+    {
+        Debug.Log("ON PUSH BUTTON");
+
+        Material sharedMaterial = GetComponent<MeshRenderer>().material;
+        savedColor = sharedMaterial.GetColor("_BaseColor");
+        sharedMaterial.SetColor("_BaseColor", Color.red);
+    }
+
+    public void onReleaseButton()
+    {
+        Debug.Log("ON RELEASE BUTTON");
+
+        Material sharedMaterial = GetComponent<MeshRenderer>().material;
+        sharedMaterial.SetColor("_BaseColor", savedColor);
     }
 }

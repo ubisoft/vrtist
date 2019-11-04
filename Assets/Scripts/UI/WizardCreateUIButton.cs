@@ -35,7 +35,7 @@ public class WizardCreateUIButton : ScriptableWizard
             parent = T;
         }
 
-        CreateUIButton("Button", parent, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), Color.white);
+        CreateUIButton("Button", parent, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), UIElement.default_color);
     }
 
     private void OnWizardUpdate()
@@ -50,7 +50,7 @@ public class WizardCreateUIButton : ScriptableWizard
 
     static Material LoadDefaultUIMaterial()
     {
-        string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Materials" });
+        string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Resources/Materials" });
         if (uiMaterialAssetPath.Length == 1)
         {
             return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
@@ -93,6 +93,13 @@ public class WizardCreateUIButton : ScriptableWizard
         if (meshFilter != null)
         {
             meshFilter.mesh = UIButton.BuildRoundedRect(width, height, margin);
+            BoxCollider coll = go.GetComponent<BoxCollider>();
+            if (coll != null)
+            {
+                coll.center = meshFilter.sharedMesh.bounds.center;
+                coll.size = meshFilter.sharedMesh.bounds.size;
+                coll.isTrigger = true;
+            }
         }
 
         MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
