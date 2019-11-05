@@ -1,26 +1,40 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
- RequireComponent(typeof(MeshRenderer))]
+ RequireComponent(typeof(MeshRenderer)),
+ RequireComponent(typeof(BoxCollider))]
 public class UIButton : UIElement
 {
-    [Header("Panel Shape Parmeters")]
+    [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
     public float width = 1.5f;
     public float height = 0.5f;
     public float margin = 0.05f;
     public float thickness = 0.05f;
 
-    [Header("Subdivision Parameters")]
+    [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
     public int nbSubdivCornerFixed = 3;
     public int nbSubdivCornerPerUnit = 3;
+
+    [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
+    public UnityEvent onHoverEvent = null;
+    public UnityEvent onClickEvent = null;
+    public UnityEvent onReleaseEvent = null;
 
     public float Width { get { return width; } set { width = value; RebuildMesh(); } }
     public float Height { get { return height; } set { height = value; RebuildMesh(); } }
 
     private bool needRebuild = false;
+
+    void Start()
+    {
+        // test
+        onClickEvent.AddListener(onPushButton);
+        onReleaseEvent.AddListener(onReleaseButton);
+    }
 
     private void OnValidate()
     {
@@ -77,6 +91,18 @@ public class UIButton : UIElement
         Mesh theNewMesh = UIButton.BuildRoundedRectEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
         theNewMesh.name = "UIButton_GeneratedMesh";
         meshFilter.sharedMesh = theNewMesh;
+        UpdateColliderDimensions();
+    }
+
+    private void UpdateColliderDimensions()
+    {
+        MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
+        BoxCollider coll = gameObject.GetComponent<BoxCollider>();
+        if (meshFilter != null && coll != null)
+        {
+            coll.center = meshFilter.sharedMesh.bounds.center;
+            coll.size = meshFilter.sharedMesh.bounds.size;
+        }
     }
 
     public static Mesh BuildRoundedRect(float width, float height, float margin)
@@ -89,7 +115,6 @@ public class UIButton : UIElement
             width, height, margin, default_thickness,
             default_nbSubdivCornerFixed, default_nbSubdivCornerPerUnit);
     }
-
 
     public static Mesh BuildRoundedRectEx(
         float width,
@@ -210,7 +235,7 @@ public class UIButton : UIElement
 
         #endregion
 
-        #region side-rect-face
+        #region side-rect-4-faces
 
         vertices.Add(innerTopLeft_front + new Vector3(0, margin, 0));
         vertices.Add(innerTopRight_front + new Vector3(0, margin, 0));
@@ -320,7 +345,6 @@ public class UIButton : UIElement
 
         #endregion
 
-        // TODO: good, copy/adapt pour les autres coins.
         #region side-top-left-corner
 
         for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
@@ -412,6 +436,35 @@ public class UIButton : UIElement
 
         #endregion
 
+        #region side-top-right-corner
+
+        for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
+        {
+            float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+            Vector3 outerCirclePos = new Vector3(
+                +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
+                +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
+                0);
+            vertices.Add(innerTopRight_front + outerCirclePos);
+            vertices.Add(innerTopRight_back + outerCirclePos);
+            normals.Add(outerCirclePos.normalized);
+            normals.Add(outerCirclePos.normalized);
+        }
+
+        for (int i = 0; i < nbTrianglesOnCorner; ++i)
+        {
+            indices.Add(indexOffset + 2 * i + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+        }
+
+        indexOffset = vertices.Count;
+
+        #endregion
+
 
 
         #region front-bottom-left-corner
@@ -474,6 +527,34 @@ public class UIButton : UIElement
 
         #endregion
 
+        #region side-bottom-left-corner
+
+        for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
+        {
+            float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+            Vector3 outerCirclePos = new Vector3(
+                -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
+                -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
+                0);
+            vertices.Add(innerBottomLeft_front + outerCirclePos);
+            vertices.Add(innerBottomLeft_back + outerCirclePos);
+            normals.Add(outerCirclePos.normalized);
+            normals.Add(outerCirclePos.normalized);
+        }
+
+        for (int i = 0; i < nbTrianglesOnCorner; ++i)
+        {
+            indices.Add(indexOffset + 2 * i + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+        }
+
+        indexOffset = vertices.Count;
+
+        #endregion
 
 
         #region front-bottom-right-corner
@@ -536,11 +617,81 @@ public class UIButton : UIElement
 
         #endregion
 
+        #region side-bottom-right-corner
+
+        for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
+        {
+            float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+            Vector3 outerCirclePos = new Vector3(
+                +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
+                -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
+                0);
+            vertices.Add(innerBottomRight_front + outerCirclePos);
+            vertices.Add(innerBottomRight_back + outerCirclePos);
+            normals.Add(outerCirclePos.normalized);
+            normals.Add(outerCirclePos.normalized);
+        }
+
+        for (int i = 0; i < nbTrianglesOnCorner; ++i)
+        {
+            indices.Add(indexOffset + 2 * i + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+            indices.Add(indexOffset + 2 * i + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 1);
+            indices.Add(indexOffset + 2 * (i + 1) + 0);
+        }
+
+        indexOffset = vertices.Count;
+
+        #endregion
+
+
         Mesh mesh = new Mesh();
         mesh.SetVertices(vertices);
         mesh.SetNormals(normals);
         mesh.SetIndices(indices, MeshTopology.Triangles, 0);
 
         return mesh;
+    }
+
+    private void OnTriggerEnter(Collider otherCollider)
+    {
+        Debug.Log("Trigger Collision with " + otherCollider.gameObject.name);
+        onClickEvent.Invoke();
+    }
+
+    private void OnTriggerExit(Collider otherCollider)
+    {
+        Debug.Log("Trigger EXIT Collision with " + otherCollider.gameObject.name);
+        onReleaseEvent.Invoke();
+    }
+
+    private void OnTriggerStay(Collider otherCollider)
+    {
+        Debug.Log("Trigger STAY Collision with " + otherCollider.gameObject.name);
+        onHoverEvent.Invoke();
+    }
+
+
+
+    // test
+    private Color savedColor = Color.white;
+
+    public void onPushButton()
+    {
+        Debug.Log("ON PUSH BUTTON");
+
+        Material sharedMaterial = GetComponent<MeshRenderer>().material;
+        savedColor = sharedMaterial.GetColor("_BaseColor");
+        sharedMaterial.SetColor("_BaseColor", Color.red);
+    }
+
+    public void onReleaseButton()
+    {
+        Debug.Log("ON RELEASE BUTTON");
+
+        Material sharedMaterial = GetComponent<MeshRenderer>().material;
+        sharedMaterial.SetColor("_BaseColor", savedColor);
     }
 }

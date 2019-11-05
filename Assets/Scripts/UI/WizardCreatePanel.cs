@@ -35,7 +35,7 @@ public class WizardCreatePanel : ScriptableWizard
             parent = T;
         }
 
-        CreateUIPanel("Panel", parent, default_width, default_height, default_margin, default_radius, LoadDefaultUIMaterial(), Color.white);
+        CreateUIPanel("Panel", parent, default_width, default_height, default_margin, default_radius, LoadDefaultUIMaterial(), UIElement.default_color);
     }
 
     private void OnWizardUpdate()
@@ -50,7 +50,7 @@ public class WizardCreatePanel : ScriptableWizard
 
     static Material LoadDefaultUIMaterial()
     {
-        string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Materials" });
+        string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Resources/Materials" });
         if (uiMaterialAssetPath.Length == 1)
         {
             return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
