@@ -29,7 +29,8 @@ public class UIPanelEditor : Editor
         Vector3 posLeft   = T.TransformPoint(new Vector3(-uiPanel.width / 2.0f, 0, 0));
         Vector3 posRight  = T.TransformPoint(new Vector3(+uiPanel.width / 2.0f, 0, 0));
         Vector3 posBottom = T.TransformPoint(new Vector3(0, -uiPanel.height / 2.0f, 0));
-        Vector3 posTop    = T.TransformPoint(new Vector3(0, +uiPanel.height / 2.0f, 0));
+        Vector3 posTop = T.TransformPoint(new Vector3(0, +uiPanel.height / 2.0f, 0));
+        Vector3 posAnchor = T.TransformPoint(uiPanel.anchor);
         float handleSize = uiPanel.radius * 2.0f;
         Vector3 snap = Vector3.one * 0.1f;
 
@@ -43,6 +44,9 @@ public class UIPanelEditor : Editor
         Vector3 newTargetPosition_bottom = Handles.FreeMoveHandle(posBottom, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
         Vector3 newTargetPosition_top = Handles.FreeMoveHandle(posTop, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
+        Handles.color = Handles.zAxisColor;
+        Vector3 newTargetPosition_anchor = Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
+
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(target, "Change Dimensions");
@@ -51,6 +55,7 @@ public class UIPanelEditor : Editor
             Vector3 deltaRight  = newTargetPosition_right - posRight;
             Vector3 deltaBottom = newTargetPosition_bottom - posBottom;
             Vector3 deltaTop    = newTargetPosition_top - posTop;
+            Vector3 deltaAnchor = newTargetPosition_anchor - posAnchor;
 
             if (Vector3.SqrMagnitude(deltaLeft) > Mathf.Epsilon)
             {
@@ -67,6 +72,11 @@ public class UIPanelEditor : Editor
             else if (Vector3.SqrMagnitude(deltaTop) > Mathf.Epsilon)
             {
                 uiPanel.Height = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_top));
+            }
+            else if (Vector3.SqrMagnitude(deltaAnchor) > Mathf.Epsilon)
+            {
+                // TODO
+                //uiButton.Anchor = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_top));
             }
         }
     }

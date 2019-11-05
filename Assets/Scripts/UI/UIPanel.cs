@@ -8,27 +8,17 @@ using UnityEditor;
  RequireComponent(typeof(MeshRenderer))]
 public class UIPanel : UIElement
 {
-    [Header("Panel Shape Parmeters")]
-    public float width = 4.0f;
-    public float height = 6.0f;
+    [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
     public float margin = 0.2f;
     public float radius = 0.1f;
 
-    [Header("Subdivision Parameters")]
+    [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
     public int circleSubdiv = 8;
     public int nbSubdivPerUnit = 1;
     public int nbSubdivCornerFixed = 3;
     public int nbSubdivCornerPerUnit = 3;
 
-    public float Width { get { return width; } set { width = value; RebuildMesh(); } }
-    public float Height { get { return height; } set { height = value; RebuildMesh(); } }
-
     private bool needRebuild = false;
-
-    private void Start()
-    {
-
-    }
 
     private void OnValidate()
     {
@@ -71,6 +61,10 @@ public class UIPanel : UIElement
         if (needRebuild)
         {
             RebuildMesh();
+            UpdateLocalPosition();
+            UpdateAnchor();
+            UpdateChildren();
+            SetColor(baseColor);
             needRebuild = false;
         }
     }
@@ -89,26 +83,29 @@ public class UIPanel : UIElement
         Gizmos.DrawLine(posBottomRight, posBottomLeft);
         Gizmos.DrawLine(posBottomLeft, posTopLeft);
         UnityEditor.Handles.Label(labelPosition, gameObject.name);
+
+        //Gizmos.color = Color.blue;
+        //Gizmos.DrawSphere(transform.TransformPoint(anchor), 1.1f * radius);
     }
 
-    public void RebuildMesh()
+    public override void RebuildMesh()
     {
         MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-        Mesh theNewMesh = UIPanel.BuildRoundedRectEx(
+        Mesh theNewMesh = UIPanel.BuildRoundedRectTubeEx(
             width, height, margin, radius, 
             circleSubdiv, nbSubdivPerUnit, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
         theNewMesh.name = "UIPanel_GeneratedMesh";
         meshFilter.sharedMesh = theNewMesh;
     }
 
-    public static Mesh BuildRoundedRect(float width, float height, float margin, float radius)
+    public static Mesh BuildRoundedRectTube(float width, float height, float margin, float radius)
     {
         const int default_circleSubdiv = 8;
         const int default_nbSubdivPerUnit = 1;
         const int default_nbSubdivCornerFixed = 3;
         const int default_nbSubdivCornerPerUnit = 3;
 
-        return BuildRoundedRectEx(
+        return BuildRoundedRectTubeEx(
             width, height, margin, radius,
             default_circleSubdiv, 
             default_nbSubdivPerUnit, 
@@ -117,7 +114,7 @@ public class UIPanel : UIElement
         );
     }
 
-    public static Mesh BuildRoundedRectEx(
+    public static Mesh BuildRoundedRectTubeEx(
         float width, 
         float height, 
         float margin, 
@@ -414,6 +411,68 @@ public class UIPanel : UIElement
                 indices.Add(indexOffset + idx1);
                 indices.Add(indexOffset + idx2);
             }
+        }
+    }
+
+    public static void CreateUIPanel(
+        string panelName,
+        Transform parent,
+        Vector3 relativeLocation,
+        float width,
+        float height,
+        float margin,
+        float radius,
+        Material material,
+        Color color)
+    {
+        GameObject go = new GameObject(panelName);
+
+        // Find the anchor of the parent if it is a UIElement
+        Vector3 parentAnchor = Vector3.zero;
+        if (parent)
+        {
+            UIElement elem = parent.gameObject.GetComponent<UIElement>();
+            if (elem)
+            {
+                parentAnchor = elem.anchor;
+            }
+        }
+
+        UIPanel uiPanel = go.AddComponent<UIPanel>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
+        uiPanel.relativeLocation = relativeLocation;
+        uiPanel.transform.parent = parent;
+        uiPanel.transform.localPosition = parentAnchor + relativeLocation;
+        uiPanel.transform.localRotation = Quaternion.identity;
+        uiPanel.transform.localScale = Vector3.one;
+        uiPanel.width = width;
+        uiPanel.height = height;
+        uiPanel.margin = margin;
+        uiPanel.radius = radius;
+
+        MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+        if (meshFilter != null)
+        {
+            meshFilter.sharedMesh = UIPanel.BuildRoundedRectTube(width, height, margin, radius);
+            // TODO: make the Build* functions return the anchor point.
+            uiPanel.anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
+        }
+
+        MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
+        if (meshRenderer != null && material != null)
+        {
+            // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
+            //       to make the error disappear;
+
+            // Get an instance of the same material
+            // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
+            //meshRenderer.sharedMaterial = uiMaterial;
+            //Material material = meshRenderer.material; // instance of the sharedMaterial
+
+            // Clone the material.
+            meshRenderer.sharedMaterial = Instantiate(material);
+            Material sharedMaterial = meshRenderer.sharedMaterial;
+
+            sharedMaterial.SetColor("_BaseColor", color);
         }
     }
 }

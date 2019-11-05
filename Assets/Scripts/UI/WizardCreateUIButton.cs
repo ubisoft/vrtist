@@ -6,7 +6,7 @@ using UnityEditor;
 public class WizardCreateUIButton : ScriptableWizard
 {
     public UIPanel parentPanel = null;
-    public string panelName = "Button";
+    public string buttonName = "Button";
     public float width = 1.5f;
     public float height = 0.5f;
     public float margin = 0.05f;
@@ -35,7 +35,7 @@ public class WizardCreateUIButton : ScriptableWizard
             parent = T;
         }
 
-        CreateUIButton("Button", parent, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), UIElement.default_color);
+        UIButton.CreateUIButton("Button", parent, Vector3.zero, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), UIElement.default_color);
     }
 
     private void OnWizardUpdate()
@@ -63,62 +63,7 @@ public class WizardCreateUIButton : ScriptableWizard
 
     private void OnWizardCreate()
     {
-        CreateUIButton(panelName, parentPanel ? parentPanel.transform : null, width, height, margin, thickness, uiMaterial, color);
-    }
-
-    private static void CreateUIButton(
-        string panelName,
-        Transform parent,
-        float width,
-        float height,
-        float margin,
-        float thickness,
-        Material material,
-        Color color)
-    {
-        GameObject go = new GameObject(panelName);
-
-        // NOTE: also creates a MeshFilter and MeshRenderer
-        UIButton uiButton = go.AddComponent<UIButton>();
-        uiButton.transform.parent = parent;
-        uiButton.transform.localPosition = Vector3.zero;
-        uiButton.transform.localRotation = Quaternion.identity;
-        uiButton.transform.localScale = Vector3.one;
-        uiButton.width = width;
-        uiButton.height = height;
-        uiButton.margin = margin;
-        uiButton.thickness = thickness;
-
-        MeshFilter meshFilter = go.GetComponent<MeshFilter>();
-        if (meshFilter != null)
-        {
-            meshFilter.mesh = UIButton.BuildRoundedRect(width, height, margin);
-            BoxCollider coll = go.GetComponent<BoxCollider>();
-            if (coll != null)
-            {
-                coll.center = meshFilter.sharedMesh.bounds.center;
-                coll.size = meshFilter.sharedMesh.bounds.size;
-                coll.isTrigger = true;
-            }
-        }
-
-        MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-        if (meshRenderer != null && material != null)
-        {
-            // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
-            //       to make the error disappear;
-
-            // Get an instance of the same material
-            // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
-            //meshRenderer.sharedMaterial = uiMaterial;
-            //Material material = meshRenderer.material; // instance of the sharedMaterial
-
-            // Clone the material.
-            meshRenderer.sharedMaterial = Instantiate(material);
-            Material sharedMaterial = meshRenderer.sharedMaterial;
-
-            sharedMaterial.SetColor("_BaseColor", color);
-        }
+        UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color);
     }
 
     //private void OnWizardOtherButton()

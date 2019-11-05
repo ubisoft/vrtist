@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEditor;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter)),
@@ -9,11 +10,10 @@ using UnityEngine.Events;
  RequireComponent(typeof(BoxCollider))]
 public class UIButton : UIElement
 {
-    [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-    public float width = 1.5f;
-    public float height = 0.5f;
+    [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
     public float margin = 0.05f;
     public float thickness = 0.05f;
+    public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
 
     [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
     public int nbSubdivCornerFixed = 3;
@@ -24,85 +24,25 @@ public class UIButton : UIElement
     public UnityEvent onClickEvent = null;
     public UnityEvent onReleaseEvent = null;
 
-    public float Width { get { return width; } set { width = value; RebuildMesh(); } }
-    public float Height { get { return height; } set { height = value; RebuildMesh(); } }
-
     private bool needRebuild = false;
 
     void Start()
     {
-        // test
-        onClickEvent.AddListener(onPushButton);
-        onReleaseEvent.AddListener(onReleaseButton);
-    }
-
-    private void OnValidate()
-    {
-        const float min_width = 0.01f;
-        const float min_height = 0.01f;
-        const float min_thickness = 0.01f;
-        const int min_nbSubdivCornerFixed = 1;
-        const int min_nbSubdivCornerPerUnit = 1;
-
-        if (width < min_width)
-            width = min_width;
-        if (height < min_height)
-            height = min_height;
-        if (thickness < min_thickness)
-            thickness = min_thickness;
-        if (margin > width / 2.0f || margin > height / 2.0f)
-            margin = Mathf.Min(width / 2.0f, height / 2.0f);
-        if (nbSubdivCornerFixed < min_nbSubdivCornerFixed)
-            nbSubdivCornerFixed = min_nbSubdivCornerFixed;
-        if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
-            nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
-
-        needRebuild = true;
-    }
-
-    private void Update()
-    {
-        if (needRebuild)
+        if (EditorApplication.isPlaying || Application.isPlaying)
         {
-            RebuildMesh();
-            needRebuild = false;
+            onClickEvent.AddListener(OnPushButton);
+            onReleaseEvent.AddListener(OnReleaseButton);
         }
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        Vector3 labelPosition = transform.TransformPoint(new Vector3(-width / 4.0f, 0.0f, -thickness / 2.0f - 0.01f));
-        Vector3 posTopLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, -thickness / 2.0f - 0.01f));
-        Vector3 posTopRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, -thickness / 2.0f - 0.01f));
-        Vector3 posBottomLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, -thickness / 2.0f - 0.01f));
-        Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, -thickness / 2.0f - 0.01f));
-
-        Gizmos.color = Color.white;
-        Gizmos.DrawLine(posTopLeft, posTopRight);
-        Gizmos.DrawLine(posTopRight, posBottomRight);
-        Gizmos.DrawLine(posBottomRight, posBottomLeft);
-        Gizmos.DrawLine(posBottomLeft, posTopLeft);
-        UnityEditor.Handles.Label(labelPosition, gameObject.name);
-    }
-
-    public void RebuildMesh()
+    public override void RebuildMesh()
     {
         MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
         Mesh theNewMesh = UIButton.BuildRoundedRectEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
         theNewMesh.name = "UIButton_GeneratedMesh";
         meshFilter.sharedMesh = theNewMesh;
+        
         UpdateColliderDimensions();
-    }
-
-    private void UpdateColliderDimensions()
-    {
-        MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-        BoxCollider coll = gameObject.GetComponent<BoxCollider>();
-        if (meshFilter != null && coll != null)
-        {
-            coll.center = meshFilter.sharedMesh.bounds.center;
-            coll.size = meshFilter.sharedMesh.bounds.size;
-        }
     }
 
     public static Mesh BuildRoundedRect(float width, float height, float margin)
@@ -655,43 +595,168 @@ public class UIButton : UIElement
         return mesh;
     }
 
+
+    private void UpdateColliderDimensions()
+    {
+        MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
+        BoxCollider coll = gameObject.GetComponent<BoxCollider>();
+        if (meshFilter != null && coll != null)
+        {
+            coll.center = meshFilter.sharedMesh.bounds.center;
+            coll.size = meshFilter.sharedMesh.bounds.size;
+        }
+    }
+
+    private void OnValidate()
+    {
+        const float min_width = 0.01f;
+        const float min_height = 0.01f;
+        const float min_thickness = 0.01f;
+        const int min_nbSubdivCornerFixed = 1;
+        const int min_nbSubdivCornerPerUnit = 1;
+
+        if (width < min_width)
+            width = min_width;
+        if (height < min_height)
+            height = min_height;
+        if (thickness < min_thickness)
+            thickness = min_thickness;
+        if (margin > width / 2.0f || margin > height / 2.0f)
+            margin = Mathf.Min(width / 2.0f, height / 2.0f);
+        if (nbSubdivCornerFixed < min_nbSubdivCornerFixed)
+            nbSubdivCornerFixed = min_nbSubdivCornerFixed;
+        if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
+            nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
+
+        needRebuild = true;
+    }
+
+    private void Update()
+    {
+        if (needRebuild)
+        {
+            // NOTE: I do all these things because properties can't be called from the inspector.
+            RebuildMesh();
+            UpdateLocalPosition();
+            UpdateAnchor();
+            UpdateChildren();
+            SetColor(baseColor);
+            needRebuild = false;
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 labelPosition = transform.TransformPoint(new Vector3(-width / 4.0f, 0.0f, -thickness / 2.0f - 0.01f));
+        Vector3 posTopLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, -thickness / 2.0f - 0.01f));
+        Vector3 posTopRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, -thickness / 2.0f - 0.01f));
+        Vector3 posBottomLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, -thickness / 2.0f - 0.01f));
+        Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, -thickness / 2.0f - 0.01f));
+
+        Gizmos.color = Color.white;
+        Gizmos.DrawLine(posTopLeft, posTopRight);
+        Gizmos.DrawLine(posTopRight, posBottomRight);
+        Gizmos.DrawLine(posBottomRight, posBottomLeft);
+        Gizmos.DrawLine(posBottomLeft, posTopLeft);
+        UnityEditor.Handles.Label(labelPosition, gameObject.name);
+
+        //Gizmos.color = Color.blue;
+        //Gizmos.DrawSphere(transform.TransformPoint(anchor), 1.1f * thickness / 2.0f);
+    }
+
     private void OnTriggerEnter(Collider otherCollider)
     {
-        Debug.Log("Trigger Collision with " + otherCollider.gameObject.name);
         onClickEvent.Invoke();
     }
 
     private void OnTriggerExit(Collider otherCollider)
     {
-        Debug.Log("Trigger EXIT Collision with " + otherCollider.gameObject.name);
         onReleaseEvent.Invoke();
     }
 
     private void OnTriggerStay(Collider otherCollider)
     {
-        Debug.Log("Trigger STAY Collision with " + otherCollider.gameObject.name);
         onHoverEvent.Invoke();
     }
 
-
-
-    // test
-    private Color savedColor = Color.white;
-
-    public void onPushButton()
+    public void OnPushButton()
     {
-        Debug.Log("ON PUSH BUTTON");
-
-        Material sharedMaterial = GetComponent<MeshRenderer>().material;
-        savedColor = sharedMaterial.GetColor("_BaseColor");
-        sharedMaterial.SetColor("_BaseColor", Color.red);
+        SetColor(pushedColor);
     }
 
-    public void onReleaseButton()
+    public void OnReleaseButton()
     {
-        Debug.Log("ON RELEASE BUTTON");
+        SetColor(baseColor);
+    }
 
-        Material sharedMaterial = GetComponent<MeshRenderer>().material;
-        sharedMaterial.SetColor("_BaseColor", savedColor);
+
+    public static void CreateUIButton(
+        string buttonName,
+        Transform parent,
+        Vector3 relativeLocation,
+        float width,
+        float height,
+        float margin,
+        float thickness,
+        Material material,
+        Color color)
+    {
+        GameObject go = new GameObject(buttonName);
+
+        // Find the anchor of the parent if it is a UIElement
+        Vector3 parentAnchor = Vector3.zero;
+        if (parent)
+        {
+            UIElement elem = parent.gameObject.GetComponent<UIElement>();
+            if(elem)
+            {
+                parentAnchor = elem.anchor;
+            }
+        }
+
+        UIButton uiButton = go.AddComponent<UIButton>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
+        uiButton.relativeLocation = relativeLocation;
+        uiButton.transform.parent = parent;
+        uiButton.transform.localPosition = parentAnchor + relativeLocation;
+        uiButton.transform.localRotation = Quaternion.identity;
+        uiButton.transform.localScale = Vector3.one;
+        uiButton.width = width;
+        uiButton.height = height;
+        uiButton.margin = margin;
+        uiButton.thickness = thickness;
+
+        // Setup the Meshfilter
+        MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+        if (meshFilter != null)
+        {
+            meshFilter.sharedMesh = UIButton.BuildRoundedRect(width, height, margin);
+            uiButton.anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
+            BoxCollider coll = go.GetComponent<BoxCollider>();
+            if (coll != null)
+            {
+                coll.center = meshFilter.sharedMesh.bounds.center;
+                coll.size = meshFilter.sharedMesh.bounds.size;
+                coll.isTrigger = true;
+            }
+        }
+
+        // Setup the MeshRenderer
+        MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
+        if (meshRenderer != null && material != null)
+        {
+            // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
+            //       to make the error disappear;
+
+            // Get an instance of the same material
+            // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
+            //meshRenderer.sharedMaterial = uiMaterial;
+            //Material material = meshRenderer.material; // instance of the sharedMaterial
+
+            // Clone the material.
+            meshRenderer.sharedMaterial = Instantiate(material);
+            Material sharedMaterial = meshRenderer.sharedMaterial;
+
+            uiButton.BaseColor = color;
+        }
     }
 }
