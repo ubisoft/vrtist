@@ -6,7 +6,7 @@ namespace VRtist
 {
     public class CommandAddGameObject : ICommand
     {
-        GameObject gObject = null;
+        protected GameObject gObject = null;
         Transform parent = null;
         Vector3 position;
         Quaternion rotation;
@@ -17,22 +17,11 @@ namespace VRtist
             gObject = o;
             parent = o.transform.parent;
         }
-        private GameObject GetOrCreateTrash()
-        {
-            string trashName = "__Trash__";
-            GameObject trash = GameObject.Find(trashName);
-            if (!trash)
-            {
-                trash = new GameObject();
-                trash.name = trashName;
-            }
-            return trash;
-        }
 
         public override void Undo()
         {
             gObject.SetActive(false);
-            gObject.transform.parent = GetOrCreateTrash().transform;
+            gObject.transform.parent = Utils.GetOrCreateTrash().transform;
         }
         public override void Redo()
         {
@@ -52,10 +41,10 @@ namespace VRtist
 
         public override void Serialize(SceneSerializer serializer)
         {
-            Filename filename = gObject.GetComponent<Filename>();
-            if(filename)
+            IOMetaData metaData = gObject.GetComponent<IOMetaData>();
+            if(metaData)
             {
-                serializer.AddAsset(filename.filename, filename.id);
+                serializer.AddAsset(metaData);
             }
         }
 

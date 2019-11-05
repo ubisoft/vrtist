@@ -880,6 +880,8 @@ MonoBehaviour:
   json: D:\test.json
   serialize: 0
   deserialize: 0
+  obj: D:\test.obj
+  writeOBJ: 0
 --- !u!114 &1046805903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1271,7 +1273,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1445331676}
   m_Layer: 0
-  m_Name: Lighting
+  m_Name: Lights
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

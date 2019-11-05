@@ -34,7 +34,7 @@ namespace VRtist
 
             if (load)
             {
-                importer.Import(filename, gameObject.transform);
+                importer.Import(filename, gameObject.transform, IOMetaData.Type.Geometry);
                 load = false;
             }
             if (undo == true)

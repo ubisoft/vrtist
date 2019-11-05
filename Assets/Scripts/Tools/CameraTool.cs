@@ -133,7 +133,7 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    GameObject newCamera = CreateInstance(cameraPrefab, null);
+                    GameObject newCamera = Utils.CreateInstance(cameraPrefab, null);
                     newCamera.transform.parent = CameraContainer;
                     newCamera.transform.position = selectorBrush.position;
                     newCamera.transform.rotation = selectorBrush.rotation;                    

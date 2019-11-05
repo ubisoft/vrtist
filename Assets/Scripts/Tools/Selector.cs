@@ -290,15 +290,6 @@ namespace VRtist
             Selection.ClearSelection();           
         }
 
-        protected GameObject CreateInstance(GameObject gObject, Transform parent)
-        {
-            GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
-            if (builder)
-                return builder.CreateInstance(gObject, parent);
-
-            return GameObject.Instantiate(gObject, parent);
-        }
-
         public void DuplicateSelection()
         {
             ManageMoveObjectsUndo();
@@ -333,17 +324,17 @@ namespace VRtist
                         newGroup.transform.localScale = parent.localScale;
                     }
 
-                    GameObject clone = CreateInstance(selectedObjects[i], groups[parent]);
+                    GameObject clone = Utils.CreateInstance(selectedObjects[i], groups[parent]);
                     clones.Add(clone);
 
-                    new CommandAddGameObject(clone).Submit();
+                    new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
                 }
                 else
                 {
-                    GameObject clone = CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent);
+                    GameObject clone = Utils.CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent);
                     clones.Add(clone);
 
-                    new CommandAddGameObject(clone).Submit();
+                    new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
                 }
             }
 

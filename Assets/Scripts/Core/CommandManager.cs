@@ -83,6 +83,14 @@ namespace VRtist
             currentGroup = groupStack.Count == 0 ? null : groupStack.Peek();
         }
 
+        public static void Clear()
+        {
+            undoStack.Clear();
+            redoStack.Clear();
+            groupStack.Clear();
+            currentGroup = null;
+        }
+
         public static void Serialize(SceneSerializer serializer)
         {
             ICommand[] undos = undoStack.ToArray();

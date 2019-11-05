@@ -96,17 +96,17 @@ namespace VRtist
                     switch (UIObject.name)
                     {
                         case "Sun":
-                            light = CreateInstance(sunPrefab, parentContainer);
+                            light = Utils.CreateInstance(sunPrefab, parentContainer);
                             lightName = "Sun" + sunId.ToString();
                             sunId++;
                             break;
                         case "Spot":
-                            light = CreateInstance(spotPrefab, parentContainer);
+                            light = Utils.CreateInstance(spotPrefab, parentContainer);
                             lightName = "Spot" + spotId.ToString();
                             spotId++;
                             break;
                         case "Point":
-                            light = CreateInstance(pointPrefab, parentContainer);
+                            light = Utils.CreateInstance(pointPrefab, parentContainer);
                             lightName = "Point" + pointId.ToString();
                             pointId++;
                             break;

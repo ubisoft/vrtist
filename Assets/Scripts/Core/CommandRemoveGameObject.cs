@@ -17,18 +17,6 @@ namespace VRtist
             gObject = o;
             parent = o.transform.parent;
         }
-        private GameObject GetOrCreateTrash()
-        {
-            string trashName = "__Trash__";
-            GameObject trash = GameObject.Find(trashName);
-            if (!trash)
-            {
-                trash = new GameObject();
-                trash.name = trashName;
-            }
-            return trash;
-        }
-
         public override void Undo()
         {
             gObject.transform.parent = parent;
@@ -40,7 +28,7 @@ namespace VRtist
         public override void Redo()
         {
             gObject.SetActive(false);
-            gObject.transform.parent = GetOrCreateTrash().transform;
+            gObject.transform.parent = Utils.GetOrCreateTrash().transform;
         }
         public override void Submit()
         {
@@ -52,7 +40,21 @@ namespace VRtist
 
         public override void Serialize(SceneSerializer serializer)
         {
-
+            IOMetaData metaData = gObject.GetComponentInParent<IOMetaData>();
+            if (metaData)
+            {
+                AssetSerializer assetSerializer = serializer.GetAssetSerializer(metaData.id);
+                GameObject root = metaData.gameObject;
+                if(root.transform.childCount > 0)
+                {
+                    string transformPath = Utils.BuildTransformPath(gObject);
+                    assetSerializer.CreateDeletedSerializer(transformPath);
+                }
+                else
+                {
+                    serializer.RemoveAsset(metaData);
+                }
+            }
         }
 
     }

@@ -53,29 +53,16 @@ namespace VRtist
             if(objects.Count > 0)
                 CommandManager.AddCommand(this);
         }
-
-        string BuildTransformPath(GameObject gobject)
-        {
-            string res = "";
-            while(gobject.GetComponent<Filename>() == null)
-            {
-                res = "/" + gobject.name + res;
-                gobject = gobject.transform.parent.gameObject;
-            }
-
-            return res;
-        }
-
         public override void Serialize(SceneSerializer serializer)
         {
             for(int i = 0; i < objects.Count; i++)
             {
                 GameObject gobject = objects[i];
-                Filename filename = gobject.GetComponentInParent<Filename>();
-                if (filename)
+                IOMetaData metaData = gobject.GetComponentInParent<IOMetaData>();
+                if (metaData)
                 {
-                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(filename.id);
-                    string transformPath = BuildTransformPath(gobject);
+                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(metaData.id);
+                    string transformPath = Utils.BuildTransformPath(gobject);
                     TransformSerializer transformSerializer = assetSerializer.GetOrCreateTransformSerializer(transformPath);
                     transformSerializer.position = endPositions[i];
                     transformSerializer.rotation = endRotations[i];

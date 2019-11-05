@@ -94,11 +94,14 @@ namespace VRtist
                 // Bake line renderer into a mesh so we can raycast on it
                 if (currentPaintLine != null)
                 {
-                    MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
-                    new CommandAddGameObject(currentPaintLine).Submit();
-                    currentPaintLine = null;
-                    //OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
-                    //VRInput.rightController.StopHaptics();
+                     MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
+                     IOMetaData metaData = currentPaintLine.AddComponent<IOMetaData>();
+                     metaData.type = IOMetaData.Type.Paint;
+                     metaData.filename = IOUtilities.CreatePaintFilename(currentPaintLine.name);
+                     new CommandAddGameObject(currentPaintLine).Submit();
+                     currentPaintLine = null;
+                     //OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
+                     //VRInput.rightController.StopHaptics();
                 }
             });
             float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);

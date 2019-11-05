@@ -36,35 +36,48 @@ namespace VRtist
         public bool serialize = false;
         public bool deserialize = false;
 
+        public string obj = @"D:\test.obj";
+        public bool writeOBJ = false;
+
         void Update()
         {
             progress = importer.Progress;
 
             if (load)
             {
-                importer.Import(filename, root);
                 load = false;
+                importer.Import(filename, root, IOMetaData.Type.Geometry);
             }
             if (undo == true)
             {
-                CommandManager.Undo();
                 undo = false;
+                CommandManager.Undo();
             }
             if (redo == true)
             {
-                CommandManager.Redo();
                 redo = false;
+                CommandManager.Redo();
             }
 
             if (serialize == true)
             {
-                SceneSerializer sceneSerializer = new SceneSerializer();
-                sceneSerializer.Save(json);
                 serialize = false;
+                SceneSerializer.Save(json);
             }
             if (deserialize == true)
             {
+                deserialize = false;
                 SceneSerializer sceneSerializer = SceneSerializer.Load(json);
+            }
+
+            if(writeOBJ == true)
+            {
+                writeOBJ = false;
+                foreach (var selectedItem in Selection.selection)
+                {
+                    OBJExporter.Export(obj, selectedItem.Value);
+                    break;
+                }
             }
         }
         //===========================
