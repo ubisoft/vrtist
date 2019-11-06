@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace VRtist
 {
@@ -17,6 +18,38 @@ namespace VRtist
             }
             return trash;
         }
+
+        public static GameObject FindWorld()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            GameObject[] roots = scene.GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                if (roots[i].name == "World")
+                {
+                    return roots[i];
+                }
+            }
+            return null;
+        }
+
+        public static GameObject FindGameObject(string name)
+        {
+            GameObject world = Utils.FindWorld();
+            if (!world)
+                return null;
+
+            int childrenCount = world.transform.childCount;
+            for (int i = 0; i < childrenCount; i++)
+            {
+                GameObject child = world.transform.GetChild(i).gameObject;
+                if (child.name == name)
+                    return child;
+            }
+
+            return null;
+        }
+
 
         public static GameObject GetRoot(GameObject gobject)
         {
@@ -44,11 +77,17 @@ namespace VRtist
 
         public static GameObject CreateInstance(GameObject gObject, Transform parent)
         {
+            GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
-                return builder.CreateInstance(gObject, parent);
+                res = builder.CreateInstance(gObject, parent);
+            else
+                res = GameObject.Instantiate(gObject, parent);
 
-            return GameObject.Instantiate(gObject, parent);
+            IOMetaData metaData = res.GetComponent<IOMetaData>();
+            if (metaData)
+                metaData.InitId();
+            return res;
         }
 
 

@@ -7,6 +7,7 @@ namespace VRtist
     public class GeometryImporter : MonoBehaviour
     {
         [SerializeField] private Transform root;
+        public GameObject lightPrefab = null;
         private AssimpIO importer = null;
 
         void Start()
@@ -26,6 +27,8 @@ namespace VRtist
 
         // This is for debug purpose
         //===========================
+        public bool createLight = false;
+
         public string filename = @"D:\unity\VRtist\Build\cabane.fbx";
         public bool load = false;
         public bool undo = false;
@@ -39,9 +42,17 @@ namespace VRtist
         public string obj = @"D:\test.obj";
         public bool writeOBJ = false;
 
+
         void Update()
         {
             progress = importer.Progress;
+
+            if(createLight)
+            {
+                createLight = false;
+                GameObject light = Utils.CreateInstance(lightPrefab, Utils.FindGameObject("Lights").transform);
+                new CommandAddGameObject(light).Submit();
+            }
 
             if (load)
             {

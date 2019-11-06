@@ -88,6 +88,7 @@ namespace VRtist
             undoStack.Clear();
             redoStack.Clear();
             groupStack.Clear();
+            Selection.ClearSelection();
             currentGroup = null;
         }
 

@@ -95,9 +95,10 @@ namespace VRtist
                 if (currentPaintLine != null)
                 {
                      MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
-                     IOMetaData metaData = currentPaintLine.AddComponent<IOMetaData>();
+                     IOPaintMetaData metaData = currentPaintLine.AddComponent<IOPaintMetaData>();
                      metaData.type = IOMetaData.Type.Paint;
                      metaData.filename = IOUtilities.CreatePaintFilename(currentPaintLine.name);
+                     metaData.color = paintColor;
                      new CommandAddGameObject(currentPaintLine).Submit();
                      currentPaintLine = null;
                      //OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);

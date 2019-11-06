@@ -88,9 +88,20 @@ namespace VRtist
             {
                 // Get last child
                 root = importedGeometries.GetChild(importedGeometries.childCount - 1);
-                IOMetaData metaData = root.gameObject.AddComponent<IOMetaData>();
+                IOMetaData metaData;
+                switch(type)
+                {
+                    default:
+                    case IOMetaData.Type.Geometry:
+                        metaData = root.gameObject.AddComponent<IOGeometryMetaData>();
+                        ((IOGeometryMetaData)metaData).filename = filename;
+                        break;
+                    case IOMetaData.Type.Paint:
+                        metaData = root.gameObject.AddComponent<IOPaintMetaData>();
+                        ((IOPaintMetaData)metaData).filename = filename;
+                        break;
+                }
                 metaData.type = type;
-                metaData.filename = IOUtilities.IsProjectRelative(filename) ? IOUtilities.GetRelativeFilename(filename): filename;
             }
         }
         public void Import(string fileName, Transform root, IOMetaData.Type type, bool synchronous = false)

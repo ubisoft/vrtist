@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 1862806351537794285}
   - component: {fileID: 1204138857207612560}
   - component: {fileID: 7266784867430804055}
-  m_Layer: 5
+  - component: {fileID: -4813057241336292645}
+  m_Layer: 0
   m_Name: Sun
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -79,6 +80,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd8539113035e9418819c9874439536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-4813057241336292645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2522542035530869807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57e8dfafbe85a024f95c122f554ef7b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  type: 2
+  id: 0
+  lightType: 0
 --- !u!1 &3375600871356153348
 GameObject:
   m_ObjectHideFlags: 0
@@ -90,7 +106,7 @@ GameObject:
   - component: {fileID: 2363868379688984270}
   - component: {fileID: 3551377350450663505}
   - component: {fileID: 4233052572024792226}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -332,7 +348,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}

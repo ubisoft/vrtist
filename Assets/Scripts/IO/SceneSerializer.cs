@@ -42,14 +42,131 @@ namespace VRtist
         }
     }
 
-    public class AssetSerializer
+    public class LightSerializer
+    {
+        [JsonProperty("type")]
+        IOLightMetaData.LightType type;
+        public LightSerializer()
+        {
+        }
+        public LightSerializer(IOMetaData metaData)
+        {
+            IOLightMetaData lightMetaData = metaData as IOLightMetaData;
+            type = lightMetaData.lightType;
+
+        }
+
+        public Transform Apply(Transform parent)
+        {
+            GameObject light;
+            GameObject lightPrefab = null;
+            switch (type)
+            {
+                case IOLightMetaData.LightType.Point:
+                    lightPrefab = Resources.Load("Prefabs/Point") as GameObject;
+                    break;
+                case IOLightMetaData.LightType.Spot :
+                    lightPrefab = Resources.Load("Prefabs/Spot") as GameObject;
+                    break;
+                case IOLightMetaData.LightType.Sun:
+                    lightPrefab = Resources.Load("Prefabs/Sun") as GameObject;
+                    break;
+            }
+
+            light = Utils.CreateInstance(lightPrefab, parent);
+            IOLightMetaData metaData = light.GetComponentInChildren<IOLightMetaData>();            
+            metaData.lightType = type;
+            return light.transform;
+        }
+    }
+    public class CameraSerializer
+    {
+        public CameraSerializer()
+        { }
+        public CameraSerializer(IOMetaData metaData)
+        {
+            IOCameraMetaData cameraMetaData = metaData as IOCameraMetaData;
+        }
+
+        public Transform Apply(Transform parent)
+        {
+            GameObject cam = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, parent);
+            return cam.transform;
+        }
+    }
+
+    public class PaintSerializer
     {
         [JsonProperty("filename")]
         public string filename;
+        [JsonProperty("color")]
+        Color color;
+
+        public PaintSerializer()
+        { }
+        public PaintSerializer(IOMetaData metaData)
+        {
+            IOPaintMetaData paintMetaData = metaData as IOPaintMetaData;
+            color = paintMetaData.color;
+            filename = paintMetaData.filename;
+            OBJExporter.Export(IOUtilities.GetAbsoluteFilename(filename), metaData.gameObject);
+        }
+        public Transform Apply(Transform parent)
+        {
+            AssimpIO geometryImporter = new AssimpIO();
+            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, IOMetaData.Type.Paint, true);
+            Transform paint = parent.GetChild(parent.childCount - 1);
+            MeshRenderer renderer = paint.GetComponentInChildren<MeshRenderer>();
+            renderer.material.SetColor("_BaseColor", color);
+
+            IOPaintMetaData metaData = paint.GetComponentInChildren<IOPaintMetaData>();
+            metaData.filename = filename;
+            metaData.color = color;
+
+            return paint;
+        }
+    }
+    public class GeometrySerializer
+    {
+        [JsonProperty("filename")]
+        public string filename;
+
+        public GeometrySerializer()
+        { }
+        public GeometrySerializer(IOMetaData metaData)
+        {
+            IOGeometryMetaData geometryMetaData = metaData as IOGeometryMetaData;
+            filename = geometryMetaData.filename;            
+        }
+
+        public Transform Apply(Transform parent)
+        {
+            AssimpIO geometryImporter = new AssimpIO();
+            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, IOMetaData.Type.Geometry, true);
+
+            Transform transform = parent.GetChild(parent.childCount - 1);
+            IOGeometryMetaData metaData = transform.GetComponentInChildren<IOGeometryMetaData>();            
+            metaData.filename = filename;
+
+            return transform;
+        }
+
+    }
+
+    public class AssetSerializer
+    {
         [JsonProperty("id")]
         public int id;
         [JsonProperty("type")]
         public IOMetaData.Type type;
+        [JsonProperty("lightSerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public LightSerializer lightSerializer = null;
+        [JsonProperty("cameraSerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public CameraSerializer cameraSerializer = null;
+        [JsonProperty("geometrySerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public GeometrySerializer geometrySerializer = null;
+        [JsonProperty("paintSerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public PaintSerializer paintSerializer = null;
 
         [JsonProperty("transforms")]
         List<TransformSerializer> transforms = new List<TransformSerializer>();
@@ -95,11 +212,31 @@ namespace VRtist
 
         public void Apply()
         {
-            GameObject root = SceneSerializer.FindGameObject(SceneSerializer.rootsByTypes[type]);
+            GameObject root = Utils.FindGameObject(SceneSerializer.rootsByTypes[type]);
 
-            AssimpIO geometryImporter = new AssimpIO();
-            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), root.transform, type, true);
-            Transform rootTransform = root.transform.GetChild(root.transform.childCount - 1);
+            Transform rootTransform = null;
+
+            if (lightSerializer != null)
+            {
+                rootTransform = lightSerializer.Apply(root.transform);                
+            }
+            if (cameraSerializer != null)
+            { 
+                rootTransform = cameraSerializer.Apply(root.transform);                
+            }
+            if (paintSerializer != null)
+            { 
+                rootTransform = paintSerializer.Apply(root.transform);
+            }
+            if (geometrySerializer != null)
+            { 
+                rootTransform = geometrySerializer.Apply(root.transform);
+            }
+
+            IOMetaData metaData = rootTransform.GetComponent<IOMetaData>();
+            metaData.id = id;
+            IOMetaData.idGen = Math.Max(id + 1, IOMetaData.idGen);
+            metaData.type = type;
 
             for (int i = 0; i < clones.Count; i++)
             {
@@ -141,49 +278,28 @@ namespace VRtist
             { IOMetaData.Type.Camera ,  "Cameras" },
         };
 
-        public static GameObject FindWorld()
-        {
-            Scene scene = SceneManager.GetActiveScene();
-            GameObject[] roots = scene.GetRootGameObjects();
-            for (int i = 0; i < roots.Length; i++)
-            {
-                if (roots[i].name == "World")
-                {
-                    return roots[i];
-                }
-            }
-            return null;
-        }
-
-        public static GameObject FindGameObject(string name)
-        {
-            GameObject world = FindWorld();
-            if (!world)
-                return null;
-
-            int childrenCount = world.transform.childCount;
-            for (int i = 0; i < childrenCount; i++)
-            {
-                GameObject child = world.transform.GetChild(i).gameObject;
-                if (child.name == name)
-                    return child;
-            }
-
-            return null;
-        }
-
         public void AddAsset(IOMetaData metaData)
         {
             AssetSerializer assetSerializer = new AssetSerializer();
-            assetSerializer.filename = metaData.filename;
             assetSerializer.id = metaData.id;
             assetSerializer.type = metaData.type;
             assets.Add(assetSerializer);
             assetById[metaData.id] = assetSerializer;
 
-            if (assetSerializer.type == IOMetaData.Type.Paint)
-            {                
-                OBJExporter.Export(IOUtilities.GetAbsoluteFilename(assetSerializer.filename), metaData.gameObject);
+            switch(metaData.type)
+            {
+                case IOMetaData.Type.Paint:
+                    assetSerializer.paintSerializer = new PaintSerializer(metaData);
+                    break;
+                case IOMetaData.Type.Geometry:
+                    assetSerializer.geometrySerializer = new GeometrySerializer(metaData);
+                    break;
+                case IOMetaData.Type.Light:
+                    assetSerializer.lightSerializer = new LightSerializer(metaData);
+                    break;
+                case IOMetaData.Type.Camera:
+                    assetSerializer.cameraSerializer = new CameraSerializer(metaData);
+                    break;
             }
         }
 
@@ -236,7 +352,7 @@ namespace VRtist
 
         public static void ClearGroup(string groupName)
         {
-            var group = SceneSerializer.FindGameObject(groupName);
+            var group = Utils.FindGameObject(groupName);
             for (int i = group.transform.childCount - 1; i >= 0; i--)
             {
                 GameObject.Destroy(group.transform.GetChild(i).gameObject);

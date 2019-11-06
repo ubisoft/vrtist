@@ -14,15 +14,18 @@ namespace VRtist
             Camera
         }
 
-        IOMetaData()
+        public IOMetaData()
         {
             id = idGen++;
         }
 
-        public string filename;
-        public Type type;
+        public void InitId()
+        {
+            id = idGen++;
+        }
 
+        public Type type;
         public int id;
-        static int idGen = 0;
+        static public int idGen = 0;
     }
 }
