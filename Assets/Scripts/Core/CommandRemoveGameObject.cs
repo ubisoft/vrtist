@@ -45,7 +45,7 @@ namespace VRtist
             {
                 AssetSerializer assetSerializer = serializer.GetAssetSerializer(metaData.id);
                 GameObject root = metaData.gameObject;
-                if(root.transform.childCount > 0)
+                if(metaData.type == IOMetaData.Type.Geometry && root.transform.childCount > 0)
                 {
                     string transformPath = Utils.BuildTransformPath(gObject);
                     assetSerializer.CreateDeletedSerializer(transformPath);

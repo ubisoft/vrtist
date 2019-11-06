@@ -77,16 +77,35 @@ namespace VRtist
 
         public static GameObject CreateInstance(GameObject gObject, Transform parent)
         {
+            HashSet<string> childrenName = new HashSet<string>();
+            for (int i = 0; i < parent.childCount; i++)
+                childrenName.Add(parent.GetChild(i).name);
+
             GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
+            {
                 res = builder.CreateInstance(gObject, parent);
+            }
             else
+            {
                 res = GameObject.Instantiate(gObject, parent);
+            }
 
-            IOMetaData metaData = res.GetComponent<IOMetaData>();
-            if (metaData)
-                metaData.InitId();
+            IOMetaData cloneMetaData = res.GetComponent<IOMetaData>();
+            if (cloneMetaData)
+                cloneMetaData.InitId();
+
+            int id = 0;
+            string baseName = gObject.name.Split('.')[0];
+            string name = baseName + "." + id.ToString();
+            while (childrenName.Contains(name))
+            {
+                id++;
+                name = baseName + "." + id.ToString();
+            }
+            res.name = name;
+
             return res;
         }
 

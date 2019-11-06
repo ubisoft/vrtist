@@ -139,7 +139,7 @@ Light:
   m_Type: 1
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0
+  m_Intensity: 8
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -205,7 +205,7 @@ MonoBehaviour:
   m_ObsoleteUseShadowQualitySettings: 0
   m_ObsoleteCustomShadowResolution: 2048
   m_ObsoleteContactShadows: 0
-  m_Intensity: 0
+  m_Intensity: 8
   m_EnableSpotReflector: 0
   m_LuxAtDistance: 1
   m_InnerSpotPercent: 0
@@ -250,7 +250,7 @@ MonoBehaviour:
   m_ShadowResolution:
     m_Override: 2048
     m_UseOverride: 1
-    m_Level: 1
+    m_Level: -1
   m_ShadowDimmer: 1
   m_VolumetricShadowDimmer: 1
   m_ShadowFadeDistance: 10000
@@ -348,7 +348,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}

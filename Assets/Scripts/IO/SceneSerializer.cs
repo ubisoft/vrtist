@@ -130,14 +130,31 @@ namespace VRtist
     {
         [JsonProperty("filename")]
         public string filename;
+        [JsonProperty("deleted")]
+        List<string> deleted = new List<string>();
+        [JsonProperty("clones")]
+        List<Tuple<string, string>> clones = new List<Tuple<string, string>>();
 
         public GeometrySerializer()
         { }
         public GeometrySerializer(IOMetaData metaData)
         {
             IOGeometryMetaData geometryMetaData = metaData as IOGeometryMetaData;
-            filename = geometryMetaData.filename;            
+            filename = geometryMetaData.filename;
+            deleted = geometryMetaData.deleted;
+            clones = geometryMetaData.clones;
         }
+
+        public void CreateDeletedSerializer(string path)
+        {
+            deleted.Add(path);
+        }
+
+        public void CreateDuplicateSerializer(string path, string name)
+        {
+            clones.Add(new Tuple<string, string>(path, name));
+        }
+
 
         public Transform Apply(Transform parent)
         {
@@ -146,7 +163,28 @@ namespace VRtist
 
             Transform transform = parent.GetChild(parent.childCount - 1);
             IOGeometryMetaData metaData = transform.GetComponentInChildren<IOGeometryMetaData>();            
-            metaData.filename = filename;
+            metaData.filename = filename;            
+
+            for (int i = 0; i < clones.Count; i++)
+            {
+                Tuple<string, string> clone = clones[i];
+                Transform child = transform.Find(clone.Item1);
+                var newInstance = Utils.CreateInstance(child.gameObject, child.parent);
+                newInstance.name = clone.Item2;
+                metaData.clones.Add(new Tuple<string,string>(clone.Item1, clone.Item2));
+            }
+
+            for (int i = 0; i < deleted.Count; i++)
+            {
+                string deletedPath = deleted[i];
+                Transform child = transform.Find(deletedPath);
+                if (child)
+                {
+                    GameObject.Destroy(child.gameObject);
+                    metaData.deleted.Add(deletedPath);
+                }
+            }
+
 
             return transform;
         }
@@ -170,12 +208,6 @@ namespace VRtist
 
         [JsonProperty("transforms")]
         List<TransformSerializer> transforms = new List<TransformSerializer>();
-
-        [JsonProperty("deleted")]
-        List<string> deleted = new List<string>();
-
-        [JsonProperty("clones")]
-        List<Tuple<string, string>> clones = new List<Tuple<string, string>>();
 
         Dictionary<string, TransformSerializer> transformsByPath = new Dictionary<string, TransformSerializer>();
 
@@ -202,12 +234,14 @@ namespace VRtist
 
         public void CreateDeletedSerializer(string path)
         {
-            deleted.Add(path);
+            if(geometrySerializer != null)
+                geometrySerializer.CreateDeletedSerializer(path);
         }
 
         public void CreateDuplicateSerializer(string path, string name)
         {
-            clones.Add(new Tuple<string,string>(path, name));
+            if (geometrySerializer != null)
+                geometrySerializer.CreateDuplicateSerializer(path, name);
         }
 
         public void Apply()
@@ -237,22 +271,6 @@ namespace VRtist
             metaData.id = id;
             IOMetaData.idGen = Math.Max(id + 1, IOMetaData.idGen);
             metaData.type = type;
-
-            for (int i = 0; i < clones.Count; i++)
-            {
-                Tuple<string, string> clone = clones[i];
-                Transform child = rootTransform.Find(clone.Item1);
-                var newInstance = Utils.CreateInstance(child.gameObject, child.parent);
-                newInstance.name = clone.Item2;
-            }
-
-            for (int i = 0; i < deleted.Count; i++)
-            {
-                string deletedPath = deleted[i];
-                Transform child = rootTransform.Find(deletedPath);
-                if (child)
-                    GameObject.Destroy(child.gameObject);
-            }
 
             for (int i = 0; i < transforms.Count; i++)
             {
