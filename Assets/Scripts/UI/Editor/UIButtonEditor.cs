@@ -20,7 +20,7 @@ public class UIButtonEditor : Editor
 
     private void OnEnable()
     {
-        if (HasUIElemParent())
+        //if (HasUIElemParent())
         {
             // Hide the default handles, so that they don't get in the way.
             // But not if this panel is a top level GUI widget.
@@ -57,7 +57,8 @@ public class UIButtonEditor : Editor
         Vector3 newTargetPosition_bottom = Handles.FreeMoveHandle(posBottom, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
         Handles.color = Handles.zAxisColor;
-        Vector3 newTargetPosition_anchor = hasUIElementParent ? Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap) : posAnchor;
+        //Vector3 newTargetPosition_anchor = hasUIElementParent ? Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap) : posAnchor;
+        Vector3 newTargetPosition_anchor = Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
         if (EditorGUI.EndChangeCheck())
         {
@@ -69,13 +70,13 @@ public class UIButtonEditor : Editor
 
             if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
             {
-                Vector3 localDeltaRight = T.InverseTransformPoint(deltaRight);
+                //Vector3 localDeltaRight = T.InverseTransformPoint(deltaRight);
                 uiButton.RelativeLocation += new Vector3(deltaRight.x / 2.0f, 0.0f, 0.0f);
                 uiButton.Width += deltaRight.x;
             }
             else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
             {
-                Vector3 localDeltaBottom = T.InverseTransformPoint(deltaBottom);
+                //Vector3 localDeltaBottom = T.InverseTransformPoint(deltaBottom);
                 uiButton.RelativeLocation += new Vector3(0.0f, deltaBottom.y / 2.0f, 0.0f);
                 uiButton.Height += -deltaBottom.y;
             }
