@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.Collections;
 using UnityEngine;
 
@@ -8,12 +9,13 @@ namespace VRtist
 
     public class FreeDraw
     {
+        public Vector3[] controlPoints;
+        public float[] controlPointsRadius;
+
         private Vector3[] linePoints;
         private int[] linePointIndices;
         private float[] lineRadius;
-        private Vector3[] controlPoints;
         private Vector3[] controlPointNormals;
-        private float[] controlPointsRadius;
 
         public Vector3[] vertices;
         public Vector3[] normals;
@@ -25,6 +27,17 @@ namespace VRtist
         public FreeDraw()
         {
             Reset();
+        }
+        public FreeDraw(Vector3[] points, float[] radius)
+        {
+            Reset();
+            matrix = Matrix4x4.identity;
+
+            int count = points.Length;
+            for (int i = 0; i < count; i++)
+            {
+                AddControlPoint(points[i], radius[i]);
+            }
         }
 
         public void AddFlatLineControlPoint(Vector3 next, Vector3 normal, float length)
@@ -55,8 +68,8 @@ namespace VRtist
             if (size == 0)
             {
                 Vector3 c = Vector3.Cross(normal, Vector3.forward).normalized;
-                vertices[0] = matrix.MultiplyPoint(next + c * length);
-                vertices[1] = matrix.MultiplyPoint(next - c * length);
+                vertices[0] = next + c * length;
+                vertices[1] = next - c * length;
                 normals[0] = normal;
                 normals[1] = normal;
             }
@@ -65,11 +78,11 @@ namespace VRtist
                 Vector3 direction = (next - controlPoints[size - 1]).normalized;
                 Vector3 c = Vector3.Cross(normal, direction).normalized;
                 float prevLength = controlPointsRadius[size - 1];
-                vertices[2 * (size - 1)] = matrix.MultiplyPoint(controlPoints[size - 1] + c * prevLength);
-                vertices[2 * (size - 1) + 1] = matrix.MultiplyPoint(controlPoints[size - 1] - c * prevLength);
+                vertices[2 * (size - 1)] = controlPoints[size - 1] + c * prevLength;
+                vertices[2 * (size - 1) + 1] = controlPoints[size - 1] - c * prevLength;
 
-                vertices[2 * size] = matrix.MultiplyPoint(next + c * length);
-                vertices[2 * size + 1] = matrix.MultiplyPoint(next - c * length);
+                vertices[2 * size] = next + c * length;
+                vertices[2 * size + 1] = next - c * length;
                 normals[2 * size] = normal;
                 normals[2 * size + 1] = normal;
 
@@ -85,8 +98,11 @@ namespace VRtist
 
         }
 
-        public void AddControlPoint(Vector3 next, float radius)
+        public void AddControlPoint(Vector3 nextPoint, float nextPointRadius)
         {
+            Vector3 next = matrix.MultiplyPoint(nextPoint);
+            float radius = matrix.lossyScale.x * nextPointRadius;
+
             int ANZ = 8;  // number of vertices per circle
             int size = controlPoints.Length;
 
@@ -344,7 +360,7 @@ namespace VRtist
                 {
                     float angle = FULL * (j / (float)ANZ);
                     Vector3 pos = radius * (Mathf.Cos(angle) * firstPerp + Mathf.Sin(angle) * secondPerp);
-                    vertices[(newIndex - 1) * ANZ + j] = matrix.MultiplyPoint(curr + pos);
+                    vertices[(newIndex - 1) * ANZ + j] = curr + pos;
                     normals[(newIndex - 1) * ANZ + j] = pos.normalized;
                 }
 
@@ -367,7 +383,7 @@ namespace VRtist
             {
                 float angle = FULL * (j / (float)ANZ);
                 Vector3 pos = r * (Mathf.Cos(angle) * firstPerp + Mathf.Sin(angle) * secondPerp);
-                vertices[newIndex * ANZ + j] = matrix.MultiplyPoint(next + pos);
+                vertices[newIndex * ANZ + j] = next + pos;
                 normals[newIndex * ANZ + j] = pos.normalized;
             }
 

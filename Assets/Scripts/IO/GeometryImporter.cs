@@ -57,7 +57,7 @@ namespace VRtist
             if (load)
             {
                 load = false;
-                importer.Import(filename, root, IOMetaData.Type.Geometry);
+                importer.Import(filename, root);
             }
             if (undo == true)
             {

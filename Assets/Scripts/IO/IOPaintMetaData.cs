@@ -6,7 +6,9 @@ namespace VRtist
 {
     public class IOPaintMetaData : IOMetaData
     {
-        public string filename;
+        //public string filename;
         public Color color = new Color(1, 1, 1);
+        public Vector3[] controlPoints;
+        public float[] controlPointsRadius;
     }
 }

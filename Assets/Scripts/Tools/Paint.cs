@@ -83,7 +83,7 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
             {
                 // Create an empty game object with a mesh
-                currentPaintLine = PaintCreateLine("paint__" + paintId.ToString());
+                currentPaintLine = Utils.CreatePaint(paintContainer, paintColor);
                 ++paintId;
                 paintPrevPosition = Vector3.zero;
                 freeDraw = new FreeDraw();
@@ -97,8 +97,10 @@ namespace VRtist
                      MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
                      IOPaintMetaData metaData = currentPaintLine.AddComponent<IOPaintMetaData>();
                      metaData.type = IOMetaData.Type.Paint;
-                     metaData.filename = IOUtilities.CreatePaintFilename(currentPaintLine.name);
+                     //metaData.filename = IOUtilities.CreatePaintFilename(currentPaintLine.name);
                      metaData.color = paintColor;
+                     metaData.controlPoints = freeDraw.controlPoints;
+                     metaData.controlPointsRadius = freeDraw.controlPointsRadius;
                      new CommandAddGameObject(currentPaintLine).Submit();
                      currentPaintLine = null;
                      //OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
@@ -175,7 +177,7 @@ namespace VRtist
             MeshFilter meshFilter = lineObject.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = lineObject.AddComponent<MeshRenderer>();
-            renderer.material = Instantiate<Material>(paintMaterial);
+            renderer.material = GameObject.Instantiate<Material>(paintMaterial);
             renderer.material.SetColor("_BaseColor", paintColor);
 
             return lineObject;

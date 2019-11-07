@@ -96,11 +96,13 @@ namespace VRtist
     }
 
     public class PaintSerializer
-    {
-        [JsonProperty("filename")]
-        public string filename;
+    {        
         [JsonProperty("color")]
         Color color;
+        [JsonProperty("controlPoints")]
+        Vector3[] controlPoints;
+        [JsonProperty("controlPointsRadius")]
+        float[] controlPointsRadius;
 
         public PaintSerializer()
         { }
@@ -108,22 +110,35 @@ namespace VRtist
         {
             IOPaintMetaData paintMetaData = metaData as IOPaintMetaData;
             color = paintMetaData.color;
-            filename = paintMetaData.filename;
-            OBJExporter.Export(IOUtilities.GetAbsoluteFilename(filename), metaData.gameObject);
+            //filename = paintMetaData.filename;
+            controlPoints = paintMetaData.controlPoints;
+            controlPointsRadius = paintMetaData.controlPointsRadius;
+            //OBJExporter.Export(IOUtilities.GetAbsoluteFilename(filename), metaData.gameObject);
         }
         public Transform Apply(Transform parent)
         {
-            AssimpIO geometryImporter = new AssimpIO();
-            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, IOMetaData.Type.Paint, true);
-            Transform paint = parent.GetChild(parent.childCount - 1);
-            MeshRenderer renderer = paint.GetComponentInChildren<MeshRenderer>();
-            renderer.material.SetColor("_BaseColor", color);
-
-            IOPaintMetaData metaData = paint.GetComponentInChildren<IOPaintMetaData>();
-            metaData.filename = filename;
+            //AssimpIO geometryImporter = new AssimpIO();
+            //geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, IOMetaData.Type.Paint, true);
+            GameObject paint = Utils.CreatePaint(parent, color);
+            IOPaintMetaData metaData = paint.AddComponent<IOPaintMetaData>();
+            metaData.type = IOMetaData.Type.Paint;
+            //metaData.filename = filename;
             metaData.color = color;
+            metaData.controlPoints = controlPoints;
+            metaData.controlPointsRadius  = controlPointsRadius;
 
-            return paint;
+            // set mesh components
+            var freeDraw = new FreeDraw(controlPoints, controlPointsRadius);
+            MeshFilter meshFilter = paint.GetComponent<MeshFilter>();
+            Mesh mesh = meshFilter.mesh;
+            mesh.Clear();
+            mesh.vertices = freeDraw.vertices;
+            mesh.normals = freeDraw.normals;
+            mesh.triangles = freeDraw.triangles;
+            
+            MeshCollider collider = paint.AddComponent<MeshCollider>();
+
+            return paint.transform;
         }
     }
     public class GeometrySerializer
@@ -159,7 +174,7 @@ namespace VRtist
         public Transform Apply(Transform parent)
         {
             AssimpIO geometryImporter = new AssimpIO();
-            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, IOMetaData.Type.Geometry, true);
+            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, true);
 
             Transform transform = parent.GetChild(parent.childCount - 1);
             IOGeometryMetaData metaData = transform.GetComponentInChildren<IOGeometryMetaData>();            
@@ -398,8 +413,7 @@ namespace VRtist
 
             deserialized.Apply();
 
-            if(currentJson == null)
-                currentJson = json;
+            currentJson = json;
 
             return deserialized;
         }

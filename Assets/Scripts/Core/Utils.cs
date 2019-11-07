@@ -75,12 +75,29 @@ namespace VRtist
             return res;
         }
 
-        public static GameObject CreateInstance(GameObject gObject, Transform parent)
+        public static string CreateUniqueName(GameObject gObject, string baseName)
         {
+            Transform parent = gObject.transform.parent;
             HashSet<string> childrenName = new HashSet<string>();
             for (int i = 0; i < parent.childCount; i++)
-                childrenName.Add(parent.GetChild(i).name);
+            {
+                GameObject child = parent.GetChild(i).gameObject;
+                if(child != gObject)
+                    childrenName.Add(child.name);
+            }
 
+            int id = 0;
+            string name = baseName + "." + id.ToString();
+            while (childrenName.Contains(name))
+            {
+                id++;
+                name = baseName + "." + id.ToString();
+            }
+            return name;
+        }
+
+        public static GameObject CreateInstance(GameObject gObject, Transform parent)
+        {            
             GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
@@ -96,17 +113,32 @@ namespace VRtist
             if (cloneMetaData)
                 cloneMetaData.InitId();
 
-            int id = 0;
             string baseName = gObject.name.Split('.')[0];
-            string name = baseName + "." + id.ToString();
-            while (childrenName.Contains(name))
-            {
-                id++;
-                name = baseName + "." + id.ToString();
-            }
-            res.name = name;
+            res.name = CreateUniqueName(res, baseName);
 
             return res;
+        }
+
+        public static GameObject CreatePaint(Transform parent, Color color)
+        {
+            GameObject lineObject = new GameObject();
+            lineObject.transform.parent = parent;
+            lineObject.name = CreateUniqueName(lineObject, "Paint");
+
+            lineObject.transform.localPosition = Vector3.zero;
+            lineObject.transform.localRotation = Quaternion.identity;
+            lineObject.transform.localScale = Vector3.one;
+            lineObject.tag = "PhysicObject";
+
+            Mesh mesh = new Mesh();
+            MeshFilter meshFilter = lineObject.AddComponent<MeshFilter>();
+            meshFilter.mesh = mesh;
+            MeshRenderer renderer = lineObject.AddComponent<MeshRenderer>();
+            Material paintMaterial = Resources.Load("Materials/Paint") as Material;
+            renderer.material = GameObject.Instantiate<Material>(paintMaterial);
+            renderer.material.SetColor("_BaseColor", color);
+
+            return lineObject;
         }
 
 
