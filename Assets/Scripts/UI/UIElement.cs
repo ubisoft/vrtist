@@ -30,6 +30,10 @@ public class UIElement : MonoBehaviour
         {
             transform.localPosition = parentElem.anchor + relativeLocation;
         }
+        else
+        {
+            transform.localPosition = relativeLocation;
+        }
     }
 
     public void UpdateChildren()

@@ -8,75 +8,83 @@ public class UIPanelEditor : Editor
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
+    }
 
-        EditorGUILayout.HelpBox("Rebuild the mesh of the UIPanel", MessageType.Info);
+    // TODO: factor, also used in UIButtonEditor
+    private bool HasUIElemParent()
+    {
+        UIElement uiElem = (UIElement)target;
+        UIElement parentElem = uiElem.transform.parent ? uiElem.transform.parent.gameObject.GetComponent<UIElement>() : null;
+        return parentElem != null;
+    }
 
-        UIPanel uiPanel = (UIPanel)target;
-        if (GUILayout.Button("Rebuild"))
+    // TODO: factor, also used in UIButtonEditor
+    private void OnEnable()
+    {
+        if (HasUIElemParent())
         {
-            uiPanel.RebuildMesh();
+            // Hide the default handles, so that they don't get in the way.
+            // But not if this panel is a top level GUI widget.
+            Tools.hidden = true;
         }
+    }
+
+    // TODO: factor, also used in UIButtonEditor
+    private void OnDisable()
+    {
+        // Restore the default handles.
+        Tools.hidden = false;
     }
 
     private void OnSceneGUI()
     {
-        //if (Event.current.type == EventType.Repaint)
+        bool hasUIElementParent = HasUIElemParent();
 
         UIPanel uiPanel = target as UIPanel;
         
         Transform T = uiPanel.transform;
 
-        Vector3 posLeft   = T.TransformPoint(new Vector3(-uiPanel.width / 2.0f, 0, 0));
         Vector3 posRight  = T.TransformPoint(new Vector3(+uiPanel.width / 2.0f, 0, 0));
         Vector3 posBottom = T.TransformPoint(new Vector3(0, -uiPanel.height / 2.0f, 0));
-        Vector3 posTop = T.TransformPoint(new Vector3(0, +uiPanel.height / 2.0f, 0));
         Vector3 posAnchor = T.TransformPoint(uiPanel.anchor);
-        float handleSize = uiPanel.radius * 2.0f;
+        float handleSize = uiPanel.radius * 2.2f;
         Vector3 snap = Vector3.one * 0.1f;
 
         EditorGUI.BeginChangeCheck();
 
         Handles.color = Handles.xAxisColor;
-        Vector3 newTargetPosition_left = Handles.FreeMoveHandle(posLeft, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
         Vector3 newTargetPosition_right = Handles.FreeMoveHandle(posRight, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
         Handles.color = Handles.yAxisColor;
         Vector3 newTargetPosition_bottom = Handles.FreeMoveHandle(posBottom, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
-        Vector3 newTargetPosition_top = Handles.FreeMoveHandle(posTop, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
         Handles.color = Handles.zAxisColor;
-        Vector3 newTargetPosition_anchor = Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
+        Vector3 newTargetPosition_anchor = hasUIElementParent ? Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap) : posAnchor;
 
         if (EditorGUI.EndChangeCheck())
         {
             Undo.RecordObject(target, "Change Dimensions");
 
-            Vector3 deltaLeft   = newTargetPosition_left - posLeft;
             Vector3 deltaRight  = newTargetPosition_right - posRight;
             Vector3 deltaBottom = newTargetPosition_bottom - posBottom;
-            Vector3 deltaTop    = newTargetPosition_top - posTop;
             Vector3 deltaAnchor = newTargetPosition_anchor - posAnchor;
 
-            if (Vector3.SqrMagnitude(deltaLeft) > Mathf.Epsilon)
+            if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
             {
-                uiPanel.Width = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_left));
-            }
-            else if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
-            {
-                uiPanel.Width = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_right));
+                Vector3 localDeltaRight = T.InverseTransformPoint(deltaRight);
+                uiPanel.RelativeLocation += new Vector3(deltaRight.x / 2.0f, 0.0f, 0.0f);
+                uiPanel.Width += deltaRight.x;
             }
             else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
             {
-                uiPanel.Height = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_bottom));
-            }
-            else if (Vector3.SqrMagnitude(deltaTop) > Mathf.Epsilon)
-            {
-                uiPanel.Height = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_top));
+                Vector3 localDeltaBottom = T.InverseTransformPoint(deltaBottom);
+                uiPanel.RelativeLocation += new Vector3(0.0f, deltaBottom.y / 2.0f, 0.0f);
+                uiPanel.Height += -deltaBottom.y;
             }
             else if (Vector3.SqrMagnitude(deltaAnchor) > Mathf.Epsilon)
             {
-                // TODO
-                //uiButton.Anchor = 2.0f * Vector3.Magnitude(T.InverseTransformPoint(newTargetPosition_top));
+                Vector3 localDeltaAnchor = T.InverseTransformVector(deltaAnchor);
+                uiPanel.RelativeLocation += new Vector3(localDeltaAnchor.x, localDeltaAnchor.y, 0.0f);
             }
         }
     }
