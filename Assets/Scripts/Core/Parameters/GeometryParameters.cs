@@ -37,6 +37,11 @@ namespace VRtist
             {
                 Tuple<string, string> clone = clones[i];
                 Transform child = transform.Find(clone.Item1);
+                if (child == null)
+                {
+                    Debug.LogWarning("Can't find " + transform.name + "/" + clone.Item1);
+                    continue;
+                }
                 var newInstance = Utils.CreateInstance(child.gameObject, child.parent);
                 newInstance.name = clone.Item2;
             }

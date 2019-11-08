@@ -33,7 +33,7 @@ namespace VRtist
         {
         }
 
-        public void Apply(GameObject root)
+        public void Deserialize(GameObject root)
         {
             Transform t = root.transform.Find(path);
             if(t == null)
@@ -102,7 +102,7 @@ namespace VRtist
                 geometrySerializer.CreateDuplicateSerializer(path, name);
         }
 
-        public void Apply()
+        public void Deserialize()
         {
             Transform rootTransform = null;
 
@@ -143,7 +143,7 @@ namespace VRtist
 
             for (int i = 0; i < transforms.Count; i++)
             {
-                transforms[i].Apply(rootTransform.gameObject);
+                transforms[i].Deserialize(rootTransform.gameObject);
             }
         }
     }
@@ -229,11 +229,11 @@ namespace VRtist
             System.IO.File.WriteAllText(filename, json);
         }        
 
-        public void Apply()
+        public void Deserialize()
         {
             for(int i = 0; i < assets.Count; i++)
             {
-                assets[i].Apply();                
+                assets[i].Deserialize();                
             }
         }
 
@@ -265,7 +265,7 @@ namespace VRtist
 
             SceneSerializer.Clear();
 
-            deserialized.Apply();
+            deserialized.Deserialize();
 
             currentJson = json;
 

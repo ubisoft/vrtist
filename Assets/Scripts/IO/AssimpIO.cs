@@ -88,7 +88,8 @@ namespace VRtist
                 // Get last child
                 root = importedGeometries.GetChild(importedGeometries.childCount - 1);
                 GeometryController geometryController = root.gameObject.AddComponent<GeometryController>();
-                geometryController.parameters.filename = filename;
+                GeometryParameters geometryParameters = geometryController.GetParameters() as GeometryParameters;
+                geometryParameters.filename = filename;
             }
         }
         public void Import(string fileName, Transform root, bool synchronous = false)

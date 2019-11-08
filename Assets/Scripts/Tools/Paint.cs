@@ -95,7 +95,7 @@ namespace VRtist
                 if (currentPaintLine != null)
                 {
                      MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
-                     PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().parameters;
+                     PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
                      paintParameters.color = paintColor;
                      paintParameters.controlPoints = freeDraw.controlPoints;
                      paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
