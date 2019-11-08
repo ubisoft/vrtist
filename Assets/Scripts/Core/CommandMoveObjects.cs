@@ -58,10 +58,10 @@ namespace VRtist
             for(int i = 0; i < objects.Count; i++)
             {
                 GameObject gobject = objects[i];
-                IOMetaData metaData = gobject.GetComponentInParent<IOMetaData>();
-                if (metaData)
+                ParametersController parametersController = gobject.GetComponentInParent<ParametersController>();
+                if (parametersController)
                 {
-                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(metaData.id);
+                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(parametersController.GetParameters().id);
                     string transformPath = Utils.BuildTransformPath(gobject);
                     TransformSerializer transformSerializer = assetSerializer.GetOrCreateTransformSerializer(transformPath);
                     transformSerializer.position = endPositions[i];

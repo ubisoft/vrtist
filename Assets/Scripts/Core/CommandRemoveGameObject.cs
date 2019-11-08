@@ -40,19 +40,20 @@ namespace VRtist
 
         public override void Serialize(SceneSerializer serializer)
         {
-            IOMetaData metaData = gObject.GetComponentInParent<IOMetaData>();
-            if (metaData)
+            ParametersController parametersController = gObject.GetComponentInParent<ParametersController>();
+            if (parametersController)
             {
-                AssetSerializer assetSerializer = serializer.GetAssetSerializer(metaData.id);
-                GameObject root = metaData.gameObject;
-                if(metaData.type == IOMetaData.Type.Geometry && root.transform.childCount > 0)
+                Parameters parameters = parametersController.GetParameters();
+                AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
+                GameObject root = parametersController.gameObject;
+                if(parametersController.GetType() == typeof(GeometryParameters) && root.transform.childCount > 0)
                 {
                     string transformPath = Utils.BuildTransformPath(gObject);
                     assetSerializer.CreateDeletedSerializer(transformPath);
                 }
                 else
                 {
-                    serializer.RemoveAsset(metaData);
+                    serializer.RemoveAsset(parameters);
                 }
             }
         }

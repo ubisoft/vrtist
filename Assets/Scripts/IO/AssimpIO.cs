@@ -80,15 +80,15 @@ namespace VRtist
 
         ImporterState importerState = ImporterState.Ready;
 
-        void ApplyMetaData(Transform importedGeometries, string filename)
+        void ApplyParameters(Transform importedGeometries, string filename)
         {
             Transform root = null;
             if (importedGeometries.childCount > 0)
             {
                 // Get last child
                 root = importedGeometries.GetChild(importedGeometries.childCount - 1);
-                IOGeometryMetaData metaData = root.gameObject.AddComponent<IOGeometryMetaData>();
-                metaData.filename = filename;
+                GeometryController geometryController = root.gameObject.AddComponent<GeometryController>();
+                geometryController.parameters.filename = filename;
             }
         }
         public void Import(string fileName, Transform root, bool synchronous = false)
@@ -102,7 +102,7 @@ namespace VRtist
                     Assimp.PostProcessSteps.GenerateNormals |
                     Assimp.PostProcessSteps.GenerateUVCoords);
                 CreateUnityDataFromAssimp(fileName, aScene, root).MoveNext();
-                ApplyMetaData(root, fileName);
+                ApplyParameters(root, fileName);
                 Clear();
                 progress = 1.0f;
             }
@@ -171,7 +171,7 @@ namespace VRtist
                         Clear();
                         importerState = ImporterState.Ready;
 
-                        ApplyMetaData(tdata.root.transform, tdata.fileName);
+                        ApplyParameters(tdata.root.transform, tdata.fileName);
 
                         Transform root = tdata.root.transform.GetChild(tdata.root.transform.childCount - 1);
                         ImportTaskEventArgs args = new ImportTaskEventArgs(root, tdata.fileName, false);

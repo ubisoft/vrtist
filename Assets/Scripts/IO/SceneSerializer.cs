@@ -36,190 +36,33 @@ namespace VRtist
         public void Apply(GameObject root)
         {
             Transform t = root.transform.Find(path);
+            if(t == null)
+            {
+                Debug.LogWarning("Can't find " + path);
+                return;
+            }
             t.localPosition = position;
             t.localRotation = rotation;
             t.localScale = scale;
         }
     }
 
-    public class LightSerializer
-    {
-        [JsonProperty("type")]
-        IOLightMetaData.LightType type;
-        public LightSerializer()
-        {
-        }
-        public LightSerializer(IOMetaData metaData)
-        {
-            IOLightMetaData lightMetaData = metaData as IOLightMetaData;
-            type = lightMetaData.lightType;
-
-        }
-
-        public Transform Apply(Transform parent)
-        {
-            GameObject light;
-            GameObject lightPrefab = null;
-            switch (type)
-            {
-                case IOLightMetaData.LightType.Point:
-                    lightPrefab = Resources.Load("Prefabs/Point") as GameObject;
-                    break;
-                case IOLightMetaData.LightType.Spot :
-                    lightPrefab = Resources.Load("Prefabs/Spot") as GameObject;
-                    break;
-                case IOLightMetaData.LightType.Sun:
-                    lightPrefab = Resources.Load("Prefabs/Sun") as GameObject;
-                    break;
-            }
-
-            light = Utils.CreateInstance(lightPrefab, parent);
-            IOLightMetaData metaData = light.GetComponentInChildren<IOLightMetaData>();            
-            metaData.lightType = type;
-            return light.transform;
-        }
-    }
-    public class CameraSerializer
-    {
-        public CameraSerializer()
-        { }
-        public CameraSerializer(IOMetaData metaData)
-        {
-            IOCameraMetaData cameraMetaData = metaData as IOCameraMetaData;
-        }
-
-        public Transform Apply(Transform parent)
-        {
-            GameObject cam = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, parent);
-            return cam.transform;
-        }
-    }
-
-    public class PaintSerializer
-    {        
-        [JsonProperty("color")]
-        Color color;
-        [JsonProperty("controlPoints")]
-        Vector3[] controlPoints;
-        [JsonProperty("controlPointsRadius")]
-        float[] controlPointsRadius;
-
-        public PaintSerializer()
-        { }
-        public PaintSerializer(IOMetaData metaData)
-        {
-            IOPaintMetaData paintMetaData = metaData as IOPaintMetaData;
-            color = paintMetaData.color;
-            //filename = paintMetaData.filename;
-            controlPoints = paintMetaData.controlPoints;
-            controlPointsRadius = paintMetaData.controlPointsRadius;
-            //OBJExporter.Export(IOUtilities.GetAbsoluteFilename(filename), metaData.gameObject);
-        }
-        public Transform Apply(Transform parent)
-        {
-            //AssimpIO geometryImporter = new AssimpIO();
-            //geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, IOMetaData.Type.Paint, true);
-            GameObject paint = Utils.CreatePaint(parent, color);
-            IOPaintMetaData metaData = paint.AddComponent<IOPaintMetaData>();
-            metaData.type = IOMetaData.Type.Paint;
-            //metaData.filename = filename;
-            metaData.color = color;
-            metaData.controlPoints = controlPoints;
-            metaData.controlPointsRadius  = controlPointsRadius;
-
-            // set mesh components
-            var freeDraw = new FreeDraw(controlPoints, controlPointsRadius);
-            MeshFilter meshFilter = paint.GetComponent<MeshFilter>();
-            Mesh mesh = meshFilter.mesh;
-            mesh.Clear();
-            mesh.vertices = freeDraw.vertices;
-            mesh.normals = freeDraw.normals;
-            mesh.triangles = freeDraw.triangles;
-            
-            MeshCollider collider = paint.AddComponent<MeshCollider>();
-
-            return paint.transform;
-        }
-    }
-    public class GeometrySerializer
-    {
-        [JsonProperty("filename")]
-        public string filename;
-        [JsonProperty("deleted")]
-        List<string> deleted = new List<string>();
-        [JsonProperty("clones")]
-        List<Tuple<string, string>> clones = new List<Tuple<string, string>>();
-
-        public GeometrySerializer()
-        { }
-        public GeometrySerializer(IOMetaData metaData)
-        {
-            IOGeometryMetaData geometryMetaData = metaData as IOGeometryMetaData;
-            filename = geometryMetaData.filename;
-            deleted = geometryMetaData.deleted;
-            clones = geometryMetaData.clones;
-        }
-
-        public void CreateDeletedSerializer(string path)
-        {
-            deleted.Add(path);
-        }
-
-        public void CreateDuplicateSerializer(string path, string name)
-        {
-            clones.Add(new Tuple<string, string>(path, name));
-        }
-
-
-        public Transform Apply(Transform parent)
-        {
-            AssimpIO geometryImporter = new AssimpIO();
-            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, true);
-
-            Transform transform = parent.GetChild(parent.childCount - 1);
-            IOGeometryMetaData metaData = transform.GetComponentInChildren<IOGeometryMetaData>();            
-            metaData.filename = filename;            
-
-            for (int i = 0; i < clones.Count; i++)
-            {
-                Tuple<string, string> clone = clones[i];
-                Transform child = transform.Find(clone.Item1);
-                var newInstance = Utils.CreateInstance(child.gameObject, child.parent);
-                newInstance.name = clone.Item2;
-                metaData.clones.Add(new Tuple<string,string>(clone.Item1, clone.Item2));
-            }
-
-            for (int i = 0; i < deleted.Count; i++)
-            {
-                string deletedPath = deleted[i];
-                Transform child = transform.Find(deletedPath);
-                if (child)
-                {
-                    GameObject.Destroy(child.gameObject);
-                    metaData.deleted.Add(deletedPath);
-                }
-            }
-
-
-            return transform;
-        }
-
-    }
-
     public class AssetSerializer
     {
         [JsonProperty("id")]
         public int id;
-        [JsonProperty("type")]
-        public IOMetaData.Type type;
-        [JsonProperty("lightSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public LightSerializer lightSerializer = null;
+        [JsonProperty("sunLightSerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public SunLightParameters sunLightSerializer = null;
+        [JsonProperty("pointLightSerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public PointLightParameters pointLightSerializer = null;
+        [JsonProperty("spotLightSerializer", NullValueHandling = NullValueHandling.Ignore)]
+        public SpotLightParameters spotLightSerializer = null;
         [JsonProperty("cameraSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public CameraSerializer cameraSerializer = null;
+        public CameraParameters cameraSerializer = null;
         [JsonProperty("geometrySerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public GeometrySerializer geometrySerializer = null;
+        public GeometryParameters geometrySerializer = null;
         [JsonProperty("paintSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public PaintSerializer paintSerializer = null;
+        public PaintParameters paintSerializer = null;
 
         [JsonProperty("transforms")]
         List<TransformSerializer> transforms = new List<TransformSerializer>();
@@ -261,31 +104,42 @@ namespace VRtist
 
         public void Apply()
         {
-            GameObject root = Utils.FindGameObject(SceneSerializer.rootsByTypes[type]);
-
             Transform rootTransform = null;
 
-            if (lightSerializer != null)
+            if (sunLightSerializer != null)
             {
-                rootTransform = lightSerializer.Apply(root.transform);                
+                GameObject root = Utils.FindGameObject("Lights");
+                rootTransform = sunLightSerializer.Deserialize(root.transform);
+            }
+            if (spotLightSerializer != null)
+            {
+                GameObject root = Utils.FindGameObject("Lights");
+                rootTransform = spotLightSerializer.Deserialize(root.transform);
+            }
+            if (pointLightSerializer != null)
+            {
+                GameObject root = Utils.FindGameObject("Lights");
+                rootTransform = pointLightSerializer.Deserialize(root.transform);
             }
             if (cameraSerializer != null)
-            { 
-                rootTransform = cameraSerializer.Apply(root.transform);                
+            {
+                GameObject root = Utils.FindGameObject("Cameras");
+                rootTransform = cameraSerializer.Deserialize(root.transform);                
             }
             if (paintSerializer != null)
-            { 
-                rootTransform = paintSerializer.Apply(root.transform);
+            {
+                GameObject root = Utils.FindGameObject("Paintings");
+                rootTransform = paintSerializer.Deserialize(root.transform);
             }
             if (geometrySerializer != null)
-            { 
-                rootTransform = geometrySerializer.Apply(root.transform);
+            {
+                GameObject root = Utils.FindGameObject("Imported Geometries");
+                rootTransform = geometrySerializer.Deserialize(root.transform);
             }
 
-            IOMetaData metaData = rootTransform.GetComponent<IOMetaData>();
-            metaData.id = id;
-            IOMetaData.idGen = Math.Max(id + 1, IOMetaData.idGen);
-            metaData.type = type;
+            Parameters parameters = rootTransform.GetComponent<ParametersController>().GetParameters();
+            parameters.id = id;
+            Parameters.idGen = Math.Max(id + 1, Parameters.idGen);
 
             for (int i = 0; i < transforms.Count; i++)
             {
@@ -304,42 +158,42 @@ namespace VRtist
 
         private static string currentJson = null;
 
-        public static Dictionary<IOMetaData.Type, string> rootsByTypes = new Dictionary<IOMetaData.Type, string>() {
-            { IOMetaData.Type.Geometry ,  "Imported Geometries" },
-            { IOMetaData.Type.Paint ,  "Paintings" },
-            { IOMetaData.Type.Light ,  "Lights" },
-            { IOMetaData.Type.Camera ,  "Cameras" },
-        };
 
-        public void AddAsset(IOMetaData metaData)
+        public void AddAsset(ParametersController parametersController)
         {
+            Parameters parameters = parametersController.GetParameters();
             AssetSerializer assetSerializer = new AssetSerializer();
-            assetSerializer.id = metaData.id;
-            assetSerializer.type = metaData.type;
+            assetSerializer.id = parameters.id;
             assets.Add(assetSerializer);
-            assetById[metaData.id] = assetSerializer;
-
-            switch(metaData.type)
+            assetById[parameters.id] = assetSerializer;
+            
+            switch(parameters)
             {
-                case IOMetaData.Type.Paint:
-                    assetSerializer.paintSerializer = new PaintSerializer(metaData);
+                case PaintParameters paintParameters:
+                    assetSerializer.paintSerializer = paintParameters;
                     break;
-                case IOMetaData.Type.Geometry:
-                    assetSerializer.geometrySerializer = new GeometrySerializer(metaData);
+                case GeometryParameters geometryParameters:
+                    assetSerializer.geometrySerializer = geometryParameters;
                     break;
-                case IOMetaData.Type.Light:
-                    assetSerializer.lightSerializer = new LightSerializer(metaData);
+                case SunLightParameters sunLightParameters:
+                    assetSerializer.sunLightSerializer = sunLightParameters;
                     break;
-                case IOMetaData.Type.Camera:
-                    assetSerializer.cameraSerializer = new CameraSerializer(metaData);
+                case SpotLightParameters spotLightParameters:
+                    assetSerializer.spotLightSerializer = spotLightParameters;
+                    break;
+                case PointLightParameters pointLightParameters:
+                    assetSerializer.pointLightSerializer = pointLightParameters;
+                    break;
+                case CameraParameters cameraParameters:
+                    assetSerializer.cameraSerializer = cameraParameters;
                     break;
             }
         }
 
-        public void RemoveAsset(IOMetaData metaData)
+        public void RemoveAsset(Parameters parameters)
         {
-            assets.Remove(assetById[metaData.id]);
-            assetById.Remove(metaData.id);
+            assets.Remove(assetById[parameters.id]);
+            assetById.Remove(parameters.id);
         }
 
         public AssetSerializer GetAssetSerializer(int id)
@@ -395,10 +249,10 @@ namespace VRtist
 
         public static void Clear()
         {
-            foreach(var elem in rootsByTypes)
-            {
-                ClearGroup(elem.Value);
-            }
+            ClearGroup("Lights");
+            ClearGroup("Paintings");
+            ClearGroup("Cameras");
+            ClearGroup("Imported Geometries");
             GameObject.Destroy(Utils.GetOrCreateTrash());
 
             CommandManager.Clear();

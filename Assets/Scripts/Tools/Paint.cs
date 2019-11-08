@@ -95,12 +95,10 @@ namespace VRtist
                 if (currentPaintLine != null)
                 {
                      MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
-                     IOPaintMetaData metaData = currentPaintLine.AddComponent<IOPaintMetaData>();
-                     metaData.type = IOMetaData.Type.Paint;
-                     //metaData.filename = IOUtilities.CreatePaintFilename(currentPaintLine.name);
-                     metaData.color = paintColor;
-                     metaData.controlPoints = freeDraw.controlPoints;
-                     metaData.controlPointsRadius = freeDraw.controlPointsRadius;
+                     PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().parameters;
+                     paintParameters.color = paintColor;
+                     paintParameters.controlPoints = freeDraw.controlPoints;
+                     paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
                      new CommandAddGameObject(currentPaintLine).Submit();
                      currentPaintLine = null;
                      //OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);

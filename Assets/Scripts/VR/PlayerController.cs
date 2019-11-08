@@ -5,7 +5,7 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
-    public class CameraController : MonoBehaviour
+    public class PlayerController : MonoBehaviour
     {
         [Header("Base Parameters")]
         public Transform world = null;

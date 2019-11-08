@@ -15,10 +15,10 @@ namespace VRtist
 
         public override void Serialize(SceneSerializer serializer)
         {
-            IOMetaData metaData = srcObject.GetComponentInParent<IOMetaData>();
-            if(metaData.type == IOMetaData.Type.Geometry)
+            Parameters parameters = srcObject.GetComponentInParent<ParametersController>().GetParameters();
+            if(parameters.GetType() == typeof(GeometryParameters))
             {
-                AssetSerializer assetSerializer = serializer.GetAssetSerializer(metaData.id);
+                AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
                 string transformPath = Utils.BuildTransformPath(srcObject);
                 assetSerializer.CreateDuplicateSerializer(transformPath, gObject.name);
             }

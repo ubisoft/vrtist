@@ -41,10 +41,10 @@ namespace VRtist
 
         public override void Serialize(SceneSerializer serializer)
         {
-            IOMetaData metaData = gObject.GetComponent<IOMetaData>();
-            if(metaData)
+            ParametersController parametersController = gObject.GetComponent<ParametersController>();
+            if(parametersController)
             {
-                serializer.AddAsset(metaData);
+                serializer.AddAsset(parametersController);
             }
         }
 

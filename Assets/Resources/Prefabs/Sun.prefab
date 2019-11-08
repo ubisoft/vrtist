@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 1862806351537794285}
   - component: {fileID: 1204138857207612560}
   - component: {fileID: 7266784867430804055}
-  - component: {fileID: -4813057241336292645}
   m_Layer: 0
   m_Name: Sun
   m_TagString: PhysicObject
@@ -48,13 +47,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  intensity: 8
-  range: 10
-  near: 0.01
-  color: {r: 1, g: 1, b: 1, a: 1}
-  outerAngle: 20
-  innerAngle: 30
-  castShadows: 0
 --- !u!65 &1204138857207612560
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -80,21 +72,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd8539113035e9418819c9874439536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &-4813057241336292645
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2522542035530869807}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57e8dfafbe85a024f95c122f554ef7b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  type: 2
-  id: 0
-  lightType: 0
 --- !u!1 &3375600871356153348
 GameObject:
   m_ObjectHideFlags: 0

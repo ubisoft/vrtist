@@ -53,17 +53,16 @@ namespace VRtist
 
         public static GameObject GetRoot(GameObject gobject)
         {
-            while (gobject && gobject.GetComponent<IOMetaData>() == null)
-            {
-                gobject = gobject.transform.parent.gameObject;
-            }
-            return gobject;
+            ParametersController parametersController = gobject.GetComponentInParent<ParametersController>();
+            if (!parametersController)
+                return null;
+            return parametersController.gameObject;
         }
 
         public static string BuildTransformPath(GameObject gobject)
         {
             string res = "";
-            while (gobject.GetComponent<IOMetaData>() == null)
+            while (gobject.GetComponent<ParametersController>() == null)
             {
                 res = "/" + gobject.name + res;
                 gobject = gobject.transform.parent.gameObject;
@@ -109,10 +108,6 @@ namespace VRtist
                 res = GameObject.Instantiate(gObject, parent);
             }
 
-            IOMetaData cloneMetaData = res.GetComponent<IOMetaData>();
-            if (cloneMetaData)
-                cloneMetaData.InitId();
-
             string baseName = gObject.name.Split('.')[0];
             res.name = CreateUniqueName(res, baseName);
 
@@ -137,6 +132,8 @@ namespace VRtist
             Material paintMaterial = Resources.Load("Materials/Paint") as Material;
             renderer.material = GameObject.Instantiate<Material>(paintMaterial);
             renderer.material.SetColor("_BaseColor", color);
+
+            PaintController paintController = lineObject.AddComponent<PaintController>();
 
             return lineObject;
         }
