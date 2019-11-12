@@ -15,6 +15,7 @@ namespace VRtist
             {
                 trash = new GameObject();
                 trash.name = trashName;
+                trash.SetActive(false);
             }
             return trash;
         }

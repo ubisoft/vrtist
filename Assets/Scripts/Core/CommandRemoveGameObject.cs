@@ -8,6 +8,8 @@ namespace VRtist
     {
         GameObject gObject = null;
         Transform parent = null;
+        ParametersController parametersController = null;
+        string objectPath;
         Vector3 position;
         Quaternion rotation;
         Vector3 scale;
@@ -16,6 +18,17 @@ namespace VRtist
         {
             gObject = o;
             parent = o.transform.parent;
+
+            parametersController = gObject.GetComponentInParent<ParametersController>();
+            if (parametersController)
+            {
+                Parameters parameters = parametersController.GetParameters();
+                GameObject root = parametersController.gameObject;
+                if (parameters.GetType() == typeof(GeometryParameters) && root.transform.childCount > 0)
+                {
+                    objectPath = Utils.BuildTransformPath(gObject);
+                }
+            }
         }
         public override void Undo()
         {
@@ -23,11 +36,9 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
-            gObject.SetActive(true);
         }
         public override void Redo()
         {
-            gObject.SetActive(false);
             gObject.transform.parent = Utils.GetOrCreateTrash().transform;
         }
         public override void Submit()
@@ -40,16 +51,13 @@ namespace VRtist
 
         public override void Serialize(SceneSerializer serializer)
         {
-            ParametersController parametersController = gObject.GetComponentInParent<ParametersController>();
-            if (parametersController)
+            if(parametersController)
             {
                 Parameters parameters = parametersController.GetParameters();
-                AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
-                GameObject root = parametersController.gameObject;
-                if(parametersController.GetType() == typeof(GeometryParameters) && root.transform.childCount > 0)
+                if (objectPath != null)
                 {
-                    string transformPath = Utils.BuildTransformPath(gObject);
-                    assetSerializer.CreateDeletedSerializer(transformPath);
+                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
+                    assetSerializer.CreateDeletedSerializer(objectPath);
                 }
                 else
                 {

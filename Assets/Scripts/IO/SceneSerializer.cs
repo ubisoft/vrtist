@@ -156,8 +156,11 @@ namespace VRtist
 
         Dictionary<int, AssetSerializer> assetById = new Dictionary<int, AssetSerializer>();
 
-        private static string currentJson = null;
-
+        private static SceneSerializer currentSerializer = new SceneSerializer();
+        public static SceneSerializer CurrentSerializer
+        {
+            get { return currentSerializer; }
+        }
 
         public void AddAsset(ParametersController parametersController)
         {
@@ -208,26 +211,7 @@ namespace VRtist
                 assetById[asset.id] = asset;
                 asset.InitNonSerializedData();
             }
-        }       
-
-        public static void Save(string filename)
-        {
-            SceneSerializer serializer = null;
-            if (currentJson == null)
-            {
-                serializer = new SceneSerializer();
-            }
-            else
-            {
-                serializer = JsonConvert.DeserializeObject<SceneSerializer>(currentJson);
-                serializer.InitNonSerializedData();
-            }
-
-            CommandManager.Serialize(serializer);
-
-            string json = JsonConvert.SerializeObject(serializer, Newtonsoft.Json.Formatting.Indented);
-            System.IO.File.WriteAllText(filename, json);
-        }        
+        }
 
         public void Deserialize()
         {
@@ -235,6 +219,7 @@ namespace VRtist
             {
                 assets[i].Deserialize();                
             }
+            InitNonSerializedData();
         }
 
         public static void ClearGroup(string groupName)
@@ -258,16 +243,39 @@ namespace VRtist
             CommandManager.Clear();
         }
 
+        public static void Save(string filename)
+        {
+            // serialize / deserialize to copy currentSerializer into a new data structure (instead of referncing it)
+            string currentJson = JsonConvert.SerializeObject(currentSerializer, Newtonsoft.Json.Formatting.None);
+            SceneSerializer newSerializer = JsonConvert.DeserializeObject<SceneSerializer>(currentJson);
+
+            // init acceleration data
+            newSerializer.InitNonSerializedData();
+
+            // gather remaining undo commands
+            CommandManager.Serialize(newSerializer);
+
+            // convert to Json
+            string json = JsonConvert.SerializeObject(newSerializer, Newtonsoft.Json.Formatting.Indented);
+            // write to file
+            System.IO.File.WriteAllText(filename, json);
+        }
+
         public static SceneSerializer Load(string filename)
         {
+            // read json file
             string json = System.IO.File.ReadAllText(filename);
+            // create data structure from json
             SceneSerializer deserialized = JsonConvert.DeserializeObject<SceneSerializer>(json);
 
+            // clear scene and command manager
             SceneSerializer.Clear();
 
-            deserialized.Deserialize();
+            // Apply data structure to actually create and manage game objects
+            deserialized.Deserialize();            
 
-            currentJson = json;
+            // keep current serialization state
+            currentSerializer = deserialized;
 
             return deserialized;
         }

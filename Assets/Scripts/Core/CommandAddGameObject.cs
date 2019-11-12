@@ -20,7 +20,6 @@ namespace VRtist
 
         public override void Undo()
         {
-            gObject.SetActive(false);
             gObject.transform.parent = Utils.GetOrCreateTrash().transform;
         }
         public override void Redo()
@@ -29,7 +28,6 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
-            gObject.SetActive(true);
         }
         public override void Submit()
         {

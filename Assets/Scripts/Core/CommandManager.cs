@@ -35,27 +35,32 @@ namespace VRtist
     }
     public static class CommandManager
     {
-        static Stack<ICommand> undoStack = new Stack<ICommand>();
-        static Stack<ICommand> redoStack = new Stack<ICommand>();
-        static Stack<CommandGroup> groupStack = new Stack<CommandGroup>();
+        static List<ICommand> undoStack = new List<ICommand>();
+        static List<ICommand> redoStack = new List<ICommand>();
+        static List<CommandGroup> groupStack = new List<CommandGroup>();
         static CommandGroup currentGroup = null;
+        static int maxUndo = 100;
 
         public static void Undo()
         {
-            if (undoStack.Count == 0)
+            int count = undoStack.Count;
+            if (count == 0)
                 return;
-            ICommand undoCommand = undoStack.Pop();
+            ICommand undoCommand = undoStack[count - 1];
+            undoStack.RemoveAt(count - 1);
             undoCommand.Undo();
-            redoStack.Push(undoCommand);
+            redoStack.Add(undoCommand);
         }
 
         public static void Redo()
         {
+            int count = redoStack.Count;
             if (redoStack.Count == 0)
                 return;
-            ICommand redoCommand = redoStack.Pop();
+            ICommand redoCommand = redoStack[count - 1];
+            redoStack.RemoveAt(count - 1);
             redoCommand.Redo();
-            undoStack.Push(redoCommand);
+            undoStack.Add(redoCommand);
         }
 
         public static void AddCommand(ICommand command)
@@ -66,21 +71,32 @@ namespace VRtist
             }
             else
             {
-                undoStack.Push(command);
+                undoStack.Add(command);
                 redoStack.Clear();
+            }
+
+            int count = undoStack.Count;
+            while (count > 0 && count > maxUndo)
+            {
+                ICommand firstCommand = undoStack[0];
+                undoStack.RemoveAt(0);
+                firstCommand.Serialize(SceneSerializer.CurrentSerializer);
+                count--;
             }
         }
 
         public static void BeginGroup(CommandGroup command)
         {
-            groupStack.Push(command);
+            groupStack.Add(command);
             currentGroup = command;
         }
 
         public static void EndGroup()
         {
-            CommandGroup groupCommand = groupStack.Pop();
-            currentGroup = groupStack.Count == 0 ? null : groupStack.Peek();
+            int count = groupStack.Count;
+            groupStack.RemoveAt(count - 1);
+            count--;
+            currentGroup = count == 0 ? null : groupStack[count -1];
         }
 
         public static void Clear()
@@ -95,10 +111,8 @@ namespace VRtist
         public static void Serialize(SceneSerializer serializer)
         {
             ICommand[] undos = undoStack.ToArray();
-            for (int i = undos.Length - 1; i >= 0 ; i--)
+            for (int i = 0; i < undos.Length; i++)
                 undos[i].Serialize(serializer);
         }
-
     }
-
 }
