@@ -7,17 +7,17 @@ public class WizardCreateUIButton : ScriptableWizard
 {
     public UIPanel parentPanel = null;
     public string buttonName = "Button";
-    public float width = 1.5f;
-    public float height = 0.5f;
-    public float margin = 0.05f;
-    public float thickness = 0.05f;
+    public float width = 0.15f;
+    public float height = 0.05f;
+    public float margin = 0.005f;
+    public float thickness = 0.001f;
     public Material uiMaterial = null;
     public Color color = Color.white;
 
-    private static readonly float default_width = 1.5f;
-    private static readonly float default_height = 0.5f;
-    private static readonly float default_margin = 0.05f;
-    private static readonly float default_thickness = 0.05f;
+    private static readonly float default_width = 0.15f;
+    private static readonly float default_height = 0.05f;
+    private static readonly float default_margin = 0.005f;
+    private static readonly float default_thickness = 0.001f;
 
     [MenuItem("VRtist/Create UI Button")]
     static void CreateWizard()

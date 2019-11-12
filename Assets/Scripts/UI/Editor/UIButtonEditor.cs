@@ -46,7 +46,7 @@ public class UIButtonEditor : Editor
         Vector3 posBottom = T.TransformPoint(new Vector3(0, -uiButton.height / 2.0f, 0));
         Vector3 posAnchor = T.TransformPoint(uiButton.anchor);
         float handleSize = uiButton.thickness * 1.1f;
-        Vector3 snap = Vector3.one * 0.1f;
+        Vector3 snap = Vector3.one * 0.01f;
 
         EditorGUI.BeginChangeCheck();
 

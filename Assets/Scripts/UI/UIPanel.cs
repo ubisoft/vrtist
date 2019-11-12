@@ -9,8 +9,8 @@ using UnityEditor;
 public class UIPanel : UIElement
 {
     [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-    public float margin = 0.2f;
-    public float radius = 0.1f;
+    public float margin = 0.02f;
+    public float radius = 0.01f;
 
     [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
     public int circleSubdiv = 8;
@@ -24,7 +24,7 @@ public class UIPanel : UIElement
     {
         const float min_width = 0.01f;
         const float min_height = 0.01f;
-        const float min_radius = 0.01f;
+        const float min_radius = 0.001f;
         const int min_circleSubdiv = 3;
         const int min_nbSubdivPerUnit = 1;
         const int min_nbSubdivCornerFixed = 1;

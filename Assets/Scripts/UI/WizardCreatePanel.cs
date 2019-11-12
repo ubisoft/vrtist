@@ -7,17 +7,17 @@ public class WizardCreatePanel : ScriptableWizard
 {
     public UIPanel parentPanel = null;
     public string panelName = "Panel";
-    public float width = 4.0f;
-    public float height = 6.0f;
-    public float margin = 0.2f;
-    public float radius = 0.1f;
+    public float width = 0.4f;
+    public float height = 0.6f;
+    public float margin = 0.02f;
+    public float radius = 0.01f;
     public Material uiMaterial = null;
     public Color color = Color.white;
 
-    private static readonly float default_width = 4.0f;
-    private static readonly float default_height = 6.0f;
-    private static readonly float default_margin = 0.2f;
-    private static readonly float default_radius = 0.1f;
+    private static readonly float default_width = 0.4f;
+    private static readonly float default_height = 0.6f;
+    private static readonly float default_margin = 0.02f;
+    private static readonly float default_radius = 0.01f;
 
     [MenuItem("VRtist/Create UI Panel")]
     static void CreateWizard()

@@ -11,8 +11,8 @@ using UnityEditor;
 public class UIButton : UIElement
 {
     [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-    public float margin = 0.05f;
-    public float thickness = 0.05f;
+    public float margin = 0.005f;
+    public float thickness = 0.001f;
     public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
 
     [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
@@ -49,7 +49,7 @@ public class UIButton : UIElement
     {
         const int default_nbSubdivCornerFixed = 3;
         const int default_nbSubdivCornerPerUnit = 3;
-        const float default_thickness = 0.05f;
+        const float default_thickness = 0.001f;
 
         return BuildRoundedRectEx(
             width, height, margin, default_thickness,
@@ -611,7 +611,7 @@ public class UIButton : UIElement
     {
         const float min_width = 0.01f;
         const float min_height = 0.01f;
-        const float min_thickness = 0.01f;
+        const float min_thickness = 0.001f;
         const int min_nbSubdivCornerFixed = 1;
         const int min_nbSubdivCornerPerUnit = 1;
 
@@ -647,11 +647,11 @@ public class UIButton : UIElement
 
     private void OnDrawGizmosSelected()
     {
-        Vector3 labelPosition = transform.TransformPoint(new Vector3(-width / 4.0f, 0.0f, -thickness / 2.0f - 0.01f));
-        Vector3 posTopLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, -thickness / 2.0f - 0.01f));
-        Vector3 posTopRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, -thickness / 2.0f - 0.01f));
-        Vector3 posBottomLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, -thickness / 2.0f - 0.01f));
-        Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, -thickness / 2.0f - 0.01f));
+        Vector3 labelPosition = transform.TransformPoint(new Vector3(-width / 4.0f, 0.0f, -thickness / 2.0f - 0.001f));
+        Vector3 posTopLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, -thickness / 2.0f - 0.001f));
+        Vector3 posTopRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, -thickness / 2.0f - 0.001f));
+        Vector3 posBottomLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, -thickness / 2.0f - 0.001f));
+        Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, -thickness / 2.0f - 0.001f));
 
         Gizmos.color = Color.white;
         Gizmos.DrawLine(posTopLeft, posTopRight);
@@ -666,17 +666,29 @@ public class UIButton : UIElement
 
     private void OnTriggerEnter(Collider otherCollider)
     {
-        onClickEvent.Invoke();
+        // TODO: pass the Cursor to the button, test the object instead of a hardcoded name.
+        if (otherCollider.gameObject.name == "Cursor")
+        {
+            //Debug.Log("-->[] UIButton: " + name);
+            onClickEvent.Invoke();
+        }
     }
 
     private void OnTriggerExit(Collider otherCollider)
     {
-        onReleaseEvent.Invoke();
+        if (otherCollider.gameObject.name == "Cursor")
+        {
+            //Debug.Log("[]--> UIButton: " + name);
+            onReleaseEvent.Invoke();
+        }
     }
 
     private void OnTriggerStay(Collider otherCollider)
     {
-        onHoverEvent.Invoke();
+        if (otherCollider.gameObject.name == "Cursor")
+        {
+            onHoverEvent.Invoke();
+        }
     }
 
     public void OnPushButton()

@@ -32,7 +32,7 @@ namespace VRtist
     {
         //[SerializeField] private GameObject pointer;
         //[SerializeField] private Transform buttonsParent;
-        //[SerializeField] private Transform panelsParent;
+        [SerializeField] private Transform panelsParent;
         //[SerializeField] private Transform canvas3D;
         [SerializeField] private Transform palette;
         Transform proxy3D = null;
@@ -139,14 +139,14 @@ namespace VRtist
 
         private void TogglePanel(string activePanelName)
         {
-            /*
+            string panelObjectName = activePanelName + "Panel";
+
             for (int i = 0; i < panelsParent.childCount; i++)
             {
                 GameObject child = panelsParent.GetChild(i).gameObject;
-                child.SetActive(activePanelName == child.name);
+                child.SetActive(panelObjectName == child.name);
             }
-            */
-
+            
             /*
             for (int i = 0; i < canvas3D.childCount; i++)
             {
@@ -154,14 +154,15 @@ namespace VRtist
                 child.SetActive(activePanelName == child.name);
             }
             */
-            if (proxy3D != null)
-            {
-                for (int i = 0; i < proxy3D.childCount; i++)
-                {
-                    GameObject child = proxy3D.GetChild(i).gameObject;
-                    child.SetActive(activePanelName == child.name);
-                }
-            }
+
+            //if (proxy3D != null)
+            //{
+            //    for (int i = 0; i < proxy3D.childCount; i++)
+            //    {
+            //        GameObject child = proxy3D.GetChild(i).gameObject;
+            //        child.SetActive(activePanelName == child.name);
+            //    }
+            //}
 
             /*
             for (int i = 0; i < buttonsParent.childCount; i++)
@@ -191,7 +192,10 @@ namespace VRtist
         }
         public void EnableProxy3D(bool value)
         {
-            proxy3D.gameObject.SetActive(value);
+            if (proxy3D != null)
+            {
+                proxy3D.gameObject.SetActive(value);
+            }
         }
 
         public void StoreProxy3DState()
@@ -201,7 +205,7 @@ namespace VRtist
 
         public bool IsProxy3DEnabled()
         {
-            return proxy3D.gameObject.activeSelf;
+            return proxy3D != null ? proxy3D.gameObject.activeSelf : false;
         }
 
         public void RestoreProxy3DState()

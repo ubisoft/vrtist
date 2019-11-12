@@ -65,6 +65,7 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider other)
         {
+            Debug.Log("-->[] SelectorTrigger");
             if (other.tag == "PhysicObject")
             {
                 collidedObjects.Add(other.gameObject);
@@ -81,6 +82,7 @@ namespace VRtist
 
         private void OnTriggerExit(Collider other)
         {
+            Debug.Log("[]--> SelectorTrigger");
             if (other.tag == "UIObject" && selector != null)
             {
                 other.gameObject.transform.localScale /= 1.1f;
