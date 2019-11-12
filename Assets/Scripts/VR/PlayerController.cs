@@ -61,6 +61,8 @@ namespace VRtist
             {
                 UpdateNavigation();
 
+                UpdatePalette();
+
                 VRInput.ButtonEvent(VRInput.leftController, CommonUsages.primaryButton, () => { },
                 () =>
                 {
@@ -164,6 +166,18 @@ namespace VRtist
                 }
 
                 UpdateCameraClipPlanes();
+            }
+        }
+
+        private void UpdatePalette()
+        {
+            if (VRInput.GetValue(VRInput.leftController, CommonUsages.trigger) > deadZone)
+            {
+                ToolsUIManager.Instance.EnableMenu(true);
+            }
+            else
+            {
+                ToolsUIManager.Instance.EnableMenu(false);
             }
         }
     }

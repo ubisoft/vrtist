@@ -48,7 +48,7 @@ public class UIPanelEditor : Editor
         Vector3 posBottom = T.TransformPoint(new Vector3(0, -uiPanel.height / 2.0f, 0));
         Vector3 posAnchor = T.TransformPoint(uiPanel.anchor);
         float handleSize = uiPanel.radius * 2.2f;
-        Vector3 snap = Vector3.one * 0.1f;
+        Vector3 snap = Vector3.one * 0.01f;
 
         EditorGUI.BeginChangeCheck();
 
