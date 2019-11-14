@@ -380,5 +380,10 @@ namespace VRtist
             }
 
         }
+
+        public static void SendHaptic(InputDevice controller, float duration, float amplitude = 1f)
+        {
+            controller.SendHapticImpulse(0, amplitude, duration);
+        }
     }
 }

@@ -35,6 +35,7 @@ namespace VRtist
         [SerializeField] private Transform panelsParent;
         //[SerializeField] private Transform canvas3D;
         [SerializeField] private Transform palette;
+        [SerializeField] private Vector3 paletteScale = Vector3.one;
         Transform proxy3D = null;
 
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
@@ -187,7 +188,7 @@ namespace VRtist
 
         public void EnableMenu(bool value)
         {
-            palette.transform.localScale = value ? Vector3.one : Vector3.zero;
+            palette.transform.localScale = value ? paletteScale : Vector3.zero;
             EnableProxy3D(value);
         }
         public void EnableProxy3D(bool value)
