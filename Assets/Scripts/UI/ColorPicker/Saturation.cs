@@ -32,12 +32,19 @@ namespace VRtist
         public void SetSaturation(Vector2 sat)
         {
             cursorPosition = sat;
-            cursor.localPosition = new Vector3(sat.x - 0.5f, sat.y - 0.5f, cursor.localPosition.z);
+            cursor.localPosition = new Vector3(sat.x - 0.5f, sat.y - 0.5f, cursor.localPosition.z);            
         }
 
         private void OnTriggerStay(Collider other)
         {
-            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(other.transform.position);
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
+            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
+
+            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
+            
             float x = position.x + 1f * 0.5f;
             float y = position.y + 1f * 0.5f;
             x = Mathf.Clamp(x, 0, 1);

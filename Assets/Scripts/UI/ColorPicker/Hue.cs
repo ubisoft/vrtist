@@ -29,7 +29,14 @@ namespace VRtist
 
         private void OnTriggerStay(Collider other)
         {
-            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(other.transform.position);
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
+            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
+
+            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
+
             SetHue(Mathf.Clamp(position.x + 1f * 0.5f, 0, 1));
             colorPicker.OnColorChanged();
         }

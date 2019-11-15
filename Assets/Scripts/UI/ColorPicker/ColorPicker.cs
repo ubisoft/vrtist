@@ -1,12 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
     public class ColorPicker : MonoBehaviour
     {
         Color currentColor;
+        public ColorChangedEvent onColorChangedEvent = new ColorChangedEvent();
+
         public Color CurrentColor
         {
             get { return currentColor; }
@@ -48,6 +51,8 @@ namespace VRtist
 
             SetPreviewColor(currentColor);
             saturation.SetBaseColor(baseColor);
+
+            onColorChangedEvent.Invoke(currentColor);
         }
 
         public void SetPreviewColor(Color color)

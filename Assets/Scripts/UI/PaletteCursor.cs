@@ -21,6 +21,7 @@ namespace VRtist
                 Vector3 position;
                 Quaternion rotation;
                 VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+
                 transform.localPosition = position;
                 transform.localRotation = rotation;
             }
