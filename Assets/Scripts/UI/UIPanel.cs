@@ -74,11 +74,11 @@ namespace VRtist
 
         private void OnDrawGizmosSelected()
         {
-            Vector3 labelPosition = transform.TransformPoint(new Vector3(-width / 2.0f + margin + radius, height / 2.0f - margin - radius, 0.0f));
-            Vector3 posTopLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, 0));
-            Vector3 posTopRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, 0));
-            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, 0));
-            Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, 0));
+            Vector3 labelPosition = transform.TransformPoint(new Vector3(margin + radius, -margin - radius, 0.0f));
+            Vector3 posTopLeft = transform.TransformPoint(new Vector3(margin, -margin, 0));
+            Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, 0));
+            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(+margin, -height + margin, 0));
+            Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, 0));
 
             Gizmos.color = Color.white;
             Gizmos.DrawLine(posTopLeft, posTopRight);
@@ -86,9 +86,6 @@ namespace VRtist
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
-
-            //Gizmos.color = Color.blue;
-            //Gizmos.DrawSphere(transform.TransformPoint(anchor), 1.1f * radius);
         }
 
         public override void RebuildMesh()
@@ -146,10 +143,10 @@ namespace VRtist
             float sectionWidth = hTubeWidth / (float)(nbSubdivOnWidth + 1);
             float sectionHeight = vTubeHeight / (float)(nbSubdivOnHeight + 1);
 
-            Vector3 panelTopLeft = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
-            Vector3 panelTopRight = new Vector3(width / 2.0f, height / 2.0f, 0.0f);
-            Vector3 panelBottomLeft = new Vector3(-width / 2.0f, -height / 2.0f, 0.0f);
-            Vector3 panelBottomRight = new Vector3(width / 2.0f, -height / 2.0f, 0.0f);
+            Vector3 panelTopLeft = new Vector3(0.0f, 0.0f, 0.0f);
+            Vector3 panelTopRight = new Vector3(width, 0.0f, 0.0f);
+            Vector3 panelBottomLeft = new Vector3(0.0f, -height, 0.0f);
+            Vector3 panelBottomRight = new Vector3(width, -height, 0.0f);
 
             int indexOffset = 0;
 
@@ -437,7 +434,7 @@ namespace VRtist
                 UIElement elem = parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
-                    parentAnchor = elem.anchor;
+                    parentAnchor = elem.Anchor;
                 }
             }
 
@@ -457,7 +454,7 @@ namespace VRtist
             {
                 meshFilter.sharedMesh = UIPanel.BuildRoundedRectTube(width, height, margin, radius);
                 // TODO: make the Build* functions return the anchor point.
-                uiPanel.anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
+                uiPanel.Anchor = Vector3.zero;
             }
 
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();

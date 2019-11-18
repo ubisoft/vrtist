@@ -45,10 +45,10 @@ namespace VRtist
 
             Transform T = uiButton.transform;
 
-            Vector3 posRight = T.TransformPoint(new Vector3(+uiButton.width / 2.0f, 0, 0));
-            Vector3 posBottom = T.TransformPoint(new Vector3(0, -uiButton.height / 2.0f, 0));
-            Vector3 posAnchor = T.TransformPoint(uiButton.anchor);
-            float handleSize = uiButton.thickness * 1.1f;
+            Vector3 posRight = T.TransformPoint(new Vector3(+uiButton.width, -uiButton.height / 2.0f, 0));
+            Vector3 posBottom = T.TransformPoint(new Vector3(uiButton.width / 2.0f, -uiButton.height, 0));
+            Vector3 posAnchor = T.TransformPoint(uiButton.Anchor);
+            float handleSize = .3f * HandleUtility.GetHandleSize(posAnchor);
             Vector3 snap = Vector3.one * 0.01f;
 
             EditorGUI.BeginChangeCheck();
@@ -74,13 +74,13 @@ namespace VRtist
                 if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
                 {
                     //Vector3 localDeltaRight = T.InverseTransformPoint(deltaRight);
-                    uiButton.RelativeLocation += new Vector3(deltaRight.x / 2.0f, 0.0f, 0.0f);
+                    //uiButton.RelativeLocation += new Vector3(deltaRight.x / 2.0f, 0.0f, 0.0f);
                     uiButton.Width += deltaRight.x;
                 }
                 else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
                 {
                     //Vector3 localDeltaBottom = T.InverseTransformPoint(deltaBottom);
-                    uiButton.RelativeLocation += new Vector3(0.0f, deltaBottom.y / 2.0f, 0.0f);
+                    //uiButton.RelativeLocation += new Vector3(0.0f, deltaBottom.y / 2.0f, 0.0f);
                     uiButton.Height += -deltaBottom.y;
                 }
                 else if (Vector3.SqrMagnitude(deltaAnchor) > Mathf.Epsilon)

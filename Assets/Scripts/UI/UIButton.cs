@@ -71,15 +71,15 @@ namespace VRtist
             List<Vector3> normals = new List<Vector3>(); // TODO: use Vector3[] normals = new Vector3[computed_size];
             List<int> indices = new List<int>(); // TODO: use int[] indices = new int[computed_size];
 
-            Vector3 innerTopLeft_front = new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, -thickness / 2.0f);
-            Vector3 innerTopRight_front = new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, -thickness / 2.0f);
-            Vector3 innerBottomRight_front = new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, -thickness / 2.0f);
-            Vector3 innerBottomLeft_front = new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, -thickness / 2.0f);
+            Vector3 innerTopLeft_front = new Vector3(margin, -margin, -thickness / 2.0f);
+            Vector3 innerTopRight_front = new Vector3(width - margin, -margin, -thickness / 2.0f);
+            Vector3 innerBottomRight_front = new Vector3(width - margin, -height + margin, -thickness / 2.0f);
+            Vector3 innerBottomLeft_front = new Vector3(margin, -height + margin, -thickness / 2.0f);
 
-            Vector3 innerTopLeft_back = new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, +thickness / 2.0f);
-            Vector3 innerTopRight_back = new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, +thickness / 2.0f);
-            Vector3 innerBottomRight_back = new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, +thickness / 2.0f);
-            Vector3 innerBottomLeft_back = new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, +thickness / 2.0f);
+            Vector3 innerTopLeft_back = new Vector3(margin, -margin, +thickness / 2.0f);
+            Vector3 innerTopRight_back = new Vector3(width - margin, -margin, +thickness / 2.0f);
+            Vector3 innerBottomRight_back = new Vector3(width - margin, -height + margin, +thickness / 2.0f);
+            Vector3 innerBottomLeft_back = new Vector3(margin, -height + margin, +thickness / 2.0f);
 
             float cornerLength = margin * Mathf.PI / 2.0f;
             int nbSubdivOnCorner = Mathf.FloorToInt(nbSubdivCornerFixed + cornerLength * nbSubdivCornerPerUnit);
@@ -650,11 +650,11 @@ namespace VRtist
 
         private void OnDrawGizmosSelected()
         {
-            Vector3 labelPosition = transform.TransformPoint(new Vector3(-width / 4.0f, 0.0f, -thickness / 2.0f - 0.001f));
-            Vector3 posTopLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, +height / 2.0f - margin, -thickness / 2.0f - 0.001f));
-            Vector3 posTopRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, +height / 2.0f - margin, -thickness / 2.0f - 0.001f));
-            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(-width / 2.0f + margin, -height / 2.0f + margin, -thickness / 2.0f - 0.001f));
-            Vector3 posBottomRight = transform.TransformPoint(new Vector3(+width / 2.0f - margin, -height / 2.0f + margin, -thickness / 2.0f - 0.001f));
+            Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -thickness / 2.0f - 0.001f));
+            Vector3 posTopLeft = transform.TransformPoint(new Vector3(margin, -margin, -thickness / 2.0f - 0.001f));
+            Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, -thickness / 2.0f - 0.001f));
+            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(margin, -height + margin, -thickness / 2.0f - 0.001f));
+            Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, -thickness / 2.0f - 0.001f));
 
             Gizmos.color = Color.white;
             Gizmos.DrawLine(posTopLeft, posTopRight);
@@ -662,9 +662,6 @@ namespace VRtist
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
-
-            //Gizmos.color = Color.blue;
-            //Gizmos.DrawSphere(transform.TransformPoint(anchor), 1.1f * thickness / 2.0f);
         }
 
         private void OnTriggerEnter(Collider otherCollider)
@@ -726,7 +723,7 @@ namespace VRtist
                 UIElement elem = parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
-                    parentAnchor = elem.anchor;
+                    parentAnchor = elem.Anchor;
                 }
             }
 
@@ -746,7 +743,7 @@ namespace VRtist
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = UIButton.BuildRoundedRect(width, height, margin);
-                uiButton.anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
+                uiButton.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {
