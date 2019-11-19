@@ -20,7 +20,7 @@ namespace VRtist
         public void SetBaseColor(Color clr)
         {
             baseColor = clr;
-            var renderer = GetComponent<Renderer>();
+            var renderer = GetComponentInChildren<Renderer>();
             renderer.material.SetColor("_Color", clr);
         }
 
