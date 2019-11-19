@@ -8,6 +8,7 @@ namespace VRtist
     public class UIElement : MonoBehaviour
     {
         public static readonly Color default_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
+        public static readonly float collider_depth = 0.03f;
 
         [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
         private Vector3 anchor = Vector3.zero; // local position of anchor for children.

@@ -71,15 +71,15 @@ namespace VRtist
             List<Vector3> normals = new List<Vector3>(); // TODO: use Vector3[] normals = new Vector3[computed_size];
             List<int> indices = new List<int>(); // TODO: use int[] indices = new int[computed_size];
 
-            Vector3 innerTopLeft_front = new Vector3(margin, -margin, -thickness / 2.0f);
-            Vector3 innerTopRight_front = new Vector3(width - margin, -margin, -thickness / 2.0f);
-            Vector3 innerBottomRight_front = new Vector3(width - margin, -height + margin, -thickness / 2.0f);
-            Vector3 innerBottomLeft_front = new Vector3(margin, -height + margin, -thickness / 2.0f);
+            Vector3 innerTopLeft_front = new Vector3(margin, -margin, 0.0f);
+            Vector3 innerTopRight_front = new Vector3(width - margin, -margin, 0.0f);
+            Vector3 innerBottomRight_front = new Vector3(width - margin, -height + margin, 0.0f);
+            Vector3 innerBottomLeft_front = new Vector3(margin, -height + margin, 0.0f);
 
-            Vector3 innerTopLeft_back = new Vector3(margin, -margin, +thickness / 2.0f);
-            Vector3 innerTopRight_back = new Vector3(width - margin, -margin, +thickness / 2.0f);
-            Vector3 innerBottomRight_back = new Vector3(width - margin, -height + margin, +thickness / 2.0f);
-            Vector3 innerBottomLeft_back = new Vector3(margin, -height + margin, +thickness / 2.0f);
+            Vector3 innerTopLeft_back = new Vector3(margin, -margin, thickness);
+            Vector3 innerTopRight_back = new Vector3(width - margin, -margin, thickness);
+            Vector3 innerBottomRight_back = new Vector3(width - margin, -height + margin, thickness);
+            Vector3 innerBottomLeft_back = new Vector3(margin, -height + margin, thickness);
 
             float cornerLength = margin * Mathf.PI / 2.0f;
             int nbSubdivOnCorner = Mathf.FloorToInt(nbSubdivCornerFixed + cornerLength * nbSubdivCornerPerUnit);
@@ -605,8 +605,18 @@ namespace VRtist
             BoxCollider coll = gameObject.GetComponent<BoxCollider>();
             if (meshFilter != null && coll != null)
             {
-                coll.center = meshFilter.sharedMesh.bounds.center;
-                coll.size = meshFilter.sharedMesh.bounds.size;
+                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                if (initColliderSize.z < UIElement.collider_depth)
+                {
+                    coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_depth / 2.0f);
+                    coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_depth);
+                }
+                else
+                {
+                    coll.center = initColliderCenter;
+                    coll.size = initColliderSize;
+                }
             }
         }
 
@@ -650,11 +660,11 @@ namespace VRtist
 
         private void OnDrawGizmosSelected()
         {
-            Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -thickness / 2.0f - 0.001f));
-            Vector3 posTopLeft = transform.TransformPoint(new Vector3(margin, -margin, -thickness / 2.0f - 0.001f));
-            Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, -thickness / 2.0f - 0.001f));
-            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(margin, -height + margin, -thickness / 2.0f - 0.001f));
-            Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, -thickness / 2.0f - 0.001f));
+            Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -0.001f));
+            Vector3 posTopLeft = transform.TransformPoint(new Vector3(margin, -margin, -0.001f));
+            Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, -0.001f));
+            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(margin, -height + margin, -0.001f));
+            Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, -0.001f));
 
             Gizmos.color = Color.white;
             Gizmos.DrawLine(posTopLeft, posTopRight);
@@ -669,9 +679,8 @@ namespace VRtist
             // TODO: pass the Cursor to the button, test the object instead of a hardcoded name.
             if (otherCollider.gameObject.name == "Cursor")
             {
-                //Debug.Log("-->[] UIButton: " + name);
                 onClickEvent.Invoke();
-                VRInput.SendHaptic(VRInput.rightController, 0.05f);
+                VRInput.SendHaptic(VRInput.rightController, 0.03f);
             }
         }
 
@@ -679,7 +688,6 @@ namespace VRtist
         {
             if (otherCollider.gameObject.name == "Cursor")
             {
-                //Debug.Log("[]--> UIButton: " + name);
                 onReleaseEvent.Invoke();
             }
         }
@@ -747,8 +755,18 @@ namespace VRtist
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {
-                    coll.center = meshFilter.sharedMesh.bounds.center;
-                    coll.size = meshFilter.sharedMesh.bounds.size;
+                    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                    if (initColliderSize.z < UIElement.collider_depth)
+                    {
+                        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_depth / 2.0f);
+                        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_depth);
+                    }
+                    else
+                    {
+                        coll.center = initColliderCenter;
+                        coll.size = initColliderSize;
+                    }
                     coll.isTrigger = true;
                 }
             }
