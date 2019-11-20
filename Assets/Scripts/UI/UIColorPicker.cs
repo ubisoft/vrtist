@@ -6,35 +6,96 @@ using UnityEditor;
 
 namespace VRtist
 {
-    public partial class UIColorPickerSaturation { }
-    public partial class UIColorPickerHue { }
-    public partial class UIColorPickerPreview { }
-
     [ExecuteInEditMode]
     public class UIColorPicker : UIElement
     {
-        [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        [SpaceHeader("Picker Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         public float thickness = 0.001f;
         public float padding = 0.01f;
-        
+        public float hueToSaturationRatio = 0.12f;//1.0f / 7.0f;
+        public float hueToPreviewRatio = 0.88f;//3.0f / 4.0f;
+
+        [SpaceHeader("SubComponents", 6, 0.8f, 0.8f, 0.8f)]
+        public UIColorPickerSaturation saturation = null;
+        public UIColorPickerHue hue = null;
+        public UIColorPickerPreview preview = null;
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public ColorChangedEvent onColorChangedEvent = new ColorChangedEvent();
 
-        private UIColorPickerSaturation saturation = null;
-        private UIColorPickerHue hue = null;
-        private UIColorPickerPreview preview = null;
+        private Color currentColor;
+        public Color CurrentColor
+        {
+            get { return currentColor; }
+            set { SetPickedColor(value); }
+        }
 
         private bool needRebuild = false;
 
         void Start()
         {
+            if (EditorApplication.isPlaying || Application.isPlaying)
+            {
+                OnColorChanged();
+                CurrentColor = new Color(0.2f, 0.5f, 0.6f);
+            }
+        }
+
+        public void SetPickedColor(Color color)
+        {
+            currentColor = color;
+            float h, s, v;
+            Color.RGBToHSV(color, out h, out s, out v);
+            hue.SetHue(h);
+
+            Color baseColor = Color.HSVToRGB(h, 1f, 1f);
+            saturation.SetBaseColor(baseColor);
+            saturation.SetSaturation(new Vector2(s, v));
+
+            preview.SetColor(color);
+        }
+
+        public void OnColorChanged()
+        {
+            float h = hue.GetHue();
+            Vector2 sat = saturation.GetSaturation();
+
+            Color baseColor = Color.HSVToRGB(h, 1f, 1f);
+            currentColor = Color.Lerp(Color.white, baseColor, sat.x);
+            currentColor = Color.Lerp(Color.black, currentColor, sat.y);
+
+            saturation.SetBaseColor(baseColor);
+
+            preview.SetColor(currentColor);
+
+            onColorChangedEvent.Invoke(currentColor);
         }
 
         public override void RebuildMesh()
         {
-            saturation.RebuildMesh();
-            hue.RebuildMesh();
-            preview.RebuildMesh();
+            Vector3 saturationPosition = new Vector3(0.0f, hueToSaturationRatio * -(height - padding) - padding, 0.0f);
+            float saturationWidth = width;
+            float saturationHeight = (1.0f-hueToSaturationRatio) * (height - padding);
+            float saturationThickness = thickness;
+
+            saturation.RebuildMesh(saturationWidth, saturationHeight, saturationThickness);
+            saturation.transform.localPosition = Anchor + saturationPosition;
+
+            Vector3 huePosition = new Vector3(0.0f, 0.0f, 0.0f);
+            float hueWidth = hueToPreviewRatio * (width - padding);
+            float hueHeight = hueToSaturationRatio * (height - padding);
+            float hueThickness = thickness;
+
+            hue.RebuildMesh(hueWidth, hueHeight, hueThickness);
+            hue.transform.localPosition = Anchor + huePosition;
+
+            Vector3 previewPosition = new Vector3(hueToPreviewRatio * (width - padding) + padding, 0.0f, 0.0f);
+            float previewWidth = (1.0f -hueToPreviewRatio) * (width - padding);
+            float previewHeight = hueToSaturationRatio * (height - padding);
+            float previewThickness = thickness;
+
+            preview.RebuildMesh(previewWidth, previewHeight, previewThickness);
+            preview.transform.localPosition = Anchor + previewPosition;
         }
 
         private void OnValidate()
@@ -122,6 +183,8 @@ namespace VRtist
             float height,
             float thickness,
             float padding,
+            float hueToSaturationRatio,
+            float hueToPreviewRatio,
             Material saturationMaterial,
             Material hueMaterial,
             Material previewMaterial)
@@ -150,212 +213,39 @@ namespace VRtist
             uiColorPicker.thickness = thickness;
             uiColorPicker.padding = padding;
 
-            // TODO: create saturation, hue and preview
-            // 1) find the 3 children positions and dimensions
-            // 2) create them, give them "this" as a parent, make it return the component we need for step 3
-            // 3) set saturation/hue/preview variables with the returned component.
+            // Sub Components
 
-            uiColorPicker.saturation = UIColorPickerSaturation.CreateUIColorPickerSaturation("saturation", go.transform);
-            uiColorPicker.hue = UIColorPickerHue.CreateUIColorPickerHue("hue", go.transform);
-            uiColorPicker.preview = UIColorPickerPreview.CreateUIColorPickerPreview("preview", go.transform);
+            Vector3 saturationPosition = new Vector3(0.0f, hueToSaturationRatio * -(height - padding) - padding, 0.0f);
+            float saturationWidth = width;
+            float saturationHeight = (1.0f - hueToSaturationRatio) * (height - padding);
+            float saturationThickness = thickness;
 
-            //// Setup the Meshfilter
-            //MeshFilter meshFilter = go.GetComponent<MeshFilter>();
-            //if (meshFilter != null)
-            //{
-            //    meshFilter.sharedMesh = UIButton.BuildRoundedRect(width, height, margin);
-            //    uiButton.Anchor = Vector3.zero;
-            //    BoxCollider coll = go.GetComponent<BoxCollider>();
-            //    if (coll != null)
-            //    {
-            //        Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-            //        Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-            //        if (initColliderSize.z < UIElement.collider_depth)
-            //        {
-            //            coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_depth / 2.0f);
-            //            coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_depth);
-            //        }
-            //        else
-            //        {
-            //            coll.center = initColliderCenter;
-            //            coll.size = initColliderSize;
-            //        }
-            //        coll.isTrigger = true;
-            //    }
-            //}
+            uiColorPicker.saturation = UIColorPickerSaturation.CreateUIColorPickerSaturation(
+                "Saturation", go.transform, 
+                saturationPosition, saturationWidth, saturationHeight, saturationThickness,
+                saturationMaterial);
+            uiColorPicker.saturation.colorPicker = uiColorPicker;
 
-            //// Setup the MeshRenderer
-            //MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            //if (meshRenderer != null && material != null)
-            //{
-            //    // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
-            //    //       to make the error disappear;
+            Vector3 huePosition = new Vector3(0.0f, 0.0f, 0.0f);
+            float hueWidth = hueToPreviewRatio * (width - padding);
+            float hueHeight = hueToSaturationRatio * (height - padding);
+            float hueThickness = thickness;
 
-            //    // Get an instance of the same material
-            //    // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
-            //    //meshRenderer.sharedMaterial = uiMaterial;
-            //    //Material material = meshRenderer.material; // instance of the sharedMaterial
+            uiColorPicker.hue = UIColorPickerHue.CreateUIColorPickerHue(
+                "Hue", go.transform,
+                huePosition, hueWidth, hueHeight, hueThickness,
+                hueMaterial);
+            uiColorPicker.hue.colorPicker = uiColorPicker;
 
-            //    // Clone the material.
-            //    meshRenderer.sharedMaterial = Instantiate(material);
-            //    Material sharedMaterial = meshRenderer.sharedMaterial;
+            Vector3 previewPosition = new Vector3(hueToPreviewRatio * (width - padding) + padding, 0.0f, 0.0f);
+            float previewWidth = (1.0f - hueToPreviewRatio) * (width - padding);
+            float previewHeight = hueToSaturationRatio * (height - padding);
+            float previewThickness = thickness;
 
-            //    uiButton.BaseColor = color;
-            //}
-        }
-    }
-
-    [ExecuteInEditMode]
-    [RequireComponent(typeof(MeshFilter)),
-     RequireComponent(typeof(MeshRenderer)),
-     RequireComponent(typeof(BoxCollider))]
-    public partial class UIColorPickerSaturation : MonoBehaviour
-    {
-        public void RebuildMesh()
-        {
-            //MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            //Mesh theNewMesh = UIButton.BuildRoundedRectEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
-            //theNewMesh.name = "UIButton_GeneratedMesh";
-            //meshFilter.sharedMesh = theNewMesh;
-
-            UpdateColliderDimensions();
-        }
-
-        public void UpdateColliderDimensions()
-        {
-            //    MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            //    BoxCollider coll = gameObject.GetComponent<BoxCollider>();
-            //    if (meshFilter != null && coll != null)
-            //    {
-            //        Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-            //        Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-            //        if (initColliderSize.z < UIElement.collider_depth)
-            //        {
-            //            coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_depth / 2.0f);
-            //            coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_depth);
-            //        }
-            //        else
-            //        {
-            //            coll.center = initColliderCenter;
-            //            coll.size = initColliderSize;
-            //        }
-            //    }
-        }
-
-        public static UIColorPickerSaturation CreateUIColorPickerSaturation(
-            string objectName,
-            Transform parent)
-        {
-            GameObject go = new GameObject(objectName);
-
-            // Find the anchor of the parent if it is a UIElement
-            Vector3 parentAnchor = Vector3.zero;
-            if (parent)
-            {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
-                if (elem)
-                {
-                    parentAnchor = elem.Anchor;
-                }
-            }
-
-            UIColorPickerSaturation uiColorPickerSaturation = go.AddComponent<UIColorPickerSaturation>();
-
-
-
-            // TODO
-
-
-
-            return uiColorPickerSaturation;
-        }
-    }
-
-    [ExecuteInEditMode]
-    [RequireComponent(typeof(MeshFilter)),
-     RequireComponent(typeof(MeshRenderer)),
-     RequireComponent(typeof(BoxCollider))]
-    public partial class UIColorPickerHue : MonoBehaviour
-    {
-        public void RebuildMesh()
-        {
-            UpdateColliderDimensions();
-        }
-
-        public void UpdateColliderDimensions()
-        {
-        }
-
-        public static UIColorPickerHue CreateUIColorPickerHue(
-            string objectName,
-            Transform parent)
-        {
-            GameObject go = new GameObject(objectName);
-
-            // Find the anchor of the parent if it is a UIElement
-            Vector3 parentAnchor = Vector3.zero;
-            if (parent)
-            {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
-                if (elem)
-                {
-                    parentAnchor = elem.Anchor;
-                }
-            }
-
-            UIColorPickerHue uiColorPickerHue = go.AddComponent<UIColorPickerHue>();
-
-
-
-            // TODO
-
-
-
-            return uiColorPickerHue;
-        }
-    }
-
-    [ExecuteInEditMode]
-    [RequireComponent(typeof(MeshFilter)),
-        RequireComponent(typeof(MeshRenderer)),
-        RequireComponent(typeof(BoxCollider))]
-    public partial class UIColorPickerPreview : MonoBehaviour
-    {
-        public void RebuildMesh()
-        {
-            UpdateColliderDimensions();
-        }
-
-        public void UpdateColliderDimensions()
-        {
-        }
-
-        public static UIColorPickerPreview CreateUIColorPickerPreview(
-            string objectName,
-            Transform parent)
-        {
-            GameObject go = new GameObject(objectName);
-
-            // Find the anchor of the parent if it is a UIElement
-            Vector3 parentAnchor = Vector3.zero;
-            if (parent)
-            {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
-                if (elem)
-                {
-                    parentAnchor = elem.Anchor;
-                }
-            }
-
-            UIColorPickerPreview uiColorPickerPreview = go.AddComponent<UIColorPickerPreview>();
-
-
-
-            // TODO
-
-
-
-            return uiColorPickerPreview;
+            uiColorPicker.preview = UIColorPickerPreview.CreateUIColorPickerPreview(
+                "Preview", go.transform,
+                previewPosition, previewWidth, previewHeight, previewThickness,
+                previewMaterial);
         }
     }
 }

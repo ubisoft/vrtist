@@ -607,10 +607,10 @@ namespace VRtist
             {
                 Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
                 Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                if (initColliderSize.z < UIElement.collider_depth)
+                if (initColliderSize.z < UIElement.collider_min_depth_shallow)
                 {
-                    coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_depth / 2.0f);
-                    coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_depth);
+                    coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_shallow / 2.0f);
+                    coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_shallow);
                 }
                 else
                 {
@@ -723,6 +723,7 @@ namespace VRtist
             Color color)
         {
             GameObject go = new GameObject(buttonName);
+            go.tag = "UIObject";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -757,10 +758,10 @@ namespace VRtist
                 {
                     Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
                     Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                    if (initColliderSize.z < UIElement.collider_depth)
+                    if (initColliderSize.z < UIElement.collider_min_depth_shallow)
                     {
-                        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_depth / 2.0f);
-                        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_depth);
+                        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_shallow / 2.0f);
+                        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_shallow);
                     }
                     else
                     {

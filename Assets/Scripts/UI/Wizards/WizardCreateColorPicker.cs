@@ -13,6 +13,8 @@ namespace VRtist
         public float height = 0.3f;
         public float thickness = 0.001f;
         public float padding = 0.01f;
+        public float hueToSaturationRatio = 0.12f;
+        public float hueToPreviewRatio = 0.88f;
         public Material saturationMaterial = null;
         public Material hueMaterial = null;
         public Material previewMaterial = null;
@@ -21,6 +23,8 @@ namespace VRtist
         private static readonly float default_height = 0.3f;
         private static readonly float default_thickness = 0.001f;
         private static readonly float default_padding = 0.01f;
+        private static readonly float default_hueToSaturationRatio = 0.12f;
+        private static readonly float default_hueToPreviewRatio = 0.88f;
 
         [MenuItem("VRtist/Create UI ColorPicker")]
         static void CreateWizard()
@@ -41,6 +45,7 @@ namespace VRtist
             UIColorPicker.CreateUIColorPicker(
                 "ColorPicker", parent, Vector3.zero,
                 default_width, default_height, default_thickness, default_padding,
+                default_hueToSaturationRatio, default_hueToPreviewRatio,
                 LoadDefaultSaturationMaterial(), LoadDefaultHueMaterial(), LoadDefaultPreviewMaterial());
         }
 
@@ -67,40 +72,49 @@ namespace VRtist
         static Material LoadDefaultSaturationMaterial()
         {
             string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Saturation", new[] { "Assets/Resources/Materials/UI/Color Picker" });
-            if (uiMaterialAssetPath.Length == 1)
+            if (uiMaterialAssetPath.Length > 0)
             {
-                return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
+                foreach(string path in uiMaterialAssetPath)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
+                    if (obj is Material)
+                        return obj as Material;
+                }
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         static Material LoadDefaultHueMaterial()
         {
             string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Hue", new[] { "Assets/Resources/Materials/UI/Color Picker" });
-            if (uiMaterialAssetPath.Length == 1)
+            if (uiMaterialAssetPath.Length > 0)
             {
-                return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
+                foreach (string path in uiMaterialAssetPath)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
+                    if (obj is Material)
+                        return obj as Material;
+                }
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         static Material LoadDefaultPreviewMaterial()
         {
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("SolidColor", new[] { "Assets/Resources/Materials/UI/Color Picker" });
-            if (uiMaterialAssetPath.Length == 1)
+            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Preview", new[] { "Assets/Resources/Materials/UI/Color Picker" });
+            if (uiMaterialAssetPath.Length > 0)
             {
-                return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
+                foreach (string path in uiMaterialAssetPath)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
+                    if (obj is Material)
+                        return obj as Material;
+                }
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         private void OnWizardCreate()
@@ -108,6 +122,7 @@ namespace VRtist
             UIColorPicker.CreateUIColorPicker(
                 widgetName, parentPanel ? parentPanel.transform : null, Vector3.zero, 
                 width, height, thickness, padding,
+                hueToSaturationRatio, hueToPreviewRatio,
                 saturationMaterial, hueMaterial, previewMaterial);
         }
     }
