@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace VRtist
@@ -17,13 +18,19 @@ namespace VRtist
         private float thickness = 1.0f;
 
         public UIColorPicker colorPicker = null;
-        float cursorPosition = 0.5f;
+        float cursorPosition = 0.5f; // normalized position
 
         public Transform cursor;
 
         void Awake()
         {
-            //colorPicker = GetComponentInParent<UIColorPicker>();
+            if (EditorApplication.isPlaying || Application.isPlaying)
+            {
+                colorPicker = GetComponentInParent<UIColorPicker>();
+                width = GetComponent<MeshFilter>().mesh.bounds.size.x;
+                height = GetComponent<MeshFilter>().mesh.bounds.size.y;
+                thickness = GetComponent<MeshFilter>().mesh.bounds.size.z;
+            }
         }
 
         public float GetHue()
@@ -31,10 +38,11 @@ namespace VRtist
             return cursorPosition;
         }
 
+        // value: [0..1]
         public void SetHue(float value)
         {
             cursorPosition = value;
-            cursor.localPosition = new Vector3(value - 0.5f, cursor.localPosition.y, cursor.localPosition.z);
+            cursor.localPosition = new Vector3(width * value, -height/2.0f, 0);
         }
 
         private void OnTriggerStay(Collider other)
@@ -47,7 +55,7 @@ namespace VRtist
 
             Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
 
-            SetHue(Mathf.Clamp(position.x + 1f * 0.5f, 0, 1));
+            SetHue(Mathf.Clamp(position.x / width, 0, 1));
             colorPicker.OnColorChanged();
         }
 
@@ -57,6 +65,10 @@ namespace VRtist
             Mesh theNewMesh = UIUtils.BuildBoxEx(newWidth, newHeight, newThickness);
             theNewMesh.name = "UIColorPickerHue_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
+
+            width = newWidth;
+            height = newHeight;
+            thickness = newThickness;
 
             UpdateColliderDimensions();
         }

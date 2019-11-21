@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 namespace VRtist
 {
@@ -19,19 +20,24 @@ namespace VRtist
         public UIColorPicker colorPicker = null;
 
         Color baseColor;
-        Vector2 cursorPosition = new Vector2(0.5f, 0.5f);
+        Vector2 cursorPosition = new Vector2(0.5f, 0.5f); // normalized
 
         public Transform cursor;
 
         void Awake()
         {
-            //colorPicker = GetComponentInParent<UIColorPicker>();
+            if (EditorApplication.isPlaying || Application.isPlaying)
+            {
+                colorPicker = GetComponentInParent<UIColorPicker>();
+                width = GetComponent<MeshFilter>().mesh.bounds.size.x;
+                height = GetComponent<MeshFilter>().mesh.bounds.size.y;
+                thickness = GetComponent<MeshFilter>().mesh.bounds.size.z;
+            }
         }
 
         public void SetBaseColor(Color clr)
         {
             baseColor = clr;
-            //var renderer = GetComponentInChildren<Renderer>();
             var renderer = GetComponent<MeshRenderer>();
             renderer.material.SetColor("_Color", clr);
         }
@@ -44,7 +50,7 @@ namespace VRtist
         public void SetSaturation(Vector2 sat)
         {
             cursorPosition = sat;
-            cursor.localPosition = new Vector3(sat.x - 0.5f, sat.y - 0.5f, cursor.localPosition.z);
+            cursor.localPosition = new Vector3(width * sat.x, -height * (1.0f-sat.y), 0);
         }
 
         private void OnTriggerStay(Collider other)
@@ -57,8 +63,8 @@ namespace VRtist
 
             Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
 
-            float x = position.x + 1f * 0.5f;
-            float y = position.y + 1f * 0.5f;
+            float x = position.x / width;
+            float y = 1.0f - (-position.y / height);
             x = Mathf.Clamp(x, 0, 1);
             y = Mathf.Clamp(y, 0, 1);
             SetSaturation(new Vector2(x, y));
@@ -72,6 +78,10 @@ namespace VRtist
             Mesh theNewMesh = UIUtils.BuildBoxEx(newWidth, newHeight, newThickness);
             theNewMesh.name = "UIColorPickerSaturation_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
+
+            width = newWidth;
+            height = newHeight;
+            thickness = newThickness;
 
             UpdateColliderDimensions();
         }

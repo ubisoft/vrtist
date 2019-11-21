@@ -28,6 +28,10 @@ namespace VRtist
             theNewMesh.name = "UIColorPickerPreview_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
+            width = newWidth;
+            height = newHeight;
+            thickness = newThickness;
+
             UpdateColliderDimensions();
         }
 

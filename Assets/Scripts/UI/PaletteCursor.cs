@@ -44,11 +44,20 @@ namespace VRtist
                 if (isOnAWidget)
                 {
                     Transform cursorShapeTransform = GetComponentInChildren<MeshFilter>().gameObject.transform;
+                    Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
+                    Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
 
-                    Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
+                    //Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
+                    Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
                     Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
                     Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
                     cursorShapeTransform.position = worldProjectedWidgetPosition;
+
+                    // duration is seconds (only on oculus).
+                    // amplitude in [0..1]
+                    float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+                    intensity *= intensity; // le ease in to pauvre :)
+                    VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
                 }
             }
         }
@@ -67,6 +76,7 @@ namespace VRtist
             {
                 isOnAWidget = true;
                 widgetTransform = other.transform;
+                VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
             }
         }
 

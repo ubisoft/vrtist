@@ -680,7 +680,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                VRInput.SendHaptic(VRInput.rightController, 0.03f);
+                //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
 
