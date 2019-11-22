@@ -5,9 +5,8 @@ using UnityEditor;
 
 namespace VRtist
 {
-
-    [CustomEditor(typeof(UIButton))]
-    public class UIButtonEditor : Editor
+    [CustomEditor(typeof(UIColorPicker))]
+    public class UIColorPickerEditor : Editor
     {
         public override void OnInspectorGUI()
         {
@@ -41,13 +40,13 @@ namespace VRtist
         {
             bool hasUIElementParent = HasUIElemParent();
 
-            UIButton uiButton = target as UIButton;
+            UIColorPicker uiColorPicker = target as UIColorPicker;
 
-            Transform T = uiButton.transform;
+            Transform T = uiColorPicker.transform;
 
-            Vector3 posRight = T.TransformPoint(new Vector3(+uiButton.width, -uiButton.height / 2.0f, 0));
-            Vector3 posBottom = T.TransformPoint(new Vector3(uiButton.width / 2.0f, -uiButton.height, 0));
-            Vector3 posAnchor = T.TransformPoint(uiButton.Anchor);
+            Vector3 posRight = T.TransformPoint(new Vector3(+uiColorPicker.width, -uiColorPicker.height / 2.0f, 0));
+            Vector3 posBottom = T.TransformPoint(new Vector3(uiColorPicker.width / 2.0f, -uiColorPicker.height, 0));
+            Vector3 posAnchor = T.TransformPoint(uiColorPicker.Anchor);
             float handleSize = .3f * HandleUtility.GetHandleSize(posAnchor);
             Vector3 snap = Vector3.one * 0.01f;
 
@@ -75,18 +74,18 @@ namespace VRtist
                 {
                     //Vector3 localDeltaRight = T.InverseTransformPoint(deltaRight);
                     //uiButton.RelativeLocation += new Vector3(deltaRight.x / 2.0f, 0.0f, 0.0f);
-                    uiButton.Width += deltaRight.x;
+                    uiColorPicker.Width += deltaRight.x;
                 }
                 else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
                 {
                     //Vector3 localDeltaBottom = T.InverseTransformPoint(deltaBottom);
                     //uiButton.RelativeLocation += new Vector3(0.0f, deltaBottom.y / 2.0f, 0.0f);
-                    uiButton.Height += -deltaBottom.y;
+                    uiColorPicker.Height += -deltaBottom.y;
                 }
                 else if (Vector3.SqrMagnitude(deltaAnchor) > Mathf.Epsilon)
                 {
                     Vector3 localDeltaAnchor = T.InverseTransformVector(deltaAnchor);
-                    uiButton.RelativeLocation += new Vector3(localDeltaAnchor.x, localDeltaAnchor.y, 0.0f);
+                    uiColorPicker.RelativeLocation += new Vector3(localDeltaAnchor.x, localDeltaAnchor.y, 0.0f);
                 }
             }
         }

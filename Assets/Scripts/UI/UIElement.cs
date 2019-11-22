@@ -4,14 +4,15 @@ using UnityEngine;
 
 namespace VRtist
 {
-
     public class UIElement : MonoBehaviour
     {
         public static readonly Color default_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
+        public static readonly float collider_min_depth_shallow = 0.03f;
+        public static readonly float collider_min_depth_deep = 0.1f;
 
         [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        public Vector3 anchor = Vector3.zero;
-        public Vector3 relativeLocation = Vector3.zero;
+        private Vector3 anchor = Vector3.zero; // local position of anchor for children.
+        public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         public float width = 1.0f;
         public float height = 1.0f;
         public Color baseColor = UIElement.default_color;
@@ -70,7 +71,8 @@ namespace VRtist
 
         public virtual void UpdateAnchor()
         {
-            anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
+            //anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
+            anchor = Vector3.zero;
         }
 
         public void SetColor(Color color)

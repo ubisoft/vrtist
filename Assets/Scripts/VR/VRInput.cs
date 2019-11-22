@@ -381,6 +381,8 @@ namespace VRtist
 
         }
 
+        // duration is seconds (only on oculus).
+        // amplitude in [0..1]
         public static void SendHaptic(InputDevice controller, float duration, float amplitude = 1f)
         {
             controller.SendHapticImpulse(0, amplitude, duration);

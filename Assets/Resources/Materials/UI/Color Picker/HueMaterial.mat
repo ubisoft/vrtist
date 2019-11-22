@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ColorHue
+  m_Name: HueMaterial
   m_Shader: {fileID: -6465566751694194690, guid: e5492fc8967308244a1e2d610ba5f997,
     type: 3}
   m_ShaderKeywords: 
