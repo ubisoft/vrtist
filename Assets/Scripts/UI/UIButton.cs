@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -41,563 +42,12 @@ namespace VRtist
         public override void RebuildMesh()
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIButton.BuildRoundedRectEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
+            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
             theNewMesh.name = "UIButton_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
             UpdateColliderDimensions();
         }
-
-        public static Mesh BuildRoundedRect(float width, float height, float margin)
-        {
-            const int default_nbSubdivCornerFixed = 3;
-            const int default_nbSubdivCornerPerUnit = 3;
-            const float default_thickness = 0.001f;
-
-            return BuildRoundedRectEx(
-                width, height, margin, default_thickness,
-                default_nbSubdivCornerFixed, default_nbSubdivCornerPerUnit);
-        }
-
-        public static Mesh BuildRoundedRectEx(
-            float width,
-            float height,
-            float margin,
-            float thickness,
-            int nbSubdivCornerFixed,
-            int nbSubdivCornerPerUnit)
-        {
-            List<Vector3> vertices = new List<Vector3>(); // TODO: use Vector3[] vertices = new Vector3[computed_size];
-            List<Vector3> normals = new List<Vector3>(); // TODO: use Vector3[] normals = new Vector3[computed_size];
-            List<int> indices = new List<int>(); // TODO: use int[] indices = new int[computed_size];
-
-            Vector3 innerTopLeft_front = new Vector3(margin, -margin, 0.0f);
-            Vector3 innerTopRight_front = new Vector3(width - margin, -margin, 0.0f);
-            Vector3 innerBottomRight_front = new Vector3(width - margin, -height + margin, 0.0f);
-            Vector3 innerBottomLeft_front = new Vector3(margin, -height + margin, 0.0f);
-
-            Vector3 innerTopLeft_back = new Vector3(margin, -margin, thickness);
-            Vector3 innerTopRight_back = new Vector3(width - margin, -margin, thickness);
-            Vector3 innerBottomRight_back = new Vector3(width - margin, -height + margin, thickness);
-            Vector3 innerBottomLeft_back = new Vector3(margin, -height + margin, thickness);
-
-            float cornerLength = margin * Mathf.PI / 2.0f;
-            int nbSubdivOnCorner = Mathf.FloorToInt(nbSubdivCornerFixed + cornerLength * nbSubdivCornerPerUnit);
-            int nbTrianglesOnCorner = 1 + nbSubdivOnCorner;
-            int nbVerticesOnCorner = 2 + nbSubdivOnCorner;
-
-            int indexOffset = 0;
-
-            #region front-rect-face
-
-            // FRONT
-            vertices.Add(innerTopLeft_front);
-            vertices.Add(innerTopRight_front);
-            vertices.Add(innerBottomLeft_front);
-            vertices.Add(innerBottomRight_front);
-
-            vertices.Add(innerTopLeft_front + new Vector3(0, margin, 0));
-            vertices.Add(innerTopRight_front + new Vector3(0, margin, 0));
-            vertices.Add(innerTopLeft_front + new Vector3(-margin, 0, 0));
-            vertices.Add(innerTopRight_front + new Vector3(margin, 0, 0));
-            vertices.Add(innerBottomLeft_front + new Vector3(-margin, 0, 0));
-            vertices.Add(innerBottomRight_front + new Vector3(margin, 0, 0));
-            vertices.Add(innerBottomLeft_front + new Vector3(0, -margin, 0));
-            vertices.Add(innerBottomRight_front + new Vector3(0, -margin, 0));
-
-            for (int i = 0; i < 12; ++i)
-            {
-                normals.Add(-Vector3.forward);
-            }
-
-            int[] front_middle_indices = new int[]
-            {
-            4,5,1,
-            4,1,0,
-            6,0,2,
-            6,2,8,
-            0,1,3,
-            0,3,2,
-            1,7,9,
-            1,9,3,
-            2,3,11,
-            2,11,10
-            };
-
-            for (int i = 0; i < front_middle_indices.Length; ++i)
-            {
-                indices.Add(indexOffset + front_middle_indices[i]);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region back-rect-face
-
-            // BACK
-            vertices.Add(innerTopLeft_back);
-            vertices.Add(innerTopRight_back);
-            vertices.Add(innerBottomLeft_back);
-            vertices.Add(innerBottomRight_back);
-
-            vertices.Add(innerTopLeft_back + new Vector3(0, margin, 0));
-            vertices.Add(innerTopRight_back + new Vector3(0, margin, 0));
-            vertices.Add(innerTopLeft_back + new Vector3(-margin, 0, 0));
-            vertices.Add(innerTopRight_back + new Vector3(margin, 0, 0));
-            vertices.Add(innerBottomLeft_back + new Vector3(-margin, 0, 0));
-            vertices.Add(innerBottomRight_back + new Vector3(margin, 0, 0));
-            vertices.Add(innerBottomLeft_back + new Vector3(0, -margin, 0));
-            vertices.Add(innerBottomRight_back + new Vector3(0, -margin, 0));
-
-            for (int i = 0; i < 12; ++i)
-            {
-                normals.Add(Vector3.forward);
-            }
-
-            int[] back_middle_indices = new int[]
-            {
-            4,1,5,
-            4,0,1,
-            6,2,0,
-            6,8,2,
-            0,3,1,
-            0,2,3,
-            1,9,7,
-            1,3,9,
-            2,11,3,
-            2,10,11
-            };
-
-            for (int i = 0; i < back_middle_indices.Length; ++i)
-            {
-                indices.Add(indexOffset + back_middle_indices[i]);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region side-rect-4-faces
-
-            vertices.Add(innerTopLeft_front + new Vector3(0, margin, 0));
-            vertices.Add(innerTopRight_front + new Vector3(0, margin, 0));
-            vertices.Add(innerTopLeft_back + new Vector3(0, margin, 0));
-            vertices.Add(innerTopRight_back + new Vector3(0, margin, 0));
-
-            vertices.Add(innerTopLeft_front + new Vector3(-margin, 0, 0));
-            vertices.Add(innerBottomLeft_front + new Vector3(-margin, 0, 0));
-            vertices.Add(innerTopLeft_back + new Vector3(-margin, 0, 0));
-            vertices.Add(innerBottomLeft_back + new Vector3(-margin, 0, 0));
-
-            vertices.Add(innerTopRight_front + new Vector3(margin, 0, 0));
-            vertices.Add(innerBottomRight_front + new Vector3(margin, 0, 0));
-            vertices.Add(innerTopRight_back + new Vector3(margin, 0, 0));
-            vertices.Add(innerBottomRight_back + new Vector3(margin, 0, 0));
-
-            vertices.Add(innerBottomLeft_front + new Vector3(0, -margin, 0));
-            vertices.Add(innerBottomRight_front + new Vector3(0, -margin, 0));
-            vertices.Add(innerBottomLeft_back + new Vector3(0, -margin, 0));
-            vertices.Add(innerBottomRight_back + new Vector3(0, -margin, 0));
-
-            for (int i = 0; i < 4; ++i) normals.Add(Vector3.up);
-            for (int i = 0; i < 4; ++i) normals.Add(Vector3.left);
-            for (int i = 0; i < 4; ++i) normals.Add(Vector3.right);
-            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
-
-            int[] side_faces_indices = new int[]
-            {
-            0,2,1,
-            2,3,1,
-            5,7,4,
-            7,6,4,
-            8,10,9,
-            10,11,9,
-            13,15,12,
-            15,14,12
-            };
-
-            for (int i = 0; i < side_faces_indices.Length; ++i)
-            {
-                indices.Add(indexOffset + side_faces_indices[i]);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-
-
-            #region front-top-left-corner
-
-            vertices.Add(innerTopLeft_front);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerTopLeft_front + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(-Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 1);
-                indices.Add(indexOffset + i + 2);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region back-top-left-corner
-
-            vertices.Add(innerTopLeft_back);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerTopLeft_back + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 2);
-                indices.Add(indexOffset + i + 1);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region side-top-left-corner
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerTopLeft_front + outerCirclePos);
-                vertices.Add(innerTopLeft_back + outerCirclePos);
-                normals.Add(outerCirclePos.normalized);
-                normals.Add(outerCirclePos.normalized);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 2 * i + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-
-
-            #region front-top-right-corner
-
-            vertices.Add(innerTopRight_front);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerTopRight_front + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(-Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 2);
-                indices.Add(indexOffset + i + 1);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region back-top-right-corner
-
-            vertices.Add(innerTopRight_back);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerTopRight_back + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 1);
-                indices.Add(indexOffset + i + 2);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region side-top-right-corner
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
-                Vector3 outerCirclePos = new Vector3(
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerTopRight_front + outerCirclePos);
-                vertices.Add(innerTopRight_back + outerCirclePos);
-                normals.Add(outerCirclePos.normalized);
-                normals.Add(outerCirclePos.normalized);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 2 * i + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-
-
-            #region front-bottom-left-corner
-
-            vertices.Add(innerBottomLeft_front);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerBottomLeft_front + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(-Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 2);
-                indices.Add(indexOffset + i + 1);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region back-bottom-left-corner
-
-            vertices.Add(innerBottomLeft_back);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerBottomLeft_back + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 1);
-                indices.Add(indexOffset + i + 2);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region side-bottom-left-corner
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
-                Vector3 outerCirclePos = new Vector3(
-                    -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerBottomLeft_front + outerCirclePos);
-                vertices.Add(innerBottomLeft_back + outerCirclePos);
-                normals.Add(outerCirclePos.normalized);
-                normals.Add(outerCirclePos.normalized);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 2 * i + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-
-            #region front-bottom-right-corner
-
-            vertices.Add(innerBottomRight_front);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerBottomRight_front + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(-Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 2);
-                indices.Add(indexOffset + i + 1);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region back-bottom-right-corner
-
-            vertices.Add(innerBottomRight_back);
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
-                Vector3 outerCirclePos = new Vector3(
-                    +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerBottomRight_back + outerCirclePos);
-            }
-
-            for (int i = 0; i < nbVerticesOnCorner + 1; ++i)
-            {
-                normals.Add(Vector3.forward);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 0);
-                indices.Add(indexOffset + i + 1);
-                indices.Add(indexOffset + i + 2);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-            #region side-bottom-right-corner
-
-            for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
-            {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
-                Vector3 outerCirclePos = new Vector3(
-                    +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
-                    -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
-                    0);
-                vertices.Add(innerBottomRight_front + outerCirclePos);
-                vertices.Add(innerBottomRight_back + outerCirclePos);
-                normals.Add(outerCirclePos.normalized);
-                normals.Add(outerCirclePos.normalized);
-            }
-
-            for (int i = 0; i < nbTrianglesOnCorner; ++i)
-            {
-                indices.Add(indexOffset + 2 * i + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-                indices.Add(indexOffset + 2 * i + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 1);
-                indices.Add(indexOffset + 2 * (i + 1) + 0);
-            }
-
-            indexOffset = vertices.Count;
-
-            #endregion
-
-
-            Mesh mesh = new Mesh();
-            mesh.SetVertices(vertices);
-            mesh.SetNormals(normals);
-            mesh.SetIndices(indices, MeshTopology.Triangles, 0);
-
-            return mesh;
-        }
-
 
         private void UpdateColliderDimensions()
         {
@@ -654,6 +104,7 @@ namespace VRtist
                 UpdateAnchor();
                 UpdateChildren();
                 SetColor(baseColor);
+                // TODO: update canvas and text and image sizes
                 needRebuild = false;
             }
         }
@@ -720,7 +171,8 @@ namespace VRtist
             float margin,
             float thickness,
             Material material,
-            Color color)
+            Color color,
+            string caption)
         {
             GameObject go = new GameObject(buttonName);
             go.tag = "UIObject";
@@ -751,7 +203,7 @@ namespace VRtist
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIButton.BuildRoundedRect(width, height, margin);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
                 uiButton.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -790,6 +242,56 @@ namespace VRtist
 
                 uiButton.BaseColor = color;
             }
+
+            // Add a Canvas
+            GameObject canvas = new GameObject("Canvas");
+            canvas.transform.parent = uiButton.transform;
+
+            Canvas c = canvas.AddComponent<Canvas>();
+            c.renderMode = RenderMode.WorldSpace;
+
+            RectTransform rt = canvas.GetComponent<RectTransform>(); // auto added when adding Canvas
+            rt.localScale = Vector3.one;
+            rt.localRotation = Quaternion.identity;
+            rt.anchorMin = new Vector2(0, 1);
+            rt.anchorMax = new Vector2(0, 1);
+            rt.pivot = new Vector2(0, 1); // top left
+            rt.sizeDelta = new Vector2(uiButton.width, uiButton.height);
+            rt.localPosition = Vector3.zero;
+
+            CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
+            cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
+            cs.referencePixelsPerUnit = 100; // default?
+
+            //canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
+
+            // Add a Text under the Canvas
+            if (caption.Length > 0)
+            {
+                GameObject text = new GameObject("Text");
+                text.transform.parent = canvas.transform;
+
+                Text t = text.AddComponent<Text>();
+                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.text = caption;
+                t.fontSize = 32;
+                t.fontStyle = FontStyle.Bold;
+                t.alignment = TextAnchor.MiddleLeft;
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
+                t.verticalOverflow = VerticalWrapMode.Overflow;
+
+                RectTransform trt = t.GetComponent<RectTransform>();
+                trt.localScale = 0.01f * Vector3.one; // or else the text is way too big.
+                trt.localRotation = Quaternion.identity;
+                trt.anchorMin = new Vector2(0, 1);
+                trt.anchorMax = new Vector2(0, 1);
+                trt.pivot = new Vector2(0, 1); // top left
+                trt.sizeDelta = new Vector2(uiButton.width, uiButton.height);
+                trt.localPosition = new Vector3(uiButton.width / 10.0f, -uiButton.height / 2.0f, -0.001f);
+            }
+
+            // Add an Image under the Canvas
+
         }
     }
 }

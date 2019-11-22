@@ -15,11 +15,13 @@ namespace VRtist
         public float thickness = 0.001f;
         public Material uiMaterial = null;
         public Color color = Color.white;
+        public string caption = "";
 
         private static readonly float default_width = 0.15f;
         private static readonly float default_height = 0.05f;
         private static readonly float default_margin = 0.005f;
         private static readonly float default_thickness = 0.001f;
+        private static readonly string default_text = "Button";
 
         [MenuItem("VRtist/Create UI Button")]
         static void CreateWizard()
@@ -37,7 +39,7 @@ namespace VRtist
                 parent = T;
             }
 
-            UIButton.CreateUIButton("Button", parent, Vector3.zero, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), UIElement.default_color);
+            UIButton.CreateUIButton("Button", parent, Vector3.zero, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), UIElement.default_color, default_text);
         }
 
         private void OnWizardUpdate()
@@ -65,7 +67,7 @@ namespace VRtist
 
         private void OnWizardCreate()
         {
-            UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color);
+            UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color, caption);
         }
 
         //private void OnWizardOtherButton()
