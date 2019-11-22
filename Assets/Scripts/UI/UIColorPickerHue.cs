@@ -101,7 +101,8 @@ namespace VRtist
             float width,
             float height,
             float thickness,
-            Material material)
+            Material material,
+            GameObject cursorPrefab)
         {
             GameObject go = new GameObject(objectName);
             go.tag = "UIObject";
@@ -158,6 +159,12 @@ namespace VRtist
             {
                 meshRenderer.sharedMaterial = Instantiate(material);
             }
+
+            // Add a cursor
+            GameObject cursor = Instantiate<GameObject>(cursorPrefab);
+            cursor.transform.parent = uiColorPickerHue.transform;
+            cursor.transform.localPosition = Vector3.zero;
+            uiColorPickerHue.cursor = cursor.transform;
 
             return uiColorPickerHue;
         }

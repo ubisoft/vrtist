@@ -187,7 +187,9 @@ namespace VRtist
             float hueToPreviewRatio,
             Material saturationMaterial,
             Material hueMaterial,
-            Material previewMaterial)
+            Material previewMaterial,
+            GameObject saturationCursorPrefab,
+            GameObject hueCursorPrefab)
         {
             GameObject go = new GameObject(objectName);
 
@@ -213,7 +215,11 @@ namespace VRtist
             uiColorPicker.thickness = thickness;
             uiColorPicker.padding = padding;
 
+            //
             // Sub Components
+            //
+
+            //      Saturation
 
             Vector3 saturationPosition = new Vector3(0.0f, hueToSaturationRatio * -(height - padding) - padding, 0.0f);
             float saturationWidth = width;
@@ -223,8 +229,10 @@ namespace VRtist
             uiColorPicker.saturation = UIColorPickerSaturation.CreateUIColorPickerSaturation(
                 "Saturation", go.transform, 
                 saturationPosition, saturationWidth, saturationHeight, saturationThickness,
-                saturationMaterial);
+                saturationMaterial, saturationCursorPrefab);
             uiColorPicker.saturation.colorPicker = uiColorPicker;
+
+            //      Hue
 
             Vector3 huePosition = new Vector3(0.0f, 0.0f, 0.0f);
             float hueWidth = hueToPreviewRatio * (width - padding);
@@ -234,8 +242,10 @@ namespace VRtist
             uiColorPicker.hue = UIColorPickerHue.CreateUIColorPickerHue(
                 "Hue", go.transform,
                 huePosition, hueWidth, hueHeight, hueThickness,
-                hueMaterial);
+                hueMaterial, hueCursorPrefab);
             uiColorPicker.hue.colorPicker = uiColorPicker;
+
+            //      Preview
 
             Vector3 previewPosition = new Vector3(hueToPreviewRatio * (width - padding) + padding, 0.0f, 0.0f);
             float previewWidth = (1.0f - hueToPreviewRatio) * (width - padding);

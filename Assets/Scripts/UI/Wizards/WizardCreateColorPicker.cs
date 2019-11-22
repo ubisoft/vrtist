@@ -18,6 +18,8 @@ namespace VRtist
         public Material saturationMaterial = null;
         public Material hueMaterial = null;
         public Material previewMaterial = null;
+        public GameObject saturationCursorPrefab = null;
+        public GameObject hueCursorPrefab = null;
 
         private static readonly float default_width = 0.3f;
         private static readonly float default_height = 0.3f;
@@ -46,7 +48,8 @@ namespace VRtist
                 "ColorPicker", parent, Vector3.zero,
                 default_width, default_height, default_thickness, default_padding,
                 default_hueToSaturationRatio, default_hueToPreviewRatio,
-                LoadDefaultSaturationMaterial(), LoadDefaultHueMaterial(), LoadDefaultPreviewMaterial());
+                LoadDefaultSaturationMaterial(), LoadDefaultHueMaterial(), LoadDefaultPreviewMaterial(),
+                LoadDefaultSaturationCursor(), LoadDefaultHueCursor());
         }
 
         private void OnWizardUpdate()
@@ -103,6 +106,7 @@ namespace VRtist
 
         static Material LoadDefaultPreviewMaterial()
         {
+            // TODO: use LoadResource?
             string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Preview", new[] { "Assets/Resources/Materials/UI/Color Picker" });
             if (uiMaterialAssetPath.Length > 0)
             {
@@ -117,13 +121,24 @@ namespace VRtist
             return null;
         }
 
+        static GameObject LoadDefaultSaturationCursor()
+        {
+            return Resources.Load("Prefabs/UI/Cursor_Saturation") as GameObject;
+        }
+
+        static GameObject LoadDefaultHueCursor()
+        {
+            return Resources.Load("Prefabs/UI/Cursor_Hue") as GameObject;
+        }
+
         private void OnWizardCreate()
         {
             UIColorPicker.CreateUIColorPicker(
                 widgetName, parentPanel ? parentPanel.transform : null, Vector3.zero, 
                 width, height, thickness, padding,
                 hueToSaturationRatio, hueToPreviewRatio,
-                saturationMaterial, hueMaterial, previewMaterial);
+                saturationMaterial, hueMaterial, previewMaterial,
+                saturationCursorPrefab, hueCursorPrefab);
         }
     }
 }

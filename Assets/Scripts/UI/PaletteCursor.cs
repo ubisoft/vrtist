@@ -53,10 +53,8 @@ namespace VRtist
                     Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
                     cursorShapeTransform.position = worldProjectedWidgetPosition;
 
-                    // duration is seconds (only on oculus).
-                    // amplitude in [0..1]
                     float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                    intensity *= intensity; // le ease in to pauvre :)
+                    intensity *= intensity; // ease-in
                     VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
                 }
             }
