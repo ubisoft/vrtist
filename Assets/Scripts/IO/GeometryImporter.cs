@@ -42,7 +42,6 @@ namespace VRtist
         public string obj = @"D:\test.obj";
         public bool writeOBJ = false;
 
-
         void Update()
         {
             progress = importer.Progress;
