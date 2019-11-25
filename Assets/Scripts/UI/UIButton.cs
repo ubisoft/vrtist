@@ -30,6 +30,8 @@ namespace VRtist
 
         private bool needRebuild = false;
 
+        public string Text { get { return GetText(); } set { SetText(value); } }
+
         void Start()
         {
             if (EditorApplication.isPlaying || Application.isPlaying)
@@ -149,6 +151,26 @@ namespace VRtist
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
         }
 
+        private string GetText()
+        {
+            Text text = GetComponentInChildren<Text>();
+            if (text != null)
+            {
+                return text.text;
+            }
+
+            return null;
+        }
+
+        private void SetText(string textValue)
+        {
+            Text text = GetComponentInChildren<Text>();
+            if (text != null)
+            {
+                text.text = textValue;
+            }
+        }
+
         private void OnTriggerEnter(Collider otherCollider)
         {
             // TODO: pass the Cursor to the button, test the object instead of a hardcoded name.
@@ -196,7 +218,8 @@ namespace VRtist
             float thickness,
             Material material,
             Color color,
-            string caption)
+            string caption,
+            Sprite icon)
         {
             GameObject go = new GameObject(buttonName);
             go.tag = "UIObject";
@@ -289,6 +312,28 @@ namespace VRtist
 
             //canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
 
+            float minSide = Mathf.Min(uiButton.width, uiButton.height);
+
+            // Add an Image under the Canvas
+            if (icon != null)
+            {
+                GameObject image = new GameObject("Image");
+                image.transform.parent = canvas.transform;
+
+                Image img = image.AddComponent<Image>();
+                img.sprite = icon;
+
+                RectTransform trt = image.GetComponent<RectTransform>();
+                trt.localScale = Vector3.one;
+                trt.localRotation = Quaternion.identity;
+                trt.anchorMin = new Vector2(0, 1);
+                trt.anchorMax = new Vector2(0, 1);
+                trt.pivot = new Vector2(0, 1); // top left
+                // TODO: non square icons ratio...
+                trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
+                trt.localPosition = new Vector3(margin, -margin, -0.001f);
+            }
+
             // Add a Text under the Canvas
             if (caption.Length > 0)
             {
@@ -305,17 +350,15 @@ namespace VRtist
                 t.verticalOverflow = VerticalWrapMode.Overflow;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
-                trt.localScale = 0.01f * Vector3.one; // or else the text is way too big.
+                trt.localScale = 0.01f * Vector3.one;
                 trt.localRotation = Quaternion.identity;
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.sizeDelta = new Vector2(uiButton.width, uiButton.height);
-                trt.localPosition = new Vector3(uiButton.width / 10.0f, -uiButton.height / 2.0f, -0.001f);
+                float textPosLeft = icon != null ? minSide : 0.0f;
+                trt.localPosition = new Vector3(textPosLeft, -uiButton.height / 2.0f, -0.002f);
             }
-
-            // Add an Image under the Canvas
-
         }
     }
 }
