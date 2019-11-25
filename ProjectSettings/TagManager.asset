@@ -6,6 +6,7 @@ TagManager:
   tags:
   - PhysicObject
   - UIObject
+  - UICollider
   layers:
   - Default
   - TransparentFX

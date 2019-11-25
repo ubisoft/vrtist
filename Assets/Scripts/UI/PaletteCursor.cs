@@ -70,7 +70,7 @@ namespace VRtist
 
                 ShowCursor(true);
             }
-            else if (other.gameObject.tag == "UIObject")
+            else if (other.gameObject.tag == "UICollider")
             {
                 isOnAWidget = true;
                 widgetTransform = other.transform;
@@ -86,7 +86,7 @@ namespace VRtist
                 tools.SetActive(true);
                 ShowCursor(false);
             }
-            else if (other.gameObject.tag == "UIObject")
+            else if (other.gameObject.tag == "UICollider")
             {
                 isOnAWidget = false;
                 widgetTransform = null;
