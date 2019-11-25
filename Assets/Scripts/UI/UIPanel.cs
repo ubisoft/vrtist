@@ -5,8 +5,8 @@ using UnityEditor;
 
 namespace VRtist
 {
-
     [ExecuteInEditMode]
+    [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer))]
     public class UIPanel : UIElement

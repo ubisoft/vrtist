@@ -7,8 +7,8 @@ using UnityEngine.UI;
 
 namespace VRtist
 {
-
     [ExecuteInEditMode]
+    [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
@@ -47,6 +47,7 @@ namespace VRtist
             meshFilter.sharedMesh = theNewMesh;
 
             UpdateColliderDimensions();
+            UpdateCanvasDimensions();
         }
 
         private void UpdateColliderDimensions()
@@ -67,6 +68,25 @@ namespace VRtist
                     coll.center = initColliderCenter;
                     coll.size = initColliderSize;
                 }
+            }
+        }
+
+        private void UpdateCanvasDimensions()
+        {
+            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            if(canvas != null)
+            {
+                RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
+                canvasRT.sizeDelta = new Vector2(width, height);
+
+                Text text = canvas.gameObject.GetComponentInChildren<Text>();
+                if(text != null)
+                {
+                    RectTransform textRT = text.gameObject.GetComponent<RectTransform>();
+                    textRT.sizeDelta = new Vector2(width, height);
+                }
+
+                // TODO: image
             }
         }
 
@@ -96,6 +116,11 @@ namespace VRtist
 
         private void Update()
         {
+            // NOTE: rebuild when touching a property in the inspector.
+            // Boolean needRebuild is set in OnValidate();
+            // The rebuild method called when using the gizmos is: Width and Height
+            // properties in UIElement.
+            // This comment is probably already obsolete.
             if (needRebuild)
             {
                 // NOTE: I do all these things because properties can't be called from the inspector.
@@ -104,7 +129,6 @@ namespace VRtist
                 UpdateAnchor();
                 UpdateChildren();
                 SetColor(baseColor);
-                // TODO: update canvas and text and image sizes
                 needRebuild = false;
             }
         }
