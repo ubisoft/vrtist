@@ -200,7 +200,8 @@ namespace VRtist
             for (int i = 0; i < panel.childCount; i++)
             {
                 GameObject child = panel.GetChild(i).gameObject;
-                Image image = child.GetComponent<Image>();
+                // en supposant qu'il n'y a que les boutons comme enfant avec des images
+                Image image = child.GetComponentInChildren<Image>();
                 if (image)
                 {
                     image.color = Selection.UnselectedColor;

@@ -7,6 +7,7 @@ using UnityEditor;
 namespace VRtist
 {
     [ExecuteInEditMode]
+    [SelectionBase]
     public class UIColorPicker : UIElement
     {
         [SpaceHeader("Picker Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]

@@ -7,21 +7,26 @@ namespace VRtist
 {
     public class WizardCreateUIButton : ScriptableWizard
     {
-        public UIPanel parentPanel = null;
-        public string buttonName = "Button";
-        public float width = 0.15f;
-        public float height = 0.05f;
-        public float margin = 0.005f;
-        public float thickness = 0.001f;
-        public Material uiMaterial = null;
-        public Color color = Color.white;
-        public string caption = "";
-
+        private static readonly string default_button_name = "Button";
         private static readonly float default_width = 0.15f;
         private static readonly float default_height = 0.05f;
         private static readonly float default_margin = 0.005f;
         private static readonly float default_thickness = 0.001f;
+        private static readonly Material default_material = null; // use LoadDefault...
+        private static readonly Color default_color = UIElement.default_color;
         private static readonly string default_text = "Button";
+        private static readonly Sprite default_icon = null; // use LoadDefault...
+
+        public UIPanel parentPanel = null;
+        public string buttonName = default_button_name;
+        public float width = default_width;
+        public float height = default_height;
+        public float margin = default_margin;
+        public float thickness = default_thickness;
+        public Material uiMaterial = default_material;
+        public Color color = default_color;
+        public string caption = default_text;
+        public Sprite icon = default_icon;
 
         [MenuItem("VRtist/Create UI Button")]
         static void CreateWizard()
@@ -39,7 +44,9 @@ namespace VRtist
                 parent = T;
             }
 
-            UIButton.CreateUIButton("Button", parent, Vector3.zero, default_width, default_height, default_margin, default_thickness, LoadDefaultUIMaterial(), UIElement.default_color, default_text);
+            UIButton.CreateUIButton(default_button_name, parent, 
+                Vector3.zero, default_width, default_height, default_margin, default_thickness, 
+                LoadDefaultUIMaterial(), default_color, default_text, LoadDefaultIcon());
         }
 
         private void OnWizardUpdate()
@@ -65,9 +72,27 @@ namespace VRtist
             }
         }
 
+        static Sprite LoadDefaultIcon()
+        {
+            //Sprite sprite = Resources.Load("Textures/UI/paint") as Sprite;
+            //return sprite;
+
+            string[] pathList = AssetDatabase.FindAssets("paint", new[] { "Assets/Resources/Textures/UI" });
+            if (pathList.Length > 0)
+            {
+                foreach (string path in pathList)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Sprite));
+                    if (obj is Sprite)
+                        return obj as Sprite;
+                }
+            }
+            return null;
+        }
+
         private void OnWizardCreate()
         {
-            UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color, caption);
+            UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color, caption, icon);
         }
 
         //private void OnWizardOtherButton()

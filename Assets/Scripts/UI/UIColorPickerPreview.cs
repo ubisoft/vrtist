@@ -66,7 +66,7 @@ namespace VRtist
             Material material)
         {
             GameObject go = new GameObject(objectName);
-            go.tag = "UIObject";
+            go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
