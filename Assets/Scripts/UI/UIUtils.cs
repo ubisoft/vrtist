@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace VRtist
 {
     public class UIUtils
     {
+        #region Mesh Building
+
         public static Mesh BuildBox(float width, float height)
         {
             const float default_thickness = 0.001f;
@@ -680,5 +683,47 @@ namespace VRtist
 
             return mesh;
         }
+
+        #endregion
+
+        #region Resource Loading
+
+        public static Material LoadMaterial(string materialName)
+        {
+            string[] pathList = AssetDatabase.FindAssets(materialName, new[] { "Assets/Resources/Materials/UI" });
+            if (pathList.Length > 0)
+            {
+                foreach (string path in pathList)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
+                    if (obj is Material)
+                        return obj as Material;
+                }
+            }
+            return null;
+        }
+
+        public static Sprite LoadIcon(string iconName)
+        {
+            // TODO: Doesn't work, find out why.
+            //Sprite sprite = Resources.Load("Textures/UI/paint") as Sprite;
+            //return sprite;
+
+            string[] pathList = AssetDatabase.FindAssets(iconName, new[] { "Assets/Resources/Textures/UI" });
+            if (pathList.Length > 0)
+            {
+                foreach (string path in pathList)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Sprite));
+                    if (obj is Sprite)
+                        return obj as Sprite;
+                }
+            }
+            return null;
+        }
+
+        #endregion
+
+
     }
 }

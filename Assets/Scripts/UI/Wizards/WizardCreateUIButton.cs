@@ -31,7 +31,7 @@ namespace VRtist
         [MenuItem("VRtist/Create UI Button")]
         static void CreateWizard()
         {
-            ScriptableWizard.DisplayWizard<WizardCreateUIButton>("Create UI Button", "Create");//, "OtherButton");
+            ScriptableWizard.DisplayWizard<WizardCreateUIButton>("Create UI Button", "Create");
         }
 
         [MenuItem("GameObject/VRtist/UIButton", false, 49)]
@@ -39,14 +39,14 @@ namespace VRtist
         {
             Transform parent = null;
             Transform T = UnityEditor.Selection.activeTransform;
-            if (T != null)// && T.GetComponent<UIPanel>() != null)
+            if (T != null)
             {
                 parent = T;
             }
 
             UIButton.CreateUIButton(default_button_name, parent, 
                 Vector3.zero, default_width, default_height, default_margin, default_thickness, 
-                LoadDefaultUIMaterial(), default_color, default_text, LoadDefaultIcon());
+                UIUtils.LoadMaterial("UIPanel"), default_color, default_text, UIUtils.LoadIcon("paint"));
         }
 
         private void OnWizardUpdate()
@@ -55,48 +55,18 @@ namespace VRtist
 
             if (uiMaterial == null)
             {
-                uiMaterial = LoadDefaultUIMaterial();
+                uiMaterial = UIUtils.LoadMaterial("UIPanel");
             }
-        }
 
-        static Material LoadDefaultUIMaterial()
-        {
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Resources/Materials" });
-            if (uiMaterialAssetPath.Length == 1)
+            if(icon == null)
             {
-                return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
+                icon = UIUtils.LoadIcon("paint");
             }
-            else
-            {
-                return null;
-            }
-        }
-
-        static Sprite LoadDefaultIcon()
-        {
-            //Sprite sprite = Resources.Load("Textures/UI/paint") as Sprite;
-            //return sprite;
-
-            string[] pathList = AssetDatabase.FindAssets("paint", new[] { "Assets/Resources/Textures/UI" });
-            if (pathList.Length > 0)
-            {
-                foreach (string path in pathList)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Sprite));
-                    if (obj is Sprite)
-                        return obj as Sprite;
-                }
-            }
-            return null;
         }
 
         private void OnWizardCreate()
         {
             UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color, caption, icon);
         }
-
-        //private void OnWizardOtherButton()
-        //{
-        //}
     }
 }

@@ -39,7 +39,7 @@ namespace VRtist
         {
             Transform parent = null;
             Transform T = UnityEditor.Selection.activeTransform;
-            if (T != null)// && T.GetComponent<UIPanel>() != null)
+            if (T != null)
             {
                 parent = T;
             }
@@ -48,7 +48,7 @@ namespace VRtist
                 "ColorPicker", parent, Vector3.zero,
                 default_width, default_height, default_thickness, default_padding,
                 default_hueToSaturationRatio, default_hueToPreviewRatio,
-                LoadDefaultSaturationMaterial(), LoadDefaultHueMaterial(), LoadDefaultPreviewMaterial(),
+                UIUtils.LoadMaterial("Saturation"), UIUtils.LoadMaterial("Hue"), UIUtils.LoadMaterial("Preview"),
                 LoadDefaultSaturationCursor(), LoadDefaultHueCursor());
         }
 
@@ -58,67 +58,18 @@ namespace VRtist
 
             if (saturationMaterial == null)
             {
-                saturationMaterial = LoadDefaultSaturationMaterial();
+                saturationMaterial = UIUtils.LoadMaterial("Saturation");
             }
 
             if (hueMaterial == null)
             {
-                hueMaterial = LoadDefaultHueMaterial();
+                hueMaterial = UIUtils.LoadMaterial("Hue");
             }
 
             if (previewMaterial == null)
             {
-                previewMaterial = LoadDefaultPreviewMaterial();
+                previewMaterial = UIUtils.LoadMaterial("Preview");
             }
-        }
-
-        static Material LoadDefaultSaturationMaterial()
-        {
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Saturation", new[] { "Assets/Resources/Materials/UI/Color Picker" });
-            if (uiMaterialAssetPath.Length > 0)
-            {
-                foreach(string path in uiMaterialAssetPath)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
-                    if (obj is Material)
-                        return obj as Material;
-                }
-            }
-
-            return null;
-        }
-
-        static Material LoadDefaultHueMaterial()
-        {
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Hue", new[] { "Assets/Resources/Materials/UI/Color Picker" });
-            if (uiMaterialAssetPath.Length > 0)
-            {
-                foreach (string path in uiMaterialAssetPath)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
-                    if (obj is Material)
-                        return obj as Material;
-                }
-            }
-
-            return null;
-        }
-
-        static Material LoadDefaultPreviewMaterial()
-        {
-            // TODO: use LoadResource?
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("Preview", new[] { "Assets/Resources/Materials/UI/Color Picker" });
-            if (uiMaterialAssetPath.Length > 0)
-            {
-                foreach (string path in uiMaterialAssetPath)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
-                    if (obj is Material)
-                        return obj as Material;
-                }
-            }
-
-            return null;
         }
 
         static GameObject LoadDefaultSaturationCursor()
