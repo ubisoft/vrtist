@@ -44,17 +44,66 @@ namespace VRtist
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
         public static Material currentMaterial = null;
 
+        public static byte[] Vector3ToBytes(Vector3 vector)
+        {
+            byte[] bytes = new byte[3 * sizeof(float)];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, 0, sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, 2 * sizeof(float), sizeof(float));
+            return bytes;
+        }
+        public static byte[] QuaternionToBytes(Quaternion quaternion)
+        {
+            byte[] bytes = new byte[4 * sizeof(float)];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(quaternion.x), 0, bytes, 0, sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(quaternion.y), 0, bytes, 1 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(quaternion.z), 0, bytes, 2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(quaternion.w), 0, bytes, 3 * sizeof(float), sizeof(float));
+            return bytes;
+        }
+
+        public static byte[] ConcatenateBuffers(List<byte[]> buffers)
+        {
+            int totalLength = 0;
+            foreach (byte[] buffer in buffers)
+            {
+                totalLength += buffer.Length;
+            }
+            byte[] resultBuffer = new byte[totalLength];
+            int index = 0;
+            foreach (byte[] buffer in buffers)
+            {
+                int size = buffer.Length;
+                Buffer.BlockCopy(buffer, 0, resultBuffer, index, size);
+                index += size;
+            }
+            return resultBuffer;
+        }
+
+        public static Material DefaultMaterial()
+        {
+            string name = "defaultMaterial";
+            if (materials.ContainsKey(name))
+                return materials[name];
+
+            Shader hdrplit = Shader.Find("HDRP/Lit");
+            Material material = new Material(hdrplit);
+            material.name = name;
+            material.SetColor("_BaseColor", new Color(0.8f,0.8f,0.8f));
+            material.SetFloat("_Metallic", 0.0f);
+            material.SetFloat("_Smoothness", 0.5f);
+            materials[name] = material;
+
+            return material;
+        }
+
         public static void BuildMaterial(byte[] data)
         {
             int nameLength = (int)BitConverter.ToUInt32(data, 0);
             string name = System.Text.Encoding.UTF8.GetString(data, 4, nameLength);
-
-            if (materials.ContainsKey(name))
-            {
-                currentMaterial = materials[name];
-                return;
-            }
-
+            
             int currentIndex = 4 + nameLength;
 
             float[] buffer = new float[3];
@@ -75,7 +124,7 @@ namespace VRtist
             material.SetFloat("_Metallic", metallic);
             material.SetFloat("_Smoothness",1f - roughness);
 
-            materials.Add(name, material);
+            materials[name] = material;
             currentMaterial = material;
         }
 
@@ -125,6 +174,28 @@ namespace VRtist
             return transform;
         }
 
+        public static NetCommand BuildTransformCommand(Transform root,Transform transform)
+        {
+            Transform current = transform;
+            string path = current.name;
+            while(current.parent && current != root)
+            {
+                current = current.parent;
+                path = current.name + "/" + path;
+            }
+
+            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
+
+            byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
+            byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
+            byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
+
+            List<byte[]> buffers = new List<byte[]>{ nameBufferSize, nameBuffer, positionBuffer, rotationBuffer, scaleBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
+            return command;
+        }
+
         public static Mesh BuildMesh(Transform root, byte[] data)
         {
             int currentIndex = 0;
@@ -161,6 +232,7 @@ namespace VRtist
 
             UInt32 UVsCount = BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
+
             size = (int)UVsCount * sizeof(float) * 2;
             Vector2[] uvs = new Vector2[UVsCount];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
@@ -172,10 +244,10 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex) / 2;
             currentIndex += 4;
-            int[] materialIndices = new int[materialIndicesCount];
-            size = materialIndicesCount * sizeof(int);
+            int[] materialIndices = new int[materialIndicesCount * 2];
+            size = materialIndicesCount * 2 * sizeof(int);
             Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
             currentIndex += size;
 
@@ -186,19 +258,30 @@ namespace VRtist
             Buffer.BlockCopy(data, currentIndex, indices, 0, size);
             currentIndex += size;
 
+
             int materialCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
-            Material[] meshMaterials = new Material[materialCount];
-            for(int i = 0; i < materialCount; i++)
+            Material[] meshMaterials;
+            if (materialCount == 0)
             {
-                int materialNameSize = (int)BitConverter.ToUInt32(data, currentIndex);
-                string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
-                currentIndex += materialNameSize + 4;
-
-                meshMaterials[i] = null;
-                if (materials.ContainsKey(materialName))
+                meshMaterials = new Material[1];
+                meshMaterials[0] = DefaultMaterial();
+                materialCount = 1;
+            }
+            else
+            {
+                meshMaterials = new Material[materialCount];
+                for (int i = 0; i < materialCount; i++)
                 {
-                    meshMaterials[i] = materials[materialName];
+                    int materialNameSize = (int)BitConverter.ToUInt32(data, currentIndex);
+                    string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
+                    currentIndex += materialNameSize + 4;
+
+                    meshMaterials[i] = null;
+                    if (materials.ContainsKey(materialName))
+                    {
+                        meshMaterials[i] = materials[materialName];
+                    }
                 }
             }
 
@@ -207,7 +290,67 @@ namespace VRtist
             mesh.normals = normals;
             mesh.uv = uvs;
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-            mesh.triangles = indices;
+
+            if (materialCount == 1) // only one submesh
+                mesh.triangles = indices;
+            else
+            {
+                int remainingTringles = indicesCount / 3;
+                int currentTriangleIndex = 0;
+                mesh.subMeshCount = materialIndicesCount;
+
+                int[][] subIndices = new int[materialCount][];
+                int[] trianglesPerMaterialCount = new int[materialCount];
+                int[] subIndicesIndices = new int[materialCount];
+                for (int i = 0; i < materialCount; i++)
+                {
+                    trianglesPerMaterialCount[i] = 0;
+                    subIndicesIndices[i] = 0;
+                }
+
+                // count
+                for (int i = 0; i < materialIndicesCount; i++)
+                {
+                    int triangleCount = remainingTringles;
+                    if (i < (materialIndicesCount - 1))
+                    {
+                        triangleCount = materialIndices[(i + 1) * 2] - materialIndices[i * 2];
+                        remainingTringles -= triangleCount;
+                    }
+                    int materialIndex = materialIndices[i * 2 + 1];
+                    trianglesPerMaterialCount[materialIndex] += triangleCount;
+                }
+
+                //allocate
+                for(int i = 0; i < materialCount; i++)
+                {
+                    subIndices[i] = new int[trianglesPerMaterialCount[i] * 3];
+                }
+
+                // fill
+                remainingTringles = indicesCount / 3;
+                for (int i = 0; i < materialIndicesCount; i++)
+                {
+                    // allocate triangles
+                    int triangleCount = remainingTringles;
+                    if (i < (materialIndicesCount - 1))
+                    {
+                        triangleCount = materialIndices[(i + 1) * 2] - materialIndices[i * 2];
+                        remainingTringles -= triangleCount;
+                    }
+                    int materialIndex = materialIndices[i * 2 + 1];
+                    int dataSize = triangleCount * 3 * sizeof(int);
+                    Buffer.BlockCopy(indices, currentTriangleIndex, subIndices[materialIndex], subIndicesIndices[materialIndex], dataSize);
+                    subIndicesIndices[materialIndex] += dataSize;
+                    currentTriangleIndex += dataSize;
+                }
+
+                // set
+                for(int i = 0; i < materialCount; i++)
+                {
+                    mesh.SetTriangles(subIndices[i], i);
+                }
+            }
 
             GameObject gobject = transform.gameObject;
             MeshFilter meshFilter = gobject.GetComponent<MeshFilter>();
@@ -218,9 +361,10 @@ namespace VRtist
                 meshRenderer = gobject.AddComponent<MeshRenderer>();
             meshFilter.mesh = mesh;
 
-            //////////////////////
-            meshRenderer.sharedMaterial = currentMaterial;
-            //////////////////////
+            meshRenderer.sharedMaterials = meshMaterials;
+
+            MeshCollider collider = gobject.AddComponent<MeshCollider>();
+            gobject.tag = "PhysicObject";
 
             return mesh;
         }
@@ -228,6 +372,7 @@ namespace VRtist
 
     public class NetworkClient : MonoBehaviour
     {
+        private static NetworkClient _instance;
         public Transform root;
         public string host = "localhost";
         public int port = 12800;
@@ -239,9 +384,19 @@ namespace VRtist
         List<NetCommand> receivedCommands = new List<NetCommand>();
         List<NetCommand> pendingCommands = new List<NetCommand>();
 
+        public void Awake()
+        {
+            _instance = this;
+        }
+
         ~NetworkClient()
         {
             Join();
+        }
+
+        public static NetworkClient GetInstance()
+        {
+            return _instance;
         }
 
         void Update()
@@ -350,12 +505,9 @@ namespace VRtist
             byte[] sizeBuffer = BitConverter.GetBytes((Int64)command.data.Length);
             byte[] commandId = BitConverter.GetBytes((Int32)command.id);
             byte[] typeBuffer = BitConverter.GetBytes((Int16)command.messageType);
-            byte[] buffer = new byte[sizeof(Int64) + sizeof(Int32) + sizeof(Int16) + command.data.Length];
-            Buffer.BlockCopy(sizeBuffer, 0, buffer, 0, sizeof(Int64));
-            Buffer.BlockCopy(commandId, 0, buffer, sizeof(Int64), sizeof(Int32));
-            Buffer.BlockCopy(typeBuffer, 0, buffer, sizeof(Int64) + sizeof(Int32), sizeof(Int16));
-            Buffer.BlockCopy(command.data, 0, buffer, sizeof(Int64) + sizeof(Int32) + sizeof(Int16), command.data.Length);
-            socket.Send(buffer);
+            List<byte[]> buffers = new List<byte[]> { sizeBuffer, commandId, typeBuffer, command.data };
+
+            socket.Send(NetGeometry.ConcatenateBuffers(buffers));
         }
 
         void AddCommand(NetCommand command)
@@ -364,6 +516,12 @@ namespace VRtist
             {
                 pendingCommands.Add(command);
             }
+        }
+
+        public void SendTransform(Transform transform)
+        {
+            NetCommand command = NetGeometry.BuildTransformCommand(root, transform);
+            WriteMessage(command);
         }
 
         public void JoinRoom(string roomName)
@@ -407,6 +565,15 @@ namespace VRtist
                         pendingCommands.Clear();
                     }
                 }
+            }
+        }
+
+        public void SendEvent<T>(MessageType messageType, T data)
+        {
+            switch(messageType)
+            {
+                case MessageType.Transform:
+                    SendTransform(data as Transform); break;
             }
         }
     }
