@@ -33,7 +33,7 @@ namespace VRtist
         public UnityEvent onUncheckEvent = null;
 
         private bool isChecked = false;
-        public bool Checked { get { return isChecked; } set { isChecked = value; } }
+        public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }
 
         private bool needRebuild = false;
 
