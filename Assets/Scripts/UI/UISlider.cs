@@ -172,7 +172,25 @@ namespace VRtist
 
         private void UpdateValueText()
         {
+            //transform.FindChild("TextValue");
+
             // TODO
+            Canvas canvas = GetComponentInChildren<Canvas>();
+            if (canvas != null)
+            {
+                for (int i = 0; i < canvas.transform.childCount; ++i)
+                {
+                    Transform t = canvas.transform.GetChild(i);
+                    if (t.gameObject.name == "TextValue")
+                    {
+                        Text txt = t.gameObject.GetComponent<Text>();
+                        if (txt != null)
+                        {
+                            txt.text = current_value.ToString();
+                        }
+                    }
+                }
+            }
         }
 
         private void UpdateSliderPosition()
@@ -243,7 +261,7 @@ namespace VRtist
                 // Calc projection of cursor, and snap to slider range if in range (lol)
                 // Update local slider value.
 
-                current_value = 0.5f;
+                Value += 0.01f;
 
                 onSlideEvent.Invoke(current_value);
             }
@@ -412,7 +430,7 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 //t.font = (Font)Resources.Load("MyLocalFont");
-                t.text = caption;
+                t.text = cur_slider_value.ToString();
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleRight;
