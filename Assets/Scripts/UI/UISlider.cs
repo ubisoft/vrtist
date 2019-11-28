@@ -7,6 +7,10 @@ using UnityEngine.UI;
 
 namespace VRtist
 {
+    public class UIFloatEvent : UnityEvent<float>
+    {
+    }
+
     [ExecuteInEditMode]
     [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
@@ -23,20 +27,31 @@ namespace VRtist
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
 
+        [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
+        public float min_value = 0.0f;
+        public float max_value = 1.0f;
+        public float current_value = 0.5f;
+
+        // TODO: type? handle int and float.
+        //       precision, step?
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public UnityEvent onHoverEvent = null;
+        public UIFloatEvent onSlideEvent = null;
+        // TODO: maybe make 2 callbacks, one for floats, one for ints
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
         private bool needRebuild = false;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
+        public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
         void Start()
         {
             if (EditorApplication.isPlaying || Application.isPlaying)
             {
-                onClickEvent.AddListener(OnPushSlider);
+                onSlideEvent.AddListener(OnSlide);
+                onClickEvent.AddListener(OnClickSlider);
                 onReleaseEvent.AddListener(OnReleaseSlider);
             }
         }
@@ -88,7 +103,7 @@ namespace VRtist
                     textRT.sizeDelta = new Vector2(width, height);
                 }
 
-                // TODO: image
+                // TODO: text 2
             }
         }
 
@@ -130,6 +145,8 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
+                UpdateValueText();
+                UpdateSliderPosition();
                 SetColor(baseColor);
                 needRebuild = false;
             }
@@ -149,6 +166,18 @@ namespace VRtist
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
+
+            // TODO: add gizmos for the slider section.
+        }
+
+        private void UpdateValueText()
+        {
+            // TODO
+        }
+
+        private void UpdateSliderPosition()
+        {
+            // TODO
         }
 
         private string GetText()
@@ -171,13 +200,29 @@ namespace VRtist
             }
         }
 
+        private float GetValue()
+        {
+            return current_value;
+
+            // This can be done in Update/UpdateSliderTextValue
+            //Text[] texts = GetComponentsInChildren<Text>();
+            //return float.Parse(texts[1].text); // TODO: find the right children
+        }
+
+        private void SetValue(float floatValue)
+        {
+            current_value = floatValue;
+            //Text[] texts = GetComponentsInChildren<Text>();
+            //texts[1].text = floatValue.ToString(); // TODO: find the right children
+        }
+
         private void OnTriggerEnter(Collider otherCollider)
         {
-            // TODO: pass the Cursor to the slider, test the object instead of a hardcoded name.
             if (otherCollider.gameObject.name == "Cursor")
             {
+                // HIDE cursor
+
                 onClickEvent.Invoke();
-                //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
 
@@ -185,6 +230,8 @@ namespace VRtist
         {
             if (otherCollider.gameObject.name == "Cursor")
             {
+                // SHOW cursor
+
                 onReleaseEvent.Invoke();
             }
         }
@@ -193,11 +240,16 @@ namespace VRtist
         {
             if (otherCollider.gameObject.name == "Cursor")
             {
-                onHoverEvent.Invoke();
+                // Calc projection of cursor, and snap to slider range if in range (lol)
+                // Update local slider value.
+
+                current_value = 0.5f;
+
+                onSlideEvent.Invoke(current_value);
             }
         }
 
-        public void OnPushSlider()
+        public void OnClickSlider()
         {
             SetColor(pushedColor);
         }
@@ -205,6 +257,11 @@ namespace VRtist
         public void OnReleaseSlider()
         {
             SetColor(baseColor);
+        }
+
+        public void OnSlide(float f)
+        {
+            // TODO
         }
 
         public static void CreateUISlider(
@@ -215,6 +272,9 @@ namespace VRtist
             float height,
             float margin,
             float thickness,
+            float min_slider_value,
+            float max_slider_value,
+            float cur_slider_value,
             Material material,
             Color color,
             string caption)
@@ -243,7 +303,10 @@ namespace VRtist
             uiSlider.height = height;
             uiSlider.margin = margin;
             uiSlider.thickness = thickness;
-            
+            uiSlider.min_value = min_slider_value;
+            uiSlider.max_value = max_slider_value;
+            uiSlider.current_value = cur_slider_value;
+
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
@@ -267,6 +330,8 @@ namespace VRtist
                     }
                     coll.isTrigger = true;
                 }
+
+                // TODO: child objects, slider "rail", slider "knob"
             }
 
             // Setup the MeshRenderer
@@ -312,25 +377,6 @@ namespace VRtist
 
             float minSide = Mathf.Min(uiSlider.width, uiSlider.height);
 
-            // Add an Image under the Canvas
-            //if (uncheckedIcon != null && checkedIcon != null)
-            //{
-            //    GameObject image = new GameObject("Image");
-            //    image.transform.parent = canvas.transform;
-
-            //    Image img = image.AddComponent<Image>();
-            //    img.sprite = uncheckedIcon;
-
-            //    RectTransform trt = image.GetComponent<RectTransform>();
-            //    trt.localScale = Vector3.one;
-            //    trt.localRotation = Quaternion.identity;
-            //    trt.anchorMin = new Vector2(0, 1);
-            //    trt.anchorMax = new Vector2(0, 1);
-            //    trt.pivot = new Vector2(0, 1); // top left
-            //    // TODO: non square icons ratio...
-            //    trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-            //    trt.localPosition = new Vector3(margin, -margin, -0.001f);
-            //}
 
             // Add a Text under the Canvas
             if (caption.Length > 0)
@@ -353,9 +399,35 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2(uiSlider.width, uiSlider.height);
-               // float textPosLeft = uncheckedIcon != null ? minSide : 0.0f;
-                //trt.localPosition = new Vector3(textPosLeft, -uiSlider.height / 2.0f, -0.002f);
+                trt.sizeDelta = new Vector2(uiSlider.width / 2.0f, uiSlider.height);
+                float textPosLeft = minSide;
+                trt.localPosition = new Vector3(textPosLeft, -uiSlider.height / 2.0f, -0.002f);
+            }
+
+            // Text VALUE
+            //if (caption.Length > 0)
+            {
+                GameObject text = new GameObject("TextValue");
+                text.transform.parent = canvas.transform;
+
+                Text t = text.AddComponent<Text>();
+                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.text = caption;
+                t.fontSize = 32;
+                t.fontStyle = FontStyle.Bold;
+                t.alignment = TextAnchor.MiddleRight;
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
+                t.verticalOverflow = VerticalWrapMode.Overflow;
+
+                RectTransform trt = t.GetComponent<RectTransform>();
+                trt.localScale = 0.01f * Vector3.one;
+                trt.localRotation = Quaternion.identity;
+                trt.anchorMin = new Vector2(0, 1);
+                trt.anchorMax = new Vector2(0, 1);
+                trt.pivot = new Vector2(1, 1); // top right?
+                trt.sizeDelta = new Vector2(uiSlider.width / 2.0f, uiSlider.height);
+                float textPosRight = uiSlider.width - minSide;
+                trt.localPosition = new Vector3(textPosRight, -uiSlider.height / 2.0f, -0.002f);
             }
         }
     }
