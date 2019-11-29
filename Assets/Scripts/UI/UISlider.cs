@@ -4,9 +4,11 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEditor;
 using UnityEngine.UI;
+using System;
 
 namespace VRtist
 {
+    [Serializable]
     public class UIFloatEvent : UnityEvent<float>
     {
     }
@@ -21,6 +23,8 @@ namespace VRtist
         [SpaceHeader("Slider Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         public float margin = 0.005f;
         public float thickness = 0.001f;
+        public float sliderPositionBegin = 0.3f;
+        public float sliderPositionEnd = 0.8f;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
@@ -28,21 +32,24 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
-        public float min_value = 0.0f;
-        public float max_value = 1.0f;
-        public float current_value = 0.5f;
+        public float minValue = 0.0f;
+        public float maxValue = 1.0f;
+        public float currentValue = 0.5f;
 
         // TODO: type? handle int and float.
         //       precision, step?
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public UIFloatEvent onSlideEvent = null;
-        // TODO: maybe make 2 callbacks, one for floats, one for ints
+        public UIFloatEvent onSlideEvent = null; // TODO: maybe make 2 callbacks, one for floats, one for ints
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
+
         private bool needRebuild = false;
 
+        // TODO: also rebuild rail mesh
+        public float SliderPositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; UpdateCanvasDimensions(); } }
+        public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; UpdateCanvasDimensions(); } }
         public string Text { get { return GetText(); } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
@@ -62,6 +69,8 @@ namespace VRtist
             Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
             theNewMesh.name = "UISlider_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
+
+            // TODO: rebuild rail and maybe knob
 
             UpdateColliderDimensions();
             UpdateCanvasDimensions();
@@ -96,14 +105,20 @@ namespace VRtist
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
                 canvasRT.sizeDelta = new Vector2(width, height);
 
-                Text text = canvas.gameObject.GetComponentInChildren<Text>();
-                if (text != null)
-                {
-                    RectTransform textRT = text.gameObject.GetComponent<RectTransform>();
-                    textRT.sizeDelta = new Vector2(width, height);
-                }
+                float textPosRight = width - margin;
+                float textPosLeft = margin;
 
-                // TODO: text 2
+                Transform textTransform = canvas.transform.Find("Text");
+                Transform textValueTransform = canvas.transform.Find("TextValue");
+
+                RectTransform rectText = textTransform.GetComponent<RectTransform>();
+                RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
+
+                rectText.sizeDelta = new Vector2((width - 2 * margin) * sliderPositionBegin, height);
+                rectText.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
+
+                rectTextValue.sizeDelta = new Vector2((width - 2 * margin) * (1 - sliderPositionEnd), height);
+                rectTextValue.localPosition = new Vector3(textPosRight, -height / 2.0f, -0.002f);
             }
         }
 
@@ -154,48 +169,59 @@ namespace VRtist
 
         private void OnDrawGizmosSelected()
         {
+            float widthWithoutMargins = width - 2.0f * margin;
+
             Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -0.001f));
             Vector3 posTopLeft = transform.TransformPoint(new Vector3(margin, -margin, -0.001f));
             Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, -0.001f));
             Vector3 posBottomLeft = transform.TransformPoint(new Vector3(margin, -height + margin, -0.001f));
             Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, -0.001f));
+            Vector3 posTopSliderBegin = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionBegin, -margin, -0.001f));
+            Vector3 posTopSliderEnd = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionEnd, -margin, -0.001f));
+            Vector3 posBottomSliderBegin = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionBegin, -height + margin, -0.001f));
+            Vector3 posBottomSliderEnd = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionEnd, -height + margin, -0.001f));
+
+            Vector3 eps = new Vector3(0.001f, 0, 0);
 
             Gizmos.color = Color.white;
-            Gizmos.DrawLine(posTopLeft, posTopRight);
-            Gizmos.DrawLine(posTopRight, posBottomRight);
-            Gizmos.DrawLine(posBottomRight, posBottomLeft);
+            Gizmos.DrawLine(posTopLeft, posTopSliderBegin);
+            Gizmos.DrawLine(posTopSliderBegin, posBottomSliderBegin);
+            Gizmos.DrawLine(posBottomSliderBegin, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
-            UnityEditor.Handles.Label(labelPosition, gameObject.name);
 
-            // TODO: add gizmos for the slider section.
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(posTopSliderBegin + eps, posTopSliderEnd);
+            Gizmos.DrawLine(posTopSliderEnd, posBottomSliderEnd);
+            Gizmos.DrawLine(posBottomSliderEnd, posBottomSliderBegin + eps);
+            Gizmos.DrawLine(posBottomSliderBegin + eps, posTopSliderBegin + eps);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(posTopSliderEnd + eps, posTopRight);
+            Gizmos.DrawLine(posTopRight, posBottomRight);
+            Gizmos.DrawLine(posBottomRight, posBottomSliderEnd + eps);
+            Gizmos.DrawLine(posBottomSliderEnd + eps, posTopSliderEnd + eps);
+
+            Gizmos.color = Color.white;
+            UnityEditor.Handles.Label(labelPosition, gameObject.name);
         }
 
         private void UpdateValueText()
         {
-            //transform.FindChild("TextValue");
-
-            // TODO
             Canvas canvas = GetComponentInChildren<Canvas>();
             if (canvas != null)
             {
-                for (int i = 0; i < canvas.transform.childCount; ++i)
+                Transform textValueTransform = canvas.transform.Find("TextValue");
+                Text txt = textValueTransform.gameObject.GetComponent<Text>();
+                if (txt != null)
                 {
-                    Transform t = canvas.transform.GetChild(i);
-                    if (t.gameObject.name == "TextValue")
-                    {
-                        Text txt = t.gameObject.GetComponent<Text>();
-                        if (txt != null)
-                        {
-                            txt.text = current_value.ToString();
-                        }
-                    }
+                    txt.text = currentValue.ToString();
                 }
             }
         }
 
         private void UpdateSliderPosition()
         {
-            // TODO
+            // TODO: reposition the knob
         }
 
         private string GetText()
@@ -220,18 +246,12 @@ namespace VRtist
 
         private float GetValue()
         {
-            return current_value;
-
-            // This can be done in Update/UpdateSliderTextValue
-            //Text[] texts = GetComponentsInChildren<Text>();
-            //return float.Parse(texts[1].text); // TODO: find the right children
+            return currentValue;
         }
 
         private void SetValue(float floatValue)
         {
-            current_value = floatValue;
-            //Text[] texts = GetComponentsInChildren<Text>();
-            //texts[1].text = floatValue.ToString(); // TODO: find the right children
+            currentValue = floatValue;
         }
 
         private void OnTriggerEnter(Collider otherCollider)
@@ -263,7 +283,7 @@ namespace VRtist
 
                 Value += 0.01f;
 
-                onSlideEvent.Invoke(current_value);
+                onSlideEvent.Invoke(currentValue);
             }
         }
 
@@ -290,6 +310,8 @@ namespace VRtist
             float height,
             float margin,
             float thickness,
+            float slider_begin,
+            float slider_end,
             float min_slider_value,
             float max_slider_value,
             float cur_slider_value,
@@ -321,9 +343,11 @@ namespace VRtist
             uiSlider.height = height;
             uiSlider.margin = margin;
             uiSlider.thickness = thickness;
-            uiSlider.min_value = min_slider_value;
-            uiSlider.max_value = max_slider_value;
-            uiSlider.current_value = cur_slider_value;
+            uiSlider.sliderPositionBegin = slider_begin;
+            uiSlider.sliderPositionEnd = slider_end;
+            uiSlider.minValue = min_slider_value;
+            uiSlider.maxValue = max_slider_value;
+            uiSlider.currentValue = cur_slider_value;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -366,10 +390,25 @@ namespace VRtist
 
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(material);
-                Material sharedMaterial = meshRenderer.sharedMaterial;
-
+                
                 uiSlider.BaseColor = color;
             }
+
+            // Add the Rail Geometry Object
+            GameObject rail = new GameObject("Rail");
+            rail.transform.parent = uiSlider.transform;
+            rail.transform.localPosition = new Vector3(margin + (width-2*margin)*slider_begin, -height/2, 0.0f);
+            rail.transform.localRotation = Quaternion.identity;
+            rail.transform.localScale = Vector3.one;
+
+            MeshFilter railMeshFilter = rail.AddComponent<MeshFilter>();
+            Mesh newRailMesh = UIUtils.BuildHollowCube((width - 2 * margin) * (slider_end - slider_begin), 3*margin); // TODO: pass params to CreateUISlider
+            newRailMesh.name = "UISliderRail_GeneratedMesh";
+            railMeshFilter.sharedMesh = newRailMesh;
+
+            MeshRenderer railMeshRenderer = rail.AddComponent<MeshRenderer>();
+            railMeshRenderer.sharedMaterial = Instantiate(material);
+            railMeshRenderer.material.SetColor("_BaseColor", Color.red);
 
             // Add a Canvas
             GameObject canvas = new GameObject("Canvas");
@@ -390,11 +429,6 @@ namespace VRtist
             CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
             cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
             cs.referencePixelsPerUnit = 100; // default?
-
-            //canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
-
-            float minSide = Mathf.Min(uiSlider.width, uiSlider.height);
-
 
             // Add a Text under the Canvas
             if (caption.Length > 0)
@@ -417,8 +451,8 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2(uiSlider.width / 2.0f, uiSlider.height);
-                float textPosLeft = minSide;
+                trt.sizeDelta = new Vector2((uiSlider.width-2*uiSlider.margin) * uiSlider.sliderPositionBegin, uiSlider.height);
+                float textPosLeft = uiSlider.margin;
                 trt.localPosition = new Vector3(textPosLeft, -uiSlider.height / 2.0f, -0.002f);
             }
 
@@ -443,8 +477,8 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(1, 1); // top right?
-                trt.sizeDelta = new Vector2(uiSlider.width / 2.0f, uiSlider.height);
-                float textPosRight = uiSlider.width - minSide;
+                trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * (1-uiSlider.sliderPositionEnd), uiSlider.height);
+                float textPosRight = uiSlider.width - uiSlider.margin;
                 trt.localPosition = new Vector3(textPosRight, -uiSlider.height / 2.0f, -0.002f);
             }
         }

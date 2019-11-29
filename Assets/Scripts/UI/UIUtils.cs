@@ -684,6 +684,89 @@ namespace VRtist
             return mesh;
         }
 
+        public static Mesh BuildHollowCube(float width, float height)
+        {
+            const float default_margin = 0.005f;
+            const float default_thickness = 0.005f;
+
+            return BuildHollowCubeEx(width, height, default_margin, default_thickness);
+        }
+
+        public static Mesh BuildHollowCubeEx(float width, float height, float margin, float thickness)
+        {
+            int currentIndex = 0;
+
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<int> indices = new List<int>();
+
+            float h2 = height / 2.0f;
+            float m = margin;
+
+            Vector3 front_outer_top_left = new Vector3(0.0f, h2, -thickness);
+            Vector3 front_outer_top_right = new Vector3(width, h2, -thickness);
+            Vector3 front_outer_bottom_left = new Vector3(0.0f, -h2, -thickness);
+            Vector3 front_outer_bottom_right = new Vector3(width, -h2, -thickness);
+
+            Vector3 front_inner_top_left = new Vector3(m, h2-m, -thickness);
+            Vector3 front_inner_top_right = new Vector3(width-m, h2-m, -thickness);
+            Vector3 front_inner_bottom_left = new Vector3(m, -h2+m, -thickness);
+            Vector3 front_inner_bottom_right = new Vector3(width-m, -h2+m, -thickness);
+
+            Vector3 back_outer_top_left = new Vector3(0.0f, h2, 0.0f);
+            Vector3 back_outer_top_right = new Vector3(width, h2, 0.0f);
+            Vector3 back_outer_bottom_left = new Vector3(0.0f, -h2, 0.0f);
+            Vector3 back_outer_bottom_right = new Vector3(width, -h2, 0.0f);
+
+            Vector3 back_inner_top_left = new Vector3(m, h2-m, 0.0f);
+            Vector3 back_inner_top_right = new Vector3(width-m, h2-m, 0.0f);
+            Vector3 back_inner_bottom_left = new Vector3(m, -h2+m, 0.0f);
+            Vector3 back_inner_bottom_right = new Vector3(width-m, -h2+m, 0.0f);
+
+
+            #region front-hollow-face
+
+            vertices.Add(front_outer_top_left);
+            vertices.Add(front_outer_top_right);
+            vertices.Add(front_outer_bottom_left);
+            vertices.Add(front_outer_bottom_right);
+            vertices.Add(front_inner_top_left);
+            vertices.Add(front_inner_top_right);
+            vertices.Add(front_inner_bottom_left);
+            vertices.Add(front_inner_bottom_right);
+
+            for (int i = 0; i < 8; ++i) normals.Add(Vector3.up);
+
+            int[] outer_front_hollow_face_indices = new int[]
+            {
+            0,1,4,
+            4,1,5,
+            5,1,7,
+            7,1,3,
+            7,3,6,
+            6,3,2,
+            6,2,4,
+            4,2,0
+            };
+
+            for (int i = 0; i < outer_front_hollow_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + outer_front_hollow_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+
+            Mesh mesh = new Mesh();
+            mesh.SetVertices(vertices);
+            mesh.SetNormals(normals);
+            mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+
+            return mesh;
+        }
+
         #endregion
 
         #region Resource Loading

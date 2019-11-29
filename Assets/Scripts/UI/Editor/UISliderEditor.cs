@@ -47,6 +47,8 @@ namespace VRtist
             Vector3 posRight = T.TransformPoint(new Vector3(+uiSlider.width, -uiSlider.height / 2.0f, 0));
             Vector3 posBottom = T.TransformPoint(new Vector3(uiSlider.width / 2.0f, -uiSlider.height, 0));
             Vector3 posAnchor = T.TransformPoint(uiSlider.Anchor);
+            Vector3 posSliderBegin = T.TransformPoint(new Vector3(uiSlider.margin + (uiSlider.width - 2 * uiSlider.margin) * uiSlider.sliderPositionBegin, -uiSlider.height / 2.0f, 0));
+            Vector3 posSliderEnd = T.TransformPoint(new Vector3(uiSlider.margin + (uiSlider.width - 2 * uiSlider.margin) * uiSlider.sliderPositionEnd, -uiSlider.height / 2.0f, 0));
             float handleSize = .3f * HandleUtility.GetHandleSize(posAnchor);
             Vector3 snap = Vector3.one * 0.01f;
 
@@ -59,8 +61,13 @@ namespace VRtist
             Vector3 newTargetPosition_bottom = Handles.FreeMoveHandle(posBottom, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
             Handles.color = Handles.zAxisColor;
-            //Vector3 newTargetPosition_anchor = hasUIElementParent ? Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap) : posAnchor;
             Vector3 newTargetPosition_anchor = Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
+
+            Handles.color = new Color(0.8f, 0.4f, 0.1f);
+            Vector3 newTargetPosition_sliderBegin = Handles.FreeMoveHandle(posSliderBegin, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
+
+            Handles.color = new Color(0.8f, 0.4f, 0.1f);
+            Vector3 newTargetPosition_sliderEnd = Handles.FreeMoveHandle(posSliderEnd, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -69,6 +76,8 @@ namespace VRtist
                 Vector3 deltaRight = newTargetPosition_right - posRight;
                 Vector3 deltaBottom = newTargetPosition_bottom - posBottom;
                 Vector3 deltaAnchor = newTargetPosition_anchor - posAnchor;
+                Vector3 deltaSliderBegin = newTargetPosition_sliderBegin - posSliderBegin;
+                Vector3 deltaSliderEnd = newTargetPosition_sliderEnd - posSliderEnd;
 
                 if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
                 {
@@ -77,6 +86,14 @@ namespace VRtist
                 else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
                 {
                     uiSlider.Height += -deltaBottom.y;
+                }
+                else if (Vector3.SqrMagnitude(deltaSliderBegin) > Mathf.Epsilon)
+                {
+                    uiSlider.SliderPositionBegin += deltaSliderBegin.x;
+                }
+                else if (Vector3.SqrMagnitude(deltaSliderEnd) > Mathf.Epsilon)
+                {
+                    uiSlider.SliderPositionEnd += deltaSliderEnd.x;
                 }
                 else if (Vector3.SqrMagnitude(deltaAnchor) > Mathf.Epsilon)
                 {
