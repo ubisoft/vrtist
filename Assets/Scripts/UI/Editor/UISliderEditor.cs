@@ -64,10 +64,10 @@ namespace VRtist
             Vector3 newTargetPosition_anchor = Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
             Handles.color = new Color(0.8f, 0.4f, 0.1f);
-            Vector3 newTargetPosition_sliderBegin = Handles.FreeMoveHandle(posSliderBegin, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
+            Vector3 newTargetPosition_sliderBegin = Handles.FreeMoveHandle(posSliderBegin, Quaternion.identity, handleSize, snap, Handles.CubeHandleCap);
 
             Handles.color = new Color(0.8f, 0.4f, 0.1f);
-            Vector3 newTargetPosition_sliderEnd = Handles.FreeMoveHandle(posSliderEnd, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
+            Vector3 newTargetPosition_sliderEnd = Handles.FreeMoveHandle(posSliderEnd, Quaternion.identity, handleSize, snap, Handles.CubeHandleCap);
 
             if (EditorGUI.EndChangeCheck())
             {

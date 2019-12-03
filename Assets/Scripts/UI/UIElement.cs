@@ -6,7 +6,12 @@ namespace VRtist
 {
     public class UIElement : MonoBehaviour
     {
+        // "stylesheet"
         public static readonly Color default_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
+        public static readonly Color default_background_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
+        public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
+        public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
+
         public static readonly float collider_min_depth_shallow = 0.03f;
         public static readonly float collider_min_depth_deep = 0.1f;
 

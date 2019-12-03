@@ -20,7 +20,7 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UISlider : UIElement
     {
-        [SpaceHeader("Slider Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         public float margin = 0.005f;
         public float thickness = 0.001f;
         public float sliderPositionBegin = 0.3f;
@@ -31,10 +31,22 @@ namespace VRtist
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
 
+        [SpaceHeader("Slider SubComponents Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
+        public float railMargin = 0.005f;
+        public float railThickness = 0.001f;
+        public float knobHeadWidth = 0.002f;
+        public float knobHeadHeight = 0.013f;
+        public float knobHeadDepth = 0.003f;
+        public float knobFootWidth = 0.001f;
+        public float knobFootHeight = 0.005f;
+        public float knobFootDepth = 0.001f; // == railThickness
+        // TODO: add colors here?
+
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
         public float minValue = 0.0f;
         public float maxValue = 1.0f;
         public float currentValue = 0.5f;
+        
 
         // TODO: type? handle int and float.
         //       precision, step?
@@ -44,12 +56,13 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
+        private UISliderRail rail = null;
+        private UISliderKnob knob = null;
 
         private bool needRebuild = false;
 
-        // TODO: also rebuild rail mesh
-        public float SliderPositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; UpdateCanvasDimensions(); } }
-        public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; UpdateCanvasDimensions(); } }
+        public float SliderPositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; RebuildMesh(); } }
+        public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
         public string Text { get { return GetText(); } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
@@ -65,15 +78,33 @@ namespace VRtist
 
         public override void RebuildMesh()
         {
+            // RAIL
+            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * sliderPositionBegin, -height / 2, -0.0f); // put z = 0 back
+            float railWidth = (width - 2 * margin) * (sliderPositionEnd - sliderPositionBegin);
+            float railHeight = 3 * railMargin;
+            
+            rail.RebuildMesh(railWidth, railHeight, railThickness, railMargin);
+            rail.transform.localPosition = railPosition;
+
+            // KNOB
+            float newKnobHeadWidth = knobHeadWidth;
+            float newKnobHeadHeight = knobHeadHeight;
+            float newKnobHeadDepth = knobHeadDepth;
+            float newKnobFootWidth = knobFootWidth;
+            float newKnobFootHeight = knobFootHeight;
+            float newKnobFootDepth = knobFootDepth;
+
+            knob.RebuildMesh(newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth);
+            
+            // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
             theNewMesh.name = "UISlider_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
-            // TODO: rebuild rail and maybe knob
-
             UpdateColliderDimensions();
             UpdateCanvasDimensions();
+            UpdateSliderPosition();
         }
 
         private void UpdateColliderDimensions()
@@ -142,6 +173,10 @@ namespace VRtist
                 nbSubdivCornerFixed = min_nbSubdivCornerFixed;
             if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
                 nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
+            if (currentValue < minValue)
+                currentValue = minValue;
+            if (currentValue > maxValue)
+                currentValue = maxValue;
 
             needRebuild = true;
         }
@@ -221,7 +256,16 @@ namespace VRtist
 
         private void UpdateSliderPosition()
         {
-            // TODO: reposition the knob
+            float pct = currentValue / (maxValue - minValue);
+
+            float widthWithoutMargins = width - 2.0f * margin;
+            float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
+            float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+            float posX = startX + pct * (endX - startX);
+
+            Vector3 knobPosition = new Vector3(posX, -height / 2.0f, 0.0f);
+
+            knob.transform.localPosition = knobPosition;
         }
 
         private string GetText()
@@ -312,11 +356,17 @@ namespace VRtist
             float thickness,
             float slider_begin,
             float slider_end,
+            float rail_margin,
+            float rail_thickness,
             float min_slider_value,
             float max_slider_value,
             float cur_slider_value,
-            Material material,
-            Color color,
+            Material background_material,
+            Material rail_material,
+            Material knob_material,
+            Color background_color,
+            Color rail_color,
+            Color knob_color,
             string caption)
         {
             GameObject go = new GameObject(sliderName);
@@ -372,45 +422,47 @@ namespace VRtist
                     }
                     coll.isTrigger = true;
                 }
-
-                // TODO: child objects, slider "rail", slider "knob"
             }
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && background_material != null)
             {
-                // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
-                //       to make the error disappear;
-
-                // Get an instance of the same material
-                // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
-                //meshRenderer.sharedMaterial = uiMaterial;
-                //Material material = meshRenderer.material; // instance of the sharedMaterial
-
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(material);
-                
-                uiSlider.BaseColor = color;
+                meshRenderer.sharedMaterial = Instantiate(background_material);
+                uiSlider.BaseColor = background_color;
             }
 
-            // Add the Rail Geometry Object
-            GameObject rail = new GameObject("Rail");
-            rail.transform.parent = uiSlider.transform;
-            rail.transform.localPosition = new Vector3(margin + (width-2*margin)*slider_begin, -height/2, 0.0f);
-            rail.transform.localRotation = Quaternion.identity;
-            rail.transform.localScale = Vector3.one;
+            //
+            // RAIL
+            //
 
-            MeshFilter railMeshFilter = rail.AddComponent<MeshFilter>();
-            Mesh newRailMesh = UIUtils.BuildHollowCube((width - 2 * margin) * (slider_end - slider_begin), 3*margin); // TODO: pass params to CreateUISlider
-            newRailMesh.name = "UISliderRail_GeneratedMesh";
-            railMeshFilter.sharedMesh = newRailMesh;
+            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * slider_begin, -height / 2, -0.0f); // put z = 0 back
+            float railWidth = (width - 2 * margin) * (slider_end - slider_begin);
+            float railHeight = 3 * uiSlider.railMargin; // TODO: see if we can tie this to another variable, like height.
+            float railThickness = uiSlider.railThickness;
+            float railMargin = uiSlider.railMargin;
 
-            MeshRenderer railMeshRenderer = rail.AddComponent<MeshRenderer>();
-            railMeshRenderer.sharedMaterial = Instantiate(material);
-            railMeshRenderer.material.SetColor("_BaseColor", Color.red);
+            uiSlider.rail = UISliderRail.CreateUISliderRail("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, rail_material, rail_color);
 
-            // Add a Canvas
+
+            // KNOB
+            Vector3 knobPosition = new Vector3(0, 0, 0);
+            float newKnobHeadWidth = uiSlider.knobHeadWidth;
+            float newKnobHeadHeight = uiSlider.knobHeadHeight;
+            float newKnobHeadDepth = uiSlider.knobHeadDepth;
+            float newKnobFootWidth = uiSlider.knobFootWidth;
+            float newKnobFootHeight = uiSlider.knobFootHeight;
+            float newKnobFootDepth = uiSlider.knobFootDepth;
+
+            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, 
+                newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth, 
+                knob_material, knob_color);
+
+            //
+            // CANVAS (to hold the 2 texts)
+            //
+
             GameObject canvas = new GameObject("Canvas");
             canvas.transform.parent = uiSlider.transform;
 

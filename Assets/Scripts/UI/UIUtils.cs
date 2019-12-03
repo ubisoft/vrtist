@@ -735,7 +735,7 @@ namespace VRtist
             vertices.Add(front_inner_bottom_left);
             vertices.Add(front_inner_bottom_right);
 
-            for (int i = 0; i < 8; ++i) normals.Add(Vector3.up);
+            for (int i = 0; i < 8; ++i) normals.Add(Vector3.back);
 
             int[] outer_front_hollow_face_indices = new int[]
             {
@@ -758,6 +758,429 @@ namespace VRtist
 
             #endregion
 
+            #region back-hollow-face
+
+            vertices.Add(back_outer_top_left);
+            vertices.Add(back_outer_top_right);
+            vertices.Add(back_outer_bottom_left);
+            vertices.Add(back_outer_bottom_right);
+            vertices.Add(back_inner_top_left);
+            vertices.Add(back_inner_top_right);
+            vertices.Add(back_inner_bottom_left);
+            vertices.Add(back_inner_bottom_right);
+
+            for (int i = 0; i < 8; ++i) normals.Add(Vector3.forward);
+
+            int[] outer_back_hollow_face_indices = new int[]
+            {
+            0,4,1,
+            4,5,1,
+            5,7,1,
+            7,3,1,
+            7,6,3,
+            6,2,3,
+            6,4,2,
+            4,0,2
+            };
+
+            for (int i = 0; i < outer_back_hollow_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + outer_back_hollow_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region inner-top-face
+
+            vertices.Add(front_inner_top_left);
+            vertices.Add(front_inner_top_right);
+            vertices.Add(back_inner_top_left);
+            vertices.Add(back_inner_top_right);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+
+            int[] inner_top_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < inner_top_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + inner_top_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region inner-bottom-face
+
+            vertices.Add(back_inner_bottom_left);
+            vertices.Add(back_inner_bottom_right);
+            vertices.Add(front_inner_bottom_left);
+            vertices.Add(front_inner_bottom_right);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.up);
+
+            int[] inner_bottom_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < inner_bottom_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + inner_bottom_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region inner-left-face
+
+            vertices.Add(front_inner_bottom_left);
+            vertices.Add(front_inner_top_left);
+            vertices.Add(back_inner_bottom_left);
+            vertices.Add(back_inner_top_left);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.right);
+
+            int[] inner_left_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < inner_left_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + inner_left_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region inner-right-face
+
+            vertices.Add(back_inner_bottom_right);
+            vertices.Add(back_inner_top_right);
+            vertices.Add(front_inner_bottom_right);
+            vertices.Add(front_inner_top_right);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.left);
+
+            int[] inner_right_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < inner_right_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + inner_right_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region outer-top-face
+
+            vertices.Add(back_outer_top_left);
+            vertices.Add(back_outer_top_right);
+            vertices.Add(front_outer_top_left);
+            vertices.Add(front_outer_top_right);
+            
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+
+            int[] outer_top_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < outer_top_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + outer_top_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region outer-bottom-face
+
+            vertices.Add(front_outer_bottom_left);
+            vertices.Add(front_outer_bottom_right);
+            vertices.Add(back_outer_bottom_left);
+            vertices.Add(back_outer_bottom_right);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+
+            int[] outer_bottom_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < outer_bottom_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + outer_bottom_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region outer-left-face
+
+            vertices.Add(front_outer_top_left);
+            vertices.Add(front_outer_bottom_left);
+            vertices.Add(back_outer_top_left);
+            vertices.Add(back_outer_bottom_left);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+
+            int[] outer_left_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < outer_left_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + outer_left_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region outer-right-face
+
+            vertices.Add(back_outer_top_right);
+            vertices.Add(back_outer_bottom_right);
+            vertices.Add(front_outer_top_right);
+            vertices.Add(front_outer_bottom_right);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+
+            int[] outer_right_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3
+            };
+
+            for (int i = 0; i < outer_right_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + outer_right_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            Mesh mesh = new Mesh();
+            mesh.SetVertices(vertices);
+            mesh.SetNormals(normals);
+            mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+
+            return mesh;
+        }
+
+        public static Mesh BuildSliderKnob(float width, float height, float depth)
+        {
+            return BuildSliderKnobEx(width, height, depth, width, height, depth);
+        }
+
+        public static Mesh BuildSliderKnobEx(float head_width, float head_height, float head_depth, float foot_width, float foot_height, float foot_depth)
+        {
+            int currentIndex = 0;
+
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<int> indices = new List<int>();
+
+            float hw2 = head_width / 2.0f;
+            float fw2 = foot_width / 2.0f;
+            float hh2 = head_height / 2.0f;
+            float fh2 = foot_height / 2.0f;
+            float hd = head_depth;
+            float fd = foot_depth;
+
+            Vector3 back_foot_top_left = new Vector3(-fw2, fh2, 0.0f);
+            Vector3 back_foot_top_right = new Vector3(fw2, fh2, 0.0f);
+            Vector3 back_foot_bottom_left = new Vector3(-fw2, -fh2, 0.0f);
+            Vector3 back_foot_bottom_right = new Vector3(fw2, -fh2, 0.0f);
+
+            Vector3 front_foot_top_left = new Vector3(-fw2, fh2, -fd);
+            Vector3 front_foot_top_right = new Vector3(fw2, fh2, -fd);
+            Vector3 front_foot_bottom_left = new Vector3(-fw2, -fh2, -fd);
+            Vector3 front_foot_bottom_right = new Vector3(fw2, -fh2, -fd);
+
+            Vector3 back_head_top_left = new Vector3(-hw2, hh2, -fd);
+            Vector3 back_head_top_right = new Vector3(hw2, hh2, -fd);
+            Vector3 back_head_bottom_left = new Vector3(-hw2, -hh2, -fd);
+            Vector3 back_head_bottom_right = new Vector3(hw2, -hh2, -fd);
+
+            Vector3 front_head_top_left = new Vector3(-hw2, hh2, -fd-hd);
+            Vector3 front_head_top_right = new Vector3(hw2, hh2, -fd-hd);
+            Vector3 front_head_bottom_left = new Vector3(-hw2, -hh2, -fd-hd);
+            Vector3 front_head_bottom_right = new Vector3(hw2, -hh2, -fd-hd);
+
+            #region foot
+
+            // TOP
+            vertices.Add(back_foot_top_left);
+            vertices.Add(back_foot_top_right);
+            vertices.Add(front_foot_top_left);
+            vertices.Add(front_foot_top_right);
+
+            // BOTTOM
+            vertices.Add(front_foot_bottom_left);
+            vertices.Add(front_foot_bottom_right);
+            vertices.Add(back_foot_bottom_left);
+            vertices.Add(back_foot_bottom_right);
+
+            // LEFT
+            vertices.Add(back_foot_top_left);
+            vertices.Add(front_foot_top_left);
+            vertices.Add(back_foot_bottom_left);
+            vertices.Add(front_foot_bottom_left);
+
+            // RIGHT
+            vertices.Add(front_foot_top_right);
+            vertices.Add(back_foot_top_right);
+            vertices.Add(front_foot_bottom_right);
+            vertices.Add(back_foot_bottom_right);
+
+            // FRONT
+            vertices.Add(front_foot_top_left);
+            vertices.Add(front_foot_top_right);
+            vertices.Add(front_foot_bottom_left);
+            vertices.Add(front_foot_bottom_right);
+
+            // BACK
+            vertices.Add(back_foot_top_right);
+            vertices.Add(back_foot_top_left);
+            vertices.Add(back_foot_bottom_right);
+            vertices.Add(back_foot_bottom_left);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.up);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.left);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.right);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.back); // front
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.forward); // back
+
+            int[] foot_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3,
+
+            4,5,6,
+            6,5,7,
+
+            8,9,10,
+            10,9,11,
+
+            12,13,14,
+            14,13,15,
+
+            16,17,18,
+            18,17,19,
+
+            20,21,22,
+            22,21,23
+            };
+
+            for (int i = 0; i < foot_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + foot_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
+
+            #region head
+
+            // TOP
+            vertices.Add(back_head_top_left);
+            vertices.Add(back_head_top_right);
+            vertices.Add(front_head_top_left);
+            vertices.Add(front_head_top_right);
+
+            // BOTTOM
+            vertices.Add(front_head_bottom_left);
+            vertices.Add(front_head_bottom_right);
+            vertices.Add(back_head_bottom_left);
+            vertices.Add(back_head_bottom_right);
+
+            // LEFT
+            vertices.Add(back_head_top_left);
+            vertices.Add(front_head_top_left);
+            vertices.Add(back_head_bottom_left);
+            vertices.Add(front_head_bottom_left);
+
+            // RIGHT
+            vertices.Add(front_head_top_right);
+            vertices.Add(back_head_top_right);
+            vertices.Add(front_head_bottom_right);
+            vertices.Add(back_head_bottom_right);
+
+            // FRONT
+            vertices.Add(front_head_top_left);
+            vertices.Add(front_head_top_right);
+            vertices.Add(front_head_bottom_left);
+            vertices.Add(front_head_bottom_right);
+
+            // BACK
+            vertices.Add(back_head_top_right);
+            vertices.Add(back_head_top_left);
+            vertices.Add(back_head_bottom_right);
+            vertices.Add(back_head_bottom_left);
+
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.up);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.left);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.right);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.back); // front
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.forward); // back
+
+            int[] head_face_indices = new int[]
+            {
+            0,1,2,
+            2,1,3,
+
+            4,5,6,
+            6,5,7,
+
+            8,9,10,
+            10,9,11,
+
+            12,13,14,
+            14,13,15,
+
+            16,17,18,
+            18,17,19,
+
+            20,21,22,
+            22,21,23
+            };
+
+            for (int i = 0; i < head_face_indices.Length; ++i)
+            {
+                indices.Add(currentIndex + head_face_indices[i]);
+            }
+
+            currentIndex = vertices.Count;
+
+            #endregion
 
             Mesh mesh = new Mesh();
             mesh.SetVertices(vertices);
@@ -806,7 +1229,5 @@ namespace VRtist
         }
 
         #endregion
-
-
     }
 }
