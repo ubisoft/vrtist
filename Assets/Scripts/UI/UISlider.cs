@@ -25,7 +25,7 @@ namespace VRtist
         public float thickness = 0.001f;
         public float sliderPositionBegin = 0.3f;
         public float sliderPositionEnd = 0.8f;
-        public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
+        public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -56,8 +56,8 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
-        private UISliderRail rail = null;
-        private UISliderKnob knob = null;
+        [SerializeField] private UISliderRail rail = null;
+        [SerializeField] private UISliderKnob knob = null;
 
         private bool needRebuild = false;
 
@@ -191,13 +191,21 @@ namespace VRtist
             if (needRebuild)
             {
                 // NOTE: I do all these things because properties can't be called from the inspector.
-                RebuildMesh();
-                UpdateLocalPosition();
-                UpdateAnchor();
-                UpdateChildren();
-                UpdateValueText();
-                UpdateSliderPosition();
-                SetColor(baseColor);
+                try
+                {
+                    RebuildMesh();
+                    UpdateLocalPosition();
+                    UpdateAnchor();
+                    UpdateChildren();
+                    UpdateValueText();
+                    UpdateSliderPosition();
+                    SetColor(baseColor);
+                }
+                catch(Exception e)
+                {
+                    Debug.Log("Exception: " + e);
+                }
+
                 needRebuild = false;
             }
         }
@@ -249,7 +257,7 @@ namespace VRtist
                 Text txt = textValueTransform.gameObject.GetComponent<Text>();
                 if (txt != null)
                 {
-                    txt.text = currentValue.ToString();
+                    txt.text = currentValue.ToString("#.00");
                 }
             }
         }
@@ -325,9 +333,9 @@ namespace VRtist
                 // Calc projection of cursor, and snap to slider range if in range (lol)
                 // Update local slider value.
 
-                Value += 0.01f;
-
-                onSlideEvent.Invoke(currentValue);
+                float projectedValue = (currentValue + 1); // TMP
+                
+                onSlideEvent.Invoke(projectedValue);
             }
         }
 
@@ -343,7 +351,7 @@ namespace VRtist
 
         public void OnSlide(float f)
         {
-            // TODO
+            Value = f;
         }
 
         public static void CreateUISlider(
@@ -431,6 +439,9 @@ namespace VRtist
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(background_material);
                 uiSlider.BaseColor = background_color;
+
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
             }
 
             //
@@ -516,7 +527,7 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 //t.font = (Font)Resources.Load("MyLocalFont");
-                t.text = cur_slider_value.ToString();
+                t.text = cur_slider_value.ToString("#.00");
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleRight;

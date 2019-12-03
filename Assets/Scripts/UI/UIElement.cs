@@ -16,11 +16,12 @@ namespace VRtist
         public static readonly float collider_min_depth_deep = 0.1f;
 
         [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        private Vector3 anchor = Vector3.zero; // local position of anchor for children.
         public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         public float width = 1.0f;
         public float height = 1.0f;
         public Color baseColor = UIElement.default_color;
+
+        private Vector3 anchor = Vector3.zero; // local position of anchor for children.
 
         //
         // Properties

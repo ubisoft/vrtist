@@ -141,6 +141,9 @@ namespace VRtist
             {
                 meshRenderer.sharedMaterial = Instantiate(material);
                 uiSliderRail.Color = c;
+
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
             }
 
             return uiSliderRail;

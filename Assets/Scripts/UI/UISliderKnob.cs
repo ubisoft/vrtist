@@ -150,6 +150,9 @@ namespace VRtist
             {
                 meshRenderer.sharedMaterial = Instantiate(material);
                 uiSliderKnob.Color = c;
+
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
             }
 
             return uiSliderKnob;
