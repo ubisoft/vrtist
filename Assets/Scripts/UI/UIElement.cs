@@ -89,5 +89,7 @@ namespace VRtist
 
         public virtual void RebuildMesh() { }
 
+        public virtual bool HandlesCursorBehavior() { return false; }
+        public virtual void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform) { }
     }
 }

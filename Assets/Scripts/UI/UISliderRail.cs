@@ -7,8 +7,8 @@ namespace VRtist
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(MeshFilter)),
-     RequireComponent(typeof(MeshRenderer)),
-     RequireComponent(typeof(BoxCollider))]
+     RequireComponent(typeof(MeshRenderer))]
+     //RequireComponent(typeof(BoxCollider))]
     public class UISliderRail : MonoBehaviour
     {
         public float width;
@@ -46,29 +46,29 @@ namespace VRtist
             thickness = newThickness;
             margin = newMargin;
 
-            UpdateColliderDimensions();
+            //UpdateColliderDimensions();
         }
 
-        public void UpdateColliderDimensions()
-        {
-            MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            BoxCollider coll = gameObject.GetComponent<BoxCollider>();
-            if (meshFilter != null && coll != null)
-            {
-                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                if (initColliderSize.z < UIElement.collider_min_depth_deep)
-                {
-                    coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
-                    coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
-                }
-                else
-                {
-                    coll.center = initColliderCenter;
-                    coll.size = initColliderSize;
-                }
-            }
-        }
+        //public void UpdateColliderDimensions()
+        //{
+        //    MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
+        //    BoxCollider coll = gameObject.GetComponent<BoxCollider>();
+        //    if (meshFilter != null && coll != null)
+        //    {
+        //        Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+        //        Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+        //        if (initColliderSize.z < UIElement.collider_min_depth_deep)
+        //        {
+        //            coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
+        //            coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
+        //        }
+        //        else
+        //        {
+        //            coll.center = initColliderCenter;
+        //            coll.size = initColliderSize;
+        //        }
+        //    }
+        //}
 
         private void ApplyColor(Color c)
         {
@@ -116,23 +116,23 @@ namespace VRtist
             {
                 meshFilter.sharedMesh = UIUtils.BuildHollowCubeEx(width, height, margin, thickness);
                 //uiColorPickerSaturation.Anchor = Vector3.zero;
-                BoxCollider coll = go.GetComponent<BoxCollider>();
-                if (coll != null)
-                {
-                    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                    if (initColliderSize.z < UIElement.collider_min_depth_deep)
-                    {
-                        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
-                        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
-                    }
-                    else
-                    {
-                        coll.center = initColliderCenter;
-                        coll.size = initColliderSize;
-                    }
-                    coll.isTrigger = true;
-                }
+                //BoxCollider coll = go.GetComponent<BoxCollider>();
+                //if (coll != null)
+                //{
+                //    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                //    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                //    if (initColliderSize.z < UIElement.collider_min_depth_deep)
+                //    {
+                //        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
+                //        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
+                //    }
+                //    else
+                //    {
+                //        coll.center = initColliderCenter;
+                //        coll.size = initColliderSize;
+                //    }
+                //    coll.isTrigger = true;
+                //}
             }
 
             // Setup the MeshRenderer

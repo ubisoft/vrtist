@@ -333,9 +333,9 @@ namespace VRtist
                 // Calc projection of cursor, and snap to slider range if in range (lol)
                 // Update local slider value.
 
-                float projectedValue = (currentValue + 1); // TMP
+                //float projectedValue = (currentValue + 1); // TMP
                 
-                onSlideEvent.Invoke(projectedValue);
+                onSlideEvent.Invoke(currentValue);
             }
         }
 
@@ -351,7 +351,38 @@ namespace VRtist
 
         public void OnSlide(float f)
         {
-            Value = f;
+            //Value = f; // Value already set in HandleCursorBehavior
+        }
+
+        public override bool HandlesCursorBehavior() { return true; }
+        public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
+        {
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            float widthWithoutMargins = width - 2.0f * margin;
+            float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
+            float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+
+            if (localProjectedWidgetPosition.x > startX && localProjectedWidgetPosition.x < endX)
+            {
+                localProjectedWidgetPosition.y = -height / 2.0f; // SNAP Y to middle
+
+                
+                float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+
+                Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+            }
+            else
+            {
+                
+            }
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            cursorShapeTransform.position = worldProjectedWidgetPosition;
+            // Haptic intensity as we go deeper into the widget.
+            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+            //intensity *= intensity; // ease-in
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
         }
 
         public static void CreateUISlider(
