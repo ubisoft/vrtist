@@ -286,6 +286,8 @@ namespace VRtist
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 uiButton.BaseColor = color;
             }

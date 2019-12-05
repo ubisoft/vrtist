@@ -382,17 +382,23 @@ namespace VRtist
             if (!panel)
                 return;
 
+            // NOTE: currently the SelectorPanel has 4 children of type UIButton
+            //       which have on Canvas children, with in turn has one Image and one Text children.
             for (int i = 0; i < panel.childCount; i++)
             {
                 GameObject child = panel.GetChild(i).gameObject;
-                Image image = child.GetComponent<Image>();
-                if (image)
+                Canvas canvas = child.GetComponentInChildren<Canvas>();
+                if (canvas != null)
                 {
-                    image.color = Selection.UnselectedColor;
-                    if (child.name == "Select" && mode == SelectorModes.Select)
-                        image.color = Selection.SelectedColor;
-                    if (child.name == "Eraser" && mode == SelectorModes.Eraser)
-                        image.color = Selection.SelectedColor;
+                    Image image = canvas.gameObject.GetComponentInChildren<Image>();
+                    if (image != null)
+                    {
+                        image.color = Selection.UnselectedColor;
+                        if (child.name == "Select" && mode == SelectorModes.Select)
+                            image.color = Selection.SelectedColor;
+                        if (child.name == "Eraser" && mode == SelectorModes.Eraser)
+                            image.color = Selection.SelectedColor;
+                    }
                 }
             }
         }
