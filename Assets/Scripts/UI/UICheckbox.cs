@@ -26,10 +26,10 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
+        public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
         public UnityEvent onHoverEvent = null;
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
-        public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
 
         private bool isChecked = false;
         public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }

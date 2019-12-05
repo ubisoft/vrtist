@@ -114,6 +114,9 @@ namespace VRtist
             ChangeTool(EventSystem.current.currentSelectedGameObject.name);
         }
 
+        //
+        // DEPRECATED: used by the old 2D Unity UI with the EventSystem.
+        //
         public void OnSliderChange()
         {
             /*

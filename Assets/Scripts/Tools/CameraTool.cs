@@ -220,6 +220,13 @@ namespace VRtist
             return cam.fieldOfView;
         }
 
+        public void OnChangeFocal(float value)
+        {
+            Focal = value;
+            foreach (Camera cam in SelectedCameras())
+                ComputeFOV(cam);
+        }
+
         private void OnChangeParameter(object sender, ToolParameterChangedArgs args)
         {
             // update selection parameters from UI

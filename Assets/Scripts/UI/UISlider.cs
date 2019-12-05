@@ -8,11 +8,6 @@ using System;
 
 namespace VRtist
 {
-    [Serializable]
-    public class UIFloatEvent : UnityEvent<float>
-    {
-    }
-
     [ExecuteInEditMode]
     [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
@@ -52,7 +47,7 @@ namespace VRtist
         //       precision, step?
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public UIFloatEvent onSlideEvent = null; // TODO: maybe make 2 callbacks, one for floats, one for ints
+        public FloatChangedEvent onSlideEvent = new FloatChangedEvent(); // TODO: maybe make 2 callbacks, one for floats, one for ints
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
@@ -330,11 +325,8 @@ namespace VRtist
         {
             if (otherCollider.gameObject.name == "Cursor")
             {
-                // Calc projection of cursor, and snap to slider range if in range (lol)
-                // Update local slider value.
-
-                //float projectedValue = (currentValue + 1); // TMP
-                
+                // NOTE: The correct "currentValue" is already computed in the HandleCursorBehavior callback.
+                //       Just call the listeners here.
                 onSlideEvent.Invoke(currentValue);
             }
         }
