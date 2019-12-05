@@ -129,6 +129,9 @@ namespace VRtist
             */
         }
 
+        //
+        // DEPRECATED: used by the old 2D Unity UI with the EventSystem.
+        //
         public void OnCheckboxChange()
         {
             Toggle checkbox = EventSystem.current.currentSelectedGameObject.GetComponentInParent<Toggle>();

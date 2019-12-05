@@ -29,8 +29,7 @@ namespace VRtist
         public UnityEvent onHoverEvent = null;
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
-        public UnityEvent onCheckEvent = null;
-        public UnityEvent onUncheckEvent = null;
+        public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
 
         private bool isChecked = false;
         public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }
@@ -236,14 +235,7 @@ namespace VRtist
         {
             SetColor(pushedColor);
             Checked = !Checked;
-            if (Checked)
-            {
-                onCheckEvent.Invoke();
-            }
-            else
-            {
-                onUncheckEvent.Invoke();
-            }
+            onCheckEvent.Invoke(Checked);
         }
 
         public void OnReleaseCheckbox()

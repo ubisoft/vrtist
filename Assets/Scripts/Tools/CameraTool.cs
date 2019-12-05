@@ -104,6 +104,12 @@ namespace VRtist
             UIObject = null;
         }
 
+        public void OnCheckFeedbackPositionning(bool value)
+        {
+            feedbackPositioning = value;
+        }
+
+        // DEPRECATED
         private void OnBoolChangeParameter(object sender, BoolToolParameterChangedArgs args)
         {
             if (args.toolName != "Camera")
