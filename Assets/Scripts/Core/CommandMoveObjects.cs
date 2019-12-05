@@ -36,6 +36,7 @@ namespace VRtist
                 objects[i].transform.localPosition = beginPositions[i];
                 objects[i].transform.localRotation = beginRotations[i];
                 objects[i].transform.localScale = beginScales[i];
+                CommandManager.SendEvent(MessageType.Transform, objects[i].transform);
             }
         }
         public override void Redo()
@@ -46,12 +47,20 @@ namespace VRtist
                 objects[i].transform.localPosition = endPositions[i];
                 objects[i].transform.localRotation = endRotations[i];
                 objects[i].transform.localScale = endScales[i];
+                CommandManager.SendEvent(MessageType.Transform, objects[i].transform);
             }
         }
         public override void Submit()
         {
-            if(objects.Count > 0)
+            if (objects.Count > 0)
+            {
                 CommandManager.AddCommand(this);
+                int count = objects.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    CommandManager.SendEvent(MessageType.Transform, objects[i].transform);
+                }
+            }
         }
         public override void Serialize(SceneSerializer serializer)
         {

@@ -96,7 +96,7 @@ namespace VRtist
             int count = groupStack.Count;
             groupStack.RemoveAt(count - 1);
             count--;
-            currentGroup = count == 0 ? null : groupStack[count -1];
+            currentGroup = count == 0 ? null : groupStack[count - 1];
         }
 
         public static void Clear()
@@ -113,6 +113,11 @@ namespace VRtist
             ICommand[] undos = undoStack.ToArray();
             for (int i = 0; i < undos.Length; i++)
                 undos[i].Serialize(serializer);
+        }
+
+        public static void SendEvent<T>(MessageType messageType, T data)
+        {
+            NetworkClient.GetInstance().SendEvent<T>(messageType, data);
         }
     }
 }

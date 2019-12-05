@@ -42,6 +42,7 @@ namespace VRtist
                 transform.localPosition = position;
                 transform.localRotation = rotation;
 
+                return;
                 if (isOnAWidget)
                 {
                     Transform cursorShapeTransform = GetComponentInChildren<MeshFilter>().gameObject.transform;
