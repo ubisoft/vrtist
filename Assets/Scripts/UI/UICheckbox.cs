@@ -89,14 +89,32 @@ namespace VRtist
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
                 canvasRT.sizeDelta = new Vector2(width, height);
 
+                float minSide = Mathf.Min(width, height);
+
+                // IMAGE
+                Image image = canvas.GetComponentInChildren<Image>();
+                if (image != null)
+                {
+                    RectTransform rt = image.gameObject.GetComponent<RectTransform>();
+                    if (rt)
+                    {
+                        rt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
+                        rt.localPosition = new Vector3(margin, -margin, -0.001f);
+                    }
+                }
+
+                // TEXT
                 Text text = canvas.gameObject.GetComponentInChildren<Text>();
                 if (text != null)
                 {
-                    RectTransform textRT = text.gameObject.GetComponent<RectTransform>();
-                    textRT.sizeDelta = new Vector2(width, height);
+                    RectTransform rt = text.gameObject.GetComponent<RectTransform>();
+                    if (rt != null)
+                    {
+                        rt.sizeDelta = new Vector2(width, height);
+                        float textPosLeft = image != null ? minSide : 0.0f;
+                        rt.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
+                    }
                 }
-
-                // TODO: image
             }
         }
 
