@@ -1228,6 +1228,21 @@ namespace VRtist
             return null;
         }
 
+        public static GameObject LoadPrefab(string prefabName)
+        {
+            string[] pathList = AssetDatabase.FindAssets(prefabName, new[] { "Assets/Resources/Prefabs/UI" });
+            if (pathList.Length > 0)
+            {
+                foreach (string path in pathList)
+                {
+                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(GameObject));
+                    if (obj is GameObject)
+                        return obj as GameObject;
+                }
+            }
+            return null;
+        }
+
         #endregion
     }
 }
