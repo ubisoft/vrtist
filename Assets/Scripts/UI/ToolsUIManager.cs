@@ -107,6 +107,24 @@ namespace VRtist
             TogglePanel(currentToolName);
         }
 
+        public void OnUI3DObjectEnter(GameObject go)
+        {
+            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            if (tool != null)
+            {
+                tool.OnUIObjectEnter(go);
+            }
+        }
+
+        public void OnUI3DObjectExit(GameObject go)
+        {
+            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            if (tool != null)
+            {
+                tool.OnUIObjectExit(go);
+            }
+        }
+
         public void OnTool()
         {
             ChangeTool(EventSystem.current.currentSelectedGameObject.name);
