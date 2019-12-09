@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: ConeLight
-    second: {fileID: 2100000, guid: 48b8596e0316fb8469a7b0bfe9402de2, type: 2}
+    second: {fileID: 2100000, guid: 3095edd70b28b3b4496e611d858ee758, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0

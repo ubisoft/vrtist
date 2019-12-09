@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: LightBulb
-    second: {fileID: 2100000, guid: c749e69f31d474c4b8249549c63185c5, type: 2}
+    second: {fileID: 2100000, guid: 3095edd70b28b3b4496e611d858ee758, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
