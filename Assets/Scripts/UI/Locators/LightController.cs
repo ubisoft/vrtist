@@ -21,28 +21,20 @@ namespace VRtist
                 world = world.parent;
             }
 
-            for (int i = 0; i < transform.childCount; i++)
+            Light l = transform.GetComponentInChildren<Light>();
+            LightType ltype = l.type;
+            lightObject = l;
+            switch (ltype)
             {
-                GameObject child = transform.GetChild(i).gameObject;
-                Light l = child.GetComponent<Light>();
-                if (l != null)
-                {
-                    LightType ltype = l.type;
-                    lightObject = l;
-                    switch(ltype)
-                    {
-                        case LightType.Directional:
-                            parameters = new SunLightParameters();
-                            break;
-                        case LightType.Point:
-                            parameters = new PointLightParameters();
-                            break;
-                        case LightType.Spot:
-                            parameters = new SpotLightParameters();
-                            break;
-                    }
+                case LightType.Directional:
+                    parameters = new SunLightParameters();
                     break;
-                }
+                case LightType.Point:
+                    parameters = new PointLightParameters();
+                    break;
+                case LightType.Spot:
+                    parameters = new SpotLightParameters();
+                    break;
             }
         }
 

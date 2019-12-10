@@ -4,6 +4,22 @@ using UnityEngine;
 
 namespace VRtist
 {
+    public class MeshInfos
+    {
+        public MeshFilter meshFilter;
+        public MeshRenderer meshRenderer;
+    }
+
+    public class MeshConnectionInfos
+    {
+        public Transform meshTransform;
+    }
+
+    public class DeleteMeshInfos
+    {
+        public Transform meshTransform;
+    }
+
     public class CommandAddGameObject : ICommand
     {
         protected GameObject gObject = null;
@@ -18,8 +34,30 @@ namespace VRtist
             parent = o.transform.parent;
         }
 
+        private void SendDeleteMesh()
+        {
+            DeleteMeshInfos deleteMeshInfo = new DeleteMeshInfos();
+            deleteMeshInfo.meshTransform = gObject.transform;
+            CommandManager.SendEvent(MessageType.Delete, deleteMeshInfo);
+        }
+
+        private void SendMesh()
+        {
+            MeshInfos meshInfos = new MeshInfos();
+            meshInfos.meshFilter = gObject.GetComponent<MeshFilter>();
+            meshInfos.meshRenderer = gObject.GetComponent<MeshRenderer>();
+
+            CommandManager.SendEvent(MessageType.Mesh, meshInfos);
+
+            MeshConnectionInfos meshConnectionInfos = new MeshConnectionInfos();
+            meshConnectionInfos.meshTransform = gObject.transform;
+
+            CommandManager.SendEvent(MessageType.MeshConnection, meshConnectionInfos);
+        }
+
         public override void Undo()
         {
+            SendDeleteMesh();
             gObject.transform.parent = Utils.GetOrCreateTrash().transform;
         }
         public override void Redo()
@@ -28,6 +66,7 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
+            SendMesh();
         }
         public override void Submit()
         {
@@ -35,6 +74,7 @@ namespace VRtist
             rotation = gObject.transform.localRotation;
             scale = gObject.transform.localScale;
             CommandManager.AddCommand(this);
+            SendMesh();
         }
 
         public override void Serialize(SceneSerializer serializer)

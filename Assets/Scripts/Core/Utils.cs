@@ -103,9 +103,13 @@ namespace VRtist
             if (builder)
             {
                 res = builder.CreateInstance(gObject, parent);
-                Parameters parameters = res.GetComponentInParent<ParametersController>().GetParameters();
-                if (parameters != null)
-                    parameters.InitId();
+                ParametersController parametersController = res.GetComponentInParent<ParametersController>();
+                if (parametersController)
+                {
+                    Parameters parameters = parametersController.GetParameters();
+                    if (parameters != null)
+                        parameters.InitId();
+                }
             }
             else
             {

@@ -30,8 +30,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 6010238314413921745}
-  - {fileID: 2363868379688984270}
+  - {fileID: 1402099131505382279}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -47,6 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parameters:
+    id: 32
+    lightType: 0
+    intensity: 8
+    color: {r: 1, g: 1, b: 1, a: 1}
+    castShadows: 0
 --- !u!65 &1204138857207612560
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -72,6 +77,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efd8539113035e9418819c9874439536, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &2603879419754474627
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1402099131505382279}
+  m_Layer: 0
+  m_Name: Rotate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1402099131505382279
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2603879419754474627}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 6010238314413921745}
+  - {fileID: 2363868379688984270}
+  m_Father: {fileID: 1966593794077509117}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3375600871356153348
 GameObject:
   m_ObjectHideFlags: 0
@@ -101,7 +138,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1966593794077509117}
+  m_Father: {fileID: 1402099131505382279}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!108 &3551377350450663505
@@ -260,7 +297,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 1966593794077509117}
+    m_TransformParent: {fileID: 1402099131505382279}
     m_Modifications:
     - target: {fileID: -4216859302048453862, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
@@ -280,7 +317,7 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
@@ -317,6 +354,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4216859302048453862, guid: fd5eb8089aefc534a947cb9428b9a7e8,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -4216859302048453862, guid: fd5eb8089aefc534a947cb9428b9a7e8,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -4216859302048453862, guid: fd5eb8089aefc534a947cb9428b9a7e8,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: -927199367670048503, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
       propertyPath: m_Name
@@ -332,6 +384,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 4c8d9f8ea3fe26f43b408f27e8d1f2f2, type: 2}
+    - target: {fileID: -1504981713932161579, guid: fd5eb8089aefc534a947cb9428b9a7e8,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fd5eb8089aefc534a947cb9428b9a7e8, type: 3}
 --- !u!4 &6010238314413921745 stripped

@@ -19,6 +19,9 @@ namespace VRtist
         Delete,
         Mesh,
         Material,
+        Camera,
+        Light,
+        MeshConnection
     }
 
     public class NetCommand
@@ -44,6 +47,63 @@ namespace VRtist
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
         public static Material currentMaterial = null;
 
+        public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
+        public static Dictionary<string, Material[]> meshesMaterials = new Dictionary<string, Material[]>();
+        public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
+
+        public static byte[] StringToBytes(string[] values)
+        {
+            int size = sizeof(int);
+            for (int i = 0; i < values.Length; i++)
+            {
+                byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(values[i]);
+                size += sizeof(int) + utf8.Length;
+            }
+                
+
+            byte[] bytes = new byte[size];
+            Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < values.Length; i++)
+            {
+                string value = values[i];
+                byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(value);
+                Buffer.BlockCopy(BitConverter.GetBytes(utf8.Length), 0, bytes, index, sizeof(int));
+                Buffer.BlockCopy(utf8, 0, bytes, index + sizeof(int), value.Length);
+                index += sizeof(int) + value.Length;
+            }
+            return bytes;
+        }
+
+        public static byte[] IntToBytes(int[] vectors)
+        {
+            byte[] bytes = new byte[sizeof(int) * vectors.Length + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < vectors.Length; i++)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(vectors[i]), 0, bytes, index, sizeof(int));
+                index += sizeof(int);
+            }
+            return bytes;
+        }
+
+        public static byte[] Vector3ToBytes(Vector3[] vectors)
+        {
+            byte[] bytes = new byte[3 * sizeof(float) * vectors.Length + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < vectors.Length; i++)
+            {
+                Vector3 vector = vectors[i];
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, index + 0, sizeof(float));
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, index + sizeof(float), sizeof(float));
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, index + 2 * sizeof(float), sizeof(float));
+                index += 3 * sizeof(float);
+            }
+            return bytes;
+        }
+
         public static byte[] Vector3ToBytes(Vector3 vector)
         {
             byte[] bytes = new byte[3 * sizeof(float)];
@@ -53,6 +113,22 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, 2 * sizeof(float), sizeof(float));
             return bytes;
         }
+
+        public static byte[] Vector2ToBytes(Vector2[] vectors)
+        {
+            byte[] bytes = new byte[2 * sizeof(float) * vectors.Length + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < vectors.Length; i++)
+            {
+                Vector2 vector = vectors[i];
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, index + 0, sizeof(float));
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, index + sizeof(float), sizeof(float));
+                index += 2 * sizeof(float);
+            }
+            return bytes;
+        }
+
         public static byte[] QuaternionToBytes(Quaternion quaternion)
         {
             byte[] bytes = new byte[4 * sizeof(float)];
@@ -82,6 +158,47 @@ namespace VRtist
             return resultBuffer;
         }
 
+        public static void Delete(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            Transform trf = FindPath(root, data, 0, out bufferIndex);
+            if (trf == null)
+                return;
+
+            MeshFilter[] meshFilters = trf.GetComponentsInChildren<MeshFilter>();
+            for(int i = 0; i < meshFilters.Length; i++)
+            {
+                MeshFilter meshFilter = meshFilters[i];
+                GameObject subObject = meshFilters[i].gameObject;
+
+                bool next = false;
+                foreach(var meshInstance in meshInstances)
+                {
+                    string meshInstanceName = meshInstance.Key;
+                    HashSet<MeshFilter> meshFilterInstance = meshInstance.Value;
+                    foreach(MeshFilter mf in meshFilterInstance)
+                    {
+                        if(mf == meshFilter)
+                        {
+                            meshFilterInstance.Remove(meshFilter);
+                            if(meshFilterInstance.Count == 0)
+                            {
+                                meshInstances.Remove(meshInstanceName);
+                                meshesMaterials.Remove(meshInstanceName);
+                                meshes.Remove(meshInstanceName);
+                            }
+                            next = true;
+                            break;
+                        }
+                    }
+                    if (next)
+                        break;
+                }
+            }
+
+            GameObject.Destroy(trf.gameObject);
+        }
+
         public static Material DefaultMaterial()
         {
             string name = "defaultMaterial";
@@ -103,7 +220,17 @@ namespace VRtist
         {
             int nameLength = (int)BitConverter.ToUInt32(data, 0);
             string name = System.Text.Encoding.UTF8.GetString(data, 4, nameLength);
-            
+            Material material;
+            if (materials.ContainsKey(name))
+                material = materials[name];
+            else
+            {
+                Shader hdrplit = Shader.Find("HDRP/Lit");
+                material = new Material(hdrplit);
+                material.name = name;
+                materials[name] = material;
+            }
+
             int currentIndex = 4 + nameLength;
 
             float[] buffer = new float[3];
@@ -115,20 +242,16 @@ namespace VRtist
 
             float metallic = BitConverter.ToSingle(data, currentIndex);
             currentIndex += sizeof(float);
-            float roughness = BitConverter.ToSingle(data, currentIndex);
-
-            Shader hdrplit = Shader.Find("HDRP/Lit");
-            Material material = new Material(hdrplit);
-            material.name = name;
+            float roughness = BitConverter.ToSingle(data, currentIndex);            
+            
             material.SetColor("_BaseColor", baseColor);
             material.SetFloat("_Metallic", metallic);
             material.SetFloat("_Smoothness",1f - roughness);
 
-            materials[name] = material;
             currentMaterial = material;
         }
 
-        public static Transform BuildPath(Transform root, byte[] data, int startIndex, out int bufferIndex)
+        public static Transform FindPath(Transform root, byte[] data, int startIndex, out int bufferIndex)
         {
             int pathLength = (int)BitConverter.ToUInt32(data, startIndex);
             string path = System.Text.Encoding.UTF8.GetString(data, 4, pathLength);
@@ -139,6 +262,45 @@ namespace VRtist
             Transform parent = root;
             foreach (string subPath in splitted)
             {
+                Transform transform = parent.Find(subPath);
+                if (transform == null)
+                {
+                    return null;
+                }
+                parent = transform;
+            }
+            return parent;
+        }
+
+        public static string GetString(byte[] data, int startIndex, out int bufferIndex)
+        {
+            int strLength = (int)BitConverter.ToUInt32(data, startIndex);
+            string str = System.Text.Encoding.UTF8.GetString(data, startIndex + 4, strLength);
+            bufferIndex = startIndex + strLength + 4;
+            return str;
+        }
+
+        public static string GetPathName(Transform root, Transform transform)
+        {
+            string result = transform.name;
+            while(transform.parent && transform.parent != root)
+            {
+                transform = transform.parent;
+                result = transform.name + "/" + result;
+            }
+            return result;
+        }
+
+        public static Transform BuildPath(Transform root, byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
+        {
+            string path = GetString(data, startIndex, out bufferIndex);
+
+            string[] splitted = path.Split('/');
+            Transform parent = root;
+            int length = includeLeaf ? splitted.Length : splitted.Length - 1;
+            for (int i = 0; i < length; i++)
+            {
+                string subPath = splitted[i];
                 Transform transform = parent.Find(subPath);
                 if(transform == null)
                 {
@@ -152,7 +314,7 @@ namespace VRtist
         public static Transform BuildTransform(Transform root, byte[] data)
         {
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, out currentIndex);
+            Transform transform = BuildPath(root, data, 0, true, out currentIndex);
 
             float[] buffer = new float[4];
             int size = 3 * sizeof(float);
@@ -178,7 +340,7 @@ namespace VRtist
         {
             Transform current = transform;
             string path = current.name;
-            while(current.parent && current != root)
+            while(current.parent && current.parent != root)
             {
                 current = current.parent;
                 path = current.name + "/" + path;
@@ -196,10 +358,230 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildMeshCommand(MeshInfos meshInfos)
+        {
+            Mesh mesh = meshInfos.meshFilter.mesh;
+            string name = mesh.name;
+            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(name);
+            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
+
+            byte[] positions = Vector3ToBytes(mesh.vertices);
+            byte[] normals = Vector3ToBytes(mesh.normals);
+            byte[] uvs = Vector2ToBytes(mesh.uv);
+
+            // temp only one material
+            byte[] materialIndices = new byte[sizeof(int) + 2 * sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(2), 0, materialIndices, 0, sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 4, sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 8, sizeof(int));
+
+            byte[] triangles = IntToBytes(mesh.triangles);
+
+            Material material = meshInfos.meshRenderer.material;
+            string[] materialNames = new string[1] { material.name };
+            byte[] materials = StringToBytes(materialNames);
+
+            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, positions, normals, uvs, materialIndices, triangles, materials };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
+            return command;
+        }
+
+        public static NetCommand BuildMeshConnectionCommand(Transform root, MeshConnectionInfos meshConnectionInfos)
+        {
+            Transform transform = meshConnectionInfos.meshTransform;
+            Mesh mesh = transform.GetComponent<MeshFilter>().mesh;
+            string path = GetPathName(root, transform);
+            string[] names = new string[2] { path, mesh.name };
+
+            byte[] namesBuffer = StringToBytes(names);
+            NetCommand command = new NetCommand(namesBuffer, MessageType.MeshConnection);
+            return command;
+        }
+
+        public static NetCommand BuildDeleteMeshCommand(Transform root, DeleteMeshInfos deleteMeshInfos)
+        {
+            Transform transform = deleteMeshInfos.meshTransform;
+            Mesh mesh = transform.GetComponent<MeshFilter>().mesh;
+            string path = GetPathName(root, transform);
+
+            byte[] encodedPath = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] encodedPathSize = BitConverter.GetBytes(encodedPath.Length);
+            List<byte[]> buffers = new List<byte[]> { encodedPath, encodedPath };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Delete);
+            return command;
+        }
+
+        public static void BuildCamera(Transform root, byte[] data)
+        {
+            int tmpIndex = 0;
+            string name = GetString(data, 0, out tmpIndex);
+
+            int currentIndex = 0;
+            Transform transform = BuildPath(root, data, 0, false, out currentIndex);
+            if (transform == null)
+                return;
+
+            GameObject camGameObject = null;
+            Transform camTransform = transform.Find(name);
+            if (camTransform == null)
+            {
+                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform);
+                camGameObject.name = name;
+                camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
+                camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
+            }
+            else
+            {
+                camGameObject = camTransform.gameObject;
+            }
+
+            float focal = BitConverter.ToSingle(data, currentIndex);
+            float near = BitConverter.ToSingle(data, currentIndex + sizeof(float));
+            float far = BitConverter.ToSingle(data, currentIndex + 2 * sizeof(float));
+            float aperture = BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
+            currentIndex += 4 * sizeof(float);
+
+            Camera.GateFitMode gateFit = (Camera.GateFitMode)BitConverter.ToInt32(data, currentIndex);
+            if (gateFit == Camera.GateFitMode.None)
+                gateFit = Camera.GateFitMode.Horizontal;
+            currentIndex += sizeof(Int32);
+
+            float sensorWidth = BitConverter.ToSingle(data, currentIndex);
+            currentIndex += sizeof(float);
+            float sensorHeight = BitConverter.ToSingle(data, currentIndex);
+            currentIndex += sizeof(float);
+
+            Camera cam = camGameObject.GetComponentInChildren<Camera>();
+
+            // Is it necessary ?
+            /////////////////
+            CameraController cameraController = camGameObject.GetComponent<CameraController>();
+            CameraParameters cameraParameters = (CameraParameters)cameraController.GetParameters();
+            cameraParameters.focal = focal;
+            //cameraParameters.gateFit = gateFit;
+            /////////////////
+
+            cam.focalLength = focal;
+            cam.gateFit = gateFit;
+
+            cameraParameters.focal = focal;
+            cam.focalLength = focal;
+            cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
+        }
+
+        public static void BuildLight(Transform root, byte[] data)
+        {
+            int tmpIndex = 0;
+            string name = GetString(data, 0, out tmpIndex);
+
+            int currentIndex = 0;
+            Transform transform = BuildPath(root, data, 0, false, out currentIndex);
+            if (transform == null)
+                return;
+
+            LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
+            currentIndex += sizeof(Int32);
+
+            GameObject lightGameObject = null;
+            Transform lightTransform = transform.Find(name);
+            if (lightTransform == null)
+            {
+                switch (lightType)
+                {
+                    case LightType.Directional:
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform);
+                        break;
+                    case LightType.Point:
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform);
+                        break;
+                    case LightType.Spot:
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform);
+                        break;
+                }
+                lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
+                lightGameObject.name = name;
+            }
+            else
+            {
+                lightGameObject = lightTransform.gameObject;
+            }
+
+
+            int shadow = BitConverter.ToInt32(data, currentIndex);
+            currentIndex += sizeof(Int32);
+
+            float ColorR = BitConverter.ToSingle(data, currentIndex);
+            float ColorG = BitConverter.ToSingle(data, currentIndex + sizeof(float));
+            float ColorB = BitConverter.ToSingle(data, currentIndex + 2 * sizeof(float));
+            Color lightColor = new Color(ColorR, ColorG, ColorB);
+            currentIndex += 3 * sizeof(float);
+
+            float power = BitConverter.ToSingle(data, currentIndex);
+            currentIndex += sizeof(float);
+            float spotSize = BitConverter.ToSingle(data, currentIndex);
+            currentIndex += sizeof(float);
+            float spotBlend = BitConverter.ToSingle(data, currentIndex);
+            currentIndex += sizeof(float);
+
+
+            LightController lightController = lightGameObject.GetComponent<LightController>();
+            LightParameters lightParameters = (LightParameters)lightController.GetParameters();
+            lightParameters.color = lightColor;
+            switch(lightType)
+            {
+                case LightType.Point:
+                    lightParameters.intensity = power / 10f;
+                    break;
+                case LightType.Directional:
+                    lightParameters.intensity = power * 1.5f;
+                    break;
+                case LightType.Spot:
+                    lightParameters.intensity = power * 0.4f / 3f;
+                    break;
+            }
+
+            if (lightType == LightType.Spot)
+            {
+                lightParameters.SetRange(1000f);
+                lightParameters.SetOuterAngle(spotSize * 180f / 3.14f);
+                lightParameters.SetInnerAngle((1f - spotBlend) * 100f);
+            }
+            lightParameters.castShadows = shadow != 0 ? true : false;
+        }
+
+        public static Transform ConnectMesh(Transform root, byte[] data)
+        {
+            int currentIndex = 0;
+            Transform transform = BuildPath(root, data, 0, true, out currentIndex);
+            string meshName = GetString(data, currentIndex, out currentIndex);
+
+            GameObject gobject = transform.gameObject;
+            MeshFilter meshFilter = gobject.GetComponent<MeshFilter>();
+            if (meshFilter == null)
+                meshFilter = gobject.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = gobject.GetComponent<MeshRenderer>();
+            if (meshRenderer == null)
+                meshRenderer = gobject.AddComponent<MeshRenderer>();
+
+            Mesh mesh = meshes[meshName];
+
+            meshRenderer.sharedMaterials = meshesMaterials[meshName];
+
+            MeshCollider collider = gobject.AddComponent<MeshCollider>();
+            gobject.tag = "PhysicObject";
+
+            if(!meshInstances.ContainsKey(meshName))
+                meshInstances[meshName] = new HashSet<MeshFilter>();
+            meshInstances[meshName].Add(meshFilter);
+            meshFilter.mesh = mesh;
+            
+            return transform;
+        }
+
         public static Mesh BuildMesh(Transform root, byte[] data)
         {
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, out currentIndex);
+            string meshName = GetString(data, currentIndex, out currentIndex);
 
             int verticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
@@ -244,14 +626,14 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex) / 2;
+            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int[] materialIndices = new int[materialIndicesCount * 2];
             size = materialIndicesCount * 2 * sizeof(int);
             Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
             currentIndex += size;
 
-            int indicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int indicesCount = (int)BitConverter.ToUInt32(data, currentIndex) * 3;
             currentIndex += 4;
             int[] indices = new int[indicesCount];
             size = indicesCount * sizeof(int);
@@ -286,6 +668,7 @@ namespace VRtist
             }
 
             Mesh mesh = new Mesh();
+            mesh.name = meshName;
             mesh.vertices = vertices;
             mesh.normals = normals;
             mesh.uv = uvs;
@@ -352,19 +735,18 @@ namespace VRtist
                 }
             }
 
-            GameObject gobject = transform.gameObject;
-            MeshFilter meshFilter = gobject.GetComponent<MeshFilter>();
-            if(meshFilter == null)
-                meshFilter = gobject.AddComponent<MeshFilter>();
-            MeshRenderer meshRenderer = gobject.GetComponent<MeshRenderer>();
-            if(meshRenderer == null)
-                meshRenderer = gobject.AddComponent<MeshRenderer>();
-            meshFilter.mesh = mesh;
+            meshes[meshName] = mesh;
+            meshesMaterials[meshName] = meshMaterials;
 
-            meshRenderer.sharedMaterials = meshMaterials;
-
-            MeshCollider collider = gobject.AddComponent<MeshCollider>();
-            gobject.tag = "PhysicObject";
+            if (meshInstances.ContainsKey(meshName))
+            {
+                HashSet<MeshFilter> filters = meshInstances[meshName];
+                foreach (MeshFilter filter in filters)
+                {
+                    if(filter)
+                        filter.mesh = mesh;
+                }
+            }
 
             return mesh;
         }
@@ -389,14 +771,14 @@ namespace VRtist
             _instance = this;
         }
 
-        ~NetworkClient()
-        {
-            Join();
-        }
-
         public static NetworkClient GetInstance()
         {
             return _instance;
+        }
+
+        void OnDestroy()
+        {
+            Join();
         }
 
         void Update()
@@ -414,11 +796,23 @@ namespace VRtist
                         case MessageType.Mesh:
                             NetGeometry.BuildMesh(root, command.data);
                             break;
+                        case MessageType.MeshConnection:
+                            NetGeometry.ConnectMesh(root, command.data);
+                            break;
                         case MessageType.Transform:
                             NetGeometry.BuildTransform(root, command.data);
                             break;
                         case MessageType.Material:
                             NetGeometry.BuildMaterial(command.data);
+                            break;
+                        case MessageType.Camera:
+                            NetGeometry.BuildCamera(root, command.data);
+                            break;
+                        case MessageType.Light:
+                            NetGeometry.BuildLight(root, command.data);
+                            break;
+                        case MessageType.Delete:
+                            NetGeometry.Delete(root, command.data);
                             break;
                     }
                 }
@@ -469,6 +863,7 @@ namespace VRtist
                 return;
             alive = false;
             thread.Join();
+            socket.Disconnect(false);
         }
 
         NetCommand ReadMessage()
@@ -524,6 +919,24 @@ namespace VRtist
             WriteMessage(command);
         }
 
+        public void SendMesh(MeshInfos meshInfos)
+        {
+            NetCommand command = NetGeometry.BuildMeshCommand(meshInfos);
+            WriteMessage(command);
+        }
+
+        public void SendMeshConnection(MeshConnectionInfos meshConnectionInfos)
+        {
+            NetCommand command = NetGeometry.BuildMeshConnectionCommand(root, meshConnectionInfos);
+            WriteMessage(command);
+        }
+
+        public void SendDeleteMesh(DeleteMeshInfos deleteMeshInfo)
+        {
+            NetCommand command = NetGeometry.BuildDeleteMeshCommand(root, deleteMeshInfo);
+            WriteMessage(command);
+        }
+
         public void JoinRoom(string roomName)
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
@@ -574,6 +987,12 @@ namespace VRtist
             {
                 case MessageType.Transform:
                     SendTransform(data as Transform); break;
+                case MessageType.Mesh:
+                    SendMesh(data as MeshInfos); break;
+                case MessageType.MeshConnection:
+                    SendMeshConnection(data as MeshConnectionInfos); break;
+                case MessageType.Delete:
+                    SendDeleteMesh(data as DeleteMeshInfos); break;
             }
         }
     }
