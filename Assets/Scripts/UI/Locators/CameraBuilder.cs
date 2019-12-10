@@ -13,8 +13,8 @@ namespace VRtist
             GameObject newCamera = GameObject.Instantiate(source, parent);
 
             RenderTexture newRenderTexture = new RenderTexture(renderTexture);
-            newCamera.transform.Find("Camera").GetComponent<Camera>().targetTexture = newRenderTexture;
-            newCamera.transform.Find("CameraPreview").gameObject.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", newRenderTexture);
+            newCamera.GetComponentInChildren<Camera>().targetTexture = newRenderTexture;
+            newCamera.GetComponentInChildren<MeshRenderer>().material.SetTexture("_UnlitColorMap", newRenderTexture);
 
             VRInput.DeepSetLayer(newCamera, 5);
             return newCamera;
