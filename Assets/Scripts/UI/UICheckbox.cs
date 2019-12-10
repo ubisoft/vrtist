@@ -15,8 +15,8 @@ namespace VRtist
     public class UICheckbox : UIElement
     {
         [SpaceHeader("Checkbox Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        public float margin = 0.005f;
-        public float thickness = 0.001f;
+        [CentimeterFloat] public float margin = 0.005f;
+        [CentimeterFloat] public float thickness = 0.001f;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
         public Sprite checkedSprite = null;
         public Sprite uncheckedSprite = null;

@@ -12,8 +12,8 @@ namespace VRtist
     public class UIPanel : UIElement
     {
         [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        public float margin = 0.02f;
-        public float radius = 0.01f;
+        [CentimeterFloat] public float margin = 0.02f;
+        [CentimeterFloat] public float radius = 0.01f;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int circleSubdiv = 8;

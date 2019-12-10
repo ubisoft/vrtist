@@ -11,8 +11,8 @@ namespace VRtist
     public class UIColorPicker : UIElement
     {
         [SpaceHeader("Picker Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        public float thickness = 0.001f;
-        public float padding = 0.01f;
+        [CentimeterFloat] public float thickness = 0.001f;
+        [CentimeterFloat] public float padding = 0.01f;
         public float hueToSaturationRatio = 0.12f;//1.0f / 7.0f;
         public float hueToPreviewRatio = 0.88f;//3.0f / 4.0f;
 
