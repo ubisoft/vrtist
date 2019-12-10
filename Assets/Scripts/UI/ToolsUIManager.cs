@@ -30,54 +30,52 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
-        //[SerializeField] private GameObject pointer;
-        //[SerializeField] private Transform buttonsParent;
         [SerializeField] private Transform panelsParent;
-        //[SerializeField] private Transform canvas3D;
         [SerializeField] private Transform palette;
         [SerializeField] private Vector3 paletteScale = Vector3.one;
-        Transform proxy3D = null;
+
+        //[SerializeField] private GameObject pointer;
+        //[SerializeField] private Transform buttonsParent;
+        //[SerializeField] private Transform canvas3D;
+        //Transform proxy3D = null;
 
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
 
         private string currentToolName;
-        private bool proxy3DState = false;
+        //private bool proxy3DState = false;
 
         private static ToolsUIManager instance;
         public static ToolsUIManager Instance
         { get { return instance;  } }
 
-        private void CreateProxy3D()
-        {
-            /*
-            GameObject gobject = GameObject.Instantiate<GameObject>(canvas3D.gameObject);
-            proxy3D = gobject.transform;
-            proxy3D.position = Vector3.zero;
-            proxy3D.rotation = Quaternion.identity;
-            proxy3D.localScale = Vector3.one;
+        //private void CreateProxy3D()
+        //{
+        //    GameObject gobject = GameObject.Instantiate<GameObject>(canvas3D.gameObject);
+        //    proxy3D = gobject.transform;
+        //    proxy3D.position = Vector3.zero;
+        //    proxy3D.rotation = Quaternion.identity;
+        //    proxy3D.localScale = Vector3.one;
            
-            Component[] components = canvas3D.gameObject.GetComponentsInChildren<Component>(true);
-            for (int i = components.Length - 1; i >= 0; i--)
-            {
-                Component c = components[i];
-                if (c.GetType() != typeof(Transform))
-                    Destroy(c);
-            }
-            */
-        }
+        //    Component[] components = canvas3D.gameObject.GetComponentsInChildren<Component>(true);
+        //    for (int i = components.Length - 1; i >= 0; i--)
+        //    {
+        //        Component c = components[i];
+        //        if (c.GetType() != typeof(Transform))
+        //            Destroy(c);
+        //    }
+        //}
 
-        public void UpdateProxy3D()
-        {
-            /*
-            if (proxy3D)
-            {
-                proxy3D.position = canvas3D.position;
-                proxy3D.rotation = canvas3D.rotation;
-                proxy3D.localScale = canvas3D.localScale;
-            }*/
-        }
+        //public void UpdateProxy3D()
+        //{
+        //    if (proxy3D)
+        //    {
+        //        proxy3D.position = canvas3D.position;
+        //        proxy3D.rotation = canvas3D.rotation;
+        //        proxy3D.localScale = canvas3D.localScale;
+        //    }
+        //}
 
         void Awake()
         {
@@ -94,7 +92,7 @@ namespace VRtist
 
             palette.transform.localScale = Vector3.zero;
 
-            CreateProxy3D();
+            //CreateProxy3D();
         }
 
         public void ChangeTool(string toolName)
@@ -109,34 +107,56 @@ namespace VRtist
             TogglePanel(currentToolName);
         }
 
+        public void OnUI3DObjectEnter(GameObject go)
+        {
+            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            if (tool != null)
+            {
+                tool.OnUIObjectEnter(go);
+            }
+        }
+
+        public void OnUI3DObjectExit(GameObject go)
+        {
+            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            if (tool != null)
+            {
+                tool.OnUIObjectExit(go);
+            }
+        }
+
         public void OnTool()
         {
             ChangeTool(EventSystem.current.currentSelectedGameObject.name);
         }
 
-        public void OnSliderChange()
-        {
-            /*
-            if (!EventSystem.current || !EventSystem.current.currentSelectedGameObject)
-                return;
-            SliderComp slider = EventSystem.current.currentSelectedGameObject.GetComponentInParent<SliderComp>();
-            if (!slider)
-                return;
-            float value = slider.Value;
-            var args = new ToolParameterChangedArgs { toolName = currentToolName, parameterName = slider.gameObject.name, value = value };
-            EventHandler<ToolParameterChangedArgs> handler = OnToolParameterChangedEvent;
-            if (handler != null) { handler(this, args); }
-            */
-        }
+        //
+        // DEPRECATED: used by the old 2D Unity UI with the EventSystem.
+        //
+        //public void OnSliderChange()
+        //{
+        //    if (!EventSystem.current || !EventSystem.current.currentSelectedGameObject)
+        //        return;
+        //    SliderComp slider = EventSystem.current.currentSelectedGameObject.GetComponentInParent<SliderComp>();
+        //    if (!slider)
+        //        return;
+        //    float value = slider.Value;
+        //    var args = new ToolParameterChangedArgs { toolName = currentToolName, parameterName = slider.gameObject.name, value = value };
+        //    EventHandler<ToolParameterChangedArgs> handler = OnToolParameterChangedEvent;
+        //    if (handler != null) { handler(this, args); }
+        //}
 
-        public void OnCheckboxChange()
-        {
-            Toggle checkbox = EventSystem.current.currentSelectedGameObject.GetComponentInParent<Toggle>();
-            bool isOn = checkbox.isOn;
-            var args = new BoolToolParameterChangedArgs { toolName = currentToolName, parameterName = checkbox.gameObject.name, value = isOn };
-            EventHandler<BoolToolParameterChangedArgs> handler = OnBoolToolParameterChangedEvent;
-            if (handler != null) { handler(this, args); }
-        }
+        //
+        // DEPRECATED: used by the old 2D Unity UI with the EventSystem.
+        //
+        //public void OnCheckboxChange()
+        //{
+        //    Toggle checkbox = EventSystem.current.currentSelectedGameObject.GetComponentInParent<Toggle>();
+        //    bool isOn = checkbox.isOn;
+        //    var args = new BoolToolParameterChangedArgs { toolName = currentToolName, parameterName = checkbox.gameObject.name, value = isOn };
+        //    EventHandler<BoolToolParameterChangedArgs> handler = OnBoolToolParameterChangedEvent;
+        //    if (handler != null) { handler(this, args); }
+        //}
 
         private void TogglePanel(string activePanelName)
         {
@@ -165,6 +185,9 @@ namespace VRtist
             //    }
             //}
 
+            // TODO: show which TAB is active.
+            //       with emissive in the shader??
+
             /*
             for (int i = 0; i < buttonsParent.childCount; i++)
             {
@@ -175,11 +198,11 @@ namespace VRtist
             */
         }
 
-        public bool isOverUI()
-        {
-            return false;
-            //return pointer.activeSelf;
-        }
+        //public bool isOverUI()
+        //{
+        //    return false;
+        //    //return pointer.activeSelf;
+        //}
 
         public void ToggleMenu()
         {
@@ -189,29 +212,30 @@ namespace VRtist
         public void EnableMenu(bool value)
         {
             palette.transform.localScale = value ? paletteScale : Vector3.zero;
-            EnableProxy3D(value);
-        }
-        public void EnableProxy3D(bool value)
-        {
-            if (proxy3D != null)
-            {
-                proxy3D.gameObject.SetActive(value);
-            }
+            //EnableProxy3D(value);
         }
 
-        public void StoreProxy3DState()
-        {
-            proxy3DState = IsProxy3DEnabled();
-        }
+        //public void EnableProxy3D(bool value)
+        //{
+        //    if (proxy3D != null)
+        //    {
+        //        proxy3D.gameObject.SetActive(value);
+        //    }
+        //}
 
-        public bool IsProxy3DEnabled()
-        {
-            return proxy3D != null ? proxy3D.gameObject.activeSelf : false;
-        }
+        //public void StoreProxy3DState()
+        //{
+        //    proxy3DState = IsProxy3DEnabled();
+        //}
 
-        public void RestoreProxy3DState()
-        {
-            EnableProxy3D(proxy3DState);
-        }
+        //public bool IsProxy3DEnabled()
+        //{
+        //    return proxy3D != null ? proxy3D.gameObject.activeSelf : false;
+        //}
+
+        //public void RestoreProxy3DState()
+        //{
+        //    EnableProxy3D(proxy3DState);
+        //}
     }
 }

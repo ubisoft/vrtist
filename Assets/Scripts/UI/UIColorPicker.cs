@@ -58,16 +58,16 @@ namespace VRtist
 
         public void OnColorChanged()
         {
-            float h = hue.GetHue();
-            Vector2 sat = saturation.GetSaturation();
+            float h = hue.GetHue(); // get linear position on rainbow
+            Vector2 sat = saturation.GetSaturation(); // get linear vec2, cursor position on square
 
             Color baseColor = Color.HSVToRGB(h, 1f, 1f);
-            currentColor = Color.Lerp(Color.white, baseColor, sat.x);
+            currentColor = Color.Lerp(Color.white, baseColor.linear, sat.x); // linear computations on the linear version of the color
             currentColor = Color.Lerp(Color.black, currentColor, sat.y);
 
             saturation.SetBaseColor(baseColor);
 
-            preview.SetColor(currentColor);
+            preview.SetColor(currentColor.gamma); // back to sRGB
 
             onColorChangedEvent.Invoke(currentColor);
         }

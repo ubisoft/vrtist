@@ -65,31 +65,31 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider other)
         {
-            Debug.Log("-->[] SelectorTrigger");
             if (other.tag == "PhysicObject")
             {
                 collidedObjects.Add(other.gameObject);
                 gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.white);
             }
-            else if (other.tag == "UIObject" && selector != null)
-            {
-                other.gameObject.transform.localScale *= 1.1f;
-                selector.OnUIObjectEnter(other.gameObject);
-                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.white);
-                hasUIObject = true;
-            }
+            //else if (other.tag == "UIObject" && selector != null)
+            //{
+            //    other.gameObject.transform.localScale *= 1.1f;
+            //    selector.OnUIObjectEnter(other.gameObject);
+            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.white);
+            //    hasUIObject = true;
+            //}
         }
+
+        // TODO: handle UI 3D Objects grab elsewhere.
 
         private void OnTriggerExit(Collider other)
         {
-            Debug.Log("[]--> SelectorTrigger");
-            if (other.tag == "UIObject" && selector != null)
-            {
-                other.gameObject.transform.localScale /= 1.1f;
-                selector.OnUIObjectExit(other.gameObject);
-                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
-            }
-            else
+            //if (other.tag == "UIObject" && selector != null)
+            //{
+            //    other.gameObject.transform.localScale /= 1.1f;
+            //    selector.OnUIObjectExit(other.gameObject);
+            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
+            //}
+            //else
             {
                 collidedObjects.Remove(other.gameObject);
                 if(collidedObjects.Count == 0)

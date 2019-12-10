@@ -11,6 +11,7 @@ namespace VRtist
         private Vector3 initialCursorLocalPosition = Vector3.zero;
         private bool isOnAWidget = false;
         private Transform widgetTransform = null;
+        private UIElement widgetHit = null;
 
         void Start()
         {
@@ -48,15 +49,23 @@ namespace VRtist
                     Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
                     Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
 
-                    //Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
-                    Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
-                    Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-                    Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
-                    cursorShapeTransform.position = worldProjectedWidgetPosition;
+                    if (widgetHit != null && widgetHit.HandlesCursorBehavior())
+                    {
+                        widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref cursorShapeTransform);
+                    }
+                    else
+                    { 
+                        //Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
+                        Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
+                        Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+                        Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
+                        cursorShapeTransform.position = worldProjectedWidgetPosition;
 
-                    float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                    intensity *= intensity; // ease-in
-                    VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+                        // Haptic intensity as we go deeper into the widget.
+                        float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+                        intensity *= intensity; // ease-in
+                        VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+                    }
                 }
             }
         }
@@ -75,6 +84,7 @@ namespace VRtist
             {
                 isOnAWidget = true;
                 widgetTransform = other.transform;
+                widgetHit = other.GetComponent<UIElement>();
                 VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
             }
         }
@@ -91,6 +101,7 @@ namespace VRtist
             {
                 isOnAWidget = false;
                 widgetTransform = null;
+                widgetHit = null;
                 GetComponentInChildren<MeshFilter>().gameObject.transform.localPosition = initialCursorLocalPosition;
             }
         }

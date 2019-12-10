@@ -187,7 +187,7 @@ namespace VRtist
             paintBrush.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", color);
         }
 
-        public void OnPaintOnSurface(bool value)
+        public void OnCheckPaintOnSurface(bool value)
         {
             paintOnSurface = value;
         }

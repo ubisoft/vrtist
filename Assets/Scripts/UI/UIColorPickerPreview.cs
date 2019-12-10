@@ -119,6 +119,8 @@ namespace VRtist
             if (meshRenderer != null && material != null)
             {
                 meshRenderer.sharedMaterial = Instantiate(material);
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
             }
 
             return uiColorPickerPreview;

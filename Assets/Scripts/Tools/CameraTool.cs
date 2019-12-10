@@ -104,6 +104,12 @@ namespace VRtist
             UIObject = null;
         }
 
+        public void OnCheckFeedbackPositionning(bool value)
+        {
+            feedbackPositioning = value;
+        }
+
+        // DEPRECATED
         private void OnBoolChangeParameter(object sender, BoolToolParameterChangedArgs args)
         {
             if (args.toolName != "Camera")
@@ -212,6 +218,13 @@ namespace VRtist
         {
             cam.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * Focal)) * Mathf.Rad2Deg;
             return cam.fieldOfView;
+        }
+
+        public void OnChangeFocal(float value)
+        {
+            Focal = value;
+            foreach (Camera cam in SelectedCameras())
+                ComputeFOV(cam);
         }
 
         private void OnChangeParameter(object sender, ToolParameterChangedArgs args)

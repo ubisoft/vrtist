@@ -25,7 +25,7 @@ namespace VRtist
         [MenuItem("VRtist/Create UI Panel")]
         static void CreateWizard()
         {
-            ScriptableWizard.DisplayWizard<WizardCreatePanel>("Create UI Panel", "Create");//, "OtherButton");
+            ScriptableWizard.DisplayWizard<WizardCreatePanel>("Create UI Panel", "Create");
         }
 
         [MenuItem("GameObject/VRtist/UIPanel", false, 49)]
@@ -33,12 +33,12 @@ namespace VRtist
         {
             Transform parent = null;
             Transform T = UnityEditor.Selection.activeTransform;
-            if (T != null)// && T.GetComponent<UIPanel>() != null)
+            if (T != null)
             {
                 parent = T;
             }
 
-            UIPanel.CreateUIPanel("Panel", parent, Vector3.zero, default_width, default_height, default_margin, default_radius, LoadDefaultUIMaterial(), UIElement.default_color);
+            UIPanel.CreateUIPanel("Panel", parent, Vector3.zero, default_width, default_height, default_margin, default_radius, UIUtils.LoadMaterial("UIPanel"), UIElement.default_color);
         }
 
         private void OnWizardUpdate()
@@ -47,20 +47,7 @@ namespace VRtist
 
             if (uiMaterial == null)
             {
-                uiMaterial = LoadDefaultUIMaterial();
-            }
-        }
-
-        static Material LoadDefaultUIMaterial()
-        {
-            string[] uiMaterialAssetPath = AssetDatabase.FindAssets("UIPanel", new[] { "Assets/Resources/Materials" });
-            if (uiMaterialAssetPath.Length == 1)
-            {
-                return AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(uiMaterialAssetPath[0]), typeof(Material)) as Material;
-            }
-            else
-            {
-                return null;
+                uiMaterial = UIUtils.LoadMaterial("UIPanel");
             }
         }
 
@@ -68,9 +55,5 @@ namespace VRtist
         {
             UIPanel.CreateUIPanel(panelName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, radius, uiMaterial, color);
         }
-
-        //private void OnWizardOtherButton()
-        //{
-        //}
     }
 }

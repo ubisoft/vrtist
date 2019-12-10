@@ -25,7 +25,7 @@ namespace VRtist
         private Transform picker;
         private Transform intensitySlider;
         private Transform rangeSlider;
-        private Transform innerAngleSlider;
+        //private Transform innerAngleSlider;
         private Transform outerAngleSlider;
         private Transform castShadowsCheckbox;
         private Transform enableCheckbox;
@@ -36,7 +36,7 @@ namespace VRtist
             picker.gameObject.SetActive(false);
             intensitySlider.gameObject.SetActive(false);
             rangeSlider.gameObject.SetActive(false);
-            innerAngleSlider.gameObject.SetActive(false);
+            //innerAngleSlider.gameObject.SetActive(false);
             outerAngleSlider.gameObject.SetActive(false);
             castShadowsCheckbox.gameObject.SetActive(false);
             enableCheckbox.gameObject.SetActive(false);
@@ -46,23 +46,15 @@ namespace VRtist
         {
         }
 
-        // Start is called before the first frame update
         void Start()
         {
             Init();
             switchToSelectionEnabled = false;
 
-            ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
-            ToolsUIManager.Instance.OnBoolToolParameterChangedEvent += OnBoolChangeParameter;
-
-            picker = panel.Find("Picker 2.0");
-            /*
-            ColorPickerControl pickerControl = picker.GetComponent<ColorPickerControl>();
-            pickerControl.CurrentColor = new Color(0.25f, 0.25f, 1f);
-            */
+            picker = panel.Find("ColorPicker");
             intensitySlider = panel.Find("Intensity");
             rangeSlider = panel.Find("Range");
-            innerAngleSlider = panel.Find("InnerAngle");
+            //innerAngleSlider = panel.Find("InnerAngle");
             outerAngleSlider = panel.Find("OuterAngle");
             castShadowsCheckbox = panel.Find("CastShadows");
             enableCheckbox = panel.Find("Enable");
@@ -132,22 +124,20 @@ namespace VRtist
 
         private void SetSliderValue(Transform slider, float value)
         {
-            /*
-            SliderComp sliderComp = slider.GetComponent<SliderComp>();
-            sliderComp.blockSignals = true;
-            sliderComp.Value = value;
-            sliderComp.blockSignals = false;
-            */
+            UISlider sliderComp = slider.GetComponent<UISlider>();
+            if(sliderComp != null)
+            {
+                sliderComp.Value = value;
+            }
         }
 
         private void SetCheckboxValue(Transform checkbox, bool value)
         {
-            /*
-            CheckboxComp checkboxComp = checkbox.GetComponent<CheckboxComp>();
-            checkboxComp.blockSignals = true;
-            checkboxComp.Value = value;
-            checkboxComp.blockSignals = false;
-            */
+            UICheckbox checkboxComp = checkbox.GetComponent<UICheckbox>();
+            if (checkboxComp!= null)
+            {
+                checkboxComp.Checked = value;
+            }
         }
 
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -192,7 +182,7 @@ namespace VRtist
             intensitySlider.gameObject.SetActive(true);
             rangeSlider.gameObject.SetActive(sunCount == 0);
 
-            innerAngleSlider.gameObject.SetActive(sunCount == 0 && pointCount == 0);
+            //innerAngleSlider.gameObject.SetActive(sunCount == 0 && pointCount == 0);
             outerAngleSlider.gameObject.SetActive(sunCount == 0 && pointCount == 0);
 
             castShadowsCheckbox.gameObject.SetActive(true);
@@ -225,7 +215,7 @@ namespace VRtist
 
                 SetSliderValue(intensitySlider, lightingParameters.intensity);
                 SetSliderValue(rangeSlider, lightingParameters.GetRange());
-                SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
+                //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
                 SetSliderValue(outerAngleSlider, lightingParameters.GetOuterAngle());
 
                 SetCheckboxValue(castShadowsCheckbox, lightingParameters.castShadows);
@@ -247,24 +237,30 @@ namespace VRtist
             }
         }
 
-        private void OnBoolChangeParameter(object sender, BoolToolParameterChangedArgs args)
+        public void OnCheckEnable(bool value)
         {
-            if (args.toolName != "Lighting")
-                return;
-            bool value = args.value;
+            OnBoolChangeParameter("Enable", value);
+        }
 
+        public void OnCheckCastShadows(bool value)
+        {
+            OnBoolChangeParameter("CastShadows", value);
+        }
+
+        private void OnBoolChangeParameter(string param, bool value)
+        {
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
                 LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
                 if (lightingParameters != null)
                 {
-                    if (args.parameterName == "CastShadows")
+                    if (param == "CastShadows")
                     {
                         lightingParameters.castShadows = value;
                     }
 
-                    if (args.parameterName == "Enable")
+                    if (param == "Enable")
                     {
                         gobject.transform.GetChild(1).gameObject.SetActive(value);
                     }
@@ -272,25 +268,41 @@ namespace VRtist
             }
         }
 
-        private void OnChangeParameter(object sender, ToolParameterChangedArgs args)
+        public void OnChangeIntensity(float value)
         {
-            // update selection parameters from UI
-            if (args.toolName != "Lighting")
-                return;
-            float value = args.value;
+            OnFloatChangeParameter("Intensity", value);
+        }
+
+        public void OnChangeRange(float value)
+        {
+            OnFloatChangeParameter("Range", value);
+        }
+
+        public void OnChangeOuterAngle(float value)
+        {
+            OnFloatChangeParameter("OuterAngle", value);
+        }
+
+        public void OnChangeInnerAngle(float value)
+        {
+            OnFloatChangeParameter("InnerAngle", value);
+        }
+
+        private void OnFloatChangeParameter(string param, float value)
+        {
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
                 LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
                 if (lightingParameters != null)
                 {
-                    if (args.parameterName == "Intensity")
+                    if (param == "Intensity")
                         lightingParameters.intensity = value;
-                    if (args.parameterName == "Range")
+                    if (param == "Range")
                         lightingParameters.SetRange(value);
-                    if (args.parameterName == "OuterAngle")
+                    if (param == "OuterAngle")
                         lightingParameters.SetOuterAngle(value);
-                    if (args.parameterName == "InnerAngle")
+                    if (param == "InnerAngle")
                         lightingParameters.SetInnerAngle(value);
                 }
             }
