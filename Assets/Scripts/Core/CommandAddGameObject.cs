@@ -4,55 +4,10 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class MeshInfos
+    public class CommandAddGameObject : CommandAddRemoveGameObject
     {
-        public MeshFilter meshFilter;
-        public MeshRenderer meshRenderer;
-    }
-
-    public class MeshConnectionInfos
-    {
-        public Transform meshTransform;
-    }
-
-    public class DeleteMeshInfos
-    {
-        public Transform meshTransform;
-    }
-
-    public class CommandAddGameObject : ICommand
-    {
-        protected GameObject gObject = null;
-        Transform parent = null;
-        Vector3 position;
-        Quaternion rotation;
-        Vector3 scale;
-
-        public CommandAddGameObject(GameObject o)
+        public CommandAddGameObject(GameObject o) : base(o)
         {
-            gObject = o;
-            parent = o.transform.parent;
-        }
-
-        private void SendDeleteMesh()
-        {
-            DeleteMeshInfos deleteMeshInfo = new DeleteMeshInfos();
-            deleteMeshInfo.meshTransform = gObject.transform;
-            CommandManager.SendEvent(MessageType.Delete, deleteMeshInfo);
-        }
-
-        private void SendMesh()
-        {
-            MeshInfos meshInfos = new MeshInfos();
-            meshInfos.meshFilter = gObject.GetComponent<MeshFilter>();
-            meshInfos.meshRenderer = gObject.GetComponent<MeshRenderer>();
-
-            CommandManager.SendEvent(MessageType.Mesh, meshInfos);
-
-            MeshConnectionInfos meshConnectionInfos = new MeshConnectionInfos();
-            meshConnectionInfos.meshTransform = gObject.transform;
-
-            CommandManager.SendEvent(MessageType.MeshConnection, meshConnectionInfos);
         }
 
         public override void Undo()

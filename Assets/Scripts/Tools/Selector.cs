@@ -163,23 +163,23 @@ namespace VRtist
                 });
 
             // get rightPrimaryState
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton,
-                () =>
-                {
-                    var undoGroup = new CommandGroup();
-                    List<GameObject> selectedObjects = new List<GameObject>();
-                    foreach (KeyValuePair<int, GameObject> data in Selection.selection)
-                    {
-                        selectedObjects.Add(data.Value);
-                    }
-                    ClearSelection();
-                    foreach(var gobject in selectedObjects)
-                    {
-                        new CommandRemoveGameObject(gobject).Submit();
-                        gobject.transform.parent = Utils.GetOrCreateTrash().transform;
-                    }
-                    undoGroup.Submit();
-                });
+            //VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton,
+            //    () =>
+            //    {
+            //        var undoGroup = new CommandGroup();
+            //        List<GameObject> selectedObjects = new List<GameObject>();
+            //        foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            //        {
+            //            selectedObjects.Add(data.Value);
+            //        }
+            //        ClearSelection();
+            //        foreach(var gobject in selectedObjects)
+            //        {
+            //            new CommandRemoveGameObject(gobject).Submit();
+            //            gobject.transform.parent = Utils.GetOrCreateTrash().transform;
+            //        }
+            //        undoGroup.Submit();
+            //    });
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 

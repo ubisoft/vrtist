@@ -4,21 +4,13 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class CommandRemoveGameObject : ICommand
+    public class CommandRemoveGameObject : CommandAddRemoveGameObject
     {
-        GameObject gObject = null;
-        Transform parent = null;
         ParametersController parametersController = null;
         string objectPath;
-        Vector3 position;
-        Quaternion rotation;
-        Vector3 scale;
 
-        public CommandRemoveGameObject(GameObject o)
-        {
-            gObject = o;
-            parent = o.transform.parent;
-
+        public CommandRemoveGameObject(GameObject o) : base(o)
+        {            
             parametersController = gObject.GetComponentInParent<ParametersController>();
             if (parametersController)
             {
@@ -36,13 +28,17 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
+            SendMesh();
         }
         public override void Redo()
         {
+            SendDeleteMesh();
             gObject.transform.parent = Utils.GetOrCreateTrash().transform;
         }
         public override void Submit()
         {
+            SendDeleteMesh();
+
             position = gObject.transform.localPosition;
             rotation = gObject.transform.localRotation;
             scale = gObject.transform.localScale;

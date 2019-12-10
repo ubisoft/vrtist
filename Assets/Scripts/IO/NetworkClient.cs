@@ -21,7 +21,9 @@ namespace VRtist
         Material,
         Camera,
         Light,
-        MeshConnection
+        MeshConnection,
+        Rename,
+        Duplicate,
     }
 
     public class NetCommand
@@ -51,7 +53,7 @@ namespace VRtist
         public static Dictionary<string, Material[]> meshesMaterials = new Dictionary<string, Material[]>();
         public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
 
-        public static byte[] StringToBytes(string[] values)
+        public static byte[] StringsToBytes(string[] values)
         {
             int size = sizeof(int);
             for (int i = 0; i < values.Length; i++)
@@ -75,10 +77,10 @@ namespace VRtist
             return bytes;
         }
 
-        public static byte[] IntToBytes(int[] vectors)
+        public static byte[] TriangleIndicesToBytes(int[] vectors)
         {
             byte[] bytes = new byte[sizeof(int) * vectors.Length + sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length / 3), 0, bytes, 0, sizeof(int));
             int index = sizeof(int);
             for (int i = 0; i < vectors.Length; i++)
             {
@@ -104,6 +106,15 @@ namespace VRtist
             return bytes;
         }
 
+        public static Vector3 GetVector3(byte[] data, ref int currentIndex)
+        {
+            float[] buffer = new float[3];
+            int size = 3 * sizeof(float);
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+            currentIndex += size;
+            return new Vector3(buffer[0], buffer[1], buffer[2]);
+        }
+
         public static byte[] Vector3ToBytes(Vector3 vector)
         {
             byte[] bytes = new byte[3 * sizeof(float)];
@@ -112,6 +123,15 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, 2 * sizeof(float), sizeof(float));
             return bytes;
+        }
+
+        public static Vector2 GetVector2(byte[] data, ref int currentIndex)
+        {
+            float[] buffer = new float[2];
+            int size = 2 * sizeof(float);
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+            currentIndex += size;
+            return new Vector2(buffer[0], buffer[1]);
         }
 
         public static byte[] Vector2ToBytes(Vector2[] vectors)
@@ -129,6 +149,14 @@ namespace VRtist
             return bytes;
         }
 
+        public static Quaternion GetQuaternion(byte[] data, ref int currentIndex)
+        {
+            float[] buffer = new float[4];
+            int size = 4 * sizeof(float);
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+            currentIndex += size;
+            return new Quaternion(buffer[0], buffer[1], buffer[2], buffer[3]);
+        }
         public static byte[] QuaternionToBytes(Quaternion quaternion)
         {
             byte[] bytes = new byte[4 * sizeof(float)];
@@ -197,6 +225,26 @@ namespace VRtist
             }
 
             GameObject.Destroy(trf.gameObject);
+        }
+
+        public static void Duplicate(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            Transform srcPath = FindPath(root, data, 0, out bufferIndex);
+            if (srcPath == null)
+                return;
+
+            string dstName = GetString(data, bufferIndex, out bufferIndex);
+            Vector3 position = GetVector3(data, ref bufferIndex);
+            Quaternion rotation = GetQuaternion(data, ref bufferIndex);
+            Vector3 scale = GetVector3(data, ref bufferIndex);
+
+            GameObject newGameObject = GameObject.Instantiate(srcPath.gameObject);
+            newGameObject.transform.parent = srcPath.parent;
+            newGameObject.name = dstName;
+            newGameObject.transform.localPosition = position;
+            newGameObject.transform.localRotation = rotation;
+            newGameObject.transform.localScale = scale;
         }
 
         public static Material DefaultMaterial()
@@ -358,6 +406,48 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildMaterialCommand(Material material)
+        {
+            string name = material.name;
+            Color baseColor = material.GetColor("_BaseColor");
+            float metallic = material.GetFloat("_Metallic");
+            float roughness = 1f - material.GetFloat("_Smoothness");
+
+            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(name);
+            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
+
+            byte[] paramsBuffer = new byte[5 * sizeof(float)];
+            Buffer.BlockCopy(BitConverter.GetBytes(baseColor.r), 0, paramsBuffer,   0 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(baseColor.g), 0, paramsBuffer,   1 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(baseColor.b), 0, paramsBuffer,   2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(metallic), 0, paramsBuffer,      3 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(roughness), 0, paramsBuffer,     4 * sizeof(float), sizeof(float));
+            
+            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, paramsBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Material);
+            return command;
+        }
+
+        public static NetCommand BuildDuplicateCommand(Transform root, DuplicateInfos duplicate)
+        {
+            string srcPath = GetPathName(root, duplicate.srcObject.transform);
+            string dstName = duplicate.dstObject.name;
+
+            byte[] srcPathBuffer = System.Text.Encoding.UTF8.GetBytes(srcPath);
+            byte[] srcPathBufferSize = BitConverter.GetBytes(srcPathBuffer.Length);
+            byte[] dstNameBuffer = System.Text.Encoding.UTF8.GetBytes(dstName);
+            byte[] dstNameBufferSize = BitConverter.GetBytes(dstNameBuffer.Length);
+
+            Transform transform = duplicate.dstObject.transform;
+            byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
+            byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
+            byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
+
+            List<byte[]> buffers = new List<byte[]> { srcPathBufferSize, srcPathBuffer, dstNameBufferSize, dstNameBuffer, positionBuffer, rotationBuffer, scaleBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Duplicate);
+            return command;
+        }
+
         public static NetCommand BuildMeshCommand(MeshInfos meshInfos)
         {
             Mesh mesh = meshInfos.meshFilter.mesh;
@@ -371,15 +461,15 @@ namespace VRtist
 
             // temp only one material
             byte[] materialIndices = new byte[sizeof(int) + 2 * sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(2), 0, materialIndices, 0, sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 4, sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 8, sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(1), 0, materialIndices, 0, sizeof(int)); // 1 entry
+            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 4, sizeof(int)); // triangle index
+            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 8, sizeof(int)); // material index
 
-            byte[] triangles = IntToBytes(mesh.triangles);
+            byte[] triangles = TriangleIndicesToBytes(mesh.triangles);
 
             Material material = meshInfos.meshRenderer.material;
             string[] materialNames = new string[1] { material.name };
-            byte[] materials = StringToBytes(materialNames);
+            byte[] materials = StringsToBytes(materialNames);
 
             List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, positions, normals, uvs, materialIndices, triangles, materials };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
@@ -391,10 +481,15 @@ namespace VRtist
             Transform transform = meshConnectionInfos.meshTransform;
             Mesh mesh = transform.GetComponent<MeshFilter>().mesh;
             string path = GetPathName(root, transform);
-            string[] names = new string[2] { path, mesh.name };
 
-            byte[] namesBuffer = StringToBytes(names);
-            NetCommand command = new NetCommand(namesBuffer, MessageType.MeshConnection);
+            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+
+            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(mesh.name);
+            byte[] nameBufferSize = BitConverter.GetBytes(mesh.name.Length);
+
+            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, nameBufferSize, nameBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.MeshConnection);
             return command;
         }
 
@@ -406,7 +501,7 @@ namespace VRtist
 
             byte[] encodedPath = System.Text.Encoding.UTF8.GetBytes(path);
             byte[] encodedPathSize = BitConverter.GetBytes(encodedPath.Length);
-            List<byte[]> buffers = new List<byte[]> { encodedPath, encodedPath };
+            List<byte[]> buffers = new List<byte[]> { encodedPathSize, encodedPath };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Delete);
             return command;
         }
@@ -567,14 +662,15 @@ namespace VRtist
 
             meshRenderer.sharedMaterials = meshesMaterials[meshName];
 
-            MeshCollider collider = gobject.AddComponent<MeshCollider>();
             gobject.tag = "PhysicObject";
 
             if(!meshInstances.ContainsKey(meshName))
                 meshInstances[meshName] = new HashSet<MeshFilter>();
             meshInstances[meshName].Add(meshFilter);
             meshFilter.mesh = mesh;
-            
+
+            MeshCollider collider = gobject.AddComponent<MeshCollider>();
+
             return transform;
         }
 
@@ -814,6 +910,11 @@ namespace VRtist
                         case MessageType.Delete:
                             NetGeometry.Delete(root, command.data);
                             break;
+                        case MessageType.Rename:
+                            break;
+                        case MessageType.Duplicate:
+                            NetGeometry.Duplicate(root, command.data);
+                            break;
                     }
                 }
                 receivedCommands.Clear();
@@ -937,6 +1038,18 @@ namespace VRtist
             WriteMessage(command);
         }
 
+        public void SendMaterial(Material material)
+        {
+            NetCommand command = NetGeometry.BuildMaterialCommand(material);
+            WriteMessage(command);
+        }
+
+        public void SendDuplicate(DuplicateInfos duplicate)
+        {
+            NetCommand command = NetGeometry.BuildDuplicateCommand(root, duplicate);
+            WriteMessage(command);
+        }
+
         public void JoinRoom(string roomName)
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
@@ -993,6 +1106,10 @@ namespace VRtist
                     SendMeshConnection(data as MeshConnectionInfos); break;
                 case MessageType.Delete:
                     SendDeleteMesh(data as DeleteMeshInfos); break;
+                case MessageType.Material:
+                    SendMaterial(data as Material); break;
+                case MessageType.Duplicate:
+                    SendDuplicate(data as DuplicateInfos); break;
             }
         }
     }
