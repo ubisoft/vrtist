@@ -35,7 +35,11 @@ namespace VRtist
 
         void Start()
         {
-            if (EditorApplication.isPlaying || Application.isPlaying)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
                 OnColorChanged();
                 CurrentColor = new Color(0.2f, 0.5f, 0.6f);
@@ -147,7 +151,9 @@ namespace VRtist
             Gizmos.DrawLine(posTopRight, posBottomRight);
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
+#endif
         }
 
         //private void OnTriggerEnter(Collider otherCollider)

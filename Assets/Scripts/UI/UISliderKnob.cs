@@ -25,7 +25,11 @@ namespace VRtist
 
         void Awake()
         {
-            if (EditorApplication.isPlaying || Application.isPlaying)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
                 // Why did I copy these lines from the ColorPicker???
 

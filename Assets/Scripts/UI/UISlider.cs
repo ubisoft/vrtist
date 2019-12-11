@@ -63,7 +63,11 @@ namespace VRtist
 
         void Start()
         {
-            if (EditorApplication.isPlaying || Application.isPlaying)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
                 onSlideEvent.AddListener(OnSlide);
                 onClickEvent.AddListener(OnClickSlider);
@@ -239,8 +243,10 @@ namespace VRtist
             Gizmos.DrawLine(posBottomRight, posBottomSliderEnd + eps);
             Gizmos.DrawLine(posBottomSliderEnd + eps, posTopSliderEnd + eps);
 
+#if UNITY_EDITOR
             Gizmos.color = Color.white;
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
+#endif
         }
 
         private void UpdateValueText()
@@ -381,9 +387,7 @@ namespace VRtist
                 intensity *= intensity; // ease-in
 
                 // TODO : Re-enable
-                /*
                 VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-                */
             }
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);

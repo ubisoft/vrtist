@@ -85,7 +85,9 @@ namespace VRtist
             Gizmos.DrawLine(posTopRight, posBottomRight);
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
+#endif
         }
 
         public override void RebuildMesh()

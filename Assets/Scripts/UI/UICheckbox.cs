@@ -40,7 +40,11 @@ namespace VRtist
 
         void Start()
         {
-            if (EditorApplication.isPlaying || Application.isPlaying)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
                 onClickEvent.AddListener(OnPushCheckbox);
                 onReleaseEvent.AddListener(OnReleaseCheckbox);
@@ -182,7 +186,9 @@ namespace VRtist
             Gizmos.DrawLine(posTopRight, posBottomRight);
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
+#endif
         }
 
         private string GetText()

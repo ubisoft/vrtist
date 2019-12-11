@@ -1196,6 +1196,7 @@ namespace VRtist
 
         public static Material LoadMaterial(string materialName)
         {
+#if UNITY_EDITOR
             string[] pathList = AssetDatabase.FindAssets(materialName, new[] { "Assets/Resources/Materials/UI" });
             if (pathList.Length > 0)
             {
@@ -1206,15 +1207,13 @@ namespace VRtist
                         return obj as Material;
                 }
             }
+#endif
             return null;
         }
 
         public static Sprite LoadIcon(string iconName)
         {
-            // TODO: Doesn't work, find out why.
-            //Sprite sprite = Resources.Load("Textures/UI/paint") as Sprite;
-            //return sprite;
-
+#if UNITY_EDITOR
             string[] pathList = AssetDatabase.FindAssets(iconName, new[] { "Assets/Resources/Textures/UI" });
             if (pathList.Length > 0)
             {
@@ -1225,11 +1224,13 @@ namespace VRtist
                         return obj as Sprite;
                 }
             }
+#endif
             return null;
         }
 
         public static GameObject LoadPrefab(string prefabName)
         {
+#if UNITY_EDITOR
             string[] pathList = AssetDatabase.FindAssets(prefabName, new[] { "Assets/Resources/Prefabs/UI" });
             if (pathList.Length > 0)
             {
@@ -1240,6 +1241,7 @@ namespace VRtist
                         return obj as GameObject;
                 }
             }
+#endif
             return null;
         }
 

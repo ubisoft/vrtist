@@ -1,16 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using System;
 
 namespace VRtist
 {
-    [System.AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
-    public class CentimeterFloatAttribute : PropertyAttribute
-    {
-    }
-
     [CustomPropertyDrawer(typeof(CentimeterFloatAttribute))]
     internal sealed class CentimeterFloatDrawer : PropertyDrawer
     {

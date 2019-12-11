@@ -24,13 +24,11 @@ namespace VRtist
         public void RebuildMesh(float newWidth, float newHeight, float newThickness)
         {
             // TODO : Re-enable
-            /*
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             Mesh theNewMesh = UIUtils.BuildBoxEx(newWidth, newHeight, newThickness);
             theNewMesh.name = "UIColorPickerPreview_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
-            */
-
+            
             width = newWidth;
             height = newHeight;
             thickness = newThickness;
@@ -93,7 +91,6 @@ namespace VRtist
             uiColorPickerPreview.thickness = thickness;
 
             // TODO : Re-enable
-            /*
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
@@ -117,7 +114,7 @@ namespace VRtist
                     }
                     coll.isTrigger = true;
                 }
-            }*/
+            }
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();

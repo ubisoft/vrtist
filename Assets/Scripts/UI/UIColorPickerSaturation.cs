@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 
 namespace VRtist
 {
@@ -9,7 +9,7 @@ namespace VRtist
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
-    public class UIColorPickerHue : MonoBehaviour
+    public class UIColorPickerSaturation : MonoBehaviour
     {
         // UIElement ?
 
@@ -18,13 +18,19 @@ namespace VRtist
         private float thickness = 1.0f;
 
         public UIColorPicker colorPicker = null;
-        float cursorPosition = 0.5f; // normalized position
+
+        Color baseColor;
+        Vector2 cursorPosition = new Vector2(0.5f, 0.5f); // normalized
 
         public Transform cursor;
 
         void Awake()
         {
-            if (EditorApplication.isPlaying || Application.isPlaying)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
                 colorPicker = GetComponentInParent<UIColorPicker>();
                 width = GetComponent<MeshFilter>().mesh.bounds.size.x;
@@ -33,16 +39,22 @@ namespace VRtist
             }
         }
 
-        public float GetHue()
+        public void SetBaseColor(Color clr)
+        {
+            baseColor = clr;
+            var renderer = GetComponent<MeshRenderer>();
+            renderer.material.SetColor("_Color", clr);
+        }
+
+        public Vector2 GetSaturation()
         {
             return cursorPosition;
         }
 
-        // value: [0..1]
-        public void SetHue(float value)
+        public void SetSaturation(Vector2 sat)
         {
-            cursorPosition = value;
-            cursor.localPosition = new Vector3(width * value, -height/2.0f, 0);
+            cursorPosition = sat;
+            cursor.localPosition = new Vector3(width * sat.x, -height * (1.0f-sat.y), 0);
         }
 
         private void OnTriggerStay(Collider other)
@@ -55,7 +67,12 @@ namespace VRtist
 
             Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
 
-            SetHue(Mathf.Clamp(position.x / width, 0, 1));
+            float x = position.x / width;
+            float y = 1.0f - (-position.y / height);
+            x = Mathf.Clamp(x, 0, 1);
+            y = Mathf.Clamp(y, 0, 1);
+            SetSaturation(new Vector2(x, y));
+
             colorPicker.OnColorChanged();
         }
 
@@ -63,7 +80,7 @@ namespace VRtist
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             Mesh theNewMesh = UIUtils.BuildBoxEx(newWidth, newHeight, newThickness);
-            theNewMesh.name = "UIColorPickerHue_GeneratedMesh";
+            theNewMesh.name = "UIColorPickerSaturation_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
             width = newWidth;
@@ -93,8 +110,8 @@ namespace VRtist
                 }
             }
         }
-
-        public static UIColorPickerHue CreateUIColorPickerHue(
+        
+        public static UIColorPickerSaturation CreateUIColorPickerSaturation(
             string objectName,
             Transform parent,
             Vector3 relativeLocation,
@@ -118,22 +135,22 @@ namespace VRtist
                 }
             }
 
-            UIColorPickerHue uiColorPickerHue = go.AddComponent<UIColorPickerHue>();
-            //uiColorPickerHue.relativeLocation = relativeLocation;
-            uiColorPickerHue.transform.parent = parent;
-            uiColorPickerHue.transform.localPosition = parentAnchor + relativeLocation;
-            uiColorPickerHue.transform.localRotation = Quaternion.identity;
-            uiColorPickerHue.transform.localScale = Vector3.one;
-            uiColorPickerHue.width = width;
-            uiColorPickerHue.height = height;
-            uiColorPickerHue.thickness = thickness;
+            UIColorPickerSaturation uiColorPickerSaturation = go.AddComponent<UIColorPickerSaturation>();
+            //uiColorPickerSaturation.relativeLocation = relativeLocation;
+            uiColorPickerSaturation.transform.parent = parent;
+            uiColorPickerSaturation.transform.localPosition = parentAnchor + relativeLocation;
+            uiColorPickerSaturation.transform.localRotation = Quaternion.identity;
+            uiColorPickerSaturation.transform.localScale = Vector3.one;
+            uiColorPickerSaturation.width = width;
+            uiColorPickerSaturation.height = height;
+            uiColorPickerSaturation.thickness = thickness;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = UIUtils.BuildBoxEx(width, height, thickness);
-                //uiColorPickerHue.Anchor = Vector3.zero;
+                //uiColorPickerSaturation.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {
@@ -164,11 +181,11 @@ namespace VRtist
 
             // Add a cursor
             GameObject cursor = Instantiate<GameObject>(cursorPrefab);
-            cursor.transform.parent = uiColorPickerHue.transform;
+            cursor.transform.parent = uiColorPickerSaturation.transform;
             cursor.transform.localPosition = Vector3.zero;
-            uiColorPickerHue.cursor = cursor.transform;
+            uiColorPickerSaturation.cursor = cursor.transform;
 
-            return uiColorPickerHue;
+            return uiColorPickerSaturation;
         }
     }
 }

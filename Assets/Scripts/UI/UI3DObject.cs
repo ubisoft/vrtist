@@ -32,7 +32,11 @@ namespace VRtist
         
         void Start()
         {
-            if (EditorApplication.isPlaying || Application.isPlaying)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
                 onClickEvent.AddListener(OnPush3DObject);
                 onReleaseEvent.AddListener(OnRelease3DObject);
@@ -166,7 +170,9 @@ namespace VRtist
             Vector3 worldCenter = transform.TransformPoint(new Vector3(width / 2.0f, -height / 2.0f, -depth / 2.0f));
             Gizmos.color = Color.white;
             Gizmos.DrawWireCube(worldCenter, new Vector3(width, height, depth));
+#if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
+#endif
         }
 
         //private string GetText()
