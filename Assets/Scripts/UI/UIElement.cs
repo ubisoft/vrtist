@@ -15,7 +15,8 @@ namespace VRtist
         public static readonly float collider_min_depth_shallow = 0.03f;
         public static readonly float collider_min_depth_deep = 0.1f;
 
-        [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
+        // TODO re-enable
+        // [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         public float width = 1.0f;
         public float height = 1.0f;
@@ -83,7 +84,7 @@ namespace VRtist
 
         public void SetColor(Color color)
         {
-            Material sharedMaterial = GetComponent<MeshRenderer>().material;
+            Material sharedMaterial = GetComponent<MeshRenderer>().sharedMaterial;
             sharedMaterial.SetColor("_BaseColor", color);
         }
 

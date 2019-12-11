@@ -5,6 +5,11 @@ using UnityEngine;
 
 namespace VRtist
 {
+    public class RenameInfo
+    {
+        public Transform srcTransform;
+        public string newName;
+    }
     public abstract class ICommand
     {
         abstract public void Undo();

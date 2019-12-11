@@ -379,7 +379,11 @@ namespace VRtist
                 // Haptic intensity as we go deeper into the widget.
                 float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
                 intensity *= intensity; // ease-in
+
+                // TODO : Re-enable
+                /*
                 VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+                */
             }
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);

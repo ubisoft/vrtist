@@ -186,6 +186,20 @@ namespace VRtist
             return resultBuffer;
         }
 
+        public static void Rename(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            Transform srcTrf = FindPath(root, data, 0, out bufferIndex);
+            if (srcTrf == null)
+                return;
+            string dstPath = GetString(data, bufferIndex, out bufferIndex);
+            if (dstPath.Length == 0)
+                return;
+            string[] splittedDstPath = dstPath.Split('/');
+            string newName = splittedDstPath[splittedDstPath.Length - 1];
+            srcTrf.gameObject.name = newName;
+        }
+
         public static void Delete(Transform root, byte[] data)
         {
             int bufferIndex = 0;
@@ -425,6 +439,21 @@ namespace VRtist
             
             List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Material);
+            return command;
+        }
+
+        public static NetCommand BuildRenameCommand(Transform root, RenameInfo rename)
+        {
+            string srcPath = GetPathName(root, rename.srcTransform);
+            byte[] srcPathBuffer = System.Text.Encoding.UTF8.GetBytes(srcPath);
+            byte[] srcPathBufferSize = BitConverter.GetBytes(srcPathBuffer.Length);
+
+            string dstName = rename.newName;
+            byte[] dstNameBuffer = System.Text.Encoding.UTF8.GetBytes(dstName);
+            byte[] dstNameBufferSize = BitConverter.GetBytes(dstNameBuffer.Length);
+
+            List<byte[]> buffers = new List<byte[]> { srcPathBufferSize, srcPathBuffer, dstNameBufferSize, dstNameBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Rename);
             return command;
         }
 
@@ -911,6 +940,7 @@ namespace VRtist
                             NetGeometry.Delete(root, command.data);
                             break;
                         case MessageType.Rename:
+                            NetGeometry.Rename(root, command.data);
                             break;
                         case MessageType.Duplicate:
                             NetGeometry.Duplicate(root, command.data);
@@ -1044,6 +1074,12 @@ namespace VRtist
             WriteMessage(command);
         }
 
+        public void SendRename(RenameInfo rename)
+        {
+            NetCommand command = NetGeometry.BuildRenameCommand(root, rename);
+            WriteMessage(command);
+        }
+
         public void SendDuplicate(DuplicateInfos duplicate)
         {
             NetCommand command = NetGeometry.BuildDuplicateCommand(root, duplicate);
@@ -1108,6 +1144,8 @@ namespace VRtist
                     SendDeleteMesh(data as DeleteMeshInfos); break;
                 case MessageType.Material:
                     SendMaterial(data as Material); break;
+                case MessageType.Rename:
+                    SendRename(data as RenameInfo); break;
                 case MessageType.Duplicate:
                     SendDuplicate(data as DuplicateInfos); break;
             }

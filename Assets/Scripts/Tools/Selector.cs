@@ -225,9 +225,15 @@ namespace VRtist
                     else
                         meshParentMatrixInverse = Matrix4x4.identity;
                     Matrix4x4 transformed = meshParentMatrixInverse * controllerMatrix * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
-                    data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                    data.Value.transform.localRotation = transformed.rotation;
-                    data.Value.transform.localScale = transformed.lossyScale;
+
+                    if (data.Value.transform.localToWorldMatrix != transformed)
+                    {
+                        data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                        data.Value.transform.localRotation = transformed.rotation;
+                        data.Value.transform.localScale = transformed.lossyScale;
+
+                        CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
+                    }
                 }
             }
         }

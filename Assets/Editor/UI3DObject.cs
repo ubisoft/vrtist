@@ -121,7 +121,7 @@ namespace VRtist
             Vector3 middle = new Vector3(width / 2.0f, -height / 2.0f, -depth / 2.0f);
             child.transform.localPosition = middle;
             child.transform.localRotation = Quaternion.identity;
-            Vector3 childExtents = child.GetComponentInChildren<MeshFilter>().mesh.bounds.extents;
+            Vector3 childExtents = child.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents;
             float maxChildDim = Mathf.Max(new float[] { childExtents.x, childExtents.y, childExtents.z });
             float minDim = Mathf.Min(new float[] { width / 2.0f, height / 2.0f, depth / 2.0f });
             float ratio = minDim / maxChildDim;

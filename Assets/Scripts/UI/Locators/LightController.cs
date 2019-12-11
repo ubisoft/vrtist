@@ -57,6 +57,9 @@ namespace VRtist
                 lightObject.innerSpotAngle = parameters.GetInnerAngle();
                 lightObject.spotAngle = parameters.GetOuterAngle();
             }
+
+            // avoid flicking
+            lightObject.transform.localScale = new Vector3(1f / world.localScale.x, 1f / world.localScale.x, 1f / world.localScale.x);
         }
     }
 

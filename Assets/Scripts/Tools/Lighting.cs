@@ -124,20 +124,25 @@ namespace VRtist
 
         private void SetSliderValue(Transform slider, float value)
         {
+            // TODO : Re-enable
+            /*
             UISlider sliderComp = slider.GetComponent<UISlider>();
             if(sliderComp != null)
             {
                 sliderComp.Value = value;
             }
+            */
         }
 
         private void SetCheckboxValue(Transform checkbox, bool value)
         {
+            // TODO : Re-enable
+            /*
             UICheckbox checkboxComp = checkbox.GetComponent<UICheckbox>();
             if (checkboxComp!= null)
             {
                 checkboxComp.Checked = value;
-            }
+            }*/
         }
 
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
