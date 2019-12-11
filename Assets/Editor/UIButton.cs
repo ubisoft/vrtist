@@ -15,8 +15,8 @@ namespace VRtist
     public class UIButton : UIElement
     {
         [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        public float margin = 0.005f;
-        public float thickness = 0.001f;
+        [CentimeterFloat] public float margin = 0.005f;
+        [CentimeterFloat] public float thickness = 0.001f;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]

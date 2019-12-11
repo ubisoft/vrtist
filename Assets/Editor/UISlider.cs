@@ -16,8 +16,8 @@ namespace VRtist
     public class UISlider : UIElement
     {
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        public float margin = 0.005f;
-        public float thickness = 0.001f;
+        [CentimeterFloat] public float margin = 0.005f;
+        [CentimeterFloat] public float thickness = 0.001f;
         public float sliderPositionBegin = 0.3f;
         public float sliderPositionEnd = 0.8f;
         public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);

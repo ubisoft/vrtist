@@ -13,9 +13,9 @@ namespace VRtist
     public class UI3DObject : UIElement
     {
         [SpaceHeader("3DObject Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        public float margin = 0.05f;
-        public float thickness = 0.05f;
-        public float depth = 0.05f;
+        [CentimeterFloat] public float margin = 0.05f;
+        [CentimeterFloat] public float thickness = 0.05f;
+        [CentimeterFloat] public float depth = 0.05f;
         public GameObject objectPrefab = null;
         private GameObject instantiatedObject = null; // TODO: get this object in Start or Awake
 
@@ -112,6 +112,7 @@ namespace VRtist
         {
             // TODO: do better, dont destroy and re-instantiate for every interaction.
 
+            // TODO: but with many instantiated objects. Find and remove them all?
             if(instantiatedObject != null)
             {
                 DestroyImmediate(instantiatedObject);
@@ -121,6 +122,7 @@ namespace VRtist
             Vector3 middle = new Vector3(width / 2.0f, -height / 2.0f, -depth / 2.0f);
             child.transform.localPosition = middle;
             child.transform.localRotation = Quaternion.identity;
+            // TODO: problem, some object are multi-mesh... compute the while bbox.
             Vector3 childExtents = child.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents;
             float maxChildDim = Mathf.Max(new float[] { childExtents.x, childExtents.y, childExtents.z });
             float minDim = Mathf.Min(new float[] { width / 2.0f, height / 2.0f, depth / 2.0f });
