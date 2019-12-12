@@ -442,6 +442,89 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildCameraCommand(Transform root, CameraInfo cameraInfo)
+        {
+            Transform current = cameraInfo.transform;
+            string path = current.name;
+            while (current.parent && current.parent != root)
+            {
+                current = current.parent;
+                path = current.name + "/" + path;
+            }
+            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+
+            Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>();
+            int sensorFit = (int)cam.gateFit;
+
+            byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(cam.focalLength), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(cam.nearClipPlane), 0, paramsBuffer, 1 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(cam.farClipPlane), 0, paramsBuffer, 2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(1.8f), 0, paramsBuffer, 3 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(sensorFit), 0, paramsBuffer, 4 * sizeof(float), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.x), 0, paramsBuffer, 4 * sizeof(float) + sizeof(int), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.y), 0, paramsBuffer, 5 * sizeof(float) + sizeof(int), sizeof(float));
+
+            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, paramsBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Camera);
+            return command;
+        }
+
+        public static NetCommand BuildLightCommand(Transform root, LightInfo lightInfo)
+        {
+            Transform current = lightInfo.transform;
+            string path = current.name;
+            while (current.parent && current.parent != root)
+            {
+                current = current.parent;
+                path = current.name + "/" + path;
+            }
+            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+
+            Light light = lightInfo.transform.GetComponentInChildren<Light>();
+            int shadow = light.shadows != LightShadows.None ? 1 : 0;
+            Color color = light.color;
+
+            float power = 0f;
+            float spotSize = 0;
+            float spotBlend = 0;
+
+            float worldScale = root.parent.localScale.x;
+            float intensity = light.intensity / (worldScale * worldScale);
+
+            switch (light.type)
+            {
+                case LightType.Point:
+                    power = intensity * 10f;
+                    break;
+                case LightType.Directional:
+                    power = intensity / 1.5f;
+                    break;
+                case LightType.Spot:
+                    power = intensity / (0.4f / 3f);
+                    spotSize = light.spotAngle / 180f * 3.14f;
+                    spotBlend = 1f - (light.innerSpotAngle / 100f);
+                    break;
+            }
+
+            byte[] paramsBuffer = new byte[2 * sizeof(int) + 6 * sizeof(float)];
+            Buffer.BlockCopy(BitConverter.GetBytes((int)light.type), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(shadow), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(light.color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(light.color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(light.color.b), 0, paramsBuffer, 2 * sizeof(int) + 2 * sizeof(float), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(power), 0, paramsBuffer, 2 * sizeof(int) + 3 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(spotSize), 0, paramsBuffer, 2 * sizeof(int) + 4 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(spotBlend), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
+
+            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, paramsBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Light);
+            return command;
+
+        }
+
         public static NetCommand BuildRenameCommand(Transform root, RenameInfo rename)
         {
             string srcPath = GetPathName(root, rename.srcTransform);
@@ -522,10 +605,9 @@ namespace VRtist
             return command;
         }
 
-        public static NetCommand BuildDeleteMeshCommand(Transform root, DeleteMeshInfos deleteMeshInfos)
+        public static NetCommand BuildDeleteCommand(Transform root, DeleteInfo deleteInfo)
         {
-            Transform transform = deleteMeshInfos.meshTransform;
-            Mesh mesh = transform.GetComponent<MeshFilter>().mesh;
+            Transform transform = deleteInfo.meshTransform;
             string path = GetPathName(root, transform);
 
             byte[] encodedPath = System.Text.Encoding.UTF8.GetBytes(path);
@@ -1062,9 +1144,9 @@ namespace VRtist
             WriteMessage(command);
         }
 
-        public void SendDeleteMesh(DeleteMeshInfos deleteMeshInfo)
+        public void SendDelete(DeleteInfo deleteInfo)
         {
-            NetCommand command = NetGeometry.BuildDeleteMeshCommand(root, deleteMeshInfo);
+            NetCommand command = NetGeometry.BuildDeleteCommand(root, deleteInfo);
             WriteMessage(command);
         }
 
@@ -1073,7 +1155,16 @@ namespace VRtist
             NetCommand command = NetGeometry.BuildMaterialCommand(material);
             WriteMessage(command);
         }
-
+        public void SendCamera(CameraInfo cameraInfo)
+        {
+            NetCommand command = NetGeometry.BuildCameraCommand(root, cameraInfo);
+            WriteMessage(command);
+        }
+        public void SendLight(LightInfo lightInfo)
+        {
+            NetCommand command = NetGeometry.BuildLightCommand(root, lightInfo);
+            WriteMessage(command);
+        }
         public void SendRename(RenameInfo rename)
         {
             NetCommand command = NetGeometry.BuildRenameCommand(root, rename);
@@ -1141,9 +1232,17 @@ namespace VRtist
                 case MessageType.MeshConnection:
                     SendMeshConnection(data as MeshConnectionInfos); break;
                 case MessageType.Delete:
-                    SendDeleteMesh(data as DeleteMeshInfos); break;
+                    SendDelete(data as DeleteInfo); break;
                 case MessageType.Material:
                     SendMaterial(data as Material); break;
+                case MessageType.Camera:
+                    SendCamera(data as CameraInfo);
+                    SendTransform((data as CameraInfo).transform);
+                    break;
+                case MessageType.Light:
+                    SendLight(data as LightInfo); 
+                    SendTransform((data as LightInfo).transform);
+                    break;
                 case MessageType.Rename:
                     SendRename(data as RenameInfo); break;
                 case MessageType.Duplicate:

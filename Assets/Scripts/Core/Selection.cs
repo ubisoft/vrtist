@@ -19,6 +19,17 @@ namespace VRtist
 
         public static Material selectionMaterial;
 
+        public static void TriggerSelectionChanged()
+        {
+            SelectionChangedArgs args = new SelectionChangedArgs();
+            fillSelection(ref args.selectionBefore);
+            EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
+            if (handler != null)
+            {
+                handler(null, args);
+            }
+        }
+
         public static void fillSelection(ref Dictionary<int, GameObject> s)
         {
             foreach (KeyValuePair<int, GameObject> data in selection)

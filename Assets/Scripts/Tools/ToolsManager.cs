@@ -74,6 +74,9 @@ namespace VRtist
             VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
             Instance.currentToolRef.transform.localPosition = position;
             Instance.currentToolRef.transform.localRotation = rotation;
+
+            // update panels
+            //Selection.TriggerSelectionChanged();
         }
 
         public void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)

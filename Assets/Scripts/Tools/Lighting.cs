@@ -55,7 +55,7 @@ namespace VRtist
             intensitySlider = panel.Find("Intensity");
             rangeSlider = panel.Find("Range");
             //innerAngleSlider = panel.Find("InnerAngle");
-            outerAngleSlider = panel.Find("OuterAngle");
+            outerAngleSlider = panel.Find("Angle");
             castShadowsCheckbox = panel.Find("CastShadows");
             enableCheckbox = panel.Find("Enable");
 
@@ -124,7 +124,6 @@ namespace VRtist
 
         private void SetSliderValue(Transform slider, float value)
         {
-            // TODO : Re-enable
             UISlider sliderComp = slider.GetComponent<UISlider>();
             if(sliderComp != null)
             {
@@ -134,7 +133,6 @@ namespace VRtist
 
         private void SetCheckboxValue(Transform checkbox, bool value)
         {
-            // TODO : Re-enable
             UICheckbox checkboxComp = checkbox.GetComponent<UICheckbox>();
             if (checkboxComp!= null)
             {
@@ -155,7 +153,10 @@ namespace VRtist
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
-                LightParameters lightParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
+                LightController lightController = gobject.GetComponent<LightController>();
+                if (null == lightController)
+                    continue;
+                LightParameters lightParameters = lightController.GetParameters() as LightParameters;
                 if(lightParameters != null)
                 {
                     selectedLights[data.Key] = data.Value;
@@ -264,7 +265,8 @@ namespace VRtist
 
                     if (param == "Enable")
                     {
-                        gobject.transform.GetChild(1).gameObject.SetActive(value);
+                        Light light = gobject.transform.GetComponentInChildren<Light>(true);
+                        light.gameObject.SetActive(value);
                     }
                 }
             }

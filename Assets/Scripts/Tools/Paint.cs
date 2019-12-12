@@ -160,26 +160,7 @@ namespace VRtist
             }
 
             paintPrevPosition = position;
-        }
-
-        private GameObject PaintCreateLine(string name)
-        {
-            GameObject lineObject = new GameObject(name);
-            lineObject.transform.parent = paintContainer;
-            lineObject.transform.localPosition = Vector3.zero;
-            lineObject.transform.localRotation = Quaternion.identity;
-            lineObject.transform.localScale = Vector3.one;
-            lineObject.tag = "PhysicObject";
-
-            Mesh mesh = new Mesh();
-            MeshFilter meshFilter = lineObject.AddComponent<MeshFilter>();
-            meshFilter.mesh = mesh;
-            MeshRenderer renderer = lineObject.AddComponent<MeshRenderer>();
-            renderer.material = GameObject.Instantiate<Material>(paintMaterial);
-            renderer.material.SetColor("_BaseColor", paintColor);
-
-            return lineObject;
-        }
+        }        
 
         public void OnPaintColor(Color color)
         {

@@ -12,8 +12,8 @@ namespace VRtist
 
         public override void Undo()
         {
-            SendDeleteMesh();
-            gObject.transform.parent = Utils.GetOrCreateTrash().transform;
+            SendDelete();
+            gObject.transform.parent = Utils.GetTrash().transform;
         }
         public override void Redo()
         {

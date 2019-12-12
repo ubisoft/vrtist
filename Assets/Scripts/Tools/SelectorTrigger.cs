@@ -156,7 +156,7 @@ namespace VRtist
                 collidedObjects.Clear();
                 grippedGameObject = false;
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.2f);
-                Destroy(gObject);
+                new CommandRemoveGameObject(gObject).Submit();
             }
         }
     }
