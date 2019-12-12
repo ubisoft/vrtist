@@ -86,6 +86,8 @@ namespace VRtist
             meshConnectionInfos.meshTransform = gObject.transform;
 
             CommandManager.SendEvent(MessageType.MeshConnection, meshConnectionInfos);
+
+            CommandManager.SendEvent(MessageType.Transform, meshConnectionInfos.meshTransform);
         }
     }
 }
