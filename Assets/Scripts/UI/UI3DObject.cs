@@ -9,7 +9,7 @@ namespace VRtist
 {
     [ExecuteInEditMode]
     [SelectionBase]
-    [RequireComponent(typeof(BoxCollider))]
+    [RequireComponent(typeof(SphereCollider))]
     public class UI3DObject : UIElement
     {
         [SpaceHeader("3DObject Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
@@ -45,71 +45,7 @@ namespace VRtist
 
         public override void RebuildMesh()
         {
-            // TODO: scale objectPrefab to fit the new size.
             InstantiateChildObject();
-
-            UpdateColliderDimensions();
-
-            // TODO: do we want some text under the 3d object? or tooltip?
-            UpdateCanvasDimensions();
-        }
-
-        private void UpdateColliderDimensions()
-        {
-            //MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            //BoxCollider coll = gameObject.GetComponent<BoxCollider>();
-            //if (meshFilter != null && coll != null)
-            //{
-            //    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-            //    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-            //    if (initColliderSize.z < UIElement.collider_min_depth_shallow)
-            //    {
-            //        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_shallow / 2.0f);
-            //        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_shallow);
-            //    }
-            //    else
-            //    {
-            //        coll.center = initColliderCenter;
-            //        coll.size = initColliderSize;
-            //    }
-            //}
-        }
-
-        private void UpdateCanvasDimensions()
-        {
-            //Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
-            //if (canvas != null)
-            //{
-            //    RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
-            //    canvasRT.sizeDelta = new Vector2(width, height);
-
-            //    float minSide = Mathf.Min(width, height);
-
-            //    // IMAGE
-            //    Image image = canvas.GetComponentInChildren<Image>();
-            //    if (image != null)
-            //    {
-            //        RectTransform rt = image.gameObject.GetComponent<RectTransform>();
-            //        if (rt)
-            //        {
-            //            rt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-            //            rt.localPosition = new Vector3(margin, -margin, -0.001f);
-            //        }
-            //    }
-
-            //    // TEXT
-            //    Text text = canvas.gameObject.GetComponentInChildren<Text>();
-            //    if (text != null)
-            //    {
-            //        RectTransform rt = text.gameObject.GetComponent<RectTransform>();
-            //        if (rt != null)
-            //        {
-            //            rt.sizeDelta = new Vector2(width, height);
-            //            float textPosLeft = image != null ? minSide : 0.0f;
-            //            rt.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
-            //        }
-            //    }
-            //}
         }
 
         private void InstantiateChildObject()
@@ -126,7 +62,7 @@ namespace VRtist
             Vector3 middle = new Vector3(width / 2.0f, -height / 2.0f, -depth / 2.0f);
             child.transform.localPosition = middle;
             child.transform.localRotation = Quaternion.identity;
-            // TODO: problem, some object are multi-mesh... compute the while bbox.
+            // TODO: problem, some object are multi-mesh... compute the bbox.
             Vector3 childExtents = child.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents;
             float maxChildDim = Mathf.Max(new float[] { childExtents.x, childExtents.y, childExtents.z });
             float minDim = Mathf.Min(new float[] { width / 2.0f, height / 2.0f, depth / 2.0f });
@@ -134,6 +70,22 @@ namespace VRtist
             child.transform.localScale = new Vector3(ratio, ratio, ratio);
 
             instantiatedObject = child;
+
+            CopyChildColliderTo(child, gameObject);
+        }
+
+        static private void CopyChildColliderTo(GameObject child, GameObject go)
+        {
+            SphereCollider childColl = child.GetComponent<SphereCollider>();
+            SphereCollider parentColl = go.GetComponent<SphereCollider>();
+            if (parentColl == null)
+            {
+                parentColl = go.AddComponent<SphereCollider>();
+            }
+            parentColl.center = parentColl.transform.InverseTransformPoint(childColl.transform.TransformPoint(childColl.center));
+            parentColl.radius = childColl.radius * childColl.transform.localScale.x;
+            parentColl.isTrigger = true;
+            childColl.enabled = false;
         }
 
         private void OnValidate()
@@ -167,33 +119,40 @@ namespace VRtist
         private void OnDrawGizmosSelected()
         {
             Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -0.001f));
+
             Vector3 worldCenter = transform.TransformPoint(new Vector3(width / 2.0f, -height / 2.0f, -depth / 2.0f));
+
+            Vector3 front_top_left = transform.TransformPoint(new Vector3(0, 0, -depth));
+            Vector3 front_top_right = transform.TransformPoint(new Vector3(width, 0, -depth));
+            Vector3 front_bottom_left = transform.TransformPoint(new Vector3(0, -height, -depth));
+            Vector3 front_bottom_right = transform.TransformPoint(new Vector3(width, -height, -depth));
+
+            Vector3 back_top_left = transform.TransformPoint(new Vector3(0, 0, 0));
+            Vector3 back_top_right = transform.TransformPoint(new Vector3(width, 0, 0));
+            Vector3 back_bottom_left = transform.TransformPoint(new Vector3(0, -height, 0));
+            Vector3 back_bottom_right = transform.TransformPoint(new Vector3(width, -height, 0));
+
             Gizmos.color = Color.white;
-            Gizmos.DrawWireCube(worldCenter, new Vector3(width, height, depth));
+
+            Gizmos.DrawLine(front_top_left,     front_top_right);
+            Gizmos.DrawLine(front_top_right,    front_bottom_right);
+            Gizmos.DrawLine(front_bottom_right, front_bottom_left);
+            Gizmos.DrawLine(front_bottom_left,  front_top_left);
+
+            Gizmos.DrawLine(back_top_left,      back_top_right);
+            Gizmos.DrawLine(back_top_right,     back_bottom_right);
+            Gizmos.DrawLine(back_bottom_right,  back_bottom_left);
+            Gizmos.DrawLine(back_bottom_left,   back_top_left);
+
+            Gizmos.DrawLine(front_top_left,     back_top_left);
+            Gizmos.DrawLine(front_top_right,    back_top_right);
+            Gizmos.DrawLine(front_bottom_right, back_bottom_right);
+            Gizmos.DrawLine(front_bottom_left,  back_bottom_left);
+
 #if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
 #endif
         }
-
-        //private string GetText()
-        //{
-        //    Text text = GetComponentInChildren<Text>();
-        //    if (text != null)
-        //    {
-        //        return text.text;
-        //    }
-
-        //    return null;
-        //}
-
-        //private void SetText(string textValue)
-        //{
-        //    Text text = GetComponentInChildren<Text>();
-        //    if (text != null)
-        //    {
-        //        text.text = textValue;
-        //    }
-        //}
 
         private void OnTriggerEnter(Collider otherCollider)
         {
@@ -201,7 +160,8 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                onEnterUI3DObject.Invoke(gameObject);
+                // TODO: PROBLEM unity error as if we passed UnityEngine.Object instead of UntyEngine.GameObject
+                //onEnterUI3DObject.Invoke(gameObject);
                 //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
@@ -212,7 +172,7 @@ namespace VRtist
             {
                 // RE-instantiate an object from the prefab, the other one being in the user's hands.
                 onReleaseEvent.Invoke();
-                onExitUI3DObject.Invoke(gameObject);
+                //onExitUI3DObject.Invoke(gameObject);
             }
         }
 
@@ -286,93 +246,7 @@ namespace VRtist
 
             ui3DObject.instantiatedObject = child;
 
-            //BoxCollider coll = go.GetComponent<BoxCollider>();
-            //if (coll != null)
-            //{
-            //    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-            //    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-            //    if (initColliderSize.z < UIElement.collider_min_depth_shallow)
-            //    {
-            //        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_shallow / 2.0f);
-            //        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_shallow);
-            //    }
-            //    else
-            //    {
-            //        coll.center = initColliderCenter;
-            //        coll.size = initColliderSize;
-            //    }
-            //    coll.isTrigger = true;
-            //}
-
-            // Add a Canvas
-            //GameObject canvas = new GameObject("Canvas");
-            //canvas.transform.parent = ui3DObject.transform;
-
-            //Canvas c = canvas.AddComponent<Canvas>();
-            //c.renderMode = RenderMode.WorldSpace;
-
-            //RectTransform rt = canvas.GetComponent<RectTransform>(); // auto added when adding Canvas
-            //rt.localScale = Vector3.one;
-            //rt.localRotation = Quaternion.identity;
-            //rt.anchorMin = new Vector2(0, 1);
-            //rt.anchorMax = new Vector2(0, 1);
-            //rt.pivot = new Vector2(0, 1); // top left
-            //rt.sizeDelta = new Vector2(ui3DObject.width, ui3DObject.height);
-            //rt.localPosition = Vector3.zero;
-
-            //CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
-            //cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
-            //cs.referencePixelsPerUnit = 100; // default?
-
-            ////canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
-
-            //float minSide = Mathf.Min(ui3DObject.width, ui3DObject.height);
-
-            //// Add an Image under the Canvas
-            //if (icon != null)
-            //{
-            //    GameObject image = new GameObject("Image");
-            //    image.transform.parent = canvas.transform;
-
-            //    Image img = image.AddComponent<Image>();
-            //    img.sprite = icon;
-
-            //    RectTransform trt = image.GetComponent<RectTransform>();
-            //    trt.localScale = Vector3.one;
-            //    trt.localRotation = Quaternion.identity;
-            //    trt.anchorMin = new Vector2(0, 1);
-            //    trt.anchorMax = new Vector2(0, 1);
-            //    trt.pivot = new Vector2(0, 1); // top left
-            //    // TODO: non square icons ratio...
-            //    trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-            //    trt.localPosition = new Vector3(margin, -margin, -0.001f);
-            //}
-
-            //// Add a Text under the Canvas
-            //if (caption.Length > 0)
-            //{
-            //    GameObject text = new GameObject("Text");
-            //    text.transform.parent = canvas.transform;
-
-            //    Text t = text.AddComponent<Text>();
-            //    //t.font = (Font)Resources.Load("MyLocalFont");
-            //    t.text = caption;
-            //    t.fontSize = 32;
-            //    t.fontStyle = FontStyle.Bold;
-            //    t.alignment = TextAnchor.MiddleLeft;
-            //    t.horizontalOverflow = HorizontalWrapMode.Overflow;
-            //    t.verticalOverflow = VerticalWrapMode.Overflow;
-
-            //    RectTransform trt = t.GetComponent<RectTransform>();
-            //    trt.localScale = 0.01f * Vector3.one;
-            //    trt.localRotation = Quaternion.identity;
-            //    trt.anchorMin = new Vector2(0, 1);
-            //    trt.anchorMax = new Vector2(0, 1);
-            //    trt.pivot = new Vector2(0, 1); // top left
-            //    trt.sizeDelta = new Vector2(ui3DObject.width, ui3DObject.height);
-            //    float textPosLeft = icon != null ? minSide : 0.0f;
-            //    trt.localPosition = new Vector3(textPosLeft, -ui3DObject.height / 2.0f, -0.002f);
-            //}
+            CopyChildColliderTo(child, go);
         }
     }
 }
