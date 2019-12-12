@@ -238,7 +238,7 @@ namespace VRtist
             ClearGroup("Paintings");
             ClearGroup("Cameras");
             ClearGroup("Imported Geometries");
-            GameObject.Destroy(Utils.GetOrCreateTrash());
+            GameObject.Destroy(Utils.GetTrash());
 
             CommandManager.Clear();
         }

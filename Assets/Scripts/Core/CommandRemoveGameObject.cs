@@ -28,20 +28,30 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
-            SendMesh();
+            if (gObject.GetComponent<LightController>() != null)
+            {
+                SendLight();
+            }
+            else if (gObject.GetComponent<CameraController>() != null)
+            {
+                SendCamera();
+            }
+            else if (gObject.GetComponent<MeshFilter>() != null)
+            {
+                SendMesh();
+            }
         }
         public override void Redo()
         {
-            SendDeleteMesh();
-            gObject.transform.parent = Utils.GetOrCreateTrash().transform;
+            SendDelete();
+            gObject.transform.parent = Utils.GetTrash().transform;
         }
         public override void Submit()
         {
-            SendDeleteMesh();
-
             position = gObject.transform.localPosition;
             rotation = gObject.transform.localRotation;
             scale = gObject.transform.localScale;
+            Redo();
             CommandManager.AddCommand(this);
         }
 

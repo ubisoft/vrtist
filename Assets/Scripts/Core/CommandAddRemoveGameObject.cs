@@ -15,9 +15,18 @@ namespace VRtist
         public Transform meshTransform;
     }
 
-    public class DeleteMeshInfos
+    public class DeleteInfo
     {
         public Transform meshTransform;
+    }
+
+    public class CameraInfo
+    {
+        public Transform transform;
+    }
+    public class LightInfo
+    {
+        public Transform transform;
     }
 
     public class CommandAddRemoveGameObject : ICommand
@@ -39,11 +48,25 @@ namespace VRtist
             parent = o.transform.parent;
         }
 
-        protected void SendDeleteMesh()
+        protected void SendDelete()
         {
-            DeleteMeshInfos deleteMeshInfo = new DeleteMeshInfos();
-            deleteMeshInfo.meshTransform = gObject.transform;
-            CommandManager.SendEvent(MessageType.Delete, deleteMeshInfo);
+            DeleteInfo deleteInfo = new DeleteInfo();
+            deleteInfo.meshTransform = gObject.transform;
+            CommandManager.SendEvent(MessageType.Delete, deleteInfo);
+        }
+
+        protected void SendLight()
+        {
+            LightInfo lightInfo = new LightInfo();
+            lightInfo.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.Light, lightInfo);
+        }
+
+        protected void SendCamera()
+        {
+            CameraInfo cameraInfo = new CameraInfo();
+            cameraInfo.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
         }
 
         protected void SendMesh()
@@ -63,6 +86,8 @@ namespace VRtist
             meshConnectionInfos.meshTransform = gObject.transform;
 
             CommandManager.SendEvent(MessageType.MeshConnection, meshConnectionInfos);
+
+            CommandManager.SendEvent(MessageType.Transform, meshConnectionInfos.meshTransform);
         }
     }
 }

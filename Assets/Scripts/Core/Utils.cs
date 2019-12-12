@@ -7,14 +7,12 @@ namespace VRtist
 {
     public class Utils
     {
-        public static GameObject GetOrCreateTrash()
+        static GameObject trash = null;
+        public static GameObject GetTrash()
         {
-            string trashName = "__Trash__";
-            GameObject trash = GameObject.Find(trashName);
-            if (!trash)
-            {
-                trash = new GameObject();
-                trash.name = trashName;
+            if (trash == null)
+            {                
+                trash = new GameObject("__Trash__");
                 trash.SetActive(false);
             }
             return trash;

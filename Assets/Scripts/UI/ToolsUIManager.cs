@@ -98,13 +98,14 @@ namespace VRtist
         public void ChangeTool(string toolName)
         {
             currentToolName = toolName;
+            TogglePanel(currentToolName);
+
             var args = new ToolChangedArgs { toolName = currentToolName };
             EventHandler<ToolChangedArgs> handler = OnToolChangedEvent;
             if (handler != null)
             {
                 handler(this, args);
             }
-            TogglePanel(currentToolName);
         }
 
         public void OnUI3DObjectEnter(GameObject go)
