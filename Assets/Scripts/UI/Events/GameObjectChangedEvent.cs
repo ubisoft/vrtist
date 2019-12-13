@@ -4,8 +4,14 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
+    //[Serializable]
+    //public class GameObjectChangedEvent : UnityEvent<GameObject>
+    //{
+
+    //}
+
     [Serializable]
-    public class GameObjectChangedEvent : UnityEvent<GameObject>
+    public class GameObjectHashChangedEvent : UnityEvent<int>
     {
 
     }

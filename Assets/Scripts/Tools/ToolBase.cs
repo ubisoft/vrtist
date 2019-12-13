@@ -71,7 +71,7 @@ namespace VRtist
 
         protected abstract void DoUpdate(Vector3 position, Quaternion rotation);
 
-        public virtual void OnUIObjectEnter(GameObject gObject) { }
-        public virtual void OnUIObjectExit(GameObject gObject) { }
+        public virtual void OnUIObjectEnter(int gohash) { }
+        public virtual void OnUIObjectExit(int gohash) { }
     }
 }

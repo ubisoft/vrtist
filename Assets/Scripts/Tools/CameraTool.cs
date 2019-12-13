@@ -94,12 +94,13 @@ namespace VRtist
 
         }
 
-        public override void OnUIObjectEnter(GameObject gObject)
+        public override void OnUIObjectEnter(int gohash)
         {
             feedbackPositioning = false;
-            UIObject = gObject;
+            UIObject = ToolsUIManager.Instance.GetUI3DObject(gohash);
         }
-        public override void OnUIObjectExit(GameObject gObject)
+
+        public override void OnUIObjectExit(int gohash)
         {
             UIObject = null;
         }

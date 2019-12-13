@@ -20,8 +20,8 @@ namespace VRtist
         private GameObject instantiatedObject = null; // TODO: get this object in Start or Awake
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public GameObjectChangedEvent onEnterUI3DObject = null;
-        public GameObjectChangedEvent onExitUI3DObject = null;
+        public GameObjectHashChangedEvent onEnterUI3DObject = null;
+        public GameObjectHashChangedEvent onExitUI3DObject = null;
         public UnityEvent onHoverEvent = null;
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
@@ -160,8 +160,9 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                // TODO: PROBLEM unity error as if we passed UnityEngine.Object instead of UntyEngine.GameObject
-                //onEnterUI3DObject.Invoke(gameObject);
+                gameObject.GetHashCode();
+                
+                onEnterUI3DObject.Invoke(gameObject.GetHashCode());
                 //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
@@ -172,7 +173,7 @@ namespace VRtist
             {
                 // RE-instantiate an object from the prefab, the other one being in the user's hands.
                 onReleaseEvent.Invoke();
-                //onExitUI3DObject.Invoke(gameObject);
+                onExitUI3DObject.Invoke(gameObject.GetHashCode());
             }
         }
 
@@ -247,6 +248,8 @@ namespace VRtist
             ui3DObject.instantiatedObject = child;
 
             CopyChildColliderTo(child, go);
+
+            ToolsUIManager.Instance.RegisterUI3DObject(go);
         }
     }
 }

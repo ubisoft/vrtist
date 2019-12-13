@@ -34,52 +34,27 @@ namespace VRtist
         [SerializeField] private Transform palette;
         [SerializeField] private Vector3 paletteScale = Vector3.one;
 
-        //[SerializeField] private GameObject pointer;
-        //[SerializeField] private Transform buttonsParent;
-        //[SerializeField] private Transform canvas3D;
-        //Transform proxy3D = null;
-
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
 
+        // DEBUG
+        public bool forceShowPalette = false;
+
+        [Tooltip("Panel shown when using the Force Show Palette feature.")]
+        public string forceShowPanel = "Lighting";
+
         private string currentToolName;
-        //private bool proxy3DState = false;
 
-        private static ToolsUIManager instance;
-        public static ToolsUIManager Instance
-        { get { return instance;  } }
+        // Map of the 3d object widgets. Used for passing messages by int instead of GameObject. Key is a Hash.
+        private Dictionary<int, GameObject> ui3DObjects = new Dictionary<int, GameObject>();
 
-        //private void CreateProxy3D()
-        //{
-        //    GameObject gobject = GameObject.Instantiate<GameObject>(canvas3D.gameObject);
-        //    proxy3D = gobject.transform;
-        //    proxy3D.position = Vector3.zero;
-        //    proxy3D.rotation = Quaternion.identity;
-        //    proxy3D.localScale = Vector3.one;
-           
-        //    Component[] components = canvas3D.gameObject.GetComponentsInChildren<Component>(true);
-        //    for (int i = components.Length - 1; i >= 0; i--)
-        //    {
-        //        Component c = components[i];
-        //        if (c.GetType() != typeof(Transform))
-        //            Destroy(c);
-        //    }
-        //}
-
-        //public void UpdateProxy3D()
-        //{
-        //    if (proxy3D)
-        //    {
-        //        proxy3D.position = canvas3D.position;
-        //        proxy3D.rotation = canvas3D.rotation;
-        //        proxy3D.localScale = canvas3D.localScale;
-        //    }
-        //}
+        // Singleton
+        public static ToolsUIManager Instance { get; private set; }
 
         void Awake()
         {
-            ToolsUIManager.instance = this;
+            ToolsUIManager.Instance = this;
         }
 
         void Start()
@@ -91,8 +66,15 @@ namespace VRtist
             OnToolParameterChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeToolParameter;
 
             palette.transform.localScale = Vector3.zero;
+        }
 
-            //CreateProxy3D();
+        private void Update()
+        {
+            if (forceShowPalette)
+            {
+                forceShowPalette = false;
+                SetForceShowPalette(true);
+            }
         }
 
         public void ChangeTool(string toolName)
@@ -108,21 +90,39 @@ namespace VRtist
             }
         }
 
-        public void OnUI3DObjectEnter(GameObject go)
+        public void RegisterUI3DObject(GameObject go)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
-            if (tool != null)
+            int key = go.GetHashCode();
+            if (!ui3DObjects.ContainsKey(key))
             {
-                tool.OnUIObjectEnter(go);
+                ui3DObjects.Add(key, go);
             }
         }
 
-        public void OnUI3DObjectExit(GameObject go)
+        public GameObject GetUI3DObject(int hash)
+        {
+            if (ui3DObjects.ContainsKey(hash))
+            {
+                return ui3DObjects[hash];
+            }
+            return null;
+        }
+
+        public void OnUI3DObjectEnter(int gohash)
         {
             ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
-                tool.OnUIObjectExit(go);
+                tool.OnUIObjectEnter(gohash);
+            }
+        }
+
+        public void OnUI3DObjectExit(int gohash)
+        {
+            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            if (tool != null)
+            {
+                tool.OnUIObjectExit(gohash);
             }
         }
 
@@ -214,6 +214,15 @@ namespace VRtist
         {
             palette.transform.localScale = value ? paletteScale : Vector3.zero;
             //EnableProxy3D(value);
+        }
+
+        public void SetForceShowPalette(bool value)
+        {
+            EnableMenu(value);
+            if (value)
+            {
+                TogglePanel(forceShowPanel);
+            }
         }
 
         //public void EnableProxy3D(bool value)
