@@ -17,7 +17,6 @@ namespace VRtist
         [CentimeterFloat] public float thickness = 0.05f;
         [CentimeterFloat] public float depth = 0.05f;
         public GameObject objectPrefab = null;
-        private GameObject instantiatedObject = null; // TODO: get this object in Start or Awake
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = null;
@@ -52,10 +51,10 @@ namespace VRtist
         {
             // TODO: do better, dont destroy and re-instantiate for every interaction.
 
-            // TODO: but with many instantiated objects. Find and remove them all?
-            if(instantiatedObject != null)
+            // Removes all children (to circumvent a bug which spawns too many instances)
+            for(int i = transform.childCount - 1; i >= 0; i--)
             {
-                DestroyImmediate(instantiatedObject);
+                DestroyImmediate(transform.GetChild(i).gameObject);
             }
 
             GameObject child = Instantiate(objectPrefab, transform);
@@ -68,8 +67,6 @@ namespace VRtist
             float minDim = Mathf.Min(new float[] { width / 2.0f, height / 2.0f, depth / 2.0f });
             float ratio = minDim / maxChildDim;
             child.transform.localScale = new Vector3(ratio, ratio, ratio);
-
-            instantiatedObject = child;
 
             CopyChildColliderTo(child, gameObject);
         }
@@ -244,8 +241,6 @@ namespace VRtist
             float childObjectRadius = child.GetComponentInChildren<MeshFilter>().mesh.bounds.extents.magnitude;
             float ratio = middle.magnitude / childObjectRadius;
             child.transform.localScale = new Vector3(ratio, ratio, ratio);
-
-            ui3DObject.instantiatedObject = child;
 
             CopyChildColliderTo(child, go);
 
