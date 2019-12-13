@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace VRtist
 {
@@ -571,19 +572,32 @@ namespace VRtist
             byte[] normals = Vector3ToBytes(mesh.normals);
             byte[] uvs = Vector2ToBytes(mesh.uv);
 
-            // temp only one material
-            byte[] materialIndices = new byte[sizeof(int) + 2 * sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(1), 0, materialIndices, 0, sizeof(int)); // 1 entry
-            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 4, sizeof(int)); // triangle index
-            Buffer.BlockCopy(BitConverter.GetBytes(0), 0, materialIndices, 8, sizeof(int)); // material index
+            byte[] materialIndices = new byte[sizeof(int) + mesh.subMeshCount * 2 * sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(mesh.subMeshCount), 0, materialIndices, 0, sizeof(int));
+            int offset = sizeof(int);
+
+            for (int i = 0; i <  mesh.subMeshCount; i++)
+            {
+                SubMeshDescriptor subMesh = mesh.GetSubMesh(i);
+                int start = subMesh.indexStart / 3;
+                Buffer.BlockCopy(BitConverter.GetBytes(start), 0, materialIndices, offset, sizeof(int));
+                Buffer.BlockCopy(BitConverter.GetBytes(i), 0, materialIndices, offset + sizeof(int), sizeof(int));
+                offset += 2 * sizeof(int);
+            }
 
             byte[] triangles = TriangleIndicesToBytes(mesh.triangles);
 
-            Material material = meshInfos.meshRenderer.material;
-            string[] materialNames = new string[1] { material.name };
-            byte[] materials = StringsToBytes(materialNames);
+            Material[] materials = meshInfos.meshRenderer.sharedMaterials;
+            string[] materialNames = new string[materials.Length];
+            int index = 0;
+            foreach (Material material in materials)
+            {
+                materialNames[index++] = material.name;
 
-            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, positions, normals, uvs, materialIndices, triangles, materials };
+            }
+            byte[] materialsBuffer = StringsToBytes(materialNames);
+
+            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, positions, normals, uvs, materialIndices, triangles, materialsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
             return command;
         }
@@ -887,7 +901,7 @@ namespace VRtist
             {
                 int remainingTringles = indicesCount / 3;
                 int currentTriangleIndex = 0;
-                mesh.subMeshCount = materialIndicesCount;
+                mesh.subMeshCount = materialCount;
 
                 int[][] subIndices = new int[materialCount][];
                 int[] trianglesPerMaterialCount = new int[materialCount];
