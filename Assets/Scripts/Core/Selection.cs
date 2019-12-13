@@ -76,6 +76,11 @@ namespace VRtist
             }
         }
 
+        public static bool IsSelected(GameObject gObject)
+        {
+            return selection.ContainsKey(gObject.GetInstanceID());
+        }
+
         public static bool AddToSelection(GameObject gObject)
         {
             if (selection.ContainsKey(gObject.GetInstanceID()))
