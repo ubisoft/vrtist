@@ -25,6 +25,8 @@ namespace VRtist
         MeshConnection,
         Rename,
         Duplicate,
+        SendToTrash,
+        RestoreFromTrash,
     }
 
     public class NetCommand
@@ -558,6 +560,33 @@ namespace VRtist
 
             List<byte[]> buffers = new List<byte[]> { srcPathBufferSize, srcPathBuffer, dstNameBufferSize, dstNameBuffer, positionBuffer, rotationBuffer, scaleBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Duplicate);
+            return command;
+        }
+
+        public static NetCommand BuildSendToTrashCommand(Transform root, SendToTrashInfo sendToTrash)
+        {
+            string path = GetPathName(root, sendToTrash.transform);
+            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+
+            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.SendToTrash);
+            return command;
+        }
+
+        public static NetCommand BuildRestoreFromTrashCommand(Transform root, RestoreFromTrashInfo sendToTrash)
+        {
+            string name = sendToTrash.transform.name;
+            string path = "";
+            if (sendToTrash.transform.parent != root) 
+                path = GetPathName(root, sendToTrash.transform.parent);
+            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(name);
+            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
+            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
+            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+
+            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, pathBufferSize, pathBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.RestoreFromTrash);
             return command;
         }
 
@@ -1191,6 +1220,18 @@ namespace VRtist
             WriteMessage(command);
         }
 
+        public void SendToTrash(SendToTrashInfo sendToTrash)
+        {
+            NetCommand command = NetGeometry.BuildSendToTrashCommand(root, sendToTrash);
+            WriteMessage(command);
+        }
+
+        public void RestoreFromTrash(RestoreFromTrashInfo restoreFromTrash)
+        {
+            NetCommand command = NetGeometry.BuildRestoreFromTrashCommand(root, restoreFromTrash);
+            WriteMessage(command);
+        }
+
         public void JoinRoom(string roomName)
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
@@ -1261,6 +1302,10 @@ namespace VRtist
                     SendRename(data as RenameInfo); break;
                 case MessageType.Duplicate:
                     SendDuplicate(data as DuplicateInfos); break;
+                case MessageType.SendToTrash:
+                    SendToTrash(data as SendToTrashInfo); break;
+                case MessageType.RestoreFromTrash:
+                    RestoreFromTrash(data as RestoreFromTrashInfo); break;
             }
         }
     }

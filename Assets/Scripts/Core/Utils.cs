@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,6 +10,7 @@ namespace VRtist
     public class Utils
     {
         static GameObject trash = null;
+        static int gameObjectNameId = -1;
         public static GameObject GetTrash()
         {
             if (trash == null)
@@ -75,22 +78,34 @@ namespace VRtist
 
         public static string CreateUniqueName(GameObject gObject, string baseName)
         {
-            Transform parent = gObject.transform.parent;
-            HashSet<string> childrenName = new HashSet<string>();
-            for (int i = 0; i < parent.childCount; i++)
+            if(gameObjectNameId == -1)
             {
-                GameObject child = parent.GetChild(i).gameObject;
-                if(child != gObject)
-                    childrenName.Add(child.name);
-            }
+                Regex rx = new Regex(@".*?\.(\d+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-            int id = 0;
-            string name = baseName + "." + id.ToString();
-            while (childrenName.Contains(name))
-            {
-                id++;
-                name = baseName + "." + id.ToString();
+                HashSet<string> childrenName = new HashSet<string>();
+
+                GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+                foreach (GameObject go in allObjects)
+                {
+                    MatchCollection matches = rx.Matches(go.name);
+                    foreach (Match match in matches)
+                    {
+                        GroupCollection groups = match.Groups;
+                        if (groups.Count == 2)
+                        {
+                            string strValue = groups[1].Value;
+                            int value;
+                            Int32.TryParse(strValue, out value);
+                            if (value > gameObjectNameId)
+                                gameObjectNameId = value;
+                        }
+                    }
+                }
+                gameObjectNameId++;
             }
+                        
+            string name = baseName + "." + gameObjectNameId.ToString();
+            gameObjectNameId++;
             return name;
         }
 
@@ -145,6 +160,7 @@ namespace VRtist
             Material paintMaterial = Resources.Load("Materials/Paint") as Material;
             renderer.material = GameObject.Instantiate<Material>(paintMaterial);
             renderer.material.SetColor("_BaseColor", color);
+            renderer.material.name = "Paint_" + color.ToString();
 
             PaintController paintController = lineObject.AddComponent<PaintController>();
 

@@ -36,6 +36,27 @@ namespace VRtist
             fieldName = values[count - 1];
         }
 
+        protected void SendDelete(GameObject gObject)
+        {
+            DeleteInfo deleteInfo = new DeleteInfo();
+            deleteInfo.meshTransform = gObject.transform;
+            CommandManager.SendEvent(MessageType.Delete, deleteInfo);
+        }
+
+        protected void SendToTrash(GameObject gObject)
+        {
+            SendToTrashInfo trashInfo = new SendToTrashInfo();
+            trashInfo.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.SendToTrash, trashInfo);
+        }
+
+        protected void RestoreFromTrash(GameObject gObject)
+        {
+            RestoreFromTrashInfo trashInfo = new RestoreFromTrashInfo();
+            trashInfo.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.RestoreFromTrash, trashInfo);
+        }
+
         protected string name;
     }
     public static class CommandManager

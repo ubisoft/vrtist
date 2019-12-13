@@ -12,7 +12,7 @@ namespace VRtist
 
         public override void Undo()
         {
-            SendDelete();
+            SendToTrash(gObject);
             gObject.transform.parent = Utils.GetTrash().transform;
         }
         public override void Redo()
@@ -21,7 +21,7 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
-            SendMesh();
+            RestoreFromTrash(gObject);
         }
         public override void Submit()
         {
@@ -29,7 +29,19 @@ namespace VRtist
             rotation = gObject.transform.localRotation;
             scale = gObject.transform.localScale;
             CommandManager.AddCommand(this);
-            SendMesh();
+            if (gObject.GetComponent<LightController>() != null)
+            {
+                SendLight();
+            }
+            else if (gObject.GetComponent<CameraController>() != null)
+            {
+                SendCamera();
+            }
+            else if (gObject.GetComponent<MeshFilter>() != null)
+            {
+                SendMesh();
+            }
+
         }
 
         public override void Serialize(SceneSerializer serializer)

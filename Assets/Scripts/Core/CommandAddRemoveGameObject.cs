@@ -20,6 +20,15 @@ namespace VRtist
         public Transform meshTransform;
     }
 
+    public class SendToTrashInfo
+    {
+        public Transform transform;
+    }
+    public class RestoreFromTrashInfo
+    {
+        public Transform transform;
+    }
+
     public class CameraInfo
     {
         public Transform transform;
@@ -46,14 +55,7 @@ namespace VRtist
         {
             gObject = o;
             parent = o.transform.parent;
-        }
-
-        protected void SendDelete()
-        {
-            DeleteInfo deleteInfo = new DeleteInfo();
-            deleteInfo.meshTransform = gObject.transform;
-            CommandManager.SendEvent(MessageType.Delete, deleteInfo);
-        }
+        }        
 
         protected void SendLight()
         {

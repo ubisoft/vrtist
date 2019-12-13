@@ -348,6 +348,7 @@ namespace VRtist
             {
                 AddToSelection(clone);
             }
+            new CommandAddToSelection(clones).Submit();
         }
 
         public void OnSelectMode()
