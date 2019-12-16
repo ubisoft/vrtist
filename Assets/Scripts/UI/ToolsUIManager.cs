@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -39,10 +40,19 @@ namespace VRtist
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
 
         // DEBUG
-        public bool forceShowPalette = false;
-
-        [Tooltip("Panel shown when using the Force Show Palette feature.")]
-        public string forceShowPanel = "Lighting";
+        public int palettePopNbFrames = 8;
+        public AnimationCurve paletteXCurve = new AnimationCurve(
+            new Keyframe(0, 0, 0, 0),
+            new Keyframe(0.5f, 1.5f, 0, 0),
+            new Keyframe(0.75f, 0.8f, 0, 0),
+            new Keyframe(1, 1, 0, 0)
+        );
+        public AnimationCurve paletteYCurve = new AnimationCurve(
+            new Keyframe(0, 0, 0, 0),
+            new Keyframe(0.7f, 1.0f, 4.0f, 4.0f), // goes over
+            new Keyframe(1, 1, 0, 0)
+        );
+        private bool forceShowPalette = false;
 
         private string currentToolName;
 
@@ -70,11 +80,14 @@ namespace VRtist
 
         private void Update()
         {
-            if (forceShowPalette)
-            {
-                forceShowPalette = false;
-                SetForceShowPalette(true);
-            }
+
+        }
+
+        // Show/Hide palette
+        public void TogglePalette()
+        {
+            forceShowPalette = !forceShowPalette;
+            EnableMenu(forceShowPalette);
         }
 
         public void ChangeTool(string toolName)
@@ -131,35 +144,7 @@ namespace VRtist
             ChangeTool(EventSystem.current.currentSelectedGameObject.name);
         }
 
-        //
-        // DEPRECATED: used by the old 2D Unity UI with the EventSystem.
-        //
-        //public void OnSliderChange()
-        //{
-        //    if (!EventSystem.current || !EventSystem.current.currentSelectedGameObject)
-        //        return;
-        //    SliderComp slider = EventSystem.current.currentSelectedGameObject.GetComponentInParent<SliderComp>();
-        //    if (!slider)
-        //        return;
-        //    float value = slider.Value;
-        //    var args = new ToolParameterChangedArgs { toolName = currentToolName, parameterName = slider.gameObject.name, value = value };
-        //    EventHandler<ToolParameterChangedArgs> handler = OnToolParameterChangedEvent;
-        //    if (handler != null) { handler(this, args); }
-        //}
-
-        //
-        // DEPRECATED: used by the old 2D Unity UI with the EventSystem.
-        //
-        //public void OnCheckboxChange()
-        //{
-        //    Toggle checkbox = EventSystem.current.currentSelectedGameObject.GetComponentInParent<Toggle>();
-        //    bool isOn = checkbox.isOn;
-        //    var args = new BoolToolParameterChangedArgs { toolName = currentToolName, parameterName = checkbox.gameObject.name, value = isOn };
-        //    EventHandler<BoolToolParameterChangedArgs> handler = OnBoolToolParameterChangedEvent;
-        //    if (handler != null) { handler(this, args); }
-        //}
-
-        private void TogglePanel(string activePanelName)
+        public void TogglePanel(string activePanelName)
         {
             string panelObjectName = activePanelName + "Panel";
 
@@ -212,40 +197,24 @@ namespace VRtist
 
         public void EnableMenu(bool value)
         {
-            palette.transform.localScale = value ? paletteScale : Vector3.zero;
-            //EnableProxy3D(value);
+            // TODO: interruption in middle
+            Coroutine co = StartCoroutine(AnimatePalettePopup(value ? Vector3.zero : paletteScale, value ? paletteScale : Vector3.zero));
         }
 
-        public void SetForceShowPalette(bool value)
+        private IEnumerator AnimatePalettePopup(Vector3 startScale, Vector3 endScale)
         {
-            EnableMenu(value);
-            if (value)
+            int nbFrames = palettePopNbFrames;
+            float t = 0.0f;
+            for(int i = 0; i < nbFrames; i++)
             {
-                TogglePanel(forceShowPanel);
+                t = (float)i / (nbFrames - 1);
+                float tx = paletteXCurve.Evaluate(t);
+                float ty = paletteYCurve.Evaluate(t);
+                Vector3 tt = new Vector3(tx, ty, t);
+                Vector3 s = startScale + Vector3.Scale(tt, (endScale - startScale));
+                palette.transform.localScale = s;
+                yield return new WaitForEndOfFrame();
             }
         }
-
-        //public void EnableProxy3D(bool value)
-        //{
-        //    if (proxy3D != null)
-        //    {
-        //        proxy3D.gameObject.SetActive(value);
-        //    }
-        //}
-
-        //public void StoreProxy3DState()
-        //{
-        //    proxy3DState = IsProxy3DEnabled();
-        //}
-
-        //public bool IsProxy3DEnabled()
-        //{
-        //    return proxy3D != null ? proxy3D.gameObject.activeSelf : false;
-        //}
-
-        //public void RestoreProxy3DState()
-        //{
-        //    EnableProxy3D(proxy3DState);
-        //}
     }
 }
