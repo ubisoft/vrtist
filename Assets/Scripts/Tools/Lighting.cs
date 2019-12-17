@@ -75,6 +75,46 @@ namespace VRtist
             UIObject = null;
         }
 
+#if UNITY_EDITOR
+        // DEBUG Editor
+        public void CreateLight(string lightType)
+        {
+            GameObject light = null;
+            string lightName = "";
+
+            // Create an empty game object with a mesh
+            switch (lightType)
+            {
+                case "Sun":
+                    light = Utils.CreateInstance(sunPrefab, parentContainer);
+                    lightName = "Sun" + sunId.ToString();
+                    sunId++;
+                    break;
+                case "Spot":
+                    light = Utils.CreateInstance(spotPrefab, parentContainer);
+                    lightName = "Spot" + spotId.ToString();
+                    spotId++;
+                    break;
+                case "Point":
+                    light = Utils.CreateInstance(pointPrefab, parentContainer);
+                    lightName = "Point" + pointId.ToString();
+                    pointId++;
+                    break;
+            }
+
+            if (light)
+            {
+                light.name = lightName;
+                light.transform.position = transform.position;
+                light.transform.rotation = transform.rotation;
+                light.transform.localScale = Vector3.one * 0.1f;
+
+                Selection.ClearSelection();
+                Selection.AddToSelection(light);
+            }
+        }
+#endif
+
         // Update is called once per frame
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
