@@ -246,21 +246,23 @@ namespace VRtist
         }
 
         public void AddSiblingsToSelection(GameObject gObject, bool haptic = true)
-        {
-            bool somethingWasAddedToSelection = false;
+        {           
             List<GameObject> objects = GetGroupSiblings(gObject);
+            List<GameObject> objectsAddedToSelection = new List<GameObject>();
             foreach (GameObject gobj in objects)
             {
+                if (Selection.IsSelected(gobj))
+                    continue;
                 if (AddToSelection(gobj))
-                    somethingWasAddedToSelection = true;
+                    objectsAddedToSelection.Add(gobj);
             }
 
-            if (haptic && somethingWasAddedToSelection)
+            if (haptic && objectsAddedToSelection.Count > 0)
             {
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.1f);
             }
 
-            new CommandAddToSelection(objects).Submit();
+            new CommandAddToSelection(objectsAddedToSelection).Submit();
         }
         public bool RemoveFromSelection(GameObject gObject)
         {
@@ -268,20 +270,26 @@ namespace VRtist
         }
         public void RemoveSiblingsFromSelection(GameObject gObject, bool haptic = true)
         {
-            bool somethingWasRemovedFromSelection = false;
             List<GameObject> objects = GetGroupSiblings(gObject);
+
+            List<GameObject> objectsRemovedFromSelection = new List<GameObject>();
             foreach (GameObject gobj in objects)
             {
+                if (!Selection.IsSelected(gobj))
+                    continue;
+
                 if (RemoveFromSelection(gobj))
-                    somethingWasRemovedFromSelection = true;
+                {
+                    objectsRemovedFromSelection.Add(gobj);
+                }
             }
 
-            if (haptic && somethingWasRemovedFromSelection)
+            if (haptic && objectsRemovedFromSelection.Count > 0)
             {
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.1f);
             }
 
-            new CommandRemoveFromSelection(objects).Submit();
+            new CommandRemoveFromSelection(objectsRemovedFromSelection).Submit();
         }
 
         public void ClearSelection()
@@ -348,6 +356,7 @@ namespace VRtist
             {
                 AddToSelection(clone);
             }
+            new CommandAddToSelection(clones).Submit();
         }
 
         public void OnSelectMode()

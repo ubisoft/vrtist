@@ -32,16 +32,9 @@ namespace VRtist
             CommandManager.SendEvent(MessageType.Duplicate, duplicateInfos);
         }
 
-        protected void SendDeleteMesh()
-        {
-            DeleteInfo deleteMeshInfo = new DeleteInfo();
-            deleteMeshInfo.meshTransform = gObject.transform;
-            CommandManager.SendEvent(MessageType.Delete, deleteMeshInfo);
-        }
-
         public override void Undo()
         {
-            SendDeleteMesh();
+            SendToTrash(gObject);
             gObject.transform.parent = Utils.GetTrash().transform;
         }
         public override void Redo()
@@ -50,7 +43,7 @@ namespace VRtist
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
-            SendDuplicate();
+            RestoreFromTrash(gObject);
         }
         public override void Submit()
         {
