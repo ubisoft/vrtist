@@ -1011,6 +1011,7 @@ namespace VRtist
 
         Thread thread = null;
         bool alive = true;
+        bool connected = false;
 
         Socket socket = null;
         List<NetCommand> receivedCommands = new List<NetCommand>();
@@ -1083,6 +1084,17 @@ namespace VRtist
 
         public void Connect()
         {
+            connected = false;
+            string[] args = System.Environment.GetCommandLineArgs();
+            string room = "Local";
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--room")
+                {
+                    room = args[i + 1];
+                }
+            }
+
             IPHostEntry ipHostInfo = Dns.GetHostEntry(host);
             IPAddress ipAddress = ipHostInfo.AddressList[1];
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
@@ -1098,21 +1110,26 @@ namespace VRtist
             catch (ArgumentNullException ane)
             {
                 Console.WriteLine("ArgumentNullException : {0}", ane.ToString());
+                return;
             }
             catch (SocketException se)
             {
                 Console.WriteLine("SocketException : {0}", se.ToString());
+                return;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Unexpected exception : {0}", e.ToString());
+                return;
             }
 
-            JoinRoom("toto");
+            JoinRoom(room);
+            connected = true;
 
             thread = new Thread(new ThreadStart(Run));
             thread.Start();
         }
+
         public void Join()
         {
             if (thread == null)
@@ -1172,70 +1189,70 @@ namespace VRtist
         public void SendTransform(Transform transform)
         {
             NetCommand command = NetGeometry.BuildTransformCommand(root, transform);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void SendMesh(MeshInfos meshInfos)
         {
             NetCommand command = NetGeometry.BuildMeshCommand(meshInfos);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void SendMeshConnection(MeshConnectionInfos meshConnectionInfos)
         {
             NetCommand command = NetGeometry.BuildMeshConnectionCommand(root, meshConnectionInfos);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void SendDelete(DeleteInfo deleteInfo)
         {
             NetCommand command = NetGeometry.BuildDeleteCommand(root, deleteInfo);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void SendMaterial(Material material)
         {
             NetCommand command = NetGeometry.BuildMaterialCommand(material);
-            WriteMessage(command);
+            AddCommand(command);
         }
         public void SendCamera(CameraInfo cameraInfo)
         {
             NetCommand command = NetGeometry.BuildCameraCommand(root, cameraInfo);
-            WriteMessage(command);
+            AddCommand(command);
         }
         public void SendLight(LightInfo lightInfo)
         {
             NetCommand command = NetGeometry.BuildLightCommand(root, lightInfo);
-            WriteMessage(command);
+            AddCommand(command);
         }
         public void SendRename(RenameInfo rename)
         {
             NetCommand command = NetGeometry.BuildRenameCommand(root, rename);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void SendDuplicate(DuplicateInfos duplicate)
         {
             NetCommand command = NetGeometry.BuildDuplicateCommand(root, duplicate);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void SendToTrash(SendToTrashInfo sendToTrash)
         {
             NetCommand command = NetGeometry.BuildSendToTrashCommand(root, sendToTrash);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void RestoreFromTrash(RestoreFromTrashInfo restoreFromTrash)
         {
             NetCommand command = NetGeometry.BuildRestoreFromTrashCommand(root, restoreFromTrash);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         public void JoinRoom(string roomName)
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
-            WriteMessage(command);
+            AddCommand(command);
         }
 
         void Send(byte[] data)
@@ -1278,6 +1295,7 @@ namespace VRtist
 
         public void SendEvent<T>(MessageType messageType, T data)
         {
+            if(!connected) { return; }
             switch(messageType)
             {
                 case MessageType.Transform:
