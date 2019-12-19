@@ -33,6 +33,7 @@ namespace VRtist
             int count = objects.Count;
             for(int i = 0; i < count; i++)
             {
+                if(null == objects[i]) { continue; }
                 objects[i].transform.localPosition = beginPositions[i];
                 objects[i].transform.localRotation = beginRotations[i];
                 objects[i].transform.localScale = beginScales[i];
@@ -44,6 +45,7 @@ namespace VRtist
             int count = objects.Count;
             for (int i = 0; i < count; i++)
             {
+                if (null == objects[i]) { continue; }
                 objects[i].transform.localPosition = endPositions[i];
                 objects[i].transform.localRotation = endRotations[i];
                 objects[i].transform.localScale = endScales[i];
