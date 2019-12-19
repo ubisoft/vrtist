@@ -241,6 +241,7 @@ namespace VRtist
                 }
             }
 
+            Selection.RemoveFromSelection(trf.gameObject);
             GameObject.Destroy(trf.gameObject);
         }
 
@@ -262,6 +263,26 @@ namespace VRtist
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
             newGameObject.transform.localScale = scale;
+        }
+
+        public static void BuildSendToTrash(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            Transform objectPath = FindPath(root, data, 0, out bufferIndex);
+            objectPath.parent = Utils.GetTrash().transform;
+        }
+        public static void BuildRestoreFromTrash(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string objectPath = GetString(data, 0, out bufferIndex);
+            string[] splittedPathName = objectPath.Split('/');
+            string objectName = splittedPathName[splittedPathName.Length - 1];
+            Transform trf = Utils.GetTrash().transform.Find(objectName);
+            if (null != trf)
+            {
+                Transform parent = BuildPath(root, objectPath, false);
+                trf.parent = parent;
+            }
         }
 
         public static Material DefaultMaterial()
@@ -356,10 +377,8 @@ namespace VRtist
             return result;
         }
 
-        public static Transform BuildPath(Transform root, byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
+        public static Transform BuildPath(Transform root, string path, bool includeLeaf)
         {
-            string path = GetString(data, startIndex, out bufferIndex);
-
             string[] splitted = path.Split('/');
             Transform parent = root;
             int length = includeLeaf ? splitted.Length : splitted.Length - 1;
@@ -367,14 +386,20 @@ namespace VRtist
             {
                 string subPath = splitted[i];
                 Transform transform = parent.Find(subPath);
-                if(transform == null)
+                if (transform == null)
                 {
-                    transform = new GameObject(subPath).transform;                    
+                    transform = new GameObject(subPath).transform;
                     transform.parent = parent;
                 }
                 parent = transform;
             }
             return parent;
+        }
+
+        public static Transform BuildPath(Transform root, byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
+        {
+            string path = GetString(data, startIndex, out bufferIndex);
+            return BuildPath(root, path, includeLeaf);
         }
         public static Transform BuildTransform(Transform root, byte[] data)
         {
@@ -1006,7 +1031,6 @@ namespace VRtist
     {
         private static NetworkClient _instance;
         public Transform root;
-        public string host = "localhost";
         public int port = 12800;
 
         Thread thread = null;
@@ -1071,6 +1095,12 @@ namespace VRtist
                         case MessageType.Duplicate:
                             NetGeometry.Duplicate(root, command.data);
                             break;
+                        case MessageType.SendToTrash:
+                            NetGeometry.BuildSendToTrash(root, command.data);
+                            break;
+                        case MessageType.RestoreFromTrash:
+                            NetGeometry.BuildRestoreFromTrash(root, command.data);
+                            break;
                     }
                 }
                 receivedCommands.Clear();
@@ -1087,16 +1117,47 @@ namespace VRtist
             connected = false;
             string[] args = System.Environment.GetCommandLineArgs();
             string room = "Local";
+            string hostname = "localhost";
+            int port = 12800;
+
+            //room = "thomas.capelle";
+
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "--room")
                 {
                     room = args[i + 1];
                 }
+
+                if (args[i] == "--hostname")
+                {
+                    hostname = args[i + 1];
+                }
+
+                if (args[i] == "--port")
+                {
+                    Int32.TryParse(args[i + 1], out port);
+                }
+
+            }
+            
+            IPHostEntry ipHostInfo = Dns.GetHostEntry(hostname);
+            if (ipHostInfo.AddressList.Length == 0)
+                return;
+
+            IPAddress ipAddress = null;
+            for (int i = ipHostInfo.AddressList.Length - 1; i >= 0; i --)
+            {
+                IPAddress addr = ipHostInfo.AddressList[i];
+                if (addr.ToString().Contains(":"))
+                    continue;
+                ipAddress = addr;
+                break;
             }
 
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(host);
-            IPAddress ipAddress = ipHostInfo.AddressList[1];
+            if (null == ipAddress)
+                return;
+                
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
 
             // Create a TCP/IP  socket.  

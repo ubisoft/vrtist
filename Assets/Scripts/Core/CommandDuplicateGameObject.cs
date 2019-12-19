@@ -34,11 +34,13 @@ namespace VRtist
 
         public override void Undo()
         {
+            if (null == gObject) { return; }
             SendToTrash(gObject);
             gObject.transform.parent = Utils.GetTrash().transform;
         }
         public override void Redo()
         {
+            if (null == gObject) { return; }
             gObject.transform.parent = parent;
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
