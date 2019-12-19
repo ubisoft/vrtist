@@ -269,18 +269,19 @@ namespace VRtist
         {
             int bufferIndex = 0;
             Transform objectPath = FindPath(root, data, 0, out bufferIndex);
+            if (null == objectPath)
+                return;
             objectPath.parent = Utils.GetTrash().transform;
         }
         public static void BuildRestoreFromTrash(Transform root, byte[] data)
         {
             int bufferIndex = 0;
-            string objectPath = GetString(data, 0, out bufferIndex);
-            string[] splittedPathName = objectPath.Split('/');
-            string objectName = splittedPathName[splittedPathName.Length - 1];
+            string objectName = GetString(data, 0, out bufferIndex);
+            string dstPath = GetString(data, bufferIndex, out bufferIndex);
             Transform trf = Utils.GetTrash().transform.Find(objectName);
             if (null != trf)
             {
-                Transform parent = BuildPath(root, objectPath, false);
+                Transform parent = BuildPath(root, dstPath,true);
                 trf.parent = parent;
             }
         }
