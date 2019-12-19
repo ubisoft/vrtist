@@ -75,8 +75,8 @@ namespace VRtist
             if (other.gameObject.name == "Palette")
             {
                 // deactivate all tools
-                tools.SetActive(false);
-
+                //tools.SetActive(false);
+                ToolsUIManager.Instance.ShowTools(false);
                 ShowCursor(true);
             }
             else if (other.gameObject.tag == "UICollider")
@@ -93,7 +93,8 @@ namespace VRtist
             if (other.gameObject.name == "Palette")
             {
                 // reactivate all tools
-                tools.SetActive(true);
+                //tools.SetActive(true);
+                ToolsUIManager.Instance.ShowTools(true);
                 ShowCursor(false);
             }
             else if (other.gameObject.tag == "UICollider")

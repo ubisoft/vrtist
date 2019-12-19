@@ -53,6 +53,7 @@ namespace VRtist
             new Keyframe(1, 1, 0, 0)
         );
         private bool forceShowPalette = false;
+        private bool showTools = true;
 
         private string currentToolName;
 
@@ -100,6 +101,22 @@ namespace VRtist
             {
                 handler(this, args);
             }
+            ShowCurrentTool(showTools);
+        }
+
+        public void ShowCurrentTool(bool doShowTool)
+        {
+            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            if (tool != null)
+            {
+                tool.IsInGui = !doShowTool;
+            }
+        }
+        
+        public void ShowTools(bool doShowTools)
+        {
+            showTools = doShowTools;
+            ShowCurrentTool(showTools);
         }
 
         public void RegisterUI3DObject(GameObject go)
@@ -138,6 +155,7 @@ namespace VRtist
             }
         }
 
+        // DEPRECATED
         public void OnTool()
         {
             ChangeTool(EventSystem.current.currentSelectedGameObject.name);

@@ -11,6 +11,9 @@ namespace VRtist
         static GameObject previousTool = null;
         protected bool switchToSelectionEnabled = true;
 
+        private bool isInGui = false;
+        public bool IsInGui { get { return isInGui; } set { isInGui = value; ShowTool(!value); } }
+
         protected virtual void Awake()
         {
             // default is NOT current tool
@@ -27,7 +30,7 @@ namespace VRtist
 
         // Update is called once per frame
         void Update()
-        {
+        {                
             if (VRInput.TryGetDevices())
             {
                 // Device rotation
@@ -66,10 +69,16 @@ namespace VRtist
                 */
                 // Custom tool update
                 DoUpdate(position, rotation); // call children DoUpdate
+                if (IsInGui)
+                {
+                    DoUpdateGui();
+                }
             }
         }
 
         protected abstract void DoUpdate(Vector3 position, Quaternion rotation);
+        protected virtual void DoUpdateGui() { }
+        protected virtual void ShowTool(bool show) { }
 
         public virtual void OnUIObjectEnter(int gohash) { }
         public virtual void OnUIObjectExit(int gohash) { }
