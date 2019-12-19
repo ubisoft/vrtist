@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,7 +11,9 @@ namespace VRtist
     public class Utils
     {
         static GameObject trash = null;
-        static int gameObjectNameId = -1;
+        static int gameObjectNameId = 0;
+        static long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
+        static string hostname = Dns.GetHostName();
         public static GameObject GetTrash()
         {
             if (trash == null)
@@ -78,33 +81,9 @@ namespace VRtist
 
         public static string CreateUniqueName(GameObject gObject, string baseName)
         {
-            if(gameObjectNameId == -1)
-            {
-                Regex rx = new Regex(@".*?\.(\d+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-                HashSet<string> childrenName = new HashSet<string>();
-
-                GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
-                foreach (GameObject go in allObjects)
-                {
-                    MatchCollection matches = rx.Matches(go.name);
-                    foreach (Match match in matches)
-                    {
-                        GroupCollection groups = match.Groups;
-                        if (groups.Count == 2)
-                        {
-                            string strValue = groups[1].Value;
-                            int value;
-                            Int32.TryParse(strValue, out value);
-                            if (value > gameObjectNameId)
-                                gameObjectNameId = value;
-                        }
-                    }
-                }
-                gameObjectNameId++;
-            }
-                        
-            string name = baseName + "." + gameObjectNameId.ToString();
+            if (baseName.Length > 48)
+                baseName = baseName.Substring(0, 48);
+            string name = baseName + "." + String.Format("{0:X}", (hostname + timestamp.ToString()).GetHashCode()) + "." + gameObjectNameId.ToString();
             gameObjectNameId++;
             return name;
         }
