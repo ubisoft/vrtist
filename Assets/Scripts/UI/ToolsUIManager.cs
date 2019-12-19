@@ -86,8 +86,7 @@ namespace VRtist
         // Show/Hide palette
         public void TogglePalette()
         {
-            forceShowPalette = !forceShowPalette;
-            EnableMenu(forceShowPalette);
+            EnableMenu(!forceShowPalette);
         }
 
         public void ChangeTool(string toolName)
@@ -190,15 +189,15 @@ namespace VRtist
         //    //return pointer.activeSelf;
         //}
 
-        public void ToggleMenu()
-        {
-            EnableMenu(palette.transform.localScale == Vector3.zero);
-        }
-
         public void EnableMenu(bool value)
         {
-            // TODO: interruption in middle
-            Coroutine co = StartCoroutine(AnimatePalettePopup(value ? Vector3.zero : paletteScale, value ? paletteScale : Vector3.zero));
+            if (value != forceShowPalette)
+            {
+                forceShowPalette = value;
+
+                // TODO: interruption in middle
+                Coroutine co = StartCoroutine(AnimatePalettePopup(value ? Vector3.zero : paletteScale, value ? paletteScale : Vector3.zero));
+            }
         }
 
         private IEnumerator AnimatePalettePopup(Vector3 startScale, Vector3 endScale)
