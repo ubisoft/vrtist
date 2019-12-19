@@ -1120,7 +1120,7 @@ namespace VRtist
             string hostname = "localhost";
             int port = 12800;
 
-            room = "thomas.capelle";
+            //room = "thomas.capelle";
 
             for (int i = 0; i < args.Length; i++)
             {
