@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -109,6 +110,26 @@ namespace VRtist
             return bytes;
         }
 
+        public static Color GetColor(byte[] data, ref int currentIndex)
+        {
+            float[] buffer = new float[4];
+            int size = 4 * sizeof(float);
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+            currentIndex += size;
+            return new Color(buffer[0], buffer[1], buffer[2], buffer[3]);
+        }
+
+        public static byte[] ColorToBytes(Color color)
+        {
+            byte[] bytes = new byte[4 * sizeof(float)];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(color.r), 0, bytes, 0, sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(color.g), 0, bytes, sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(color.b), 0, bytes, 2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(color.a), 0, bytes, 3 * sizeof(float), sizeof(float));
+            return bytes;
+        }
+
         public static Vector3 GetVector3(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[3];
@@ -168,6 +189,51 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(quaternion.y), 0, bytes, 1 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(quaternion.z), 0, bytes, 2 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(quaternion.w), 0, bytes, 3 * sizeof(float), sizeof(float));
+            return bytes;
+        }
+
+        public static bool GetBool(byte[] data, ref int currentIndex)
+        {
+            int[] buffer = new int[1];
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, sizeof(int));
+            currentIndex += sizeof(int);
+            return buffer[0] == 0 ? false : true;
+        }
+
+        public static byte[] boolToBytes(bool value)
+        {
+            byte[] bytes = new byte[sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(int));
+            return bytes;
+        }
+
+        public static int GetInt(byte[] data, ref int currentIndex)
+        {
+            int[] buffer = new int[1];
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, sizeof(int));
+            currentIndex += sizeof(int);
+            return buffer[0];
+        }
+
+        public static byte[] intToBytes(int value)
+        {
+            byte[] bytes = new byte[sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(int));
+            return bytes;
+        }
+
+        public static float GetFloat(byte[] data, ref int currentIndex)
+        {
+            float[] buffer = new float[1];
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, sizeof(float));
+            currentIndex += sizeof(float);
+            return buffer[0];
+        }
+
+        public static byte[] floatToBytes(float value)
+        {
+            byte[] bytes = new byte[sizeof(float)];
+            Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(float));
             return bytes;
         }
 
@@ -303,10 +369,70 @@ namespace VRtist
             return material;
         }
 
+
+        public static Texture2D LoadTextureDXT(string filePath)
+        {
+            byte[] ddsBytes = System.IO.File.ReadAllBytes(filePath);
+
+            byte[] format = { ddsBytes[84],ddsBytes[85],ddsBytes[86],ddsBytes[87], 0 };
+            string sFormat = System.Text.Encoding.UTF8.GetString(format);
+            TextureFormat textureFormat;
+
+            if (sFormat != "DXT1")
+                textureFormat = TextureFormat.DXT1;
+            else if (sFormat != "DXT5")
+                textureFormat = TextureFormat.DXT5;
+            else return null;
+
+            byte ddsSizeCheck = ddsBytes[4];
+            if (ddsSizeCheck != 124)
+                throw new Exception("Invalid DDS DXTn texture. Unable to read");  //this header byte should be 124 for DDS image files
+
+            int height = ddsBytes[13] * 256 + ddsBytes[12];
+            int width = ddsBytes[17] * 256 + ddsBytes[16];
+
+            int DDS_HEADER_SIZE = 128;
+            byte[] dxtBytes = new byte[ddsBytes.Length - DDS_HEADER_SIZE];
+            Buffer.BlockCopy(ddsBytes, DDS_HEADER_SIZE, dxtBytes, 0, ddsBytes.Length - DDS_HEADER_SIZE);
+
+            Texture2D texture = new Texture2D(width, height, textureFormat, false);
+            texture.LoadRawTextureData(dxtBytes);
+            texture.Apply();
+
+            return texture;
+        }
+
+        public static Texture2D loadTexture(string filePath)
+        {
+            /*
+            string directory = Path.GetDirectoryName(filePath);
+            string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            string ddsFile = directory + "/" + withoutExtension + ".dds";
+            if (File.Exists(ddsFile))
+            {
+                Texture2D t = LoadTextureDXT(ddsFile);
+                if (null != t)
+                    return t;
+            }
+            */
+
+            if (!File.Exists(filePath))
+                return null;
+
+            byte[] bytes = System.IO.File.ReadAllBytes(filePath);
+            Texture2D tex = new Texture2D(1, 1);
+            bool res = tex.LoadImage(bytes);
+            if (!res)
+                return null;
+
+            return tex;
+        }
+
         public static void BuildMaterial(byte[] data)
         {
-            int nameLength = (int)BitConverter.ToUInt32(data, 0);
-            string name = System.Text.Encoding.UTF8.GetString(data, 4, nameLength);
+            int currentIndex = 0;
+
+            string name = GetString(data, currentIndex, out currentIndex);
             Material material;
             if (materials.ContainsKey(name))
                 material = materials[name];
@@ -318,23 +444,75 @@ namespace VRtist
                 materials[name] = material;
             }
 
-            int currentIndex = 4 + nameLength;
+            bool hasBaseColorTexture = GetBool(data, ref currentIndex);
+            string baseColorTexturePath = "";
+            Color baseColor = Color.white;
+            if (hasBaseColorTexture)
+            {
+                baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
+                Texture2D tex = loadTexture(baseColorTexturePath);
+                if (tex != null)
+                    material.SetTexture("_BaseColorMap", tex);
+            }
+            else
+            {
+                baseColor = GetColor(data, ref currentIndex);
+                material.SetColor("_BaseColor", baseColor);
+            }
 
-            float[] buffer = new float[3];
-            int size = 3 * sizeof(float);
+            bool hasMetallicTexture = GetBool(data, ref currentIndex);
+            string metallicTexturePath = "";
+            float metallic = 0f;
+            if (hasMetallicTexture)
+            {
+              
+                metallicTexturePath = GetString(data, currentIndex, out currentIndex);
+                /*
+                Texture2D tex = loadTexture(metallicTexturePath);
+                if (tex != null)
+                    material.SetTexture("_Metallic", tex);
+                    */
+                /// TEMP
+                material.SetFloat("_Metallic", metallic);
+            }
+            else
+            {
+                metallic = GetFloat(data, ref currentIndex);
+                material.SetFloat("_Metallic", metallic);
+            }
 
-            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-            currentIndex += size;
-            Color baseColor = new Color(buffer[0], buffer[1], buffer[2]);
+            bool hasRoughnessTexture = GetBool(data, ref currentIndex);
+            string roughnessTexturePath = "";
+            float roughness = 1f;
+            if (hasRoughnessTexture)
+            {                
+                roughnessTexturePath = GetString(data, currentIndex, out currentIndex);
+                /*
+                Texture2D tex = loadTexture(roughnessTexturePath);
+                if (tex != null)
+                    material.SetTexture("_Smoothness", tex);
+                    */
+                /// TEMP
+                material.SetFloat("_Smoothness", 1f - roughness);
 
-            float metallic = BitConverter.ToSingle(data, currentIndex);
-            currentIndex += sizeof(float);
-            float roughness = BitConverter.ToSingle(data, currentIndex);            
+            }
+            else
+            {
+                roughness = GetFloat(data, ref currentIndex);
+                material.SetFloat("_Smoothness", 1f - roughness);
+            }
+
+            bool hasNormalTexture = GetBool(data, ref currentIndex);
+            string normalTexturePath = "";
+            if (hasRoughnessTexture)
+            {
+                normalTexturePath = GetString(data, currentIndex, out currentIndex);
+                Texture2D tex = loadTexture(normalTexturePath);
+                if (tex != null)
+                    material.SetTexture("_NormalMap", tex);
+            }
             
-            material.SetColor("_BaseColor", baseColor);
-            material.SetFloat("_Metallic", metallic);
-            material.SetFloat("_Smoothness",1f - roughness);
-
+           
             currentMaterial = material;
         }
 
@@ -544,9 +722,10 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.b), 0, paramsBuffer, 2 * sizeof(int) + 2 * sizeof(float), sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(power), 0, paramsBuffer, 2 * sizeof(int) + 3 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(spotSize), 0, paramsBuffer, 2 * sizeof(int) + 4 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(spotBlend), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(light.color.a), 0, paramsBuffer, 2 * sizeof(int) + 3 * sizeof(float), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes(power), 0, paramsBuffer, 2 * sizeof(int) + 4 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(spotSize), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(spotBlend), 0, paramsBuffer, 2 * sizeof(int) + 6 * sizeof(float), sizeof(float));
 
             List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Light);
@@ -788,8 +967,9 @@ namespace VRtist
             float ColorR = BitConverter.ToSingle(data, currentIndex);
             float ColorG = BitConverter.ToSingle(data, currentIndex + sizeof(float));
             float ColorB = BitConverter.ToSingle(data, currentIndex + 2 * sizeof(float));
-            Color lightColor = new Color(ColorR, ColorG, ColorB);
-            currentIndex += 3 * sizeof(float);
+            float ColorA = BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
+            Color lightColor = new Color(ColorR, ColorG, ColorB, ColorA);
+            currentIndex += 4 * sizeof(float);
 
             float power = BitConverter.ToSingle(data, currentIndex);
             currentIndex += sizeof(float);
