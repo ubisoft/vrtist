@@ -28,6 +28,7 @@ namespace VRtist
         Duplicate,
         SendToTrash,
         RestoreFromTrash,
+        Texture,
     }
 
     public class NetCommand
@@ -56,6 +57,7 @@ namespace VRtist
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
         public static Dictionary<string, Material[]> meshesMaterials = new Dictionary<string, Material[]>();
         public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
+        public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
 
         public static byte[] StringsToBytes(string[] values)
         {
@@ -78,6 +80,15 @@ namespace VRtist
                 Buffer.BlockCopy(utf8, 0, bytes, index + sizeof(int), value.Length);
                 index += sizeof(int) + value.Length;
             }
+            return bytes;
+        }
+
+        public static byte[] StringToBytes(string value)
+        {
+            byte[] bytes = new byte[sizeof(int) + value.Length];
+            byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(value);
+            Buffer.BlockCopy(BitConverter.GetBytes(utf8.Length), 0, bytes, 0, sizeof(int));
+            Buffer.BlockCopy(utf8, 0, bytes, sizeof(int), value.Length);
             return bytes;
         }
 
@@ -230,7 +241,7 @@ namespace VRtist
             return buffer[0];
         }
 
-        public static byte[] floatToBytes(float value)
+        public static byte[] FloatToBytes(float value)
         {
             byte[] bytes = new byte[sizeof(float)];
             Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(float));
@@ -352,6 +363,41 @@ namespace VRtist
             }
         }
 
+        public static void BuildTexture(byte[] data)
+        {
+            int bufferIndex = 0;
+            string path = GetString(data, 0, out bufferIndex);
+
+            byte[] textureData = null;
+            int size = 0;
+            if (!textures.ContainsKey(path))
+            {
+                size = GetInt(data, ref bufferIndex);
+                textureData = new byte[size];
+                Buffer.BlockCopy(data, bufferIndex, textureData, 0, size);
+                LoadTexture(path, textureData);
+
+                // Do we need to create the file ?
+                //////////////////////////////////
+                /*
+                if (File.Exists(path))
+                    return;
+                try
+                {
+                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+                    {
+                        fs.Write(textureData, 0, size);
+                    }
+                }
+                catch
+                {
+                    Debug.LogWarning("Could not write : " + path);
+                }
+                */
+            }
+
+        }
+
         public static Material DefaultMaterial()
         {
             string name = "defaultMaterial";
@@ -402,8 +448,21 @@ namespace VRtist
             return texture;
         }
 
-        public static Texture2D loadTexture(string filePath)
+        public static Texture2D LoadTexture(string filePath, byte[] data)
         {
+            Texture2D tex = new Texture2D(1, 1);
+            bool res = tex.LoadImage(data);
+            if (!res)
+                return null;
+
+            textures[filePath] = tex;
+            return tex;
+        }
+
+        public static Texture2D LoadTexture(string filePath)
+        {
+            if (textures.ContainsKey(filePath))
+                return textures[filePath];
             /*
             string directory = Path.GetDirectoryName(filePath);
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
@@ -420,12 +479,7 @@ namespace VRtist
                 return null;
 
             byte[] bytes = System.IO.File.ReadAllBytes(filePath);
-            Texture2D tex = new Texture2D(1, 1);
-            bool res = tex.LoadImage(bytes);
-            if (!res)
-                return null;
-
-            return tex;
+            return LoadTexture(filePath, bytes);
         }
 
         public static void BuildMaterial(byte[] data)
@@ -444,70 +498,30 @@ namespace VRtist
                 materials[name] = material;
             }
 
-            bool hasBaseColorTexture = GetBool(data, ref currentIndex);
-            string baseColorTexturePath = "";
-            Color baseColor = Color.white;
-            if (hasBaseColorTexture)
+            Color baseColor = GetColor(data, ref currentIndex);
+            material.SetColor("_BaseColor", baseColor);
+            string baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
+            if (baseColorTexturePath.Length > 0)
             {
-                baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
-                Texture2D tex = loadTexture(baseColorTexturePath);
+                Texture2D tex = LoadTexture(baseColorTexturePath);
                 if (tex != null)
                     material.SetTexture("_BaseColorMap", tex);
             }
-            else
-            {
-                baseColor = GetColor(data, ref currentIndex);
-                material.SetColor("_BaseColor", baseColor);
-            }
 
-            bool hasMetallicTexture = GetBool(data, ref currentIndex);
-            string metallicTexturePath = "";
-            float metallic = 0f;
-            if (hasMetallicTexture)
-            {
-              
-                metallicTexturePath = GetString(data, currentIndex, out currentIndex);
-                /*
-                Texture2D tex = loadTexture(metallicTexturePath);
-                if (tex != null)
-                    material.SetTexture("_Metallic", tex);
-                    */
-                /// TEMP
-                material.SetFloat("_Metallic", metallic);
-            }
-            else
-            {
-                metallic = GetFloat(data, ref currentIndex);
-                material.SetFloat("_Metallic", metallic);
-            }
+            float metallic = GetFloat(data, ref currentIndex);
+            material.SetFloat("_Metallic", metallic);
+            string metallicTexturePath = GetString(data, currentIndex, out currentIndex);
+            // ignore metallic texture
 
-            bool hasRoughnessTexture = GetBool(data, ref currentIndex);
-            string roughnessTexturePath = "";
-            float roughness = 1f;
-            if (hasRoughnessTexture)
-            {                
-                roughnessTexturePath = GetString(data, currentIndex, out currentIndex);
-                /*
-                Texture2D tex = loadTexture(roughnessTexturePath);
-                if (tex != null)
-                    material.SetTexture("_Smoothness", tex);
-                    */
-                /// TEMP
-                material.SetFloat("_Smoothness", 1f - roughness);
+            float roughness = GetFloat(data, ref currentIndex);
+            material.SetFloat("_Smoothness", 1f - roughness);
+            string roughnessTexturePath = GetString(data, currentIndex, out currentIndex);
+            // ignore roughness texture
 
-            }
-            else
+            string normalTexturePath = GetString(data, currentIndex, out currentIndex);
+            if (normalTexturePath.Length > 0)
             {
-                roughness = GetFloat(data, ref currentIndex);
-                material.SetFloat("_Smoothness", 1f - roughness);
-            }
-
-            bool hasNormalTexture = GetBool(data, ref currentIndex);
-            string normalTexturePath = "";
-            if (hasRoughnessTexture)
-            {
-                normalTexturePath = GetString(data, currentIndex, out currentIndex);
-                Texture2D tex = loadTexture(normalTexturePath);
+                Texture2D tex = LoadTexture(normalTexturePath);
                 if (tex != null)
                     material.SetTexture("_NormalMap", tex);
             }
@@ -615,36 +629,28 @@ namespace VRtist
                 path = current.name + "/" + path;
             }
 
-            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
-
+            byte[] name = StringToBytes(path);
             byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
             byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
             byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
 
-            List<byte[]> buffers = new List<byte[]>{ nameBufferSize, nameBuffer, positionBuffer, rotationBuffer, scaleBuffer };
+            List<byte[]> buffers = new List<byte[]>{ name, positionBuffer, rotationBuffer, scaleBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
 
         public static NetCommand BuildMaterialCommand(Material material)
-        {
-            string name = material.name;
-            Color baseColor = material.GetColor("_BaseColor");
-            float metallic = material.GetFloat("_Metallic");
-            float roughness = 1f - material.GetFloat("_Smoothness");
-
-            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(name);
-            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
-
-            byte[] paramsBuffer = new byte[5 * sizeof(float)];
-            Buffer.BlockCopy(BitConverter.GetBytes(baseColor.r), 0, paramsBuffer,   0 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(baseColor.g), 0, paramsBuffer,   1 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(baseColor.b), 0, paramsBuffer,   2 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(metallic), 0, paramsBuffer,      3 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(roughness), 0, paramsBuffer,     4 * sizeof(float), sizeof(float));
+        {            
+            byte[] name = StringToBytes(material.name);
+            byte[] baseColor = ColorToBytes(material.GetColor("_BaseColor"));
+            byte[] baseColorTexture = StringToBytes("");
+            byte[] metallic = FloatToBytes(material.GetFloat("_Metallic"));
+            byte[] metallicTexture = StringToBytes("");
+            byte[] roughness = FloatToBytes(1f - material.GetFloat("_Smoothness"));
+            byte[] roughnessTexture = StringToBytes("");
+            byte[] normalMapTexture = StringToBytes("");
             
-            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Material);
             return command;
         }
@@ -658,8 +664,7 @@ namespace VRtist
                 current = current.parent;
                 path = current.name + "/" + path;
             }
-            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+            byte[] name = StringToBytes(path);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>();
             int sensorFit = (int)cam.gateFit;
@@ -673,7 +678,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.x), 0, paramsBuffer, 4 * sizeof(float) + sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.y), 0, paramsBuffer, 5 * sizeof(float) + sizeof(int), sizeof(float));
 
-            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Camera);
             return command;
         }
@@ -687,8 +692,7 @@ namespace VRtist
                 current = current.parent;
                 path = current.name + "/" + path;
             }
-            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+            byte[] name = StringToBytes(path);
 
             Light light = lightInfo.transform.GetComponentInChildren<Light>();
             int shadow = light.shadows != LightShadows.None ? 1 : 0;
@@ -727,7 +731,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(spotSize), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(spotBlend), 0, paramsBuffer, 2 * sizeof(int) + 6 * sizeof(float), sizeof(float));
 
-            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Light);
             return command;
 
@@ -735,62 +739,47 @@ namespace VRtist
 
         public static NetCommand BuildRenameCommand(Transform root, RenameInfo rename)
         {
-            string srcPath = GetPathName(root, rename.srcTransform);
-            byte[] srcPathBuffer = System.Text.Encoding.UTF8.GetBytes(srcPath);
-            byte[] srcPathBufferSize = BitConverter.GetBytes(srcPathBuffer.Length);
+            byte[] srcPath = StringToBytes(GetPathName(root, rename.srcTransform));
+            byte[] dstName = StringToBytes(rename.newName);
 
-            string dstName = rename.newName;
-            byte[] dstNameBuffer = System.Text.Encoding.UTF8.GetBytes(dstName);
-            byte[] dstNameBufferSize = BitConverter.GetBytes(dstNameBuffer.Length);
-
-            List<byte[]> buffers = new List<byte[]> { srcPathBufferSize, srcPathBuffer, dstNameBufferSize, dstNameBuffer };
+            List<byte[]> buffers = new List<byte[]> { srcPath, dstName };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Rename);
             return command;
         }
 
         public static NetCommand BuildDuplicateCommand(Transform root, DuplicateInfos duplicate)
         {
-            string srcPath = GetPathName(root, duplicate.srcObject.transform);
-            string dstName = duplicate.dstObject.name;
-
-            byte[] srcPathBuffer = System.Text.Encoding.UTF8.GetBytes(srcPath);
-            byte[] srcPathBufferSize = BitConverter.GetBytes(srcPathBuffer.Length);
-            byte[] dstNameBuffer = System.Text.Encoding.UTF8.GetBytes(dstName);
-            byte[] dstNameBufferSize = BitConverter.GetBytes(dstNameBuffer.Length);
+            byte[] srcPath = StringToBytes(GetPathName(root, duplicate.srcObject.transform));
+            byte[] dstName = StringToBytes(duplicate.dstObject.name);
 
             Transform transform = duplicate.dstObject.transform;
             byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
             byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
             byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
 
-            List<byte[]> buffers = new List<byte[]> { srcPathBufferSize, srcPathBuffer, dstNameBufferSize, dstNameBuffer, positionBuffer, rotationBuffer, scaleBuffer };
+            List<byte[]> buffers = new List<byte[]> { srcPath, dstName, positionBuffer, rotationBuffer, scaleBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Duplicate);
             return command;
         }
 
         public static NetCommand BuildSendToTrashCommand(Transform root, SendToTrashInfo sendToTrash)
         {
-            string path = GetPathName(root, sendToTrash.transform);
-            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
-
-            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer };
+            byte[] path = StringToBytes(GetPathName(root, sendToTrash.transform));
+            List<byte[]> buffers = new List<byte[]> { path };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.SendToTrash);
             return command;
         }
 
         public static NetCommand BuildRestoreFromTrashCommand(Transform root, RestoreFromTrashInfo sendToTrash)
         {
-            string name = sendToTrash.transform.name;
             string path = "";
             if (sendToTrash.transform.parent != root) 
                 path = GetPathName(root, sendToTrash.transform.parent);
-            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(name);
-            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
-            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
 
-            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, pathBufferSize, pathBuffer };
+            byte[] nameBuffer = StringToBytes(sendToTrash.transform.name);
+            byte[] pathBuffer = StringToBytes(path);
+
+            List<byte[]> buffers = new List<byte[]> { nameBuffer, pathBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.RestoreFromTrash);
             return command;
         }
@@ -798,9 +787,7 @@ namespace VRtist
         public static NetCommand BuildMeshCommand(MeshInfos meshInfos)
         {
             Mesh mesh = meshInfos.meshFilter.mesh;
-            string name = mesh.name;
-            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(name);
-            byte[] nameBufferSize = BitConverter.GetBytes(nameBuffer.Length);
+            byte[] name = StringToBytes(mesh.name);
 
             byte[] positions = Vector3ToBytes(mesh.vertices);
             byte[] normals = Vector3ToBytes(mesh.normals);
@@ -831,7 +818,7 @@ namespace VRtist
             }
             byte[] materialsBuffer = StringsToBytes(materialNames);
 
-            List<byte[]> buffers = new List<byte[]> { nameBufferSize, nameBuffer, positions, normals, uvs, materialIndices, triangles, materialsBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, positions, normals, uvs, materialIndices, triangles, materialsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
             return command;
         }
@@ -842,13 +829,10 @@ namespace VRtist
             Mesh mesh = transform.GetComponent<MeshFilter>().mesh;
             string path = GetPathName(root, transform);
 
-            byte[] pathBuffer = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] pathBufferSize = BitConverter.GetBytes(pathBuffer.Length);
+            byte[] pathBuffer = StringToBytes(path);
+            byte[] nameBuffer = StringToBytes(mesh.name);
 
-            byte[] nameBuffer = System.Text.Encoding.UTF8.GetBytes(mesh.name);
-            byte[] nameBufferSize = BitConverter.GetBytes(mesh.name.Length);
-
-            List<byte[]> buffers = new List<byte[]> { pathBufferSize, pathBuffer, nameBufferSize, nameBuffer };
+            List<byte[]> buffers = new List<byte[]> { pathBuffer, nameBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.MeshConnection);
             return command;
         }
@@ -857,10 +841,9 @@ namespace VRtist
         {
             Transform transform = deleteInfo.meshTransform;
             string path = GetPathName(root, transform);
+            byte[] pathBuffer = StringToBytes(path);
 
-            byte[] encodedPath = System.Text.Encoding.UTF8.GetBytes(path);
-            byte[] encodedPathSize = BitConverter.GetBytes(encodedPath.Length);
-            List<byte[]> buffers = new List<byte[]> { encodedPathSize, encodedPath };
+            List<byte[]> buffers = new List<byte[]> { pathBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Delete);
             return command;
         }
@@ -1281,6 +1264,9 @@ namespace VRtist
                             break;
                         case MessageType.RestoreFromTrash:
                             NetGeometry.BuildRestoreFromTrash(root, command.data);
+                            break;
+                        case MessageType.Texture:
+                            NetGeometry.BuildTexture(command.data);
                             break;
                     }
                 }
