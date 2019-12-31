@@ -18,15 +18,9 @@ namespace VRtist
         private bool grippedGameObject = false;
 
         private bool multiSelecting = false;
-        private Color selectionColor;
+        private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
         private bool hasUIObject = false;
-
-        // Start is called before the first frame update
-        void Start()
-        {
-            selectionColor = gameObject.GetComponent<MeshRenderer>().material.GetColor("_BaseColor");
-        }
 
         protected CommandGroup undoGroup = null;
 
@@ -68,13 +62,13 @@ namespace VRtist
             if (other.tag == "PhysicObject")
             {
                 collidedObjects.Add(other.gameObject);
-                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.white);
+                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
             }
             //else if (other.tag == "UIObject" && selector != null)
             //{
             //    other.gameObject.transform.localScale *= 1.1f;
             //    selector.OnUIObjectEnter(other.gameObject);
-            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.white);
+            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
             //    hasUIObject = true;
             //}
         }
@@ -87,13 +81,13 @@ namespace VRtist
             //{
             //    other.gameObject.transform.localScale /= 1.1f;
             //    selector.OnUIObjectExit(other.gameObject);
-            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
+            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
             //}
             //else
             {
                 collidedObjects.Remove(other.gameObject);
                 if(collidedObjects.Count == 0)
-                    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
+                    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
             }
         }
 
