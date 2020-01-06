@@ -134,7 +134,8 @@ namespace VRtist
             }
             return selectedCameras;
         }
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+
+        protected override void DoUpdateGui()
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
             {
@@ -143,11 +144,33 @@ namespace VRtist
                     GameObject newCamera = Utils.CreateInstance(cameraPrefab, null);
                     newCamera.transform.parent = CameraContainer;
                     newCamera.transform.position = selectorBrush.position;
-                    newCamera.transform.rotation = selectorBrush.rotation;                    
+                    newCamera.transform.rotation = selectorBrush.rotation;
 
                     Selection.ClearSelection();
                     Selection.AddToSelection(newCamera);
                 }
+                OnStartGrip();
+            },
+           () =>
+           {
+               OnEndGrip();
+           });
+        }
+
+        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        {
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
+            {
+                //if (UIObject)
+                //{
+                //    GameObject newCamera = Utils.CreateInstance(cameraPrefab, null);
+                //    newCamera.transform.parent = CameraContainer;
+                //    newCamera.transform.position = selectorBrush.position;
+                //    newCamera.transform.rotation = selectorBrush.rotation;                    
+
+                //    Selection.ClearSelection();
+                //    Selection.AddToSelection(newCamera);
+                //}
                 OnStartGrip();
             }, 
             () =>
@@ -206,6 +229,15 @@ namespace VRtist
             if (!feedbackPositioning)
             {
                 base.DoUpdate(position, rotation);
+            }
+        }
+
+        protected override void ShowTool(bool show)
+        {
+            Transform sphere = gameObject.transform.Find("Sphere");
+            if (sphere != null)
+            {
+                sphere.gameObject.SetActive(show);
             }
         }
 
