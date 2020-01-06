@@ -77,6 +77,15 @@ namespace VRtist
             }
         }
 
+        protected override void ShowTool(bool show)
+        {
+            Transform sphere = gameObject.transform.Find("Brush");
+            if (sphere != null)
+            {
+                sphere.gameObject.SetActive(show);
+            }
+        }
+
         private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation, bool flat)
         {
             // Activate a new paint            

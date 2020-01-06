@@ -115,8 +115,7 @@ namespace VRtist
         }
 #endif
 
-        // Update is called once per frame
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdateGui()
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
             {
@@ -158,10 +157,63 @@ namespace VRtist
                 }
                 OnStartGrip();
             }, OnEndGrip);
+        }
+
+        // Update is called once per frame
+        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        {
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
+            {
+                //if (UIObject)
+                //{
+                //    GameObject light = null;
+                //    string lightName = "";
+
+                //    // Create an empty game object with a mesh
+                //    switch (UIObject.name)
+                //    {
+                //        case "Sun":
+                //            light = Utils.CreateInstance(sunPrefab, parentContainer);
+                //            lightName = "Sun" + sunId.ToString();
+                //            sunId++;
+                //            break;
+                //        case "Spot":
+                //            light = Utils.CreateInstance(spotPrefab, parentContainer);
+                //            lightName = "Spot" + spotId.ToString();
+                //            spotId++;
+                //            break;
+                //        case "Point":
+                //            light = Utils.CreateInstance(pointPrefab, parentContainer);
+                //            lightName = "Point" + pointId.ToString();
+                //            pointId++;
+                //            break;
+                //    }
+
+                //    if (light)
+                //    {
+                //        light.name = lightName;
+                //        light.transform.position = transform.position;
+                //        light.transform.rotation = transform.rotation;
+                //        light.transform.localScale = Vector3.one * 0.1f;
+
+                //        Selection.ClearSelection();
+                //        Selection.AddToSelection(light);
+                //    }
+                //}
+                OnStartGrip();
+            }, OnEndGrip);
 
             base.DoUpdate(position, rotation);
         }
 
+        protected override void ShowTool(bool show)
+        {
+            Transform sphere = gameObject.transform.Find("Sphere");
+            if (sphere != null)
+            {
+                sphere.gameObject.SetActive(show);
+            }
+        }
 
         private void SetSliderValue(Transform slider, float value)
         {
