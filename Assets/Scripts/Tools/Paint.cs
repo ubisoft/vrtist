@@ -88,6 +88,15 @@ namespace VRtist
                 paintPrevPosition = Vector3.zero;
                 freeDraw = new FreeDraw();
                 freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
+
+                /*
+                freeDraw.matrix = Matrix4x4.identity;
+                freeDraw.AddControlPoint(new Vector3(0, 0, 20), 1f);
+                freeDraw.AddControlPoint(new Vector3(10, 0, 20), 1f);
+                freeDraw.AddControlPoint(new Vector3(10, 10, 20), 1f);                
+                freeDraw.AddControlPoint(new Vector3(20, 10, 20), 1f);              
+                freeDraw.AddControlPoint(new Vector3(20, 0, 20), 1f);
+                */
             },            
              () =>
              {
@@ -144,12 +153,12 @@ namespace VRtist
 
                 // make some vibration feedback
                 //OVRInput.SetControllerVibration(1, ratio, OVRInput.Controller.RTouch);
-                //VRInput.rightController.SendHapticImpulse(0, ratio, 1f);
+                //VRInput.rightController.SendHapticImpulse(0, ratio, 1f);                       
+
                 if (flat)
                     freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, brushSize * ratio);
                 else
                     freeDraw.AddControlPoint(penPosition, brushSize * ratio);
-
                 // set mesh components
                 MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
                 Mesh mesh = meshFilter.mesh;

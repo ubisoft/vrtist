@@ -107,7 +107,7 @@ namespace VRtist
             int size = controlPoints.Length;
 
             // if new control point is too close to previous control point then replace it.
-            if (size > 1 && Vector3.Distance(prevControlPoint, next) < 0.01)
+            if (size > 1 && Vector3.Distance(prevControlPoint, next) < Mathf.Abs(radius))
             {
                 size--;
             }
@@ -126,8 +126,14 @@ namespace VRtist
             if (size == 0)
                 return;
 
+            float prevPrevPrevRadius = 0;
             float prevPrevRadius = 0;
             float prevRadius = controlPointsRadius[size - 1];
+
+            if (size >= 3)
+            {
+                prevPrevPrevRadius = controlPointsRadius[size - 3];
+            }
 
             if (size >= 2)
             {
@@ -135,7 +141,11 @@ namespace VRtist
             }
 
             int prevIndex = linePointIndices[size - 1];
-            if (size > 1)
+            if (size >= 3)
+            {
+                prevIndex = linePointIndices[size - 3];
+            }
+            else if (size >= 2)
             {
                 prevIndex = linePointIndices[size - 2];
             }
@@ -179,8 +189,46 @@ namespace VRtist
                     AddArc(A, B, C, D, prevRadius, radius, ANZ);
                 }
             }
+            else if (size == 3)
+            {
+                {
+                    Vector3 A = controlPoints[size - 3];
+                    Vector3 D = controlPoints[size - 2];
+                    float thirdDist = Vector3.Distance(D, A) / 3f;
+                    Vector3 B = A + (D - A).normalized * thirdDist;
+                    Vector3 C = D - (controlPoints[size - 1] - A).normalized * thirdDist;
+                    AddArc(A, B, C, D, prevPrevPrevRadius, prevRadius, ANZ);
+                }
+
+                {
+                    Vector3 A = controlPoints[size - 2];
+                    Vector3 D = controlPoints[size - 1];
+                    float thirdDist = Vector3.Distance(D, A) / 3f;
+                    Vector3 B = A + (controlPoints[size - 1] - controlPoints[size - 3]).normalized * thirdDist;
+                    Vector3 C = D - (controlPoints[size] - A).normalized * thirdDist;
+                    AddArc(A, B, C, D, prevPrevRadius, prevRadius, ANZ);
+                }
+
+                {
+                    Vector3 A = controlPoints[size - 1];
+                    Vector3 D = controlPoints[size - 0];
+                    float thirdDist = Vector3.Distance(D, A) / 3f;
+                    Vector3 B = A + (controlPoints[size] - controlPoints[size - 2]).normalized * thirdDist;
+                    Vector3 C = D - (controlPoints[size] - A).normalized * thirdDist;
+                    AddArc(A, B, C, D, prevRadius, radius, ANZ);
+                }
+            }
             else
             {
+                {
+                    Vector3 A = controlPoints[size - 3];
+                    Vector3 D = controlPoints[size - 2];
+                    float thirdDist = Vector3.Distance(D, A) / 3f;
+                    Vector3 B = A + (controlPoints[size - 2] - controlPoints[size - 4]).normalized * thirdDist;
+                    Vector3 C = D - (controlPoints[size - 1] - A).normalized * thirdDist;
+                    AddArc(A, B, C, D, prevPrevPrevRadius, prevRadius, ANZ);
+                }
+
                 {
                     Vector3 A = controlPoints[size - 2];
                     Vector3 D = controlPoints[size - 1];
@@ -200,7 +248,7 @@ namespace VRtist
                 }
             }
 
-            AddPointToLine(controlPoints[size], radius, ANZ);
+            AddPointToLine(next, next, radius, ANZ);
             linePointIndices[size] = linePoints.Length;
         }
 
@@ -300,140 +348,131 @@ namespace VRtist
         private void AddArc(Vector3 A, Vector3 B, Vector3 C, Vector3 D, float radiusA, float radiusD, int ANZ)
         {
             int s = Step(A, D, radiusD);
-            for (int i = 0; i < s; i++)
+            int i = 0;
+            float ratio = 0;
+            Vector3 point = CubicBezier(A, B, C, D, ratio);
+            do
             {
-                float ratio = (float)i / (float)s;
-                AddPointToLine(CubicBezier(A, B, C, D, ratio), radiusA + ratio * (radiusD - radiusA), ANZ);
-            }
+                i++;
+                float nextRatio = (float)i / (float)s;
+                Vector3 nextPoint = CubicBezier(A, B, C, D, nextRatio);
+                AddPointToLine(point, nextPoint, radiusA + ratio * (radiusD - radiusA), ANZ);
+                point = nextPoint;
+                ratio = nextRatio;
+            } while (i < s);
         }
 
-        // adds a point to a line mesh (made of cylinders)
-        private void AddPointToLine(Vector3 next, float R1, int ANZ)
+        private void AddPointToLine(Vector3 point, Vector3 nextPoint, float R1, int ANZ)
         {
             const float FULL = 2.0f * Mathf.PI;
 
-            // make some space in mesh arrays
-            System.Array.Resize(ref linePoints, linePoints.Length + 1);
-            System.Array.Resize(ref lineRadius, lineRadius.Length + 1);
-
-            System.Array.Resize(ref vertices, vertices.Length + ANZ);
-            System.Array.Resize(ref normals, normals.Length + ANZ);
-            System.Array.Resize(ref triangles, triangles.Length + 6 * ANZ);
-
-            int newIndex = vertices.Length / ANZ - 1;
-
-            linePoints[newIndex] = next;
-            lineRadius[newIndex] = R1;
-
-            Vector3 curr = new Vector3();
-            Vector3 prev = new Vector3();
-
-            // Get current point from center of circle
-            if (newIndex >= 1)
-            {
-                curr = linePoints[newIndex - 1];
+            int count = linePoints.Length;
+            int index = count;
+            if (count > 0)
+            {                
+                if (point == linePoints[count - 1])
+                    index = count - 1;
+                    
+                count = index;
             }
+            count++;
 
-            // Get previous point
-            if (newIndex >= 2)
-            {
-                prev = linePoints[newIndex - 2];
-            }
+            System.Array.Resize(ref linePoints, count);
+            System.Array.Resize(ref lineRadius, count);
+
+            System.Array.Resize(ref vertices, count * ANZ);
+            System.Array.Resize(ref normals, count * ANZ);
+
+            if(count > 1)
+                System.Array.Resize(ref triangles, (count - 1) * 6 * ANZ);
+
+            linePoints[index] = point;
+            lineRadius[index] = R1;
+
+            Vector3 prevP = point;
+            if (index > 0)
+                prevP = linePoints[index - 1];
+
+            Vector3 prevPrevP = prevP;
+            if (index > 1)
+                prevPrevP = linePoints[index - 2];
 
             // reorient current circle
             Vector3 dir = new Vector3(1f, 0f, 0f);
             Vector3 firstPerp = new Vector3();
             Vector3 secondPerp = new Vector3();
 
-            if (newIndex > 0)
-            {
-                if (newIndex == 1)
-                    dir = (next - curr).normalized;
-                else if (newIndex >= 2)
-                    dir = (next - prev).normalized;
+            Vector3 center;
+            float radius;
 
+            if (index > 0)
+            {
+                dir = (point - prevPrevP).normalized;
                 firstPerp = GetFirstPerpVector(dir);
                 secondPerp = Vector3.Cross(dir, firstPerp).normalized;
 
-                float radius = lineRadius[newIndex - 1];
+                center = linePoints[index - 1];
+                radius = lineRadius[index - 1];
                 for (int j = 0; j < ANZ; j++)
                 {
                     float angle = FULL * (j / (float)ANZ);
                     Vector3 pos = radius * (Mathf.Cos(angle) * firstPerp + Mathf.Sin(angle) * secondPerp);
-                    vertices[(newIndex - 1) * ANZ + j] = curr + pos;
-                    normals[(newIndex - 1) * ANZ + j] = pos.normalized;
+                    vertices[(index - 1) * ANZ + j] = center + pos;
+                    normals[(index - 1) * ANZ + j] = pos.normalized;
                 }
 
                 // reorder circles by distance to avoid twists
-                if (newIndex > 1)
-                    Reorder(ref vertices, ref normals, newIndex - 1, ANZ);
+                if (index > 1)
+                    Reorder(ref vertices, ref normals, index - 1, ANZ);
+
             }
 
-            // orient new point
-            dir = new Vector3(1, 0, 0);
-            if (newIndex == 1)
-                dir = (next - curr).normalized;
-            else if (newIndex > 1)
-                dir = (next - prev).normalized;
+            dir = (nextPoint - prevP).normalized;
             firstPerp = GetFirstPerpVector(dir);
             secondPerp = Vector3.Cross(dir, firstPerp).normalized;
 
-            float r = lineRadius[newIndex];
+            center = linePoints[index];
+            radius = lineRadius[index];
             for (int j = 0; j < ANZ; j++)
             {
                 float angle = FULL * (j / (float)ANZ);
-                Vector3 pos = r * (Mathf.Cos(angle) * firstPerp + Mathf.Sin(angle) * secondPerp);
-                vertices[newIndex * ANZ + j] = next + pos;
-                normals[newIndex * ANZ + j] = pos.normalized;
+                Vector3 pos = radius * (Mathf.Cos(angle) * firstPerp + Mathf.Sin(angle) * secondPerp);
+                vertices[index * ANZ + j] = center + pos;
+                normals[index * ANZ + j] = pos.normalized;
             }
 
             // reorder circles by distance to avoid twists
-            if (newIndex > 0)
+            if (index > 0)
             {
-                Reorder(ref vertices, ref normals, newIndex, ANZ);
-            }
+                Reorder(ref vertices, ref normals, index, ANZ);
 
-            // compute triangles
-            if (newIndex > 0)
-            {
-                int index = 0, quadIndex;
-                int tIndex = 6 * ANZ * (newIndex - 1);
-                int vIndex = ANZ * (newIndex - 1);
+                int i = 0, quadIndex;
+                int tIndex = 6 * ANZ * (index - 1);
+                int vIndex = ANZ * (index - 1);
                 for (quadIndex = 0; quadIndex < (ANZ - 1); quadIndex++)
                 {
-                    triangles[tIndex + index + 0] = vIndex + quadIndex + 0;
-                    triangles[tIndex + index + 1] = vIndex + quadIndex + 1;
-                    triangles[tIndex + index + 2] = vIndex + quadIndex + ANZ;
+                    triangles[tIndex + i + 0] = vIndex + quadIndex + 0;
+                    triangles[tIndex + i + 1] = vIndex + quadIndex + 1;
+                    triangles[tIndex + i + 2] = vIndex + quadIndex + ANZ;
 
 
-                    triangles[tIndex + index + 3] = vIndex + quadIndex + 1;
-                    triangles[tIndex + index + 4] = vIndex + quadIndex + ANZ + 1;
-                    triangles[tIndex + index + 5] = vIndex + quadIndex + ANZ;
+                    triangles[tIndex + i + 3] = vIndex + quadIndex + 1;
+                    triangles[tIndex + i + 4] = vIndex + quadIndex + ANZ + 1;
+                    triangles[tIndex + i + 5] = vIndex + quadIndex + ANZ;
 
                     // debug
-                    /*
-                    triangles[tIndex + index + 0] = vIndex + quadIndex + ANZ;
-                    triangles[tIndex + index + 1] = vIndex + quadIndex + 1;
-                    triangles[tIndex + index + 2] = vIndex + quadIndex + 0;
-                    */
-                    index += 6;
+                    i += 6;
                 }
 
-                triangles[tIndex + index + 0] = vIndex + ANZ - 1;
-                triangles[tIndex + index + 1] = vIndex + 0;
-                triangles[tIndex + index + 2] = vIndex + 2 * ANZ - 1;
+                triangles[tIndex + i + 0] = vIndex + ANZ - 1;
+                triangles[tIndex + i + 1] = vIndex + 0;
+                triangles[tIndex + i + 2] = vIndex + 2 * ANZ - 1;
 
-                triangles[tIndex + index + 3] = vIndex + 0;
-                triangles[tIndex + index + 4] = vIndex + ANZ;
-                triangles[tIndex + index + 5] = vIndex + 2 * ANZ - 1;
-
-                // debug
-                /*
-                triangles[tIndex + index + 3] = vIndex + 2 * ANZ - 1;
-                triangles[tIndex + index + 4] = vIndex + 0;
-                triangles[tIndex + index + 5] = vIndex + ANZ - 1;
-                */
+                triangles[tIndex + i + 3] = vIndex + 0;
+                triangles[tIndex + i + 4] = vIndex + ANZ;
+                triangles[tIndex + i + 5] = vIndex + 2 * ANZ - 1;
             }
+
         }
     }
 }

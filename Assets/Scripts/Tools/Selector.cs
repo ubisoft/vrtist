@@ -14,6 +14,7 @@ namespace VRtist
 
         float selectorRadius = 0.03f;
         Color selectionColor = new Color(0f, 167f/255f, 1f);
+        Color eraseColor = new Color(1f, 0f, 0f);
 
         Dictionary<GameObject, Matrix4x4> initParentMatrix = new Dictionary<GameObject, Matrix4x4>();
         Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
@@ -119,7 +120,6 @@ namespace VRtist
             List<Quaternion> endRotations = new List<Quaternion>();
             List<Vector3> endScales = new List<Vector3>();
 
-            int i = 0;
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gObject = data.Value;
@@ -150,6 +150,7 @@ namespace VRtist
             InitDuplicateMoveTransforms();
             outOfDeadZone = false;            
         }
+
         private void UpdateSelect(Vector3 position, Quaternion rotation)
         {
             // Move & Duplicate selection
@@ -264,10 +265,12 @@ namespace VRtist
 
             new CommandAddToSelection(objectsAddedToSelection).Submit();
         }
+
         public bool RemoveFromSelection(GameObject gObject)
         {
             return Selection.RemoveFromSelection(gObject);
         }
+
         public void RemoveSiblingsFromSelection(GameObject gObject, bool haptic = true)
         {
             List<GameObject> objects = GetGroupSiblings(gObject);
@@ -369,8 +372,14 @@ namespace VRtist
         public void OnEraserMode()
         {
             mode = SelectorModes.Eraser;
-            selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.red);
+            selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", eraseColor);
             updateButtonsColor();
+        }
+
+        public Color GetModeColor()
+        {
+            if(mode == SelectorModes.Select) { return selectionColor; }
+            return eraseColor;
         }
 
         void updateButtonsColor()
