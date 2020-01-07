@@ -58,6 +58,7 @@ namespace VRtist
         public static Dictionary<string, Material[]> meshesMaterials = new Dictionary<string, Material[]>();
         public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
+        public static HashSet<string> texturesFlipY = new HashSet<string>();
 
         public static byte[] StringsToBytes(string[] values)
         {
@@ -368,34 +369,8 @@ namespace VRtist
             int bufferIndex = 0;
             string path = GetString(data, 0, out bufferIndex);
 
-            byte[] textureData = null;
             int size = 0;
-            if (!textures.ContainsKey(path))
-            {
-                size = GetInt(data, ref bufferIndex);
-                textureData = new byte[size];
-                Buffer.BlockCopy(data, bufferIndex, textureData, 0, size);
-                LoadTexture(path, textureData);
-
-                // Do we need to create the file ?
-                //////////////////////////////////
-                /*
-                if (File.Exists(path))
-                    return;
-                try
-                {
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-                    {
-                        fs.Write(textureData, 0, size);
-                    }
-                }
-                catch
-                {
-                    Debug.LogWarning("Could not write : " + path);
-                }
-                */
-            }
-
+            LoadTexture(path, data, ref bufferIndex);            
         }
 
         public static Material DefaultMaterial()
@@ -448,22 +423,23 @@ namespace VRtist
             return texture;
         }
 
-        public static Texture2D LoadTexture(string filePath, byte[] data)
+        public static Texture2D LoadTextureFromBuffer(byte[] data)
         {
             Texture2D tex = new Texture2D(1, 1);
             bool res = tex.LoadImage(data);
             if (!res)
                 return null;
 
-            textures[filePath] = tex;
             return tex;
         }
 
-        public static Texture2D LoadTexture(string filePath)
+        public static Texture2D LoadTexture(string filePath, byte[] data, ref int bufferIndex)
         {
+            int size = GetInt(data, ref bufferIndex);
+
             if (textures.ContainsKey(filePath))
                 return textures[filePath];
-            /*
+
             string directory = Path.GetDirectoryName(filePath);
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
@@ -471,16 +447,45 @@ namespace VRtist
             {
                 Texture2D t = LoadTextureDXT(ddsFile);
                 if (null != t)
+                {
+                    textures[filePath] = t;
+                    texturesFlipY.Add(filePath);
                     return t;
+                }
             }
-            */
 
-            if (!File.Exists(filePath))
-                return null;
+            if (File.Exists(filePath))
+            {
+                byte[] bytes = System.IO.File.ReadAllBytes(filePath);
+                Texture2D t = LoadTextureFromBuffer(bytes);
+                if(null != t)
+                {
+                    textures[filePath] = t;
+                    return t;
+                }
+            }
 
-            byte[] bytes = System.IO.File.ReadAllBytes(filePath);
-            return LoadTexture(filePath, bytes);
+            byte[] textureData = new byte[size];
+            Buffer.BlockCopy(data, bufferIndex, textureData, 0, size);
+            Texture2D texture = LoadTextureFromBuffer(textureData);
+            if(null != texture)
+                textures[filePath] = texture;
+
+            try
+            {
+                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    fs.Write(textureData, 0, size);
+                }
+            }
+            catch
+            {
+                Debug.LogWarning("Could not write : " + filePath);
+            }
+
+            return texture;
         }
+
 
         public static void BuildMaterial(byte[] data)
         {
@@ -503,9 +508,14 @@ namespace VRtist
             string baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
             if (baseColorTexturePath.Length > 0)
             {
-                Texture2D tex = LoadTexture(baseColorTexturePath);
-                if (tex != null)
+                if(textures.ContainsKey(baseColorTexturePath))
+                { 
+                    Texture2D tex = textures[baseColorTexturePath];
                     material.SetTexture("_BaseColorMap", tex);
+                    if(texturesFlipY.Contains(baseColorTexturePath))
+                        material.SetTextureScale("_BaseColorMap", new Vector2(1, -1));
+                }
+
             }
 
             float metallic = GetFloat(data, ref currentIndex);
@@ -521,12 +531,14 @@ namespace VRtist
             string normalTexturePath = GetString(data, currentIndex, out currentIndex);
             if (normalTexturePath.Length > 0)
             {
-                Texture2D tex = LoadTexture(normalTexturePath);
-                if (tex != null)
+                if (textures.ContainsKey(normalTexturePath))
                 {
-                    //material.shaderKeywords = new string[1] { "_NORMALMAP" };
-                    //material.EnableKeyword("_NORMALMAP");                    
+                    Texture2D tex = textures[normalTexturePath];
                     material.SetTexture("_NormalMap", tex);
+                    if (texturesFlipY.Contains(normalTexturePath))
+                        material.SetTextureScale("_NormalMap", new Vector2(1, -1));
+                    material.EnableKeyword("_NORMALMAP");
+                    material.EnableKeyword("_NORMALMAP_TANGENT_SPACE");
                 }
             }
             
