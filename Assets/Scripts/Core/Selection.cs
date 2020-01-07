@@ -57,14 +57,17 @@ namespace VRtist
 
         private static void ApplyMaterial(GameObject gobject)
         {
+            gobject.layer = 9; // hardcoded value for the "Selection" layer.
+
             Renderer renderer = gobject.GetComponent<Renderer>();
             if (renderer)
             {
                 var mats = renderer.materials;
-                for (int i = mats.Length - 1; i >= 0; i--)
-                {
-                    mats[i] = selectionMaterial;
-                }
+                // TMP - pour ne plus voir les anciens contours.
+                //for (int i = mats.Length - 1; i >= 0; i--)
+                //{
+                //    mats[i] = selectionMaterial;
+                //}
 
                 gobject.GetComponent<Renderer>().materials = mats;
                 gobject.AddComponent<Outline>();
@@ -97,7 +100,7 @@ namespace VRtist
             newGObject.transform.localPosition = Vector3.zero;
             newGObject.transform.localRotation = Quaternion.identity;
             newGObject.transform.localScale = Vector3.one;
-
+            
             ApplyMaterial(newGObject);
             CleanDuplicatedObject(newGObject);
 
