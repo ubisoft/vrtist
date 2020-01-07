@@ -523,7 +523,11 @@ namespace VRtist
             {
                 Texture2D tex = LoadTexture(normalTexturePath);
                 if (tex != null)
+                {
+                    //material.shaderKeywords = new string[1] { "_NORMALMAP" };
+                    //material.EnableKeyword("_NORMALMAP");                    
                     material.SetTexture("_NormalMap", tex);
+                }
             }
             
            
