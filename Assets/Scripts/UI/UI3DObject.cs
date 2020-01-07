@@ -37,6 +37,7 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
+                ToolsUIManager.Instance.RegisterUI3DObject(gameObject);
                 onClickEvent.AddListener(OnPush3DObject);
                 onReleaseEvent.AddListener(OnRelease3DObject);
             }
@@ -157,9 +158,9 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                gameObject.GetHashCode();
+                int hash = gameObject.GetHashCode();
                 
-                onEnterUI3DObject.Invoke(gameObject.GetHashCode());
+                onEnterUI3DObject.Invoke(hash);
                 //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
