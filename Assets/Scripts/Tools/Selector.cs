@@ -20,10 +20,10 @@ namespace VRtist
         Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
         Dictionary<GameObject, Quaternion> initRotations = new Dictionary<GameObject, Quaternion>();
         Dictionary<GameObject, Vector3> initScales = new Dictionary<GameObject, Vector3>();
-        Vector3 initControllerPosition;
-        Quaternion initControllerRotation;
+        protected Vector3 initControllerPosition;
+        protected Quaternion initControllerRotation;
 
-        Matrix4x4 initControllerMatrix;
+        protected Matrix4x4 initControllerMatrix;
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
@@ -87,11 +87,14 @@ namespace VRtist
             transform.localScale = visible ? Vector3.one : Vector3.zero;
         }
 
-        void InitDuplicateMoveTransforms()
+        protected void InitControllerMatrix()
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
             initControllerMatrix = (transform.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
+        }
 
+        protected void InitTransforms()
+        {
             initParentMatrix.Clear();
             initPositions.Clear();
             initRotations.Clear();
@@ -103,7 +106,7 @@ namespace VRtist
                 initRotations[data.Value] = data.Value.transform.localRotation;
                 initScales[data.Value] = data.Value.transform.localScale;
             }
-            scale = 1f;            
+            scale = 1f;
         }
 
         bool outOfDeadZone = false;
@@ -114,7 +117,8 @@ namespace VRtist
         {
             undoGroup = new CommandGroup();
 
-            InitDuplicateMoveTransforms();
+            InitControllerMatrix();
+            InitTransforms();
             outOfDeadZone = false;
             gripped = true;
         }
@@ -156,7 +160,8 @@ namespace VRtist
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            InitDuplicateMoveTransforms();
+            InitControllerMatrix();
+            InitTransforms();
             outOfDeadZone = false;            
         }
 
@@ -182,7 +187,8 @@ namespace VRtist
                 if (buttonAJustPressed)
                 {
                     DuplicateSelection();
-                    InitDuplicateMoveTransforms();
+                    InitControllerMatrix();
+                    InitTransforms();
                     outOfDeadZone = true;
                 }
 
@@ -196,35 +202,38 @@ namespace VRtist
                 if (!outOfDeadZone)
                     return;
 
-                Transform parent = transform.parent;
-
                 Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                 if (joystickAxis.y > deadZone)
                     scale *= scaleFactor;
                 if (joystickAxis.y < -deadZone)
                     scale /= scaleFactor;
 
+                ScaleSelection(new Vector3(scale, scale, scale), p, r);
+            }
+        }
 
-                Matrix4x4 controllerMatrix = parent.localToWorldMatrix * Matrix4x4.TRS(p, r, new Vector3(scale, scale, scale)) * initControllerMatrix;
+        protected void ScaleSelection(Vector3 scale, Vector3 position, Quaternion rotation)
+        {
+            Transform parent = transform.parent;
+            Matrix4x4 controllerMatrix = parent.localToWorldMatrix * Matrix4x4.TRS(position, rotation, scale) * initControllerMatrix;
 
-                foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            {
+                var meshParentTransform = data.Value.transform.parent;
+                Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
+                if (meshParentTransform)
+                    meshParentMatrixInverse = meshParentTransform.worldToLocalMatrix;
+                else
+                    meshParentMatrixInverse = Matrix4x4.identity;
+                Matrix4x4 transformed = meshParentMatrixInverse * controllerMatrix * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
+
+                if (data.Value.transform.localToWorldMatrix != transformed)
                 {
-                    var meshParentTransform = data.Value.transform.parent;
-                    Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
-                    if (meshParentTransform)
-                        meshParentMatrixInverse = meshParentTransform.worldToLocalMatrix;
-                    else
-                        meshParentMatrixInverse = Matrix4x4.identity;
-                    Matrix4x4 transformed = meshParentMatrixInverse * controllerMatrix * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
+                    data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                    data.Value.transform.localRotation = transformed.rotation;
+                    data.Value.transform.localScale = transformed.lossyScale;
 
-                    if (data.Value.transform.localToWorldMatrix != transformed)
-                    {
-                        data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                        data.Value.transform.localRotation = transformed.rotation;
-                        data.Value.transform.localScale = transformed.lossyScale;
-
-                        CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
-                    }
+                    CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                 }
             }
         }

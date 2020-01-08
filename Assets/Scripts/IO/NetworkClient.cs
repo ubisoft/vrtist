@@ -1190,6 +1190,7 @@ namespace VRtist
                 }
             }
 
+            mesh.RecalculateBounds();
             meshes[meshName] = mesh;
             meshesMaterials[meshName] = meshMaterials;
 
