@@ -6,7 +6,15 @@ namespace VRtist
     [Serializable]
     public class SunLightParameters : LightParameters
     {
-        public override LightType GetType() { return LightType.Sun; }
+        public SunLightParameters()
+        {
+            lightType = LightType.Sun;
+            intensity = 3.0f;
+            minIntensity = 0.0f;
+            maxIntensity = 100.0f;
+        }
+
+        public override LightType GetLightType() { return LightType.Sun; }
         protected override GameObject GetPrefab()
         {
             return Resources.Load("Prefabs/Sun") as GameObject;
