@@ -24,6 +24,15 @@ namespace VRtist
 
         protected CommandGroup undoGroup = null;
 
+        private void OnDisable()
+        {
+            if(null !=undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
+        }
+
         void Update()
         {
             //if (uiTools.isOverUI()) { return; }
@@ -40,8 +49,11 @@ namespace VRtist
                     grippedGameObject = false;
                     multiSelecting = false;
                 }
-                undoGroup.Submit();
-                undoGroup = null;
+                if (null != undoGroup)
+                {
+                    undoGroup.Submit();
+                    undoGroup = null;
+                }
             });
 
             int count = collidedObjects.Count;

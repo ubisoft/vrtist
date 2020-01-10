@@ -136,6 +136,8 @@ namespace VRtist
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gObject = data.Value;
+                if (initPositions[gObject] == gObject.transform.localPosition && initRotations[gObject] == gObject.transform.localRotation && initScales[gObject] == gObject.transform.localScale)
+                    continue;
                 objects.Add(gObject);
                 beginPositions.Add(initPositions[gObject]);
                 beginRotations.Add(initRotations[gObject]);
@@ -146,7 +148,8 @@ namespace VRtist
                 endScales.Add(gObject.transform.localScale);
             }
 
-            new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
+            if(objects.Count > 0)
+                new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
 
         }
         protected void OnEndGrip()

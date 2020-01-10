@@ -62,9 +62,16 @@ namespace VRtist
             vertices[2] = v3;
             vertices[3] = v4;
 
+            Vector2[] uvs = new Vector2[4];
+            uvs[0] = new Vector2(0, 0);
+            uvs[1] = new Vector2(1, 0);
+            uvs[2] = new Vector2(1, 1);
+            uvs[3] = new Vector2(0, 1);
+
             int[] indices = { 0, 1, 2, 0, 2, 3 };
             Mesh mesh = new Mesh();
             mesh.vertices = vertices;
+            mesh.uv = uvs;
             mesh.triangles = indices;
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
@@ -295,14 +302,15 @@ namespace VRtist
             if (!deforming)
             {
                 if(activePlane)
-                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.2f));
+                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.2f));
 
                 activePlane = plane;
                 if (plane != null)
                 {
                     Color selectColor = selectionColor;
                     selectColor.a = 0.2f;
-                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", selectColor);
+                    //activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectColor);
+                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.red);
                 }
 
                 selectorTrigger.enabled = (plane == null);
