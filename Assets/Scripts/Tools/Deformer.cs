@@ -12,6 +12,11 @@ namespace VRtist
         public GameObject planesContainer;
         public float gap = 0.0f;
         public SelectorTrigger selectorTrigger;
+        public bool scaleAllAxis = false;
+
+        private Matrix4x4 initPlaneContainerMatrix;
+        private Matrix4x4 initInversePlaneContainerMatrix;
+        private Matrix4x4 initOppositeMatrix;
 
         private Vector3 minBound = Vector3.positiveInfinity;
         private Vector3 maxBound = Vector3.negativeInfinity;
@@ -19,7 +24,6 @@ namespace VRtist
         private DeformerPlane activePlane = null;
         private bool deforming = false;
         private float initMagnitude;
-        private Vector3 initScale;
         private Vector3 planeControllerDelta;
 
         void Start()
@@ -39,10 +43,14 @@ namespace VRtist
 
         protected void OnStartDeform()
         {
+            deforming = true;
         }
 
         protected void OnEndDeform()
         {
+            deforming = false;
+            SetActivePLane(null);
+
             ManageMoveObjectsUndo();
         }
 
@@ -83,19 +91,46 @@ namespace VRtist
             minBound = Vector3.positiveInfinity;
             maxBound = Vector3.negativeInfinity;
             bool foundBounds = false;
+            int selectionCount = Selection.selection.Count;
+            if(selectionCount == 1)
+            {
+                foreach (KeyValuePair<int, GameObject> item in Selection.selection)
+                {
+                    
+                    planesContainer.transform.parent = item.Value.transform.parent;
+                    planesContainer.transform.localPosition = item.Value.transform.localPosition;
+                    planesContainer.transform.localRotation = item.Value.transform.localRotation;
+                    planesContainer.transform.localScale = item.Value.transform.localScale;               
+                }
+            }
+            else
+            {
+                planesContainer.transform.parent = world;
+                planesContainer.transform.localPosition = Vector3.zero;
+                planesContainer.transform.localRotation = Quaternion.identity;
+                planesContainer.transform.localScale = Vector3.one;
+            }
+
             foreach (KeyValuePair<int, GameObject> item in Selection.selection)
             {
                 MeshFilter meshFilter = item.Value.GetComponentInChildren<MeshFilter>();
                 if (null != meshFilter)
                 {
                     Matrix4x4 transform;
-                    if(meshFilter.gameObject != item.Value)
+                    if (selectionCount > 1)
                     {
-                        transform = world.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
+                        if (meshFilter.gameObject != item.Value)
+                        {
+                            transform = world.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
+                        }
+                        else
+                        {
+                            transform = world.worldToLocalMatrix * item.Value.transform.localToWorldMatrix;
+                        }
                     }
                     else
                     {
-                        transform = world.worldToLocalMatrix * item.Value.transform.localToWorldMatrix;
+                        transform = Matrix4x4.identity;
                     }
 
                     Mesh mesh = meshFilter.mesh;
@@ -113,9 +148,6 @@ namespace VRtist
                     for (int i = 0; i < vertices.Length; i++)
                     {
                         vertices[i] = transform.MultiplyPoint(vertices[i]);
-                        //vertices[i] = item.Value.transform.TransformPoint(vertices[i]);  // to root (absolute) space
-                        //vertices[i] = world.InverseTransformPoint(vertices[i]);          // to world game object space
-
                         //  Compute min and max bounds
                         if (vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
                         if (vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
@@ -175,6 +207,19 @@ namespace VRtist
             planesContainer.SetActive(true);
         }
 
+        protected Vector3 FilterControllerDirection()
+        {
+            Vector3 controllerPosition;
+            Quaternion controllerRotation;
+            VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
+            controllerPosition = transform.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
+
+            controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
+            controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer
+            controllerPosition = initPlaneContainerMatrix.MultiplyPoint(controllerPosition);            // back to absolute coordinates
+            return controllerPosition;
+        }
+
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
             // Base selection update
@@ -188,29 +233,16 @@ namespace VRtist
                 VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
                 {
                     InitDeformerMatrix();
-                    InitTransforms();
+                    InitTransforms();                    
 
-                    Vector3 initControllerPosition;
-                    Quaternion initControllerRotation;
-                    VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
-                    initControllerPosition = transform.parent.TransformPoint(initControllerPosition);
-
-                    initControllerPosition = world.InverseTransformPoint(initControllerPosition);
-                    initControllerPosition = Vector3.Scale(initControllerPosition, activePlane.direction);
-                    initControllerPosition = world.TransformPoint(initControllerPosition);
-
-                    planeControllerDelta = initControllerPosition - activePlane.transform.position;
-
-                    deforming = true;
+                    planeControllerDelta = FilterControllerDirection() - activePlane.transform.position; // in absolute coordinates
 
                     Vector3 initDelta = activePlane.transform.position - activePlane.opposite.position;
-                    initMagnitude = initDelta.magnitude;
+                    initMagnitude = initDelta.magnitude; // initial scale value
 
                     OnStartDeform();
                 }, () =>
                 {
-                    deforming = false;
-                    SetActivePLane(null);
                     OnEndDeform();
                 });
                 
@@ -218,15 +250,7 @@ namespace VRtist
 
             if(deforming)
             {
-                Vector3 controllerPosition;
-                Quaternion controllerRotation;
-                VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
-                controllerPosition = transform.parent.TransformPoint(controllerPosition);
-
-                controllerPosition = world.InverseTransformPoint(controllerPosition);
-                controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);
-                controllerPosition = world.TransformPoint(controllerPosition);
-
+                Vector3 controllerPosition = FilterControllerDirection();                
                 controllerPosition -= planeControllerDelta;
 
                 Vector3 delta = controllerPosition - activePlane.opposite.position;
@@ -235,9 +259,16 @@ namespace VRtist
                 float scaleFactor = magnitude / initMagnitude;
 
                 Vector3 scale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
-                Matrix4x4 scaleMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, scale);
+                bool scaleAll = Selection.selection.Count != 1 || scaleAllAxis;
+                if (!scaleAll)
+                {
+                    scale = new Vector3(activePlane.direction.x == 0f ? 1f : scale.x,
+                                        activePlane.direction.y == 0f ? 1f : scale.y,
+                                        activePlane.direction.z == 0f ? 1f : scale.z);
+                }
 
-                Matrix4x4 transformationMatrix = activePlane.opposite.localToWorldMatrix * scaleMatrix;
+                Matrix4x4 scaleMatrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, scale);
+                Matrix4x4 transformationMatrix = initOppositeMatrix * scaleMatrix;
 
                 TransformSelection(transformationMatrix);
                 
@@ -249,9 +280,10 @@ namespace VRtist
 
         private void InitDeformerMatrix()
         {            
-            Matrix4x4 oppositeMatrix = activePlane.opposite.localToWorldMatrix;
-            initScale = new Vector3(oppositeMatrix.GetColumn(0).magnitude, oppositeMatrix.GetColumn(1).magnitude, oppositeMatrix.GetColumn(2).magnitude);
             initTransformation = activePlane.opposite.worldToLocalMatrix;
+            initPlaneContainerMatrix = planesContainer.transform.localToWorldMatrix;
+            initInversePlaneContainerMatrix = planesContainer.transform.worldToLocalMatrix;
+            initOppositeMatrix = activePlane.opposite.localToWorldMatrix;
         }
 
         public DeformerPlane ActivePlane()
