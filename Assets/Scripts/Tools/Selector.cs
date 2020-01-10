@@ -13,8 +13,8 @@ namespace VRtist
         [SerializeField] private float deadZoneDistance = 0.005f;
 
         float selectorRadius = 0.03f;
-        Color selectionColor = new Color(0f, 167f/255f, 1f);
-        Color eraseColor = new Color(1f, 0f, 0f);
+        protected Color selectionColor = new Color(0f, 167f/255f, 1f);
+        protected Color eraseColor = new Color(1f, 0f, 0f);
 
         Dictionary<GameObject, Matrix4x4> initParentMatrix = new Dictionary<GameObject, Matrix4x4>();
         Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
@@ -23,7 +23,7 @@ namespace VRtist
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
 
-        protected Matrix4x4 initControllerMatrix;
+        protected Matrix4x4 initTransformation;
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
@@ -90,7 +90,7 @@ namespace VRtist
         protected void InitControllerMatrix()
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
-            initControllerMatrix = (transform.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
+            initTransformation = (transform.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
         }
 
         protected void InitTransforms()
@@ -123,7 +123,7 @@ namespace VRtist
             gripped = true;
         }
 
-        private void ManageMoveObjectsUndo()
+        protected void ManageMoveObjectsUndo()
         {
             List<GameObject> objects = new List<GameObject>();
             List<Vector3> beginPositions = new List<Vector3>();
@@ -208,14 +208,16 @@ namespace VRtist
                 if (joystickAxis.y < -deadZone)
                     scale /= scaleFactor;
 
-                ScaleSelection(new Vector3(scale, scale, scale), p, r);
+                Transform parent = transform.parent;
+                Matrix4x4 controllerMatrix = parent.localToWorldMatrix * Matrix4x4.TRS(p, r, new Vector3(scale, scale, scale));
+
+                TransformSelection(controllerMatrix);
             }
         }
 
-        protected void ScaleSelection(Vector3 scale, Vector3 position, Quaternion rotation)
+        protected void TransformSelection(Matrix4x4 transformation)
         {
-            Transform parent = transform.parent;
-            Matrix4x4 controllerMatrix = parent.localToWorldMatrix * Matrix4x4.TRS(position, rotation, scale) * initControllerMatrix;
+            transformation = transformation * initTransformation;
 
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
@@ -225,13 +227,13 @@ namespace VRtist
                     meshParentMatrixInverse = meshParentTransform.worldToLocalMatrix;
                 else
                     meshParentMatrixInverse = Matrix4x4.identity;
-                Matrix4x4 transformed = meshParentMatrixInverse * controllerMatrix * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
+                Matrix4x4 transformed = meshParentMatrixInverse * transformation * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
 
                 if (data.Value.transform.localToWorldMatrix != transformed)
                 {
                     data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                    data.Value.transform.localRotation = transformed.rotation;
-                    data.Value.transform.localScale = transformed.lossyScale;
+                    data.Value.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2),transformed.GetColumn(1));
+                    data.Value.transform.localScale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
 
                     CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                 }

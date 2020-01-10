@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-4066989623256855498
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da692e001514ec24dbc4cca1949ff7e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 0
 --- !u!21 &2100000
 Material:
   serializedVersion: 6
@@ -8,9 +21,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ModifierBox
-  m_Shader: {fileID: 4800000, guid: 92d1c4a2691045849ad08cbbe2a05da2, type: 3}
-  m_ShaderKeywords: _BLENDMODE_ALPHA _BLENDMODE_PRESERVE_SPECULAR_LIGHTING _ENABLE_FOG_ON_TRANSPARENT
-    _NORMALMAP_TANGENT_SPACE _SURFACE_TYPE_TRANSPARENT
+  m_Shader: {fileID: 4800000, guid: c4edd00ff2db5b24391a4fcb1762e459, type: 3}
+  m_ShaderKeywords: _BLENDMODE_ALPHA _NORMALMAP_TANGENT_SPACE _SURFACE_TYPE_TRANSPARENT
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,9 +32,6 @@ Material:
   disabledShaderPasses:
   - DistortionVectors
   - MOTIONVECTORS
-  - TransparentDepthPrepass
-  - TransparentDepthPostpass
-  - TransparentBackface
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -110,6 +119,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _UnlitColorMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _AORemapMax: 1
     - _AORemapMin: 0
@@ -148,6 +161,7 @@ Material:
     - _DistortionDepthTest: 1
     - _DistortionDstBlend: 1
     - _DistortionEnable: 0
+    - _DistortionOnly: 0
     - _DistortionScale: 1
     - _DistortionSrcBlend: 1
     - _DistortionVectorBias: -1
@@ -160,7 +174,7 @@ Material:
     - _EmissiveIntensity: 1
     - _EmissiveIntensityUnit: 0
     - _EnableBlendModePreserveSpecularLighting: 1
-    - _EnableFogOnTransparent: 1
+    - _EnableFogOnTransparent: 0
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
     - _HdrpVersion: 2
@@ -173,6 +187,7 @@ Material:
     - _HeightPoMAmplitude: 2
     - _HeightTessAmplitude: 2
     - _HeightTessCenter: 0.5
+    - _IncludeIndirectLighting: 1
     - _InvTilingScale: 1
     - _Ior: 1.5
     - _IridescenceMask: 1
@@ -197,11 +212,11 @@ Material:
     - _SpecularAAThreshold: 0.2
     - _SpecularOcclusionMode: 1
     - _SrcBlend: 1
-    - _StencilRef: 2
-    - _StencilRefDepth: 0
+    - _StencilRef: 0
+    - _StencilRefDepth: 32
     - _StencilRefDistortionVec: 64
     - _StencilRefGBuffer: 2
-    - _StencilRefMV: 128
+    - _StencilRefMV: 160
     - _StencilWriteMask: 3
     - _StencilWriteMaskDepth: 48
     - _StencilWriteMaskDistortionVec: 64
@@ -231,9 +246,9 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.5471698, g: 0.5394268, b: 0.5394268, a: 0.3137255}
+    - _BaseColor: {r: 0.6132076, g: 0.6045301, b: 0.6045301, a: 0.33333334}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 0.5471698, g: 0.53942674, b: 0.53942674, a: 0.3137255}
+    - _Color: {r: 0, g: 0, b: 0, a: 1}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
@@ -247,3 +262,4 @@ Material:
     - _UVDetailsMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMaskEmissive: {r: 1, g: 0, b: 0, a: 0}
+    - _UnlitColor: {r: 1, g: 1, b: 1, a: 0.3137255}

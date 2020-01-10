@@ -27,7 +27,8 @@ namespace VRtist
         {
             if (other.tag == "DeformerCollider")
             {
-                deformer.SetActivePLane(this);
+                if(deformer.ActivePlane() == null)
+                    deformer.SetActivePLane(this);
             }
         }
 
@@ -35,7 +36,8 @@ namespace VRtist
         {
             if (other.tag == "DeformerCollider")
             {
-                deformer.SetActivePLane(null);
+                if (deformer.ActivePlane() == this)
+                    deformer.SetActivePLane(null);
             }
         }
     }
