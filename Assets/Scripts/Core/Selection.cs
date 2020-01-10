@@ -36,25 +36,6 @@ namespace VRtist
                 s[data.Key] = data.Value;
         }
 
-        private static void CleanDuplicatedObject(GameObject gObject)
-        {
-            Component[] components = gObject.GetComponents<Component>();
-            for (int i = components.Length - 1; i >= 0; i--)
-            {
-                Component component = components[i];
-                if (component.GetType() != typeof(MeshFilter) &&
-                    component.GetType() != typeof(MeshRenderer) &&
-                    component.GetType() != typeof(Transform) &&
-                    component.GetType() != typeof(Outline))
-                    GameObject.Destroy(component);
-            }
-
-            for (int i = 0; i < gObject.transform.childCount; i++)
-            {
-                CleanDuplicatedObject(gObject.transform.GetChild(i).gameObject);
-            }
-        }
-
         private static void ApplyMaterial(GameObject gobject)
         {
             Renderer renderer = gobject.GetComponent<Renderer>();
@@ -91,17 +72,7 @@ namespace VRtist
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
-            GameObject newGObject = GameObject.Instantiate(gObject, gObject.transform);
-
-            newGObject.name = "__Selected__";
-            newGObject.transform.localPosition = Vector3.zero;
-            newGObject.transform.localRotation = Quaternion.identity;
-            newGObject.transform.localScale = Vector3.one;
-
-            ApplyMaterial(newGObject);
-            CleanDuplicatedObject(newGObject);
-
-
+            gObject.layer = LayerMask.NameToLayer("Selection"); // TODO: init in one of the singletons
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -120,14 +91,9 @@ namespace VRtist
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
 
-            Transform selected = gObject.transform.Find("__Selected__");
-            if (selected)
-            {
-                selected.parent = null;
-                GameObject.Destroy(selected.gameObject);
-            }
-
             selection.Remove(gObject.GetInstanceID());
+
+            gObject.layer = LayerMask.NameToLayer("Default"); // 0
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -142,12 +108,7 @@ namespace VRtist
         {
             foreach (KeyValuePair<int, GameObject> data in selection)
             {
-                Transform selected = data.Value.transform.Find("__Selected__");
-                if (selected)
-                {
-                    selected.parent = null;
-                    GameObject.Destroy(selected.gameObject);
-                }
+                data.Value.layer = LayerMask.NameToLayer("Default");
             }
 
             SelectionChangedArgs args = new SelectionChangedArgs();
@@ -162,5 +123,4 @@ namespace VRtist
             }
         }
     }
-
 }

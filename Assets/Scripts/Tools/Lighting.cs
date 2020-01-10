@@ -164,42 +164,6 @@ namespace VRtist
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
             {
-                //if (UIObject)
-                //{
-                //    GameObject light = null;
-                //    string lightName = "";
-
-                //    // Create an empty game object with a mesh
-                //    switch (UIObject.name)
-                //    {
-                //        case "Sun":
-                //            light = Utils.CreateInstance(sunPrefab, parentContainer);
-                //            lightName = "Sun" + sunId.ToString();
-                //            sunId++;
-                //            break;
-                //        case "Spot":
-                //            light = Utils.CreateInstance(spotPrefab, parentContainer);
-                //            lightName = "Spot" + spotId.ToString();
-                //            spotId++;
-                //            break;
-                //        case "Point":
-                //            light = Utils.CreateInstance(pointPrefab, parentContainer);
-                //            lightName = "Point" + pointId.ToString();
-                //            pointId++;
-                //            break;
-                //    }
-
-                //    if (light)
-                //    {
-                //        light.name = lightName;
-                //        light.transform.position = transform.position;
-                //        light.transform.rotation = transform.rotation;
-                //        light.transform.localScale = Vector3.one * 0.1f;
-
-                //        Selection.ClearSelection();
-                //        Selection.AddToSelection(light);
-                //    }
-                //}
                 OnStartGrip();
             }, OnEndGrip);
 
@@ -215,11 +179,13 @@ namespace VRtist
             }
         }
 
-        private void SetSliderValue(Transform slider, float value)
+        private void SetSliderValues(Transform slider, float value, float minValue, float maxValue)
         {
             UISlider sliderComp = slider.GetComponent<UISlider>();
             if(sliderComp != null)
             {
+                sliderComp.minValue = minValue;
+                sliderComp.maxValue = maxValue;
                 sliderComp.Value = value;
             }
         }
@@ -253,7 +219,7 @@ namespace VRtist
                 if(lightParameters != null)
                 {
                     selectedLights[data.Key] = data.Value;
-                    switch(lightParameters.lightType)
+                    switch(lightParameters.GetLightType())
                     {
                         case LightParameters.LightType.Sun:
                             sunCount++;
@@ -309,14 +275,17 @@ namespace VRtist
                 pickerControl.blockSignals = false;
                 */
 
-                SetSliderValue(intensitySlider, lightingParameters.intensity);
-                SetSliderValue(rangeSlider, lightingParameters.GetRange());
+                // TODO: put min/max for each slider in LightParameters
+
+                SetSliderValues(intensitySlider, lightingParameters.intensity, lightingParameters.minIntensity, lightingParameters.maxIntensity);
+                SetSliderValues(rangeSlider, lightingParameters.GetRange(), lightingParameters.GetMinRange(), lightingParameters.GetMaxRange());
                 //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
-                SetSliderValue(outerAngleSlider, lightingParameters.GetOuterAngle());
+                SetSliderValues(outerAngleSlider, lightingParameters.GetOuterAngle(), lightingParameters.GetMinOuterAngle(), lightingParameters.GetMaxOuterAngle());
 
                 SetCheckboxValue(castShadowsCheckbox, lightingParameters.castShadows);
                 SetCheckboxValue(enableCheckbox, gobject.activeSelf);
 
+                // Only the first light sets its parameters to the widgets
                 break;
             }
         }
