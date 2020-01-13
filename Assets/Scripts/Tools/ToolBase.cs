@@ -68,10 +68,14 @@ namespace VRtist
                 ToolsUIManager.Instance.UpdateProxy3D();
                 */
                 // Custom tool update
-                DoUpdate(position, rotation); // call children DoUpdate
                 if (IsInGui)
                 {
                     DoUpdateGui();
+                }
+                else // TODO: voir si il faut pas quand meme faire DoUpdate dans tous les cas.
+                // le probleme de faire les deux vient quand ils reagissent au meme input (ex: Grip dans UI)
+                {
+                    DoUpdate(position, rotation); // call children DoUpdate
                 }
             }
         }
