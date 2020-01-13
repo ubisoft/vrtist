@@ -10,7 +10,7 @@ namespace VRtist
     {
         // Start is called before the first frame update
         public GameObject cameraPrefab;
-        public Transform CameraContainer;
+        public Transform cameraContainer;
         public Material screenShotMaterial;
         public Transform world;
         public Transform backgroundFeedback;
@@ -23,11 +23,23 @@ namespace VRtist
         private GameObject UIObject = null;
         public RenderTexture renderTexture = null;
         private bool feedbackPositioning = false;
+        private Transform focalSlider = null;
 
         public float Focal
         {
             get { return focal; }
-            set { focal = value; UpdateText(); }
+            set 
+            { 
+                focal = value;
+                foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+                {
+                    GameObject gobject = data.Value;
+                    CameraParameters cameraParameters = gobject.GetComponent<CameraController>().GetParameters() as CameraParameters;
+                    if (cameraParameters != null)
+                        cameraParameters.focal = value;
+                }
+                UpdateText(); 
+            }
         }
 
         public float deadZone = 0.8f;
@@ -52,6 +64,10 @@ namespace VRtist
             feedbackPositioning = false;
         }
 
+        void DisableUI()
+        {
+            focalSlider.gameObject.SetActive(false);
+        }
         void Start()
         {
             Init();
@@ -61,7 +77,11 @@ namespace VRtist
             foreach (Camera camera in SelectedCameras())
                 ComputeFocal(camera);
 
-            cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);            
+            cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
+
+            focalSlider = panel.Find("Focal");
+            DisableUI();
+            Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
         void UpdateText()
@@ -124,10 +144,7 @@ namespace VRtist
             List<Camera> selectedCameras = new List<Camera>();
             foreach (var selectedItem in selection)
             {
-                Transform camT = selectedItem.transform.Find("Camera");
-                if (!camT)
-                    continue;
-                Camera cam = camT.GetComponent<Camera>();
+                Camera cam = selectedItem.GetComponentInChildren<Camera>();               
                 if (!cam)
                     continue;
                 selectedCameras.Add(cam);
@@ -141,13 +158,19 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    GameObject newCamera = Utils.CreateInstance(cameraPrefab, null);
-                    newCamera.transform.parent = CameraContainer;
-                    newCamera.transform.position = selectorBrush.position;
-                    newCamera.transform.rotation = selectorBrush.rotation;
+                    GameObject newCamera = Utils.CreateInstance(cameraPrefab, cameraContainer);
+                    if (newCamera)
+                    {
+                        new CommandAddGameObject(newCamera).Submit();
 
-                    Selection.ClearSelection();
-                    Selection.AddToSelection(newCamera);
+                        Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * transform.localToWorldMatrix;
+                        newCamera.transform.localPosition = matrix.GetColumn(3);
+                        newCamera.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+                        newCamera.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
+
+                        ClearSelection();
+                        AddToSelection(newCamera);
+                    }
                 }
                 OnStartGrip();
             },
@@ -159,25 +182,6 @@ namespace VRtist
 
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
-            {
-                //if (UIObject)
-                //{
-                //    GameObject newCamera = Utils.CreateInstance(cameraPrefab, null);
-                //    newCamera.transform.parent = CameraContainer;
-                //    newCamera.transform.position = selectorBrush.position;
-                //    newCamera.transform.rotation = selectorBrush.rotation;                    
-
-                //    Selection.ClearSelection();
-                //    Selection.AddToSelection(newCamera);
-                //}
-                OnStartGrip();
-            }, 
-            () =>
-            {
-                OnEndGrip();
-            });
-
             // Update feedback position and scale
             bool trigger = false;
             if (feedbackPositioning
@@ -268,6 +272,30 @@ namespace VRtist
             Focal = args.value;
             foreach(Camera cam in SelectedCameras())
                 ComputeFOV(cam);
+        }
+
+        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        {
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            {
+                GameObject gobject = data.Value;
+                CameraController cameraController = gobject.GetComponent<CameraController>();
+                if (null == cameraController)
+                    continue;
+                CameraParameters cameraParameters = cameraController.GetParameters() as CameraParameters;
+                if (cameraParameters != null)
+                {
+                    UISlider sliderComp = focalSlider.GetComponent<UISlider>();
+                    if (sliderComp != null)
+                    {
+                        sliderComp.Value = cameraParameters.focal;
+                        focalSlider.gameObject.SetActive(true);
+                        return;
+                    }
+                    break;
+                }
+            }
+            focalSlider.gameObject.SetActive(false);
         }
     }
 }

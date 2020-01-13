@@ -89,6 +89,11 @@ namespace VRtist
             undoStack.Add(redoCommand);
         }
 
+        public static bool IsUndoGroupOpened()
+        {
+            return groupStack.Count > 0;
+        }
+
         public static void AddCommand(ICommand command)
         {
             if (currentGroup != null)

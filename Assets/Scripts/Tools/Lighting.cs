@@ -15,12 +15,7 @@ namespace VRtist
         [SerializeField] private GameObject pointPrefab;
         [SerializeField] private GameObject spotPrefab;
 
-        static int sunId = 0;
-        static int spotId = 0;
-        static int pointId = 0;
-
         enum LightTools { None = 0, Sun, Spot, Point }
-        LightTools lightTool = LightTools.None;
 
         private Transform picker;
         private Transform intensitySlider;
@@ -75,48 +70,35 @@ namespace VRtist
             UIObject = null;
         }
 
-#if UNITY_EDITOR
-        // DEBUG Editor
         public void CreateLight(string lightType)
         {
             GameObject light = null;
-            string lightName = "";
 
             switch (lightType)
             {
                 case "Sun":
                     light = Utils.CreateInstance(sunPrefab, parentContainer);
-                    lightName = "Sun" + sunId.ToString();
-                    sunId++;
                     break;
                 case "Spot":
                     light = Utils.CreateInstance(spotPrefab, parentContainer);
-                    lightName = "Spot" + spotId.ToString();
-                    spotId++;
                     break;
                 case "Point":
                     light = Utils.CreateInstance(pointPrefab, parentContainer);
-                    lightName = "Point" + pointId.ToString();
-                    pointId++;
                     break;
             }
 
             if (light)
             {
                 new CommandAddGameObject(light).Submit();
-
-                light.name = lightName;
-                light.transform.position = transform.position;
-                light.transform.rotation = transform.rotation;
-                light.transform.localScale = Vector3.one * 0.1f;
+                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * transform.localToWorldMatrix;
+                light.transform.localPosition = matrix.GetColumn(3);
+                light.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+                light.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
 
                 ClearSelection();
                 AddToSelection(light);
-                //Selection.ClearSelection();
-                //Selection.AddToSelection(light);
             }
         }
-#endif
 
         protected override void DoUpdateGui()
         {
@@ -124,43 +106,7 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    GameObject light = null;
-                    string lightName = "";
-
-                    // Create an empty game object with a mesh
-                    switch (UIObject.name)
-                    {
-                        case "Sun":
-                            light = Utils.CreateInstance(sunPrefab, parentContainer);
-                            lightName = "Sun" + sunId.ToString();
-                            sunId++;
-                            break;
-                        case "Spot":
-                            light = Utils.CreateInstance(spotPrefab, parentContainer);
-                            lightName = "Spot" + spotId.ToString();
-                            spotId++;
-                            break;
-                        case "Point":
-                            light = Utils.CreateInstance(pointPrefab, parentContainer);
-                            lightName = "Point" + pointId.ToString();
-                            pointId++;
-                            break;
-                    }
-
-                    if (light)
-                    {
-                        new CommandAddGameObject(light).Submit();
-
-                        light.name = lightName;
-                        light.transform.position = transform.position;
-                        light.transform.rotation = transform.rotation;
-                        light.transform.localScale = Vector3.one * 0.1f;
-
-                        ClearSelection();
-                        AddToSelection(light);
-                        //Selection.ClearSelection();
-                        //Selection.AddToSelection(light);
-                    }
+                    CreateLight(UIObject.name);
                 }
                 OnStartGrip();
             }, OnEndGrip);

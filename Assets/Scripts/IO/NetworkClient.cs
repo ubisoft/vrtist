@@ -443,6 +443,7 @@ namespace VRtist
             string directory = Path.GetDirectoryName(filePath);
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
+            
             if (File.Exists(ddsFile))
             {
                 Texture2D t = LoadTextureDXT(ddsFile);
@@ -497,23 +498,23 @@ namespace VRtist
                 material = materials[name];
             else
             {
-                Shader hdrplit = Shader.Find("HDRP/Lit");
+                Shader hdrplit = Shader.Find("HDRP/Autodesk Interactive/AutodeskInteractive");
                 material = new Material(hdrplit);
                 material.name = name;
+                material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
                 materials[name] = material;
             }
 
             Color baseColor = GetColor(data, ref currentIndex);
-            material.SetColor("_BaseColor", baseColor);
+            material.SetColor("_Color", baseColor);
             string baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
             if (baseColorTexturePath.Length > 0)
             {
                 if(textures.ContainsKey(baseColorTexturePath))
-                { 
+                {
+                    material.SetFloat("_UseColorMap", 1f);
                     Texture2D tex = textures[baseColorTexturePath];
-                    material.SetTexture("_BaseColorMap", tex);
-                    if(texturesFlipY.Contains(baseColorTexturePath))
-                        material.SetTextureScale("_BaseColorMap", new Vector2(1, -1));
+                    material.SetTexture("_MainTex", tex);                                            
                 }
 
             }
@@ -521,28 +522,43 @@ namespace VRtist
             float metallic = GetFloat(data, ref currentIndex);
             material.SetFloat("_Metallic", metallic);
             string metallicTexturePath = GetString(data, currentIndex, out currentIndex);
-            // ignore metallic texture
+            if (metallicTexturePath.Length > 0)
+            {
+                if (textures.ContainsKey(metallicTexturePath))
+                {
+                    material.SetFloat("_UseMetallicMap", 1f);
+                    Texture2D tex = textures[metallicTexturePath];
+                    material.SetTexture("_MetallicGlossMap", tex);
+                }
+            }
+
 
             float roughness = GetFloat(data, ref currentIndex);
-            material.SetFloat("_Smoothness", 1f - roughness);
+            material.SetFloat("_Glossiness", roughness);
             string roughnessTexturePath = GetString(data, currentIndex, out currentIndex);
-            // ignore roughness texture
+            if (roughnessTexturePath.Length > 0)
+            {
+                if (textures.ContainsKey(roughnessTexturePath))
+                {
+                    material.SetFloat("_UseRoughnessMap", 1f);
+                    Texture2D tex = textures[roughnessTexturePath];
+                    material.SetTexture("_SpecGlossMap", tex);
+                }
+            }
 
             string normalTexturePath = GetString(data, currentIndex, out currentIndex);
+            /*
             if (normalTexturePath.Length > 0)
             {
                 if (textures.ContainsKey(normalTexturePath))
                 {
+                    material.SetFloat("_UseNormalMap", 1f);                    
                     Texture2D tex = textures[normalTexturePath];
-                    material.SetTexture("_NormalMap", tex);
-                    if (texturesFlipY.Contains(normalTexturePath))
-                        material.SetTextureScale("_NormalMap", new Vector2(1, -1));
-                    material.EnableKeyword("_NORMALMAP");
-                    material.EnableKeyword("_NORMALMAP_TANGENT_SPACE");
+                    material.SetTexture("_BumpMap", tex);
                 }
             }
-            
-           
+            */
+
             currentMaterial = material;
         }
 
@@ -736,7 +752,7 @@ namespace VRtist
                     break;
             }
 
-            byte[] paramsBuffer = new byte[2 * sizeof(int) + 6 * sizeof(float)];
+            byte[] paramsBuffer = new byte[2 * sizeof(int) + 7 * sizeof(float)];
             Buffer.BlockCopy(BitConverter.GetBytes((int)light.type), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(shadow), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
@@ -867,7 +883,7 @@ namespace VRtist
         public static void BuildCamera(Transform root, byte[] data)
         {
             int tmpIndex = 0;
-            string name = GetString(data, 0, out tmpIndex);
+            string path = GetString(data, 0, out tmpIndex);
 
             int currentIndex = 0;
             Transform transform = BuildPath(root, data, 0, false, out currentIndex);
@@ -875,13 +891,15 @@ namespace VRtist
                 return;
 
             GameObject camGameObject = null;
+            string[] splittedPath = path.Split('/');
+            string name = splittedPath[splittedPath.Length - 1];
             Transform camTransform = transform.Find(name);
             if (camTransform == null)
             {
                 camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform);
                 camGameObject.name = name;
-                camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
-                camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
+                //camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
+                //camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
             }
             else
             {
@@ -925,7 +943,7 @@ namespace VRtist
         public static void BuildLight(Transform root, byte[] data)
         {
             int tmpIndex = 0;
-            string name = GetString(data, 0, out tmpIndex);
+            string path = GetString(data, 0, out tmpIndex);
 
             int currentIndex = 0;
             Transform transform = BuildPath(root, data, 0, false, out currentIndex);
@@ -936,6 +954,8 @@ namespace VRtist
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject = null;
+            string[] splittedPath = path.Split('/');
+            string name = splittedPath[splittedPath.Length - 1];
             Transform lightTransform = transform.Find(name);
             if (lightTransform == null)
             {

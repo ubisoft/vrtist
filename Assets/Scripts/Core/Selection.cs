@@ -34,32 +34,20 @@ namespace VRtist
         {
             foreach (KeyValuePair<int, GameObject> data in selection)
                 s[data.Key] = data.Value;
-        }
-
-        private static void ApplyMaterial(GameObject gobject)
-        {
-            Renderer renderer = gobject.GetComponent<Renderer>();
-            if (renderer)
-            {
-                var mats = renderer.materials;
-                for (int i = mats.Length - 1; i >= 0; i--)
-                {
-                    mats[i] = selectionMaterial;
-                }
-
-                gobject.GetComponent<Renderer>().materials = mats;
-                gobject.AddComponent<Outline>();
-            }
-
-            for (int i = 0; i < gobject.transform.childCount; i++)
-            {
-                ApplyMaterial(gobject.transform.GetChild(i).gameObject);
-            }
-        }
+        }        
 
         public static bool IsSelected(GameObject gObject)
         {
             return selection.ContainsKey(gObject.GetInstanceID());
+        }
+
+        private static void SetRecursiveLayer(GameObject gObject, string layerName)
+        {
+            gObject.layer = LayerMask.NameToLayer(layerName); // TODO: init in one of the singletons
+            for(int i = 0; i < gObject.transform.childCount; i++)
+            {
+                SetRecursiveLayer(gObject.transform.GetChild(i).gameObject, layerName);
+            }
         }
 
         public static bool AddToSelection(GameObject gObject)
@@ -72,7 +60,7 @@ namespace VRtist
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
-            gObject.layer = LayerMask.NameToLayer("Selection"); // TODO: init in one of the singletons
+            SetRecursiveLayer(gObject, "Selection");
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -93,7 +81,7 @@ namespace VRtist
 
             selection.Remove(gObject.GetInstanceID());
 
-            gObject.layer = LayerMask.NameToLayer("Default"); // 0
+            SetRecursiveLayer(gObject, "Default");
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -108,7 +96,7 @@ namespace VRtist
         {
             foreach (KeyValuePair<int, GameObject> data in selection)
             {
-                data.Value.layer = LayerMask.NameToLayer("Default");
+                SetRecursiveLayer(data.Value, "Default");
             }
 
             SelectionChangedArgs args = new SelectionChangedArgs();

@@ -76,8 +76,11 @@ namespace VRtist
             {
                 // deactivate all tools
                 //tools.SetActive(false);
-                ToolsUIManager.Instance.ShowTools(false);
-                ShowCursor(true);
+                if (!CommandManager.IsUndoGroupOpened())
+                {
+                    ToolsUIManager.Instance.ShowTools(false);
+                    ShowCursor(true);
+                }
             }
             else if (other.gameObject.tag == "UICollider")
             {
