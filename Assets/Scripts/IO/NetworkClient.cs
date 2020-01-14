@@ -391,7 +391,7 @@ namespace VRtist
         }
 
 
-        public static Texture2D LoadTextureDXT(string filePath)
+        public static Texture2D LoadTextureDXT(string filePath, bool isLinear)
         {
             byte[] ddsBytes = System.IO.File.ReadAllBytes(filePath);
 
@@ -416,16 +416,16 @@ namespace VRtist
             byte[] dxtBytes = new byte[ddsBytes.Length - DDS_HEADER_SIZE];
             Buffer.BlockCopy(ddsBytes, DDS_HEADER_SIZE, dxtBytes, 0, ddsBytes.Length - DDS_HEADER_SIZE);
 
-            Texture2D texture = new Texture2D(width, height, textureFormat, false);
+            Texture2D texture = new Texture2D(width, height, textureFormat, true, isLinear);
             texture.LoadRawTextureData(dxtBytes);
             texture.Apply();
 
             return texture;
         }
 
-        public static Texture2D LoadTextureFromBuffer(byte[] data)
+        public static Texture2D LoadTextureFromBuffer(byte[] data, bool isLinear)
         {
-            Texture2D tex = new Texture2D(1, 1);
+            Texture2D tex = new Texture2D(2, 2, TextureFormat.ARGB32, true, isLinear);
             bool res = tex.LoadImage(data);
             if (!res)
                 return null;
@@ -443,10 +443,14 @@ namespace VRtist
             string directory = Path.GetDirectoryName(filePath);
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
-            
+            bool isNormalMap = withoutExtension.EndsWith("_Normal");
+            bool isRoughnessMap = withoutExtension.EndsWith("_Roughness");
+            bool isMetalnessMap = withoutExtension.EndsWith("_Metalness");
+            bool isLinear = isNormalMap || isRoughnessMap || isMetalnessMap;
+
             if (File.Exists(ddsFile))
             {
-                Texture2D t = LoadTextureDXT(ddsFile);
+                Texture2D t = LoadTextureDXT(ddsFile, isLinear);
                 if (null != t)
                 {
                     textures[filePath] = t;
@@ -458,7 +462,7 @@ namespace VRtist
             if (File.Exists(filePath))
             {
                 byte[] bytes = System.IO.File.ReadAllBytes(filePath);
-                Texture2D t = LoadTextureFromBuffer(bytes);
+                Texture2D t = LoadTextureFromBuffer(bytes, isLinear);
                 if(null != t)
                 {
                     textures[filePath] = t;
@@ -468,7 +472,7 @@ namespace VRtist
 
             byte[] textureData = new byte[size];
             Buffer.BlockCopy(data, bufferIndex, textureData, 0, size);
-            Texture2D texture = LoadTextureFromBuffer(textureData);
+            Texture2D texture = LoadTextureFromBuffer(textureData, isLinear);
             if(null != texture)
                 textures[filePath] = texture;
 
@@ -498,7 +502,7 @@ namespace VRtist
                 material = materials[name];
             else
             {
-                Shader hdrplit = Shader.Find("HDRP/Autodesk Interactive/AutodeskInteractive");
+                Shader hdrplit = Shader.Find("VRtist/Autodesk Interactive/AutodeskInteractiveNormalMap");
                 material = new Material(hdrplit);
                 material.name = name;
                 material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
@@ -547,7 +551,6 @@ namespace VRtist
             }
 
             string normalTexturePath = GetString(data, currentIndex, out currentIndex);
-            /*
             if (normalTexturePath.Length > 0)
             {
                 if (textures.ContainsKey(normalTexturePath))
@@ -557,8 +560,7 @@ namespace VRtist
                     material.SetTexture("_BumpMap", tex);
                 }
             }
-            */
-
+            
             currentMaterial = material;
         }
 
