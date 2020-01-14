@@ -90,7 +90,7 @@ namespace VRtist
             if (light)
             {
                 new CommandAddGameObject(light).Submit();
-                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * transform.localToWorldMatrix;
+                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.1f, 0.1f, 0.1f));
                 light.transform.localPosition = matrix.GetColumn(3);
                 light.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
                 light.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);

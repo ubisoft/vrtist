@@ -78,11 +78,24 @@ namespace VRtist
             return mesh;
         }
 
-        private void SetPlaneCollider(Transform plane, Vector3 size)
+        private void SetPlaneCollider(Transform plane, Vector3 center, Vector3 size)
         {
             var collider = plane.GetComponent<BoxCollider>();
-            collider.center = Vector3.zero;
+            collider.center = center;
             collider.size = size;
+        }
+
+        private bool LightOrCameraSelected()
+        {
+            foreach (KeyValuePair<int, GameObject> item in Selection.selection)
+            {
+                GameObject gObject = item.Value;
+                if (gObject.GetComponent<LightController>() != null || gObject.GetComponent<CameraController>() != null)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void ComputeSelectionBounds()
@@ -99,15 +112,22 @@ namespace VRtist
             maxBound = Vector3.negativeInfinity;
             bool foundBounds = false;
             int selectionCount = Selection.selection.Count;
-            if(selectionCount == 1)
+
+            bool foundLightOrCamera = false;
+            if (selectionCount == 1)
+            {
+                foundLightOrCamera = LightOrCameraSelected();
+            }
+
+            if (selectionCount == 1 && !foundLightOrCamera)
             {
                 foreach (KeyValuePair<int, GameObject> item in Selection.selection)
-                {
-                    
-                    planesContainer.transform.parent = item.Value.transform.parent;
-                    planesContainer.transform.localPosition = item.Value.transform.localPosition;
-                    planesContainer.transform.localRotation = item.Value.transform.localRotation;
-                    planesContainer.transform.localScale = item.Value.transform.localScale;               
+                {                    
+                    Transform transform = item.Value.GetComponentInChildren<MeshFilter>().transform;
+                    planesContainer.transform.parent = transform.parent;
+                    planesContainer.transform.localPosition = transform.localPosition;
+                    planesContainer.transform.localRotation = transform.localRotation;
+                    planesContainer.transform.localScale = transform.localScale;               
                 }
             }
             else
@@ -124,7 +144,7 @@ namespace VRtist
                 if (null != meshFilter)
                 {
                     Matrix4x4 transform;
-                    if (selectionCount > 1)
+                    if (selectionCount > 1 || foundLightOrCamera)
                     {
                         if (meshFilter.gameObject != item.Value)
                         {
@@ -174,42 +194,44 @@ namespace VRtist
                 return;
             }
 
+
             // Add a small gap getween the object and the bounding box
-            Vector3 minGapBound = minBound - new Vector3(gap, gap, gap);
-            Vector3 maxGapBound = maxBound + new Vector3(gap, gap, gap);
+            float g = (maxBound - minBound).magnitude * gap;
+            Vector3 minGapBound = minBound - new Vector3(g, g, g);
+            Vector3 maxGapBound = maxBound + new Vector3(g, g, g);
 
             Vector3 delta = (maxGapBound - minGapBound) * 0.5f;
 
             // Set planes (depending on their initial rotation)
             // Top
             planes[0].transform.localPosition = new Vector3((maxBound.x + minBound.x) * 0.5f, maxBound.y, (maxBound.z + minBound.z) * 0.5f);
-            planes[0].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-delta.x, gap, -delta.z), new Vector3(-delta.x, gap, delta.z), new Vector3(delta.x, gap, delta.z), new Vector3(delta.x, gap, -delta.z));
-            SetPlaneCollider(planes[0], new Vector3(delta.x * 2f, 0.5f, delta.z * 2f));
+            planes[0].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-delta.x, g, -delta.z), new Vector3(-delta.x, g, delta.z), new Vector3(delta.x, g, delta.z), new Vector3(delta.x, g, -delta.z));
+            SetPlaneCollider(planes[0], new Vector3(0,g,0), new Vector3(delta.x * 2f, g, delta.z * 2f));
 
             // Bottom
             planes[1].transform.localPosition = new Vector3((maxBound.x + minBound.x) * 0.5f, minBound.y, (maxBound.z + minBound.z) * 0.5f);
-            planes[1].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -gap, -delta.z), new Vector3(delta.x, -gap, delta.z), new Vector3(-delta.x, -gap, delta.z), new Vector3(-delta.x, -gap, -delta.z));
-            SetPlaneCollider(planes[1], new Vector3(delta.x * 2f, 0.5f, delta.z * 2f));
+            planes[1].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -g, -delta.z), new Vector3(delta.x, -g, delta.z), new Vector3(-delta.x, -g, delta.z), new Vector3(-delta.x, -g, -delta.z));
+            SetPlaneCollider(planes[1], new Vector3(0, -g, 0), new Vector3(delta.x * 2f, 0.5f, delta.z * 2f));
 
             // Left
             planes[2].transform.localPosition = new Vector3(minBound.x, (maxBound.y + minBound.y) * 0.5f, (maxBound.z + minBound.z) * 0.5f);
-            planes[2].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-gap, -delta.y, -delta.z), new Vector3(-gap, -delta.y, delta.z), new Vector3(-gap, delta.y, delta.z), new Vector3(-gap, delta.y, -delta.z));
-            SetPlaneCollider(planes[2], new Vector3(0.5f, delta.y * 2f, delta.z * 2f));
+            planes[2].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-g, -delta.y, -delta.z), new Vector3(-g, -delta.y, delta.z), new Vector3(-g, delta.y, delta.z), new Vector3(-g, delta.y, -delta.z));
+            SetPlaneCollider(planes[2], new Vector3(-g, 0 , 0), new Vector3(0.5f, delta.y * 2f, delta.z * 2f));
 
             // Right
             planes[3].transform.localPosition = new Vector3(maxBound.x, (maxBound.y + minBound.y) * 0.5f, (maxBound.z + minBound.z) * 0.5f);
-            planes[3].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(gap, delta.y, -delta.z), new Vector3(gap, delta.y, delta.z), new Vector3(gap, -delta.y, delta.z), new Vector3(gap, -delta.y, -delta.z));
-            SetPlaneCollider(planes[3], new Vector3(0.5f, delta.y * 2f, delta.z * 2f));
+            planes[3].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(g, delta.y, -delta.z), new Vector3(g, delta.y, delta.z), new Vector3(g, -delta.y, delta.z), new Vector3(g, -delta.y, -delta.z));
+            SetPlaneCollider(planes[3], new Vector3(g, 0, 0), new Vector3(0.5f, delta.y * 2f, delta.z * 2f));
 
             // Front
             planes[4].transform.localPosition = new Vector3((maxBound.x + minBound.x) * 0.5f, (maxBound.y + minBound.y) * 0.5f, minBound.z);
-            planes[4].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-delta.x, -delta.y,-gap), new Vector3(-delta.x, delta.y, -gap), new Vector3(delta.x, delta.y, -gap), new Vector3(delta.x, -delta.y, -gap));
-            SetPlaneCollider(planes[4], new Vector3(delta.x * 2f, delta.y * 2f, 0.5f));
+            planes[4].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-delta.x, -delta.y,-g), new Vector3(-delta.x, delta.y, -g), new Vector3(delta.x, delta.y, -g), new Vector3(delta.x, -delta.y, -g));
+            SetPlaneCollider(planes[4], new Vector3(0, 0, -g), new Vector3(delta.x * 2f, delta.y * 2f, 0.5f));
 
             // Back
             planes[5].transform.localPosition = new Vector3((maxBound.x + minBound.x) * 0.5f, (maxBound.y + minBound.y) * 0.5f, maxBound.z);
-            planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, gap), new Vector3(delta.x, delta.y, gap), new Vector3(-delta.x, delta.y, gap), new Vector3(-delta.x, -delta.y, gap));
-            SetPlaneCollider(planes[5], new Vector3(delta.x * 2f, delta.y * 2f, 0.5f));
+            planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, g), new Vector3(delta.x, delta.y, g), new Vector3(-delta.x, delta.y, g), new Vector3(-delta.x, -delta.y, g));
+            SetPlaneCollider(planes[5], new Vector3(0, 0, g), new Vector3(delta.x * 2f, delta.y * 2f, 0.5f));
 
             planesContainer.SetActive(true);
         }
@@ -222,7 +244,7 @@ namespace VRtist
             controllerPosition = transform.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
-            controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer
+            controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer)
             controllerPosition = initPlaneContainerMatrix.MultiplyPoint(controllerPosition);            // back to absolute coordinates
             return controllerPosition;
         }
@@ -266,7 +288,15 @@ namespace VRtist
                 float scaleFactor = magnitude / initMagnitude;
 
                 Vector3 scale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
-                bool scaleAll = Selection.selection.Count != 1 || scaleAllAxis;
+                
+                int selectionCount = Selection.selection.Count;
+                bool foundLightOrCamera = false;
+                if (selectionCount == 1)
+                {
+                    foundLightOrCamera = LightOrCameraSelected();
+                }
+
+                bool scaleAll = Selection.selection.Count != 1 || foundLightOrCamera || scaleAllAxis;
                 if (!scaleAll)
                 {
                     scale = new Vector3(activePlane.direction.x == 0f ? 1f : scale.x,
