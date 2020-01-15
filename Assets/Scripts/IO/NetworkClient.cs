@@ -57,6 +57,8 @@ namespace VRtist
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
         public static Dictionary<string, Material[]> meshesMaterials = new Dictionary<string, Material[]>();
         public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
+
+        public static Dictionary<string, byte[]> textureData = new Dictionary<string, byte[]>();
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static HashSet<string> texturesFlipY = new HashSet<string>();
 
@@ -369,8 +371,12 @@ namespace VRtist
             int bufferIndex = 0;
             string path = GetString(data, 0, out bufferIndex);
 
-            int size = 0;
-            LoadTexture(path, data, ref bufferIndex);            
+            int size = GetInt(data, ref bufferIndex);
+
+            byte[] buffer = new byte[size];
+            Buffer.BlockCopy(data, bufferIndex, buffer, 0, size);
+
+            textureData[path] = buffer;
         }
 
         public static Material DefaultMaterial()
@@ -433,20 +439,26 @@ namespace VRtist
             return tex;
         }
 
-        public static Texture2D LoadTexture(string filePath, byte[] data, ref int bufferIndex)
+        public static Texture2D GetTexture(string filePath, bool isLinear)
         {
-            int size = GetInt(data, ref bufferIndex);
-
-            if (textures.ContainsKey(filePath))
+            if(textureData.ContainsKey(filePath))
+            {
+                byte[] data = textureData[filePath];
+                textureData.Remove(filePath);
+                return LoadTexture(filePath, data, isLinear);
+            }
+            if(textures.ContainsKey(filePath))
+            {
                 return textures[filePath];
+            }
+            return null;
+        }
 
+        public static Texture2D LoadTexture(string filePath, byte[] data, bool isLinear)
+        {
             string directory = Path.GetDirectoryName(filePath);
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
-            bool isNormalMap = withoutExtension.EndsWith("_Normal");
-            bool isRoughnessMap = withoutExtension.EndsWith("_Roughness");
-            bool isMetalnessMap = withoutExtension.EndsWith("_Metalness");
-            bool isLinear = isNormalMap || isRoughnessMap || isMetalnessMap;
 
             if (File.Exists(ddsFile))
             {
@@ -470,17 +482,14 @@ namespace VRtist
                 }
             }
 
-            byte[] textureData = new byte[size];
-            Buffer.BlockCopy(data, bufferIndex, textureData, 0, size);
-            Texture2D texture = LoadTextureFromBuffer(textureData, isLinear);
+            Texture2D texture = LoadTextureFromBuffer(data, isLinear);
             if(null != texture)
                 textures[filePath] = texture;
-
             try
             {
                 using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                 {
-                    fs.Write(textureData, 0, size);
+                    fs.Write(data, 0, data.Length);
                 }
             }
             catch
@@ -504,8 +513,7 @@ namespace VRtist
             {
                 Shader hdrplit = Shader.Find("VRtist/Autodesk Interactive/AutodeskInteractiveNormalMap");
                 material = new Material(hdrplit);
-                material.name = name;
-                material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
+                material.name = name;                
                 materials[name] = material;
             }
 
@@ -514,11 +522,13 @@ namespace VRtist
             string baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
             if (baseColorTexturePath.Length > 0)
             {
-                if(textures.ContainsKey(baseColorTexturePath))
+                Texture2D tex = GetTexture(baseColorTexturePath, false);
+                if(tex != null)
                 {
                     material.SetFloat("_UseColorMap", 1f);
-                    Texture2D tex = textures[baseColorTexturePath];
-                    material.SetTexture("_MainTex", tex);                                            
+                    material.SetTexture("_MainTex", tex);
+                    if(texturesFlipY.Contains(baseColorTexturePath))
+                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
                 }
 
             }
@@ -528,11 +538,13 @@ namespace VRtist
             string metallicTexturePath = GetString(data, currentIndex, out currentIndex);
             if (metallicTexturePath.Length > 0)
             {
-                if (textures.ContainsKey(metallicTexturePath))
+                Texture2D tex = GetTexture(metallicTexturePath, true);
+                if (tex != null)
                 {
                     material.SetFloat("_UseMetallicMap", 1f);
-                    Texture2D tex = textures[metallicTexturePath];
                     material.SetTexture("_MetallicGlossMap", tex);
+                    if (texturesFlipY.Contains(metallicTexturePath))
+                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
                 }
             }
 
@@ -542,22 +554,26 @@ namespace VRtist
             string roughnessTexturePath = GetString(data, currentIndex, out currentIndex);
             if (roughnessTexturePath.Length > 0)
             {
-                if (textures.ContainsKey(roughnessTexturePath))
+                Texture2D tex = GetTexture(roughnessTexturePath, true);
+                if (tex != null)
                 {
                     material.SetFloat("_UseRoughnessMap", 1f);
-                    Texture2D tex = textures[roughnessTexturePath];
                     material.SetTexture("_SpecGlossMap", tex);
+                    if (texturesFlipY.Contains(roughnessTexturePath))
+                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
                 }
             }
 
             string normalTexturePath = GetString(data, currentIndex, out currentIndex);
             if (normalTexturePath.Length > 0)
             {
-                if (textures.ContainsKey(normalTexturePath))
+                Texture2D tex = GetTexture(normalTexturePath, true);
+                if (tex != null)
                 {
                     material.SetFloat("_UseNormalMap", 1f);                    
-                    Texture2D tex = textures[normalTexturePath];
                     material.SetTexture("_BumpMap", tex);
+                    if (texturesFlipY.Contains(normalTexturePath))
+                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
                 }
             }
             
