@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6165141859724228006}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Rotate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 1108240311014929502}
   - component: {fileID: 8421537020558574061}
   - component: {fileID: 9012225188337701162}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -243,7 +243,7 @@ GameObject:
   - component: {fileID: 1862806351537794285}
   - component: {fileID: 1204138857207612560}
   - component: {fileID: 1427717318856244946}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Spot
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -405,7 +405,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 14474906ca4e0e24492a64f3e3ef92e6,
         type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 14474906ca4e0e24492a64f3e3ef92e6, type: 3}

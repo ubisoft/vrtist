@@ -12,7 +12,9 @@ namespace VRtist
         public GameObject planesContainer;
         public float gap = 0.0f;
         public SelectorTrigger selectorTrigger;
-        public bool scaleAllAxis = false;
+
+        public UICheckbox uniformScaleCheckbox = null;
+        public bool uniformScale = false;
 
         private Matrix4x4 initPlaneContainerMatrix;
         private Matrix4x4 initInversePlaneContainerMatrix;
@@ -33,7 +35,7 @@ namespace VRtist
 
         void OnEnable()
         {
-            planesContainer.SetActive(true);
+            planesContainer.SetActive(false);
         }
 
         private void OnDisable()
@@ -52,6 +54,11 @@ namespace VRtist
             SetActivePLane(null);
 
             ManageMoveObjectsUndo();
+        }
+
+        public void OnUniformScale(bool value)
+        {
+            uniformScale = value;
         }
 
         private Mesh CreatePlaneMesh(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
@@ -249,6 +256,36 @@ namespace VRtist
             return controllerPosition;
         }
 
+        private GameObject UIObject = null;
+        public void SetGrabbedObject(GameObject gObject)
+        {
+            UIObject = gObject;
+        }
+
+        protected override void DoUpdateGui()
+        {
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
+            {
+                if (UIObject)
+                {
+                    GameObject newObject = GameObject.Instantiate(UIObject);
+                    newObject.transform.parent = world.transform;
+
+                    new CommandAddGameObject(newObject).Submit();
+
+                    Matrix4x4 matrix = world.worldToLocalMatrix * transform.localToWorldMatrix /** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
+                    newObject.transform.localPosition = matrix.GetColumn(3);
+                    newObject.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+                    newObject.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude) * 0.1f;
+
+                    ClearSelection();
+                    AddToSelection(newObject);
+                }
+                OnStartGrip();
+            }, OnEndGrip);
+        }
+
+
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
             // Base selection update
@@ -296,7 +333,7 @@ namespace VRtist
                     foundLightOrCamera = LightOrCameraSelected();
                 }
 
-                bool scaleAll = Selection.selection.Count != 1 || foundLightOrCamera || scaleAllAxis;
+                bool scaleAll = Selection.selection.Count != 1 || foundLightOrCamera || uniformScale;
                 if (!scaleAll)
                 {
                     scale = new Vector3(activePlane.direction.x == 0f ? 1f : scale.x,

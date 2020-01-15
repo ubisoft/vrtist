@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6492189398179255611}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Rotate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 5786331652696777689}
   - component: {fileID: 5585943874075207522}
   - component: {fileID: 1574321972198940561}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Camera
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -108,6 +108,8 @@ MonoBehaviour:
   parameters:
     id: 11
     focal: 35
+    near: 0.07
+    far: 1000
 --- !u!1 &5786331654063983168
 GameObject:
   m_ObjectHideFlags: 0
@@ -120,7 +122,7 @@ GameObject:
   - component: {fileID: 5786331654063983171}
   - component: {fileID: 1373324472866382820}
   - component: {fileID: 5786331652379776902}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -403,7 +405,7 @@ GameObject:
   - component: {fileID: 5786331654409117919}
   - component: {fileID: 5786331654409117857}
   - component: {fileID: 5786331654409117856}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: CameraPreview
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -561,7 +563,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: e24916ea58c49754888ed74bc29af2c8,
         type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e24916ea58c49754888ed74bc29af2c8, type: 3}

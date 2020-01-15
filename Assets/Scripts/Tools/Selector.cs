@@ -12,6 +12,9 @@ namespace VRtist
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
 
+        [SerializeField] private bool displayGizmos = true;
+        public UICheckbox displayGizmosCheckbox = null;
+
         float selectorRadius = 0.03f;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
         protected Color eraseColor = new Color(1f, 0f, 0f);
@@ -36,6 +39,26 @@ namespace VRtist
         void Start()
         {
             Init();
+        }
+
+        public void SetDisplayGizmos(bool value)
+        {
+            displayGizmos = value;
+            LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
+            foreach(LightController lightController in lightControllers)
+            {
+                lightController.gameObject.GetComponentInChildren<MeshFilter>(true).gameObject.SetActive(value);
+            }
+        }
+
+        public bool DisplayGizmos()
+        {
+            return displayGizmos;
+        }
+
+        private void OnEnable()
+        {
+            displayGizmosCheckbox.Checked = displayGizmos;
         }
 
         protected void Init()

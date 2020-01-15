@@ -75,6 +75,8 @@ namespace VRtist
         static private void CopyChildColliderTo(GameObject child, GameObject go)
         {
             SphereCollider childColl = child.GetComponent<SphereCollider>();
+            if (null == childColl)
+                return;
             SphereCollider parentColl = go.GetComponent<SphereCollider>();
             if (parentColl == null)
             {

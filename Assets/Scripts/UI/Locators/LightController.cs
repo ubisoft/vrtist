@@ -59,7 +59,7 @@ namespace VRtist
             }
 
             // avoid flicking
-            lightObject.transform.localScale = new Vector3(1f / world.localScale.x, 1f / world.localScale.x, 1f / world.localScale.x);
+            lightObject.transform.localScale = new Vector3(1f / world.localScale.x, 1f / world.localScale.x, 1f / world.localScale.x);            
         }
     }
 
