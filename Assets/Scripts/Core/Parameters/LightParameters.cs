@@ -22,7 +22,7 @@ namespace VRtist
         [JsonProperty("minIntensity")]
         public float minIntensity = 0f;
         [JsonProperty("maxIntensity")]
-        public float maxIntensity = 10f;
+        public float maxIntensity = 100f;
         [JsonProperty("color")]
         public Color color = Color.white;
         [JsonProperty("castShadows")]
@@ -33,7 +33,7 @@ namespace VRtist
 
         public virtual float GetRange() { return 1f; }
         public virtual float GetMinRange() { return 0f; }
-        public virtual float GetMaxRange() { return 10f; }
+        public virtual float GetMaxRange() { return 100f; }
 
         public virtual float GetNear() { return 0.01f; }
         public virtual float GetInnerAngle() { return 30f; }

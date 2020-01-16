@@ -31,6 +31,10 @@ namespace VRtist
         void Start()
         {
             Init();
+
+            // Create tooltips
+            CreateTooltips();
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Deform");
         }
 
         void OnEnable()

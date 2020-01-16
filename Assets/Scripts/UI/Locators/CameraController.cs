@@ -12,6 +12,8 @@ namespace VRtist
         private Transform world;
         private Camera cameraObject = null;
 
+        bool firstTime = true;
+
         // Start is called before the first frame update
         void Awake()
         {
@@ -32,6 +34,12 @@ namespace VRtist
             float scale = world.localScale.x;
             cameraObject.farClipPlane = parameters.far * scale;
             cameraObject.nearClipPlane = parameters.near * scale;
+
+            /*
+            bool isSelected = Selection.IsSelected(gameObject);
+            cameraObject.enabled = isSelected || firstTime;
+            firstTime = false;
+            */
         }
     }
 }

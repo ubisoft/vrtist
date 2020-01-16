@@ -42,21 +42,11 @@ namespace VRtist
 
             brushSize = paintBrush.localScale.x;
             OnPaintColor(paintColor);
-
-            /*
-            Transform picker = panel.Find("Picker 2.0");
-            ColorPickerControl pickerControl = picker.GetComponent<ColorPickerControl>();
-            pickerControl.CurrentColor = new Color(0.25f, 0.25f, 1f);
-            */
-
+            
             // Create tooltips
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Trigger");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Primary, "Primary");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Secondary");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Joystick left / right");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Grip");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Pointer, "Pointer");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.System, "The System Button");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Draw");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Brush Size");
         }
 
         protected override void DoUpdate(Vector3 position, Quaternion rotation)

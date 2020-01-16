@@ -388,7 +388,7 @@ namespace VRtist
             Shader hdrplit = Shader.Find("HDRP/Lit");
             Material material = new Material(hdrplit);
             material.name = name;
-            material.SetColor("_BaseColor", new Color(0.8f,0.8f,0.8f));
+            material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
             material.SetFloat("_Metallic", 0.0f);
             material.SetFloat("_Smoothness", 0.5f);
             materials[name] = material;
@@ -506,19 +506,44 @@ namespace VRtist
             int currentIndex = 0;
 
             string name = GetString(data, currentIndex, out currentIndex);
+            float opacity = GetFloat(data, ref currentIndex);
+            string opacityTexturePath = GetString(data, currentIndex, out currentIndex);
+
             Material material;
             if (materials.ContainsKey(name))
                 material = materials[name];
             else
             {
-                Shader hdrplit = Shader.Find("VRtist/Autodesk Interactive/AutodeskInteractiveNormalMap");
-                material = new Material(hdrplit);
-                material.name = name;                
+                Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
+                    ? Shader.Find("VRtist/BlenderImportTransparent")
+                    : Shader.Find("VRtist/BlenderImport");
+                material = new Material(importShader);
+                material.name = name;
+                material.enableInstancing = true;
                 materials[name] = material;
             }
 
+            //
+            // OPACITY
+            //
+            material.SetFloat("_Opacity", opacity);
+            if (opacityTexturePath.Length > 0)
+            {
+                Texture2D tex = GetTexture(opacityTexturePath, true);
+                if (tex != null)
+                {
+                    material.SetFloat("_UseOpacityMap", 1f);
+                    material.SetTexture("_OpacityMap", tex);
+                    if (texturesFlipY.Contains(opacityTexturePath))
+                        material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
+                }
+            }
+
+            //
+            // BASE COLOR
+            //
             Color baseColor = GetColor(data, ref currentIndex);
-            material.SetColor("_Color", baseColor);
+            material.SetColor("_BaseColor", baseColor);
             string baseColorTexturePath = GetString(data, currentIndex, out currentIndex);
             if (baseColorTexturePath.Length > 0)
             {
@@ -526,13 +551,16 @@ namespace VRtist
                 if(tex != null)
                 {
                     material.SetFloat("_UseColorMap", 1f);
-                    material.SetTexture("_MainTex", tex);
+                    material.SetTexture("_ColorMap", tex);
                     if(texturesFlipY.Contains(baseColorTexturePath))
-                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
+                        material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
 
             }
 
+            //
+            // METALLIC
+            //
             float metallic = GetFloat(data, ref currentIndex);
             material.SetFloat("_Metallic", metallic);
             string metallicTexturePath = GetString(data, currentIndex, out currentIndex);
@@ -542,15 +570,17 @@ namespace VRtist
                 if (tex != null)
                 {
                     material.SetFloat("_UseMetallicMap", 1f);
-                    material.SetTexture("_MetallicGlossMap", tex);
+                    material.SetTexture("_MetallicMap", tex);
                     if (texturesFlipY.Contains(metallicTexturePath))
-                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
+                        material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
 
-
+            //
+            // ROUGHNESS
+            //
             float roughness = GetFloat(data, ref currentIndex);
-            material.SetFloat("_Glossiness", roughness);
+            material.SetFloat("_Roughness", roughness);
             string roughnessTexturePath = GetString(data, currentIndex, out currentIndex);
             if (roughnessTexturePath.Length > 0)
             {
@@ -558,12 +588,15 @@ namespace VRtist
                 if (tex != null)
                 {
                     material.SetFloat("_UseRoughnessMap", 1f);
-                    material.SetTexture("_SpecGlossMap", tex);
+                    material.SetTexture("_RoughnessMap", tex);
                     if (texturesFlipY.Contains(roughnessTexturePath))
-                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
+                        material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
 
+            //
+            // NORMAL
+            //
             string normalTexturePath = GetString(data, currentIndex, out currentIndex);
             if (normalTexturePath.Length > 0)
             {
@@ -571,9 +604,9 @@ namespace VRtist
                 if (tex != null)
                 {
                     material.SetFloat("_UseNormalMap", 1f);                    
-                    material.SetTexture("_BumpMap", tex);
+                    material.SetTexture("_NormalMap", tex);
                     if (texturesFlipY.Contains(normalTexturePath))
-                        material.SetVector("_UvTiling", new Vector4(1, -1, 0, 0));
+                        material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
             
@@ -692,6 +725,8 @@ namespace VRtist
         public static NetCommand BuildMaterialCommand(Material material)
         {            
             byte[] name = StringToBytes(material.name);
+            byte[] opacity = FloatToBytes(material.GetFloat("_Opacity"));
+            byte[] opacityMapTexture = StringToBytes("");
             byte[] baseColor = ColorToBytes(material.GetColor("_BaseColor"));
             byte[] baseColorTexture = StringToBytes("");
             byte[] metallic = FloatToBytes(material.GetFloat("_Metallic"));
@@ -700,7 +735,7 @@ namespace VRtist
             byte[] roughnessTexture = StringToBytes("");
             byte[] normalMapTexture = StringToBytes("");
             
-            List<byte[]> buffers = new List<byte[]> { name, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture };
+            List<byte[]> buffers = new List<byte[]> { name, opacity, opacityMapTexture, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Material);
             return command;
         }
@@ -989,7 +1024,7 @@ namespace VRtist
                         lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform);
                         break;
                 }
-                lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
+                //lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 lightGameObject.name = name;
             }
             else

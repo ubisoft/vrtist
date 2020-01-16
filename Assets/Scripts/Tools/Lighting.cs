@@ -26,6 +26,8 @@ namespace VRtist
         private Transform enableCheckbox;
 
         private GameObject UIObject = null;
+
+        private UIColorPicker colorPicker = null;
         void DisableUI()
         {
             picker.gameObject.SetActive(false);
@@ -47,6 +49,7 @@ namespace VRtist
             switchToSelectionEnabled = false;
 
             picker = panel.Find("ColorPicker");
+            colorPicker = picker.GetComponent<UIColorPicker>();
             intensitySlider = panel.Find("Intensity");
             rangeSlider = panel.Find("Range");
             //innerAngleSlider = panel.Find("InnerAngle");
@@ -57,6 +60,8 @@ namespace VRtist
             DisableUI();
 
             Selection.OnSelectionChanged += OnSelectionChanged;
+
+            CreateTooltips();
         }
 
 
@@ -92,7 +97,7 @@ namespace VRtist
                 new CommandAddGameObject(light).Submit();
                 Matrix4x4 matrix = parentContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.1f, 0.1f, 0.1f));
                 light.transform.localPosition = matrix.GetColumn(3);
-                light.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+                light.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
                 light.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
 
                 ClearSelection();
@@ -221,15 +226,8 @@ namespace VRtist
                 GameObject gobject = data.Value;
                 LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
 
-                /*
-                ColorPickerControl pickerControl = picker.GetComponent<ColorPickerControl>();
-                pickerControl.blockSignals = true;
-                pickerControl.CurrentColor = lightingParameters.color;
-                pickerControl.blockSignals = false;
-                */
-
-                // TODO: put min/max for each slider in LightParameters
-
+                colorPicker.SetPickedColor(lightingParameters.color);
+                
                 SetSliderValues(intensitySlider, lightingParameters.intensity, lightingParameters.minIntensity, lightingParameters.maxIntensity);
                 SetSliderValues(rangeSlider, lightingParameters.GetRange(), lightingParameters.GetMinRange(), lightingParameters.GetMaxRange());
                 //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
@@ -243,6 +241,13 @@ namespace VRtist
             }
         }
 
+        public void SendLightParams(GameObject light)
+        {
+            LightInfo lightInfo = new LightInfo();
+            lightInfo.transform = light.transform;
+            CommandManager.SendEvent(MessageType.Light, lightInfo);
+        }
+
         public void OnLightColor(Color color)
         {
             // update selection light color from UI
@@ -252,6 +257,8 @@ namespace VRtist
                 LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
                 if (lightingParameters != null)
                     lightingParameters.color = color;
+
+                SendLightParams(gobject);
             }
         }
 
@@ -284,6 +291,8 @@ namespace VRtist
                         light.gameObject.SetActive(value);
                     }
                 }
+
+                SendLightParams(gobject);
             }
         }
 
@@ -324,6 +333,7 @@ namespace VRtist
                     if (param == "InnerAngle")
                         lightingParameters.SetInnerAngle(value);
                 }
+                SendLightParams(gobject);
             }
         }
     }

@@ -43,7 +43,6 @@ namespace VRtist
         }
 
         public float deadZone = 0.8f;
-        private float frameScaleFactor = 1.03f;
 
         private Transform controller;
         private Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
@@ -82,6 +81,10 @@ namespace VRtist
             focalSlider = panel.Find("Focal");
             DisableUI();
             Selection.OnSelectionChanged += OnSelectionChanged;
+
+            // Create tooltips
+            CreateTooltips();
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Zoom");
         }
 
         void UpdateText()
@@ -97,15 +100,16 @@ namespace VRtist
             List<Camera> cameras = SelectedCameras();
             if (cameras.Count > 0)
             {
+
                 float far = Camera.main.farClipPlane * 0.8f;
                 backgroundFeedback.position = position + direction.normalized * far;
                 backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
                 float scale = far * Mathf.Tan(Mathf.Deg2Rad * Camera.main.fieldOfView * 0.5f) * 0.5f * cameraFeedbackScale;
 
-                Camera cam = cameras[0];
+                Camera cam = cameras[0].GetComponentInChildren<Camera>();
                 backgroundFeedback.gameObject.SetActive(true);
                 backgroundFeedback.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
-                backgroundFeedback.localScale = new Vector3(scale * cameras[0].aspect, scale, scale);
+                backgroundFeedback.localScale = new Vector3(scale * cam.aspect, scale, scale);
             }
             else
             {
@@ -144,10 +148,24 @@ namespace VRtist
             List<Camera> selectedCameras = new List<Camera>();
             foreach (var selectedItem in selection)
             {
-                Camera cam = selectedItem.GetComponentInChildren<Camera>();               
+                Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
                     continue;
                 selectedCameras.Add(cam);
+            }
+            return selectedCameras;
+        }
+
+        private List<GameObject> SelectedCameraObjects()
+        {
+            var selection = Selection.selection.Values;
+            List<GameObject> selectedCameras = new List<GameObject>();
+            foreach (var selectedItem in selection)
+            {
+                Camera cam = selectedItem.GetComponentInChildren<Camera>();               
+                if (!cam)
+                    continue;
+                selectedCameras.Add(selectedItem);
             }
             return selectedCameras;
         }
@@ -180,6 +198,14 @@ namespace VRtist
            });
         }
 
+        public void SendCameraParams(GameObject camera)
+        {
+            CameraInfo cameraInfo = new CameraInfo();
+            cameraInfo.transform = camera.transform;
+            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+        }
+
+
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
             // Update feedback position and scale
@@ -205,8 +231,9 @@ namespace VRtist
             if (!feedbackPositioning)
             {
                 Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                foreach (Camera cam in SelectedCameras())
+                foreach (GameObject camObject in SelectedCameraObjects())
                 {
+                    Camera cam = camObject.GetComponentInChildren<Camera>();
                     if (Mathf.Abs(val.x) > deadZone && Mathf.Abs(val.y) <= deadZone)
                     {
                         float fov = cam.fieldOfView - val.x * zoomSpeed;
@@ -222,11 +249,12 @@ namespace VRtist
                             Focal = 300;
                             ComputeFOV(cam);
                         }
+                        SendCameraParams(camObject);
                     }
                     else
                     {
                         ComputeFocal(cam);
-                    }
+                    }                    
                 }
             }
 

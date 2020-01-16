@@ -9,7 +9,7 @@ namespace VRtist
         public SunLightParameters()
         {
             lightType = LightType.Sun;
-            intensity = 3.0f;
+            intensity = 10.0f;
             minIntensity = 0.0f;
             maxIntensity = 100.0f;
         }

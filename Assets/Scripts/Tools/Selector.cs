@@ -15,7 +15,7 @@ namespace VRtist
         [SerializeField] private bool displayGizmos = true;
         public UICheckbox displayGizmosCheckbox = null;
 
-        float selectorRadius = 0.03f;
+        float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
         protected Color eraseColor = new Color(1f, 0f, 0f);
 
@@ -39,6 +39,17 @@ namespace VRtist
         void Start()
         {
             Init();
+            CreateTooltips();
+        }
+
+        protected void CreateTooltips()
+        {
+            // Create tooltips
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Primary, "Duplicate");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch Tool");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
+            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
         }
 
         public void SetDisplayGizmos(bool value)
@@ -63,8 +74,8 @@ namespace VRtist
 
         protected void Init()
         {
+            selectorRadius = selectorBrush.localScale.x;
             selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
-            selectorBrush.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
             updateButtonsColor();
             Selection.selectionMaterial = selectionMaterial;
             Selection.OnSelectionChanged += OnSelectionChanged;

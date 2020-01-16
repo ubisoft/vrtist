@@ -12,14 +12,14 @@ namespace VRtist
         [JsonProperty("minRange")]
         public float minRange = 0f;
         [JsonProperty("maxRange")]
-        public float maxRange = 10f;
+        public float maxRange = 100f;
 
         public PointLightParameters()
         {
             lightType = LightType.Point;
-            intensity = 2.0f;
+            intensity = 10.0f;
             minIntensity = 0.0f;
-            maxIntensity = 10.0f;
+            maxIntensity = 100.0f;
         }
 
         public override LightType GetLightType() { return LightType.Point; }

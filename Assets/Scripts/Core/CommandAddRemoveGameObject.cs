@@ -69,6 +69,7 @@ namespace VRtist
             CameraInfo cameraInfo = new CameraInfo();
             cameraInfo.transform = gObject.transform;
             CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+            CommandManager.SendEvent(MessageType.Transform, gObject.transform);
         }
 
         protected void SendMesh()
