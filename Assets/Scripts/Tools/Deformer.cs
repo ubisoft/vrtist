@@ -7,7 +7,7 @@ namespace VRtist
 {
     public class Deformer : Selector
     {
-        public Transform world;
+        public Transform container;
         public Transform[] planes;
         public GameObject planesContainer;
         public float gap = 0.0f;
@@ -143,7 +143,7 @@ namespace VRtist
             }
             else
             {
-                planesContainer.transform.parent = world;
+                planesContainer.transform.parent = container;
                 planesContainer.transform.localPosition = Vector3.zero;
                 planesContainer.transform.localRotation = Quaternion.identity;
                 planesContainer.transform.localScale = Vector3.one;
@@ -159,11 +159,11 @@ namespace VRtist
                     {
                         if (meshFilter.gameObject != item.Value)
                         {
-                            transform = world.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
+                            transform = container.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
                         }
                         else
                         {
-                            transform = world.worldToLocalMatrix * item.Value.transform.localToWorldMatrix;
+                            transform = container.worldToLocalMatrix * item.Value.transform.localToWorldMatrix;
                         }
                     }
                     else
@@ -273,11 +273,11 @@ namespace VRtist
                 if (UIObject)
                 {
                     GameObject newObject = GameObject.Instantiate(UIObject);
-                    newObject.transform.parent = world.transform;
+                    newObject.transform.parent = container.transform;
 
                     new CommandAddGameObject(newObject).Submit();
 
-                    Matrix4x4 matrix = world.worldToLocalMatrix * transform.localToWorldMatrix /** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
+                    Matrix4x4 matrix = container.worldToLocalMatrix * transform.localToWorldMatrix /** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
                     newObject.transform.localPosition = matrix.GetColumn(3);
                     newObject.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
                     newObject.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude) * 0.1f;

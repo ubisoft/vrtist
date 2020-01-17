@@ -101,7 +101,7 @@ namespace VRtist
             if (cameras.Count > 0)
             {
 
-                float far = Camera.main.farClipPlane * 0.8f;
+                float far = Camera.main.farClipPlane * 0.7f;
                 backgroundFeedback.position = position + direction.normalized * far;
                 backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
                 float scale = far * Mathf.Tan(Mathf.Deg2Rad * Camera.main.fieldOfView * 0.5f) * 0.5f * cameraFeedbackScale;

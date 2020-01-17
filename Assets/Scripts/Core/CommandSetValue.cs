@@ -8,10 +8,41 @@ namespace VRtist
     public class CommandSetValue<T> : ICommand
     {
         Dictionary<int, T> oldValues = new Dictionary<int, T>();
+
         T newValue;
         string objectPath;
         string componentName;
         string fieldName;
+
+        public T GetValue(Component component, string fieldName)
+        {
+            object inst = component;
+            string[] fields = fieldName.Split('.');
+
+            FieldInfo fieldInfo = component.GetType().GetField(fields[0]);
+
+            for (int i = 1; i < fields.Length; i++)
+            {
+                inst = fieldInfo.GetValue(inst);
+                fieldInfo = fieldInfo.FieldType.GetField(fields[i]);
+            }
+            return (T)fieldInfo.GetValue(inst);
+        }
+
+        public void SetValue(Component component, string fieldName, T value)
+        {
+            object inst = component;
+            string[] fields = fieldName.Split('.');
+
+            FieldInfo fieldInfo = component.GetType().GetField(fields[0]);
+
+            for (int i = 1; i < fields.Length; i++)
+            {
+                inst = fieldInfo.GetValue(inst);
+                fieldInfo = fieldInfo.FieldType.GetField(fields[i]);
+            }
+            fieldInfo.SetValue(inst, value);
+        }
 
         public CommandSetValue(string commandName, string propertyPath)
         {
@@ -23,8 +54,16 @@ namespace VRtist
                 GameObject gObject = objectPath.Length > 0 ? selectedItem.Value.transform.Find(objectPath).gameObject : selectedItem.Value;
                 Component component = gObject.GetComponent(componentName);
 
-                FieldInfo fieldInfo = component.GetType().GetField(fieldName);
-                oldValues[selectedItem.Key] = (T)fieldInfo.GetValue(component);
+                if (null == component)
+                    continue;
+
+                oldValues[selectedItem.Key] = GetValue(component, fieldName);
+                /*
+                FieldInfo fieldInfo = component.GetType().GetField("parameters");
+                var inst = fieldInfo.GetValue(component);
+                fieldInfo = fieldInfo.FieldType.GetField("intensity");
+                T val = (T)fieldInfo.GetValue(inst);
+                */
             }
         }
 
@@ -34,9 +73,10 @@ namespace VRtist
             {
                 GameObject gObject = objectPath.Length > 0 ? selectedItem.Value.transform.Find(objectPath).gameObject : selectedItem.Value;
                 Component component = gObject.GetComponent(componentName);
-                FieldInfo fieldInfo = component.GetType().GetField(fieldName);
+                if (null == component)
+                    continue;
 
-                newValue = (T)fieldInfo.GetValue(component);
+                newValue = GetValue(component, fieldName);
                 break;
             }
 
@@ -50,8 +90,7 @@ namespace VRtist
                 GameObject selectedGameObject = Selection.selection[keyValuePair.Key];
                 GameObject gObject = objectPath.Length > 0 ? selectedGameObject.transform.Find(objectPath).gameObject : selectedGameObject;
                 Component component = gObject.GetComponent(componentName);
-                FieldInfo fieldInfo = component.GetType().GetField(fieldName);
-                fieldInfo.SetValue(component, keyValuePair.Value);
+                SetValue(component, fieldName, keyValuePair.Value);
             }
             //OnValueChange();
         }
@@ -62,9 +101,7 @@ namespace VRtist
                 GameObject selectedGameObject = selectedItem.Value;
                 GameObject gObject = objectPath.Length > 0 ? selectedGameObject.transform.Find(objectPath).gameObject : selectedGameObject;
                 Component component = gObject.GetComponent(componentName);
-                FieldInfo fieldInfo = component.GetType().GetField(fieldName);
-
-                fieldInfo.SetValue(component, newValue);
+                SetValue(component, fieldName, newValue);
             }
             //OnValueChange();
         }

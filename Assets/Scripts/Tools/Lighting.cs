@@ -62,8 +62,8 @@ namespace VRtist
             Selection.OnSelectionChanged += OnSelectionChanged;
 
             CreateTooltips();
+            OnSelectionChanged(null, null);
         }
-
 
         public override void OnUIObjectEnter(int gohash)
         {
@@ -207,19 +207,7 @@ namespace VRtist
 
             castShadowsCheckbox.gameObject.SetActive(true);
             enableCheckbox.gameObject.SetActive(true);
-
-            /*
-            if (sunCount > 0)
-            {
-                intensitySlider.GetComponent<SliderComp>().MinValue = 0f;
-                intensitySlider.GetComponent<SliderComp>().MaxValue = 10f;
-            }
-            else
-            {
-                intensitySlider.GetComponent<SliderComp>().MinValue = 0f;
-                intensitySlider.GetComponent<SliderComp>().MaxValue = 10000f;
-            }
-            */
+           
 
             foreach (KeyValuePair<int, GameObject> data in selectedLights)
             {
@@ -293,6 +281,21 @@ namespace VRtist
                 }
 
                 SendLightParams(gobject);
+            }
+        }
+
+        private CommandSetValue<float> intensityCommand = null;
+        public void OnIntensitySliderPressed()
+        {
+            intensityCommand = new CommandSetValue<float>("Light Intensity", "/LightController/parameters.intensity");
+        }
+
+        public void OnIntensitySliderReleased()
+        {
+            if(null != intensityCommand)
+            {
+                intensityCommand.Submit();
+                intensityCommand = null;
             }
         }
 

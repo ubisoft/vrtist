@@ -12,7 +12,7 @@ namespace VRtist
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
 
-        [SerializeField] private bool displayGizmos = true;
+        static protected bool displayGizmos = true;
         public UICheckbox displayGizmosCheckbox = null;
 
         float selectorRadius;
@@ -188,6 +188,12 @@ namespace VRtist
         }
         protected void OnEndGrip()
         {
+            foreach (var item in Selection.selection)
+            {
+                MeshFilter meshFilter = item.Value.GetComponentInChildren<MeshFilter>(true);
+                if(null != meshFilter)
+                    meshFilter.gameObject.SetActive(displayGizmos);
+            }
             ManageMoveObjectsUndo();
             undoGroup.Submit();
             undoGroup = null;

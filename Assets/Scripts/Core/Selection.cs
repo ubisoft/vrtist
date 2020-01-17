@@ -81,7 +81,11 @@ namespace VRtist
 
             selection.Remove(gObject.GetInstanceID());
 
-            SetRecursiveLayer(gObject, "Default");
+            string layerName = "Default";
+            if (gObject.GetComponent<LightController>() || gObject.GetComponent<CameraController>())
+                layerName = "UI";
+
+            SetRecursiveLayer(gObject, layerName);
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -96,7 +100,11 @@ namespace VRtist
         {
             foreach (KeyValuePair<int, GameObject> data in selection)
             {
-                SetRecursiveLayer(data.Value, "Default");
+                string layerName = "Default";
+                if (data.Value.GetComponent<LightController>() || data.Value.GetComponent<CameraController>())
+                    layerName = "UI";
+
+                SetRecursiveLayer(data.Value, layerName);
             }
 
             SelectionChangedArgs args = new SelectionChangedArgs();

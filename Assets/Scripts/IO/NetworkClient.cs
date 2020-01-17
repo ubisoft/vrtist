@@ -609,7 +609,26 @@ namespace VRtist
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
-            
+
+            //
+            // EMISSION
+            //
+            Color emissionColor = GetColor(data, ref currentIndex);
+            material.SetColor("_EmissiveColor", baseColor);
+            string emissionColorTexturePath = GetString(data, currentIndex, out currentIndex);
+            if (emissionColorTexturePath.Length > 0)
+            {
+                Texture2D tex = GetTexture(emissionColorTexturePath, true);
+                if (tex != null)
+                {
+                    material.SetFloat("_UseEmissiveMap", 1f);
+                    material.SetTexture("_EmissiveMap", tex);
+                    if (texturesFlipY.Contains(emissionColorTexturePath))
+                        material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
+                }
+            }
+
+
             currentMaterial = material;
         }
 
@@ -725,7 +744,10 @@ namespace VRtist
         public static NetCommand BuildMaterialCommand(Material material)
         {            
             byte[] name = StringToBytes(material.name);
-            byte[] opacity = FloatToBytes(material.GetFloat("_Opacity"));
+            float op = 1f;
+            if (material.HasProperty("_Opacity"))
+                op = material.GetFloat("_Opacity");
+            byte[] opacity = FloatToBytes(op);
             byte[] opacityMapTexture = StringToBytes("");
             byte[] baseColor = ColorToBytes(material.GetColor("_BaseColor"));
             byte[] baseColorTexture = StringToBytes("");
@@ -734,8 +756,10 @@ namespace VRtist
             byte[] roughness = FloatToBytes(1f - material.GetFloat("_Smoothness"));
             byte[] roughnessTexture = StringToBytes("");
             byte[] normalMapTexture = StringToBytes("");
-            
-            List<byte[]> buffers = new List<byte[]> { name, opacity, opacityMapTexture, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture };
+            byte[] emissionColor = ColorToBytes(material.GetColor("_EmissionColor"));
+            byte[] emissionColorTexture = StringToBytes("");
+
+            List<byte[]> buffers = new List<byte[]> { name, opacity, opacityMapTexture, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture, emissionColor, emissionColorTexture };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Material);
             return command;
         }
