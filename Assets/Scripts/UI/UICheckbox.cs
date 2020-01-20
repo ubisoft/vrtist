@@ -14,7 +14,7 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UICheckbox : UIElement
     {
-        [SpaceHeader("Checkbox Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        [SpaceHeader("Checkbox Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = 0.005f;
         [CentimeterFloat] public float thickness = 0.001f;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);

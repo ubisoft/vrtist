@@ -18,6 +18,7 @@ namespace VRtist
         [CentimeterFloat] public float margin = 0.005f;
         [CentimeterFloat] public float thickness = 0.001f;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
+        public Color checkedColor = new Color(0.8f, 0.8f, 0.8f);
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -31,6 +32,14 @@ namespace VRtist
         private bool needRebuild = false;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
+
+        private bool isChecked = false;
+
+        public bool Checked
+        {
+            get { return isChecked; }
+            set { isChecked = value; SetColor(value ? checkedColor : baseColor); }
+        }
 
         void Start()
         {
@@ -140,6 +149,7 @@ namespace VRtist
 
         private void Update()
         {
+#if UNITY_EDITOR
             // NOTE: rebuild when touching a property in the inspector.
             // Boolean needRebuild is set in OnValidate();
             // The rebuild method called when using the gizmos is: Width and Height
@@ -152,9 +162,11 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(baseColor);
+                if(!EditorApplication.isPlaying)
+                    SetColor(baseColor);
                 needRebuild = false;
             }
+#endif
         }
 
         private void OnDrawGizmosSelected()
@@ -228,9 +240,8 @@ namespace VRtist
 
         public void OnReleaseButton()
         {
-            SetColor(baseColor);
+            SetColor(isChecked ? checkedColor : baseColor);
         }
-
 
         public static void CreateUIButton(
             string buttonName,

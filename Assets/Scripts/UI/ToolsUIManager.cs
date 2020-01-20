@@ -31,9 +31,12 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
+        [SerializeField] private GameObject defaultTool;
         [SerializeField] private Transform panelsParent;
         [SerializeField] private Transform palette;
         [SerializeField] private Vector3 paletteScale = Vector3.one;
+        [SerializeField] private Color defaultColor = new Color(114f/ 255f, 114f / 255f, 114f / 255f);
+        [SerializeField] private Color selectionColor = new Color(0f, 167f / 255f, 1f);
 
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
@@ -56,6 +59,7 @@ namespace VRtist
         private bool showTools = true;
 
         private string currentToolName;
+        private Transform mainPanel;
 
         // Map of the 3d object widgets. Used for passing messages by int instead of GameObject. Key is a Hash.
         private Dictionary<int, GameObject> ui3DObjects = new Dictionary<int, GameObject>();
@@ -70,18 +74,14 @@ namespace VRtist
 
         void Start()
         {
-            currentToolName = ToolsManager.Instance.CurrentTool().name;
-
-            TogglePanel(currentToolName);
             OnToolChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeTool;
             OnToolParameterChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeToolParameter;
 
             palette.transform.localScale = Vector3.zero;
-        }
+            mainPanel = palette.transform.GetChild(0);
 
-        private void Update()
-        {
-
+            ToolsManager.Instance.currentToolRef = defaultTool;
+            ChangeTool(ToolsManager.Instance.CurrentTool().name);
         }
 
         // Show/Hide palette
@@ -92,7 +92,11 @@ namespace VRtist
 
         public void ChangeTool(string toolName)
         {
+            // Restore previous panel color
+            SetToolButtonActive(currentToolName, false);
+
             currentToolName = toolName;
+            SetToolButtonActive(currentToolName, true);
             TogglePanel(currentToolName);
 
             var args = new ToolChangedArgs { toolName = currentToolName };
@@ -155,10 +159,20 @@ namespace VRtist
             }
         }
 
-        // DEPRECATED
-        public void OnTool()
+        public void SetToolButtonActive(string toolName, bool active)
         {
-            ChangeTool(EventSystem.current.currentSelectedGameObject.name);
+            if(toolName == null) { return; }
+            string buttonName = toolName + "ToolButton";
+
+            for (int i = 0; i < mainPanel.childCount; i++)
+            {
+                GameObject gobj = mainPanel.GetChild(i).gameObject;
+                if (gobj.name == buttonName)
+                {
+                    UIButton buttonElement = gobj.GetComponent<UIButton>();
+                    buttonElement.Checked = active;
+                }
+            }
         }
 
         public void TogglePanel(string activePanelName)
@@ -170,42 +184,7 @@ namespace VRtist
                 GameObject child = panelsParent.GetChild(i).gameObject;
                 child.SetActive(panelObjectName == child.name);
             }
-            
-            /*
-            for (int i = 0; i < canvas3D.childCount; i++)
-            {
-                GameObject child = canvas3D.GetChild(i).gameObject;
-                child.SetActive(activePanelName == child.name);
-            }
-            */
-
-            //if (proxy3D != null)
-            //{
-            //    for (int i = 0; i < proxy3D.childCount; i++)
-            //    {
-            //        GameObject child = proxy3D.GetChild(i).gameObject;
-            //        child.SetActive(activePanelName == child.name);
-            //    }
-            //}
-
-            // TODO: show which TAB is active.
-            //       with emissive in the shader??
-
-            /*
-            for (int i = 0; i < buttonsParent.childCount; i++)
-            {
-                GameObject child = buttonsParent.GetChild(i).gameObject;
-                Image image = child.GetComponent<Image>();
-                image.color = activePanelName == child.name ? Selection.SelectedColor : Selection.UnselectedColor;
-            }
-            */
         }
-
-        //public bool isOverUI()
-        //{
-        //    return false;
-        //    //return pointer.activeSelf;
-        //}
 
         public void EnableMenu(bool value)
         {

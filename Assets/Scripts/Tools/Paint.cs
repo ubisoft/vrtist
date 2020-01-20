@@ -25,11 +25,6 @@ namespace VRtist
 
         FreeDraw freeDraw;
 
-        protected override void Awake()
-        {
-            ToolsManager.Instance.registerTool(gameObject, true);
-        }
-
         // Start is called before the first frame update
         void Start()
         {
@@ -189,15 +184,19 @@ namespace VRtist
             for (int i = 0; i < panel.childCount; i++)
             {
                 GameObject child = panel.GetChild(i).gameObject;
-                // en supposant qu'il n'y a que les boutons comme enfant avec des images
-                Image image = child.GetComponentInChildren<Image>();
-                if (image)
+                UIButton button = child.GetComponent<UIButton>();
+                if (button != null)
                 {
-                    image.color = Selection.UnselectedColor;
-                    if (child.name == "Pencil" && paintTool == PaintTools.Pencil)
-                        image.color = Selection.SelectedColor;
-                    if (child.name == "Flat" && paintTool == PaintTools.FlatPencil)
-                        image.color = Selection.SelectedColor;
+                    button.Checked = false;
+
+                    if (child.name == "PencilButton" && paintTool == PaintTools.Pencil)
+                    {
+                        button.Checked = true;
+                    }
+                    if (child.name == "FlatPencilButton" && paintTool == PaintTools.FlatPencil)
+                    { 
+                        button.Checked = true;
+                    }
                 }
             }
         }
@@ -207,12 +206,6 @@ namespace VRtist
             paintTool = PaintTools.Pencil;
             updateButtonsColor();
         }
-
-        //public void PaintSelectEraser()
-        //{
-        //    paintTool = PaintTools.Eraser;
-        //    updateButtonsColor();
-        //}
 
         public void PaintSelectFlatPencil()
         {

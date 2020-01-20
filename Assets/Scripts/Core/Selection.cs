@@ -11,7 +11,8 @@ namespace VRtist
     }
     public class Selection
     {
-        public static Color SelectedColor = new Color(57f / 255f, 124f / 255f, 212f / 255f);
+        //public static Color SelectedColor = new Color(57f / 255f, 124f / 255f, 212f / 255f);
+        public static Color SelectedColor = new Color(0f / 255f, 167f / 255f, 255f / 255f);
         public static Color UnselectedColor = Color.white;
 
         public static Dictionary<int, GameObject> selection = new Dictionary<int, GameObject>();
