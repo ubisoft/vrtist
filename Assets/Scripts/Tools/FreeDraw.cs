@@ -40,8 +40,11 @@ namespace VRtist
             }
         }
 
-        public void AddFlatLineControlPoint(Vector3 next, Vector3 normal, float length)
+        public void AddFlatLineControlPoint(Vector3 nextPoint, Vector3 nextNormal, float length)
         {
+            Vector3 next = matrix.MultiplyPoint(nextPoint);
+            Vector3 normal = matrix.MultiplyVector(nextNormal);
+
             int size = controlPoints.Length;
 
             if (size > 1 && Vector3.Distance(prevControlPoint, next) < 0.01)
