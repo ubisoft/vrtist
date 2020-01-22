@@ -18,7 +18,7 @@ namespace VRtist
         void Awake()
         {
             world = transform.parent;
-            while (world.parent)
+            while (null != world.parent)
             {
                 world = world.parent;
             }
@@ -28,12 +28,14 @@ namespace VRtist
 
         void Update()
         {
-            if (!cameraObject)
+            if (null == cameraObject)
                 return;
 
             float scale = world.localScale.x;
             cameraObject.farClipPlane = parameters.far * scale;
             cameraObject.nearClipPlane = parameters.near * scale;
+
+            cameraObject.focalLength = parameters.focal;
 
             /*
             bool isSelected = Selection.IsSelected(gameObject);

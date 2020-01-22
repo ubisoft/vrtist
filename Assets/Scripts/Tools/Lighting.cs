@@ -28,6 +28,7 @@ namespace VRtist
         private GameObject UIObject = null;
 
         private UIColorPicker colorPicker = null;
+
         void DisableUI()
         {
             picker.gameObject.SetActive(false);
@@ -41,12 +42,12 @@ namespace VRtist
 
         private void OnEnable()
         {
+            OnSelectionChanged(null, null);
         }
 
-        void Start()
+        protected override void Awake()
         {
-            Init();
-            switchToSelectionEnabled = false;
+            base.Awake();
 
             picker = panel.Find("ColorPicker");
             colorPicker = picker.GetComponent<UIColorPicker>();
@@ -59,10 +60,10 @@ namespace VRtist
 
             DisableUI();
 
+            Init();
+            switchToSelectionEnabled = false;
             Selection.OnSelectionChanged += OnSelectionChanged;
-
             CreateTooltips();
-            OnSelectionChanged(null, null);
         }
 
         public override void OnUIObjectEnter(int gohash)
@@ -157,6 +158,33 @@ namespace VRtist
             }
         }
 
+        protected override void UpdateUI()
+        {
+            foreach(var item in Selection.selection)
+            {
+                GameObject gobject = item.Value;
+                LightController lightController = gobject.GetComponent<LightController>();
+                if (null == lightController)
+                    continue;
+                LightParameters lightingParameters = lightController.GetParameters() as LightParameters;
+                if (null == lightingParameters)
+                    continue;
+
+                colorPicker.SetPickedColor(lightingParameters.color);
+
+                SetSliderValues(intensitySlider, lightingParameters.intensity, lightingParameters.minIntensity, lightingParameters.maxIntensity);
+                SetSliderValues(rangeSlider, lightingParameters.GetRange(), lightingParameters.GetMinRange(), lightingParameters.GetMaxRange());
+                //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
+                SetSliderValues(outerAngleSlider, lightingParameters.GetOuterAngle(), lightingParameters.GetMinOuterAngle(), lightingParameters.GetMaxOuterAngle());
+
+                SetCheckboxValue(castShadowsCheckbox, lightingParameters.castShadows);
+                SetCheckboxValue(enableCheckbox, gobject.activeSelf);
+
+                // Only the first light sets its parameters to the widgets
+                break;
+            }
+        }
+
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
             // update lighting panel from selection
@@ -166,6 +194,8 @@ namespace VRtist
             int pointCount = 0;
             int spotCount = 0;
 
+            ClearListeners();
+
             Dictionary<int, GameObject> selectedLights = new Dictionary<int, GameObject>();
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
@@ -174,21 +204,23 @@ namespace VRtist
                 if (null == lightController)
                     continue;
                 LightParameters lightParameters = lightController.GetParameters() as LightParameters;
-                if(lightParameters != null)
+                if (null == lightParameters)
+                    continue;
+
+                AddListener(lightController);
+
+                selectedLights[data.Key] = data.Value;
+                switch(lightParameters.GetLightType())
                 {
-                    selectedLights[data.Key] = data.Value;
-                    switch(lightParameters.GetLightType())
-                    {
-                        case LightParameters.LightType.Sun:
-                            sunCount++;
-                            break;
-                        case LightParameters.LightType.Point:
-                            pointCount++;
-                            break;
-                        case LightParameters.LightType.Spot:
-                            spotCount++;
-                            break;
-                    }
+                    case LightParameters.LightType.Sun:
+                        sunCount++;
+                        break;
+                    case LightParameters.LightType.Point:
+                        pointCount++;
+                        break;
+                    case LightParameters.LightType.Spot:
+                        spotCount++;
+                        break;
                 }
             }
 
@@ -207,26 +239,8 @@ namespace VRtist
 
             castShadowsCheckbox.gameObject.SetActive(true);
             enableCheckbox.gameObject.SetActive(true);
-           
 
-            foreach (KeyValuePair<int, GameObject> data in selectedLights)
-            {
-                GameObject gobject = data.Value;
-                LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
-
-                colorPicker.SetPickedColor(lightingParameters.color);
-                
-                SetSliderValues(intensitySlider, lightingParameters.intensity, lightingParameters.minIntensity, lightingParameters.maxIntensity);
-                SetSliderValues(rangeSlider, lightingParameters.GetRange(), lightingParameters.GetMinRange(), lightingParameters.GetMaxRange());
-                //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
-                SetSliderValues(outerAngleSlider, lightingParameters.GetOuterAngle(), lightingParameters.GetMinOuterAngle(), lightingParameters.GetMaxOuterAngle());
-
-                SetCheckboxValue(castShadowsCheckbox, lightingParameters.castShadows);
-                SetCheckboxValue(enableCheckbox, gobject.activeSelf);
-
-                // Only the first light sets its parameters to the widgets
-                break;
-            }
+            UpdateUI();
         }
 
         public void SendLightParams(GameObject light)
@@ -242,10 +256,13 @@ namespace VRtist
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
-                LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
-                if (lightingParameters != null)
-                    lightingParameters.color = color;
-
+                LightController lightingController = gobject.GetComponent<LightController>();
+                if (null == lightingController)
+                    continue;
+                LightParameters lightingParameters  = lightingController.GetParameters() as LightParameters;
+                if (null == lightingParameters)
+                    continue;
+                lightingParameters.color = color;
                 SendLightParams(gobject);
             }
         }
@@ -265,39 +282,50 @@ namespace VRtist
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
-                LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
-                if (lightingParameters != null)
+                LightController lightingController = gobject.GetComponent<LightController>();
+                if (null == lightingController)
+                    continue;
+                LightParameters lightingParameters = lightingController.GetParameters() as LightParameters;
+                if (null == lightingParameters)
+                    continue;
+                if (param == "CastShadows")
                 {
-                    if (param == "CastShadows")
-                    {
-                        lightingParameters.castShadows = value;
-                    }
-
-                    if (param == "Enable")
-                    {
-                        Light light = gobject.transform.GetComponentInChildren<Light>(true);
-                        light.gameObject.SetActive(value);
-                    }
+                    lightingParameters.castShadows = value;
                 }
 
+                if (param == "Enable")
+                {
+                    Light light = gobject.transform.GetComponentInChildren<Light>(true);
+                    light.gameObject.SetActive(value);
+                }
+                
                 SendLightParams(gobject);
             }
         }
 
-        private CommandSetValue<float> intensityCommand = null;
         public void OnIntensitySliderPressed()
         {
-            intensityCommand = new CommandSetValue<float>("Light Intensity", "/LightController/parameters.intensity");
+            OnSliderPressed("Light Intensity", "/LightController/parameters.intensity");
+        }
+        public void OnRangeSliderPressed()
+        {
+            OnSliderPressed("Light Range", "/LightController/parameters.range");
+        }
+        public void OnAngleSliderPressed()
+        {
+            OnSliderPressed("Light Angle", "/LightController/parameters.outerAngle");
+        }       
+
+        public void OnCastShadowCheckboxPressed()
+        {
+            OnCheckboxPressed("Light Cast Shadows", "/LightController/parameters.castShadows");
         }
 
-        public void OnIntensitySliderReleased()
+        public void OnColorPickerPressed()
         {
-            if(null != intensityCommand)
-            {
-                intensityCommand.Submit();
-                intensityCommand = null;
-            }
+            OnColorPressed("Light Color", "/LightController/parameters.color");
         }
+
 
         public void OnChangeIntensity(float value)
         {
@@ -324,18 +352,21 @@ namespace VRtist
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
-                LightParameters lightingParameters = gobject.GetComponent<LightController>().GetParameters() as LightParameters;
-                if (lightingParameters != null)
-                {
-                    if (param == "Intensity")
-                        lightingParameters.intensity = value;
-                    if (param == "Range")
-                        lightingParameters.SetRange(value);
-                    if (param == "OuterAngle")
-                        lightingParameters.SetOuterAngle(value);
-                    if (param == "InnerAngle")
-                        lightingParameters.SetInnerAngle(value);
-                }
+                LightController lightingController = gobject.GetComponent<LightController>();
+                if (null == lightingController)
+                    continue;
+                LightParameters lightingParameters = lightingController.GetParameters() as LightParameters;
+                if (null == lightingParameters)
+                    continue;
+
+                if (param == "Intensity")
+                    lightingParameters.intensity = value;
+                if (param == "Range")
+                    lightingParameters.SetRange(value);
+                if (param == "OuterAngle")
+                    lightingParameters.SetOuterAngle(value);
+                if (param == "InnerAngle")
+                    lightingParameters.SetInnerAngle(value);
                 SendLightParams(gobject);
             }
         }

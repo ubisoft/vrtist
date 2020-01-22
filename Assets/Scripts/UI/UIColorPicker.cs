@@ -23,6 +23,8 @@ namespace VRtist
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public ColorChangedEvent onColorChangedEvent = new ColorChangedEvent();
+        public UnityEvent onClickEvent = null;
+        public UnityEvent onReleaseEvent = null;
 
         private Color currentColor;
         public Color CurrentColor
@@ -42,7 +44,7 @@ namespace VRtist
 #endif
             {
                 OnColorChanged();
-                CurrentColor = new Color(0.2f, 0.5f, 0.6f);
+                //CurrentColor = new Color(0.2f, 0.5f, 0.6f);
             }
         }
 
@@ -58,6 +60,21 @@ namespace VRtist
             saturation.SetSaturation(new Vector2(s, v));
 
             preview.SetColor(color);
+        }
+
+        public void OnClick(Collider otherCollider)
+        {
+            if (otherCollider.gameObject.name == "Cursor")
+            {
+                onClickEvent.Invoke();
+            }
+        }
+        public void OnRelease(Collider otherCollider)
+        {
+            if (otherCollider.gameObject.name == "Cursor")
+            {
+                onReleaseEvent.Invoke();
+            }
         }
 
         public void OnColorChanged()

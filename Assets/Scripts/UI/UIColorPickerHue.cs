@@ -49,6 +49,14 @@ namespace VRtist
             cursor.localPosition = new Vector3(width * value, -height/2.0f, 0);
         }
 
+        private void OnTriggerEnter(Collider other)
+        {
+            colorPicker.OnClick(other);
+        }
+        private void OnTriggerExit(Collider other)
+        {
+            colorPicker.OnRelease(other);
+        }
         private void OnTriggerStay(Collider other)
         {
             if (other.gameObject.name != "Cursor")

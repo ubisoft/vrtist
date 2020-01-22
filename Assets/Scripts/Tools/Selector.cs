@@ -70,6 +70,7 @@ namespace VRtist
         private void OnEnable()
         {
             displayGizmosCheckbox.Checked = displayGizmos;
+            mode = SelectorModes.Select;
         }
 
         protected void Init()

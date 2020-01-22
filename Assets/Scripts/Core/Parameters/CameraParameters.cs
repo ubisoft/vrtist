@@ -12,9 +12,9 @@ namespace VRtist
 
         public Transform Deserialize(Transform parent)
         {
-            GameObject cam = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, parent);
-            cam.GetComponent<CameraController>().parameters = this;
-            return cam.transform;
+            GameObject camObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, parent);
+            camObject.GetComponent<CameraController>().parameters = this;
+            return camObject.transform;
         }
     }    
 }

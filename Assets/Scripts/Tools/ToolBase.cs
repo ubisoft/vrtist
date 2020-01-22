@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -13,6 +14,9 @@ namespace VRtist
 
         private bool isInGui = false;
         public bool IsInGui { get { return isInGui; } set { isInGui = value; ShowTool(!value); } }
+
+        private ICommand parameterCommand = null;
+        protected List<ParametersController> connectedObjects = new List<ParametersController>();
 
         protected virtual void Awake()
         {
@@ -80,6 +84,58 @@ namespace VRtist
             }
         }
 
+        protected virtual void UpdateUI()
+        {
+
+        }
+
+        protected virtual void OnParametersChanged(GameObject gObject)
+        {
+            if (Selection.IsSelected(gObject))
+                UpdateUI();
+        }
+
+        protected void ClearListeners()
+        {
+            foreach (ParametersController parameterController in connectedObjects)
+            {
+                parameterController.RemoveListener(OnParametersChanged);
+            }
+            connectedObjects.Clear();
+        }
+
+        protected void AddListener(ParametersController parametersController)
+        {
+            parametersController.AddListener(OnParametersChanged);
+            connectedObjects.Add(parametersController);
+        }
+
+        protected virtual void OnDisable()
+        {
+            ClearListeners();
+        }
+
+        protected void OnSliderPressed(string title, string parameterPath)
+        {
+            parameterCommand = new CommandSetValue<float>(title, parameterPath);
+        }
+
+        protected void OnCheckboxPressed(string title, string parameterPath)
+        {
+            parameterCommand = new CommandSetValue<bool>(title, parameterPath);
+        }
+        protected void OnColorPressed(string title, string parameterPath)
+        {
+            parameterCommand = new CommandSetValue<Color>(title, parameterPath);
+        }
+        public void OnReleased()
+        {
+            if (null != parameterCommand)
+            {
+                parameterCommand.Submit();
+                parameterCommand = null;
+            }
+        }
         protected abstract void DoUpdate(Vector3 position, Quaternion rotation);
         protected virtual void DoUpdateGui() { }
         protected virtual void ShowTool(bool show) { }

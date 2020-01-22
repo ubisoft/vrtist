@@ -44,6 +44,7 @@ namespace VRtist
 
         private void OnDisable()
         {
+            base.OnDisable();
             planesContainer.SetActive(false);
         }
 

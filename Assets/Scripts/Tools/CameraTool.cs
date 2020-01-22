@@ -34,11 +34,14 @@ namespace VRtist
                 foreach (KeyValuePair<int, GameObject> data in Selection.selection)
                 {
                     GameObject gobject = data.Value;
-                    CameraParameters cameraParameters = gobject.GetComponent<CameraController>().GetParameters() as CameraParameters;
-                    if (cameraParameters != null)
-                        cameraParameters.focal = value;
+                    CameraController cameraControler = gobject.GetComponent<CameraController>();
+                    if (null == cameraControler)
+                        continue;
+                    CameraParameters cameraParameters = cameraControler.GetParameters() as CameraParameters;
+                    if (null == cameraParameters)
+                        continue;
+                    cameraParameters.focal = value;
                 }
-                UpdateText(); 
             }
         }
 
@@ -49,50 +52,39 @@ namespace VRtist
 
         private void OnEnable()
         {
-            foreach(Camera camera in SelectedCameras())
+            OnSelectionChanged(null, null);
+            foreach (Camera camera in SelectedCameras())
                 ComputeFocal(camera);
-            /*
-            SliderComp focalSlider = panel.Find("FocalLengthSlider").GetComponent<SliderComp>();
-            focalSlider.blockSignals = true;
-            focalSlider.Value = Mathf.RoundToInt(focal);
-            focalSlider.blockSignals = false;
-            */
         }
-        private void OnDisable()
+        protected override void OnDisable()
         {
             feedbackPositioning = false;
+            base.OnDisable();
         }
 
         void DisableUI()
         {
             focalSlider.gameObject.SetActive(false);
         }
-        void Start()
+
+        protected override void Awake()
         {
+            base.Awake();
+
+            focalSlider = panel.Find("Focal");
+            DisableUI();
+
             Init();
             ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
             ToolsUIManager.Instance.OnBoolToolParameterChangedEvent += OnBoolChangeParameter;
 
-            foreach (Camera camera in SelectedCameras())
-                ComputeFocal(camera);
-
             cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
-            focalSlider = panel.Find("Focal");
-            DisableUI();
             Selection.OnSelectionChanged += OnSelectionChanged;
 
             // Create tooltips
             CreateTooltips();
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Zoom");
-        }
-
-        void UpdateText()
-        {
-            string focalStr = "f: " + Mathf.RoundToInt(focal);
-            /*
-            tm.text = focalStr;
-            */
         }
 
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
@@ -227,37 +219,6 @@ namespace VRtist
                     cameraFeedbackScale /= cameraFeedbackScaleFactor;
             }
 
-            // change camera focal
-            if (!feedbackPositioning)
-            {
-                Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                foreach (GameObject camObject in SelectedCameraObjects())
-                {
-                    Camera cam = camObject.GetComponentInChildren<Camera>();
-                    if (Mathf.Abs(val.x) > deadZone && Mathf.Abs(val.y) <= deadZone)
-                    {
-                        float fov = cam.fieldOfView - val.x * zoomSpeed;
-                        cam.fieldOfView = fov;
-                        float f = ComputeFocal(cam);
-                        if (f < 10)
-                        {
-                            Focal = 10;
-                            ComputeFOV(cam);
-                        }
-                        if (f > 300)
-                        {
-                            Focal = 300;
-                            ComputeFOV(cam);
-                        }
-                        SendCameraParams(camObject);
-                    }
-                    else
-                    {
-                        ComputeFocal(cam);
-                    }                    
-                }
-            }
-
             if (!feedbackPositioning)
             {
                 base.DoUpdate(position, rotation);
@@ -288,8 +249,12 @@ namespace VRtist
         public void OnChangeFocal(float value)
         {
             Focal = value;
-            foreach (Camera cam in SelectedCameras())
+            foreach(GameObject camObject in SelectedCameraObjects())
+            {
+                Camera cam = camObject.GetComponentInChildren<Camera>();
                 ComputeFOV(cam);
+                SendCameraParams(camObject);
+            }
         }
 
         private void OnChangeParameter(object sender, ToolParameterChangedArgs args)
@@ -302,7 +267,7 @@ namespace VRtist
                 ComputeFOV(cam);
         }
 
-        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected override void UpdateUI()
         {
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
@@ -311,19 +276,43 @@ namespace VRtist
                 if (null == cameraController)
                     continue;
                 CameraParameters cameraParameters = cameraController.GetParameters() as CameraParameters;
-                if (cameraParameters != null)
+                if (null == cameraParameters)
+                    continue;
+
+                UISlider sliderComp = focalSlider.GetComponent<UISlider>();
+                if (sliderComp != null)
                 {
-                    UISlider sliderComp = focalSlider.GetComponent<UISlider>();
-                    if (sliderComp != null)
-                    {
-                        sliderComp.Value = cameraParameters.focal;
-                        focalSlider.gameObject.SetActive(true);
-                        return;
-                    }
-                    break;
+                    sliderComp.Value = cameraParameters.focal;
+                    focalSlider.gameObject.SetActive(true);
+                    return;
                 }
             }
             focalSlider.gameObject.SetActive(false);
+        }
+
+        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        {
+            ClearListeners();
+
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            {
+                GameObject gobject = data.Value;
+                CameraController cameraController = gobject.GetComponent<CameraController>();
+                if (null == cameraController)
+                    continue;
+                CameraParameters cameraParameters = cameraController.GetParameters() as CameraParameters;
+                if (null == cameraParameters)
+                    continue;
+
+                AddListener(cameraController);
+            }
+
+            UpdateUI();
+        }
+
+        public void OnFocalSliderPressed()
+        {
+            OnSliderPressed("Camera Focal", "/CameraController/parameters.focal");
         }
     }
 }

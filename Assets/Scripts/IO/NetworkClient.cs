@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 namespace VRtist
@@ -337,8 +338,7 @@ namespace VRtist
             Quaternion rotation = GetQuaternion(data, ref bufferIndex);
             Vector3 scale = GetVector3(data, ref bufferIndex);
 
-            GameObject newGameObject = GameObject.Instantiate(srcPath.gameObject);
-            newGameObject.transform.parent = srcPath.parent;
+            GameObject newGameObject = GameObject.Instantiate(srcPath.gameObject, srcPath.parent);
             newGameObject.name = dstName;
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
@@ -1015,6 +1015,8 @@ namespace VRtist
             cameraParameters.focal = focal;
             cam.focalLength = focal;
             cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
+
+            cameraController.FireValueChanged();
         }
 
         public static void BuildLight(Transform root, byte[] data)
@@ -1098,6 +1100,7 @@ namespace VRtist
                 lightParameters.SetInnerAngle((1f - spotBlend) * 100f);
             }
             lightParameters.castShadows = shadow != 0 ? true : false;
+            lightController.FireValueChanged();
         }
 
         public static Transform ConnectMesh(Transform root, byte[] data)

@@ -7,7 +7,7 @@ namespace VRtist
 {
     public class CommandSetValue<T> : ICommand
     {
-        Dictionary<int, T> oldValues = new Dictionary<int, T>();
+        Dictionary<GameObject, T> oldValues = new Dictionary<GameObject, T>();
 
         T newValue;
         string objectPath;
@@ -24,7 +24,7 @@ namespace VRtist
             for (int i = 1; i < fields.Length; i++)
             {
                 inst = fieldInfo.GetValue(inst);
-                fieldInfo = fieldInfo.FieldType.GetField(fields[i]);
+                fieldInfo = inst.GetType().GetField(fields[i]);
             }
             return (T)fieldInfo.GetValue(inst);
         }
@@ -39,7 +39,7 @@ namespace VRtist
             for (int i = 1; i < fields.Length; i++)
             {
                 inst = fieldInfo.GetValue(inst);
-                fieldInfo = fieldInfo.FieldType.GetField(fields[i]);
+                fieldInfo = inst.GetType().GetField(fields[i]);                
             }
             fieldInfo.SetValue(inst, value);
         }
@@ -57,13 +57,7 @@ namespace VRtist
                 if (null == component)
                     continue;
 
-                oldValues[selectedItem.Key] = GetValue(component, fieldName);
-                /*
-                FieldInfo fieldInfo = component.GetType().GetField("parameters");
-                var inst = fieldInfo.GetValue(component);
-                fieldInfo = fieldInfo.FieldType.GetField("intensity");
-                T val = (T)fieldInfo.GetValue(inst);
-                */
+                oldValues[gObject] = GetValue(component, fieldName);
             }
         }
 
@@ -87,23 +81,27 @@ namespace VRtist
         {
             foreach (var keyValuePair in oldValues)
             {
-                GameObject selectedGameObject = Selection.selection[keyValuePair.Key];
-                GameObject gObject = objectPath.Length > 0 ? selectedGameObject.transform.Find(objectPath).gameObject : selectedGameObject;
+                GameObject gObject = objectPath.Length > 0 ? keyValuePair.Key.transform.Find(objectPath).gameObject : keyValuePair.Key;
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, keyValuePair.Value);
+
+                ParametersController controller = gObject.GetComponent<ParametersController>();
+                if(controller)
+                    controller.FireValueChanged();
             }
-            //OnValueChange();
         }
         public override void Redo()
         {
-            foreach (var selectedItem in Selection.selection)
+            foreach (var keyValuePair in oldValues)
             {
-                GameObject selectedGameObject = selectedItem.Value;
-                GameObject gObject = objectPath.Length > 0 ? selectedGameObject.transform.Find(objectPath).gameObject : selectedGameObject;
+                GameObject gObject = objectPath.Length > 0 ? keyValuePair.Key.transform.Find(objectPath).gameObject : keyValuePair.Key;
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, newValue);
+
+                ParametersController controller = gObject.GetComponent<ParametersController>();
+                if (controller)
+                    controller.FireValueChanged();
             }
-            //OnValueChange();
         }
 
         public override void Serialize(SceneSerializer serializer)
