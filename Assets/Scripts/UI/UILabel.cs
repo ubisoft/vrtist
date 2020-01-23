@@ -12,13 +12,11 @@ namespace VRtist
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
-    public class UIButton : UIElement
+    public class UILabel : UIElement
     {
-        [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        [SpaceHeader("Label Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = 0.005f;
-        [CentimeterFloat] public float thickness = 0.001f;
-        public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
-        public Color checkedColor = new Color(0.8f, 0.8f, 0.8f);
+        public Color textColor = UIElement.default_color; // TODO: put in UIElement (foreground color and background color)
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -29,36 +27,24 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
+        static public float labelThickness = 0.001f; // TODO: change mesh to have only one face, no depth
+
         private bool needRebuild = false;
 
+        // TODO: expose a text field to avoid having to go 2 levels deep into the Text object
+
         public string Text { get { return GetText(); } set { SetText(value); } }
-
-        private bool isChecked = false;
-
-        public bool Checked
-        {
-            get { return isChecked; }
-            set { isChecked = value; SetColor(value ? checkedColor : baseColor); }
-        }
+        public Color TextColor { get { return textColor; } set { textColor = value; UpdateTextColor(); } } // TODO: move into UIElement
 
         void Start()
         {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                onClickEvent.AddListener(OnPushButton);
-                onReleaseEvent.AddListener(OnReleaseButton);
-            }
         }
 
         public override void RebuildMesh()
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
-            theNewMesh.name = "UIButton_GeneratedMesh";
+            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, labelThickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
+            theNewMesh.name = "UILabel_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
             UpdateColliderDimensions();
@@ -94,32 +80,28 @@ namespace VRtist
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
                 canvasRT.sizeDelta = new Vector2(width, height);
 
-                float minSide = Mathf.Min(width, height);
-
-                // IMAGE
-                Image image = canvas.GetComponentInChildren<Image>();
-                if (image != null)
-                {
-                    RectTransform rt = image.gameObject.GetComponent<RectTransform>();
-                    if (rt)
-                    {
-                        rt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                        rt.localPosition = new Vector3(margin, -margin, -0.001f);
-                    }
-                }
-
                 // TEXT
                 Text text = canvas.gameObject.GetComponentInChildren<Text>();
                 if(text != null)
                 {
+                    text.color = textColor;
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
                     {
-                        rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
-                        float textPosLeft = image != null ? minSide : 0.0f;
-                        rt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
+                        rt.sizeDelta = new Vector2((width - 2.0f * margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                        rt.localPosition = new Vector3(margin, -margin, -0.002f);
                     }
                 }
+            }
+        }
+
+        public void UpdateTextColor()
+        {
+            Text text = GetComponentInChildren<Text>();
+            if (text != null)
+            {
+                text.color = textColor;
+                // TODO: test to see if we need to go and change the _BaseColor of the material of the text object.
             }
         }
 
@@ -127,7 +109,6 @@ namespace VRtist
         {
             const float min_width = 0.01f;
             const float min_height = 0.01f;
-            const float min_thickness = 0.001f;
             const int min_nbSubdivCornerFixed = 1;
             const int min_nbSubdivCornerPerUnit = 1;
 
@@ -135,8 +116,6 @@ namespace VRtist
                 width = min_width;
             if (height < min_height)
                 height = min_height;
-            if (thickness < min_thickness)
-                thickness = min_thickness;
             if (margin > width / 2.0f || margin > height / 2.0f)
                 margin = Mathf.Min(width / 2.0f, height / 2.0f);
             if (nbSubdivCornerFixed < min_nbSubdivCornerFixed)
@@ -209,7 +188,7 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            // TODO: pass the Cursor to the button, test the object instead of a hardcoded name.
+            // TODO: pass the Cursor to the label, test the object instead of a hardcoded name.
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
@@ -233,30 +212,19 @@ namespace VRtist
             }
         }
 
-        public void OnPushButton()
-        {
-            SetColor(pushedColor);
-        }
-
-        public void OnReleaseButton()
-        {
-            SetColor(isChecked ? checkedColor : baseColor);
-        }
-
-        public static void CreateUIButton(
-            string buttonName,
+        public static void CreateUILabel(
+            string labelName,
             Transform parent,
             Vector3 relativeLocation,
             float width,
             float height,
             float margin,
-            float thickness,
             Material material,
-            Color color,
-            string caption,
-            Sprite icon)
+            Color bgcolor,
+            Color fgcolor,
+            string caption)
         {
-            GameObject go = new GameObject(buttonName);
+            GameObject go = new GameObject(labelName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
@@ -270,23 +238,22 @@ namespace VRtist
                 }
             }
 
-            UIButton uiButton = go.AddComponent<UIButton>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiButton.relativeLocation = relativeLocation;
-            uiButton.transform.parent = parent;
-            uiButton.transform.localPosition = parentAnchor + relativeLocation;
-            uiButton.transform.localRotation = Quaternion.identity;
-            uiButton.transform.localScale = Vector3.one;
-            uiButton.width = width;
-            uiButton.height = height;
-            uiButton.margin = margin;
-            uiButton.thickness = thickness;
+            UILabel uiLabel = go.AddComponent<UILabel>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
+            uiLabel.relativeLocation = relativeLocation;
+            uiLabel.transform.parent = parent;
+            uiLabel.transform.localPosition = parentAnchor + relativeLocation;
+            uiLabel.transform.localRotation = Quaternion.identity;
+            uiLabel.transform.localScale = Vector3.one;
+            uiLabel.width = width;
+            uiLabel.height = height;
+            uiLabel.margin = margin;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
-                uiButton.Anchor = Vector3.zero;
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, labelThickness);
+                uiLabel.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {
@@ -324,12 +291,12 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiButton.BaseColor = color;
+                uiLabel.BaseColor = bgcolor;
             }
 
             // Add a Canvas
             GameObject canvas = new GameObject("Canvas");
-            canvas.transform.parent = uiButton.transform;
+            canvas.transform.parent = uiLabel.transform;
 
             Canvas c = canvas.AddComponent<Canvas>();
             c.renderMode = RenderMode.WorldSpace;
@@ -340,36 +307,12 @@ namespace VRtist
             rt.anchorMin = new Vector2(0, 1);
             rt.anchorMax = new Vector2(0, 1);
             rt.pivot = new Vector2(0, 1); // top left
-            rt.sizeDelta = new Vector2(uiButton.width, uiButton.height);
+            rt.sizeDelta = new Vector2(uiLabel.width, uiLabel.height);
             rt.localPosition = Vector3.zero;
 
             CanvasScaler cs = canvas.AddComponent<CanvasScaler>();
             cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
             cs.referencePixelsPerUnit = 100; // default?
-
-            //canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
-
-            float minSide = Mathf.Min(uiButton.width, uiButton.height);
-
-            // Add an Image under the Canvas
-            if (icon != null)
-            {
-                GameObject image = new GameObject("Image");
-                image.transform.parent = canvas.transform;
-
-                Image img = image.AddComponent<Image>();
-                img.sprite = icon;
-
-                RectTransform trt = image.GetComponent<RectTransform>();
-                trt.localScale = Vector3.one;
-                trt.localRotation = Quaternion.identity;
-                trt.anchorMin = new Vector2(0, 1);
-                trt.anchorMax = new Vector2(0, 1);
-                trt.pivot = new Vector2(0, 1); // top left
-                // TODO: non square icons ratio...
-                trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                trt.localPosition = new Vector3(margin, -margin, -0.001f);
-            }
 
             // Add a Text under the Canvas
             if (caption.Length > 0)
@@ -382,19 +325,21 @@ namespace VRtist
                 t.text = caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
-                t.alignment = TextAnchor.MiddleLeft;
+                t.alignment = TextAnchor.UpperLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Wrap;
                 t.verticalOverflow = VerticalWrapMode.Truncate;
+                t.color = fgcolor;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
+                trt.sizeDelta = new Vector2((uiLabel.width - 2.0f * margin ) * 100.0f, (uiLabel.height - 2.0f * margin ) * 100.0f);
                 trt.localRotation = Quaternion.identity;
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
-                float textPosLeft = icon != null ? minSide : 0.0f;
-                trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
+                trt.localPosition = new Vector3(margin, -margin, -0.002f); // centered, on-top
+
+                uiLabel.TextColor = fgcolor;
             }
         }
     }
