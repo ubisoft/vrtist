@@ -558,16 +558,16 @@ namespace VRtist
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
 
-            //if (File.Exists(ddsFile))
-            //{
-            //    Texture2D t = LoadTextureDXT(ddsFile, isLinear);
-            //    if (null != t)
-            //    {
-            //        textures[filePath] = t;
-            //        texturesFlipY.Add(filePath);
-            //        return t;
-            //    }
-            //}
+            if (File.Exists(ddsFile))
+            {
+                Texture2D t = LoadTextureDXT(ddsFile, isLinear);
+                if (null != t)
+                {
+                    textures[filePath] = t;
+                    texturesFlipY.Add(filePath);
+                    return t;
+                }
+            }
 
             if (File.Exists(filePath))
             {
