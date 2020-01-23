@@ -8,6 +8,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
+using System.Runtime.InteropServices;
 
 namespace VRtist
 {
@@ -396,6 +397,103 @@ namespace VRtist
             return material;
         }
 
+        public static Texture2D LoadTextureOIIO(string filePath, bool isLinear)
+        {
+            // TODO: need to flip? Repere bottom left, Y-up
+            int ret = OIIOAPI.oiio_open_image(filePath);
+            if (ret == 0)
+            {
+                Debug.Log("Could not open image " + filePath + " with OIIO.");
+                return null;
+            }
+
+            int width = -1;
+            int height = -1;
+            int nchannels = -1;
+            OIIOAPI.BASETYPE format = OIIOAPI.BASETYPE.NONE;
+            ret = OIIOAPI.oiio_get_image_info(ref width, ref height, ref nchannels, ref format);
+            if (ret == 0)
+            {
+                Debug.Log("Could not get info about image " + filePath + " with OIIO");
+                return null;
+            }
+
+            TextureFormat textureFormat = Format2Format(format, nchannels);
+            Texture2D image = new Texture2D(width, height, textureFormat, true, isLinear); // with mips
+
+            // TODO: find out why I did that!!!
+            int do_rgb_to_rgba = 0;
+            if ((format == OIIOAPI.BASETYPE.FLOAT && nchannels == 3)
+                || (format == OIIOAPI.BASETYPE.HALF && nchannels == 3))
+            {
+                do_rgb_to_rgba = 1;
+            }
+
+            var pixels = image.GetRawTextureData();
+            GCHandle handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+            ret = OIIOAPI.oiio_fill_image_data(handle.AddrOfPinnedObject(), do_rgb_to_rgba);
+            if (ret == 1)
+            {
+                image.LoadRawTextureData(pixels);
+                image.Apply();
+            }
+            else
+            {
+                Debug.Log("Could not fill texture data of " + filePath + " with OIIO.");
+                return null;
+            }
+
+            return image;
+        }
+
+        private static TextureFormat Format2Format(OIIOAPI.BASETYPE format, int nchannels)
+        {
+            // TODO: handle compressed formats.
+
+            TextureFormat defaultFormat = TextureFormat.RGBA32;
+
+            switch (format)
+            {
+                case OIIOAPI.BASETYPE.UCHAR:
+                case OIIOAPI.BASETYPE.CHAR:
+                    {
+                        switch (nchannels)
+                        {
+                            case 1: return TextureFormat.R8;
+                            case 2: return TextureFormat.RG16;
+                            case 3: return TextureFormat.RGB24;
+                            case 4: return TextureFormat.RGBA32;
+                            default: return defaultFormat;
+                        }
+                    }
+
+                case OIIOAPI.BASETYPE.HALF:
+                    {
+                        switch (nchannels)
+                        {
+                            case 1: return TextureFormat.RHalf;
+                            case 2: return TextureFormat.RGHalf;
+                            case 3: return TextureFormat.RGBAHalf; // RGBHalf is NOT SUPPORTED
+                            case 4: return TextureFormat.RGBAHalf;
+                            default: return defaultFormat;
+                        }
+                    }
+
+                case OIIOAPI.BASETYPE.FLOAT:
+                    {
+                        switch (nchannels)
+                        {
+                            case 1: return TextureFormat.RFloat;
+                            case 2: return TextureFormat.RGFloat;
+                            case 3: return TextureFormat.RGBAFloat; // RGBFloat is NOT SUPPORTED
+                            case 4: return TextureFormat.RGBAFloat;
+                            default: return defaultFormat;
+                        }
+                    }
+
+                default: return defaultFormat;
+            }
+        }
 
         public static Texture2D LoadTextureDXT(string filePath, bool isLinear)
         {
@@ -460,24 +558,26 @@ namespace VRtist
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
 
-            if (File.Exists(ddsFile))
-            {
-                Texture2D t = LoadTextureDXT(ddsFile, isLinear);
-                if (null != t)
-                {
-                    textures[filePath] = t;
-                    texturesFlipY.Add(filePath);
-                    return t;
-                }
-            }
+            //if (File.Exists(ddsFile))
+            //{
+            //    Texture2D t = LoadTextureDXT(ddsFile, isLinear);
+            //    if (null != t)
+            //    {
+            //        textures[filePath] = t;
+            //        texturesFlipY.Add(filePath);
+            //        return t;
+            //    }
+            //}
 
             if (File.Exists(filePath))
             {
-                byte[] bytes = System.IO.File.ReadAllBytes(filePath);
-                Texture2D t = LoadTextureFromBuffer(bytes, isLinear);
+                //byte[] bytes = System.IO.File.ReadAllBytes(filePath);
+                //Texture2D t = LoadTextureFromBuffer(bytes, isLinear);
+                Texture2D t = LoadTextureOIIO(filePath, isLinear);
                 if(null != t)
                 {
                     textures[filePath] = t;
+                    texturesFlipY.Add(filePath);
                     return t;
                 }
             }
