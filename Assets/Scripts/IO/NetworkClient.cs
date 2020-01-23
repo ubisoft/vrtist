@@ -421,7 +421,8 @@ namespace VRtist
             TextureFormat textureFormat = Format2Format(format, nchannels);
             Texture2D image = new Texture2D(width, height, textureFormat, true, isLinear); // with mips
 
-            // TODO: find out why I did that!!!
+            // NOTE: Unity does not have RGBFloat/Half formats. So if a texture has these formats
+            // we convert it to a 4 channels RGBAFloat/Half texture.
             int do_rgb_to_rgba = 0;
             if ((format == OIIOAPI.BASETYPE.FLOAT && nchannels == 3)
                 || (format == OIIOAPI.BASETYPE.HALF && nchannels == 3))
@@ -463,6 +464,16 @@ namespace VRtist
                             case 2: return TextureFormat.RG16;
                             case 3: return TextureFormat.RGB24;
                             case 4: return TextureFormat.RGBA32;
+                            default: return defaultFormat;
+                        }
+                    }
+
+                case OIIOAPI.BASETYPE.USHORT:
+                    {
+                        switch (nchannels)
+                        {
+                            case 1: return TextureFormat.R16;
+                            // R16_G16, R16_G16_B16 and R16_G16_B16_A16 do not exist
                             default: return defaultFormat;
                         }
                     }
