@@ -7,7 +7,7 @@ namespace VRtist
     public class UIElement : MonoBehaviour
     {
         // "stylesheet"
-        public static readonly Color default_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
+        public static readonly Color default_color = new Color(0.8f, 0.8f, 0.8f, 1.0f); // light grey.
         public static readonly Color default_background_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
         public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
         public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.

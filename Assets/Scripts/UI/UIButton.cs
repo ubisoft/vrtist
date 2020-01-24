@@ -115,9 +115,9 @@ namespace VRtist
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
                     {
-                        rt.sizeDelta = new Vector2(width, height);
+                        rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
                         float textPosLeft = image != null ? minSide : 0.0f;
-                        rt.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
+                        rt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
                     }
                 }
             }
@@ -383,8 +383,8 @@ namespace VRtist
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleLeft;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                t.verticalOverflow = VerticalWrapMode.Truncate;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
@@ -392,9 +392,9 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2(uiButton.width, uiButton.height);
+                trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
                 float textPosLeft = icon != null ? minSide : 0.0f;
-                trt.localPosition = new Vector3(textPosLeft, -uiButton.height / 2.0f, -0.002f);
+                trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
             }
         }
     }
