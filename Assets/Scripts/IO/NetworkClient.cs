@@ -387,12 +387,12 @@ namespace VRtist
             if (materials.ContainsKey(name))
                 return materials[name];
 
-            Shader hdrplit = Shader.Find("HDRP/Lit");
+            Shader hdrplit = Shader.Find("VRtist/BlenderImport");
             Material material = new Material(hdrplit);
             material.name = name;
             material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
             material.SetFloat("_Metallic", 0.0f);
-            material.SetFloat("_Smoothness", 0.5f);
+            material.SetFloat("_Roughness", 0.5f);
             materials[name] = material;
 
             return material;

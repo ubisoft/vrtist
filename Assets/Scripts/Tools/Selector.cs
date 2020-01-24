@@ -195,6 +195,9 @@ namespace VRtist
         {
             foreach (var item in Selection.selection)
             {
+                LightController lightController = item.Value.GetComponentInChildren<LightController>();
+                if (null == lightController)
+                    continue;
                 MeshFilter meshFilter = item.Value.GetComponentInChildren<MeshFilter>(true);
                 if(null != meshFilter)
                     meshFilter.gameObject.SetActive(displayGizmos);
