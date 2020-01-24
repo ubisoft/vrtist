@@ -212,13 +212,14 @@ namespace VRtist
             int[] buffer = new int[1];
             Buffer.BlockCopy(data, currentIndex, buffer, 0, sizeof(int));
             currentIndex += sizeof(int);
-            return buffer[0] == 0 ? false : true;
+            return buffer[0] == 1 ? true : false;
         }
 
         public static byte[] boolToBytes(bool value)
         {
             byte[] bytes = new byte[sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(int));
+            int v = value ? 1 : 0;
+            Buffer.BlockCopy(BitConverter.GetBytes(v), 0, bytes, 0, sizeof(int));
             return bytes;
         }
 
@@ -702,6 +703,7 @@ namespace VRtist
             Transform transform = BuildPath(root, data, 0, true, out currentIndex);
 
             float[] buffer = new float[4];
+            bool[] boolBuffer = new bool[1];
             int size = 3 * sizeof(float);
 
             Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
@@ -717,6 +719,11 @@ namespace VRtist
             Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
             currentIndex += size;
             transform.localScale = new Vector3(buffer[0], buffer[1], buffer[2]);
+
+            size = sizeof(bool);
+            Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
+            currentIndex += size;
+            transform.gameObject.SetActive((bool)boolBuffer[0]);
 
             return transform;
         }
@@ -735,8 +742,9 @@ namespace VRtist
             byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
             byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
             byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
+            byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
 
-            List<byte[]> buffers = new List<byte[]>{ name, positionBuffer, rotationBuffer, scaleBuffer };
+            List<byte[]> buffers = new List<byte[]>{ name, positionBuffer, rotationBuffer, scaleBuffer, visibilityBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
@@ -775,7 +783,7 @@ namespace VRtist
             }
             byte[] name = StringToBytes(path);
 
-            Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>();
+            Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int)cam.gateFit;
 
             byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
@@ -999,7 +1007,7 @@ namespace VRtist
             float sensorHeight = BitConverter.ToSingle(data, currentIndex);
             currentIndex += sizeof(float);
 
-            Camera cam = camGameObject.GetComponentInChildren<Camera>();
+            Camera cam = camGameObject.GetComponentInChildren<Camera>(true);
 
             // Is it necessary ?
             /////////////////

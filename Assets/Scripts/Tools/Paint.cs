@@ -44,6 +44,13 @@ namespace VRtist
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Brush Size");
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            UIColorPicker colorPicker = panel.gameObject.GetComponentInChildren<UIColorPicker>(true);
+            colorPicker.CurrentColor = paintColor;
+        }
+
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
             // Manage over UI

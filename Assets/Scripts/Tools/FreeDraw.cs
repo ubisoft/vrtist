@@ -45,6 +45,8 @@ namespace VRtist
             Vector3 next = matrix.MultiplyPoint(nextPoint);
             Vector3 normal = matrix.MultiplyVector(nextNormal);
 
+            length *= matrix.lossyScale.x;
+
             int size = controlPoints.Length;
 
             if (size > 1 && Vector3.Distance(prevControlPoint, next) < 0.01)

@@ -18,8 +18,8 @@ namespace VRtist
             if (null == newRenderTexture)
                 Debug.LogError("CAMERA FAILED");
 
-            newCamera.GetComponentInChildren<Camera>().targetTexture = newRenderTexture;
-            newCamera.GetComponentInChildren<MeshRenderer>().material.SetTexture("_UnlitColorMap", newRenderTexture);
+            newCamera.GetComponentInChildren<Camera>(true).targetTexture = newRenderTexture;
+            newCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", newRenderTexture);
 
 
             VRInput.DeepSetLayer(newCamera, 5);

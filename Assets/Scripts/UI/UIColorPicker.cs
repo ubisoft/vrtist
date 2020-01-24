@@ -43,7 +43,7 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
-                OnColorChanged();
+                //OnColorChanged();
                 //CurrentColor = new Color(0.2f, 0.5f, 0.6f);
             }
         }

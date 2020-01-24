@@ -110,6 +110,10 @@ namespace VRtist
             connectedObjects.Add(parametersController);
         }
 
+        protected virtual void OnEnable()
+        {
+        }
+
         protected virtual void OnDisable()
         {
             ClearListeners();

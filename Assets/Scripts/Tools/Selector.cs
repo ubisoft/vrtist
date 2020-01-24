@@ -67,14 +67,18 @@ namespace VRtist
             return displayGizmos;
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            displayGizmosCheckbox.Checked = displayGizmos;
-            mode = SelectorModes.Select;
+            base.OnEnable();
+            if( null != displayGizmosCheckbox)
+                displayGizmosCheckbox.Checked = displayGizmos;
+            OnSelectMode();
         }
 
         protected void Init()
         {
+            if (null != displayGizmosCheckbox)
+                displayGizmosCheckbox.Checked = displayGizmos;
             selectorRadius = selectorBrush.localScale.x;
             selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
             updateButtonsColor();
@@ -479,7 +483,7 @@ namespace VRtist
             if (Selection.selection.Count <= 1)
                 return;
 
-            GameObject container = new GameObject("Group__" + groupId.ToString());
+            GameObject container = new GameObject("Group__" + groupId.ToString());            
             groupId++;
 
             SortedSet<Transform> groups = new SortedSet<Transform>();
@@ -494,6 +498,9 @@ namespace VRtist
                     if (!groupHasParent)
                     {
                         container.transform.parent = parent.parent;
+                        container.transform.localPosition = Vector3.zero;
+                        container.transform.localRotation = Quaternion.identity;
+                        container.transform.localScale = Vector3.one;
                         groupHasParent = true;
                     }
 

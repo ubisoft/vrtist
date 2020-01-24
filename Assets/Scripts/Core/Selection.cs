@@ -61,6 +61,10 @@ namespace VRtist
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
+            Camera cam = gObject.GetComponentInChildren<Camera>(true);
+            if (cam)
+                cam.gameObject.SetActive(true);
+
             SetRecursiveLayer(gObject, "Selection");
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
@@ -79,6 +83,10 @@ namespace VRtist
 
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
+
+            Camera cam = gObject.GetComponentInChildren<Camera>(true);
+            if (cam)
+                cam.gameObject.SetActive(false);
 
             selection.Remove(gObject.GetInstanceID());
 
@@ -104,6 +112,11 @@ namespace VRtist
                 string layerName = "Default";
                 if (data.Value.GetComponent<LightController>() || data.Value.GetComponent<CameraController>())
                     layerName = "UI";
+
+                Camera cam = data.Value.GetComponentInChildren<Camera>(true);
+                if (cam)
+                    cam.gameObject.SetActive(false);
+
 
                 SetRecursiveLayer(data.Value, layerName);
             }

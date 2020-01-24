@@ -37,12 +37,13 @@ namespace VRtist
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Deform");
         }
 
-        void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             planesContainer.SetActive(false);
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
             base.OnDisable();
             planesContainer.SetActive(false);

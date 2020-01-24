@@ -29,7 +29,7 @@ Transform:
   m_Children:
   - {fileID: 5786331654063983169}
   - {fileID: 5786331654409117919}
-  - {fileID: 4768684437004092955}
+  - {fileID: 529016775502310635}
   m_Father: {fileID: 5786331652696777688}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
@@ -128,7 +128,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5786331654063983169
 Transform:
   m_ObjectHideFlags: 0
@@ -567,7 +567,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e24916ea58c49754888ed74bc29af2c8, type: 3}
---- !u!4 &4768684437004092955 stripped
+--- !u!4 &529016775502310635 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: e24916ea58c49754888ed74bc29af2c8,
     type: 3}
