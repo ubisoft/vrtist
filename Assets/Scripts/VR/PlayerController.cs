@@ -17,10 +17,10 @@ namespace VRtist
 
         Matrix4x4 initLeftControllerMatrix_WtoL;
         Matrix4x4 initRightControllerMatrix_WtoL;
+        Matrix4x4 initMiddleMatrix_WtoL;
 
         Matrix4x4 initWorldMatrix_W;
 
-        // TODO: de we nee a "just gripped" ?
         bool isLeftGripped = false;
         bool isRightGripped = false;
 
@@ -35,6 +35,8 @@ namespace VRtist
         Quaternion initCameraRotation;
 
         bool rotating = false;
+
+        enum ResetType { LEFT_ONLY, LEFT_AND_RIGHT };
 
         void Start()
         {
@@ -114,18 +116,18 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
             () =>
             {
+                // left AFTER right, reset all
                 if (isRightGripped)
                 {
-                    ResetInitLeftControllerMatrix();
-                    ResetInitRightControllerMatrix();
+                    ResetInitControllerMatrices(ResetType.LEFT_AND_RIGHT);
                     ResetInitWorldMatrix();
                     ResetDistance(); // after reset world, use scale
                     leftHandle.localScale = Vector3.one; // tmp: show left controller for bi-manual interaction.
                     line.enabled = true;
                 }
-                else
+                else // only left, reset left
                 {
-                    ResetInitLeftControllerMatrix();
+                    ResetInitControllerMatrices(ResetType.LEFT_ONLY);
                     ResetInitWorldMatrix();
                     leftHandle.localScale = Vector3.zero;
                 }
@@ -140,16 +142,19 @@ namespace VRtist
                 line.enabled = false; // in case we release left grip before right grip
             });
 
-
+            // TODO: 
+            //  * soit on check si ya pas deja une selection ou un outil en cours d'utilisation
+            //  * soit on set ici un bool visible par les tools, qui EUX, check qu'on est pas en train de manipuler le monde.
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton,
             () =>
             {
-                if (isLeftGripped)// TODO: && no selection gripped by right controller
+                // right AFTER left, reset all
+                if (isLeftGripped)
                 {
-                    ResetInitLeftControllerMatrix();
-                    ResetInitRightControllerMatrix();
+                    ResetInitControllerMatrices(ResetType.LEFT_AND_RIGHT);
                     ResetInitWorldMatrix();
-                    ResetDistance(); // after reset world, use scale
+                    ResetDistance(); // NOTE: called after "reset world", because it uses the scale.
+
                     leftHandle.localScale = Vector3.one; // tmp: show left controller for bi-manual interaction.
 
                     line.enabled = true;
@@ -162,7 +167,7 @@ namespace VRtist
                 // si on relache le right et que le left est tjs grip, reset left
                 if (isLeftGripped)
                 {
-                    ResetInitLeftControllerMatrix();
+                    ResetInitControllerMatrices(ResetType.LEFT_ONLY);
                     ResetInitWorldMatrix();
 
                     leftHandle.localScale = Vector3.zero; // hide controller
@@ -172,7 +177,8 @@ namespace VRtist
                 isRightGripped = false;
             });
 
-            if (VRInput.GetValue(VRInput.leftController, CommonUsages.grip) > deadZone)
+            // NOTE: we test isLeftGrip because we can be ungripped but still over the deadzone, strangely.
+            if (isLeftGripped && VRInput.GetValue(VRInput.leftController, CommonUsages.grip) > deadZone)
             {
                 float prevScale = scale;
 
@@ -185,6 +191,8 @@ namespace VRtist
                     if (joystickAxis.y < -deadZone)
                         scale /= fixedScaleFactor;
                 }
+
+                Matrix4x4 transformed; // new world matrix
 
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
@@ -208,17 +216,27 @@ namespace VRtist
                     line.SetPosition(1, currentMiddleControllerPosition_W);
                     line.SetPosition(2, currentRightControllerPosition_W);
 
+                    Vector3 middlePosition_L = (currentLeftControllerPosition_L + currentRightControllerPosition_L) * 0.5f;
+                    Vector3 middleXVector = (currentRightControllerPosition_L - currentLeftControllerPosition_L).normalized;
+                    Vector3 middleForwardVector = -Vector3.Cross(middleXVector, pivot.up).normalized;
+                    Quaternion middleRotation_L = Quaternion.LookRotation(middleForwardVector, pivot.up);
+                    Matrix4x4 middleMatrix_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotation_L, new Vector3(scale, scale, scale));
+
+                    Matrix4x4 middleMatrix_W_Delta = pivot.localToWorldMatrix * middleMatrix_L_Scaled * initMiddleMatrix_WtoL;
+                    transformed = middleMatrix_W_Delta * initWorldMatrix_W;
+
                     // scale handling
                     float newDistance = Vector3.Distance(currentLeftControllerPosition_W, currentRightControllerPosition_W);
                     float factor = newDistance / prevDistance;
                     scale *= factor;
                     prevDistance = newDistance;
                 }
+                else
+                {
+                    Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
+                    transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
+                }
 
-                Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
-
-
-                Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
                 world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
                 world.localRotation = transformed.rotation;
 
@@ -269,24 +287,29 @@ namespace VRtist
             }
         }
 
-        private void ResetInitLeftControllerMatrix()
+        private void ResetInitControllerMatrices(ResetType res)
         {
-            Vector3 initLeftControllerPosition_L; // initial left controller position in local space.
-            Quaternion initLeftControllerRotation_L; // initial left controller rotation in local space.
+            Vector3 initLeftControllerPosition_L;
+            Quaternion initLeftControllerRotation_L;
             VRInput.GetControllerTransform(VRInput.leftController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
-
             Matrix4x4 initLeftControllerMatrix_L = Matrix4x4.TRS(initLeftControllerPosition_L, initLeftControllerRotation_L, Vector3.one);
             initLeftControllerMatrix_WtoL = (pivot.localToWorldMatrix * initLeftControllerMatrix_L).inverse;
-        }
 
-        private void ResetInitRightControllerMatrix()
-        {
-            Vector3 initRightControllerPosition_L; // initial right controller position in local space.
-            Quaternion initRightControllerRotation_L; // initial right controller rotation in local space.
-            VRInput.GetControllerTransform(VRInput.rightController, out initRightControllerPosition_L, out initRightControllerRotation_L);
+            if (res == ResetType.LEFT_AND_RIGHT)
+            {
+                Vector3 initRightControllerPosition_L; // initial right controller position in local space.
+                Quaternion initRightControllerRotation_L; // initial right controller rotation in local space.
+                VRInput.GetControllerTransform(VRInput.rightController, out initRightControllerPosition_L, out initRightControllerRotation_L);
+                Matrix4x4 initRightControllerMatrix_L = Matrix4x4.TRS(initRightControllerPosition_L, initRightControllerRotation_L, Vector3.one);
+                initRightControllerMatrix_WtoL = (pivot.localToWorldMatrix * initRightControllerMatrix_L).inverse;
 
-            Matrix4x4 initRightControllerMatrix_L = Matrix4x4.TRS(initRightControllerPosition_L, initRightControllerRotation_L, Vector3.one);
-            initRightControllerMatrix_WtoL = (pivot.localToWorldMatrix * initRightControllerMatrix_L).inverse;
+                Vector3 initMiddlePosition_L = (initLeftControllerPosition_L + initRightControllerPosition_L) * 0.5f;
+                Vector3 middleXVector = (initRightControllerPosition_L - initLeftControllerPosition_L).normalized;
+                Vector3 middleForwardVector = -Vector3.Cross(middleXVector, pivot.up).normalized;
+                Quaternion initMiddleRotation_L = Quaternion.LookRotation(middleForwardVector, pivot.up);
+                Matrix4x4 initMiddleMatrix_L = Matrix4x4.TRS(initMiddlePosition_L, initMiddleRotation_L, Vector3.one);
+                initMiddleMatrix_WtoL = (pivot.localToWorldMatrix * initMiddleMatrix_L).inverse;
+            }
         }
 
         private void ResetInitWorldMatrix()
