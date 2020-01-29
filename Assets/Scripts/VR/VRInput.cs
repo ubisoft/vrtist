@@ -271,6 +271,7 @@ namespace VRtist
             {
                 if (currentButtonPressed)
                 {
+                    // TODO: handle this state of "wasPressed" out of the ButtonEvent function.
                     wasPressed.Add(new InputPair(controller, usage));
                     if (onPress != null)
                     {                        
@@ -288,6 +289,7 @@ namespace VRtist
                 }
             }
         }
+
         public static bool TryGetDevices()
         {
             if (!head.isValid || !leftController.isValid || !rightController.isValid)
@@ -362,6 +364,13 @@ namespace VRtist
             position = Vector3.Lerp(prevTransform.position, position, 0.3f);
             prevTransform.rotation = rotation;
             prevTransform.position = position;
+        }
+
+        public static void UpdateTransformFromVRDevice(Transform transform, InputDevice device)
+        {
+            GetControllerTransform(device, out Vector3 position, out Quaternion rotation);
+            transform.localPosition = position;
+            transform.localRotation = rotation;
         }
 
         public static void UpdateTransformFromVRDevice(Transform transform, InputDevice device, out Vector3 position, out Quaternion rotation)
