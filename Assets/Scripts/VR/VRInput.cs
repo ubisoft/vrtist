@@ -46,8 +46,9 @@ namespace VRtist
         static Dictionary<InputDevice, ControllerValues> currentControllerValues = new Dictionary<InputDevice, ControllerValues>();
         static Dictionary<InputDevice, ControllerValues> prevControllerValues = new Dictionary<InputDevice, ControllerValues>();
 
-        // ensure release is called only if press was executed (even if onPress is null)
-        static HashSet<InputPair> wasPressed = new HashSet<InputPair>();
+        static HashSet<InputPair> justPressed = new HashSet<InputPair>();
+        static HashSet<InputPair> justReleased = new HashSet<InputPair>();
+        // TODO: give public access to that information?
 
         public static void UpdateControllerValues()
         {
@@ -84,12 +85,15 @@ namespace VRtist
                 bool bValue;
                 device.TryGetFeatureValue(CommonUsages.primaryButton, out bValue);
                 UpdateControllerValue(device, CommonUsages.primaryButton, bValue);
+                UpdateControllerDelta(device, CommonUsages.primaryButton);
 
                 device.TryGetFeatureValue(CommonUsages.secondaryButton, out bValue);
                 UpdateControllerValue(device, CommonUsages.secondaryButton, bValue);
+                UpdateControllerDelta(device, CommonUsages.secondaryButton);
 
                 device.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out bValue);
                 UpdateControllerValue(device, CommonUsages.primary2DAxisClick, bValue);
+                UpdateControllerDelta(device, CommonUsages.primary2DAxisClick);
 
                 float fValue;
                 device.TryGetFeatureValue(CommonUsages.trigger, out fValue);
@@ -103,6 +107,8 @@ namespace VRtist
                         UpdateControllerValue(device, CommonUsages.triggerButton, false);
                     else
                         UpdateControllerValue(device, CommonUsages.triggerButton, prevButton);
+
+                    UpdateControllerDelta(device, CommonUsages.triggerButton);
                 }
 
                 device.TryGetFeatureValue(CommonUsages.grip, out fValue);
@@ -116,14 +122,41 @@ namespace VRtist
                         UpdateControllerValue(device, CommonUsages.gripButton, false);
                     else
                         UpdateControllerValue(device, CommonUsages.gripButton, prevButton);
+
+                    UpdateControllerDelta(device, CommonUsages.gripButton);
                 }
 
                 Vector2 vValue;
                 device.TryGetFeatureValue(CommonUsages.primary2DAxis, out vValue);
                 UpdateControllerValue(device, CommonUsages.primary2DAxis, vValue);
             }
-
         }
+
+        static void UpdateControllerDelta(InputDevice controller, InputFeatureUsage<bool> usage)
+        {
+            bool bPrevValue;
+            bool bCurrValue;
+            bPrevValue = GetPrevValue(controller, usage);
+            bCurrValue = GetValue(controller, usage);
+            InputPair pair = new InputPair(controller, usage);
+            if (bPrevValue == bCurrValue)
+            {
+                justPressed.Remove(pair);
+                justReleased.Remove(pair);
+            }
+            else
+            {
+                if (bCurrValue)
+                {
+                    justPressed.Add(pair);
+                }
+                else
+                {
+                    justReleased.Add(pair);
+                }
+            }
+        }
+
         static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<Vector2> usage, Vector2 value)
         {
             ControllerValues controllerValue = currentControllerValues[controller];
@@ -265,28 +298,15 @@ namespace VRtist
 
         public static void ButtonEvent(InputDevice controller, InputFeatureUsage<bool> usage, System.Action onPress = null, System.Action onRelease = null)
         {
-            bool prevButtonPressed = GetPrevValue(controller, usage);
-            bool currentButtonPressed = GetValue(controller, usage);
-            if (prevButtonPressed != currentButtonPressed)
+            InputPair pair = new InputPair(controller, usage);
+            if (onPress != null && justPressed.Contains(pair))
             {
-                if (currentButtonPressed)
-                {
-                    // TODO: handle this state of "wasPressed" out of the ButtonEvent function.
-                    wasPressed.Add(new InputPair(controller, usage));
-                    if (onPress != null)
-                    {                        
-                        onPress();
-                    }                
-                }
-                else
-                {
-                    InputPair pair = new InputPair(controller, usage);
-                    if (wasPressed.Contains(pair) && onRelease != null)
-                    {
-                        onRelease();
-                    }
-                    wasPressed.Remove(pair);
-                }
+                onPress();
+            }
+
+            if (onRelease != null && justReleased.Contains(pair))
+            {
+                onRelease();
             }
         }
 
