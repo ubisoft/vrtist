@@ -11,6 +11,7 @@ namespace VRtist
         public Transform[] planes;
         public GameObject planesContainer;
         [CentimeterFloat] public float cameraSpaceGap = 0.01f;
+        [CentimeterFloat] public float collidersThickness = 0.05f;
         public SelectorTrigger selectorTrigger;
         public Transform world;
         public UICheckbox uniformScaleCheckbox = null;
@@ -209,7 +210,13 @@ namespace VRtist
             }
 
             Vector3 bs = planesContainer.transform.localScale; // boundsScale
-            Vector3 cs = new Vector3(0.5f/bs.x, 0.5f/bs.y, 0.5f/bs.z); // colliderScale
+            
+            // Collider Scale
+            Vector3 cs = new Vector3(
+                collidersThickness * (1.0f / world.localScale.x) * (1.0f / bs.x),
+                collidersThickness * (1.0f / world.localScale.y) * (1.0f / bs.y),
+                collidersThickness * (1.0f / world.localScale.z) * (1.0f / bs.z)
+            );
 
             // GAP: fixed in camera space. Scales with world and objet scales, inverse.
             Vector3 g = new Vector3(
