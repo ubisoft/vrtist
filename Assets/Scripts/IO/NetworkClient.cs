@@ -1247,7 +1247,10 @@ namespace VRtist
             meshInstances[meshName].Add(meshFilter);
             meshFilter.mesh = mesh;
 
-            MeshCollider collider = gobject.AddComponent<MeshCollider>();
+            if (gobject.GetComponent<MeshCollider>() == null)
+            {
+                gobject.AddComponent<MeshCollider>();
+            }
 
             return transform;
         }
