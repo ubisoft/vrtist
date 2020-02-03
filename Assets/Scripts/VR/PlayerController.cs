@@ -10,10 +10,11 @@ namespace VRtist
         [Header("Base Parameters")]
         public Transform world = null;
         public float playerSpeed = 0.2f;
+        public StretchUI lineUI = null;
 
         private Transform leftHandle = null;
         private Transform pivot = null;
-        private LineRenderer line = null;
+        //private LineRenderer line = null;
 
         Matrix4x4 initLeftControllerMatrix_WtoL;
         Matrix4x4 initRightControllerMatrix_WtoL;
@@ -47,11 +48,9 @@ namespace VRtist
 
             pivot = leftHandle.parent; // "Pivot" is the first non-identity parent of right and left controllers.
 
-            line = gameObject.GetComponent<LineRenderer>();
-            line.enabled = false;
-            line.startWidth = 0.005f;
-            line.endWidth = 0.005f;
-
+            if (lineUI == null) { Debug.LogWarning("Cannot find the stretch ui object"); }
+            lineUI.Show(false);
+            
             initCameraPosition = transform.position;
             initCameraRotation = transform.rotation;
             UpdateCameraClipPlanes();
@@ -123,7 +122,7 @@ namespace VRtist
                     ResetInitWorldMatrix();
                     ResetDistance(); // after reset world, use scale
                     leftHandle.localScale = Vector3.one; // tmp: show left controller for bi-manual interaction.
-                    line.enabled = true;
+                    lineUI.Show(true);
                 }
                 else // only left, reset left
                 {
@@ -139,7 +138,7 @@ namespace VRtist
                 leftHandle.localScale = Vector3.one;
 
                 isLeftGripped = false;
-                line.enabled = false; // in case we release left grip before right grip
+                lineUI.Show(false); // in case we release left grip before right grip
             });
 
             // TODO: 
@@ -157,7 +156,7 @@ namespace VRtist
 
                     leftHandle.localScale = Vector3.one; // tmp: show left controller for bi-manual interaction.
 
-                    line.enabled = true;
+                    lineUI.Show(true);
                 }
 
                 isRightGripped = true;
@@ -171,7 +170,7 @@ namespace VRtist
                     ResetInitWorldMatrix();
 
                     leftHandle.localScale = Vector3.zero; // hide controller
-                    line.enabled = false;
+                    lineUI.Show(false);
                 }
 
                 isRightGripped = false;
@@ -212,10 +211,7 @@ namespace VRtist
 
                     Vector3 currentMiddleControllerPosition_W = (currentLeftControllerPosition_W + currentRightControllerPosition_W) * 0.5f;
 
-                    line.SetPosition(0, currentLeftControllerPosition_W);
-                    line.SetPosition(1, currentMiddleControllerPosition_W);
-                    line.SetPosition(2, currentRightControllerPosition_W);
-
+                    
                     Vector3 middlePosition_L = (currentLeftControllerPosition_L + currentRightControllerPosition_L) * 0.5f;
                     Vector3 middleXVector = (currentRightControllerPosition_L - currentLeftControllerPosition_L).normalized;
                     Vector3 middleForwardVector = -Vector3.Cross(middleXVector, pivot.up).normalized;
@@ -230,6 +226,14 @@ namespace VRtist
                     float factor = newDistance / prevDistance;
                     scale *= factor;
                     prevDistance = newDistance;
+
+                    // Rotation for the line text
+                    Vector3 middleForward180 = Vector3.Cross(middleXVector, pivot.up).normalized;
+                    Vector3 rolledUp = Vector3.Cross(-middleXVector, middleForward180).normalized;
+                    Quaternion middleRotationWithRoll_L = Quaternion.LookRotation(middleForward180, rolledUp);
+                    Matrix4x4 middleMatrixWithRoll_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotationWithRoll_L, new Vector3(scale, scale, scale));
+                    Quaternion middleRotationWithRoll_W = (pivot.localToWorldMatrix * middleMatrixWithRoll_L_Scaled).rotation;
+                    lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentRightControllerPosition_W, middleRotationWithRoll_W, world.localScale.x);
                 }
                 else
                 {
@@ -250,6 +254,9 @@ namespace VRtist
                 UpdateCameraClipPlanes();
             }
         }
+
+        
+
 
         private void Navigation_Reset()
         {
