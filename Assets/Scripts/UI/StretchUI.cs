@@ -74,12 +74,14 @@ namespace VRtist
             //
             float m = borderMarginsPct; // margin left and right
             float w = 1.0f - 2.0f * m;
+            //line.SetPosition(0, Vector3.Lerp(left, right, m));
+            //line.SetPosition(1, Vector3.Lerp(left, right, m + 0.450f * w));
+            //line.SetPosition(2, Vector3.Lerp(left, right, m + 0.451f * w));
+            //line.SetPosition(3, Vector3.Lerp(left, right, m + 0.549f * w));
+            //line.SetPosition(4, Vector3.Lerp(left, right, m + 0.550f * w));
+            //line.SetPosition(5, Vector3.Lerp(left, right, 1.0f - m));
             line.SetPosition(0, Vector3.Lerp(left, right, m));
-            line.SetPosition(1, Vector3.Lerp(left, right, m + 0.450f * w));
-            line.SetPosition(2, Vector3.Lerp(left, right, m + 0.451f * w));
-            line.SetPosition(3, Vector3.Lerp(left, right, m + 0.549f * w));
-            line.SetPosition(4, Vector3.Lerp(left, right, m + 0.550f * w));
-            line.SetPosition(5, Vector3.Lerp(left, right, 1.0f - m));
+            line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
 
             //
             // Text
@@ -103,8 +105,16 @@ namespace VRtist
                 Text txt = textTransform.gameObject.GetComponent<Text>();
                 if (txt != null)
                 {
-                    float invertedScale = 1.0f / scale;
-                    txt.text = "x " + invertedScale.ToString("#0.00");
+                    // TODO: add an icon, change its colors.
+                    if (scale < 1.0f)
+                    {
+                        float invertedScale = 1.0f / scale;
+                        txt.text = "x " + invertedScale.ToString("#0.00");
+                    }
+                    else
+                    {
+                        txt.text = "x " + scale.ToString("#0.00");
+                    }
                 }
             }
         }
