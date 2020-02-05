@@ -945,9 +945,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 318584386858741578}
+  - component: {fileID: 2635210939663499830}
   m_Layer: 0
   m_Name: lapin
-  m_TagString: Untagged
+  m_TagString: PhysicObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -967,6 +968,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2635210939663499830
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3616547830633962841}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1.3444872, z: 0.60716337}
+  m_Center: {x: 0, y: 0.66782236, z: -0.021152765}
 --- !u!1 &4350517306768705271
 GameObject:
   m_ObjectHideFlags: 0
