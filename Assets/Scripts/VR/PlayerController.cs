@@ -206,9 +206,9 @@ namespace VRtist
                         scale *= fixedScaleFactor;
                     if (joystickAxis.y < -deadZone)
                         scale /= fixedScaleFactor;
-                }
 
-                Matrix4x4 transformed; // new world matrix
+                    // TODO: dont hide controller, and draw scale factor.
+                }
 
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
@@ -228,45 +228,69 @@ namespace VRtist
 
                     Vector3 currentMiddleControllerPosition_W = (currentLeftControllerPosition_W + currentRightControllerPosition_W) * 0.5f;
 
-                    
+                    // scale handling (before computing the "transformed" matrix with the new scale)
+                    float newDistance = Vector3.Distance(currentLeftControllerPosition_W, currentRightControllerPosition_W);
+                    float factor = newDistance / prevDistance;
+                    float oldScale = scale;
+                    scale *= factor;
+                    prevDistance = newDistance;
+
                     Vector3 middlePosition_L = (currentLeftControllerPosition_L + currentRightControllerPosition_L) * 0.5f;
                     Vector3 middleXVector = (currentRightControllerPosition_L - currentLeftControllerPosition_L).normalized;
                     Vector3 middleForwardVector = -Vector3.Cross(middleXVector, pivot.up).normalized;
                     Quaternion middleRotation_L = Quaternion.LookRotation(middleForwardVector, pivot.up);
+
+                    Matrix4x4 middleMatrix_L_OldScaled = Matrix4x4.TRS(middlePosition_L, middleRotation_L, new Vector3(oldScale, oldScale, oldScale));
                     Matrix4x4 middleMatrix_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotation_L, new Vector3(scale, scale, scale));
 
+                    Matrix4x4 middleMatrix_W_OldDelta = pivot.localToWorldMatrix * middleMatrix_L_OldScaled * initMiddleMatrix_WtoL;
                     Matrix4x4 middleMatrix_W_Delta = pivot.localToWorldMatrix * middleMatrix_L_Scaled * initMiddleMatrix_WtoL;
-                    transformed = middleMatrix_W_Delta * initWorldMatrix_W;
 
-                    // scale handling
-                    float newDistance = Vector3.Distance(currentLeftControllerPosition_W, currentRightControllerPosition_W);
-                    float factor = newDistance / prevDistance;
-                    scale *= factor;
-                    prevDistance = newDistance;
+                    Matrix4x4 transformedOld = middleMatrix_W_OldDelta * initWorldMatrix_W;
+                    Matrix4x4 transformed = middleMatrix_W_Delta * initWorldMatrix_W;
+
+                    float s = 1.0f;
+                    float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / maxPlayerScale, minPlayerScale);
+                    if (transformed.lossyScale.x != clampedScale)
+                    {
+                        world.localPosition = new Vector3(transformedOld.GetColumn(3).x, transformedOld.GetColumn(3).y, transformedOld.GetColumn(3).z);
+                        world.localRotation = transformedOld.rotation;
+
+                        s = scale;
+
+                        scale = prevScale;
+                    }
+                    else
+                    {
+                        // translate/rotate/scale using the new scale
+                        world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                        world.localRotation = transformed.rotation;
+                        world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
+
+                        s = oldScale;
+                    }
 
                     // Rotation for the line text
                     Vector3 middleForward180 = Vector3.Cross(middleXVector, pivot.up).normalized;
                     Vector3 rolledUp = Vector3.Cross(-middleXVector, middleForward180).normalized;
                     Quaternion middleRotationWithRoll_L = Quaternion.LookRotation(middleForward180, rolledUp);
-                    Matrix4x4 middleMatrixWithRoll_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotationWithRoll_L, new Vector3(scale, scale, scale));
+                    Matrix4x4 middleMatrixWithRoll_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotationWithRoll_L, new Vector3(s, s, s));
                     Quaternion middleRotationWithRoll_W = (pivot.localToWorldMatrix * middleMatrixWithRoll_L_Scaled).rotation;
                     lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentRightControllerPosition_W, middleRotationWithRoll_W, world.localScale.x);
                 }
                 else
                 {
                     Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
-                    transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
-                }
+                    Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
 
-                world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                world.localRotation = transformed.rotation;
-
-                float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / minPlayerScale, maxPlayerScale);
-                world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
-                // TODO: the following lines can lock you into min or max scale.
-                if (transformed.lossyScale.x != clampedScale)
-                {
-                    scale = prevScale;
+                    world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                    world.localRotation = transformed.rotation;
+                    float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / maxPlayerScale, minPlayerScale);
+                    world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
+                    if (transformed.lossyScale.x != clampedScale)
+                    {
+                        scale = prevScale;
+                    }
                 }
 
                 UpdateCameraClipPlanes();
