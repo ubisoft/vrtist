@@ -18,7 +18,7 @@ namespace VRtist
         void Awake()
         {
             world = transform.parent;
-            while (null != world.parent)
+            while (null != world && null != world.parent)
             {
                 world = world.parent;
             }

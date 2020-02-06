@@ -16,7 +16,7 @@ namespace VRtist
         void Awake()
         {
             world = transform.parent;
-            while (world.parent)
+            while (world != null && world.parent)
             {
                 world = world.parent;
             }
@@ -42,6 +42,10 @@ namespace VRtist
         void Update()
         {
             if (!lightObject)
+                return;
+
+            // LightParameter is shared between prefab aqnd instances, no need to update instances
+            if (lightObject.transform.parent.name != "__Prefabs")
                 return;
 
             float scale = world.localScale.x;
