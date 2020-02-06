@@ -86,6 +86,14 @@ namespace VRtist
             }
         }
 
+        enum ControllerVisibility { SHOW_NORMAL, HIDE, SHOW_GRIP };
+
+        void SetLeftControllerVisibility(ControllerVisibility visibility)
+        {
+            // TODO: handle the switch to a specific model for the left grip alone.
+            leftHandle.localScale = visibility == ControllerVisibility.HIDE ? Vector3.zero : Vector3.one;
+        }
+
         // Update is called once per frame
         void Update()
         {
@@ -128,55 +136,73 @@ namespace VRtist
             // TODO: FIT instead of reset.
             Navigation_Reset();
 
-            // grip world
+            //
+            // LEFT GRIP WORLD
+            //
+
             VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
             () =>
             {
-                // left AFTER right, reset all
-                if (isRightGripped)
+                // left AFTER right => reset all
+                // NOTE: isRightGripped && Selection.selection.Count > 0 means that the selectionTool will/has gripped objects,
+                //       and is no longer able to be used for two-hands interaction.
+                if (isRightGripped && Selection.selection.Count == 0)
                 {
                     ResetInitControllerMatrices(ResetType.LEFT_AND_RIGHT);
                     ResetInitWorldMatrix();
                     ResetDistance(); // after reset world, use scale
-                    leftHandle.localScale = Vector3.one; // tmp: show left controller for bi-manual interaction.
-                    lineUI.Show(true);
+
+                    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
+
+                    lineUI.Show(true, StretchUI.LineMode.DOUBLE);
                 }
-                else // only left, reset left
+                else // only left => reset left
                 {
                     ResetInitControllerMatrices(ResetType.LEFT_ONLY);
                     ResetInitWorldMatrix();
-                    leftHandle.localScale = Vector3.zero;
+
+                    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
+
+                    lineUI.Show(true, StretchUI.LineMode.SINGLE);
                 }
 
                 isLeftGripped = true;
             },
             () =>
             {
-                leftHandle.localScale = Vector3.one;
+                SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
+
+                lineUI.Show(false);
 
                 isLeftGripped = false;
-                lineUI.Show(false); // in case we release left grip before right grip
             });
 
+            //
+            // RIGHT GRIP WORLD
+            //
+
             // TODO: 
-            //  * soit on check si ya pas deja une selection ou un outil en cours d'utilisation
-            //  * soit on set ici un bool visible par les tools, qui EUX, check qu'on est pas en train de manipuler le monde.
+            //  * on a un souci d'ordre de recuperation d'evenement.
+            //    on ne peut pas garantir que le selection tool va essayer de grip avant ou apres le player controller.
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton,
             () =>
             {
-                // right AFTER left, reset all
-                if (isLeftGripped)
+                if (Selection.selection.Count == 0)
                 {
-                    ResetInitControllerMatrices(ResetType.LEFT_AND_RIGHT);
-                    ResetInitWorldMatrix();
-                    ResetDistance(); // NOTE: called after "reset world", because it uses the scale.
+                    // right AFTER left and no selection, reset all
+                    if (isLeftGripped)
+                    {
+                        ResetInitControllerMatrices(ResetType.LEFT_AND_RIGHT);
+                        ResetInitWorldMatrix();
+                        ResetDistance(); // NOTE: called after "reset world", because it uses the scale.
 
-                    leftHandle.localScale = Vector3.one; // tmp: show left controller for bi-manual interaction.
+                        SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
+                        lineUI.Show(true, StretchUI.LineMode.DOUBLE);
+                    }
 
-                    lineUI.Show(true);
+                    // even if no left gripped, just flag the right as gripped for the next update
+                    isRightGripped = true;
                 }
-
-                isRightGripped = true;
             },
             () =>
             {
@@ -186,8 +212,10 @@ namespace VRtist
                     ResetInitControllerMatrices(ResetType.LEFT_ONLY);
                     ResetInitWorldMatrix();
 
-                    leftHandle.localScale = Vector3.zero; // hide controller
-                    lineUI.Show(false);
+                    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
+
+                    //lineUI.Show(false);
+                    lineUI.Show(true, StretchUI.LineMode.SINGLE);
                 }
 
                 isRightGripped = false;
@@ -207,7 +235,7 @@ namespace VRtist
                     if (joystickAxis.y < -deadZone)
                         scale /= fixedScaleFactor;
 
-                    // TODO: dont hide controller, and draw scale factor.
+                    // TODO: draw scale factor.
                 }
 
                 // update left joystick
@@ -215,7 +243,8 @@ namespace VRtist
                 Quaternion currentLeftControllerRotation_L;
                 VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
                 Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
-                Vector3 currentLeftControllerPosition_W = (pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled).MultiplyPoint(Vector3.zero);
+                Matrix4x4 currentLeftControllerMatrix_W = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled;
+                Vector3 currentLeftControllerPosition_W = currentLeftControllerMatrix_W.MultiplyPoint(Vector3.zero);
 
                 if (isRightGripped)
                 {
@@ -291,6 +320,8 @@ namespace VRtist
                     {
                         scale = prevScale;
                     }
+
+                    lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentLeftControllerPosition_W, currentLeftControllerMatrix_W.rotation, world.localScale.x);
                 }
 
                 UpdateCameraClipPlanes();

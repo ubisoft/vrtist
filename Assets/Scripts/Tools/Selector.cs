@@ -154,6 +154,8 @@ namespace VRtist
 
         protected void OnStartGrip()
         {
+            // TODO: get information about the state of the two-handsgrip interaction
+
             undoGroup = new CommandGroup();
 
             InitControllerMatrix();

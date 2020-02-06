@@ -12,8 +12,13 @@ namespace VRtist
         [SpaceHeader("Debug parameters", 6, 0.8f, 0.8f, 0.8f)]
         public float borderMarginsPct = 0.1f;
         [CentimeterFloat] public float lineWidth = 0.005f;
-        [CentimeterVector3] public Vector3 localOffset = new Vector3(0.0f, 0.02f, 0.0f);
+        [CentimeterVector3] public Vector3 localOffsetTwoHands = new Vector3(-0.008f, -0.005f, 0.0f);
+        [CentimeterVector3] public Vector3 localOffsetOneHand = new Vector3(-0.0086f, -0.0344f, -0.0253f);
         public Vector3 localRotation = new Vector3(45.0f, 0.0f, 0.0f);
+
+        public enum LineMode { SINGLE, DOUBLE };
+        [HideInInspector]
+        public LineMode lineMode = LineMode.SINGLE;
 
 #if UNITY_EDITOR
         Vector3 previousLeft = Vector3.zero;
@@ -56,10 +61,15 @@ namespace VRtist
 #endif
         }
 
-        public void Show(bool doShow)
+        public void Show(bool doShow, LineMode mode = LineMode.SINGLE)
         {
+            lineMode = mode;
+            line.enabled = (mode == LineMode.DOUBLE); // hide line when doing one hand manipultion
+
             gameObject.SetActive(doShow);
         }
+
+        
 
         public void UpdateLineUI(Vector3 left, Vector3 right, Quaternion rotation, float scale)
         {
@@ -72,17 +82,20 @@ namespace VRtist
             //
             // Stretch bar
             //
-            float m = borderMarginsPct; // margin left and right
-            float w = 1.0f - 2.0f * m;
-            //line.SetPosition(0, Vector3.Lerp(left, right, m));
-            //line.SetPosition(1, Vector3.Lerp(left, right, m + 0.450f * w));
-            //line.SetPosition(2, Vector3.Lerp(left, right, m + 0.451f * w));
-            //line.SetPosition(3, Vector3.Lerp(left, right, m + 0.549f * w));
-            //line.SetPosition(4, Vector3.Lerp(left, right, m + 0.550f * w));
-            //line.SetPosition(5, Vector3.Lerp(left, right, 1.0f - m));
-            line.SetPosition(0, Vector3.Lerp(left, right, m));
-            line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
 
+            if (lineMode == LineMode.SINGLE)
+            {
+                line.SetPosition(0, left);
+                line.SetPosition(1, right);
+            }
+            else
+            {
+                float m = borderMarginsPct; // margin left and right
+                float w = 1.0f - 2.0f * m;
+                line.SetPosition(0, Vector3.Lerp(left, right, m));
+                line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
+            }
+            
             //
             // Text
             //
@@ -94,13 +107,16 @@ namespace VRtist
                 Vector3 middlePoint = Vector3.Lerp(left, right, 0.5f);
                 canvasRT.localPosition = middlePoint;
                 canvasRT.rotation = rotation * Quaternion.Euler(localRotation);
-                canvasRT.sizeDelta = new Vector2(fullBarWidth, 1.0f);
+                canvasRT.sizeDelta = 
+                    (lineMode == LineMode.SINGLE)
+                    ? new Vector2(fullBarWidth, 1.0f)
+                    : new Vector2(3.0f, 1.0f);
 
                 Transform textTransform = canvas.transform.Find("Text");
                 RectTransform rectText = textTransform.GetComponent<RectTransform>();
 
                 rectText.sizeDelta = canvasRT.sizeDelta;
-                rectText.localPosition = localOffset; // local delta relative to the middle point
+                rectText.localPosition = (lineMode == LineMode.SINGLE) ? localOffsetOneHand : localOffsetTwoHands; // local delta relative to the middle point
 
                 Text txt = textTransform.gameObject.GetComponent<Text>();
                 if (txt != null)
