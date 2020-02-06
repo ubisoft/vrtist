@@ -118,7 +118,8 @@ namespace VRtist
             if (hasUIObject) return;
 
             // Mono-selection using the grip button
-            if(!grippedGameObject && gripState && !triggerState && !primaryButtonState && !multiSelecting)
+            if (!grippedGameObject && gripState && !triggerState && !primaryButtonState && !multiSelecting
+             && !ToolsManager.Instance.isGrippingWorld)
             {
                 selector.ClearSelection();
                 selector.AddSiblingsToSelection(gObject);

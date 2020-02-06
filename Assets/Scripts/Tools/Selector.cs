@@ -154,7 +154,8 @@ namespace VRtist
 
         protected void OnStartGrip()
         {
-            // TODO: get information about the state of the two-handsgrip interaction
+            if (ToolsManager.Instance.isGrippingWorld)
+                return;
 
             undoGroup = new CommandGroup();
 
@@ -195,6 +196,9 @@ namespace VRtist
         }
         protected void OnEndGrip()
         {
+            if (ToolsManager.Instance.isGrippingWorld)
+                return;
+
             foreach (var item in Selection.selection)
             {
                 LightController lightController = item.Value.GetComponentInChildren<LightController>();
