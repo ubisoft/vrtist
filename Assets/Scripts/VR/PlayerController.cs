@@ -12,10 +12,19 @@ namespace VRtist
         public float playerSpeed = 0.2f;
         public StretchUI lineUI = null;
 
+        [Header("Tweaking")]
+        public bool useScaleFactor = false;
+        public float nearPlaneFactor = 0.1f;
+        public float farPlaneFactor = 5000.0f;
+        public float nearPlane = 0.1f; // 10 cm, close enough to not clip the controllers.
+        public float farPlane = 1000.0f; // 1km from us, far enough?
+        [Tooltip("Player can be xxx times bigger than the world")]
+        public float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
+        [Tooltip("Player can be xxx times smaller than the world")]
+        public float minPlayerScale = 50.0f; // world scale = 50.0f;
         private Transform leftHandle = null;
         private Transform pivot = null;
-        //private LineRenderer line = null;
-
+        
         Matrix4x4 initLeftControllerMatrix_WtoL;
         Matrix4x4 initRightControllerMatrix_WtoL;
         Matrix4x4 initMiddleMatrix_WtoL;
@@ -65,8 +74,16 @@ namespace VRtist
 
         void UpdateCameraClipPlanes()
         {
-            Camera.main.nearClipPlane = 0.1f * world.localScale.x;
-            Camera.main.farClipPlane = 5000f * world.localScale.x;
+            if (useScaleFactor)
+            {
+                Camera.main.nearClipPlane = nearPlaneFactor * world.localScale.x; // 0.1f
+                Camera.main.farClipPlane = farPlaneFactor * world.localScale.x; // 5000.0f
+            }
+            else
+            {
+                Camera.main.nearClipPlane = nearPlane;
+                Camera.main.farClipPlane = farPlane;
+            }
         }
 
         // Update is called once per frame
@@ -244,8 +261,9 @@ namespace VRtist
                 world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
                 world.localRotation = transformed.rotation;
 
-                float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 0.0005f, 50f);
+                float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / minPlayerScale, maxPlayerScale);
                 world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
+                // TODO: the following lines can lock you into min or max scale.
                 if (transformed.lossyScale.x != clampedScale)
                 {
                     scale = prevScale;
