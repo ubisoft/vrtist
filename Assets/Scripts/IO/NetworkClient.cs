@@ -843,6 +843,8 @@ namespace VRtist
         }
         public static void BuildAddObjectToScene(Transform root, string objectName, string collectionInstanceName)
         {
+            if (!nodes.ContainsKey(objectName))
+                return;
             Node objectNode = nodes[objectName];
 
             if (objectNode.instances.Count > 0)
@@ -927,6 +929,7 @@ namespace VRtist
             currentSceneName = GetString(data, bufferIndex, out bufferIndex);
 
             sceneCollections.Clear();
+            instancesToNodes.Clear();
 
             List<GameObject> objectToRemove = new List<GameObject>();
 
