@@ -608,6 +608,7 @@ namespace VRtist
                 {
                     ApplyVisibility(item.Item1);
                 }
+
             }
 
             // collection instances management
@@ -847,8 +848,11 @@ namespace VRtist
                 return;
             Node objectNode = nodes[objectName];
 
-            if (objectNode.instances.Count > 0)
-                return;
+            foreach(Tuple<GameObject, string> item in objectNode.instances)
+            {
+                if (item.Item2 == collectionInstanceName)
+                    return; // already instantiated
+            }
 
             GameObject instance = GameObject.Instantiate(objectNode.prefab);
             instance.name = objectName;
