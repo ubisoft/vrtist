@@ -25,7 +25,6 @@ public class OIIOAPI
     [DllImport("oiio_wrapper")]
     public static extern int oiio_get_image_info(ref int width, ref int height, ref int nchannels, ref BASETYPE format);
 
-
     [DllImport("oiio_wrapper")]
     public static extern int oiio_fill_image_data(IntPtr data, int rgb_to_rgba);
 }

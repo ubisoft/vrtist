@@ -398,13 +398,20 @@ namespace VRtist
             return material;
         }
 
+        public static Texture2D CreateSmallImage()
+        {
+            Texture2D smallImage = new Texture2D(1, 1, TextureFormat.RGBA32, false, true);
+            smallImage.LoadRawTextureData(new byte[] { 0, 0, 0, 255 });
+            return smallImage;
+        }
+
         public static Texture2D LoadTextureOIIO(string filePath, bool isLinear)
         {
             // TODO: need to flip? Repere bottom left, Y-up
             int ret = OIIOAPI.oiio_open_image(filePath);
             if (ret == 0)
             {
-                Debug.Log("Could not open image " + filePath + " with OIIO.");
+                Debug.LogWarning("Could not open image " + filePath + " with OIIO.");
                 return null;
             }
 
@@ -415,25 +422,29 @@ namespace VRtist
             ret = OIIOAPI.oiio_get_image_info(ref width, ref height, ref nchannels, ref format);
             if (ret == 0)
             {
-                Debug.Log("Could not get info about image " + filePath + " with OIIO");
+                Debug.LogWarning("Could not get info about image " + filePath + " with OIIO");
                 return null;
             }
 
-            TextureFormat textureFormat = Format2Format(format, nchannels);
-            Texture2D image = new Texture2D(width, height, textureFormat, true, isLinear); // with mips
-
-            // NOTE: Unity does not have RGBFloat/Half formats. So if a texture has these formats
-            // we convert it to a 4 channels RGBAFloat/Half texture.
-            int do_rgb_to_rgba = 0;
-            if ((format == OIIOAPI.BASETYPE.FLOAT && nchannels == 3)
-                || (format == OIIOAPI.BASETYPE.HALF && nchannels == 3))
+            TexConv conv = new TexConv();
+            bool canConvert = Format2Format(format, nchannels, ref conv);
+            if(!canConvert)
             {
-                do_rgb_to_rgba = 1;
+                Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
+                return CreateSmallImage();
             }
+            // TMP
+            else if(conv.options.HasFlag(TextureConversionOptions.SHORT_TO_FLOAT) || conv.options.HasFlag(TextureConversionOptions.SHORT_TO_INT))
+            {
+                Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
+                return CreateSmallImage();
+            }
+
+            Texture2D image = new Texture2D(width, height, conv.format, true, isLinear); // with mips
 
             var pixels = image.GetRawTextureData();
             GCHandle handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
-            ret = OIIOAPI.oiio_fill_image_data(handle.AddrOfPinnedObject(), do_rgb_to_rgba);
+            ret = OIIOAPI.oiio_fill_image_data(handle.AddrOfPinnedObject(), conv.options.HasFlag(TextureConversionOptions.RGB_TO_RGBA) ? 1 : 0);
             if (ret == 1)
             {
                 image.LoadRawTextureData(pixels);
@@ -441,70 +452,82 @@ namespace VRtist
             }
             else
             {
-                Debug.Log("Could not fill texture data of " + filePath + " with OIIO.");
+                Debug.LogWarning("Could not fill texture data of " + filePath + " with OIIO.");
                 return null;
             }
 
             return image;
         }
 
-        private static TextureFormat Format2Format(OIIOAPI.BASETYPE format, int nchannels)
+        enum TextureConversionOptions
+        {
+            NO_CONV = 0,
+            RGB_TO_RGBA = 1,
+            SHORT_TO_INT = 2,
+            SHORT_TO_FLOAT = 4,
+        }; // TODO: fill, enhance
+
+        class TexConv
+        {
+            public TextureFormat format;
+            public TextureConversionOptions options;
+        };
+
+        private static bool Format2Format(OIIOAPI.BASETYPE format, int nchannels, ref TexConv result)
         {
             // TODO: handle compressed formats.
 
-            TextureFormat defaultFormat = TextureFormat.RGBA32;
-
+            result.format = TextureFormat.RGBA32;
+            result.options = TextureConversionOptions.NO_CONV;
+            
             switch (format)
             {
                 case OIIOAPI.BASETYPE.UCHAR:
                 case OIIOAPI.BASETYPE.CHAR:
+                    switch (nchannels)
                     {
-                        switch (nchannels)
-                        {
-                            case 1: return TextureFormat.R8;
-                            case 2: return TextureFormat.RG16;
-                            case 3: return TextureFormat.RGB24;
-                            case 4: return TextureFormat.RGBA32;
-                            default: return defaultFormat;
-                        }
-                    }
-
+                        case 1: result.format = TextureFormat.R8; break;
+                        case 2: result.format = TextureFormat.RG16; break;
+                        case 3: result.format = TextureFormat.RGB24; break;
+                        case 4: result.format = TextureFormat.RGBA32; break;
+                        default: return false;
+                    } break;
+                    
                 case OIIOAPI.BASETYPE.USHORT:
+                    switch (nchannels)
                     {
-                        switch (nchannels)
-                        {
-                            case 1: return TextureFormat.R16;
-                            // R16_G16, R16_G16_B16 and R16_G16_B16_A16 do not exist
-                            default: return defaultFormat;
-                        }
-                    }
-
+                        case 1: result.format = TextureFormat.R16; break;
+                        case 2: result.format = TextureFormat.RGFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT; break;
+                        case 3: result.format = TextureFormat.RGBAFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT | TextureConversionOptions.RGB_TO_RGBA; break;
+                        case 4: result.format = TextureFormat.RGBAFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT; break;
+                        // R16_G16, R16_G16_B16 and R16_G16_B16_A16 do not exist
+                        default: return false;
+                    } break;
+                
                 case OIIOAPI.BASETYPE.HALF:
+                    switch (nchannels)
                     {
-                        switch (nchannels)
-                        {
-                            case 1: return TextureFormat.RHalf;
-                            case 2: return TextureFormat.RGHalf;
-                            case 3: return TextureFormat.RGBAHalf; // RGBHalf is NOT SUPPORTED
-                            case 4: return TextureFormat.RGBAHalf;
-                            default: return defaultFormat;
-                        }
-                    }
+                        case 1: result.format = TextureFormat.RHalf; break;
+                        case 2: result.format = TextureFormat.RGHalf; break;
+                        case 3: result.format = TextureFormat.RGBAHalf; result.options = TextureConversionOptions.NO_CONV | TextureConversionOptions.RGB_TO_RGBA; break; // RGBHalf is NOT SUPPORTED
+                        case 4: result.format = TextureFormat.RGBAHalf; break;
+                        default: return false;
+                    } break;
 
                 case OIIOAPI.BASETYPE.FLOAT:
+                    switch (nchannels)
                     {
-                        switch (nchannels)
-                        {
-                            case 1: return TextureFormat.RFloat;
-                            case 2: return TextureFormat.RGFloat;
-                            case 3: return TextureFormat.RGBAFloat; // RGBFloat is NOT SUPPORTED
-                            case 4: return TextureFormat.RGBAFloat;
-                            default: return defaultFormat;
-                        }
-                    }
+                        case 1: result.format = TextureFormat.RFloat; break;
+                        case 2: result.format = TextureFormat.RGFloat; break;
+                        case 3: result.format = TextureFormat.RGBAFloat; result.options = TextureConversionOptions.NO_CONV | TextureConversionOptions.RGB_TO_RGBA; break;// RGBFloat is NOT SUPPORTED
+                        case 4: result.format = TextureFormat.RGBAFloat; break;
+                        default: return false;
+                    } break;
 
-                default: return defaultFormat;
+                default: return false;
             }
+
+            return true;
         }
 
         public static Texture2D LoadTextureDXT(string filePath, bool isLinear)
@@ -1097,7 +1120,7 @@ namespace VRtist
                 //camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 //camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
             }
-            else
+            else // TODO: found a case where a camera was found (don't know when it was created???), but had no Camera child object.
             {
                 camGameObject = camTransform.gameObject;
             }
@@ -1119,6 +1142,10 @@ namespace VRtist
             currentIndex += sizeof(float);
 
             Camera cam = camGameObject.GetComponentInChildren<Camera>(true);
+
+            // TMP fix for a weird case.
+            if (cam == null)
+                return;
 
             // Is it necessary ?
             /////////////////
