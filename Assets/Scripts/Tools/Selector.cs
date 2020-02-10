@@ -419,7 +419,16 @@ namespace VRtist
                 }
                 else
                 {
+                    Node node = SyncData.nodes[selectedObjects[i].name];
+                    GameObject prefab = node.prefab;
+                    GameObject prefabClone = Utils.CreateInstance(prefab, prefab.transform.parent);
+                    SyncData.CreateNode(prefabClone.name, node.parent);
+                    /*SyncData.AddObjectToScene(, prefabClone.name, "/");*/
+                    // TODO
+
+
                     GameObject clone = Utils.CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent);
+
                     clones.Add(clone);
 
                     new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();

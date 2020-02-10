@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace VRtist
 {
+    
     public enum MessageType
     {
         JoinRoom = 1,
@@ -63,155 +64,6 @@ namespace VRtist
     
     public class NetGeometry
     {        
-        public class Node
-        {
-            public Node parent = null; // parent (hierarchy) of this node
-            public List<Node> children = new List<Node>(); // children (hierarchy) of this node
-            public GameObject prefab;
-            public List<Tuple<GameObject, string>> instances = new List<Tuple<GameObject, string>>(); // instances of this node in scene
-            public CollectionNode collectionInstance = null;    // this node is an instance of a collection
-            public List<CollectionNode> collections = new List<CollectionNode>(); // Collections containing this node
-            public bool visible = true;
-            public bool containerVisible = true; // combination of Collections containing this node is visible
-
-            public Node()
-            {
-                prefab = null;
-            }
-            public Node(GameObject gObject)
-            {
-                prefab = gObject;
-            }
-
-            public void AddChild(Node node)
-            {
-                node.parent = this;
-                children.Add(node);
-            }
-
-            public void RemoveChild(Node node)
-            {
-                children.Remove(node);
-                node.parent = null;
-            }
-
-            public void ComputeContainerVisibility()
-            {
-                if(collections.Count == 0)
-                {
-                    containerVisible = true;
-                    return;
-                }
-
-                containerVisible = false;
-                foreach (CollectionNode collection in collections)
-                {
-                    if (collection.IsVisible())
-                    {
-                        containerVisible = true;
-                        break;
-                    }
-                }
-            }
-
-            public void AddCollection(CollectionNode collectionNode)
-            {
-                collections.Add(collectionNode);
-                ComputeContainerVisibility();
-            }
-            public void RemoveCollection(CollectionNode collectionNode)
-            {
-                collections.Remove(collectionNode);
-                ComputeContainerVisibility();
-            }
-
-            public void AddInstance(GameObject obj, string collectionInstanceName)
-            {
-                instances.Add(new Tuple<GameObject, string>(obj, collectionInstanceName));
-            }
-            public void RemoveInstance(GameObject obj)
-            {
-                foreach(Tuple<GameObject, string> item in instances)
-                {
-                    if(item.Item1 == obj)
-                    {
-                        instances.Remove(item);
-                        break;
-                    }
-                }
-            }
-        }
-        public class CollectionNode
-        {
-            public CollectionNode parent = null;                                // Parent collection
-            public List<CollectionNode> children = new List<CollectionNode>();  // Children of collection
-            public List<Node> objects = new List<Node>();                       // Objects in collection
-            public List<Node> prefabInstanceNodes = new List<Node>();           // Instances of collection
-            public string name;
-            public bool visible;
-            public Vector3 offset;
-
-            public bool IsVisible()
-            {
-                if (!visible)
-                    return false;
-                if (null == parent)
-                    return visible;
-                return parent.IsVisible();
-            }
-
-            public CollectionNode(string collectionName)
-            {
-                name = collectionName;
-            }
-            public void AddChild(CollectionNode node)
-            {
-                node.parent = this;
-                children.Add(node);
-            }
-            public void RemoveChild(CollectionNode node)
-            {
-                node.parent = null;
-                children.Remove(node);
-            }
-            public void AddObject(Node node)
-            {
-                objects.Add(node);
-                node.AddCollection(this);
-            }
-            public void RemoveObject(Node node)
-            {
-                node.RemoveCollection(this);
-                objects.Remove(node);
-            }
-            public void AddPrefabInstanceNode(Node obj)
-            {
-                prefabInstanceNodes.Add(obj);
-            }
-            public void RemovePrefabInstanceNode(Node obj)
-            {
-                prefabInstanceNodes.Remove(obj);
-            }
-        }
-
-        public static CollectionNode CreateCollectionNode(CollectionNode parent, string name)
-        {
-            CollectionNode newNode = new CollectionNode(name);
-            collectionNodes.Add(name, newNode);
-            if(parent != null)
-                parent.AddChild(newNode);
-            return newNode;
-        }
-
-        public static Node CreateNode(string name, Node parentNode = null)
-        {
-            Node newNode = new Node();
-            nodes.Add(name, newNode);
-            if (null != parentNode)
-                parentNode.AddChild(newNode);
-            return newNode;
-        }
-
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
         public static Material currentMaterial = null;
 
@@ -222,17 +74,6 @@ namespace VRtist
         public static Dictionary<string, byte[]> textureData = new Dictionary<string, byte[]>();
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static HashSet<string> texturesFlipY = new HashSet<string>();
-
-        public static Dictionary<GameObject, Node> instancesToNodes = new Dictionary<GameObject, Node>();
-        public static Dictionary<string, Node> nodes = new Dictionary<string, Node>();
-        public static Dictionary<string, CollectionNode> collectionNodes = new Dictionary<string, CollectionNode>();
-        public static Dictionary<string, Transform> instanceRoot = new Dictionary<string, Transform>();
-        public static Node prefabNode = new Node();
-        public static Node rootNode = new Node();
-        public static string OffsetTransformName = "__Offset";
-
-        public static string currentSceneName = "";
-        public static HashSet<string> sceneCollections = new HashSet<string>();
 
         public static byte[] StringsToBytes(string[] values)
         {
@@ -451,17 +292,7 @@ namespace VRtist
             string srcName = srcPath[srcPath.Length - 1];
             string dstName = dstPath[dstPath.Length - 1];
 
-            if(nodes.ContainsKey(srcName))
-            {
-                Node node = nodes[srcName];
-                node.prefab.name = dstName;
-                foreach (Tuple<GameObject, string> obj in node.instances)
-                {
-                    obj.Item1.name = dstName;
-                }
-                nodes[dstName] = node;
-                nodes.Remove(srcName);
-            }
+            SyncData.Rename(srcName, dstName);
         }
 
         public static void Delete(Transform prefab, byte[] data)
@@ -470,58 +301,12 @@ namespace VRtist
             string[] ObjectPath = GetString(data, bufferIndex, out bufferIndex).Split('/');
             string objectName = ObjectPath[ObjectPath.Length - 1];
 
-            Node node = nodes[objectName];
-            for(int i = node.instances.Count - 1 ; i>=0; i--)
-                Delete(node.instances[i].Item1);
-        }
-
-        public static void DeleteCollectionInstance(GameObject obj)
-        {
-            RemoveInstanceToNode(obj);
-            for (int i = obj.transform.childCount - 1; i >= 0; i--)
-            {
-                Transform child = obj.transform.GetChild(i);
-                DeleteCollectionInstance(child.gameObject);
-            }
-        }
-
-        public static void Delete(GameObject gobj)
-        {            
-            Node node = nodes[gobj.name];
-            if (null != node && null != node.collectionInstance)
-            {
-                GameObject offset = gobj.transform.Find(OffsetTransformName).gameObject;
-                for (int i = offset.transform.childCount - 1; i >= 0; i--)
-                {
-                    Transform child = offset.transform.GetChild(i);
-                    DeleteCollectionInstance(child.gameObject);
-                }
-
-                offset.transform.parent = null;
-                GameObject.Destroy(offset);
-
-                for (int j = 0; j < gobj.transform.childCount; j++)
-                {
-                    Reparent(gobj.transform.GetChild(j), gobj.transform.parent);
-                }
-
-                GameObject.Destroy(node.prefab);
-                RemoveInstanceToNode(gobj);
-                GameObject.Destroy(gobj);                
-            }
-            else
-            {
-                RemoveInstanceToNode(gobj);
-
-                for (int j = 0; j < gobj.transform.childCount; j++)
-                    Reparent(gobj.transform.GetChild(j), gobj.transform.parent);
-
-                GameObject.Destroy(gobj);
-            }        
+            SyncData.Delete(objectName);
         }
 
         public static void Duplicate(Transform root, byte[] data)
         {
+            // TODO
             int bufferIndex = 0;
             Transform srcPath = FindPath(root, data, 0, out bufferIndex);
             if (srcPath == null)
@@ -541,6 +326,7 @@ namespace VRtist
 
         public static void BuildSendToTrash(Transform root, byte[] data)
         {
+            // TODO
             int bufferIndex = 0;
             Transform objectPath = FindPath(root, data, 0, out bufferIndex);
             if (null == objectPath)
@@ -549,13 +335,14 @@ namespace VRtist
         }
         public static void BuildRestoreFromTrash(Transform root, byte[] data)
         {
+            // TODO
             int bufferIndex = 0;
             string objectName = GetString(data, 0, out bufferIndex);
             string dstPath = GetString(data, bufferIndex, out bufferIndex);
             Transform trf = Utils.GetTrash().transform.Find(objectName);
             if (null != trf)
             {
-                Transform parent = CreateObjectPrefab(root, dstPath);
+                Transform parent = SyncData.CreateObjectPrefab(root, dstPath);
                 trf.parent = parent;
             }
         }
@@ -573,19 +360,6 @@ namespace VRtist
             textureData[path] = buffer;
         }
 
-        public static void GetRecursiveObjectsOfCollection(CollectionNode collectionNode, ref List<Node> nodes)
-        {
-            foreach (Node node in collectionNode.objects)
-            {
-                nodes.Add(node);
-            }
-
-            foreach (CollectionNode childCollection in collectionNode.children)
-            {
-                GetRecursiveObjectsOfCollection(childCollection, ref nodes);
-            }
-        }
-
         public static void BuildCollection(byte[] data)
         {
             int bufferIndex = 0;
@@ -593,34 +367,7 @@ namespace VRtist
             bool visible = GetBool(data, ref bufferIndex);
             Vector3 offset = GetVector3(data, ref bufferIndex);
 
-            CollectionNode collectionNode = collectionNodes.ContainsKey(collectionName) ? collectionNodes[collectionName] : CreateCollectionNode(null, collectionName);
-
-            collectionNode.visible = visible;
-            collectionNode.offset = offset;
-
-            List<Node> nodes = new List<Node>();
-            GetRecursiveObjectsOfCollection(collectionNode, ref nodes);
-            foreach (Node node in nodes)
-            {
-                node.ComputeContainerVisibility();
-
-                foreach(Tuple<GameObject,string> item in node.instances)
-                {
-                    ApplyVisibility(item.Item1);
-                }
-
-            }
-
-            // collection instances management
-            foreach (Node prefabInstanceNode in collectionNode.prefabInstanceNodes)
-            {
-                foreach(Tuple<GameObject, string> item in prefabInstanceNode.instances)
-                {
-                    ApplyVisibility(item.Item1);
-                    GameObject offsetObject = item.Item1.transform.Find(OffsetTransformName).gameObject;
-                    offsetObject.transform.localPosition = offset;
-                }
-            }
+            SyncData.AddCollection(collectionName, offset, visible);
         }
 
         public static void BuildCollectionRemoved(byte[] data)
@@ -628,25 +375,7 @@ namespace VRtist
             int bufferIndex = 0;
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
 
-            if (!collectionNodes.ContainsKey(collectionName))
-                return;
-
-            CollectionNode collectionNode = collectionNodes[collectionName];
-            foreach (Node node in collectionNode.objects)
-            {
-                node.RemoveCollection(collectionNode);
-                foreach (Tuple<GameObject, string> item in node.instances)
-                {
-                    ApplyVisibility(item.Item1);
-                }
-            }
-
-            foreach (CollectionNode child in collectionNode.children)
-            {
-                child.parent = collectionNode.parent;
-            }
-
-            collectionNodes.Remove(collectionName);
+            SyncData.RemoveCollection(collectionName);
         }
 
         public static void BuildAddCollectionToCollection(Transform root, byte[] data)
@@ -655,25 +384,7 @@ namespace VRtist
             string parentCollectionName = GetString(data, bufferIndex, out bufferIndex);
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
 
-            CollectionNode parentNode = null;
-            if (collectionNodes.ContainsKey(parentCollectionName))
-            {
-                parentNode = collectionNodes[parentCollectionName];
-            }
-
-            if (!collectionNodes.ContainsKey(collectionName))
-            {
-                CreateCollectionNode(parentNode, collectionName);
-            }
-            else
-            {
-                CollectionNode collectionNode = collectionNodes[collectionName];
-                if (null != collectionNode.parent)
-                    collectionNode.parent.RemoveChild(collectionNode);
-
-                if (null != parentNode)
-                    parentNode.AddChild(collectionNode);
-            }
+            SyncData.AddCollectionToCollection(parentCollectionName, collectionName);
 
         }
 
@@ -683,11 +394,7 @@ namespace VRtist
             string parentCollectionName = GetString(data, bufferIndex, out bufferIndex);
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
 
-            if (collectionNodes.ContainsKey(parentCollectionName))
-            {
-                CollectionNode parentCollectionNode = collectionNodes[parentCollectionName];
-                parentCollectionNode.RemoveChild(collectionNodes[collectionName]);
-            }
+            SyncData.RemoveCollectionFromCollection(parentCollectionName, collectionName);
         }
 
         public static void BuildAddObjectToCollection(Transform root, byte[] data)
@@ -696,35 +403,7 @@ namespace VRtist
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
             string objectName = GetString(data, bufferIndex, out bufferIndex);
 
-            if (!collectionNodes.ContainsKey(collectionName))
-                return;
-            CollectionNode collectionNode = collectionNodes[collectionName];
-
-            Node objectNode = nodes[objectName];
-            collectionNode.AddObject(objectNode);
-
-            foreach (Node prefabInstanceNode in collectionNode.prefabInstanceNodes)
-            {
-                foreach (Tuple<GameObject, string> t in prefabInstanceNode.instances)
-                {
-                    GameObject obj = t.Item1;
-                    Transform offsetObject = obj.transform.Find(OffsetTransformName);
-                    if (null == offsetObject)
-                        continue;
-
-                    string subCollectionInstanceName = "/" + obj.name;
-                    if (t.Item2.Length > 1)
-                        subCollectionInstanceName = t.Item2 + subCollectionInstanceName;
-
-                    BuildAddObjectToScene(offsetObject, objectNode.prefab.name, subCollectionInstanceName);
-                }
-            }
-
-            foreach(Tuple<GameObject, string> item in objectNode.instances)
-            {
-                ApplyVisibility(item.Item1);
-            }
-            
+            SyncData.AddObjectToCollection(collectionName, objectName);
         }
 
         public static void BuildRemoveObjectFromCollection(Transform root, byte[] data)
@@ -733,24 +412,7 @@ namespace VRtist
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
             string objectName = GetString(data, bufferIndex, out bufferIndex);
 
-            if (!collectionNodes.ContainsKey(collectionName))
-                return;
-
-            CollectionNode collectionNode = collectionNodes[collectionName];
-
-            foreach (Node prefabInstanceNode in collectionNode.prefabInstanceNodes)
-            {
-                foreach (Tuple<GameObject, string> t in prefabInstanceNode.instances)
-                {
-                    GameObject obj = t.Item1;
-                    Transform offsetObject = obj.transform.Find(OffsetTransformName);
-                    if (null == offsetObject)
-                        continue;
-                    BuildRemoveObjectFromScene(offsetObject, objectName, obj.name);
-                }
-            }
-
-            collectionNode.RemoveObject(nodes[objectName]);
+            SyncData.RemoveObjectFromCollection(collectionName, objectName);
         }
 
         public static void BuildCollectionInstance(Transform root, byte[] data)
@@ -759,218 +421,28 @@ namespace VRtist
             Transform transform = BuildPath(root, data, 0, true, out bufferIndex);
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
 
-            CollectionNode collectionNode = collectionNodes.ContainsKey(collectionName) ? collectionNodes[collectionName] : CreateCollectionNode(null, collectionName);
-            Node instanceNode = nodes.ContainsKey(transform.name) ? nodes[transform.name] : CreateNode(transform.name);
-
-            instanceNode.prefab = transform.gameObject;
-            instanceNode.collectionInstance = collectionNode;
-            collectionNode.AddPrefabInstanceNode(instanceNode);
+            SyncData.AddCollectionInstance(transform, collectionName);
         }
 
-        public static void FindObjects(ref List<Transform> objects, Transform t, string name)
-        {
-            if (t.name == name)
-                objects.Add(t);
-
-            for (int i = 0; i < t.childCount; i++)
-                FindObjects(ref objects, t.GetChild(i), name);
-        }
         public static void BuildAddObjectToScene(Transform root, byte[] data)
         {
             int bufferIndex = 0;
             string objectName = GetString(data, bufferIndex, out bufferIndex);
-            BuildAddObjectToScene(root, objectName, "/");
-        }
-
-        public static Transform FindRecursive(Transform t, string objectName)
-        {
-            if (t.name == objectName)
-                return t;
-            for(int i = 0 ; i < t.childCount ; i++)
-            {
-                Transform res = FindRecursive(t.GetChild(i), objectName);
-                if (null != res)
-                    return res;
-            }
-            return null;
-        }
-
-        public static void BuildRemoveObjectFromScene(Transform root, string objectName, string collectionInstanceName)
-        {
-            Transform obj = FindRecursive(root,objectName);
-            if (null == obj)
-                return;
-
-            if (nodes.ContainsKey(objectName))
-            {
-                Node objectNode = nodes[objectName];
-                objectNode.instances.Remove(new Tuple<GameObject, string>(obj.gameObject, collectionInstanceName));
-            }
-
-            Transform parent = obj.parent;
-            for(int i = 0 ; i < obj.childCount; i++)
-            {
-                GameObject child = obj.GetChild(i).gameObject;
-                string childCollectionInstanceName = objectName;
-                if (nodes.ContainsKey(child.name))
-                {
-                    childCollectionInstanceName = collectionInstanceName;
-                    Node childNode = nodes[child.name];                    
-                    if (childNode.collectionInstance != null)
-                    {
-                        childCollectionInstanceName = child.name;
-                    }
-                }
-                BuildRemoveObjectFromScene(obj, child.name, childCollectionInstanceName);
-            }
-
-            GameObject.Destroy(obj.gameObject);
-        }
-
-        public static void AddInstanceToNode(GameObject obj, Node node, string collectionInstanceName)
-        {
-            node.AddInstance(obj, collectionInstanceName);
-            instancesToNodes[obj] = node;
-        }
-
-        public static void RemoveInstanceToNode(GameObject obj)
-        {
-            if(instancesToNodes.ContainsKey(obj))
-            {
-                Node node = instancesToNodes[obj];
-                node.RemoveInstance(obj);
-                instancesToNodes.Remove(obj);
-            }
-        }
-        public static void BuildAddObjectToScene(Transform root, string objectName, string collectionInstanceName)
-        {
-            if (!nodes.ContainsKey(objectName))
-                return;
-            Node objectNode = nodes[objectName];
-
-            foreach(Tuple<GameObject, string> item in objectNode.instances)
-            {
-                if (item.Item2 == collectionInstanceName)
-                    return; // already instantiated
-            }
-
-            GameObject instance = GameObject.Instantiate(objectNode.prefab);
-            instance.name = objectName;
-            AddInstanceToNode(instance, objectNode, collectionInstanceName);
-
-            // Reparent to parent
-            Transform parent = root;
-            if(null != objectNode.parent)
-            { 
-                foreach (Tuple<GameObject, string> t in objectNode.parent.instances)
-                {
-                    if (t.Item2 == collectionInstanceName)
-                    {
-                        parent = t.Item1.transform;
-                        break;
-                    }
-                }
-            }
-            Reparent(instance.transform, parent);
-
-            // Reparent children
-            List<Node> childrenNodes = objectNode.children;
-            List<GameObject> children = new List<GameObject>();
-            foreach(Node childNode in childrenNodes)
-            {
-                foreach (Tuple<GameObject, string> t in childNode.instances)
-                    if (t.Item2 == collectionInstanceName)
-                        children.Add(t.Item1);
-            }
-            foreach(GameObject childObject in children)
-            {
-                Reparent(childObject.transform, instance.transform);
-            }
-
-            if (null != objectNode.collectionInstance)
-            {
-                CollectionNode collectionNode = objectNode.collectionInstance;
-
-                GameObject offsetObject = new GameObject(OffsetTransformName);
-                offsetObject.transform.parent = instance.transform;
-                offsetObject.transform.localPosition = -collectionNode.offset;
-                offsetObject.transform.localRotation = Quaternion.identity;
-                offsetObject.transform.localScale = Vector3.one;
-                offsetObject.SetActive(collectionNode.visible & objectNode.visible);
-
-                string subCollectionInstanceName = "/" + instance.name;
-                if (collectionInstanceName.Length > 1)
-                    subCollectionInstanceName = collectionInstanceName + subCollectionInstanceName;
-
-                instanceRoot[subCollectionInstanceName] = offsetObject.transform;
-
-                foreach (Node collectionObject in collectionNode.objects)
-                {
-                    BuildAddObjectToScene(offsetObject.transform, collectionObject.prefab.name, subCollectionInstanceName);
-                }
-                foreach(CollectionNode collectionChild in collectionNode.children)
-                {
-                    foreach (Node collectionObject in collectionChild.objects)
-                    {
-                        BuildAddObjectToScene(offsetObject.transform, collectionObject.prefab.name, subCollectionInstanceName);
-                    }
-                }
-            }
-
-            ApplyVisibility(instance);
+            SyncData.AddObjectToScene(root, objectName, "/");
         }
 
         public static void BuilAddCollectionToScene(Transform root, byte[] data)
         {
             int bufferIndex = 0;
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
-            sceneCollections.Add(collectionName);
+            SyncData.sceneCollections.Add(collectionName);
         }
 
         public static void BuilSetScene(Transform root, byte[] data)
         {
             int bufferIndex = 0;
-            currentSceneName = GetString(data, bufferIndex, out bufferIndex);
-
-            sceneCollections.Clear();
-            instancesToNodes.Clear();
-
-            List<GameObject> objectToRemove = new List<GameObject>();
-
-            foreach (KeyValuePair<string, Node> nodePair in nodes)
-            {
-                Node node = nodePair.Value;
-                List<Tuple<GameObject, string>> remainingObjects = new List<Tuple<GameObject, string>>();
-                foreach(Tuple<GameObject, string> t in node.instances)
-                {
-                    GameObject obj = t.Item1;
-                    Transform parent = obj.transform;
-                    while (parent && parent != root)
-                        parent = parent.parent;
-                    if (parent != root)
-                        remainingObjects.Add(new Tuple<GameObject, string>(obj, t.Item2));
-                    else
-                        objectToRemove.Add(obj);
-                }
-                node.instances = remainingObjects;
-            }
-
-            foreach(GameObject obj in objectToRemove)
-            {
-                GameObject.Destroy(obj);
-            }
-        }
-
-        public static void Reparent(Transform t, Transform parent)
-        {
-            Vector3 position = t.localPosition;
-            Quaternion rotation = t.localRotation;
-            Vector3 scale = t.localScale;
-            
-            t.parent = parent;
-            t.localPosition = position;
-            t.localRotation = rotation;
-            t.localScale = scale;
+            string sceneName = GetString(data, bufferIndex, out bufferIndex);
+            SyncData.SetScene(root, sceneName);
         }
 
         public static Material DefaultMaterial()
@@ -1376,137 +848,12 @@ namespace VRtist
             return result;
         }
 
-        public static void ApplyReparent(Node parent, Node node)
-        {
-            if (null != node.parent)
-                node.parent.RemoveChild(node);
-
-            // reparent parents
-            if (null != parent)
-            {
-                // get instance names of children
-                Dictionary<string, Transform> children = new Dictionary<string, Transform>();
-                foreach (Tuple<GameObject, string> instanceElem in node.instances)
-                {
-                    children[instanceElem.Item2] = instanceElem.Item1.transform;
-                }
-
-                parent.AddChild(node);
-
-                // find parents by instance name
-                foreach (Tuple<GameObject, string> instanceElem in parent.instances)
-                {
-                    if (!children.ContainsKey(instanceElem.Item2))
-                        continue;
-                    Reparent(children[instanceElem.Item2], instanceElem.Item1.transform);
-                }
-            }
-            else // reparent to null (root)
-            {
-                foreach (Tuple<GameObject, string> instanceElem in node.instances)
-                {
-                    Transform t = instanceElem.Item1.transform;
-                    string instanceName = instanceElem.Item2;
-                    Reparent(t, instanceRoot[instanceName]);
-                }
-            }
-        }
-
-        public static Transform CreateObjectPrefab(Transform root, string path)
-        {
-            string[] splitted = path.Split('/');
-            string parentName = splitted.Length >= 2 ? splitted[splitted.Length - 2] : "";
-
-            Node parentNode = null;
-            if (parentName.Length > 0)
-            {
-                if (nodes.ContainsKey(parentName))
-                {
-                    parentNode = nodes[parentName];
-                }
-                else
-                {
-                    parentNode = CreateNode(parentName);
-                    GameObject parentObject = new GameObject(parentName);
-                    Reparent(parentObject.transform, root);
-                    parentNode.prefab = parentObject;
-                }
-            }
-          
-            string objectName = splitted[splitted.Length - 1];
-            Transform transform = root.Find(objectName);
-            Node node = null;
-            if (null == transform)
-            {
-                transform = new GameObject(objectName).transform;
-                Reparent(transform, root);
-                node = CreateNode(objectName, parentNode);
-                node.prefab = transform.gameObject;
-            }
-
-            if (null == node)
-                node = nodes[objectName];
-
-            if (node.parent != parentNode)
-            {
-                ApplyReparent(parentNode, node);
-            }
-
-            return transform;
-        }
+        
 
         public static Transform BuildPath(Transform root, byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
         {
             string path = GetString(data, startIndex, out bufferIndex);
-            return CreateObjectPrefab(root, path);
-        }
-
-        public static void ApplyVisibility(GameObject obj, string instanceName = "", bool inheritVisible = true)
-        {
-            Node node = nodes[obj.name];
-            if (null != node.collectionInstance)
-            {
-                instanceName = instanceName + "/" + obj.name;
-                CollectionNode collectionNode = node.collectionInstance;
-                foreach (Node n in collectionNode.objects)
-                {
-                    foreach(Tuple<GameObject, string> item in n.instances)
-                    {
-                        if (item.Item2 == instanceName)
-                            ApplyVisibility(item.Item1, item.Item2, node.visible);
-                    }
-                }
-                obj = obj.transform.Find(OffsetTransformName).gameObject;
-            }
-
-            Component[] components = obj.GetComponents<Component>();
-            foreach(Component component in components)
-            {
-                Type componentType = component.GetType();
-                var prop = componentType.GetProperty("enabled");
-                if(null != prop)
-                {
-                    prop.SetValue(component, node.containerVisible & node.visible & inheritVisible);
-                }
-            }
-      
-            //obj.SetActive(node.containerVisible & node.visible);
-        }
-
-        public static void ApplyTransformToInstances(Transform transform)
-        {
-            if (!nodes.ContainsKey(transform.name))
-                return;
-
-            Node node = nodes[transform.name];
-            foreach (Tuple<GameObject, string> t in node.instances)
-            {
-                GameObject obj = t.Item1;
-                obj.transform.localPosition = transform.localPosition;
-                obj.transform.localRotation = transform.localRotation;
-                obj.transform.localScale = transform.localScale;
-                ApplyVisibility(obj);
-            }
+            return SyncData.CreateObjectPrefab(root, path);
         }
 
         public static Transform BuildTransform(Transform root, byte[] data)
@@ -1536,12 +883,18 @@ namespace VRtist
             Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
             currentIndex += size;
 
-            nodes[transform.name].visible = (bool)boolBuffer[0];
+            SyncData.nodes[transform.name].visible = (bool)boolBuffer[0];
+            SyncData.ApplyTransformToInstances(transform);
 
-            ApplyTransformToInstances(transform);
             return transform;
         }
 
+
+        /* --------------------------------------------------------------------------------------------
+         * 
+         *   COMMANDS
+         * 
+         * -------------------------------------------------------------------------------------------*/
         public static NetCommand BuildTransformCommand(Transform root,Transform transform)
         {
             Transform current = transform;
@@ -1797,7 +1150,7 @@ namespace VRtist
             {
                 camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform);
                 camGameObject.name = name;
-                Node node = CreateNode(name);
+                Node node = SyncData.CreateNode(name);
                 node.prefab = camGameObject;
 
                 //camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
@@ -1875,7 +1228,7 @@ namespace VRtist
                 }
                 //lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 lightGameObject.name = name;
-                Node node = CreateNode(name);
+                Node node = SyncData.CreateNode(name);
                 node.prefab = lightGameObject;
             }
             else
@@ -1905,7 +1258,7 @@ namespace VRtist
             LightController lightController = lightGameObject.GetComponent<LightController>();
             LightParameters lightParameters = (LightParameters)lightController.GetParameters();
 
-            foreach (Tuple<GameObject, string> t in nodes[lightGameObject.name].instances)
+            foreach (Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
             {
                 GameObject gobj = t.Item1;
                 LightController lightContr = gobj.GetComponent<LightController>();
@@ -1985,9 +1338,9 @@ namespace VRtist
                 meshRenderer.sharedMaterials = meshesMaterials[meshName];
                 GetOrCreateMeshCollider(obj);
 
-                if (nodes.ContainsKey(obj.name))
+                if (SyncData.nodes.ContainsKey(obj.name))
                 {
-                    foreach(Tuple<GameObject, string> t in nodes[obj.name].instances)
+                    foreach(Tuple<GameObject, string> t in SyncData.nodes[obj.name].instances)
                     {
                         GameObject instance = t.Item1;
                         MeshFilter instanceMeshFilter = GetOrCreateMeshFilter(instance);
@@ -2206,13 +1559,13 @@ namespace VRtist
         void Start()
         {
             Connect();
-            NetGeometry.prefabNode.prefab = prefab.gameObject;
-            NetGeometry.nodes.Add(prefab.name, NetGeometry.prefabNode);
+            SyncData.prefabNode.prefab = prefab.gameObject;
+            SyncData.nodes.Add(prefab.name, SyncData.prefabNode);
 
-            NetGeometry.rootNode.prefab = root.gameObject;
-            NetGeometry.nodes.Add(root.name, NetGeometry.rootNode);
+            SyncData.rootNode.prefab = root.gameObject;
+            SyncData.nodes.Add(root.name, SyncData.rootNode);
 
-            NetGeometry.instanceRoot["/"] = root;
+            SyncData.instanceRoot["/"] = root;
         }
 
         public void Connect()
