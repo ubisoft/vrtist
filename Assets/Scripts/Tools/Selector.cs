@@ -154,6 +154,9 @@ namespace VRtist
 
         protected void OnStartGrip()
         {
+            if (ToolsManager.Instance.isGrippingWorld)
+                return;
+
             undoGroup = new CommandGroup();
 
             InitControllerMatrix();
@@ -193,6 +196,9 @@ namespace VRtist
         }
         protected void OnEndGrip()
         {
+            if (ToolsManager.Instance.isGrippingWorld)
+                return;
+
             foreach (var item in Selection.selection)
             {
                 LightController lightController = item.Value.GetComponentInChildren<LightController>();

@@ -1330,7 +1330,7 @@ namespace VRtist
             MeshFilter meshFilter = GetOrCreateMeshFilter(gobject);
             meshInstances[meshName].Add(meshFilter);
 
-            foreach(MeshFilter filter in meshInstances[meshName])
+            foreach (MeshFilter filter in meshInstances[meshName])
             {
                 filter.mesh = mesh;
                 GameObject obj = filter.gameObject;
@@ -1340,7 +1340,7 @@ namespace VRtist
 
                 if (SyncData.nodes.ContainsKey(obj.name))
                 {
-                    foreach(Tuple<GameObject, string> t in SyncData.nodes[obj.name].instances)
+                    foreach (Tuple<GameObject, string> t in SyncData.nodes[obj.name].instances)
                     {
                         GameObject instance = t.Item1;
                         MeshFilter instanceMeshFilter = GetOrCreateMeshFilter(instance);
@@ -1352,6 +1352,11 @@ namespace VRtist
                         GetOrCreateMeshCollider(instance);
                     }
                 }
+            }
+
+            if (gobject.GetComponent<MeshCollider>() == null)
+            {
+                gobject.AddComponent<MeshCollider>();
             }
 
             return transform;

@@ -27,14 +27,14 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Slider SubComponents Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        public float railMargin = 0.005f;
-        public float railThickness = 0.001f;
-        public float knobHeadWidth = 0.002f;
-        public float knobHeadHeight = 0.013f;
-        public float knobHeadDepth = 0.003f;
-        public float knobFootWidth = 0.001f;
-        public float knobFootHeight = 0.005f;
-        public float knobFootDepth = 0.001f; // == railThickness
+        [CentimeterFloat] public float railMargin = 0.005f;
+        [CentimeterFloat] public float railThickness = 0.001f;
+        [CentimeterFloat] public float knobHeadWidth = 0.002f;
+        [CentimeterFloat] public float knobHeadHeight = 0.013f;
+        [CentimeterFloat] public float knobHeadDepth = 0.003f;
+        [CentimeterFloat] public float knobFootWidth = 0.001f;
+        [CentimeterFloat] public float knobFootHeight = 0.005f;
+        [CentimeterFloat] public float knobFootDepth = 0.001f; // == railThickness
         // TODO: add colors here?
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]

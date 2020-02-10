@@ -29,6 +29,9 @@ namespace VRtist
 
         public GameObject currentToolRef = null;
 
+        [HideInInspector]
+        public bool isGrippingWorld = false;
+
         public void registerTool(GameObject tool, bool activate = false)
         {
             tools.Add(tool.name, tool);

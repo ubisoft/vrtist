@@ -52,11 +52,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 5452152800831822311}
     m_Modifications:
-    - target: {fileID: -927199367670048503, guid: 4a1a5983c42397c4cb9f3a66cc55cdbe,
-        type: 3}
-      propertyPath: m_Name
-      value: ConeLight_Simple
-      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 4a1a5983c42397c4cb9f3a66cc55cdbe,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -136,6 +131,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_RenderingLayerMask
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -1504981713932161579, guid: 4a1a5983c42397c4cb9f3a66cc55cdbe,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 178e0894a7d2a93489eb909ac3602885, type: 2}
+    - target: {fileID: -927199367670048503, guid: 4a1a5983c42397c4cb9f3a66cc55cdbe,
+        type: 3}
+      propertyPath: m_Name
+      value: ConeLight_Simple
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4a1a5983c42397c4cb9f3a66cc55cdbe, type: 3}
