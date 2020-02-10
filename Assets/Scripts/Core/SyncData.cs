@@ -67,7 +67,7 @@ namespace VRtist
             ComputeContainerVisibility();
         }
 
-        public void AddInstance(GameObject obj, string collectionInstanceName)
+        public void AddInstance(GameObject obj, string collectionInstanceName = "/")
         {
             instances.Add(new Tuple<GameObject, string>(obj, collectionInstanceName));
         }
@@ -151,6 +151,9 @@ namespace VRtist
 
         public static CollectionNode CreateCollectionNode(CollectionNode parent, string name)
         {
+            if (name == "__Trash__")
+                return null;
+
             CollectionNode newNode = new CollectionNode(name);
             collectionNodes.Add(name, newNode);
             if (parent != null)
@@ -161,6 +164,8 @@ namespace VRtist
         public static Node CreateNode(string name, Node parentNode = null)
         {
             Node newNode = new Node();
+            if (nodes.ContainsKey(name)) // secu
+                nodes.Remove(name);
             nodes.Add(name, newNode);
             if (null != parentNode)
                 parentNode.AddChild(newNode);
@@ -230,6 +235,11 @@ namespace VRtist
 
         public static void RemoveObjectFromCollection(string collectionName, string objectName)
         {
+            if (collectionName == "__Trash__")
+            {
+                return;
+            }
+
             if (!collectionNodes.ContainsKey(collectionName))
                 return;
 
@@ -284,6 +294,12 @@ namespace VRtist
 
         public static void AddObjectToCollection(string collectionName, string objectName)
         {
+            if (collectionName == "__Trash__")
+            {
+                RemovePrefab(objectName);
+                return;
+            }
+
             if (!collectionNodes.ContainsKey(collectionName))
                 return;
             CollectionNode collectionNode = collectionNodes[collectionName];
@@ -348,6 +364,9 @@ namespace VRtist
 
         public static void AddCollection(string collectionName, Vector3 offset, bool visible)
         {
+            if (collectionName == "__Trash__")
+                return;
+
             CollectionNode collectionNode = collectionNodes.ContainsKey(collectionName) ? collectionNodes[collectionName] : CreateCollectionNode(null, collectionName);
 
             collectionNode.visible = visible;
@@ -466,16 +485,16 @@ namespace VRtist
             }
         }
 
-        public static void AddObjectToScene(Transform root, string objectName, string collectionInstanceName)
+        public static GameObject AddObjectToScene(Transform root, string objectName, string collectionInstanceName)
         {
             if (!nodes.ContainsKey(objectName))
-                return;
+                return null;
             Node objectNode = nodes[objectName];
 
             foreach (Tuple<GameObject, string> item in objectNode.instances)
             {
                 if (item.Item2 == collectionInstanceName)
-                    return; // already instantiated
+                    return null; // already instantiated
             }
 
             GameObject instance = GameObject.Instantiate(objectNode.prefab);
@@ -542,6 +561,8 @@ namespace VRtist
             }
 
             ApplyVisibility(instance);
+
+            return instance;
         }
 
         public static void SetScene(Transform root, string sceneName) {
@@ -714,5 +735,29 @@ namespace VRtist
                 ApplyVisibility(obj);
             }
         }
+
+        public static GameObject Duplicate(Transform root, GameObject srcInstance, string name = "")
+        {
+            Node srcNode = nodes[srcInstance.name];
+            GameObject srcPrefab = srcNode.prefab;
+            GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent);
+            if (name.Length > 0)
+                prefabClone.name = name;
+            Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
+            prefabCloneNode.prefab = prefabClone;
+            GameObject clone = AddObjectToScene(root, prefabClone.name, "/");
+            
+            return clone;
+        }
+
+        public static void RemovePrefab(string objectName)
+        {
+            Node node = SyncData.nodes[objectName];
+            GameObject.Destroy(node.prefab);
+            if (null != node.parent)
+                node.parent.RemoveChild(node);
+            SyncData.nodes.Remove(objectName);
+        }
+      
     }
 }

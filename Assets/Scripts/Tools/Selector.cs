@@ -7,6 +7,8 @@ namespace VRtist
 {
     public class Selector : ToolBase
     {
+        [SerializeField] protected Transform rightHanded;
+
         [Header("Selector Parameters")]
         [SerializeField] protected Transform selectorBrush;
         [SerializeField] protected Material selectionMaterial;
@@ -404,9 +406,9 @@ namespace VRtist
 
             for(i = 0; i < selectedObjects.Length; i++)
             {
-                Transform parent = selectedObjects[i].transform.parent;
+                Transform parent = selectedObjects[i].transform.parent;                
                 if (parent.name.StartsWith("Group__"))
-                {
+                {/*
                     if (!groups.ContainsKey(parent))
                     {
                         GameObject newGroup = new GameObject("Group__" + groupId.ToString());
@@ -422,19 +424,11 @@ namespace VRtist
                     clones.Add(clone);
 
                     new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
+                    */
                 }
                 else
                 {
-                    Node node = SyncData.nodes[selectedObjects[i].name];
-                    GameObject prefab = node.prefab;
-                    GameObject prefabClone = Utils.CreateInstance(prefab, prefab.transform.parent);
-                    SyncData.CreateNode(prefabClone.name, node.parent);
-                    /*SyncData.AddObjectToScene(, prefabClone.name, "/");*/
-                    // TODO
-
-
-                    GameObject clone = Utils.CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent);
-
+                    GameObject clone = SyncData.Duplicate(rightHanded, selectedObjects[i]);
                     clones.Add(clone);
 
                     new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
@@ -498,6 +492,8 @@ namespace VRtist
 
         public void OnLinkAction()
         {
+            // TODO
+            return;
             if (Selection.selection.Count <= 1)
                 return;
 
@@ -547,6 +543,8 @@ namespace VRtist
 
         public void OnUnlinkAction()
         {
+            // TODO
+            return;
             SortedSet<Transform> groups = new SortedSet<Transform>();
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {

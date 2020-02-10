@@ -304,11 +304,10 @@ namespace VRtist
             SyncData.Delete(objectName);
         }
 
-        public static void Duplicate(Transform root, byte[] data)
+        public static void Duplicate(Transform prefab, Transform root, byte[] data)
         {
-            // TODO
             int bufferIndex = 0;
-            Transform srcPath = FindPath(root, data, 0, out bufferIndex);
+            Transform srcPath = FindPath(prefab, data, 0, out bufferIndex);
             if (srcPath == null)
                 return;
 
@@ -317,8 +316,7 @@ namespace VRtist
             Quaternion rotation = GetQuaternion(data, ref bufferIndex);
             Vector3 scale = GetVector3(data, ref bufferIndex);
 
-            GameObject newGameObject = GameObject.Instantiate(srcPath.gameObject, srcPath.parent);
-            newGameObject.name = dstName;
+            GameObject newGameObject = SyncData.Duplicate(root, srcPath.gameObject, dstName);
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
             newGameObject.transform.localScale = scale;
@@ -326,24 +324,27 @@ namespace VRtist
 
         public static void BuildSendToTrash(Transform root, byte[] data)
         {
-            // TODO
             int bufferIndex = 0;
             Transform objectPath = FindPath(root, data, 0, out bufferIndex);
             if (null == objectPath)
                 return;
             objectPath.parent = Utils.GetTrash().transform;
+            
+            Node node = SyncData.nodes[objectPath.name];
+            node.RemoveInstance(objectPath.gameObject);
         }
         public static void BuildRestoreFromTrash(Transform root, byte[] data)
         {
-            // TODO
             int bufferIndex = 0;
             string objectName = GetString(data, 0, out bufferIndex);
-            string dstPath = GetString(data, bufferIndex, out bufferIndex);
+            Transform parent = FindPath(root, data, bufferIndex, out bufferIndex);
             Transform trf = Utils.GetTrash().transform.Find(objectName);
             if (null != trf)
-            {
-                Transform parent = SyncData.CreateObjectPrefab(root, dstPath);
+            {                
                 trf.parent = parent;
+
+                Node node = SyncData.nodes[objectName];
+                node.AddInstance(trf.gameObject);
             }
         }
 
@@ -1853,13 +1854,13 @@ namespace VRtist
                             NetGeometry.Rename(prefab, command.data);
                             break;
                         case MessageType.Duplicate:
-                            NetGeometry.Duplicate(prefab, command.data);
+                            NetGeometry.Duplicate(prefab, root, command.data);
                             break;
                         case MessageType.SendToTrash:
-                            NetGeometry.BuildSendToTrash(prefab, command.data);
+                            NetGeometry.BuildSendToTrash(root, command.data);
                             break;
                         case MessageType.RestoreFromTrash:
-                            NetGeometry.BuildRestoreFromTrash(prefab, command.data);
+                            NetGeometry.BuildRestoreFromTrash(root, command.data);
                             break;
                         case MessageType.Texture:
                             NetGeometry.BuildTexture(command.data);
