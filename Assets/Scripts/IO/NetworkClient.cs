@@ -1461,11 +1461,23 @@ namespace VRtist
             return CreateObjectPrefab(root, path);
         }
 
-        public static void ApplyVisibility(GameObject obj)
+        public static void ApplyVisibility(GameObject obj, string instanceName = "", bool inheritVisible = true)
         {
             Node node = nodes[obj.name];
             if (null != node.collectionInstance)
+            {
+                instanceName = instanceName + "/" + obj.name;
+                CollectionNode collectionNode = node.collectionInstance;
+                foreach (Node n in collectionNode.objects)
+                {
+                    foreach(Tuple<GameObject, string> item in n.instances)
+                    {
+                        if (item.Item2 == instanceName)
+                            ApplyVisibility(item.Item1, item.Item2, node.visible);
+                    }
+                }
                 obj = obj.transform.Find(OffsetTransformName).gameObject;
+            }
 
             Component[] components = obj.GetComponents<Component>();
             foreach(Component component in components)
@@ -1474,7 +1486,7 @@ namespace VRtist
                 var prop = componentType.GetProperty("enabled");
                 if(null != prop)
                 {
-                    prop.SetValue(component, node.containerVisible & node.visible);
+                    prop.SetValue(component, node.containerVisible & node.visible & inheritVisible);
                 }
             }
       
