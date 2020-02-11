@@ -64,7 +64,11 @@ namespace VRtist
         public void Show(bool doShow, LineMode mode = LineMode.SINGLE)
         {
             lineMode = mode;
-            line.enabled = (mode == LineMode.DOUBLE); // hide line when doing one hand manipultion
+            // NOTE: Show() can be called before Start(), and line may not has been GetComponent<>'d yet.
+            if (line != null)
+            {
+                line.enabled = (mode == LineMode.DOUBLE); // hide line when doing one hand manipulation
+            }
 
             gameObject.SetActive(doShow);
         }

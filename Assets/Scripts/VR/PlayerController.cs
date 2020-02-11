@@ -58,6 +58,7 @@ namespace VRtist
             pivot = leftHandle.parent; // "Pivot" is the first non-identity parent of right and left controllers.
 
             if (lineUI == null) { Debug.LogWarning("Cannot find the stretch ui object"); }
+            // NOTE: this object has not called its Start() function yet.
             lineUI.Show(false);
             
             initCameraPosition = transform.position;

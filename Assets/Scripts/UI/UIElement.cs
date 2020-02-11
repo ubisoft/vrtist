@@ -83,7 +83,7 @@ namespace VRtist
 
         public void SetColor(Color color)
         {
-            Material material = GetComponent<MeshRenderer>().material;
+            Material material = GetComponent<MeshRenderer>().material; // THIS triggers the warning in editor.
             material.SetColor("_BaseColor", color);
         }
 

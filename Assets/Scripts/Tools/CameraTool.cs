@@ -14,6 +14,7 @@ namespace VRtist
         public Material screenShotMaterial;
         public Transform world;
         public Transform backgroundFeedback;
+        public Timeline timeline;
         public TextMeshProUGUI tm;
         public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;
@@ -23,6 +24,7 @@ namespace VRtist
         private GameObject UIObject = null;
         public RenderTexture renderTexture = null;
         private bool feedbackPositioning = false;
+        private bool showTimeline = false;
         private Transform focalSlider = null;
 
         public float Focal
@@ -58,10 +60,11 @@ namespace VRtist
             foreach (Camera camera in SelectedCameras())
                 ComputeFocal(camera);
         }
+
         protected override void OnDisable()
         {
             base.OnDisable();
-            feedbackPositioning = false;            
+            feedbackPositioning = false;
         }
 
         void DisableUI()
@@ -78,7 +81,7 @@ namespace VRtist
 
             Init();
             ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
-            ToolsUIManager.Instance.OnBoolToolParameterChangedEvent += OnBoolChangeParameter;
+            //ToolsUIManager.Instance.OnBoolToolParameterChangedEvent += OnBoolChangeParameter;
 
             cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
@@ -128,13 +131,22 @@ namespace VRtist
             feedbackPositioning = value;
         }
 
-        // DEPRECATED
-        private void OnBoolChangeParameter(object sender, BoolToolParameterChangedArgs args)
+        public void OnCheckShowTimeline(bool value)
         {
-            if (args.toolName != "Camera")
-                return;
-            feedbackPositioning = args.value;
+            showTimeline = value;
+            if(timeline != null)
+            {
+                timeline.Show(value);
+            }
         }
+
+        // DEPRECATED
+        //private void OnBoolChangeParameter(object sender, BoolToolParameterChangedArgs args)
+        //{
+        //    if (args.toolName != "Camera")
+        //        return;
+        //    feedbackPositioning = args.value;
+        //}
 
         private List<Camera> SelectedCameras()
         {
