@@ -84,27 +84,25 @@ namespace VRtist
             switch (lightType)
             {
                 case "Sun":
-                    light = Utils.CreateInstance(sunPrefab, parentContainer);
+                    light = sunPrefab;
                     break;
                 case "Spot":
-                    light = Utils.CreateInstance(spotPrefab, parentContainer);
+                    light = spotPrefab;
                     break;
                 case "Point":
-                    light = Utils.CreateInstance(pointPrefab, parentContainer);
+                    light = pointPrefab;
                     break;
             }
 
             if (light)
             {
                 Matrix4x4 matrix = parentContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.1f, 0.1f, 0.1f));
-                light.transform.localPosition = matrix.GetColumn(3);
-                light.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
-                light.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
+                GameObject instance = SyncData.InstantiateUnityPrefab(light, matrix);
 
                 CommandGroup undoGroup = new CommandGroup();
-                new CommandAddGameObject(light).Submit();                
+                new CommandAddGameObject(instance).Submit();                
                 ClearSelection();
-                AddToSelection(light);
+                AddToSelection(instance);
                 undoGroup.Submit();
             }
         }

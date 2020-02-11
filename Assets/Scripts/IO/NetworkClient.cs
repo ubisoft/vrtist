@@ -304,7 +304,7 @@ namespace VRtist
             SyncData.Delete(objectName);
         }
 
-        public static void Duplicate(Transform prefab, Transform root, byte[] data)
+        public static void Duplicate(Transform prefab, byte[] data)
         {
             int bufferIndex = 0;
             Transform srcPath = FindPath(prefab, data, 0, out bufferIndex);
@@ -316,7 +316,7 @@ namespace VRtist
             Quaternion rotation = GetQuaternion(data, ref bufferIndex);
             Vector3 scale = GetVector3(data, ref bufferIndex);
 
-            GameObject newGameObject = SyncData.Duplicate(root, srcPath.gameObject, dstName);
+            GameObject newGameObject = SyncData.Duplicate(srcPath.gameObject, dstName);
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
             newGameObject.transform.localScale = scale;
@@ -416,10 +416,10 @@ namespace VRtist
             SyncData.RemoveObjectFromCollection(collectionName, objectName);
         }
 
-        public static void BuildCollectionInstance(Transform root, byte[] data)
+        public static void BuildCollectionInstance(byte[] data)
         {
             int bufferIndex = 0;
-            Transform transform = BuildPath(root, data, 0, true, out bufferIndex);
+            Transform transform = BuildPath(data, 0, true, out bufferIndex);
             string collectionName = GetString(data, bufferIndex, out bufferIndex);
 
             SyncData.AddCollectionInstance(transform, collectionName);
@@ -439,11 +439,11 @@ namespace VRtist
             SyncData.sceneCollections.Add(collectionName);
         }
 
-        public static void BuilSetScene(Transform root, byte[] data)
+        public static void BuilSetScene(byte[] data)
         {
             int bufferIndex = 0;
             string sceneName = GetString(data, bufferIndex, out bufferIndex);
-            SyncData.SetScene(root, sceneName);
+            SyncData.SetScene(sceneName);
         }
 
         public static Material DefaultMaterial()
@@ -851,16 +851,16 @@ namespace VRtist
 
         
 
-        public static Transform BuildPath(Transform root, byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
+        public static Transform BuildPath(byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
         {
             string path = GetString(data, startIndex, out bufferIndex);
-            return SyncData.CreateObjectPrefab(root, path);
+            return SyncData.GetOrCreatePrefabPath(path);
         }
 
-        public static Transform BuildTransform(Transform root, byte[] data)
+        public static Transform BuildTransform(Transform prefab, byte[] data)
         {
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, true, out currentIndex);
+            Transform transform = BuildPath(data, 0, true, out currentIndex);
 
             float[] buffer = new float[4];
             bool[] boolBuffer = new bool[1];
@@ -898,15 +898,7 @@ namespace VRtist
          * -------------------------------------------------------------------------------------------*/
         public static NetCommand BuildTransformCommand(Transform root,Transform transform)
         {
-            Transform current = transform;
-            string path = current.name;
-            while(current.parent && current.parent != root)
-            {
-                current = current.parent;
-                path = current.name + "/" + path;
-            }
-
-            byte[] name = StringToBytes(path);
+            byte[] name = StringToBytes(transform.name);
             byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
             byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
             byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
@@ -1312,10 +1304,10 @@ namespace VRtist
             return meshCollider;
         }
 
-        public static Transform ConnectMesh(Transform root, byte[] data)
+        public static Transform ConnectMesh(byte[] data)
         {
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, true, out currentIndex);
+            Transform transform = BuildPath(data, 0, true, out currentIndex);
             string meshName = GetString(data, currentIndex, out currentIndex);
 
             GameObject gobject = transform.gameObject;
@@ -1363,7 +1355,7 @@ namespace VRtist
             return transform;
         }
 
-        public static Mesh BuildMesh(Transform root, byte[] data)
+        public static Mesh BuildMesh(byte[] data)
         {
             int currentIndex = 0;
             string meshName = GetString(data, currentIndex, out currentIndex);
@@ -1565,13 +1557,7 @@ namespace VRtist
         void Start()
         {
             Connect();
-            SyncData.prefabNode.prefab = prefab.gameObject;
-            SyncData.nodes.Add(prefab.name, SyncData.prefabNode);
-
-            SyncData.rootNode.prefab = root.gameObject;
-            SyncData.nodes.Add(root.name, SyncData.rootNode);
-
-            SyncData.instanceRoot["/"] = root;
+            SyncData.Init(prefab, root);
         }
 
         public void Connect()
@@ -1830,10 +1816,10 @@ namespace VRtist
                     switch (command.messageType)
                     {
                         case MessageType.Mesh:
-                            NetGeometry.BuildMesh(prefab, command.data);
+                            NetGeometry.BuildMesh(command.data);
                             break;
                         case MessageType.MeshConnection:
-                            NetGeometry.ConnectMesh(prefab, command.data);
+                            NetGeometry.ConnectMesh(command.data);
                             break;
                         case MessageType.Transform:
                             NetGeometry.BuildTransform(prefab, command.data);
@@ -1854,7 +1840,7 @@ namespace VRtist
                             NetGeometry.Rename(prefab, command.data);
                             break;
                         case MessageType.Duplicate:
-                            NetGeometry.Duplicate(prefab, root, command.data);
+                            NetGeometry.Duplicate(prefab, command.data);
                             break;
                         case MessageType.SendToTrash:
                             NetGeometry.BuildSendToTrash(root, command.data);
@@ -1884,7 +1870,7 @@ namespace VRtist
                             NetGeometry.BuildRemoveObjectFromCollection(prefab, command.data);
                             break;
                         case MessageType.CollectionInstance:
-                            NetGeometry.BuildCollectionInstance(prefab, command.data);
+                            NetGeometry.BuildCollectionInstance(command.data);
                             break;
                         case MessageType.AddObjectToScene:
                             NetGeometry.BuildAddObjectToScene(root, command.data);
@@ -1893,7 +1879,7 @@ namespace VRtist
                             NetGeometry.BuilAddCollectionToScene(root, command.data);
                             break;
                         case MessageType.SetScene:
-                            NetGeometry.BuilSetScene(root, command.data);
+                            NetGeometry.BuilSetScene(command.data);
                             break;
                     }
                 }

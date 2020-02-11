@@ -84,7 +84,7 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
             {
                 // Create an empty game object with a mesh
-                currentPaintLine = Utils.CreatePaint(paintContainer, paintColor);
+                currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, paintColor));
                 ++paintId;
                 paintPrevPosition = Vector3.zero;
                 freeDraw = new FreeDraw();

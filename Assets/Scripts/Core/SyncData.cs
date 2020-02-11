@@ -149,6 +149,22 @@ namespace VRtist
         public static string currentSceneName = "";
         public static HashSet<string> sceneCollections = new HashSet<string>();
 
+        public static Transform root = null;
+        public static Transform prefab = null;
+
+        public static void Init(Transform p, Transform r)
+        {
+            prefab = p;
+            root = r;
+            prefabNode.prefab = prefab.gameObject;
+            nodes.Add(prefab.name, prefabNode);
+
+            rootNode.prefab = root.gameObject;
+            nodes.Add(root.name, rootNode);
+
+            instanceRoot["/"] = root;
+        }
+
         public static CollectionNode CreateCollectionNode(CollectionNode parent, string name)
         {
             if (name == "__Trash__")
@@ -253,16 +269,16 @@ namespace VRtist
                     Transform offsetObject = obj.transform.Find(OffsetTransformName);
                     if (null == offsetObject)
                         continue;
-                    BuildRemoveObjectFromScene(offsetObject, objectName, obj.name);
+                    RemoveObjectFromScene(offsetObject, objectName, obj.name);
                 }
             }
 
             collectionNode.RemoveObject(nodes[objectName]);
         }
 
-        public static void BuildRemoveObjectFromScene(Transform root, string objectName, string collectionInstanceName)
+        public static void RemoveObjectFromScene(Transform transform, string objectName, string collectionInstanceName)
         {
-            Transform obj = FindRecursive(root, objectName);
+            Transform obj = FindRecursive(transform, objectName);
             if (null == obj)
                 return;
 
@@ -286,7 +302,7 @@ namespace VRtist
                         childCollectionInstanceName = child.name;
                     }
                 }
-                BuildRemoveObjectFromScene(obj, child.name, childCollectionInstanceName);
+                RemoveObjectFromScene(obj, child.name, childCollectionInstanceName);
             }
 
             GameObject.Destroy(obj.gameObject);
@@ -485,7 +501,7 @@ namespace VRtist
             }
         }
 
-        public static GameObject AddObjectToScene(Transform root, string objectName, string collectionInstanceName)
+        public static GameObject AddObjectToScene(Transform transform, string objectName, string collectionInstanceName = "/")
         {
             if (!nodes.ContainsKey(objectName))
                 return null;
@@ -497,12 +513,13 @@ namespace VRtist
                     return null; // already instantiated
             }
 
-            GameObject instance = GameObject.Instantiate(objectNode.prefab);
+
+            GameObject instance = Utils.CreateInstance(objectNode.prefab, transform);
             instance.name = objectName;
             AddInstanceToNode(instance, objectNode, collectionInstanceName);
 
             // Reparent to parent
-            Transform parent = root;
+            Transform parent = transform;
             if (null != objectNode.parent)
             {
                 foreach (Tuple<GameObject, string> t in objectNode.parent.instances)
@@ -565,7 +582,8 @@ namespace VRtist
             return instance;
         }
 
-        public static void SetScene(Transform root, string sceneName) {
+        public static void SetScene(string sceneName)
+        {
             currentSceneName = sceneName;
 
             sceneCollections.Clear();
@@ -577,7 +595,7 @@ namespace VRtist
             {
                 Node node = nodePair.Value;
                 List<Tuple<GameObject, string>> remainingObjects = new List<Tuple<GameObject, string>>();
-                foreach(Tuple<GameObject, string> t in node.instances)
+                foreach (Tuple<GameObject, string> t in node.instances)
                 {
                     GameObject obj = t.Item1;
                     Transform parent = obj.transform;
@@ -591,7 +609,7 @@ namespace VRtist
                 node.instances = remainingObjects;
             }
 
-            foreach(GameObject obj in objectToRemove)
+            foreach (GameObject obj in objectToRemove)
             {
                 GameObject.Destroy(obj);
             }
@@ -645,7 +663,7 @@ namespace VRtist
             }
         }
 
-        public static Transform CreateObjectPrefab(Transform root, string path)
+        public static Transform GetOrCreatePrefabPath(string path)
         {
             string[] splitted = path.Split('/');
             string parentName = splitted.Length >= 2 ? splitted[splitted.Length - 2] : "";
@@ -661,18 +679,18 @@ namespace VRtist
                 {
                     parentNode = CreateNode(parentName);
                     GameObject parentObject = new GameObject(parentName);
-                    Reparent(parentObject.transform, root);
+                    Reparent(parentObject.transform, prefab);
                     parentNode.prefab = parentObject;
                 }
             }
 
             string objectName = splitted[splitted.Length - 1];
-            Transform transform = root.Find(objectName);
+            Transform transform = prefab.Find(objectName);
             Node node = null;
             if (null == transform)
             {
                 transform = new GameObject(objectName).transform;
-                Reparent(transform, root);
+                Reparent(transform, prefab);
                 node = CreateNode(objectName, parentNode);
                 node.prefab = transform.gameObject;
             }
@@ -736,7 +754,7 @@ namespace VRtist
             }
         }
 
-        public static GameObject Duplicate(Transform root, GameObject srcInstance, string name = "")
+        public static GameObject Duplicate(GameObject srcInstance, string name = "")
         {
             Node srcNode = nodes[srcInstance.name];
             GameObject srcPrefab = srcNode.prefab;
@@ -746,18 +764,54 @@ namespace VRtist
             Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
             prefabCloneNode.prefab = prefabClone;
             GameObject clone = AddObjectToScene(root, prefabClone.name, "/");
-            
+
             return clone;
         }
 
         public static void RemovePrefab(string objectName)
         {
-            Node node = SyncData.nodes[objectName];
+            Node node = nodes[objectName];
             GameObject.Destroy(node.prefab);
             if (null != node.parent)
                 node.parent.RemoveChild(node);
-            SyncData.nodes.Remove(objectName);
+            nodes.Remove(objectName);
         }
-      
+
+        public static GameObject InstantiatePrefab(GameObject newPrefab)
+        {
+            Node node = CreateNode(newPrefab.name);
+            node.prefab = newPrefab;
+            GameObject instance = AddObjectToScene(root, newPrefab.name);
+            return instance;
+        }
+
+        public static GameObject InstantiateUnityPrefab(GameObject unityPrefab, Matrix4x4 matrix)
+        {
+            GameObject newPrefab = Utils.CreateInstance(unityPrefab, prefab);
+
+            newPrefab.transform.localPosition = matrix.GetColumn(3);
+            newPrefab.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+            newPrefab.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
+
+            return InstantiatePrefab(newPrefab);
+        }
+
+        public static void SetTransform(string objectName, Matrix4x4 matrix)
+        {
+            Node node = nodes[objectName];
+            node.prefab.transform.localPosition = new Vector3(matrix.GetColumn(3).x, matrix.GetColumn(3).y, matrix.GetColumn(3).z);
+            node.prefab.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+            node.prefab.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
+            ApplyTransformToInstances(node.prefab.transform);
+        }
+        public static void SetTransform(string objectName, Vector3 position, Quaternion rotation, Vector3 scale)
+        {
+            Node node = nodes[objectName];
+            node.prefab.transform.localPosition = position;
+            node.prefab.transform.localRotation = rotation;
+            node.prefab.transform.localScale = scale;
+            ApplyTransformToInstances(node.prefab.transform);
+        }
     }
 }
+

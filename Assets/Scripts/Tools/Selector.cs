@@ -7,8 +7,6 @@ namespace VRtist
 {
     public class Selector : ToolBase
     {
-        [SerializeField] protected Transform rightHanded;
-
         [Header("Selector Parameters")]
         [SerializeField] protected Transform selectorBrush;
         [SerializeField] protected Material selectionMaterial;
@@ -169,7 +167,7 @@ namespace VRtist
 
         protected void ManageMoveObjectsUndo()
         {
-            List<GameObject> objects = new List<GameObject>();
+            List<string> objects = new List<string>();
             List<Vector3> beginPositions = new List<Vector3>();
             List<Quaternion> beginRotations = new List<Quaternion>();
             List<Vector3> beginScales = new List<Vector3>();
@@ -182,7 +180,7 @@ namespace VRtist
                 GameObject gObject = data.Value;
                 if (initPositions[gObject] == gObject.transform.localPosition && initRotations[gObject] == gObject.transform.localRotation && initScales[gObject] == gObject.transform.localScale)
                     continue;
-                objects.Add(gObject);
+                objects.Add(gObject.name);
                 beginPositions.Add(initPositions[gObject]);
                 beginRotations.Add(initRotations[gObject]);
                 beginScales.Add(initScales[gObject]);
@@ -290,10 +288,7 @@ namespace VRtist
 
                 if (data.Value.transform.localToWorldMatrix != transformed)
                 {
-                    data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                    data.Value.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2),transformed.GetColumn(1));
-                    data.Value.transform.localScale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
-
+                    SyncData.SetTransform(data.Value.name, transformed);
                     CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                 }
             }
@@ -428,7 +423,7 @@ namespace VRtist
                 }
                 else
                 {
-                    GameObject clone = SyncData.Duplicate(rightHanded, selectedObjects[i]);
+                    GameObject clone = SyncData.Duplicate(selectedObjects[i]);
                     clones.Add(clone);
 
                     new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
