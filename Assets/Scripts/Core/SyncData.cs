@@ -777,6 +777,12 @@ namespace VRtist
             nodes.Remove(objectName);
         }
 
+        /// <summary>
+        /// Create a new prefab node using the given GameObject as the prefab then instantiate it into the scene.
+        /// Note that this function does not put the given prefab game object into the prefabs.
+        /// </summary>
+        /// <param name="newPrefab">Prefab</param>
+        /// <returns>Instantiated prefab</returns>
         public static GameObject InstantiatePrefab(GameObject newPrefab)
         {
             Node node = CreateNode(newPrefab.name);
@@ -785,6 +791,12 @@ namespace VRtist
             return instance;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="unityPrefab"></param>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public static GameObject InstantiateUnityPrefab(GameObject unityPrefab, Matrix4x4 matrix)
         {
             GameObject newPrefab = Utils.CreateInstance(unityPrefab, prefab);
@@ -796,6 +808,11 @@ namespace VRtist
             return InstantiatePrefab(newPrefab);
         }
 
+        /// <summary>
+        /// Set the transform of the given object (its prefab) and to all of its instances.
+        /// </summary>
+        /// <param name="objectName">object name</param>
+        /// <param name="matrix">transform</param>
         public static void SetTransform(string objectName, Matrix4x4 matrix)
         {
             Node node = nodes[objectName];

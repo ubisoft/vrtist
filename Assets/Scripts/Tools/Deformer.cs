@@ -289,15 +289,10 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    GameObject newObject = GameObject.Instantiate(UIObject);
-                    newObject.transform.parent = container.transform;
-
-                    new CommandAddGameObject(newObject).Submit();
-
+                    GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
                     Matrix4x4 matrix = container.worldToLocalMatrix * transform.localToWorldMatrix /** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
-                    newObject.transform.localPosition = matrix.GetColumn(3);
-                    newObject.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
-                    newObject.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude) * 0.1f;
+                    SyncData.SetTransform(newObject.name, matrix);
+                    new CommandAddGameObject(newObject).Submit();
 
                     ClearSelection();
                     AddToSelection(newObject);
@@ -312,7 +307,6 @@ namespace VRtist
             // Base selection update
             base.DoUpdate(position, rotation);
             
-
             // Deform
             if (activePlane != null)
             {
