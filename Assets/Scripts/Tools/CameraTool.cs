@@ -14,7 +14,7 @@ namespace VRtist
         public Material screenShotMaterial;
         public Transform world;
         public Transform backgroundFeedback;
-        public Timeline timeline;
+        public Dopesheet timeline;
         public TextMeshProUGUI tm;
         public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;

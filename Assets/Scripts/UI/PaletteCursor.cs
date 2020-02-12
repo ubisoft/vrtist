@@ -73,7 +73,7 @@ namespace VRtist
         {
             // TODO: change these checks by name
             if (other.gameObject.name == "Palette"
-                || other.gameObject.name == "Timeline")
+                || other.gameObject.name == "Dopesheet")
             {
                 // deactivate all tools
                 //tools.SetActive(false);
@@ -95,7 +95,7 @@ namespace VRtist
         private void OnTriggerExit(Collider other)
         {
             if (other.gameObject.name == "Palette"
-                || other.gameObject.name == "Timeline")
+                || other.gameObject.name == "Dopesheet")
             {
                 // reactivate all tools
                 //tools.SetActive(true);

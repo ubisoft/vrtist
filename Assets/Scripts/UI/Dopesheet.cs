@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class Timeline : MonoBehaviour
+    public class Dopesheet : MonoBehaviour
     {
         [SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
         [SerializeField] private Transform mainPanel = null;

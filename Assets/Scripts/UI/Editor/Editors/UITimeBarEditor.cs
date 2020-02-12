@@ -47,8 +47,6 @@ namespace VRtist
             Vector3 posRight = T.TransformPoint(new Vector3(+uiTimeBar.width, -uiTimeBar.height / 2.0f, 0));
             Vector3 posBottom = T.TransformPoint(new Vector3(uiTimeBar.width / 2.0f, -uiTimeBar.height, 0));
             Vector3 posAnchor = T.TransformPoint(uiTimeBar.Anchor);
-            Vector3 posTimeBarBegin = T.TransformPoint(new Vector3(uiTimeBar.margin + (uiTimeBar.width - 2 * uiTimeBar.margin) * uiTimeBar.sliderPositionBegin, -uiTimeBar.height / 2.0f, 0));
-            Vector3 posTimeBarEnd = T.TransformPoint(new Vector3(uiTimeBar.margin + (uiTimeBar.width - 2 * uiTimeBar.margin) * uiTimeBar.sliderPositionEnd, -uiTimeBar.height / 2.0f, 0));
             float handleSize = .3f * HandleUtility.GetHandleSize(posAnchor);
             Vector3 snap = Vector3.one * 0.01f;
 
@@ -63,12 +61,6 @@ namespace VRtist
             Handles.color = Handles.zAxisColor;
             Vector3 newTargetPosition_anchor = Handles.FreeMoveHandle(posAnchor, Quaternion.identity, handleSize, snap, Handles.SphereHandleCap);
 
-            Handles.color = new Color(0.8f, 0.4f, 0.1f);
-            Vector3 newTargetPosition_sliderBegin = Handles.FreeMoveHandle(posTimeBarBegin, Quaternion.identity, handleSize, snap, Handles.CubeHandleCap);
-
-            Handles.color = new Color(0.8f, 0.4f, 0.1f);
-            Vector3 newTargetPosition_sliderEnd = Handles.FreeMoveHandle(posTimeBarEnd, Quaternion.identity, handleSize, snap, Handles.CubeHandleCap);
-
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(target, "Change Dimensions");
@@ -76,8 +68,6 @@ namespace VRtist
                 Vector3 deltaRight = newTargetPosition_right - posRight;
                 Vector3 deltaBottom = newTargetPosition_bottom - posBottom;
                 Vector3 deltaAnchor = newTargetPosition_anchor - posAnchor;
-                Vector3 deltaTimeBarBegin = newTargetPosition_sliderBegin - posTimeBarBegin;
-                Vector3 deltaTimeBarEnd = newTargetPosition_sliderEnd - posTimeBarEnd;
 
                 if (Vector3.SqrMagnitude(deltaRight) > Mathf.Epsilon)
                 {
@@ -86,14 +76,6 @@ namespace VRtist
                 else if (Vector3.SqrMagnitude(deltaBottom) > Mathf.Epsilon)
                 {
                     uiTimeBar.Height += -deltaBottom.y;
-                }
-                else if (Vector3.SqrMagnitude(deltaTimeBarBegin) > Mathf.Epsilon)
-                {
-                    uiTimeBar.TimeBarPositionBegin += deltaTimeBarBegin.x;
-                }
-                else if (Vector3.SqrMagnitude(deltaTimeBarEnd) > Mathf.Epsilon)
-                {
-                    uiTimeBar.TimeBarPositionEnd += deltaTimeBarEnd.x;
                 }
                 else if (Vector3.SqrMagnitude(deltaAnchor) > Mathf.Epsilon)
                 {
