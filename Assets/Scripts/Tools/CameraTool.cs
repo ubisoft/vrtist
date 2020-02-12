@@ -247,6 +247,12 @@ namespace VRtist
             {
                 sphere.gameObject.SetActive(show);
             }
+
+            Transform rightController = gameObject.transform.Find("right_controller");
+            if (rightController != null)
+            {
+                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
+            }
         }
 
         private float ComputeFocal(Camera cam)

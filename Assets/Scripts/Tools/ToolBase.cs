@@ -8,7 +8,7 @@ namespace VRtist
     {
         [Header("UI")]
         [SerializeField] protected Transform panel = null;
-
+        
         static GameObject previousTool = null;
         protected bool switchToSelectionEnabled = true;
 
