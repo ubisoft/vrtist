@@ -48,7 +48,7 @@ namespace VRtist
             }
             if (timeBar != null)
             {
-                timeBar.minValue = (float)firstFrame;
+                timeBar.minValue = firstFrame;
             }
         }
 
@@ -60,7 +60,7 @@ namespace VRtist
             }
             if (timeBar != null)
             {
-                timeBar.maxValue = (float)lastFrame;
+                timeBar.maxValue = lastFrame;
             }
         }
 
@@ -69,10 +69,10 @@ namespace VRtist
             if (timeBar != null)
             {
                 // TODO: remove, used for the floating current frame text
-                timeBar.Value = (int)currentFrame; // TODO: slider with int
+                timeBar.Value = currentFrame;
                 if (currentFrameLabel != null)
                 {
-                    currentFrameLabel.Text = ((int)currentFrame).ToString();
+                    currentFrameLabel.Text = currentFrame.ToString();
                 }
             }
         }
@@ -90,9 +90,9 @@ namespace VRtist
             }
         }
 
-        public void OnChangeCurrentFrame(float f)
+        public void OnChangeCurrentFrame(int i)
         {
-            currentFrame = (int)f;
+            currentFrame = i;
         }
 
         // TMP

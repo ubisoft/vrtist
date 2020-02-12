@@ -16,9 +16,9 @@ namespace VRtist
         private static readonly float default_slider_end = 0.9f;
         private static readonly float default_rail_margin = 0.005f;
         private static readonly float default_rail_thickness = 0.001f;
-        private static readonly float default_min_value = 0.0f;
-        private static readonly float default_max_value = 1.0f;
-        private static readonly float default_current_value = 0.5f;
+        private static readonly int default_min_value = 0;
+        private static readonly int default_max_value = 250;
+        private static readonly int default_current_value = 0;
         private static readonly Material default_background_material = null;
         private static readonly Material default_rail_material = null;
         private static readonly Material default_knob_material = null;
@@ -37,9 +37,9 @@ namespace VRtist
         public float slider_end = default_slider_end;
         public float rail_margin = default_rail_margin;
         public float rail_thickness = default_rail_thickness;
-        public float min_value = default_min_value;
-        public float max_value = default_max_value;
-        public float current_value = default_current_value;
+        public int min_value = default_min_value;
+        public int max_value = default_max_value;
+        public int current_value = default_current_value;
         public Material uiBackgroundMaterial = default_background_material;
         public Material uiRailMaterial = default_rail_material;
         public Material uiKnobMaterial = default_knob_material;
