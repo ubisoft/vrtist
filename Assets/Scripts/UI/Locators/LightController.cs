@@ -9,18 +9,11 @@ namespace VRtist
         public LightParameters parameters = null;
         public override Parameters GetParameters() { return parameters; }
 
-        private Transform world;
         private Light lightObject = null;
 
         // Start is called before the first frame update
         void Awake()
-        {
-            world = transform.parent;
-            while (world.parent)
-            {
-                world = world.parent;
-            }
-
+        {            
             Light l = transform.GetComponentInChildren<Light>();
             LightType ltype = l.type;
             lightObject = l;
@@ -43,6 +36,9 @@ namespace VRtist
         {
             if (!lightObject)
                 return;
+
+            if (null == world)
+                GetWorldTransform();
 
             float scale = world.localScale.x;
             if (lightObject.type == LightType.Directional)

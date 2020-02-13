@@ -6,7 +6,7 @@ namespace VRtist
 {
     public class CommandMoveObjects : ICommand
     {
-        List<GameObject> objects;
+        List<string> objectNames;
 
         List<Vector3> beginPositions;
         List<Quaternion> beginRotations;
@@ -16,9 +16,9 @@ namespace VRtist
         List<Quaternion> endRotations;
         List<Vector3> endScales;
 
-        public CommandMoveObjects(List<GameObject> o, List<Vector3> bp, List<Quaternion> br, List<Vector3> bs, List<Vector3> ep, List<Quaternion> er, List<Vector3> es)
+        public CommandMoveObjects(List<string> o, List<Vector3> bp, List<Quaternion> br, List<Vector3> bs, List<Vector3> ep, List<Quaternion> er, List<Vector3> es)
         {
-            objects = o;
+            objectNames = o;
             beginPositions = bp;
             beginRotations = br;
             beginScales = bs;
@@ -30,45 +30,43 @@ namespace VRtist
 
         public override void Undo()
         {
-            int count = objects.Count;
+            int count = objectNames.Count;
             for(int i = 0; i < count; i++)
             {
-                if(null == objects[i]) { continue; }
-                objects[i].transform.localPosition = beginPositions[i];
-                objects[i].transform.localRotation = beginRotations[i];
-                objects[i].transform.localScale = beginScales[i];
-                CommandManager.SendEvent(MessageType.Transform, objects[i].transform);
+                string objectName = objectNames[i];
+
+                SyncData.SetTransform(objectName, beginPositions[i], beginRotations[i], beginScales[i]);
+                CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
             }
         }
         public override void Redo()
         {
-            int count = objects.Count;
+            int count = objectNames.Count;
             for (int i = 0; i < count; i++)
             {
-                if (null == objects[i]) { continue; }
-                objects[i].transform.localPosition = endPositions[i];
-                objects[i].transform.localRotation = endRotations[i];
-                objects[i].transform.localScale = endScales[i];
-                CommandManager.SendEvent(MessageType.Transform, objects[i].transform);
+                string objectName = objectNames[i];
+                SyncData.SetTransform(objectName, endPositions[i], endRotations[i], endScales[i]);
+                CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
             }
         }
         public override void Submit()
         {
-            if (objects.Count > 0)
+            if (objectNames.Count > 0)
             {
                 CommandManager.AddCommand(this);
-                int count = objects.Count;
+                int count = objectNames.Count;
                 for (int i = 0; i < count; i++)
                 {
-                    CommandManager.SendEvent(MessageType.Transform, objects[i].transform);
+                    string objectName = objectNames[i];
+                    CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
                 }
             }
         }
         public override void Serialize(SceneSerializer serializer)
         {
-            for(int i = 0; i < objects.Count; i++)
+            for(int i = 0; i < objectNames.Count; i++)
             {
-                GameObject gobject = objects[i];
+                GameObject gobject = SyncData.nodes[objectNames[i]].prefab;
                 ParametersController parametersController = gobject.GetComponentInParent<ParametersController>();
                 if (parametersController)
                 {

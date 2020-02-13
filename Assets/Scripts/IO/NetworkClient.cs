@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace VRtist
 {
+    
     public enum MessageType
     {
         JoinRoom = 1,
@@ -19,10 +20,7 @@ namespace VRtist
         LeaveRoom,
 
         Command = 100,
-        Transform,
         Delete,
-        Mesh,
-        Material,
         Camera,
         Light,
         MeshConnection,
@@ -31,6 +29,20 @@ namespace VRtist
         SendToTrash,
         RestoreFromTrash,
         Texture,
+        AddCollectionToCollection,
+        RemoveCollectionFromCollection,
+        AddObjectToCollection,
+        RemoveObjectFromCollection,
+        AddObjectToScene,
+        AddCollectionToScene,
+        CollectionInstance,
+        Collection,
+        CollectionRemoved,
+        SetScene,
+        Optimized_Commands = 200,
+        Transform,
+        Mesh,
+        Material,
     }
 
     public class NetCommand
@@ -51,8 +63,7 @@ namespace VRtist
     }
     
     public class NetGeometry
-    {
-
+    {        
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
         public static Material currentMaterial = null;
 
@@ -275,63 +286,28 @@ namespace VRtist
         public static void Rename(Transform root, byte[] data)
         {
             int bufferIndex = 0;
-            Transform srcTrf = FindPath(root, data, 0, out bufferIndex);
-            if (srcTrf == null)
-                return;
-            string dstPath = GetString(data, bufferIndex, out bufferIndex);
-            if (dstPath.Length == 0)
-                return;
-            string[] splittedDstPath = dstPath.Split('/');
-            string newName = splittedDstPath[splittedDstPath.Length - 1];
-            srcTrf.gameObject.name = newName;
+            string[] srcPath = GetString(data, bufferIndex, out bufferIndex).Split('/');
+            string[] dstPath = GetString(data, bufferIndex, out bufferIndex).Split('/');
+
+            string srcName = srcPath[srcPath.Length - 1];
+            string dstName = dstPath[dstPath.Length - 1];
+
+            SyncData.Rename(srcName, dstName);
         }
 
-        public static void Delete(Transform root, byte[] data)
+        public static void Delete(Transform prefab, byte[] data)
         {
             int bufferIndex = 0;
-            Transform trf = FindPath(root, data, 0, out bufferIndex);
-            if (trf == null)
-                return;
+            string[] ObjectPath = GetString(data, bufferIndex, out bufferIndex).Split('/');
+            string objectName = ObjectPath[ObjectPath.Length - 1];
 
-            MeshFilter[] meshFilters = trf.GetComponentsInChildren<MeshFilter>();
-            for(int i = 0; i < meshFilters.Length; i++)
-            {
-                MeshFilter meshFilter = meshFilters[i];
-                GameObject subObject = meshFilters[i].gameObject;
-
-                bool next = false;
-                foreach(var meshInstance in meshInstances)
-                {
-                    string meshInstanceName = meshInstance.Key;
-                    HashSet<MeshFilter> meshFilterInstance = meshInstance.Value;
-                    foreach(MeshFilter mf in meshFilterInstance)
-                    {
-                        if(mf == meshFilter)
-                        {
-                            meshFilterInstance.Remove(meshFilter);
-                            if(meshFilterInstance.Count == 0)
-                            {
-                                meshInstances.Remove(meshInstanceName);
-                                meshesMaterials.Remove(meshInstanceName);
-                                meshes.Remove(meshInstanceName);
-                            }
-                            next = true;
-                            break;
-                        }
-                    }
-                    if (next)
-                        break;
-                }
-            }
-
-            Selection.RemoveFromSelection(trf.gameObject);
-            GameObject.Destroy(trf.gameObject);
+            SyncData.Delete(objectName);
         }
 
-        public static void Duplicate(Transform root, byte[] data)
+        public static void Duplicate(Transform prefab, byte[] data)
         {
             int bufferIndex = 0;
-            Transform srcPath = FindPath(root, data, 0, out bufferIndex);
+            Transform srcPath = FindPath(prefab, data, 0, out bufferIndex);
             if (srcPath == null)
                 return;
 
@@ -340,8 +316,7 @@ namespace VRtist
             Quaternion rotation = GetQuaternion(data, ref bufferIndex);
             Vector3 scale = GetVector3(data, ref bufferIndex);
 
-            GameObject newGameObject = GameObject.Instantiate(srcPath.gameObject, srcPath.parent);
-            newGameObject.name = dstName;
+            GameObject newGameObject = SyncData.Duplicate(srcPath.gameObject, dstName);
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
             newGameObject.transform.localScale = scale;
@@ -354,17 +329,22 @@ namespace VRtist
             if (null == objectPath)
                 return;
             objectPath.parent = Utils.GetTrash().transform;
+            
+            Node node = SyncData.nodes[objectPath.name];
+            node.RemoveInstance(objectPath.gameObject);
         }
         public static void BuildRestoreFromTrash(Transform root, byte[] data)
         {
             int bufferIndex = 0;
             string objectName = GetString(data, 0, out bufferIndex);
-            string dstPath = GetString(data, bufferIndex, out bufferIndex);
+            Transform parent = FindPath(root, data, bufferIndex, out bufferIndex);
             Transform trf = Utils.GetTrash().transform.Find(objectName);
             if (null != trf)
-            {
-                Transform parent = BuildPath(root, dstPath,true);
+            {                
                 trf.parent = parent;
+
+                Node node = SyncData.nodes[objectName];
+                node.AddInstance(trf.gameObject);
             }
         }
 
@@ -379,6 +359,91 @@ namespace VRtist
             Buffer.BlockCopy(data, bufferIndex, buffer, 0, size);
 
             textureData[path] = buffer;
+        }
+
+        public static void BuildCollection(byte[] data)
+        {
+            int bufferIndex = 0;
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+            bool visible = GetBool(data, ref bufferIndex);
+            Vector3 offset = GetVector3(data, ref bufferIndex);
+
+            SyncData.AddCollection(collectionName, offset, visible);
+        }
+
+        public static void BuildCollectionRemoved(byte[] data)
+        {
+            int bufferIndex = 0;
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+
+            SyncData.RemoveCollection(collectionName);
+        }
+
+        public static void BuildAddCollectionToCollection(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string parentCollectionName = GetString(data, bufferIndex, out bufferIndex);
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+
+            SyncData.AddCollectionToCollection(parentCollectionName, collectionName);
+
+        }
+
+        public static void BuildRemoveCollectionFromCollection(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string parentCollectionName = GetString(data, bufferIndex, out bufferIndex);
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+
+            SyncData.RemoveCollectionFromCollection(parentCollectionName, collectionName);
+        }
+
+        public static void BuildAddObjectToCollection(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+            string objectName = GetString(data, bufferIndex, out bufferIndex);
+
+            SyncData.AddObjectToCollection(collectionName, objectName);
+        }
+
+        public static void BuildRemoveObjectFromCollection(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+            string objectName = GetString(data, bufferIndex, out bufferIndex);
+
+            SyncData.RemoveObjectFromCollection(collectionName, objectName);
+        }
+
+        public static void BuildCollectionInstance(byte[] data)
+        {
+            int bufferIndex = 0;
+            Transform transform = BuildPath(data, 0, true, out bufferIndex);
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+
+            SyncData.AddCollectionInstance(transform, collectionName);
+        }
+
+        public static void BuildAddObjectToScene(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string objectName = GetString(data, bufferIndex, out bufferIndex);
+            SyncData.AddObjectToScene(root, objectName, "/");
+        }
+
+        public static void BuilAddCollectionToScene(Transform root, byte[] data)
+        {
+            int bufferIndex = 0;
+            string collectionName = GetString(data, bufferIndex, out bufferIndex);
+            SyncData.sceneCollections.Add(collectionName);
+        }
+
+        public static void BuilSetScene(byte[] data)
+        {
+            int bufferIndex = 0;
+            string sceneName = GetString(data, bufferIndex, out bufferIndex);
+            SyncData.SetScene(sceneName);
         }
 
         public static Material DefaultMaterial()
@@ -774,7 +839,7 @@ namespace VRtist
             bufferIndex = startIndex + pathLength + 4;
 
             char[] separator = { '/' };
-            string[] splitted = path.Split(separator, 1);
+            string[] splitted = path.Split(separator);
             Transform parent = root;
             foreach (string subPath in splitted)
             {
@@ -807,34 +872,18 @@ namespace VRtist
             return result;
         }
 
-        public static Transform BuildPath(Transform root, string path, bool includeLeaf)
-        {
-            string[] splitted = path.Split('/');
-            Transform parent = root;
-            int length = includeLeaf ? splitted.Length : splitted.Length - 1;
-            for (int i = 0; i < length; i++)
-            {
-                string subPath = splitted[i];
-                Transform transform = parent.Find(subPath);
-                if (transform == null)
-                {
-                    transform = new GameObject(subPath).transform;
-                    transform.parent = parent;
-                }
-                parent = transform;
-            }
-            return parent;
-        }
+        
 
-        public static Transform BuildPath(Transform root, byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
+        public static Transform BuildPath(byte[] data, int startIndex, bool includeLeaf, out int bufferIndex)
         {
             string path = GetString(data, startIndex, out bufferIndex);
-            return BuildPath(root, path, includeLeaf);
+            return SyncData.GetOrCreatePrefabPath(path);
         }
-        public static Transform BuildTransform(Transform root, byte[] data)
+
+        public static Transform BuildTransform(Transform prefab, byte[] data)
         {
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, true, out currentIndex);
+            Transform transform = BuildPath(data, 0, true, out currentIndex);
 
             float[] buffer = new float[4];
             bool[] boolBuffer = new bool[1];
@@ -857,22 +906,22 @@ namespace VRtist
             size = sizeof(bool);
             Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
             currentIndex += size;
-            transform.gameObject.SetActive((bool)boolBuffer[0]);
+
+            SyncData.nodes[transform.name].visible = (bool)boolBuffer[0];
+            SyncData.ApplyTransformToInstances(transform);
 
             return transform;
         }
 
+
+        /* --------------------------------------------------------------------------------------------
+         * 
+         *   COMMANDS
+         * 
+         * -------------------------------------------------------------------------------------------*/
         public static NetCommand BuildTransformCommand(Transform root,Transform transform)
         {
-            Transform current = transform;
-            string path = current.name;
-            while(current.parent && current.parent != root)
-            {
-                current = current.parent;
-                path = current.name + "/" + path;
-            }
-
-            byte[] name = StringToBytes(path);
+            byte[] name = StringToBytes(transform.name);
             byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
             byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
             byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
@@ -1101,14 +1150,14 @@ namespace VRtist
 
         public static void BuildCamera(Transform root, byte[] data)
         {
-            int tmpIndex = 0;
-            string path = GetString(data, 0, out tmpIndex);
-
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, false, out currentIndex);
+            string path = GetString(data, 0, out currentIndex);
+
+
+            Transform transform = root;
             if (transform == null)
                 return;
-
+            
             GameObject camGameObject = null;
             string[] splittedPath = path.Split('/');
             string name = splittedPath[splittedPath.Length - 1];
@@ -1117,6 +1166,9 @@ namespace VRtist
             {
                 camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform);
                 camGameObject.name = name;
+                Node node = SyncData.CreateNode(name);
+                node.prefab = camGameObject;
+
                 //camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 //camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
             }
@@ -1167,11 +1219,9 @@ namespace VRtist
 
         public static void BuildLight(Transform root, byte[] data)
         {
-            int tmpIndex = 0;
-            string path = GetString(data, 0, out tmpIndex);
-
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, false, out currentIndex);
+            string path = GetString(data, 0, out currentIndex);
+            Transform transform = root;/*BuildPath(root, data, 0, false, out currentIndex);*/
             if (transform == null)
                 return;
 
@@ -1198,13 +1248,15 @@ namespace VRtist
                 }
                 //lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 lightGameObject.name = name;
+                Node node = SyncData.CreateNode(name);
+                node.prefab = lightGameObject;
             }
             else
             {
                 lightGameObject = lightTransform.gameObject;
             }
 
-
+            // Read data
             int shadow = BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
@@ -1222,9 +1274,16 @@ namespace VRtist
             float spotBlend = BitConverter.ToSingle(data, currentIndex);
             currentIndex += sizeof(float);
 
-
+            // Set data to all instances
             LightController lightController = lightGameObject.GetComponent<LightController>();
             LightParameters lightParameters = (LightParameters)lightController.GetParameters();
+
+            foreach (Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
+            {
+                GameObject gobj = t.Item1;
+                LightController lightContr = gobj.GetComponent<LightController>();
+                lightContr.parameters = lightParameters;
+            }
             lightParameters.color = lightColor;
             switch(lightType)
             {
@@ -1249,30 +1308,71 @@ namespace VRtist
             lightController.FireValueChanged();
         }
 
-        public static Transform ConnectMesh(Transform root, byte[] data)
+        public static MeshFilter GetOrCreateMeshFilter(GameObject obj)
+        {
+            MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
+            if (meshFilter == null)
+                meshFilter = obj.AddComponent<MeshFilter>();
+            return meshFilter;
+        }
+
+        public static MeshRenderer GetOrCreateMeshRenderer(GameObject obj)
+        {
+            MeshRenderer meshRenderer = obj.GetComponent<MeshRenderer>();
+            if (meshRenderer == null)
+                meshRenderer = obj.AddComponent<MeshRenderer>();
+            return meshRenderer;
+        }
+        public static MeshCollider GetOrCreateMeshCollider(GameObject obj)
+        {
+            MeshCollider meshCollider = obj.GetComponent<MeshCollider>();
+            if (meshCollider == null)
+                meshCollider = obj.AddComponent<MeshCollider>();
+            return meshCollider;
+        }
+
+        public static Transform ConnectMesh(byte[] data)
         {
             int currentIndex = 0;
-            Transform transform = BuildPath(root, data, 0, true, out currentIndex);
+            Transform transform = BuildPath(data, 0, true, out currentIndex);
             string meshName = GetString(data, currentIndex, out currentIndex);
 
             GameObject gobject = transform.gameObject;
-            MeshFilter meshFilter = gobject.GetComponent<MeshFilter>();
-            if (meshFilter == null)
-                meshFilter = gobject.AddComponent<MeshFilter>();
-            MeshRenderer meshRenderer = gobject.GetComponent<MeshRenderer>();
-            if (meshRenderer == null)
-                meshRenderer = gobject.AddComponent<MeshRenderer>();
 
             Mesh mesh = meshes[meshName];
 
-            meshRenderer.sharedMaterials = meshesMaterials[meshName];
 
             gobject.tag = "PhysicObject";
 
-            if(!meshInstances.ContainsKey(meshName))
+            if (!meshInstances.ContainsKey(meshName))
                 meshInstances[meshName] = new HashSet<MeshFilter>();
+
+            MeshFilter meshFilter = GetOrCreateMeshFilter(gobject);
             meshInstances[meshName].Add(meshFilter);
-            meshFilter.mesh = mesh;
+
+            foreach (MeshFilter filter in meshInstances[meshName])
+            {
+                filter.mesh = mesh;
+                GameObject obj = filter.gameObject;
+                MeshRenderer meshRenderer = GetOrCreateMeshRenderer(obj);
+                meshRenderer.sharedMaterials = meshesMaterials[meshName];
+                GetOrCreateMeshCollider(obj);
+
+                if (SyncData.nodes.ContainsKey(obj.name))
+                {
+                    foreach (Tuple<GameObject, string> t in SyncData.nodes[obj.name].instances)
+                    {
+                        GameObject instance = t.Item1;
+                        MeshFilter instanceMeshFilter = GetOrCreateMeshFilter(instance);
+                        instanceMeshFilter.mesh = mesh;
+
+                        MeshRenderer instanceMeshRenderer = GetOrCreateMeshRenderer(instance);
+                        instanceMeshRenderer.sharedMaterials = meshesMaterials[meshName];
+
+                        GetOrCreateMeshCollider(instance);
+                    }
+                }
+            }
 
             if (gobject.GetComponent<MeshCollider>() == null)
             {
@@ -1282,7 +1382,7 @@ namespace VRtist
             return transform;
         }
 
-        public static Mesh BuildMesh(Transform root, byte[] data)
+        public static Mesh BuildMesh(byte[] data)
         {
             int currentIndex = 0;
             string meshName = GetString(data, currentIndex, out currentIndex);
@@ -1368,6 +1468,10 @@ namespace VRtist
                     {
                         meshMaterials[i] = materials[materialName];
                     }
+                    else
+                    {
+                        meshMaterials[i] = DefaultMaterial();
+                    }
                 }
             }
 
@@ -1442,17 +1546,7 @@ namespace VRtist
             mesh.RecalculateBounds();
             meshes[meshName] = mesh;
             meshesMaterials[meshName] = meshMaterials;
-
-            if (meshInstances.ContainsKey(meshName))
-            {
-                HashSet<MeshFilter> filters = meshInstances[meshName];
-                foreach (MeshFilter filter in filters)
-                {
-                    if(filter)
-                        filter.mesh = mesh;
-                }
-            }
-
+           
             return mesh;
         }
     }
@@ -1461,6 +1555,7 @@ namespace VRtist
     {
         private static NetworkClient _instance;
         public Transform root;
+        public Transform prefab;
         public int port = 12800;
 
         Thread thread = null;
@@ -1486,63 +1581,10 @@ namespace VRtist
             Join();
         }
 
-        void Update()
-        {
-            lock (this)
-            {
-                if (receivedCommands.Count == 0)
-                    return;
-
-                foreach (NetCommand command in receivedCommands)
-                {
-                    Debug.Log("Command Id " + command.id.ToString());
-                    switch (command.messageType)
-                    {
-                        case MessageType.Mesh:
-                            NetGeometry.BuildMesh(root, command.data);
-                            break;
-                        case MessageType.MeshConnection:
-                            NetGeometry.ConnectMesh(root, command.data);
-                            break;
-                        case MessageType.Transform:
-                            NetGeometry.BuildTransform(root, command.data);
-                            break;
-                        case MessageType.Material:
-                            NetGeometry.BuildMaterial(command.data);
-                            break;
-                        case MessageType.Camera:
-                            NetGeometry.BuildCamera(root, command.data);
-                            break;
-                        case MessageType.Light:
-                            NetGeometry.BuildLight(root, command.data);
-                            break;
-                        case MessageType.Delete:
-                            NetGeometry.Delete(root, command.data);
-                            break;
-                        case MessageType.Rename:
-                            NetGeometry.Rename(root, command.data);
-                            break;
-                        case MessageType.Duplicate:
-                            NetGeometry.Duplicate(root, command.data);
-                            break;
-                        case MessageType.SendToTrash:
-                            NetGeometry.BuildSendToTrash(root, command.data);
-                            break;
-                        case MessageType.RestoreFromTrash:
-                            NetGeometry.BuildRestoreFromTrash(root, command.data);
-                            break;
-                        case MessageType.Texture:
-                            NetGeometry.BuildTexture(command.data);
-                            break;
-                    }
-                }
-                receivedCommands.Clear();
-            }
-        }
-
         void Start()
         {
             Connect();
+            SyncData.Init(prefab, root);
         }
 
         public void Connect()
@@ -1785,6 +1827,90 @@ namespace VRtist
                         pendingCommands.Clear();
                     }
                 }
+            }
+        }
+
+        void Update()
+        {
+            lock (this)
+            {
+                if (receivedCommands.Count == 0)
+                    return;
+
+                foreach (NetCommand command in receivedCommands)
+                {
+                    Debug.Log("Command Id " + command.id.ToString());
+                    switch (command.messageType)
+                    {
+                        case MessageType.Mesh:
+                            NetGeometry.BuildMesh(command.data);
+                            break;
+                        case MessageType.MeshConnection:
+                            NetGeometry.ConnectMesh(command.data);
+                            break;
+                        case MessageType.Transform:
+                            NetGeometry.BuildTransform(prefab, command.data);
+                            break;
+                        case MessageType.Material:
+                            NetGeometry.BuildMaterial(command.data);
+                            break;
+                        case MessageType.Camera:
+                            NetGeometry.BuildCamera(prefab, command.data);
+                            break;
+                        case MessageType.Light:
+                            NetGeometry.BuildLight(prefab, command.data);
+                            break;
+                        case MessageType.Delete:
+                            NetGeometry.Delete(prefab, command.data);
+                            break;
+                        case MessageType.Rename:
+                            NetGeometry.Rename(prefab, command.data);
+                            break;
+                        case MessageType.Duplicate:
+                            NetGeometry.Duplicate(prefab, command.data);
+                            break;
+                        case MessageType.SendToTrash:
+                            NetGeometry.BuildSendToTrash(root, command.data);
+                            break;
+                        case MessageType.RestoreFromTrash:
+                            NetGeometry.BuildRestoreFromTrash(root, command.data);
+                            break;
+                        case MessageType.Texture:
+                            NetGeometry.BuildTexture(command.data);
+                            break;
+                        case MessageType.Collection:
+                            NetGeometry.BuildCollection(command.data);
+                            break;
+                        case MessageType.CollectionRemoved:
+                            NetGeometry.BuildCollectionRemoved(command.data);
+                            break;
+                        case MessageType.AddCollectionToCollection:
+                            NetGeometry.BuildAddCollectionToCollection(prefab, command.data);
+                            break;
+                        case MessageType.RemoveCollectionFromCollection:
+                            NetGeometry.BuildRemoveCollectionFromCollection(prefab, command.data);
+                            break;
+                        case MessageType.AddObjectToCollection:
+                            NetGeometry.BuildAddObjectToCollection(prefab, command.data);
+                            break;
+                        case MessageType.RemoveObjectFromCollection:
+                            NetGeometry.BuildRemoveObjectFromCollection(prefab, command.data);
+                            break;
+                        case MessageType.CollectionInstance:
+                            NetGeometry.BuildCollectionInstance(command.data);
+                            break;
+                        case MessageType.AddObjectToScene:
+                            NetGeometry.BuildAddObjectToScene(root, command.data);
+                            break;
+                        case MessageType.AddCollectionToScene:
+                            NetGeometry.BuilAddCollectionToScene(root, command.data);
+                            break;
+                        case MessageType.SetScene:
+                            NetGeometry.BuilSetScene(command.data);
+                            break;
+                    }
+                }
+                receivedCommands.Clear();
             }
         }
 

@@ -182,14 +182,10 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    GameObject newCamera = Utils.CreateInstance(cameraPrefab, cameraContainer);
+                    Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.05f, 0.05f, 0.05f));
+                    GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
                     if (newCamera)
                     {
-                        Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.05f, 0.05f, 0.05f));
-                        newCamera.transform.localPosition = matrix.GetColumn(3);
-                        newCamera.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
-                        newCamera.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
-
                         CommandGroup undoGroup = new CommandGroup();
                         new CommandAddGameObject(newCamera).Submit();
                         ClearSelection();

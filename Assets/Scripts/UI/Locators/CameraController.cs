@@ -8,8 +8,7 @@ namespace VRtist
     {
         public CameraParameters parameters = new CameraParameters();
         public override Parameters GetParameters() { return parameters; }
-
-        private Transform world;
+        
         private Camera cameraObject = null;
 
         bool firstTime = true;
@@ -17,12 +16,6 @@ namespace VRtist
         // Start is called before the first frame update
         void Awake()
         {
-            world = transform.parent;
-            while (null != world.parent)
-            {
-                world = world.parent;
-            }
-
             cameraObject = transform.GetComponentInChildren<Camera>();
         }
 
@@ -30,6 +23,9 @@ namespace VRtist
         {
             if (null == cameraObject)
                 return;
+
+            if (null == world)
+                GetWorldTransform();
 
             float scale = world.localScale.x;
             cameraObject.farClipPlane = parameters.far * scale;

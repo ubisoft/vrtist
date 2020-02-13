@@ -13,6 +13,19 @@ namespace VRtist
     public class ParametersController : MonoBehaviour
     {
         private ParametersEvent onChangedEvent;
+        protected Transform world = null;
+
+        protected Transform GetWorldTransform()
+        {
+            if (null != world)
+                return world;
+            world = transform.parent;
+            while (world != null && world.parent)
+            {
+                world = world.parent;
+            }
+            return world;
+        }
 
         private void Start()
         {

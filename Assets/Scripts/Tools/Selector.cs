@@ -173,7 +173,7 @@ namespace VRtist
 
         protected void ManageMoveObjectsUndo()
         {
-            List<GameObject> objects = new List<GameObject>();
+            List<string> objects = new List<string>();
             List<Vector3> beginPositions = new List<Vector3>();
             List<Quaternion> beginRotations = new List<Quaternion>();
             List<Vector3> beginScales = new List<Vector3>();
@@ -186,7 +186,7 @@ namespace VRtist
                 GameObject gObject = data.Value;
                 if (initPositions[gObject] == gObject.transform.localPosition && initRotations[gObject] == gObject.transform.localRotation && initScales[gObject] == gObject.transform.localScale)
                     continue;
-                objects.Add(gObject);
+                objects.Add(gObject.name);
                 beginPositions.Add(initPositions[gObject]);
                 beginRotations.Add(initRotations[gObject]);
                 beginScales.Add(initScales[gObject]);
@@ -294,10 +294,7 @@ namespace VRtist
 
                 if (data.Value.transform.localToWorldMatrix != transformed)
                 {
-                    data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                    data.Value.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2),transformed.GetColumn(1));
-                    data.Value.transform.localScale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
-
+                    SyncData.SetTransform(data.Value.name, transformed);
                     CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                 }
             }
@@ -410,9 +407,9 @@ namespace VRtist
 
             for(i = 0; i < selectedObjects.Length; i++)
             {
-                Transform parent = selectedObjects[i].transform.parent;
+                Transform parent = selectedObjects[i].transform.parent;                
                 if (parent.name.StartsWith("Group__"))
-                {
+                {/*
                     if (!groups.ContainsKey(parent))
                     {
                         GameObject newGroup = new GameObject("Group__" + groupId.ToString());
@@ -428,10 +425,11 @@ namespace VRtist
                     clones.Add(clone);
 
                     new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
+                    */
                 }
                 else
                 {
-                    GameObject clone = Utils.CreateInstance(selectedObjects[i], selectedObjects[i].transform.parent);
+                    GameObject clone = SyncData.Duplicate(selectedObjects[i]);
                     clones.Add(clone);
 
                     new CommandDuplicateGameObject(clone, selectedObjects[i]).Submit();
@@ -495,6 +493,8 @@ namespace VRtist
 
         public void OnLinkAction()
         {
+            // TODO
+            return;
             if (Selection.selection.Count <= 1)
                 return;
 
@@ -544,6 +544,8 @@ namespace VRtist
 
         public void OnUnlinkAction()
         {
+            // TODO
+            return;
             SortedSet<Transform> groups = new SortedSet<Transform>();
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {

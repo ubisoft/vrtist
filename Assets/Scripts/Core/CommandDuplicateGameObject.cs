@@ -35,16 +35,23 @@ namespace VRtist
         public override void Undo()
         {
             if (null == gObject) { return; }
+
             SendToTrash(gObject);
             gObject.transform.parent = Utils.GetTrash().transform;
+            Node node = SyncData.nodes[gObject.name];
+            node.RemoveInstance(gObject);
         }
         public override void Redo()
         {
             if (null == gObject) { return; }
+
             gObject.transform.parent = parent;
             gObject.transform.localPosition = position;
             gObject.transform.localRotation = rotation;
             gObject.transform.localScale = scale;
+            Node node = SyncData.nodes[gObject.name];
+            node.AddInstance(gObject);
+
             RestoreFromTrash(gObject);
         }
         public override void Submit()
