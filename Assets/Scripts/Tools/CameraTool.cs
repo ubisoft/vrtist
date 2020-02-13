@@ -14,7 +14,7 @@ namespace VRtist
         public Material screenShotMaterial;
         public Transform world;
         public Transform backgroundFeedback;
-        public Dopesheet timeline;
+        public Dopesheet dopesheet;
         public TextMeshProUGUI tm;
         public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;
@@ -134,9 +134,9 @@ namespace VRtist
         public void OnCheckShowTimeline(bool value)
         {
             showTimeline = value;
-            if(timeline != null)
+            if (dopesheet != null)
             {
-                timeline.Show(value);
+                dopesheet.Show(value);
             }
         }
 
@@ -296,14 +296,24 @@ namespace VRtist
                 if (null == cameraParameters)
                     continue;
 
+                // Update the Dopesheet
+                if (dopesheet != null)
+                {
+                    dopesheet.UpdateFromCamera(cameraParameters); // anim parameters? to be generic
+                }
+
+                // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
                 {
                     sliderComp.Value = cameraParameters.focal;
                     focalSlider.gameObject.SetActive(true);
-                    return;
                 }
+
+                // Use only the first camera.
+                return;
             }
+            dopesheet.Clear();
             focalSlider.gameObject.SetActive(false);
         }
 
@@ -330,6 +340,40 @@ namespace VRtist
         public void OnFocalSliderPressed()
         {
             OnSliderPressed("Camera Focal", "/CameraController/parameters.focal");
+        }
+
+        public void OnAddKeyframe(int i)
+        {
+            // TODO:
+            // - add a keyframe to the currently selected camera cameraParameters
+        }
+
+        public void OnRemoveKeyframe(int i)
+        {
+            // TODO:
+            // - remove a keyframe to the currently selected camera cameraParameters
+        }
+
+        static int the_next_keyframe = 1; // TMP
+        public void OnNextKeyframe(int currentKeyframe)
+        {
+            // TODO: 
+            // - find the next keyframe, using the current one provided, and cameraParameters keyframes.
+            // - call the dopesheet to tell it the new current keyframe
+
+            int f = the_next_keyframe++;
+            dopesheet.CurrentFrame = f;
+        }
+
+        static int the_previous_keyframe = 100; // TMP
+        public void OnPreviousKeyframe(int currentKeyframe)
+        {
+            // TODO: 
+            // - find the previous keyframe, using the current one provided, and cameraParameters keyframes.
+            // - call the dopesheet to tell it the new current keyframe
+
+            int f = the_previous_keyframe--;
+            dopesheet.CurrentFrame = f;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -13,7 +14,12 @@ namespace VRtist
         [SerializeField] private UILabel lastFrameLabel = null;
         [SerializeField] private UILabel currentFrameLabel = null;
 
-        // AnimInfo currentObjectInfo;
+        [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
+        public IntChangedEvent onAddKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onRemoveKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onPreviousKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onNextKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onChangeCurrentKeyframeEvent = new IntChangedEvent();
 
         private int firstFrame = 0;
         private int lastFrame = 250;
@@ -35,11 +41,6 @@ namespace VRtist
             }
         }
 
-        void Update()
-        {
-
-        }
-
         private void UpdateFirstFrame()
         {
             if (firstFrameLabel != null)
@@ -48,7 +49,7 @@ namespace VRtist
             }
             if (timeBar != null)
             {
-                timeBar.minValue = firstFrame;
+                timeBar.MinValue = firstFrame; // updates knob position
             }
         }
 
@@ -60,20 +61,19 @@ namespace VRtist
             }
             if (timeBar != null)
             {
-                timeBar.maxValue = lastFrame;
+                timeBar.MaxValue = lastFrame; // updates knob position
             }
         }
 
         private void UpdateCurrentFrame()
         {
+            if (currentFrameLabel != null)
+            {
+                currentFrameLabel.Text = currentFrame.ToString();
+            }
             if (timeBar != null)
             {
-                // TODO: remove, used for the floating current frame text
-                timeBar.Value = currentFrame;
-                if (currentFrameLabel != null)
-                {
-                    currentFrameLabel.Text = currentFrame.ToString();
-                }
+                timeBar.Value = currentFrame; // changes the knob's position
             }
         }
 
@@ -90,67 +90,44 @@ namespace VRtist
             }
         }
 
-        public void OnChangeCurrentFrame(int i)
+        public void UpdateFromCamera(CameraParameters cameraParameters)
         {
-            currentFrame = i;
+            // use cameraParameters keyframes arrays to update the tracks.
+            //cameraParameters.position_kf;
+            //cameraParameters.rotation_kf;
+            //cameraParameters.focal_kf;
         }
 
-        // TMP
-        public class KeyFrameData
+        public void Clear()
         {
-            public int data;
+            // empty all tracks, no camera is selected.
         }
-        private static SortedList<int, KeyFrameData> keyframes = new SortedList<int, KeyFrameData>();
-        private static int currentKFFrame = -1;
-        private static int FrameOfPreviousKeyFrame(int current, SortedList<int, KeyFrameData> keyframes)
+        
+        // called by the slider when moved
+        public void OnChangeCurrentFrame(int i)
         {
-            int prev = current >= 0 ? current : (keyframes.Keys.Count > 0 ? keyframes.Keys[0] : 0);
-            foreach(int k in keyframes.Keys)
-            {
-                if (k >= current) break;
-                prev = k;
-            }
-            return prev;
+            CurrentFrame = i;
+            onChangeCurrentKeyframeEvent.Invoke(i);
         }
-        private static int FrameOfNextKeyFrame(int current, SortedList<int, KeyFrameData> keyframes)
-        {
-            int next = current >= 0 ? current : (keyframes.Keys.Count > 0 ? keyframes.Keys[keyframes.Keys.Count - 1] : 0);
-            foreach (int k in keyframes.Keys)
-            {
-                if (k > current) return k;
-            }
-            return next;
-        }
-        // TMP
 
         public void OnPrevKeyFrame()
         {
-            currentKFFrame = FrameOfPreviousKeyFrame(currentKFFrame, keyframes);
-            CurrentFrame = currentKFFrame; // updates the slider
-            // TODO: use keyframes[currentKFFrame].data to apply current keyframe position/rotation/focal
+            onPreviousKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnNextKeyFrame()
         {
-            currentKFFrame = FrameOfNextKeyFrame(currentKFFrame, keyframes);
-            CurrentFrame = currentKFFrame; // updates the slider
-            // TODO: use keyframes[currentKFFrame].data to apply current keyframe position/rotation/focal
+            onNextKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnAddKeyFrame()
         {
-            int cf = CurrentFrame;
-            KeyFrameData data = new KeyFrameData(){ data = 0 };
-            keyframes[cf] = data;
+            onAddKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnRemoveKeyFrame()
         {
-            int cf = CurrentFrame;
-            if (keyframes.ContainsKey(cf))
-            {
-                keyframes.Remove(cf);
-            }
+            onRemoveKeyframeEvent.Invoke(CurrentFrame);
         }
     }
 }

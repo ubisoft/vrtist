@@ -19,33 +19,22 @@ namespace VRtist
         [CentimeterFloat] public float thickness = 0.001f;
         public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);
 
-        [SpaceHeader("TimeBar SubComponents Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float knobHeadWidth = 0.002f;
-        [CentimeterFloat] public float knobHeadHeight = 0.013f;
-        [CentimeterFloat] public float knobHeadDepth = 0.003f;
-        [CentimeterFloat] public float knobFootWidth = 0.001f;
-        [CentimeterFloat] public float knobFootHeight = 0.005f;
-        [CentimeterFloat] public float knobFootDepth = 0.001f; // == railThickness
-        // TODO: add colors here?
-
         [SpaceHeader("TimeBar Values", 6, 0.8f, 0.8f, 0.8f)]
         public int minValue = 0;
         public int maxValue = 250;
         public int currentValue = 0;
         
-
-        // TODO: type? handle int and float.
-        //       precision, step?
-
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public IntChangedEvent onSlideEvent = new IntChangedEvent(); // TODO: maybe make 2 callbacks, one for floats, one for ints
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
-        [SerializeField] private UITimeBarKnob knob = null;
+        [SerializeField] private Transform knob = null;
 
         private bool needRebuild = false;
 
+        public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); } }
+        public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); } }
         public int Value { get { return GetValue(); } set { SetValue(value); UpdateTimeBarPosition(); } }
 
         void Start()
@@ -67,16 +56,6 @@ namespace VRtist
             // TIME TICKS ??
             // ...
 
-            // KNOB
-            float newKnobHeadWidth = knobHeadWidth;
-            float newKnobHeadHeight = knobHeadHeight;
-            float newKnobHeadDepth = knobHeadDepth;
-            float newKnobFootWidth = knobFootWidth;
-            float newKnobFootHeight = knobFootHeight;
-            float newKnobFootDepth = knobFootDepth;
-
-            knob.RebuildMesh(newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth);
-            
             // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             Mesh theNewMesh = UIUtils.BuildBoxEx(width, height, thickness);
@@ -178,15 +157,35 @@ namespace VRtist
 
         private void UpdateTimeBarPosition()
         {
-            float pct = (float)currentValue / (float)(maxValue - minValue);
+            float pct = (float)(currentValue - minValue) / (float)(maxValue - minValue);
 
             float startX = 0.0f;
             float endX = width;
             float posX = startX + pct * (endX - startX);
 
-            Vector3 knobPosition = new Vector3(posX, -height, 0.0f); // knob is at the bottom of the widget
+            Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
 
-            knob.transform.localPosition = knobPosition;
+            knob.localPosition = knobPosition;
+        }
+
+        private int GetMinValue()
+        {
+            return minValue;
+        }
+
+        private void SetMinValue(int intValue)
+        {
+            minValue = intValue;
+        }
+
+        private int GetMaxValue()
+        {
+            return maxValue;
+        }
+
+        private void SetMaxValue(int intValue)
+        {
+            maxValue = intValue;
         }
 
         private int GetValue()
@@ -299,9 +298,7 @@ namespace VRtist
             int max_slider_value,
             int cur_slider_value,
             Material background_material,
-            Material knob_material,
             Color background_color,
-            Color knob_color,
             string caption)
         {
             GameObject go = new GameObject(sliderName);
@@ -370,17 +367,8 @@ namespace VRtist
             }
 
             // KNOB
-            Vector3 knobPosition = new Vector3(0, 0, 0);
-            float newKnobHeadWidth = uiTimeBar.knobHeadWidth;
-            float newKnobHeadHeight = uiTimeBar.knobHeadHeight;
-            float newKnobHeadDepth = uiTimeBar.knobHeadDepth;
-            float newKnobFootWidth = uiTimeBar.knobFootWidth;
-            float newKnobFootHeight = uiTimeBar.knobFootHeight;
-            float newKnobFootDepth = uiTimeBar.knobFootDepth;
-
-            uiTimeBar.knob = UITimeBarKnob.CreateUITimeBarKnob("Knob", go.transform, knobPosition, 
-                newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth, 
-                knob_material, knob_color);
+            GameObject K = new GameObject("Knob");
+            uiTimeBar.knob = K.transform;
         }
     }
 }
