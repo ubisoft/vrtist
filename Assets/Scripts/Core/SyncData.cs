@@ -149,6 +149,8 @@ namespace VRtist
         public static string currentSceneName = "";
         public static HashSet<string> sceneCollections = new HashSet<string>();
 
+        public static Dictionary<string, string> greasePencilsNameToPrefab = new Dictionary<string, string>();
+
         public static Transform root = null;
         public static Transform prefab = null;
 
