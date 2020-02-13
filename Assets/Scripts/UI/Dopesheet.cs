@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -13,7 +14,12 @@ namespace VRtist
         [SerializeField] private UILabel lastFrameLabel = null;
         [SerializeField] private UILabel currentFrameLabel = null;
 
-        // AnimInfo currentObjectInfo;
+        [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
+        public IntChangedEvent onAddKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onRemoveKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onPreviousKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onNextKeyframeEvent = new IntChangedEvent();
+        public IntChangedEvent onChangeCurrentKeyframeEvent = new IntChangedEvent();
 
         private int firstFrame = 0;
         private int lastFrame = 250;
@@ -33,11 +39,6 @@ namespace VRtist
                 lastFrameLabel = mainPanel.Find("LastFrameLabel").GetComponent<UILabel>();
                 currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
             }
-        }
-
-        void Update()
-        {
-
         }
 
         private void UpdateFirstFrame()
@@ -89,68 +90,44 @@ namespace VRtist
             }
         }
 
+        public void UpdateFromCamera(CameraParameters cameraParameters)
+        {
+            // use cameraParameters keyframes arrays to update the tracks.
+            //cameraParameters.position_kf;
+            //cameraParameters.rotation_kf;
+            //cameraParameters.focal_kf;
+        }
+
+        public void Clear()
+        {
+            // empty all tracks, no camera is selected.
+        }
+        
         // called by the slider when moved
         public void OnChangeCurrentFrame(int i)
         {
             CurrentFrame = i;
+            onChangeCurrentKeyframeEvent.Invoke(i);
         }
-
-        // TMP
-        public class KeyFrameData
-        {
-            public int data;
-        }
-        private static SortedList<int, KeyFrameData> keyframes = new SortedList<int, KeyFrameData>();
-        private static int currentKFFrame = -1;
-        private static int FrameOfPreviousKeyFrame(int current, SortedList<int, KeyFrameData> keyframes)
-        {
-            int prev = current >= 0 ? current : (keyframes.Keys.Count > 0 ? keyframes.Keys[0] : 0);
-            foreach(int k in keyframes.Keys)
-            {
-                if (k >= current) break;
-                prev = k;
-            }
-            return prev;
-        }
-        private static int FrameOfNextKeyFrame(int current, SortedList<int, KeyFrameData> keyframes)
-        {
-            int next = current >= 0 ? current : (keyframes.Keys.Count > 0 ? keyframes.Keys[keyframes.Keys.Count - 1] : 0);
-            foreach (int k in keyframes.Keys)
-            {
-                if (k > current) return k;
-            }
-            return next;
-        }
-        // TMP
 
         public void OnPrevKeyFrame()
         {
-            currentKFFrame = FrameOfPreviousKeyFrame(currentKFFrame, keyframes);
-            CurrentFrame = currentKFFrame; // updates the slider
-            // TODO: use keyframes[currentKFFrame].data to apply current keyframe position/rotation/focal
+            onPreviousKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnNextKeyFrame()
         {
-            currentKFFrame = FrameOfNextKeyFrame(currentKFFrame, keyframes);
-            CurrentFrame = currentKFFrame; // updates the slider
-            // TODO: use keyframes[currentKFFrame].data to apply current keyframe position/rotation/focal
+            onNextKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnAddKeyFrame()
         {
-            int cf = CurrentFrame;
-            KeyFrameData data = new KeyFrameData(){ data = 0 };
-            keyframes[cf] = data;
+            onAddKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnRemoveKeyFrame()
         {
-            int cf = CurrentFrame;
-            if (keyframes.ContainsKey(cf))
-            {
-                keyframes.Remove(cf);
-            }
+            onRemoveKeyframeEvent.Invoke(CurrentFrame);
         }
     }
 }
