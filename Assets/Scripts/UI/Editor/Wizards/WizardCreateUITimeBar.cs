@@ -15,9 +15,7 @@ namespace VRtist
         private static readonly int default_max_value = 250;
         private static readonly int default_current_value = 0;
         private static readonly Material default_background_material = null;
-        private static readonly Material default_knob_material = null;
         private static readonly Color default_background_color = UIElement.default_color;
-        private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
         private static readonly string default_text = "TimeBar";
 
         public UIPanel parentPanel = null;
@@ -29,9 +27,7 @@ namespace VRtist
         public int max_value = default_max_value;
         public int current_value = default_current_value;
         public Material uiBackgroundMaterial = default_background_material;
-        public Material uiKnobMaterial = default_knob_material;
         public Color backgroundColor = default_background_color;
-        public Color knobColor = default_knob_color;
         public string caption = default_text;
 
         [MenuItem("VRtist/Create UI TimeBar")]
@@ -52,9 +48,7 @@ namespace VRtist
 
             UITimeBar.CreateUITimeBar(default_slider_name, parent,
                 Vector3.zero, default_width, default_height, default_thickness, default_min_value, default_max_value, default_current_value,
-                UIUtils.LoadMaterial("UIPanel"), UIUtils.LoadMaterial("UITimeBarKnob"),
-                default_background_color, default_knob_color,
-                default_text);
+                UIUtils.LoadMaterial("UIPanel"), default_background_color, default_text);
         }
 
         private void OnWizardUpdate()
@@ -65,11 +59,6 @@ namespace VRtist
             {
                 uiBackgroundMaterial = UIUtils.LoadMaterial("UIPanel");
             }
-
-            if (uiKnobMaterial == null)
-            {
-                uiKnobMaterial = UIUtils.LoadMaterial("UITimeBarKnob");
-            }
         }
 
         private void OnWizardCreate()
@@ -77,9 +66,7 @@ namespace VRtist
             UITimeBar.CreateUITimeBar(sliderName, parentPanel ? parentPanel.transform : null, Vector3.zero, 
                 width, height, thickness,
                 min_value, max_value, current_value, 
-                uiBackgroundMaterial, uiKnobMaterial,
-                backgroundColor, knobColor,
-                caption);
+                uiBackgroundMaterial, backgroundColor, caption);
         }
     }
 }
