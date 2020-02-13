@@ -33,6 +33,8 @@ namespace VRtist
 
         private bool needRebuild = false;
 
+        public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); } }
+        public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); } }
         public int Value { get { return GetValue(); } set { SetValue(value); UpdateTimeBarPosition(); } }
 
         void Start()
@@ -155,7 +157,7 @@ namespace VRtist
 
         private void UpdateTimeBarPosition()
         {
-            float pct = (float)currentValue / (float)(maxValue - minValue);
+            float pct = (float)(currentValue - minValue) / (float)(maxValue - minValue);
 
             float startX = 0.0f;
             float endX = width;
@@ -164,6 +166,26 @@ namespace VRtist
             Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
 
             knob.localPosition = knobPosition;
+        }
+
+        private int GetMinValue()
+        {
+            return minValue;
+        }
+
+        private void SetMinValue(int intValue)
+        {
+            minValue = intValue;
+        }
+
+        private int GetMaxValue()
+        {
+            return maxValue;
+        }
+
+        private void SetMaxValue(int intValue)
+        {
+            maxValue = intValue;
         }
 
         private int GetValue()

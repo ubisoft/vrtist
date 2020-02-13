@@ -208,15 +208,9 @@ MonoBehaviour:
   baseColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   thickness: 0.001
   pushedColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}
-  knobHeadWidth: 0.005
-  knobHeadHeight: 0.012999999
-  knobHeadDepth: 0.005
-  knobFootWidth: 0.001
-  knobFootHeight: 0.005
-  knobFootDepth: 0.001
   minValue: 0
   maxValue: 250
-  currentValue: 1
+  currentValue: 0
   onSlideEvent:
     m_PersistentCalls:
       m_Calls:
@@ -237,7 +231,7 @@ MonoBehaviour:
   onReleaseEvent:
     m_PersistentCalls:
       m_Calls: []
-  knob: {fileID: 1554622077519526429}
+  knob: {fileID: 1554622077519526402}
 --- !u!1 &1554622077519526403
 GameObject:
   m_ObjectHideFlags: 0
@@ -247,9 +241,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1554622077519526402}
-  - component: {fileID: 1554622077519526431}
-  - component: {fileID: 1554622077519526428}
-  - component: {fileID: 1554622077519526429}
   m_Layer: 5
   m_Name: Knob
   m_TagString: UICollider
@@ -265,78 +256,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1554622077519526403}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.03, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 5751821694009823097}
   m_Father: {fileID: 1554622076258200606}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &1554622077519526431
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1554622077519526403}
-  m_Mesh: {fileID: 0}
---- !u!23 &1554622077519526428
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1554622077519526403}
-  m_Enabled: 0
-  m_CastShadows: 0
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RenderingLayerMask: 8
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
---- !u!114 &1554622077519526429
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1554622077519526403}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 939444adf46c85d4ebf8c04bb880d45a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  headWidth: 0.005
-  headHeight: 0.012999999
-  headDepth: 0.005
-  footWidth: 0.001
-  footHeight: 0.005
-  footDepth: 0.001
 --- !u!1 &2283230145017819425
 GameObject:
   m_ObjectHideFlags: 0
@@ -564,6 +490,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1554622077519526402}
     m_Modifications:
+    - target: {fileID: 4607801780100788276, guid: 44c44f13771406547b229c30fa8d45f4,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6503677049295440944, guid: 44c44f13771406547b229c30fa8d45f4,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -572,7 +503,7 @@ PrefabInstance:
     - target: {fileID: 6503677049295440944, guid: 44c44f13771406547b229c30fa8d45f4,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.005
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 6503677049295440944, guid: 44c44f13771406547b229c30fa8d45f4,
         type: 3}

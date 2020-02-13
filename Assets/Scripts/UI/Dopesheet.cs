@@ -48,7 +48,7 @@ namespace VRtist
             }
             if (timeBar != null)
             {
-                timeBar.minValue = firstFrame;
+                timeBar.MinValue = firstFrame; // updates knob position
             }
         }
 
@@ -60,20 +60,19 @@ namespace VRtist
             }
             if (timeBar != null)
             {
-                timeBar.maxValue = lastFrame;
+                timeBar.MaxValue = lastFrame; // updates knob position
             }
         }
 
         private void UpdateCurrentFrame()
         {
+            if (currentFrameLabel != null)
+            {
+                currentFrameLabel.Text = currentFrame.ToString();
+            }
             if (timeBar != null)
             {
-                // TODO: remove, used for the floating current frame text
-                timeBar.Value = currentFrame;
-                if (currentFrameLabel != null)
-                {
-                    currentFrameLabel.Text = currentFrame.ToString();
-                }
+                timeBar.Value = currentFrame; // changes the knob's position
             }
         }
 
@@ -90,9 +89,10 @@ namespace VRtist
             }
         }
 
+        // called by the slider when moved
         public void OnChangeCurrentFrame(int i)
         {
-            currentFrame = i;
+            CurrentFrame = i;
         }
 
         // TMP
