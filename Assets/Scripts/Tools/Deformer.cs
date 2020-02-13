@@ -399,15 +399,13 @@ namespace VRtist
             if (!deforming)
             {
                 if(activePlane)
-                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.2f));
+                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_PlaneColor", new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.2f));
 
                 activePlane = plane;
                 if (plane != null)
                 {
-                    Color selectColor = selectionColor;
-                    selectColor.a = 0.2f;
-                    //activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectColor);
-                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", Color.red);
+                    Color selectColor = new Color(selectionColor.r, selectionColor.g, selectionColor.b, 0.2f);
+                    activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_PlaneColor", selectColor);
                 }
 
                 selectorTrigger.enabled = (plane == null);
