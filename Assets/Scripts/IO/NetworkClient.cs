@@ -1574,6 +1574,11 @@ namespace VRtist
             string[] path = greasePencilPath.Split('/');
             path[path.Length - 1] = greasePencilName;
             Transform prefab = SyncData.GetOrCreatePrefabPath(String.Join("/", path));
+
+            // Grabbable (box collider has to be computed depending on the strokes of the grease pencil)
+            prefab.gameObject.tag = "PhysicObject";
+            prefab.gameObject.AddComponent<BoxCollider>();
+
             SyncData.greasePencilsNameToPrefab[greasePencilName] = prefab.name;
         }
 
@@ -1601,8 +1606,15 @@ namespace VRtist
                 freeDraw.AddRawControlPoint(position, ratio);
             }
 
-            GameObject stroke = new GameObject("Stroke." + greasePencilStrokeIndex);
+            // Create the stroke as a sub-gameObject
+            GameObject stroke = new GameObject("Stroke." + greasePencilLayerName + "." + greasePencilStrokeIndex);
+            
+            // TODO: update grease pencil box collider
+
+            // Add a small offset to strokes depending on their index to avoid z-fighting
+            // TODO: do it depending on the orientation of the grease pencil
             stroke.transform.localPosition += new Vector3(0.0f, greasePencilStrokeIndex * 0.001f, 0.0f);
+
             SyncData.Reparent(stroke.transform, prefab.transform);
             MeshFilter meshFilter = stroke.AddComponent<MeshFilter>();
             Mesh mesh = meshFilter.mesh;
@@ -1610,6 +1622,7 @@ namespace VRtist
             mesh.normals = freeDraw.normals;
             mesh.triangles = freeDraw.triangles;
             meshFilter.mesh = mesh;
+            // TODO: store mesh to be able to update it
             MeshRenderer meshRenderer = stroke.AddComponent<MeshRenderer>();
 
             Material material = null;
