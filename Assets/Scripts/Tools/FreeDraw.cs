@@ -27,6 +27,7 @@ namespace VRtist
         public FreeDraw()
         {
             Reset();
+            matrix = Matrix4x4.identity;
         }
         public FreeDraw(Vector3[] points, float[] radius)
         {
@@ -251,6 +252,63 @@ namespace VRtist
                     Vector3 C = D - (controlPoints[size] - A).normalized * thirdDist;
                     AddArc(A, B, C, D, prevRadius, radius, ANZ);
                 }
+            }
+
+            AddPointToLine(next, next, radius, ANZ);
+            linePointIndices[size] = linePoints.Length;
+        }
+
+        public void AddRawControlPoint(Vector3 nextPoint, float nextPointRadius)
+        {
+            Vector3 next = matrix.MultiplyPoint(nextPoint);
+            float radius = matrix.lossyScale.x * nextPointRadius;
+
+            int ANZ = 8;  // number of vertices per circle
+            int size = controlPoints.Length;
+
+            prevControlPoint = next;
+
+            System.Array.Resize(ref controlPoints, size + 1);
+            System.Array.Resize(ref controlPointsRadius, size + 1);
+            System.Array.Resize(ref linePointIndices, linePointIndices.Length + 1);
+
+            controlPoints[size] = next;
+            controlPointsRadius[size] = radius;
+
+            if (size == 0)
+                return;
+
+            float prevPrevPrevRadius = 0;
+            float prevPrevRadius = 0;
+            float prevRadius = controlPointsRadius[size - 1];
+
+            if (size >= 3)
+            {
+                prevPrevPrevRadius = controlPointsRadius[size - 3];
+            }
+
+            if (size >= 2)
+            {
+                prevPrevRadius = controlPointsRadius[size - 2];
+            }
+
+            int prevIndex = linePointIndices[size - 1];
+            if (size >= 3)
+            {
+                prevIndex = linePointIndices[size - 3];
+            }
+            else if (size >= 2)
+            {
+                prevIndex = linePointIndices[size - 2];
+            }
+            if (prevIndex >= 0)
+            {
+                System.Array.Resize(ref linePoints, prevIndex);
+                System.Array.Resize(ref lineRadius, prevIndex);
+
+                System.Array.Resize(ref vertices, prevIndex * ANZ);
+                System.Array.Resize(ref normals, prevIndex * ANZ);
+                System.Array.Resize(ref triangles, prevIndex * 6 * ANZ);
             }
 
             AddPointToLine(next, next, radius, ANZ);

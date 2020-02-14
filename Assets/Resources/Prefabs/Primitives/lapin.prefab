@@ -43,8 +43,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1.3444872, z: 0.60716337}
-  m_Center: {x: 0, y: 0.66782236, z: -0.021152765}
+  m_Size: {x: 0.055522166, y: 0.07456684, z: 0.033831045}
+  m_Center: {x: -0.00006948784, y: 0.034145214, z: -0.00085566565}
 --- !u!1001 &4715890665704763122
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -126,6 +126,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: lapin_merged
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: ad7ad9f404a907d41bdd5f75eb2a0464,
+        type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}

@@ -99,12 +99,20 @@ namespace VRtist
             collider.size = size;
         }
 
-        private bool LightOrCameraSelected()
+        // Tell whether the current selection contains a hierarchical object (mesh somewhere in children) or not.
+        // Camera and lights are known hierarchical objects.
+        // TODO: check for multiselection of a light and and simple primitive for example
+        private bool IsHierarchical()
         {
             foreach (KeyValuePair<int, GameObject> item in Selection.selection)
             {
                 GameObject gObject = item.Value;
                 if (gObject.GetComponent<LightController>() != null || gObject.GetComponent<CameraController>() != null)
+                {
+                    return true;
+                }
+                MeshFilter meshFilter = gObject.GetComponentInChildren<MeshFilter>();
+                if(meshFilter.gameObject != gObject)
                 {
                     return true;
                 }
@@ -127,13 +135,13 @@ namespace VRtist
             bool foundBounds = false;
             int selectionCount = Selection.selection.Count;
 
-            bool foundLightOrCamera = false;
+            bool foundHierarchicalObject = false;
             if (selectionCount == 1)
             {
-                foundLightOrCamera = LightOrCameraSelected();
+                foundHierarchicalObject = IsHierarchical();
             }
 
-            if (selectionCount == 1 && !foundLightOrCamera)
+            if (selectionCount == 1 && !foundHierarchicalObject)
             {
                 // NOTE: pourquoi un foreach si on a un seul element?
                 foreach (KeyValuePair<int, GameObject> item in Selection.selection)
@@ -159,7 +167,7 @@ namespace VRtist
                 if (null != meshFilter)
                 {
                     Matrix4x4 transform;
-                    if (selectionCount > 1 || foundLightOrCamera)
+                    if (selectionCount > 1 || foundHierarchicalObject)
                     {
                         if (meshFilter.gameObject != item.Value)
                         {
@@ -345,7 +353,7 @@ namespace VRtist
                 bool foundLightOrCamera = false;
                 if (selectionCount == 1)
                 {
-                    foundLightOrCamera = LightOrCameraSelected();
+                    foundLightOrCamera = IsHierarchical();
                 }
 
                 bool scaleAll = Selection.selection.Count != 1 || foundLightOrCamera || uniformScale;

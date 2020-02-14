@@ -35,8 +35,6 @@ namespace VRtist
 
         void Update()
         {
-            //if (uiTools.isOverUI()) { return; }
-
             // Clear selection on trigger click on nothing
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () => {
                 selectionHasChanged = false;
@@ -76,26 +74,11 @@ namespace VRtist
                 collidedObjects.Add(other.gameObject);
                 gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
             }
-            //else if (other.tag == "UIObject" && selector != null)
-            //{
-            //    other.gameObject.transform.localScale *= 1.1f;
-            //    selector.OnUIObjectEnter(other.gameObject);
-            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
-            //    hasUIObject = true;
-            //}
         }
 
-        // TODO: handle UI 3D Objects grab elsewhere.
 
         private void OnTriggerExit(Collider other)
         {
-            //if (other.tag == "UIObject" && selector != null)
-            //{
-            //    other.gameObject.transform.localScale /= 1.1f;
-            //    selector.OnUIObjectExit(other.gameObject);
-            //    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
-            //}
-            //else
             {
                 collidedObjects.Remove(other.gameObject);
                 if(collidedObjects.Count == 0)
@@ -132,9 +115,7 @@ namespace VRtist
             {
                 grippedGameObject = false;
             }
-
-            // Multi-selection using the trigger button
-            else if (triggerState)
+            else if (triggerState)  // Multi-selection using the trigger button
             {
                 if (!primaryButtonState)
                 {
