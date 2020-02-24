@@ -1602,7 +1602,7 @@ namespace VRtist
             for (int i = 0; i < numPoints; i++)
             {
                 Vector3 position = new Vector3(points[i * 5 + 0], points[i * 5 + 1], points[i * 5 + 2]);
-                float ratio = lineWidth * 0.0003f * points[i * 5 + 4];  // strength
+                float ratio = lineWidth * 0.0006f * points[i * 5 + 3];  // pressure
                 freeDraw.AddRawControlPoint(position, ratio);
             }
 
