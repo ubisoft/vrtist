@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   deformer: {fileID: 0}
-  prefab: {fileID: 5209273112425466081, guid: f8ee47b8d85a3e24eb479c9afa1874c8, type: 3}
+  prefab: {fileID: 397582900614614527, guid: 87290023a2f45ab4a8f6ce5ee3cf8131, type: 3}
 --- !u!65 &6005641967518322082
 BoxCollider:
   m_ObjectHideFlags: 0
