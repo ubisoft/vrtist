@@ -79,11 +79,16 @@ namespace VRtist
         {
             if (null != displayGizmosCheckbox)
                 displayGizmosCheckbox.Checked = displayGizmos;
+
             selectorRadius = selectorBrush.localScale.x;
             selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
+
             updateButtonsColor();
+
             Selection.selectionMaterial = selectionMaterial;
             Selection.OnSelectionChanged += OnSelectionChanged;
+
+
         }
 
         protected override void DoUpdate(Vector3 position, Quaternion rotation)

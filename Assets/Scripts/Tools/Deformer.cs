@@ -16,6 +16,8 @@ namespace VRtist
         public Transform world;
         public UICheckbox uniformScaleCheckbox = null;
         public bool uniformScale = false;
+        public int maxPages = 3;
+        private Transform[] pages = null;
 
         private Matrix4x4 initPlaneContainerMatrix;
         private Matrix4x4 initInversePlaneContainerMatrix;
@@ -28,6 +30,7 @@ namespace VRtist
         private bool deforming = false;
         private float initMagnitude;
         private Vector3 planeControllerDelta;
+        private int current_page = 0;
 
         void Start()
         {
@@ -36,6 +39,25 @@ namespace VRtist
             // Create tooltips
             CreateTooltips();
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Deform");
+
+            Transform primitives = panel.transform.Find("Primitives");
+            if (primitives == null)
+            {
+                Debug.LogWarning("Deformer Panel needs an object named \"Primitives\"");
+            }
+            else
+            {
+                pages = new Transform[maxPages];
+                for (int i = 0; i < maxPages; ++i)
+                {
+                    string page_name = "Page_" + i;
+                    pages[i] = primitives.Find(page_name);
+                    pages[i].gameObject.SetActive(false);
+                }
+
+                current_page = 0;
+                pages[current_page].gameObject.SetActive(true);
+            }
         }
 
         protected override void OnEnable()
@@ -66,6 +88,20 @@ namespace VRtist
         public void OnUniformScale(bool value)
         {
             uniformScale = value;
+        }
+
+        public void OnPrevPage()
+        {
+            pages[current_page].gameObject.SetActive(false);
+            current_page = (current_page + maxPages - 1 ) % maxPages;
+            pages[current_page].gameObject.SetActive(true);
+        }
+
+        public void OnNextPage()
+        {
+            pages[current_page].gameObject.SetActive(false);
+            current_page = (current_page + 1) % maxPages;
+            pages[current_page].gameObject.SetActive(true);
         }
 
         private Mesh CreatePlaneMesh(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
