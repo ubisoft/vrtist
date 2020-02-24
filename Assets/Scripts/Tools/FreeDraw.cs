@@ -275,42 +275,6 @@ namespace VRtist
             controlPoints[size] = next;
             controlPointsRadius[size] = radius;
 
-            if (size == 0)
-                return;
-
-            float prevPrevPrevRadius = 0;
-            float prevPrevRadius = 0;
-            float prevRadius = controlPointsRadius[size - 1];
-
-            if (size >= 3)
-            {
-                prevPrevPrevRadius = controlPointsRadius[size - 3];
-            }
-
-            if (size >= 2)
-            {
-                prevPrevRadius = controlPointsRadius[size - 2];
-            }
-
-            int prevIndex = linePointIndices[size - 1];
-            if (size >= 3)
-            {
-                prevIndex = linePointIndices[size - 3];
-            }
-            else if (size >= 2)
-            {
-                prevIndex = linePointIndices[size - 2];
-            }
-            if (prevIndex >= 0)
-            {
-                System.Array.Resize(ref linePoints, prevIndex);
-                System.Array.Resize(ref lineRadius, prevIndex);
-
-                System.Array.Resize(ref vertices, prevIndex * ANZ);
-                System.Array.Resize(ref normals, prevIndex * ANZ);
-                System.Array.Resize(ref triangles, prevIndex * 6 * ANZ);
-            }
-
             AddPointToLine(next, next, radius, ANZ);
             linePointIndices[size] = linePoints.Length;
         }
@@ -425,7 +389,7 @@ namespace VRtist
             } while (i < s);
         }
 
-        private void AddPointToLine(Vector3 point, Vector3 nextPoint, float R1, int ANZ)
+        private void AddPointToLine(Vector3 point, Vector3 nextPoint, float R, int ANZ)
         {
             const float FULL = 2.0f * Mathf.PI;
 
@@ -450,11 +414,15 @@ namespace VRtist
                 System.Array.Resize(ref triangles, (count - 1) * 6 * ANZ);
 
             linePoints[index] = point;
-            lineRadius[index] = R1;
-
+            lineRadius[index] = R;
+            float R2 = R;
+            float R1 = 0;
             Vector3 prevP = point;
             if (index > 0)
+            {
                 prevP = linePoints[index - 1];
+                R1 = lineRadius[index - 1];
+            }
 
             Vector3 prevPrevP = prevP;
             if (index > 1)
@@ -475,7 +443,7 @@ namespace VRtist
                 secondPerp = Vector3.Cross(dir, firstPerp).normalized;
 
                 center = linePoints[index - 1];
-                radius = lineRadius[index - 1];
+                radius = R1;
                 for (int j = 0; j < ANZ; j++)
                 {
                     float angle = FULL * (j / (float)ANZ);
@@ -495,7 +463,7 @@ namespace VRtist
             secondPerp = Vector3.Cross(dir, firstPerp).normalized;
 
             center = linePoints[index];
-            radius = lineRadius[index];
+            radius = R2;
             for (int j = 0; j < ANZ; j++)
             {
                 float angle = FULL * (j / (float)ANZ);
