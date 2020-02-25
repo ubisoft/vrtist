@@ -1640,11 +1640,41 @@ namespace VRtist
         }
         private static void CreateFill(float[] points, int numPoints, ref Mesh mesh)
         {
+            Vector3[] p3D = new Vector3[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                p3D[i].x = points[i * 5 + 0];
+                p3D[i].y = points[i * 5 + 1];
+                p3D[i].z = points[i * 5 + 2];
+            }
+
+            Vector3 x = Vector3.right;
+            Vector3 y = Vector3.up;
+            Vector3 z = Vector3.forward;
+            Matrix4x4 mat = Matrix4x4.identity;
+            if (numPoints >= 3)
+            {
+                x = (p3D[numPoints / 2] - p3D[0]).normalized;
+                y = (p3D[numPoints - 1] - p3D[numPoints / 2]).normalized;
+                z = Vector3.Cross(x, y).normalized;
+                x = Vector3.Cross(y, z).normalized;
+                Vector4 pos = new Vector4(p3D[0].x, p3D[0].y, p3D[0].z, 1);
+                mat = new Matrix4x4(x, y, z, pos);
+            }
+            Matrix4x4 invMat = mat.inverse;
+
+            Vector3[] p3D2 = new Vector3[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                p3D2[i] = invMat.MultiplyPoint(p3D[i]);
+            }
+
+
             Vector2[] p = new Vector2[numPoints];
             for (int i = 0; i < numPoints; i++)
             {
-                p[i].x = points[i * 5 + 0];
-                p[i].y = points[i * 5 + 2];
+                p[i].x = p3D2[i].x;
+                p[i].y = p3D2[i].y;
             }
 
             Vector2[] outputVertices;
@@ -1655,7 +1685,7 @@ namespace VRtist
             Vector3[] positions = new Vector3[outputVertices.Length];
             for (int i = 0; i < outputVertices.Length; i++)
             {
-                positions[i] = new Vector3(outputVertices[i].x, 0f, outputVertices[i].y);
+                positions[i] = mat.MultiplyPoint(new Vector3(outputVertices[i].x, outputVertices[i].y));
             }
             
             mesh.vertices = positions;
