@@ -59,7 +59,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   deformer: {fileID: 0}
-  prefab: {fileID: 2181485146319927276, guid: fded61bb2b3ddea4895baf7c09f395de, type: 3}
+  prefab: {fileID: 1251058645169212793, guid: b143dc02380126d42bc4330ea53d5bdf, type: 3}
 --- !u!1001 &3116134441948293104
 PrefabInstance:
   m_ObjectHideFlags: 0
