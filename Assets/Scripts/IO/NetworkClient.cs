@@ -68,14 +68,21 @@ namespace VRtist
     }
     
     public class NetGeometry
-    {        
+    {
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
+
         public static Material currentMaterial = null;
 
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
         public static Dictionary<string, List<Material>> meshesMaterials = new Dictionary<string, List<Material>>();
         public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
+        
         public static Material greasePencilMaterial = null;
+        public static Dictionary<string, List<Material>> greasePencilStrokeMaterials = new Dictionary<string, List<Material>>();
+        public static Dictionary<string, List<Material>> greasePencilFillMaterials = new Dictionary<string, List<Material>>();
+        public static HashSet<Material> materialsFill = new HashSet<Material>();
+        public static HashSet<Material> materialStrokesEnable = new HashSet<Material>();
+        public static Dictionary<string, Dictionary<string, int>> greasePencilLayerIndices = new Dictionary<string, Dictionary<string, int>>();
 
         public static Dictionary<string, byte[]> textureData = new Dictionary<string, byte[]>();
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
@@ -1581,6 +1588,110 @@ namespace VRtist
             SyncData.greasePencilsNameToPrefab[greasePencilName] = prefab.name;
         }
 
+        public static void BuildGreasePencilLayer(byte[] data)
+        {
+            int currentIndex = 0;
+            string greasePencilName = GetString(data, ref currentIndex);
+            int layerIndex = GetInt(data, ref currentIndex);
+            string layerName = GetString(data, ref currentIndex);
+
+            if (!greasePencilLayerIndices.ContainsKey(greasePencilName))
+                greasePencilLayerIndices.Add(greasePencilName, new Dictionary<string, int>());
+
+            var layers = greasePencilLayerIndices[greasePencilName];
+            if(!layers.ContainsKey(layerName))
+                layers.Add(layerName, layerIndex);
+            else
+                layers[layerName] = layerIndex;
+        }
+
+        private static bool IsFillStroke(string greasePencilName, int materialIndex)
+        {
+            if (!greasePencilFillMaterials.ContainsKey(greasePencilName))
+                return false;
+            Material material = greasePencilFillMaterials[greasePencilName][materialIndex];
+            if (materialsFill.Contains(material))
+                return true;
+            return false;
+        }
+
+        private static bool IsStrokeEnabled(string greasePencilName, int materialIndex)
+        {
+            if (!greasePencilStrokeMaterials.ContainsKey(greasePencilName))
+                return false;
+            Material material = greasePencilStrokeMaterials[greasePencilName][materialIndex];
+            if (materialStrokesEnable.Contains(material))
+                return true;
+            return false;
+        }
+
+        private static void CreateStroke(float[] points, int numPoints, int lineWidth, ref Mesh mesh)
+        {
+            FreeDraw freeDraw = new FreeDraw();
+            for (int i = 0; i < numPoints; i++)
+            {
+                Vector3 position = new Vector3(points[i * 5 + 0], points[i * 5 + 1], points[i * 5 + 2]);
+                float ratio = lineWidth * 0.0006f * points[i * 5 + 3];  // pressure
+                freeDraw.AddRawControlPoint(position, ratio);
+            }
+            mesh.vertices = freeDraw.vertices;
+            mesh.normals = freeDraw.normals;
+            mesh.triangles = freeDraw.triangles;
+        }
+        private static void CreateFill(float[] points, int numPoints, ref Mesh mesh)
+        {
+            Vector3[] p3D = new Vector3[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                p3D[i].x = points[i * 5 + 0];
+                p3D[i].y = points[i * 5 + 1];
+                p3D[i].z = points[i * 5 + 2];
+            }
+
+            Vector3 x = Vector3.right;
+            Vector3 y = Vector3.up;
+            Vector3 z = Vector3.forward;
+            Matrix4x4 mat = Matrix4x4.identity;
+            if (numPoints >= 3)
+            {
+                x = (p3D[numPoints / 2] - p3D[0]).normalized;
+                y = (p3D[numPoints - 1] - p3D[numPoints / 2]).normalized;
+                z = Vector3.Cross(x, y).normalized;
+                x = Vector3.Cross(y, z).normalized;
+                Vector4 pos = new Vector4(p3D[0].x, p3D[0].y, p3D[0].z, 1);
+                mat = new Matrix4x4(x, y, z, pos);
+            }
+            Matrix4x4 invMat = mat.inverse;
+
+            Vector3[] p3D2 = new Vector3[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                p3D2[i] = invMat.MultiplyPoint(p3D[i]);
+            }
+
+
+            Vector2[] p = new Vector2[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                p[i].x = p3D2[i].x;
+                p[i].y = p3D2[i].y;
+            }
+
+            Vector2[] outputVertices;
+            int[] indices;
+
+            Triangulator.Triangulator.Triangulate(p, Triangulator.WindingOrder.CounterClockwise, out outputVertices, out indices);
+
+            Vector3[] positions = new Vector3[outputVertices.Length];
+            for (int i = 0; i < outputVertices.Length; i++)
+            {
+                positions[i] = mat.MultiplyPoint(new Vector3(outputVertices[i].x, outputVertices[i].y));
+            }
+            
+            mesh.vertices = positions;
+            mesh.triangles = indices;
+        }
+
         public static void BuildGreasePencilStroke(byte[] data)
         {
             int currentIndex = 0;
@@ -1597,28 +1708,13 @@ namespace VRtist
             Node node = SyncData.nodes[SyncData.greasePencilsNameToPrefab[greasePencilName]];
             GameObject prefab = node.prefab;
 
-            FreeDraw freeDraw = new FreeDraw();
-            for (int i = 0; i < numPoints; i++)
-            {
-                Vector3 position = new Vector3(points[i * 5 + 0], points[i * 5 + 1], points[i * 5 + 2]);
-                float ratio = lineWidth * 0.0006f * points[i * 5 + 3];  // pressure
-                freeDraw.AddRawControlPoint(position, ratio);
-            }
-
             // Create the stroke as a sub-gameObject
             GameObject stroke = new GameObject("Stroke." + greasePencilLayerName + "." + greasePencilStrokeIndex);
-            
-            // Add a small offset to strokes depending on their index to avoid z-fighting
-            // TODO: do it depending on the orientation of the grease pencil
-            stroke.transform.localPosition += new Vector3(0.0f, greasePencilStrokeIndex * 0.001f, 0.0f);
 
             SyncData.Reparent(stroke.transform, prefab.transform);
             MeshFilter meshFilter = stroke.AddComponent<MeshFilter>();
             Mesh mesh = meshFilter.mesh;
-            mesh.vertices = freeDraw.vertices;
-            mesh.normals = freeDraw.normals;
-            mesh.triangles = freeDraw.triangles;
-            meshFilter.mesh = mesh;
+                       
             // TODO: store mesh to be able to update it
 
             // Selectable
@@ -1626,16 +1722,75 @@ namespace VRtist
             stroke.AddComponent<MeshCollider>();
 
             MeshRenderer meshRenderer = stroke.AddComponent<MeshRenderer>();
-            Material material = null;
-            if(meshesMaterials.ContainsKey(greasePencilName))
+            Material material = null;                        
+            // Add a small offset to strokes depending on their index to avoid z-fighting
+            // TODO: do it depending on the orientation of the grease pencil
+            int layerIndex = greasePencilLayerIndices[greasePencilName][greasePencilLayerName];
+            float layerOffset = 0.001f * layerIndex;
+            float strokeOffset = 0.0001f * greasePencilStrokeIndex;
+
+            if (IsStrokeEnabled(greasePencilName, materialIndex))
             {
-                material = meshesMaterials[greasePencilName][materialIndex];
+                stroke.transform.localPosition += new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
+                CreateStroke(points, numPoints, lineWidth, ref mesh);
+                material = greasePencilStrokeMaterials[greasePencilName][materialIndex];
+            }
+
+            if (IsFillStroke(greasePencilName, materialIndex))
+            {
+                stroke.transform.localPosition += new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
+                CreateFill(points, numPoints, ref mesh);
+                material = greasePencilFillMaterials[greasePencilName][materialIndex];
+            }
+            meshFilter.mesh = mesh;
+            meshRenderer.sharedMaterial = material;
+        }
+
+        public static Material BuildMaterial(Material baseMaterial, string materialName, Color color)
+        {
+            Material material = null;
+            if (materials.ContainsKey(materialName))
+            {
+                material = materials[materialName];
+                if (material.shader.name != "HDRP/Unlit")
+                {
+                    material = GameObject.Instantiate(greasePencilMaterial);
+                    material.name = materialName;
+                }
             }
             else
             {
-                material = GetDefaultUnlitMaterial();
+                material = GameObject.Instantiate(greasePencilMaterial);
+                material.name = materialName;
             }
-            meshRenderer.sharedMaterial = material;
+
+            //if (!strokeEnabled || fillEnabled) { strokeColor.a = 0.0f; }
+            material.SetColor("_UnlitColor", color);
+            materials[materialName] = material;
+
+            return material;
+        }
+
+        public static void StoreGreasePencilMaterial(string greasePencilName, Material material, ref Dictionary<string, List<Material>> container)
+        {
+            if (!container.ContainsKey(greasePencilName))
+            {
+                container[greasePencilName] = new List<Material>();
+            }
+
+            bool found = false;
+            foreach (Material mat in container[greasePencilName])
+            {
+                if (mat.name == material.name)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                container[greasePencilName].Add(material);
+            }
         }
 
         public static void BuildGreasePencilMaterial(byte[] data)
@@ -1657,42 +1812,32 @@ namespace VRtist
                 greasePencilMaterial = Resources.Load<Material>("Materials/GreasePencilMat");
             }
 
-            Material material = null;
-            if(materials.ContainsKey(materialName))
+            Material strokeMaterial = BuildMaterial(greasePencilMaterial, materialName + "_stroke", strokeColor);
+            Material fillMaterial = BuildMaterial(greasePencilMaterial, materialName + "_fill", fillColor);
+
+            StoreGreasePencilMaterial(greasePencilName, strokeMaterial, ref greasePencilStrokeMaterials);
+            StoreGreasePencilMaterial(greasePencilName, fillMaterial, ref greasePencilFillMaterials);
+
+            // stroke enable
+            if (strokeEnabled)
             {
-                material = materials[materialName];
-                if(material.shader.name != "HDRP/Unlit")
-                {
-                    material = GameObject.Instantiate(greasePencilMaterial);
-                }
+                materialStrokesEnable.Add(strokeMaterial);
             }
             else
             {
-                material = GameObject.Instantiate(greasePencilMaterial);
-                material.name = materialName;
-            }
-            
-            if (!strokeEnabled || fillEnabled) { strokeColor.a = 0.0f; }
-            material.SetColor("_UnlitColor", strokeColor);
-            materials[materialName] = material;
-
-            if(!meshesMaterials.ContainsKey(greasePencilName))
-            {
-                meshesMaterials[greasePencilName] = new List<Material>();
+                if (materialStrokesEnable.Contains(strokeMaterial))
+                    materialStrokesEnable.Remove(strokeMaterial);
             }
 
-            bool found = false;
-            foreach (Material mat in meshesMaterials[greasePencilName])
+            // fill
+            if (fillEnabled)
             {
-                if(mat.name == materialName)
-                {
-                    found = true;
-                    break;
-                }
+                materialsFill.Add(fillMaterial);
             }
-            if(! found)
+            else
             {
-                meshesMaterials[greasePencilName].Add(material);
+                if (materialsFill.Contains(fillMaterial))
+                    materialsFill.Remove(fillMaterial);
             }
         }
     }
@@ -2057,9 +2202,9 @@ namespace VRtist
                         case MessageType.GreasePencil:
                             NetGeometry.BuildGreasePencil(command.data);
                             break;
-                        //case MessageType.GreasePencilLayer:
-                        //    NetGeometry.BuildGreasePencilLayer(prefab, command.data);
-                        //    break;
+                        case MessageType.GreasePencilLayer:
+                            NetGeometry.BuildGreasePencilLayer(command.data);
+                            break;
                         //case MessageType.GreasePencilFrame:
                         //    NetGeometry.BuildGreasePencilFrame(prefab, command.data);
                         //    break;
