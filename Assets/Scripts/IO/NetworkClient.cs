@@ -42,6 +42,7 @@ namespace VRtist
         GreasePencilMesh,
         GreasePencilMaterial,
         GreasePencilConnection,
+        Frame,
         Optimized_Commands = 200,
         Transform,
         Mesh,
@@ -103,6 +104,7 @@ namespace VRtist
         public static Material greasePencilMaterial = null;
         public static Dictionary<string, List<Material>> greasePencilStrokeMaterials = new Dictionary<string, List<Material>>();
         public static Dictionary<string, List<Material>> greasePencilFillMaterials = new Dictionary<string, List<Material>>();
+        public static Dictionary<string, GreasePencilData> greasePencils = new Dictionary<string, GreasePencilData>();
         public static HashSet<string> materialsFillEnabled = new HashSet<string>();
         public static HashSet<string> materialStrokesEnabled = new HashSet<string>();
         public static Dictionary<string, Dictionary<string, int>> greasePencilLayerIndices = new Dictionary<string, Dictionary<string, int>>();
@@ -1636,6 +1638,7 @@ namespace VRtist
             subMesh.vertices = freeDraw.vertices;
             subMesh.triangles = freeDraw.triangles;
         }
+        
         private static void CreateFill(float[] points, int numPoints, Vector3 offset, ref GPStroke subMesh)
         {
             Vector3[] p3D = new Vector3[numPoints];
@@ -1649,14 +1652,18 @@ namespace VRtist
             Vector3 x = Vector3.right;
             Vector3 y = Vector3.up;
             Vector3 z = Vector3.forward;
-            Matrix4x4 mat = Matrix4x4.identity;
+            Matrix4x4 mat = Matrix4x4.identity;            
             if (numPoints >= 3)
             {
-                x = (p3D[numPoints / 2] - p3D[0]).normalized;
-                y = (p3D[numPoints - 1] - p3D[numPoints / 2]).normalized;
+                Vector3 p0 = p3D[0];
+                Vector3 p1 = p3D[numPoints / 3];
+                Vector3 p2 = p3D[ 2 * numPoints / 3];
+
+                x = (p1 - p0).normalized;
+                y = (p2 - p1).normalized;
                 z = Vector3.Cross(x, y).normalized;
                 x = Vector3.Cross(y, z).normalized;
-                Vector4 pos = new Vector4(p3D[0].x, p3D[0].y, p3D[0].z, 1);
+                Vector4 pos = new Vector4(p0.x, p0.y, p0.z, 1);
                 mat = new Matrix4x4(x, y, z, pos);
             }
             Matrix4x4 invMat = mat.inverse;
@@ -1689,6 +1696,65 @@ namespace VRtist
             subMesh.vertices = positions;
             subMesh.triangles = indices;
         }
+        
+        /*
+        private static void CreateFill(float[] points, int numPoints, Vector3 offset, ref GPStroke subMesh)
+        {
+            Vector3[] p3D = new Vector3[numPoints];
+            for (int i = 0; i < numPoints; i++)
+            {
+                int invI = i;// numPoints - i - 1;
+                p3D[invI].x = points[i * 5 + 0];
+                p3D[invI].y = points[i * 5 + 1];
+                p3D[invI].z = points[i * 5 + 2];
+            }
+
+            Vector3 x = Vector3.right;
+            Vector3 y = Vector3.up;
+            Vector3 z = Vector3.forward;
+            Matrix4x4 mat = Matrix4x4.identity;
+            if (numPoints >= 3)
+            {
+                Vector3 p0 = p3D[0];
+                Vector3 p1 = p3D[numPoints / 3];
+                Vector3 p2 = p3D[2 * numPoints / 3];
+
+                x = (p1 - p0).normalized;
+                y = (p2 - p1).normalized;
+                z = Vector3.Cross(x, y).normalized;
+                x = Vector3.Cross(y, z).normalized;
+                Vector4 pos = new Vector4(p0.x, p0.y, p0.z, 1);
+                mat = new Matrix4x4(x, y, z, pos);
+            }
+            Matrix4x4 invMat = mat.inverse;
+
+            List<Vector3> p3D2 = new List<Vector3>();
+            for (int i = 0; i < numPoints; i++)
+            {
+                p3D2.Add(invMat.MultiplyPoint(p3D[i]));
+            }
+
+            List<Triangle> triangles = Triangulator2.TriangulateConcavePolygon(p3D2);
+            Vector3[] positions = new Vector3[triangles.Count * 3];
+            int[] indices = new int[triangles.Count * 3];
+
+            int indice = 0;
+            foreach(Triangle triangle in triangles)
+            {
+                positions[indice] = mat.MultiplyPoint(triangle.v1.position);
+                positions[indice + 1] = mat.MultiplyPoint(triangle.v2.position);
+                positions[indice + 2] = mat.MultiplyPoint(triangle.v3.position);
+
+                indices[indice] = indice;
+                indices[indice + 1] = indice + 1;
+                indices[indice + 2] = indice + 2;
+                indice += 3;
+            }
+
+            subMesh.vertices = positions;
+            subMesh.triangles = indices;
+        }
+        */
 
         public static Material BuildMaterial(Material baseMaterial, string materialName, Color color)
         {
@@ -1891,6 +1957,7 @@ namespace VRtist
                     if (gpframe.frame <= f)
                     {
                         frames.Add(gpframe);
+                        break;
                     }
                 }
             }
@@ -1933,21 +2000,53 @@ namespace VRtist
             if (frames.Count == 0)
                 return;
 
-            foreach(int frame in frames)
+            GreasePencilData gpdata = new GreasePencilData();
+            greasePencils[name] = gpdata;
+            foreach (int frame in frames)
             {
                 List<GPFrame> gpframes = GetGPFrames(layers, frame);
                 List<GPStroke> strokes = GetStrokes(gpframes);
 
                 Tuple<Mesh, List<Material>> meshData = BuildGPFrameMesh(strokes);
-                meshes[name] = meshData.Item1;
-                meshesMaterials[name] = meshData.Item2;
+
                 meshData.Item1.RecalculateBounds();
-                break;
+                gpdata.AddMesh(frame, new Tuple<Mesh, Material[]>(meshData.Item1, meshData.Item2.ToArray()));
             }            
         }
         public static void BuildGreasePencilConnection(byte[] data)
         {
-            ConnectMesh(data);
+            int currentIndex = 0;
+            Transform transform = BuildPath(data, ref currentIndex, true);
+            string greasePencilName = GetString(data, ref currentIndex);
+
+            GameObject gobject = transform.gameObject;
+            GreasePencilBuilder greasePencilBuilder = gobject.GetComponent<GreasePencilBuilder>();
+            if (null == greasePencilBuilder)
+                greasePencilBuilder = gobject.AddComponent<GreasePencilBuilder>();
+
+            GreasePencil greasePencil = gobject.GetComponent<GreasePencil>();
+            if(null == greasePencil)
+                greasePencil = gobject.AddComponent<GreasePencil>();
+
+            GreasePencilData gpdata = greasePencils[greasePencilName];
+            greasePencil.data = gpdata;
+
+            Node prefab = SyncData.nodes[transform.name];
+            foreach(var item in prefab.instances)
+            {
+                GreasePencil greasePencilInstance = item.Item1.GetComponent<GreasePencil>();
+                greasePencilInstance.data = gpdata;
+                greasePencilInstance.ForceUpdate();
+            }
+
+            gobject.tag = "PhysicObject";
+        }
+
+        public static void BuildFrame(byte[] data)
+        {
+            int index = 0;
+            int frame = GetInt(data, ref index);
+            GreasePencil.currentFrame = frame;
         }
     }
 
@@ -2308,18 +2407,6 @@ namespace VRtist
                         case MessageType.SetScene:
                             NetGeometry.BuilSetScene(command.data);
                             break;
-                        //case MessageType.GreasePencil:
-                        //    NetGeometry.BuildGreasePencil(command.data);
-                        //    break;
-                        //case MessageType.GreasePencilLayer:
-                        //    NetGeometry.BuildGreasePencilLayer(command.data);
-                        //    break;
-                        //case MessageType.GreasePencilFrame:
-                        //    NetGeometry.BuildGreasePencilFrame(prefab, command.data);
-                        //    break;
-                        //case MessageType.GreasePencilStroke:
-                        //    NetGeometry.BuildGreasePencilStroke(command.data);
-                        //    break;
                         case MessageType.GreasePencilMaterial:
                             NetGeometry.BuildGreasePencilMaterial(command.data);
                             break;
@@ -2328,6 +2415,9 @@ namespace VRtist
                             break;
                         case MessageType.GreasePencilConnection:
                             NetGeometry.BuildGreasePencilConnection(command.data);
+                            break;
+                        case MessageType.Frame:
+                            NetGeometry.BuildFrame(command.data);
                             break;
                     }
                 }
