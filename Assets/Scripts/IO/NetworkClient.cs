@@ -39,11 +39,9 @@ namespace VRtist
         Collection,
         CollectionRemoved,
         SetScene,
-        GreasePencil,
-        GreasePencilLayer,
-        GreasePencilFrame,
-        GreasePencilStroke,
+        GreasePencilMesh,
         GreasePencilMaterial,
+        GreasePencilConnection,
         Optimized_Commands = 200,
         Transform,
         Mesh,
@@ -66,7 +64,32 @@ namespace VRtist
             id = mid;
         }
     }
-    
+
+    public class GPLayer
+    {
+        public GPLayer(string n)
+        {
+            name = n;
+        }
+        public List<GPFrame> frames = new List<GPFrame>();
+        string name;
+    }
+    public class GPFrame
+    {
+        public GPFrame(int f)
+        {
+            frame = f;
+        }
+        public List<GPStroke> strokes = new List<GPStroke>();
+        public int frame;
+    }
+    public class GPStroke
+    {
+        public Vector3[] vertices;
+        public int[] triangles;
+        public Material material;
+    }
+
     public class NetGeometry
     {
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
@@ -76,12 +99,12 @@ namespace VRtist
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
         public static Dictionary<string, List<Material>> meshesMaterials = new Dictionary<string, List<Material>>();
         public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
-        
+
         public static Material greasePencilMaterial = null;
         public static Dictionary<string, List<Material>> greasePencilStrokeMaterials = new Dictionary<string, List<Material>>();
         public static Dictionary<string, List<Material>> greasePencilFillMaterials = new Dictionary<string, List<Material>>();
-        public static HashSet<Material> materialsFill = new HashSet<Material>();
-        public static HashSet<Material> materialStrokesEnable = new HashSet<Material>();
+        public static HashSet<string> materialsFillEnabled = new HashSet<string>();
+        public static HashSet<string> materialStrokesEnabled = new HashSet<string>();
         public static Dictionary<string, Dictionary<string, int>> greasePencilLayerIndices = new Dictionary<string, Dictionary<string, int>>();
 
         public static Dictionary<string, byte[]> textureData = new Dictionary<string, byte[]>();
@@ -96,7 +119,7 @@ namespace VRtist
                 byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(values[i]);
                 size += sizeof(int) + utf8.Length;
             }
-                
+
 
             byte[] bytes = new byte[size];
             Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
@@ -342,7 +365,7 @@ namespace VRtist
             if (null == objectPath)
                 return;
             objectPath.parent = Utils.GetTrash().transform;
-            
+
             Node node = SyncData.nodes[objectPath.name];
             node.RemoveInstance(objectPath.gameObject);
         }
@@ -353,7 +376,7 @@ namespace VRtist
             Transform parent = FindPath(root, data, bufferIndex, out bufferIndex);
             Transform trf = Utils.GetTrash().transform.Find(objectName);
             if (null != trf)
-            {                
+            {
                 trf.parent = parent;
 
                 Node node = SyncData.nodes[objectName];
@@ -520,13 +543,13 @@ namespace VRtist
 
             TexConv conv = new TexConv();
             bool canConvert = Format2Format(format, nchannels, ref conv);
-            if(!canConvert)
+            if (!canConvert)
             {
                 Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
                 return CreateSmallImage();
             }
             // TMP
-            else if(conv.options.HasFlag(TextureConversionOptions.SHORT_TO_FLOAT) || conv.options.HasFlag(TextureConversionOptions.SHORT_TO_INT))
+            else if (conv.options.HasFlag(TextureConversionOptions.SHORT_TO_FLOAT) || conv.options.HasFlag(TextureConversionOptions.SHORT_TO_INT))
             {
                 Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
                 return CreateSmallImage();
@@ -571,7 +594,7 @@ namespace VRtist
 
             result.format = TextureFormat.RGBA32;
             result.options = TextureConversionOptions.NO_CONV;
-            
+
             switch (format)
             {
                 case OIIOAPI.BASETYPE.UCHAR:
@@ -584,7 +607,7 @@ namespace VRtist
                         case 4: result.format = TextureFormat.RGBA32; break;
                         default: return false;
                     } break;
-                    
+
                 case OIIOAPI.BASETYPE.USHORT:
                     switch (nchannels)
                     {
@@ -595,7 +618,7 @@ namespace VRtist
                         // R16_G16, R16_G16_B16 and R16_G16_B16_A16 do not exist
                         default: return false;
                     } break;
-                
+
                 case OIIOAPI.BASETYPE.HALF:
                     switch (nchannels)
                     {
@@ -626,7 +649,7 @@ namespace VRtist
         {
             byte[] ddsBytes = System.IO.File.ReadAllBytes(filePath);
 
-            byte[] format = { ddsBytes[84],ddsBytes[85],ddsBytes[86],ddsBytes[87], 0 };
+            byte[] format = { ddsBytes[84], ddsBytes[85], ddsBytes[86], ddsBytes[87], 0 };
             string sFormat = System.Text.Encoding.UTF8.GetString(format);
             TextureFormat textureFormat;
 
@@ -666,13 +689,13 @@ namespace VRtist
 
         public static Texture2D GetTexture(string filePath, bool isLinear)
         {
-            if(textureData.ContainsKey(filePath))
+            if (textureData.ContainsKey(filePath))
             {
                 byte[] data = textureData[filePath];
                 textureData.Remove(filePath);
                 return LoadTexture(filePath, data, isLinear);
             }
-            if(textures.ContainsKey(filePath))
+            if (textures.ContainsKey(filePath))
             {
                 return textures[filePath];
             }
@@ -701,7 +724,7 @@ namespace VRtist
                 //byte[] bytes = System.IO.File.ReadAllBytes(filePath);
                 //Texture2D t = LoadTextureFromBuffer(bytes, isLinear);
                 Texture2D t = LoadTextureOIIO(filePath, isLinear);
-                if(null != t)
+                if (null != t)
                 {
                     textures[filePath] = t;
                     texturesFlipY.Add(filePath);
@@ -710,7 +733,7 @@ namespace VRtist
             }
 
             Texture2D texture = LoadTextureFromBuffer(data, isLinear);
-            if(null != texture)
+            if (null != texture)
                 textures[filePath] = texture;
             try
             {
@@ -774,11 +797,11 @@ namespace VRtist
             if (baseColorTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(baseColorTexturePath, false);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseColorMap", 1f);
                     material.SetTexture("_ColorMap", tex);
-                    if(texturesFlipY.Contains(baseColorTexturePath))
+                    if (texturesFlipY.Contains(baseColorTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
 
@@ -829,7 +852,7 @@ namespace VRtist
                 Texture2D tex = GetTexture(normalTexturePath, true);
                 if (tex != null)
                 {
-                    material.SetFloat("_UseNormalMap", 1f);                    
+                    material.SetFloat("_UseNormalMap", 1f);
                     material.SetTexture("_NormalMap", tex);
                     if (texturesFlipY.Contains(normalTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
@@ -890,7 +913,7 @@ namespace VRtist
         public static string GetPathName(Transform root, Transform transform)
         {
             string result = transform.name;
-            while(transform.parent && transform.parent != root)
+            while (transform.parent && transform.parent != root)
             {
                 transform = transform.parent;
                 result = transform.name + "/" + result;
@@ -898,7 +921,7 @@ namespace VRtist
             return result;
         }
 
-        
+
 
         public static Transform BuildPath(byte[] data, ref int bufferIndex, bool includeLeaf)
         {
@@ -945,7 +968,7 @@ namespace VRtist
          *   COMMANDS
          * 
          * -------------------------------------------------------------------------------------------*/
-        public static NetCommand BuildTransformCommand(Transform root,Transform transform)
+        public static NetCommand BuildTransformCommand(Transform root, Transform transform)
         {
             byte[] name = StringToBytes(transform.name);
             byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
@@ -953,13 +976,13 @@ namespace VRtist
             byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
             byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
 
-            List<byte[]> buffers = new List<byte[]>{ name, positionBuffer, rotationBuffer, scaleBuffer, visibilityBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, positionBuffer, rotationBuffer, scaleBuffer, visibilityBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
 
         public static NetCommand BuildMaterialCommand(Material material)
-        {            
+        {
             byte[] name = StringToBytes(material.name);
             float op = 1f;
             if (material.HasProperty("_Opacity"))
@@ -1099,7 +1122,7 @@ namespace VRtist
         public static NetCommand BuildRestoreFromTrashCommand(Transform root, RestoreFromTrashInfo sendToTrash)
         {
             string path = "";
-            if (sendToTrash.transform.parent != root) 
+            if (sendToTrash.transform.parent != root)
                 path = GetPathName(root, sendToTrash.transform.parent);
 
             byte[] nameBuffer = StringToBytes(sendToTrash.transform.name);
@@ -1123,7 +1146,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(mesh.subMeshCount), 0, materialIndices, 0, sizeof(int));
             int offset = sizeof(int);
 
-            for (int i = 0; i <  mesh.subMeshCount; i++)
+            for (int i = 0; i < mesh.subMeshCount; i++)
             {
                 SubMeshDescriptor subMesh = mesh.GetSubMesh(i);
                 int start = subMesh.indexStart / 3;
@@ -1183,7 +1206,7 @@ namespace VRtist
             Transform transform = root;
             if (transform == null)
                 return;
-            
+
             GameObject camGameObject = null;
             string[] splittedPath = path.Split('/');
             string name = splittedPath[splittedPath.Length - 1];
@@ -1311,7 +1334,7 @@ namespace VRtist
                 lightContr.parameters = lightParameters;
             }
             lightParameters.color = lightColor;
-            switch(lightType)
+            switch (lightType)
             {
                 case LightType.Point:
                     lightParameters.intensity = power / 10f;
@@ -1420,7 +1443,7 @@ namespace VRtist
             float[] float3Values = new float[verticesCount * 3];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             int idx = 0;
-            for(int i = 0; i < verticesCount; i++)
+            for (int i = 0; i < verticesCount; i++)
             {
                 vertices[i].x = float3Values[idx++];
                 vertices[i].y = float3Values[idx++];
@@ -1536,7 +1559,7 @@ namespace VRtist
                 }
 
                 //allocate
-                for(int i = 0; i < materialCount; i++)
+                for (int i = 0; i < materialCount; i++)
                 {
                     subIndices[i] = new int[trianglesPerMaterialCount[i] * 3];
                 }
@@ -1560,7 +1583,7 @@ namespace VRtist
                 }
 
                 // set
-                for(int i = 0; i < materialCount; i++)
+                for (int i = 0; i < materialCount; i++)
                 {
                     mesh.SetTriangles(subIndices[i], i);
                 }
@@ -1569,7 +1592,7 @@ namespace VRtist
             mesh.RecalculateBounds();
             meshes[meshName] = mesh;
             meshesMaterials[meshName] = meshMaterials;
-           
+
             return mesh;
         }
 
@@ -1588,57 +1611,32 @@ namespace VRtist
             SyncData.greasePencilsNameToPrefab[greasePencilName] = prefab.name;
         }
 
-        public static void BuildGreasePencilLayer(byte[] data)
+
+        private static bool IsFillEnabled(string materialName)
         {
-            int currentIndex = 0;
-            string greasePencilName = GetString(data, ref currentIndex);
-            int layerIndex = GetInt(data, ref currentIndex);
-            string layerName = GetString(data, ref currentIndex);
-
-            if (!greasePencilLayerIndices.ContainsKey(greasePencilName))
-                greasePencilLayerIndices.Add(greasePencilName, new Dictionary<string, int>());
-
-            var layers = greasePencilLayerIndices[greasePencilName];
-            if(!layers.ContainsKey(layerName))
-                layers.Add(layerName, layerIndex);
-            else
-                layers[layerName] = layerIndex;
+            string name = materialName + "_fill";
+            return materialsFillEnabled.Contains(name);
         }
 
-        private static bool IsFillStroke(string greasePencilName, int materialIndex)
+        private static bool IsStrokeEnabled(string materialName)
         {
-            if (!greasePencilFillMaterials.ContainsKey(greasePencilName))
-                return false;
-            Material material = greasePencilFillMaterials[greasePencilName][materialIndex];
-            if (materialsFill.Contains(material))
-                return true;
-            return false;
+            string name = materialName + "_stroke";
+            return materialStrokesEnabled.Contains(name);
         }
 
-        private static bool IsStrokeEnabled(string greasePencilName, int materialIndex)
-        {
-            if (!greasePencilStrokeMaterials.ContainsKey(greasePencilName))
-                return false;
-            Material material = greasePencilStrokeMaterials[greasePencilName][materialIndex];
-            if (materialStrokesEnable.Contains(material))
-                return true;
-            return false;
-        }
-
-        private static void CreateStroke(float[] points, int numPoints, int lineWidth, ref Mesh mesh)
+        private static void CreateStroke(float[] points, int numPoints, int lineWidth, Vector3 offset, ref GPStroke subMesh)
         {
             FreeDraw freeDraw = new FreeDraw();
             for (int i = 0; i < numPoints; i++)
             {
-                Vector3 position = new Vector3(points[i * 5 + 0], points[i * 5 + 1], points[i * 5 + 2]);
+                Vector3 position = new Vector3(points[i * 5 + 0] + offset.x, points[i * 5 + 1] + offset.y, points[i * 5 + 2] + offset.z);
                 float ratio = lineWidth * 0.0006f * points[i * 5 + 3];  // pressure
                 freeDraw.AddRawControlPoint(position, ratio);
             }
-            mesh.vertices = freeDraw.vertices;
-            mesh.normals = freeDraw.normals;
-            mesh.triangles = freeDraw.triangles;
+            subMesh.vertices = freeDraw.vertices;
+            subMesh.triangles = freeDraw.triangles;
         }
-        private static void CreateFill(float[] points, int numPoints, ref Mesh mesh)
+        private static void CreateFill(float[] points, int numPoints, Vector3 offset, ref GPStroke subMesh)
         {
             Vector3[] p3D = new Vector3[numPoints];
             for (int i = 0; i < numPoints; i++)
@@ -1685,65 +1683,11 @@ namespace VRtist
             Vector3[] positions = new Vector3[outputVertices.Length];
             for (int i = 0; i < outputVertices.Length; i++)
             {
-                positions[i] = mat.MultiplyPoint(new Vector3(outputVertices[i].x, outputVertices[i].y));
-            }
-            
-            mesh.vertices = positions;
-            mesh.triangles = indices;
-        }
-
-        public static void BuildGreasePencilStroke(byte[] data)
-        {
-            int currentIndex = 0;
-            string greasePencilName = GetString(data, ref currentIndex);
-            string greasePencilLayerName = GetString(data, ref currentIndex);
-            int greasePencilFrame = GetInt(data, ref currentIndex);
-            int greasePencilStrokeIndex = GetInt(data, ref currentIndex);
-            int materialIndex = GetInt(data, ref currentIndex);
-            int lineWidth = GetInt(data, ref currentIndex);
-            int numPoints = GetInt(data, ref currentIndex);
-            float[] points = new float[5 * numPoints];
-            Buffer.BlockCopy(data, currentIndex, points, 0, 5 * sizeof(float) * numPoints);
-
-            Node node = SyncData.nodes[SyncData.greasePencilsNameToPrefab[greasePencilName]];
-            GameObject prefab = node.prefab;
-
-            // Create the stroke as a sub-gameObject
-            GameObject stroke = new GameObject("Stroke." + greasePencilLayerName + "." + greasePencilStrokeIndex);
-
-            SyncData.Reparent(stroke.transform, prefab.transform);
-            MeshFilter meshFilter = stroke.AddComponent<MeshFilter>();
-            Mesh mesh = meshFilter.mesh;
-                       
-            // TODO: store mesh to be able to update it
-
-            // Selectable
-            stroke.tag = "PhysicObject";
-            stroke.AddComponent<MeshCollider>();
-
-            MeshRenderer meshRenderer = stroke.AddComponent<MeshRenderer>();
-            Material material = null;                        
-            // Add a small offset to strokes depending on their index to avoid z-fighting
-            // TODO: do it depending on the orientation of the grease pencil
-            int layerIndex = greasePencilLayerIndices[greasePencilName][greasePencilLayerName];
-            float layerOffset = 0.001f * layerIndex;
-            float strokeOffset = 0.0001f * greasePencilStrokeIndex;
-
-            if (IsStrokeEnabled(greasePencilName, materialIndex))
-            {
-                stroke.transform.localPosition += new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
-                CreateStroke(points, numPoints, lineWidth, ref mesh);
-                material = greasePencilStrokeMaterials[greasePencilName][materialIndex];
+                positions[i] = mat.MultiplyPoint(new Vector3(outputVertices[i].x, outputVertices[i].y)) + offset;
             }
 
-            if (IsFillStroke(greasePencilName, materialIndex))
-            {
-                stroke.transform.localPosition += new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
-                CreateFill(points, numPoints, ref mesh);
-                material = greasePencilFillMaterials[greasePencilName][materialIndex];
-            }
-            meshFilter.mesh = mesh;
-            meshRenderer.sharedMaterial = material;
+            subMesh.vertices = positions;
+            subMesh.triangles = indices;
         }
 
         public static Material BuildMaterial(Material baseMaterial, string materialName, Color color)
@@ -1771,32 +1715,10 @@ namespace VRtist
             return material;
         }
 
-        public static void StoreGreasePencilMaterial(string greasePencilName, Material material, ref Dictionary<string, List<Material>> container)
-        {
-            if (!container.ContainsKey(greasePencilName))
-            {
-                container[greasePencilName] = new List<Material>();
-            }
-
-            bool found = false;
-            foreach (Material mat in container[greasePencilName])
-            {
-                if (mat.name == material.name)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                container[greasePencilName].Add(material);
-            }
-        }
 
         public static void BuildGreasePencilMaterial(byte[] data)
         {
             int currentIndex = 0;
-            string greasePencilName = GetString(data, ref currentIndex);
             string materialName = GetString(data, ref currentIndex);
             bool strokeEnabled = GetBool(data, ref currentIndex);
             string strokeMode = GetString(data, ref currentIndex);
@@ -1807,38 +1729,225 @@ namespace VRtist
             string fillStyle = GetString(data, ref currentIndex);
             Color fillColor = GetColor(data, ref currentIndex);
 
-            if(null == greasePencilMaterial)
+            if (null == greasePencilMaterial)
             {
                 greasePencilMaterial = Resources.Load<Material>("Materials/GreasePencilMat");
             }
 
-            Material strokeMaterial = BuildMaterial(greasePencilMaterial, materialName + "_stroke", strokeColor);
-            Material fillMaterial = BuildMaterial(greasePencilMaterial, materialName + "_fill", fillColor);
-
-            StoreGreasePencilMaterial(greasePencilName, strokeMaterial, ref greasePencilStrokeMaterials);
-            StoreGreasePencilMaterial(greasePencilName, fillMaterial, ref greasePencilFillMaterials);
+            string materialStrokeName = materialName + "_stroke";
+            string materialFiillName = materialName + "_fill";
+            Material strokeMaterial = BuildMaterial(greasePencilMaterial, materialStrokeName, strokeColor);
+            Material fillMaterial = BuildMaterial(greasePencilMaterial, materialFiillName, fillColor);
 
             // stroke enable
             if (strokeEnabled)
             {
-                materialStrokesEnable.Add(strokeMaterial);
+                materialStrokesEnabled.Add(materialStrokeName);
             }
             else
             {
-                if (materialStrokesEnable.Contains(strokeMaterial))
-                    materialStrokesEnable.Remove(strokeMaterial);
+                if (materialStrokesEnabled.Contains(materialStrokeName))
+                    materialStrokesEnabled.Remove(materialStrokeName);
             }
 
             // fill
             if (fillEnabled)
             {
-                materialsFill.Add(fillMaterial);
+                materialsFillEnabled.Add(materialFiillName);
             }
             else
             {
-                if (materialsFill.Contains(fillMaterial))
-                    materialsFill.Remove(fillMaterial);
+                if (materialsFillEnabled.Contains(materialFiillName))
+                    materialsFillEnabled.Remove(materialFiillName);
             }
+        }
+
+        public static void BuildStroke(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, int strokeIndex, ref GPFrame frame)
+        {
+            int materialIndex = GetInt(data, ref currentIndex);
+            int lineWidth = GetInt(data, ref currentIndex);
+            int numPoints = GetInt(data, ref currentIndex);
+            float[] points = new float[5 * numPoints];
+
+            int dataSize = 5 * sizeof(float) * numPoints;
+            Buffer.BlockCopy(data, currentIndex, points, 0, dataSize);
+            currentIndex += dataSize;
+
+            float layerOffset = 0.001f * layerIndex;
+            float strokeOffset = 0.0001f * strokeIndex;
+
+            if (IsStrokeEnabled(materialNames[materialIndex]))
+            {
+                Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
+                GPStroke subMesh = new GPStroke();
+                CreateStroke(points, numPoints, lineWidth, offset, ref subMesh);
+                subMesh.material = materials[materialNames[materialIndex] + "_stroke"];
+                frame.strokes.Add(subMesh);
+            }
+
+            if (IsFillEnabled(materialNames[materialIndex]))
+            {
+                Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
+                GPStroke subMesh = new GPStroke();
+                CreateFill(points, numPoints, offset, ref subMesh);
+                subMesh.material = materials[materialNames[materialIndex] + "_fill"];
+                frame.strokes.Add(subMesh);
+            }
+        }
+
+        public static void BuildFrame(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, ref GPLayer layer)
+        {
+            int frameNumber = GetInt(data, ref currentIndex);
+            GPFrame frame = new GPFrame(frameNumber);
+            layer.frames.Add(frame);
+
+            int strokeCount = GetInt(data, ref currentIndex);
+            for (int strokeIndex = 0; strokeIndex < strokeCount; strokeIndex++)
+            {
+                BuildStroke(data, ref currentIndex, materialNames, layerIndex, strokeIndex, ref frame);
+            }
+        }
+
+
+        public static void BuildLayer(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, ref List<GPLayer> layers)
+        {
+            string layerName = GetString(data, ref currentIndex);
+            GPLayer layer = new GPLayer(layerName);
+            layers.Add(layer);
+
+            int frameCount = GetInt(data, ref currentIndex);
+            for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
+            {
+                BuildFrame(data, ref currentIndex, materialNames, layerIndex, ref layer);
+            }
+        }
+
+        public static Tuple<Mesh, List<Material>> BuildGPFrameMesh(List<GPStroke> strokes)
+        {
+            // Build mesh from sub-meshes
+            int vertexCount = 0;
+            foreach (var meshMaterial in strokes)
+            {
+                vertexCount += meshMaterial.vertices.Length;
+            }
+
+            Vector3[] vertices = new Vector3[vertexCount];
+            int currentVertexIndex = 0;
+
+            foreach (var subMesh in strokes)
+            {
+                Array.Copy(subMesh.vertices, 0, vertices, currentVertexIndex, subMesh.vertices.Length);
+                currentVertexIndex += subMesh.vertices.Length;
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            mesh.subMeshCount = strokes.Count;
+            mesh.vertices = vertices;
+
+            int currentSubMesh = 0;
+            List<Material> mats = new List<Material>();
+
+            Tuple<Mesh, List<Material>> result = new Tuple<Mesh, List<Material>>(mesh, mats);
+
+            int currentIndexIndex = 0;
+            foreach (var subMesh in strokes)
+            {
+                int verticesCount = subMesh.vertices.Length;
+                int[] triangles = new int[subMesh.triangles.Length];
+                for (int i = 0; i < subMesh.triangles.Length; i++)
+                {
+                    triangles[i] = subMesh.triangles[i] + currentIndexIndex;
+                }
+
+                mesh.SetTriangles(triangles, currentSubMesh++);
+                mats.Add(subMesh.material);
+
+                currentIndexIndex += verticesCount;
+            }
+            return result;
+        }
+
+        static SortedSet<int> GetFrames(List<GPLayer> layers)
+        {
+            SortedSet<int> frames = new SortedSet<int>();
+            foreach(GPLayer layer in layers)
+            {
+                foreach (GPFrame frame in layer.frames)
+                    frames.Add(frame.frame);
+            }
+
+            return frames;
+        }
+
+        static List<GPFrame> GetGPFrames(List<GPLayer> layers, int f)
+        {
+            List<GPFrame> frames = new List<GPFrame>();
+            foreach(GPLayer layer in layers)
+            {
+                for(int i = layer.frames.Count - 1 ; i >= 0 ; --i)
+                {
+                    GPFrame gpframe= layer.frames[i];
+                    if (gpframe.frame <= f)
+                    {
+                        frames.Add(gpframe);
+                    }
+                }
+            }
+            return frames;
+        }
+
+        static List<GPStroke> GetStrokes(List<GPFrame> frames)
+        {
+            List<GPStroke> strokes = new List<GPStroke>();
+            foreach(GPFrame frame in frames)
+            {
+                foreach (GPStroke stroke in frame.strokes)
+                    strokes.Add(stroke);
+            }
+            return strokes;
+        }
+
+        public static void BuildGreasePencilMesh(byte[] data)
+        {
+            int currentIndex = 0;
+            string name = GetString(data, ref currentIndex);
+
+            int materialCount = GetInt(data, ref currentIndex);
+            string[] materialNames = new string[materialCount];
+            for (int i = 0; i < materialCount; i++)
+            {
+                materialNames[i] = GetString(data, ref currentIndex);
+            }
+
+            List<GPStroke> subMeshes = new List<GPStroke>();
+            List<GPLayer> layers = new List<GPLayer>();
+
+            int layerCount = GetInt(data, ref currentIndex);
+            for (int layerIndex = 0; layerIndex < layerCount; layerIndex++)
+            {
+                BuildLayer(data, ref currentIndex, materialNames, layerIndex, ref layers);
+            }
+
+            SortedSet<int> frames = GetFrames(layers);
+            if (frames.Count == 0)
+                return;
+
+            foreach(int frame in frames)
+            {
+                List<GPFrame> gpframes = GetGPFrames(layers, frame);
+                List<GPStroke> strokes = GetStrokes(gpframes);
+
+                Tuple<Mesh, List<Material>> meshData = BuildGPFrameMesh(strokes);
+                meshes[name] = meshData.Item1;
+                meshesMaterials[name] = meshData.Item2;
+                meshData.Item1.RecalculateBounds();
+                break;
+            }            
+        }
+        public static void BuildGreasePencilConnection(byte[] data)
+        {
+            ConnectMesh(data);
         }
     }
 
@@ -2199,20 +2308,26 @@ namespace VRtist
                         case MessageType.SetScene:
                             NetGeometry.BuilSetScene(command.data);
                             break;
-                        case MessageType.GreasePencil:
-                            NetGeometry.BuildGreasePencil(command.data);
-                            break;
-                        case MessageType.GreasePencilLayer:
-                            NetGeometry.BuildGreasePencilLayer(command.data);
-                            break;
+                        //case MessageType.GreasePencil:
+                        //    NetGeometry.BuildGreasePencil(command.data);
+                        //    break;
+                        //case MessageType.GreasePencilLayer:
+                        //    NetGeometry.BuildGreasePencilLayer(command.data);
+                        //    break;
                         //case MessageType.GreasePencilFrame:
                         //    NetGeometry.BuildGreasePencilFrame(prefab, command.data);
                         //    break;
-                        case MessageType.GreasePencilStroke:
-                            NetGeometry.BuildGreasePencilStroke(command.data);
-                            break;
+                        //case MessageType.GreasePencilStroke:
+                        //    NetGeometry.BuildGreasePencilStroke(command.data);
+                        //    break;
                         case MessageType.GreasePencilMaterial:
                             NetGeometry.BuildGreasePencilMaterial(command.data);
+                            break;
+                        case MessageType.GreasePencilMesh:
+                            NetGeometry.BuildGreasePencilMesh(command.data);
+                            break;
+                        case MessageType.GreasePencilConnection:
+                            NetGeometry.BuildGreasePencilConnection(command.data);
                             break;
                     }
                 }
