@@ -51,6 +51,20 @@ namespace VRtist
             }
         }
 
+        public static bool IsHandleSelected()
+        {
+            bool handleSelected = false;
+            if (selection.Count == 1)
+            {
+                foreach (KeyValuePair<int, GameObject> data in selection)
+                {
+                    if (data.Value.GetComponent<UIHandle>())
+                        handleSelected = true;
+                }
+            }
+            return handleSelected;
+        }
+
         public static bool AddToSelection(GameObject gObject)
         {
             if (selection.ContainsKey(gObject.GetInstanceID()))
@@ -91,8 +105,12 @@ namespace VRtist
             selection.Remove(gObject.GetInstanceID());
 
             string layerName = "Default";
-            if (gObject.GetComponent<LightController>() || gObject.GetComponent<CameraController>())
+            if (gObject.GetComponent<LightController>()
+             || gObject.GetComponent<CameraController>()
+             || gObject.GetComponent<UIHandle>())
+            {
                 layerName = "UI";
+            }
 
             SetRecursiveLayer(gObject, layerName);
 
@@ -110,8 +128,12 @@ namespace VRtist
             foreach (KeyValuePair<int, GameObject> data in selection)
             {
                 string layerName = "Default";
-                if (data.Value.GetComponent<LightController>() || data.Value.GetComponent<CameraController>())
+                if (data.Value.GetComponent<LightController>()
+                 || data.Value.GetComponent<CameraController>()
+                 || data.Value.GetComponent<UIHandle>())
+                {
                     layerName = "UI";
+                }
 
                 Camera cam = data.Value.GetComponentInChildren<Camera>(true);
                 if (cam)

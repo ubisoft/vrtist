@@ -168,7 +168,10 @@ namespace VRtist
             if (ToolsManager.Instance.isGrippingWorld)
                 return;
 
-            undoGroup = new CommandGroup();
+            //if (!IsHandleSelected())
+            {
+                undoGroup = new CommandGroup();
+            }
 
             InitControllerMatrix();
             InitTransforms();
@@ -219,9 +222,14 @@ namespace VRtist
                 if(null != meshFilter)
                     meshFilter.gameObject.SetActive(displayGizmos);
             }
-            ManageMoveObjectsUndo();
-            undoGroup.Submit();
-            undoGroup = null;
+
+            if (!Selection.IsHandleSelected())
+            {
+                ManageMoveObjectsUndo();
+            }
+                undoGroup.Submit();
+                undoGroup = null;
+            //}
 
             gripped = false;
         }
@@ -251,8 +259,8 @@ namespace VRtist
 
             if (gripped)
             {
-                // move selection
-                if (buttonAJustPressed)
+                // Duplicate selection (except if it is a UI handle)
+                if (buttonAJustPressed && !Selection.IsHandleSelected())
                 {
                     DuplicateSelection();
                     InitControllerMatrix();
@@ -270,11 +278,15 @@ namespace VRtist
                 if (!outOfDeadZone)
                     return;
 
-                Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                if (joystickAxis.y > deadZone)
-                    scale *= scaleFactor;
-                if (joystickAxis.y < -deadZone)
-                    scale /= scaleFactor;
+                // Joystick zoom only for non-handle objects
+                if (!Selection.IsHandleSelected())
+                {
+                    Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                    if (joystickAxis.y > deadZone)
+                        scale *= scaleFactor;
+                    if (joystickAxis.y < -deadZone)
+                        scale /= scaleFactor;
+                }
 
                 Transform parent = transform.parent;
                 Matrix4x4 controllerMatrix = parent.localToWorldMatrix * Matrix4x4.TRS(p, r, new Vector3(scale, scale, scale));
@@ -299,8 +311,17 @@ namespace VRtist
 
                 if (data.Value.transform.localToWorldMatrix != transformed)
                 {
-                    SyncData.SetTransform(data.Value.name, transformed);
-                    CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
+                    if (data.Value.GetComponent<UIHandle>())
+                    {
+                        data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                        data.Value.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2), transformed.GetColumn(1));
+                        //data.Value.transform.localScale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
+                    }
+                    else
+                    {
+                        SyncData.SetTransform(data.Value.name, transformed);
+                        CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
+                    }
                 }
             }
         }
@@ -328,6 +349,11 @@ namespace VRtist
 
         public bool AddToSelection(GameObject gObject)
         {
+            if (gObject.GetComponent<UIHandle>())
+            {
+                // if we select a UI handle, deselect all other objects first.
+                ClearSelection();
+            }
             return Selection.AddToSelection(gObject);
         }
 
@@ -404,8 +430,12 @@ namespace VRtist
             int i = 0;
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
-                selectedObjects[i] = data.Value;
-                ++i;
+                // TODO: maybe move that up and not do any duplicate if we have any window handle selected.
+                if (!data.Value.GetComponent<UIHandle>())
+                {
+                    selectedObjects[i] = data.Value;
+                    ++i;
+                }
             }
 
             ClearSelection();

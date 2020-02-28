@@ -159,7 +159,7 @@ namespace VRtist
         public void ComputeSelectionBounds()
         {
             planesContainer.SetActive(gameObject.activeSelf && Selection.selection.Count > 0);
-            if (Selection.selection.Count == 0)
+            if (Selection.selection.Count == 0 || Selection.IsHandleSelected())
             {
                 planesContainer.SetActive(false);
                 return;
