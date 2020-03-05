@@ -27,6 +27,7 @@ namespace VRtist
         private bool feedbackPositioning = false;
         private bool showTimeline = false;
         private Transform focalSlider = null;
+        private Transform showDopesheetCheckbox = null;
         private Dopesheet dopesheet;
         
         public float Focal
@@ -85,6 +86,7 @@ namespace VRtist
             else
             {
                 focalSlider = panel.Find("Focal");
+                showDopesheetCheckbox = panel.Find("ShowDopesheet");
             }
 
             if (!dopesheetHandle)
@@ -94,6 +96,7 @@ namespace VRtist
             else
             {
                 dopesheet = dopesheetHandle.GetComponentInChildren<Dopesheet>();
+                dopesheetHandle.transform.localScale = Vector3.zero;
             }
 
             DisableUI();
@@ -150,13 +153,52 @@ namespace VRtist
             feedbackPositioning = value;
         }
 
+        public void OnCloseDopesheet()
+        {
+            OnCheckShowDopesheet(false);
+
+            UICheckbox showDopesheet = showDopesheetCheckbox.GetComponent<UICheckbox>();
+            if (showDopesheet != null)
+            {
+                showDopesheet.Checked = false;
+            }
+        }
+
         public void OnCheckShowDopesheet(bool value)
         {
             showTimeline = value;
             if (dopesheet != null && dopesheetHandle != null)
             {
                 //dopesheet.Show(value);
-                dopesheetHandle.gameObject.SetActive(value);
+                //dopesheetHandle.gameObject.SetActive(value);
+                Coroutine co = StartCoroutine(AnimateDopesheetPopup(value ? Vector3.zero : Vector3.one, value ? Vector3.one : Vector3.zero));
+                if (value)
+                {
+                    if (ToolsUIManager.Instance.audioOpenDopesheet != null)
+                        ToolsUIManager.Instance.audioOpenDopesheet.Play();
+                }
+                else
+                {
+                    if (ToolsUIManager.Instance.audioCloseDopesheet != null)
+                        ToolsUIManager.Instance.audioCloseDopesheet.Play();
+                }
+            }
+        }
+
+        private IEnumerator AnimateDopesheetPopup(Vector3 startScale, Vector3 endScale)
+        {
+            ToolsUIManager uiMgr = ToolsUIManager.Instance;
+            int nbFrames = uiMgr.palettePopNbFrames;
+            float t = 0.0f;
+            for (int i = 0; i < nbFrames; i++)
+            {
+                t = (float)i / (nbFrames - 1);
+                float tx = uiMgr.paletteXCurve.Evaluate(t);
+                float ty = uiMgr.paletteYCurve.Evaluate(t);
+                Vector3 tt = new Vector3(tx, ty, t);
+                Vector3 s = startScale + Vector3.Scale(tt, (endScale - startScale));
+                dopesheetHandle.transform.localScale = s;
+                yield return new WaitForEndOfFrame();
             }
         }
 
@@ -298,6 +340,7 @@ namespace VRtist
 
         protected override void UpdateUI()
         {
+            // updates the panel from selection
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
@@ -323,6 +366,8 @@ namespace VRtist
                 // Use only the first camera.
                 return;
             }
+
+            // if no selection
 
             if (dopesheet != null)
                 dopesheet.Clear();
