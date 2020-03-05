@@ -74,6 +74,7 @@ namespace VRtist
         }
         public List<GPFrame> frames = new List<GPFrame>();
         string name;
+        public bool visible;
     }
     public class GPFrame
     {
@@ -1878,7 +1879,9 @@ namespace VRtist
         public static void BuildLayer(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, ref List<GPLayer> layers)
         {
             string layerName = GetString(data, ref currentIndex);
+            bool hidden = GetBool(data, ref currentIndex);
             GPLayer layer = new GPLayer(layerName);
+            layer.visible = !hidden;
             layers.Add(layer);
 
             int frameCount = GetInt(data, ref currentIndex);
@@ -1951,6 +1954,8 @@ namespace VRtist
             List<GPFrame> frames = new List<GPFrame>();
             foreach(GPLayer layer in layers)
             {
+                if (!layer.visible)
+                    continue;
                 for(int i = layer.frames.Count - 1 ; i >= 0 ; --i)
                 {
                     GPFrame gpframe= layer.frames[i];
