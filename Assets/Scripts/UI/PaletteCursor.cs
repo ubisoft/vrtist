@@ -12,6 +12,7 @@ namespace VRtist
         private bool isOnAWidget = false;
         private Transform widgetTransform = null;
         private UIElement widgetHit = null;
+        private AudioSource audioClick = null;
 
         void Start()
         {
@@ -22,6 +23,7 @@ namespace VRtist
             Transform t = go.transform;
             Vector3 lp = t.localPosition;
 
+            audioClick = GetComponentInChildren<AudioSource>();
 
             initialCursorLocalPosition = GetComponentInChildren<MeshFilter>().gameObject.transform.localPosition;
 
@@ -51,6 +53,9 @@ namespace VRtist
                     if (widgetHit != null && widgetHit.HandlesCursorBehavior())
                     {
                         widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref cursorShapeTransform);
+                        // TODO: est-ce qu'on gere le son dans les widgets, ou au niveau du curseur ???
+                        //       On peut faire ca dans le HandleCursorBehavior().
+                        //audioClick.Play();
                     }
                     else
                     { 
@@ -89,6 +94,7 @@ namespace VRtist
                 widgetTransform = other.transform;
                 widgetHit = other.GetComponent<UIElement>();
                 VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
+                audioClick.Play();
             }
         }
 

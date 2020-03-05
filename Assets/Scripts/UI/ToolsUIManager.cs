@@ -37,6 +37,7 @@ namespace VRtist
         [SerializeField] private Vector3 paletteScale = Vector3.one;
         [SerializeField] private Color defaultColor = new Color(114f/ 255f, 114f / 255f, 114f / 255f);
         [SerializeField] private Color selectionColor = new Color(0f, 167f / 255f, 1f);
+        [SerializeField] private AudioSource audioOpen = null;
 
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
@@ -194,6 +195,8 @@ namespace VRtist
 
                 // TODO: interruption in middle
                 Coroutine co = StartCoroutine(AnimatePalettePopup(value ? Vector3.zero : paletteScale, value ? paletteScale : Vector3.zero));
+                if (audioOpen != null && value)
+                    audioOpen.Play();
             }
         }
 

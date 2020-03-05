@@ -82,7 +82,8 @@ namespace VRtist
         {
             if (other.tag == "PhysicObject")
             {
-                collidedObjects.Add(ResolveSelectedObject(other.gameObject));
+                //collidedObjects.Add(ResolveSelectedObject(other.gameObject));
+                collidedObjects.Add(other.gameObject);
                 gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
             }
         }
@@ -90,8 +91,9 @@ namespace VRtist
         private void OnTriggerExit(Collider other)
         {
             {
-                collidedObjects.Remove(ResolveSelectedObject(other.gameObject));
-                if(collidedObjects.Count == 0)
+                //collidedObjects.Remove(ResolveSelectedObject(other.gameObject));
+                collidedObjects.Remove(other.gameObject);
+                if (collidedObjects.Count == 0)
                     gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
             }
         }
@@ -148,6 +150,10 @@ namespace VRtist
 
         private void UpdateEraser(GameObject gObject)
         {
+            // Don't delete UI handles
+            if (gObject.GetComponent<UIHandle>())
+                return;
+
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
             {
                 selector.RemoveSiblingsFromSelection(gObject, false);

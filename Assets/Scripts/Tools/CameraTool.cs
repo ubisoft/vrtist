@@ -14,19 +14,21 @@ namespace VRtist
         public Material screenShotMaterial;
         public Transform world;
         public Transform backgroundFeedback;
-        public Dopesheet dopesheet;
+        public Transform dopesheetHandle = null;
         public TextMeshProUGUI tm;
         public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;
+        public RenderTexture renderTexture = null;
+
         private float focal;
         private float cameraFeedbackScale = 1f;
         private float cameraFeedbackScaleFactor = 1.1f;
         private GameObject UIObject = null;
-        public RenderTexture renderTexture = null;
         private bool feedbackPositioning = false;
         private bool showTimeline = false;
         private Transform focalSlider = null;
-
+        private Dopesheet dopesheet;
+        
         public float Focal
         {
             get { return focal; }
@@ -76,7 +78,24 @@ namespace VRtist
         {
             base.Awake();
 
-            focalSlider = panel.Find("Focal");
+            if (!panel)
+            {
+                Debug.LogWarning("You forgot to give the Camera Panel to the Camera Tool.");
+            }
+            else
+            {
+                focalSlider = panel.Find("Focal");
+            }
+
+            if (!dopesheetHandle)
+            {
+                Debug.LogWarning("You forgot to give the Dopesheet to the Camera Tool.");
+            }
+            else
+            {
+                dopesheet = dopesheetHandle.GetComponentInChildren<Dopesheet>();
+            }
+
             DisableUI();
 
             Init();
@@ -131,22 +150,15 @@ namespace VRtist
             feedbackPositioning = value;
         }
 
-        public void OnCheckShowTimeline(bool value)
+        public void OnCheckShowDopesheet(bool value)
         {
             showTimeline = value;
-            if (dopesheet != null)
+            if (dopesheet != null && dopesheetHandle != null)
             {
-                dopesheet.Show(value);
+                //dopesheet.Show(value);
+                dopesheetHandle.gameObject.SetActive(value);
             }
         }
-
-        // DEPRECATED
-        //private void OnBoolChangeParameter(object sender, BoolToolParameterChangedArgs args)
-        //{
-        //    if (args.toolName != "Camera")
-        //        return;
-        //    feedbackPositioning = args.value;
-        //}
 
         private List<Camera> SelectedCameras()
         {
@@ -298,10 +310,8 @@ namespace VRtist
 
                 // Update the Dopesheet
                 if (dopesheet != null)
-                {
                     dopesheet.UpdateFromCamera(cameraParameters); // anim parameters? to be generic
-                }
-
+            
                 // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
@@ -313,7 +323,10 @@ namespace VRtist
                 // Use only the first camera.
                 return;
             }
-            dopesheet.Clear();
+
+            if (dopesheet != null)
+                dopesheet.Clear();
+
             focalSlider.gameObject.SetActive(false);
         }
 
@@ -360,9 +373,11 @@ namespace VRtist
             // TODO: 
             // - find the next keyframe, using the current one provided, and cameraParameters keyframes.
             // - call the dopesheet to tell it the new current keyframe
-
-            int f = the_next_keyframe++;
-            dopesheet.CurrentFrame = f;
+            if (dopesheet != null)
+            {
+                int f = the_next_keyframe++;
+                dopesheet.CurrentFrame = f;
+            }
         }
 
         static int the_previous_keyframe = 100; // TMP
@@ -372,8 +387,11 @@ namespace VRtist
             // - find the previous keyframe, using the current one provided, and cameraParameters keyframes.
             // - call the dopesheet to tell it the new current keyframe
 
-            int f = the_previous_keyframe--;
-            dopesheet.CurrentFrame = f;
+            if (dopesheet != null)
+            {
+                int f = the_previous_keyframe--;
+                dopesheet.CurrentFrame = f;
+            }
         }
     }
 }
