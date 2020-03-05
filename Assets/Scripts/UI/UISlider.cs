@@ -265,7 +265,7 @@ namespace VRtist
 
         private void UpdateSliderPosition()
         {
-            float pct = currentValue / (maxValue - minValue);
+            float pct = (currentValue - minValue) / (maxValue - minValue);
 
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;

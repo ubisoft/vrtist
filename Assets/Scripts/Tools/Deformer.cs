@@ -7,6 +7,7 @@ namespace VRtist
 {
     public class Deformer : Selector
     {
+        [Header("Deformer Parameters")]
         public Transform container;
         public Transform[] planes;
         public GameObject planesContainer;
