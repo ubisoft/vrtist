@@ -328,6 +328,17 @@ namespace VRtist
             UIObject = gObject;
         }
 
+        public override void OnUIObjectEnter(int gohash)
+        {
+            UIObject = ToolsUIManager.Instance.GetUI3DObject(gohash);
+        }
+
+        public override void OnUIObjectExit(int gohash)
+        {
+            UIObject = null;
+        }
+
+
         protected override void DoUpdateGui()
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
