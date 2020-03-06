@@ -19,8 +19,6 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
-        private Transform subObjTransform = null;
-
         void Start()
         {
             if (prefab == null)
@@ -31,8 +29,6 @@ namespace VRtist
             {
                 ToolsUIManager.Instance.RegisterUI3DObject(prefab);
             }
-
-            subObjTransform = GetComponentInChildren<MeshFilter>().gameObject.transform;
 
             onClickEvent.AddListener(OnPush3DObject);
             onReleaseEvent.AddListener(OnRelease3DObject);
@@ -94,12 +90,17 @@ namespace VRtist
             transform.localRotation *= Quaternion.Euler(0f, -3f, 0f); // rotate autour du Y du repere du parent (penche a 25, -35, 0)
         }
 
+        // Handles multi-mesh and multi-material per mesh.
         public void SetColor(Color color)
         {
-            Material[] materials = GetComponentInChildren<MeshRenderer>().materials;
-            foreach (Material material in materials)
+            MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
+            foreach (MeshRenderer meshRenderer in meshRenderers)
             {
-                material.SetColor("_BaseColor", color);
+                Material[] materials = meshRenderer.materials;
+                foreach (Material material in materials)
+                {
+                    material.SetColor("_BaseColor", color);
+                }
             }
         }
     }
