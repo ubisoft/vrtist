@@ -43,6 +43,8 @@ namespace VRtist
         GreasePencilMaterial,
         GreasePencilConnection,
         Frame,
+        FrameStartEnd,
+        CameraAnimation,
         Optimized_Commands = 200,
         Transform,
         Mesh,
@@ -1200,6 +1202,19 @@ namespace VRtist
             return command;
         }
 
+        public static void BuildCameraAimation(Transform root, byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            string animationChannel = GetString(data, ref currentIndex);
+
+            UInt32 keyCount = BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += 4;
+
+            float[] floatBuffer = new float[keyCount * 2];
+            Buffer.BlockCopy(data, currentIndex, floatBuffer, 0, (int)keyCount * 2 * sizeof(float));            
+        }
+
         public static void BuildCamera(Transform root, byte[] data)
         {
             int currentIndex = 0;
@@ -2060,6 +2075,14 @@ namespace VRtist
             int frame = GetInt(data, ref index);
             GreasePencil.currentFrame = frame;
         }
+
+        public static void BuildFrameStartEnd(byte[] data)
+        {
+            int index = 0;
+            int start = GetInt(data, ref index);
+            int end = GetInt(data, ref index);
+            // TODO : send data to
+        }
     }
 
     public class NetworkClient : MonoBehaviour
@@ -2370,6 +2393,9 @@ namespace VRtist
                         case MessageType.Camera:
                             NetGeometry.BuildCamera(prefab, command.data);
                             break;
+                        case MessageType.CameraAnimation:
+                            NetGeometry.BuildCameraAimation(prefab, command.data);
+                            break;
                         case MessageType.Light:
                             NetGeometry.BuildLight(prefab, command.data);
                             break;
@@ -2432,6 +2458,9 @@ namespace VRtist
                             break;
                         case MessageType.Frame:
                             NetGeometry.BuildFrame(command.data);
+                            break;
+                        case MessageType.FrameStartEnd:
+                            NetGeometry.BuildFrameStartEnd(command.data);
                             break;
                     }
                     i++;
