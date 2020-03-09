@@ -7,6 +7,7 @@ namespace VRtist
 {
     public class Deformer : Selector
     {
+        [Header("Deformer Parameters")]
         public Transform container;
         public Transform[] planes;
         public GameObject planesContainer;
@@ -326,6 +327,17 @@ namespace VRtist
         {
             UIObject = gObject;
         }
+
+        public override void OnUIObjectEnter(int gohash)
+        {
+            UIObject = ToolsUIManager.Instance.GetUI3DObject(gohash);
+        }
+
+        public override void OnUIObjectExit(int gohash)
+        {
+            UIObject = null;
+        }
+
 
         protected override void DoUpdateGui()
         {

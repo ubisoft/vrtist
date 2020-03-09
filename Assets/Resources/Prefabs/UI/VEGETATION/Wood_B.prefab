@@ -45,8 +45,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69f1f2c46695ec0478c12669fe6daa37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deformer: {fileID: 0}
   prefab: {fileID: 6740774563708598471, guid: 9c22799416eda334ca129eff2b14eec3, type: 3}
+  hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
+  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
+  onEnterUI3DObject:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnUIObjectEnter
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onExitUI3DObject:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnUIObjectExit
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onHoverEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onReleaseEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &2220316199695810544
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -58,8 +96,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.040604055, y: 0.00797981, z: 0.009397358}
-  m_Center: {x: -0.00023509562, y: -0.0003379807, z: 0.0002513798}
+  m_Size: {x: 0.055, y: 0.055, z: 0.055}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &8303576544075446925
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -125,17 +163,17 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: 3950f2c4b6731d64ab881db640c971d8,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 3950f2c4b6731d64ab881db640c971d8,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 3950f2c4b6731d64ab881db640c971d8,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: 3950f2c4b6731d64ab881db640c971d8,
         type: 3}
@@ -151,6 +189,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: WOOD_B_UI
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 3950f2c4b6731d64ab881db640c971d8,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3950f2c4b6731d64ab881db640c971d8, type: 3}

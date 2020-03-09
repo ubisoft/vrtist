@@ -45,8 +45,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69f1f2c46695ec0478c12669fe6daa37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deformer: {fileID: 0}
   prefab: {fileID: 1807643253798798825, guid: fedde1589e3399549801a35881ed92b2, type: 3}
+  hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
+  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
+  onEnterUI3DObject:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnUIObjectEnter
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onExitUI3DObject:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnUIObjectExit
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onHoverEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onReleaseEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!65 &5911786360414478142
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -58,7 +96,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.051916867, y: 0.010903269, z: 0.003641298}
+  m_Size: {x: 0.055, y: 0.055, z: 0.055}
   m_Center: {x: -0.0005237013, y: 0.00038988888, z: 0.00024509896}
 --- !u!1001 &5018184937398393551
 PrefabInstance:
@@ -151,6 +189,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: FENCE_UI
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 158b0cca006891547a888336f08fcf1f,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 158b0cca006891547a888336f08fcf1f, type: 3}

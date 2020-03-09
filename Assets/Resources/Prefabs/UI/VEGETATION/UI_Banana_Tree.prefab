@@ -45,8 +45,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69f1f2c46695ec0478c12669fe6daa37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deformer: {fileID: 0}
   prefab: {fileID: 5209273112425466081, guid: f8ee47b8d85a3e24eb479c9afa1874c8, type: 3}
+  hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
+  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
+  onEnterUI3DObject:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnUIObjectEnter
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onExitUI3DObject:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: OnUIObjectExit
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onHoverEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onClickEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onReleaseEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!135 &3390669481328806679
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -58,7 +96,7 @@ SphereCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.020950897
+  m_Radius: 0.03
   m_Center: {x: 0, y: 0.004472915, z: 0}
 --- !u!1001 &4817511393462979734
 PrefabInstance:
@@ -70,17 +108,17 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0139
+      value: -0.0187
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
@@ -125,17 +163,17 @@ PrefabInstance:
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 1
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: -1504981713932161579, guid: 412fa3aa28d676f4491471d518b56dc0,
         type: 3}
@@ -151,6 +189,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: BANANA_TREE_UI
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 412fa3aa28d676f4491471d518b56dc0,
+        type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 412fa3aa28d676f4491471d518b56dc0, type: 3}
