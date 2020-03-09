@@ -1421,14 +1421,18 @@ namespace VRtist
                         MeshRenderer instanceMeshRenderer = GetOrCreateMeshRenderer(instance);
                         instanceMeshRenderer.sharedMaterials = meshesMaterials[meshName].ToArray();
 
-                        GetOrCreateMeshCollider(instance);
+                        MeshCollider meshCollider = GetOrCreateMeshCollider(instance);
+                        meshCollider.sharedMesh = null;
+                        meshCollider.sharedMesh = meshFilter.mesh;
                     }
                 }
             }
 
-            if (gobject.GetComponent<MeshCollider>() == null)
+            MeshCollider collider = gobject.GetComponent<MeshCollider>();
+            if(null != collider)
             {
-                gobject.AddComponent<MeshCollider>();
+                collider.sharedMesh = null;
+                collider.sharedMesh = meshFilter.mesh;
             }
 
             return transform;
