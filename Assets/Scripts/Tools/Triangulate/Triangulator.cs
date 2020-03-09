@@ -289,10 +289,9 @@ namespace Triangulator
 		/// <returns>The calculated winding order of the polygon.</returns>
 		public static WindingOrder DetermineWindingOrder(Vector2[] vertices)
 		{
-			int clockWiseCount = 0;
-			int counterClockWiseCount = 0;
 			Vector2 p1 = vertices[0];
 
+			float sum = 0f;
 			for (int i = 1; i < vertices.Length; i++)
 			{
 				Vector2 p2 = vertices[i];
@@ -301,15 +300,12 @@ namespace Triangulator
 				Vector2 e1 = p1 - p2;
 				Vector2 e2 = p3 - p2;
 
-				if (e1.x * e2.y - e1.y * e2.x >= 0)
-					clockWiseCount++;
-				else
-					counterClockWiseCount++;
+				sum += e1.x * e2.y - e1.y * e2.x;
 
 				p1 = p2;
 			}
 
-			return (clockWiseCount > counterClockWiseCount)
+			return (sum >= 0f)
 				? WindingOrder.Clockwise
 				: WindingOrder.CounterClockwise;
 		}

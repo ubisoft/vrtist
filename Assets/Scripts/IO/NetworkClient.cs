@@ -1843,7 +1843,7 @@ namespace VRtist
             float layerOffset = 0.001f * layerIndex;
             float strokeOffset = 0.0001f * strokeIndex;
 
-            if (IsStrokeEnabled(materialNames[materialIndex]))
+            if ((materialIndex < materialNames.Length) && IsStrokeEnabled(materialNames[materialIndex]))
             {
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
@@ -1852,7 +1852,7 @@ namespace VRtist
                 frame.strokes.Add(subMesh);
             }
 
-            if (IsFillEnabled(materialNames[materialIndex]))
+            if ((materialIndex < materialNames.Length) && IsFillEnabled(materialNames[materialIndex]))
             {
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
@@ -1862,9 +1862,11 @@ namespace VRtist
             }
         }
 
-        public static void BuildFrame(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, ref GPLayer layer)
+        public static void BuildFrame(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, ref GPLayer layer, int frameIndex)
         {
             int frameNumber = GetInt(data, ref currentIndex);
+            if (frameIndex == 0)
+                frameNumber = 0;
             GPFrame frame = new GPFrame(frameNumber);
             layer.frames.Add(frame);
 
@@ -1887,7 +1889,7 @@ namespace VRtist
             int frameCount = GetInt(data, ref currentIndex);
             for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
             {
-                BuildFrame(data, ref currentIndex, materialNames, layerIndex, ref layer);
+                BuildFrame(data, ref currentIndex, materialNames, layerIndex, ref layer, frameIndex);
             }
         }
 
@@ -2002,11 +2004,12 @@ namespace VRtist
             }
 
             SortedSet<int> frames = GetFrames(layers);
-            if (frames.Count == 0)
-                return;
 
             GreasePencilData gpdata = new GreasePencilData();
             greasePencils[name] = gpdata;
+
+            if (frames.Count == 0)
+                return;
             foreach (int frame in frames)
             {
                 List<GPFrame> gpframes = GetGPFrames(layers, frame);
@@ -2334,6 +2337,8 @@ namespace VRtist
             }
         }
 
+        public int i = 0;
+
         void Update()
         {
             lock (this)
@@ -2425,6 +2430,7 @@ namespace VRtist
                             NetGeometry.BuildFrame(command.data);
                             break;
                     }
+                    i++;
                 }
                 receivedCommands.Clear();
             }
