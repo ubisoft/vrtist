@@ -14,6 +14,8 @@ namespace VRtist
         private UIElement widgetHit = null;
         private AudioSource audioClick = null;
 
+        private int currentShapeId = 0;
+        private int previousShapeId = 0;
         private Transform currentShapeTransform = null;
         private Transform arrowCursor = null;
         private Transform grabberCursor = null;
@@ -33,7 +35,7 @@ namespace VRtist
 
             arrowCursor = transform.Find("Arrow");
             grabberCursor = transform.Find("Grabber");
-            ShowCursorShape(0); // arrow
+            SetCursorShape(0); // arrow
             HideAllCursors();
         }
 
@@ -89,7 +91,7 @@ namespace VRtist
                 if (!CommandManager.IsUndoGroupOpened())
                 {
                     ToolsUIManager.Instance.ShowTools(false);
-                    ShowCursorShape(0); // arrow
+                    SetCursorShape(0); // arrow
                 }
             }
             else if (other.gameObject.tag == "UICollider")
@@ -121,14 +123,27 @@ namespace VRtist
         }
 
         // 0: arrow, 1: box
-        public void ShowCursorShape(int shape)
+        private void SetCursorShape(int shape)
         {
+            currentShapeId = shape;
+
             HideAllCursors();
             switch (shape)
             {
                 case 0: arrowCursor.gameObject.SetActive(true); currentShapeTransform = arrowCursor.transform; break;
                 case 1: grabberCursor.gameObject.SetActive(true); currentShapeTransform = grabberCursor.transform; break;
             }
+        }
+
+        public void PushCursorShape(int shape)
+        {
+            previousShapeId = currentShapeId;
+            SetCursorShape(shape);
+        }
+
+        public void PopCursorShape()
+        {
+            SetCursorShape(previousShapeId);
         }
 
         private void HideAllCursors()
