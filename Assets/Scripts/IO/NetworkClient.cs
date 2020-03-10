@@ -1207,6 +1207,8 @@ namespace VRtist
             int currentIndex = 0;
             string objectName = GetString(data, ref currentIndex);
             string animationChannel = GetString(data, ref currentIndex);
+            UInt32 keyCochannelIndex = BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += 4;
 
             UInt32 keyCount = BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
