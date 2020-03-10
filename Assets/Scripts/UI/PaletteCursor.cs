@@ -14,6 +14,10 @@ namespace VRtist
         private UIElement widgetHit = null;
         private AudioSource audioClick = null;
 
+        private Transform currentShapeTransform = null;
+        private Transform arrowCursor = null;
+        private Transform grabberCursor = null;
+
         void Start()
         {
             // Get the initial transform of the cursor mesh, in order to
@@ -27,7 +31,10 @@ namespace VRtist
 
             initialCursorLocalPosition = GetComponentInChildren<MeshFilter>().gameObject.transform.localPosition;
 
-            ShowCursor(false);
+            arrowCursor = transform.Find("Arrow");
+            grabberCursor = transform.Find("Grabber");
+            ShowCursorShape(0); // arrow
+            HideAllCursors();
         }
 
         void Update()
@@ -46,13 +53,12 @@ namespace VRtist
 
                 if (isOnAWidget)
                 {
-                    Transform cursorShapeTransform = GetComponentInChildren<MeshFilter>().gameObject.transform;
                     Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
                     Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
 
                     if (widgetHit != null && widgetHit.HandlesCursorBehavior())
                     {
-                        widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref cursorShapeTransform);
+                        widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref currentShapeTransform);
                         // TODO: est-ce qu'on gere le son dans les widgets, ou au niveau du curseur ???
                         //       On peut faire ca dans le HandleCursorBehavior().
                         //audioClick.Play();
@@ -63,7 +69,7 @@ namespace VRtist
                         Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
                         Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
                         Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
-                        cursorShapeTransform.position = worldProjectedWidgetPosition;
+                        currentShapeTransform.position = worldProjectedWidgetPosition;
 
                         // Haptic intensity as we go deeper into the widget.
                         float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
@@ -83,7 +89,7 @@ namespace VRtist
                 if (!CommandManager.IsUndoGroupOpened())
                 {
                     ToolsUIManager.Instance.ShowTools(false);
-                    ShowCursor(true);
+                    ShowCursorShape(0); // arrow
                 }
             }
             else if (other.gameObject.tag == "UICollider")
@@ -103,7 +109,7 @@ namespace VRtist
                 // reactivate all tools
                 //tools.SetActive(true);
                 ToolsUIManager.Instance.ShowTools(true);
-                ShowCursor(false);
+                HideAllCursors();
             }
             else if (other.gameObject.tag == "UICollider")
             {
@@ -114,10 +120,27 @@ namespace VRtist
             }
         }
 
-        private void ShowCursor(bool doShow)
+        // 0: arrow, 1: box
+        public void ShowCursorShape(int shape)
         {
-            // NOTE: will not work if we add more objects under the cursor root.
-            GetComponentInChildren<MeshRenderer>().enabled = doShow;
+            HideAllCursors();
+            switch (shape)
+            {
+                case 0: arrowCursor.gameObject.SetActive(true); currentShapeTransform = arrowCursor.transform; break;
+                case 1: grabberCursor.gameObject.SetActive(true); currentShapeTransform = grabberCursor.transform; break;
+            }
+        }
+
+        private void HideAllCursors()
+        {
+            arrowCursor.gameObject.SetActive(false);
+            grabberCursor.gameObject.SetActive(false);
+
+            //MeshRenderer[] rr = GetComponentsInChildren<MeshRenderer>();
+            //foreach (MeshRenderer r in rr)
+            //{
+            //    r.enabled = false;
+            //}
         }
     }
 }

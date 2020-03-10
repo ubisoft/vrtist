@@ -33,7 +33,7 @@ namespace VRtist
         public float Height { get { return height; } set { height = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public Color BaseColor { get { return baseColor; } set { baseColor = value; SetColor(value); } }
 
-        public void UpdateLocalPosition()
+        public virtual void UpdateLocalPosition()
         {
             UIElement parentElem = transform.parent ? transform.parent.gameObject.GetComponent<UIElement>() : null;
             if (parentElem)
@@ -81,7 +81,7 @@ namespace VRtist
             anchor = Vector3.zero;
         }
 
-        public void SetColor(Color color)
+        public virtual void SetColor(Color color)
         {
             Material material = GetComponent<MeshRenderer>().material; // THIS triggers the warning in editor.
             material.SetColor("_BaseColor", color);
