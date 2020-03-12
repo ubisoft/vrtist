@@ -960,7 +960,7 @@ namespace VRtist
             size = sizeof(bool);
             Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
             currentIndex += size;
-
+            
             SyncData.nodes[transform.name].visible = (bool)boolBuffer[0];
             SyncData.ApplyTransformToInstances(transform);
 

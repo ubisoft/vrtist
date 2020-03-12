@@ -398,7 +398,7 @@ namespace VRtist
 
                 foreach (Tuple<GameObject, string> item in node.instances)
                 {
-                    ApplyVisibility(item.Item1);
+                    ApplyVisibility(item.Item1, node.containerVisible, "");
                 }
 
             }
@@ -503,6 +503,19 @@ namespace VRtist
             }
         }
 
+        public static void AddCollectionToScene(CollectionNode collectionNode, Transform transform, string collectionInstanceName)
+        {
+            foreach (Node collectionObject in collectionNode.objects)
+            {
+                AddObjectToScene(transform, collectionObject.prefab.name, collectionInstanceName);
+            }
+            foreach (CollectionNode collectionChild in collectionNode.children)
+            {
+                AddCollectionToScene(collectionChild, transform, collectionInstanceName);
+            }
+        }
+
+
         public static GameObject AddObjectToScene(Transform transform, string objectName, string collectionInstanceName = "/")
         {
             if (!nodes.ContainsKey(objectName))
@@ -565,7 +578,8 @@ namespace VRtist
                     subCollectionInstanceName = collectionInstanceName + subCollectionInstanceName;
 
                 instanceRoot[subCollectionInstanceName] = offsetObject.transform;
-
+                AddCollectionToScene(collectionNode, offsetObject.transform, subCollectionInstanceName);
+                /*
                 foreach (Node collectionObject in collectionNode.objects)
                 {
                     AddObjectToScene(offsetObject.transform, collectionObject.prefab.name, subCollectionInstanceName);
@@ -577,6 +591,7 @@ namespace VRtist
                         AddObjectToScene(offsetObject.transform, collectionObject.prefab.name, subCollectionInstanceName);
                     }
                 }
+                */
             }
 
             ApplyVisibility(instance);
@@ -708,21 +723,40 @@ namespace VRtist
             return transform;
         }
 
-        public static void ApplyVisibility(GameObject obj, string instanceName = "", bool inheritVisible = true)
+        public static void ApplyCollectionVisibility(CollectionNode collectionNode, string instanceName = "", bool inheritVisible = true)
+        {
+            foreach (Node n in collectionNode.objects)
+            {
+                foreach (Tuple<GameObject, string> item in n.instances)
+                {
+                    if (item.Item2 == instanceName)
+                        ApplyVisibility(item.Item1, collectionNode.visible && inheritVisible, instanceName);
+                }
+            }
+
+            foreach (CollectionNode c in collectionNode.children)
+            {
+                ApplyCollectionVisibility(c, instanceName, collectionNode.visible && c.visible && inheritVisible);
+            }
+        }
+
+        public static void ApplyVisibility(GameObject obj, bool inheritVisible = true, string instanceName = "")
         {
             Node node = nodes[obj.name];
-            if (null != node.collectionInstance)
+            CollectionNode collectionNode = node.collectionInstance;
+            if (null != collectionNode)
             {
                 instanceName = instanceName + "/" + obj.name;
-                CollectionNode collectionNode = node.collectionInstance;
                 foreach (Node n in collectionNode.objects)
                 {
                     foreach (Tuple<GameObject, string> item in n.instances)
                     {
                         if (item.Item2 == instanceName)
-                            ApplyVisibility(item.Item1, item.Item2, node.visible);
+                            ApplyVisibility(item.Item1, collectionNode.visible && node.visible && inheritVisible, item.Item2);
                     }
                 }
+
+                ApplyCollectionVisibility(collectionNode, instanceName, collectionNode.visible && node.visible && inheritVisible);
                 obj = obj.transform.Find(OffsetTransformName).gameObject;
             }
 
