@@ -21,7 +21,7 @@ namespace VRtist
         protected virtual void Awake()
         {
             // default is NOT current tool
-            ToolsManager.Instance.registerTool(gameObject, false);
+            ToolsManager.RegisterTool(gameObject);
         }
 
         private void Start()
@@ -50,27 +50,10 @@ namespace VRtist
                 {
                     VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton, () =>
                     {
-                        // Leave selection mode
-                        if (ToolsManager.Instance.currentToolRef.name == "Selector" && previousTool != null)
-                        {
-                            ToolsUIManager.Instance.ChangeTool(previousTool.name);
-                            previousTool = null;
-                        }
-                        // Go to selection mode
-                        else
-                        {
-                            if (ToolsManager.Instance.currentToolRef.name != "Selector")
-                            {
-                                previousTool = ToolsManager.Instance.currentToolRef;
-                            }
-                            ToolsUIManager.Instance.ChangeTool("Selector");
-                        }
+                        ToolsManager.ToggleTool();
                     });
                 }
 
-                /*
-                ToolsUIManager.Instance.UpdateProxy3D();
-                */
                 // Custom tool update
                 if (IsInGui)
                 {

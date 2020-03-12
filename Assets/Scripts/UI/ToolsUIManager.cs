@@ -31,7 +31,6 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
-        [SerializeField] private GameObject defaultTool;
         [SerializeField] private Transform panelsParent;
         [SerializeField] private Transform palette;
         [SerializeField] private Vector3 paletteScale = Vector3.one;
@@ -78,14 +77,13 @@ namespace VRtist
 
         void Start()
         {
-            OnToolChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeTool;
-            OnToolParameterChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeToolParameter;
+            OnToolChangedEvent += ToolsManager.OnChangeTool;
+            OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
             palette.transform.localScale = Vector3.zero;
             mainPanel = palette.transform.GetChild(0);
 
-            ToolsManager.Instance.currentToolRef = defaultTool;
-            ChangeTool(ToolsManager.Instance.CurrentTool().name);
+            ChangeTool(ToolsManager.CurrentTool().name);
         }
 
         // Show/Hide palette
@@ -114,7 +112,7 @@ namespace VRtist
 
         public void ShowCurrentTool(bool doShowTool)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
                 tool.IsInGui = !doShowTool;
@@ -147,7 +145,7 @@ namespace VRtist
 
         public void OnUI3DObjectEnter(int gohash)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
                 tool.OnUIObjectEnter(gohash);
@@ -156,7 +154,7 @@ namespace VRtist
 
         public void OnUI3DObjectExit(int gohash)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
                 tool.OnUIObjectExit(gohash);

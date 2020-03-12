@@ -156,7 +156,7 @@ namespace VRtist
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
                     lineUI.Show(true, StretchUI.LineMode.DOUBLE);
-                    ToolsManager.Instance.isGrippingWorld = true;
+                    GlobalState.isGrippingWorld = true;
                 }
                 else // only left => reset left
                 {
@@ -166,7 +166,7 @@ namespace VRtist
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
 
                     lineUI.Show(true, StretchUI.LineMode.SINGLE);
-                    ToolsManager.Instance.isGrippingWorld = false;
+                    GlobalState.isGrippingWorld = false;
                 }
 
                 isLeftGripped = true;
@@ -176,7 +176,7 @@ namespace VRtist
                 SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
                 lineUI.Show(false);
-                ToolsManager.Instance.isGrippingWorld = false;
+                GlobalState.isGrippingWorld = false;
 
                 isLeftGripped = false;
             });
@@ -202,7 +202,7 @@ namespace VRtist
 
                         SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
                         lineUI.Show(true, StretchUI.LineMode.DOUBLE);
-                        ToolsManager.Instance.isGrippingWorld = true;
+                        GlobalState.isGrippingWorld = true;
                     }
 
                     // even if no left gripped, just flag the right as gripped for the next update
@@ -221,7 +221,7 @@ namespace VRtist
 
                     //lineUI.Show(false);
                     lineUI.Show(true, StretchUI.LineMode.SINGLE);
-                    ToolsManager.Instance.isGrippingWorld = false;
+                    GlobalState.isGrippingWorld = false;
                 }
 
                 isRightGripped = false;

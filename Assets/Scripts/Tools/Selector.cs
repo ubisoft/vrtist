@@ -165,7 +165,7 @@ namespace VRtist
 
         protected void OnStartGrip()
         {
-            if (ToolsManager.Instance.isGrippingWorld)
+            if (GlobalState.isGrippingWorld)
                 return;
 
             //if (!IsHandleSelected())
@@ -210,7 +210,7 @@ namespace VRtist
         }
         protected void OnEndGrip()
         {
-            if (ToolsManager.Instance.isGrippingWorld)
+            if (GlobalState.isGrippingWorld)
                 return;
 
             foreach (var item in Selection.selection)
