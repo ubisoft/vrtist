@@ -740,6 +740,7 @@ namespace VRtist
             Texture2D texture = LoadTextureFromBuffer(data, isLinear);
             if (null != texture)
                 textures[filePath] = texture;
+            /*
             try
             {
                 using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -751,6 +752,7 @@ namespace VRtist
             {
                 Debug.LogWarning("Could not write : " + filePath);
             }
+            */
 
             return texture;
         }
@@ -1345,6 +1347,8 @@ namespace VRtist
 
             // Set data to all instances
             LightController lightController = lightGameObject.GetComponent<LightController>();
+            if (!lightController)
+                return;
             LightParameters lightParameters = (LightParameters)lightController.GetParameters();
 
             foreach (Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
