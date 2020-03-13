@@ -31,32 +31,50 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
-        [SerializeField] private GameObject defaultTool;
         [SerializeField] private Transform panelsParent;
         [SerializeField] private Transform palette;
-        [SerializeField] private Vector3 paletteScale = Vector3.one;
+        [SerializeField] private float paletteScale = 0.5f;
         [SerializeField] private Color defaultColor = new Color(114f/ 255f, 114f / 255f, 114f / 255f);
         [SerializeField] private Color selectionColor = new Color(0f, 167f / 255f, 1f);
-        public AudioSource audioOpenPalette = null;
-        public AudioSource audioClosePalette = null;
-        public AudioSource audioOpenDopesheet = null;
-        public AudioSource audioCloseDopesheet = null;
+        [SerializeField] private AudioSource audioOpenPalette = null;
+        [SerializeField] private AudioSource audioClosePalette = null;
+        [SerializeField] private AudioSource audioOpenDopesheet = null;
+        [SerializeField] private AudioSource audioCloseDopesheet = null;
 
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
 
-        // DEBUG
+        [Header("Debug tweaking")]
         public int palettePopNbFrames = 8;
-        public AnimationCurve paletteXCurve = new AnimationCurve(
+        public AnimationCurve paletteOpenAnimXCurve = new AnimationCurve(
             new Keyframe(0, 0, 0, 0),
             new Keyframe(0.5f, 1.5f, 0, 0),
             new Keyframe(0.75f, 0.8f, 0, 0),
             new Keyframe(1, 1, 0, 0)
         );
-        public AnimationCurve paletteYCurve = new AnimationCurve(
+        public AnimationCurve paletteOpenAnimYCurve = new AnimationCurve(
             new Keyframe(0, 0, 0, 0),
-            new Keyframe(0.7f, 1.0f, 4.0f, 4.0f), // goes over
+            new Keyframe(0.7f, 1.0f, 4.0f, 4.0f),
+            new Keyframe(1, 1, 0, 0)
+        );
+        public AnimationCurve paletteOpenAnimZCurve = new AnimationCurve(
+            new Keyframe(0, 0, 0, 0),
+            new Keyframe(1, 1, 0, 0)
+        );
+        public AnimationCurve paletteCloseAnimXCurve = new AnimationCurve(
+            new Keyframe(0, 0, 0, 0),
+            new Keyframe(0.5f, 1.5f, 0, 0),
+            new Keyframe(0.75f, 0.8f, 0, 0),
+            new Keyframe(1, 1, 0, 0)
+        );
+        public AnimationCurve paletteCloseAnimYCurve = new AnimationCurve(
+            new Keyframe(0, 0, 0, 0),
+            new Keyframe(0.7f, 1.0f, 4.0f, 4.0f),
+            new Keyframe(1, 1, 0, 0)
+        );
+        public AnimationCurve paletteCloseAnimZCurve = new AnimationCurve(
+            new Keyframe(0, 0, 0, 0),
             new Keyframe(1, 1, 0, 0)
         );
         private bool forceShowPalette = false;
@@ -78,20 +96,19 @@ namespace VRtist
 
         void Start()
         {
-            OnToolChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeTool;
-            OnToolParameterChangedEvent += ToolsManager.Instance.MainGameObject.OnChangeToolParameter;
+            OnToolChangedEvent += ToolsManager.OnChangeTool;
+            OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
             palette.transform.localScale = Vector3.zero;
             mainPanel = palette.transform.GetChild(0);
 
-            ToolsManager.Instance.currentToolRef = defaultTool;
-            ChangeTool(ToolsManager.Instance.CurrentTool().name);
+            ChangeTool(ToolsManager.CurrentTool().name);
         }
 
         // Show/Hide palette
         public void TogglePalette()
         {
-            EnableMenu(!forceShowPalette);
+            ShowPalette(!forceShowPalette);
         }
 
         public void ChangeTool(string toolName)
@@ -114,7 +131,7 @@ namespace VRtist
 
         public void ShowCurrentTool(bool doShowTool)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
                 tool.IsInGui = !doShowTool;
@@ -147,7 +164,7 @@ namespace VRtist
 
         public void OnUI3DObjectEnter(int gohash)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
                 tool.OnUIObjectEnter(gohash);
@@ -156,7 +173,7 @@ namespace VRtist
 
         public void OnUI3DObjectExit(int gohash)
         {
-            ToolBase tool = ToolsManager.Instance.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
             if (tool != null)
             {
                 tool.OnUIObjectExit(gohash);
@@ -183,6 +200,7 @@ namespace VRtist
         {
             string panelObjectName = activePanelName + "Panel";
 
+            // TODO: pk on fait pas juste un Find ici?
             for (int i = 0; i < panelsParent.childCount; i++)
             {
                 GameObject child = panelsParent.GetChild(i).gameObject;
@@ -190,39 +208,48 @@ namespace VRtist
             }
         }
 
-        public void EnableMenu(bool value)
+        public void OpenWindow(Transform window, float scaleFactor)
+        {
+            Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false));
+            if (audioOpenPalette != null)
+                audioOpenPalette.Play();
+        }
+
+        public void CloseWindow(Transform window, float scaleFactor)
+        {
+            Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteCloseAnimXCurve, paletteCloseAnimYCurve, paletteCloseAnimZCurve, scaleFactor, palettePopNbFrames, false));
+            if (audioClosePalette != null)
+                audioClosePalette.Play();
+        }
+
+        public void ShowPalette(bool value)
         {
             if (value != forceShowPalette)
             {
                 forceShowPalette = value;
 
-                // TODO: interruption in middle
-                Coroutine co = StartCoroutine(AnimatePalettePopup(value ? Vector3.zero : paletteScale, value ? paletteScale : Vector3.zero));
                 if (value)
                 {
-                    if (audioOpenPalette != null)
-                        audioOpenPalette.Play();
+                    OpenWindow(palette.transform, paletteScale);
                 }
                 else
                 {
-                    if (audioClosePalette != null)
-                        audioClosePalette.Play();
+                    CloseWindow(palette.transform, paletteScale);
                 }
             }
         }
 
-        private IEnumerator AnimatePalettePopup(Vector3 startScale, Vector3 endScale)
+        private IEnumerator AnimateWindowOpen(Transform window, AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve, float scaleFactor, int nbFrames, bool reverse = false)
         {
-            int nbFrames = palettePopNbFrames;
-            float t = 0.0f;
-            for(int i = 0; i < nbFrames; i++)
+            for (int i = 0; i < nbFrames; i++)
             {
-                t = (float)i / (nbFrames - 1);
-                float tx = paletteXCurve.Evaluate(t);
-                float ty = paletteYCurve.Evaluate(t);
-                Vector3 tt = new Vector3(tx, ty, t);
-                Vector3 s = startScale + Vector3.Scale(tt, (endScale - startScale));
-                palette.transform.localScale = s;
+                float t = (float)i / (nbFrames - 1);
+                if (reverse) t = 1.0f - t;
+                float tx = scaleFactor * xCurve.Evaluate(t);
+                float ty = scaleFactor * yCurve.Evaluate(t);
+                float tz = scaleFactor * zCurve.Evaluate(t);
+                Vector3 s = new Vector3(tx, ty, tz);
+                window.localScale = s;
                 yield return new WaitForEndOfFrame();
             }
         }

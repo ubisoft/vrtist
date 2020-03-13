@@ -3,8 +3,27 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class ToolsManagerSingleton
+    public class ToolsManager : MonoBehaviour
     {
+        private static ToolsManager instance = null;
+        private static ToolsManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = GameObject.FindObjectOfType<ToolsManager>();
+                }
+                return instance;
+            }
+        }
+        // Must be done before Start of ToolsUIManager
+        void Awake()
+        {
+            _ = Instance;
+            SetCurrentTool(defaultTool);
+        }
+
         private Dictionary<string, GameObject> tools = new Dictionary<string, GameObject>();
         public Dictionary<string, GameObject> Tools
         {
@@ -14,59 +33,64 @@ namespace VRtist
             }
         }
 
-        private ToolsManager mainGameObject = null;
-        public ToolsManager MainGameObject
+        public GameObject defaultTool = null;
+        public GameObject altTool = null;
+        private GameObject currentToolRef = null;
+        private GameObject previousTool = null;
+
+        public static void RegisterTool(GameObject tool)
         {
-            get
-            {
-                return mainGameObject;
-            }
-            set
-            {
-                mainGameObject = value;
-            }
+            Instance._RegisterTool(tool);
         }
 
-        public GameObject currentToolRef = null;
-
-        [HideInInspector]
-        public bool isGrippingWorld = false;
-
-        public void registerTool(GameObject tool, bool activate = false)
+        public void _RegisterTool(GameObject tool)
         {
             tools.Add(tool.name, tool);
-            tool.SetActive(activate);
-            if (activate)
-                currentToolRef = tool;
+            tool.SetActive(false);
         }
-        public GameObject CurrentTool()
+
+        public static void ToggleTool()
+        {
+            Instance._ToggleTool();
+        }
+
+        public void _ToggleTool()
+        {
+            if (currentToolRef.name == altTool.name && previousTool != null)
+            {
+                ToolsUIManager.Instance.ChangeTool(previousTool.name);
+                previousTool = null;
+            }
+            // Go to selection mode
+            else
+            {
+                if (currentToolRef.name != altTool.name)
+                {
+                    previousTool = currentToolRef;
+                }
+                ToolsUIManager.Instance.ChangeTool(altTool.name);
+            }
+        }
+
+        public static GameObject CurrentTool()
+        {
+            return Instance._CurrentTool();
+        }
+        public GameObject _CurrentTool()
         {
             return currentToolRef;
         }
-    }
 
-    public class ToolsManager : MonoBehaviour
-    {
-        static ToolsManagerSingleton _instance = null;
-        public static ToolsManagerSingleton Instance
+        public static void SetCurrentTool(GameObject tool)
         {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new ToolsManagerSingleton();
-                }
-                return _instance;
-            }
+            Instance._SetCurrentTool(tool);
+        }
+        public void _SetCurrentTool(GameObject tool)
+        {
+            currentToolRef = tool;
         }
 
-        // Must be done before Start of ToolsUIManager
-        void Awake()
-        {
-            ToolsManager.Instance.MainGameObject = this;
-        }
-        
-        public void OnChangeTool(object sender, ToolChangedArgs args)
+        public static void OnChangeTool(object sender, ToolChangedArgs args)
         {
             Instance.currentToolRef.SetActive(false);
             Instance.currentToolRef = Instance.Tools[args.toolName];
@@ -77,12 +101,9 @@ namespace VRtist
             VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
             Instance.currentToolRef.transform.localPosition = position;
             Instance.currentToolRef.transform.localRotation = rotation;
-
-            // update panels
-            //Selection.TriggerSelectionChanged();
         }
 
-        public void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)
+        public static void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)
         {
         }        
     }

@@ -169,36 +169,14 @@ namespace VRtist
             showTimeline = value;
             if (dopesheet != null && dopesheetHandle != null)
             {
-                //dopesheet.Show(value);
-                //dopesheetHandle.gameObject.SetActive(value);
-                Coroutine co = StartCoroutine(AnimateDopesheetPopup(value ? Vector3.zero : Vector3.one, value ? Vector3.one : Vector3.zero));
                 if (value)
                 {
-                    if (ToolsUIManager.Instance.audioOpenDopesheet != null)
-                        ToolsUIManager.Instance.audioOpenDopesheet.Play();
+                    ToolsUIManager.Instance.OpenWindow(dopesheetHandle.transform, 1.0f);
                 }
                 else
                 {
-                    if (ToolsUIManager.Instance.audioCloseDopesheet != null)
-                        ToolsUIManager.Instance.audioCloseDopesheet.Play();
+                    ToolsUIManager.Instance.CloseWindow(dopesheetHandle.transform, 1.0f);
                 }
-            }
-        }
-
-        private IEnumerator AnimateDopesheetPopup(Vector3 startScale, Vector3 endScale)
-        {
-            ToolsUIManager uiMgr = ToolsUIManager.Instance;
-            int nbFrames = uiMgr.palettePopNbFrames;
-            float t = 0.0f;
-            for (int i = 0; i < nbFrames; i++)
-            {
-                t = (float)i / (nbFrames - 1);
-                float tx = uiMgr.paletteXCurve.Evaluate(t);
-                float ty = uiMgr.paletteYCurve.Evaluate(t);
-                Vector3 tt = new Vector3(tx, ty, t);
-                Vector3 s = startScale + Vector3.Scale(tt, (endScale - startScale));
-                dopesheetHandle.transform.localScale = s;
-                yield return new WaitForEndOfFrame();
             }
         }
 
