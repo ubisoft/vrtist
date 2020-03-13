@@ -8,10 +8,11 @@ namespace VRtist
     {
         [Header("UI")]
         [SerializeField] protected Transform panel = null;
-        
-        static GameObject previousTool = null;
-        protected bool switchToSelectionEnabled = true;
 
+        // Does this tool authorizes the swap-to-alt-tool operation. 
+        protected bool enableToggleTool = true;
+
+        // State that is TRUE if the tool is inside a GUI volume.
         private bool isInGui = false;
         public bool IsInGui { get { return isInGui; } set { isInGui = value; ShowTool(!value); } }
 
@@ -20,16 +21,12 @@ namespace VRtist
 
         protected virtual void Awake()
         {
-            // default is NOT current tool
             ToolsManager.RegisterTool(gameObject);
         }
 
-        private void Start()
+        void Start()
         {
-            if(panel == null)
-            {
-                Debug.LogError("Panel must be set!");
-            }
+
         }
 
         // Update is called once per frame
@@ -46,7 +43,7 @@ namespace VRtist
                 Vector3 r = rotation.eulerAngles;
 
                 // Toggle selection
-                if (switchToSelectionEnabled)
+                if (enableToggleTool)
                 {
                     VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton, () =>
                     {

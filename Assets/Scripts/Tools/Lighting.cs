@@ -62,7 +62,7 @@ namespace VRtist
             DisableUI();
 
             Init();
-            switchToSelectionEnabled = false;
+            enableToggleTool = false;
             Selection.OnSelectionChanged += OnSelectionChanged;
             CreateTooltips();
         }

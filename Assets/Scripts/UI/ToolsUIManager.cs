@@ -89,7 +89,7 @@ namespace VRtist
         // Show/Hide palette
         public void TogglePalette()
         {
-            EnableMenu(!forceShowPalette);
+            ShowPalette(!forceShowPalette);
         }
 
         public void ChangeTool(string toolName)
@@ -181,6 +181,7 @@ namespace VRtist
         {
             string panelObjectName = activePanelName + "Panel";
 
+            // TODO: pk on fait pas juste un Find ici?
             for (int i = 0; i < panelsParent.childCount; i++)
             {
                 GameObject child = panelsParent.GetChild(i).gameObject;
@@ -188,7 +189,7 @@ namespace VRtist
             }
         }
 
-        public void EnableMenu(bool value)
+        public void ShowPalette(bool value)
         {
             if (value != forceShowPalette)
             {
@@ -211,6 +212,7 @@ namespace VRtist
 
         private IEnumerator AnimatePalettePopup(Vector3 startScale, Vector3 endScale)
         {
+            // TODO: find out why scale is inverted in the animation.
             int nbFrames = palettePopNbFrames;
             float t = 0.0f;
             for(int i = 0; i < nbFrames; i++)
