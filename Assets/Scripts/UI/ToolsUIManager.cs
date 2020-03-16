@@ -39,8 +39,9 @@ namespace VRtist
     public class ToolsUIManager : MonoBehaviour
     {
         [SerializeField] private string defaultPanel;
-        [SerializeField] private Transform panelsParent;
-        [SerializeField] private Transform palette;
+        [SerializeField] private Transform paletteRoot;
+        [SerializeField] private Transform tabButtonsContainer;
+        [SerializeField] private Transform panelsContainer;
         [SerializeField] private float paletteScale = 0.5f;
         [SerializeField] private Color defaultColor = new Color(114f/ 255f, 114f / 255f, 114f / 255f);
         [SerializeField] private Color selectionColor = new Color(0f, 167f / 255f, 1f);
@@ -95,7 +96,7 @@ namespace VRtist
 
         private string currentToolName;
         private string currentTabName;
-        private Transform mainPanel;
+        
 
         // Map of the 3d object widgets. Used for passing messages by int instead of GameObject. Key is a Hash.
         private Dictionary<int, GameObject> ui3DObjects = new Dictionary<int, GameObject>();
@@ -113,8 +114,8 @@ namespace VRtist
             OnToolChangedEvent += ToolsManager.OnChangeTool;
             OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
-            palette.transform.localScale = Vector3.zero;
-            mainPanel = palette.transform.GetChild(0);
+            paletteRoot.transform.localScale = Vector3.zero;
+            tabButtonsContainer = paletteRoot.transform.GetChild(0);
 
             ChangeTab(defaultPanel);
             ChangeTool(ToolsManager.CurrentTool().name);
@@ -208,7 +209,7 @@ namespace VRtist
             // TODO: make a map, a little bit too hardcoded.
             string buttonName = toolName + "ToolButton";
 
-            Transform gobj = mainPanel.Find(buttonName);
+            Transform gobj = tabButtonsContainer.Find(buttonName);
             if (gobj)
             {
                 UIButton buttonElement = gobj.GetComponent<UIButton>();
@@ -216,13 +217,23 @@ namespace VRtist
             }
         }
 
+        public void OnPaletteClose()
+        {
+
+        }
+
+        public void OnPalettePin()
+        {
+
+        }
+
         public void TogglePanel(string activePanelName)
         {
             string panelObjectName = activePanelName + "Panel";
 
-            for (int i = 0; i < panelsParent.childCount; i++)
+            for (int i = 0; i < panelsContainer.childCount; i++)
             {
-                GameObject child = panelsParent.GetChild(i).gameObject;
+                GameObject child = panelsContainer.GetChild(i).gameObject;
                 child.SetActive(panelObjectName == child.name);
             }
         }
@@ -249,11 +260,11 @@ namespace VRtist
 
                 if (value)
                 {
-                    OpenWindow(palette.transform, paletteScale);
+                    OpenWindow(paletteRoot.transform, paletteScale);
                 }
                 else
                 {
-                    CloseWindow(palette.transform, paletteScale);
+                    CloseWindow(paletteRoot.transform, paletteScale);
                 }
             }
         }
