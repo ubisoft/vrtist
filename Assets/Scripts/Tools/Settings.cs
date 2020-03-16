@@ -6,17 +6,10 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
-    public class Settings : Selector
+    public class Settings : MonoBehaviour
     {
         [Header("Settings Parameters")]
         public AudioMixer mixer = null;
-
-        void Start()
-        {
-            Init(); // selector init
-
-            CreateTooltips(); // selector tooltips
-        }
 
         public void OnChangeMasterVolume(float volume)
         {
@@ -39,27 +32,6 @@ namespace VRtist
             if (mixer)
             {
                 mixer.SetFloat("Volume_UI", volume);
-            }
-        }
-
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
-        {
-            // Base selection update
-            base.DoUpdate(position, rotation);
-        }
-
-        protected override void ShowTool(bool show)
-        {
-            Transform sphere = gameObject.transform.Find("Sphere");
-            if (sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
-
-            Transform rightController = gameObject.transform.Find("right_controller");
-            if (rightController != null)
-            {
-                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
             }
         }
     }
