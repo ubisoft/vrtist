@@ -59,6 +59,7 @@ namespace VRtist
             if (currentToolRef.name == altTool.name && previousTool != null)
             {
                 ToolsUIManager.Instance.ChangeTool(previousTool.name);
+                ToolsUIManager.Instance.ChangeTab(previousTool.name); // TODO: forcement?
                 previousTool = null;
             }
             // Go to selection mode
@@ -69,6 +70,7 @@ namespace VRtist
                     previousTool = currentToolRef;
                 }
                 ToolsUIManager.Instance.ChangeTool(altTool.name);
+                ToolsUIManager.Instance.ChangeTab(altTool.name);
             }
         }
 

@@ -7,6 +7,13 @@ using UnityEngine.UI;
 
 namespace VRtist
 {
+    public delegate void OnTabChanged(object sender, TabChangedArgs args);
+    public class TabChangedArgs : EventArgs
+    {
+        public string tabName;
+        public string prevTabName;
+    }
+
     public delegate void OnToolChanged(object sender, ToolChangedArgs args);
     public class ToolChangedArgs : EventArgs
     {
@@ -31,6 +38,7 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
+        [SerializeField] private string defaultPanel;
         [SerializeField] private Transform panelsParent;
         [SerializeField] private Transform palette;
         [SerializeField] private float paletteScale = 0.5f;
@@ -41,6 +49,7 @@ namespace VRtist
         [SerializeField] private AudioSource audioOpenDopesheet = null;
         [SerializeField] private AudioSource audioCloseDopesheet = null;
 
+        public event EventHandler<TabChangedArgs> OnTabChangedEvent;
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
@@ -77,10 +86,15 @@ namespace VRtist
             new Keyframe(0, 0, 0, 0),
             new Keyframe(1, 1, 0, 0)
         );
+
+
+        private static Dictionary<string, string> tabTool = new Dictionary<string, string>();
+
         private bool forceShowPalette = false;
         private bool showTools = true;
 
         private string currentToolName;
+        private string currentTabName;
         private Transform mainPanel;
 
         // Map of the 3d object widgets. Used for passing messages by int instead of GameObject. Key is a Hash.
@@ -102,6 +116,7 @@ namespace VRtist
             palette.transform.localScale = Vector3.zero;
             mainPanel = palette.transform.GetChild(0);
 
+            ChangeTab(defaultPanel);
             ChangeTool(ToolsManager.CurrentTool().name);
         }
 
@@ -111,21 +126,27 @@ namespace VRtist
             ShowPalette(!forceShowPalette);
         }
 
+        public void ChangeTab(string tabName)
+        {
+            var args = new TabChangedArgs { tabName = tabName, prevTabName = currentTabName };
+
+            // Switch tab buttons
+            SetTabButtonActive(currentTabName, false);
+            currentTabName = tabName;
+            SetTabButtonActive(currentTabName, true);
+
+            TogglePanel(currentTabName);
+
+            OnTabChangedEvent?.Invoke(this, args);
+        }
+
         public void ChangeTool(string toolName)
         {
-            // Restore previous panel color
-            SetToolButtonActive(currentToolName, false);
-
             currentToolName = toolName;
-            SetToolButtonActive(currentToolName, true);
-            TogglePanel(currentToolName);
 
             var args = new ToolChangedArgs { toolName = currentToolName };
-            EventHandler<ToolChangedArgs> handler = OnToolChangedEvent;
-            if (handler != null)
-            {
-                handler(this, args);
-            }
+            OnToolChangedEvent?.Invoke(this, args);
+
             ShowCurrentTool(showTools);
         }
 
@@ -180,19 +201,18 @@ namespace VRtist
             }
         }
 
-        public void SetToolButtonActive(string toolName, bool active)
+        public void SetTabButtonActive(string toolName, bool active)
         {
             if(toolName == null) { return; }
+
+            // TODO: make a map, a little bit too hardcoded.
             string buttonName = toolName + "ToolButton";
 
-            for (int i = 0; i < mainPanel.childCount; i++)
+            Transform gobj = mainPanel.Find(buttonName);
+            if (gobj)
             {
-                GameObject gobj = mainPanel.GetChild(i).gameObject;
-                if (gobj.name == buttonName)
-                {
-                    UIButton buttonElement = gobj.GetComponent<UIButton>();
-                    buttonElement.Checked = active;
-                }
+                UIButton buttonElement = gobj.GetComponent<UIButton>();
+                buttonElement.Checked = active;
             }
         }
 
@@ -200,7 +220,6 @@ namespace VRtist
         {
             string panelObjectName = activePanelName + "Panel";
 
-            // TODO: pk on fait pas juste un Find ici?
             for (int i = 0; i < panelsParent.childCount; i++)
             {
                 GameObject child = panelsParent.GetChild(i).gameObject;
