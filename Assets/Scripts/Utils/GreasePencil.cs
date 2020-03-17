@@ -18,6 +18,11 @@ namespace VRtist
     public class GreasePencilData
     {
         public Dictionary<int, Tuple<Mesh, Material[]>> meshes = new Dictionary<int, Tuple<Mesh, Material[]>>();
+        public int frameOffset = 0;
+        public float frameScale = 1f;
+        public bool hasCustomRange = false;
+        public int rangeStartFrame;
+        public int rangeEndFrame;
 
         public void AddMesh(int frame, Tuple<Mesh, Material[]> mesh)
         {
@@ -57,7 +62,17 @@ namespace VRtist
 
         public void ForceUpdate()
         {
-            Tuple<Mesh, Material[]> meshData = findMesh(frame);
+            int mappedFrame = (int)(frame * data.frameScale) + data.frameOffset;
+            if (data.hasCustomRange)
+            {                
+                if (mappedFrame >= data.rangeStartFrame)
+                    mappedFrame = ((mappedFrame - data.rangeStartFrame) % (data.rangeEndFrame - data.rangeStartFrame + 1)) + data.rangeStartFrame;
+                else
+                    mappedFrame = data.rangeEndFrame - ((data.rangeStartFrame - mappedFrame - 1) % (data.rangeEndFrame - data.rangeStartFrame + 1));
+            }
+
+
+            Tuple<Mesh, Material[]> meshData = findMesh(mappedFrame);
             if (null == meshData)
                 return;
 
