@@ -16,7 +16,7 @@ namespace VRtist
         private bool isInGui = false;
         public bool IsInGui { get { return isInGui; } set { isInGui = value; ShowTool(!value); } }
 
-        private ICommand parameterCommand = null;
+        protected ICommand parameterCommand = null;
         protected List<ParametersController> connectedObjects = new List<ParametersController>();
 
         protected virtual void Awake()

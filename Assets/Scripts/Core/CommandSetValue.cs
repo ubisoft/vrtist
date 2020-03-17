@@ -44,6 +44,7 @@ namespace VRtist
             fieldInfo.SetValue(inst, value);
         }
 
+        // Create a command for each currently selected game objects
         public CommandSetValue(string commandName, string propertyPath)
         {
             name = commandName;            
@@ -58,6 +59,19 @@ namespace VRtist
                     continue;
 
                 oldValues[gObject] = GetValue(component, fieldName);
+            }
+        }
+
+        // Create a command for a set of given game objects
+        public CommandSetValue(List<GameObject> objects, string commandName, string propertyPath)
+        {
+            name = commandName;
+            ICommand.SplitPropertyPath(propertyPath, out objectPath, out componentName, out fieldName);
+            foreach(GameObject obj in objects)
+            {
+                Component component = obj.GetComponent(componentName);
+                if(null == component) { continue; }
+                oldValues[obj] = GetValue(component, fieldName);
             }
         }
 
