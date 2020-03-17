@@ -42,6 +42,7 @@ namespace VRtist
         GreasePencilMesh,
         GreasePencilMaterial,
         GreasePencilConnection,
+        GreasePencilTimeOffset,
         Frame,
         FrameStartEnd,
         CameraAnimation,
@@ -2075,6 +2076,19 @@ namespace VRtist
             gobject.tag = "PhysicObject";
         }
 
+        public static void BuildGreasePencilTimeOffset(byte[] data)
+        {
+            int currentIndex = 0;
+            string name = GetString(data, ref currentIndex);
+            GreasePencilData gpData = greasePencils[name];
+            gpData.frameOffset = GetInt(data, ref currentIndex);
+            gpData.frameScale = GetFloat(data, ref currentIndex);
+            gpData.hasCustomRange = GetBool(data, ref currentIndex);
+            gpData.rangeStartFrame = GetInt(data, ref currentIndex);
+            gpData.rangeEndFrame = GetInt(data, ref currentIndex);
+
+        }
+
         public static void BuildFrame(byte[] data)
         {
             int index = 0;
@@ -2461,6 +2475,9 @@ namespace VRtist
                             break;
                         case MessageType.GreasePencilConnection:
                             NetGeometry.BuildGreasePencilConnection(command.data);
+                            break;
+                        case MessageType.GreasePencilTimeOffset:
+                            NetGeometry.BuildGreasePencilTimeOffset(command.data);
                             break;
                         case MessageType.Frame:
                             NetGeometry.BuildFrame(command.data);
