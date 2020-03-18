@@ -8,10 +8,6 @@ namespace VRtist
     {
         public MeshFilter meshFilter;
         public MeshRenderer meshRenderer;
-    }
-
-    public class MeshConnectionInfos
-    {
         public Transform meshTransform;
     }
 
@@ -38,6 +34,18 @@ namespace VRtist
         public Transform transform;
     }
 
+    public class AddToCollectionInfo
+    {
+        public string collectionName;
+        public Transform transform;
+    }
+
+    public class AddObjectToSceneInfo
+    {
+        public Transform transform;
+    }
+
+
     public class CommandAddRemoveGameObject : ICommand
     {
         protected GameObject gObject = null;
@@ -57,11 +65,24 @@ namespace VRtist
             parent = o.transform.parent;
         }        
 
+        protected void AddObjectToScene()
+        {
+            AddToCollectionInfo addObjectToCollection = new AddToCollectionInfo();
+            addObjectToCollection.collectionName = "Collection";
+            addObjectToCollection.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.AddObjectToCollection, addObjectToCollection);
+
+            AddObjectToSceneInfo addObjectToScene = new AddObjectToSceneInfo();
+            addObjectToScene.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.AddObjectToScene, addObjectToScene);
+        }
+
         protected void SendLight()
         {
             LightInfo lightInfo = new LightInfo();
             lightInfo.transform = gObject.transform;
             CommandManager.SendEvent(MessageType.Light, lightInfo);
+            AddObjectToScene();
         }
 
         protected void SendCamera()
@@ -70,6 +91,7 @@ namespace VRtist
             cameraInfo.transform = gObject.transform;
             CommandManager.SendEvent(MessageType.Camera, cameraInfo);
             CommandManager.SendEvent(MessageType.Transform, gObject.transform);
+            AddObjectToScene();
         }
 
         protected void SendMesh()
@@ -77,6 +99,7 @@ namespace VRtist
             MeshInfos meshInfos = new MeshInfos();
             meshInfos.meshFilter = gObject.GetComponent<MeshFilter>();
             meshInfos.meshRenderer = gObject.GetComponent<MeshRenderer>();
+            meshInfos.meshTransform = gObject.transform;
 
             foreach (Material mat in meshInfos.meshRenderer.materials)
             {
@@ -84,13 +107,9 @@ namespace VRtist
             }
 
             CommandManager.SendEvent(MessageType.Mesh, meshInfos);
+            CommandManager.SendEvent(MessageType.Transform, gObject.transform);
 
-            MeshConnectionInfos meshConnectionInfos = new MeshConnectionInfos();
-            meshConnectionInfos.meshTransform = gObject.transform;
-
-            CommandManager.SendEvent(MessageType.MeshConnection, meshConnectionInfos);
-
-            CommandManager.SendEvent(MessageType.Transform, meshConnectionInfos.meshTransform);
+            AddObjectToScene();
         }
     }
 }

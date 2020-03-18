@@ -23,7 +23,7 @@ namespace VRtist
         Delete,
         Camera,
         Light,
-        MeshConnection,
+        MeshConnection_Deprecated,
         Rename,
         Duplicate,
         SendToTrash,
@@ -103,7 +103,6 @@ namespace VRtist
 
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
         public static Dictionary<string, List<Material>> meshesMaterials = new Dictionary<string, List<Material>>();
-        public static Dictionary<string, HashSet<MeshFilter>> meshInstances = new Dictionary<string, HashSet<MeshFilter>>();
 
         public static Material greasePencilMaterial = null;
         public static Dictionary<string, List<Material>> greasePencilStrokeMaterials = new Dictionary<string, List<Material>>();
@@ -1141,7 +1140,7 @@ namespace VRtist
             return command;
         }
 
-        public static NetCommand BuildMeshCommand(MeshInfos meshInfos)
+        public static NetCommand BuildMeshCommand(Transform root, MeshInfos meshInfos)
         {
             Mesh mesh = meshInfos.meshFilter.mesh;
             byte[] name = StringToBytes(mesh.name);
@@ -1175,22 +1174,39 @@ namespace VRtist
             }
             byte[] materialsBuffer = StringsToBytes(materialNames);
 
-            List<byte[]> buffers = new List<byte[]> { name, positions, normals, uvs, materialIndices, triangles, materialsBuffer };
+            Transform transform = meshInfos.meshTransform;
+            string path = GetPathName(root, transform);
+            byte[] pathBuffer = StringToBytes(path);
+
+            List<byte[]> buffers = new List<byte[]> { pathBuffer, name, positions, normals, uvs, materialIndices, triangles, materialsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
             return command;
         }
 
-        public static NetCommand BuildMeshConnectionCommand(Transform root, MeshConnectionInfos meshConnectionInfos)
+        public static NetCommand BuildAddCollecitonCommand(string collectionName)
         {
-            Transform transform = meshConnectionInfos.meshTransform;
-            Mesh mesh = transform.GetComponent<MeshFilter>().mesh;
-            string path = GetPathName(root, transform);
+            byte[] collectionNameBuffer = StringToBytes(collectionName);
+            byte[] visible = boolToBytes(true);
+            byte[] offset = Vector3ToBytes(Vector3.zero);
+            List<byte[]> buffers = new List<byte[]> { collectionNameBuffer, visible, offset };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Collection);
+            return command;
+        }
 
-            byte[] pathBuffer = StringToBytes(path);
-            byte[] nameBuffer = StringToBytes(mesh.name);
+        public static NetCommand BuildAddObjectToCollecitonCommand(AddToCollectionInfo info)
+        {
+            byte[] collectionNameBuffer = StringToBytes(info.collectionName);
+            byte[] objectNameBuffer = StringToBytes(info.transform.name);
 
-            List<byte[]> buffers = new List<byte[]> { pathBuffer, nameBuffer };
-            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.MeshConnection);
+            List<byte[]> buffers = new List<byte[]> { collectionNameBuffer, objectNameBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddObjectToCollection);
+            return command;
+        }
+
+        public static NetCommand BuildAddObjectToScene(AddObjectToSceneInfo info)
+        {
+            byte[] objectNameBuffer = StringToBytes(info.transform.name);
+            NetCommand command = new NetCommand(objectNameBuffer, MessageType.AddObjectToScene);
             return command;
         }
 
@@ -1405,26 +1421,16 @@ namespace VRtist
             return meshCollider;
         }
 
-        public static Transform ConnectMesh(byte[] data)
+        public static Transform ConnectMesh(Transform transform, Mesh mesh)
         {
-            int currentIndex = 0;
-            Transform transform = BuildPath(data, ref currentIndex, true);
-            string meshName = GetString(data, ref currentIndex);
-
             GameObject gobject = transform.gameObject;
-
-            Mesh mesh = meshes[meshName];
-
 
             gobject.tag = "PhysicObject";
 
-            if (!meshInstances.ContainsKey(meshName))
-                meshInstances[meshName] = new HashSet<MeshFilter>();
+            MeshFilter filter = GetOrCreateMeshFilter(gobject);
+            string meshName = mesh.name;
 
-            MeshFilter meshFilter = GetOrCreateMeshFilter(gobject);
-            meshInstances[meshName].Add(meshFilter);
-
-            foreach (MeshFilter filter in meshInstances[meshName])
+            //foreach (MeshFilter filter in meshInstances[meshName])
             {
                 filter.mesh = mesh;
                 GameObject obj = filter.gameObject;
@@ -1445,7 +1451,7 @@ namespace VRtist
 
                         MeshCollider meshCollider = GetOrCreateMeshCollider(instance);
                         meshCollider.sharedMesh = null;
-                        meshCollider.sharedMesh = meshFilter.mesh;
+                        meshCollider.sharedMesh = mesh;
                     }
                 }
             }
@@ -1454,7 +1460,7 @@ namespace VRtist
             if(null != collider)
             {
                 collider.sharedMesh = null;
-                collider.sharedMesh = meshFilter.mesh;
+                collider.sharedMesh = mesh;
             }
 
             return transform;
@@ -1463,6 +1469,7 @@ namespace VRtist
         public static Mesh BuildMesh(byte[] data)
         {
             int currentIndex = 0;
+            Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = GetString(data, ref currentIndex);
 
             int verticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
@@ -1622,6 +1629,7 @@ namespace VRtist
             meshes[meshName] = mesh;
             meshesMaterials[meshName] = meshMaterials;
 
+            ConnectMesh(transform, mesh);
             return mesh;
         }
 
@@ -2285,13 +2293,7 @@ namespace VRtist
 
         public void SendMesh(MeshInfos meshInfos)
         {
-            NetCommand command = NetGeometry.BuildMeshCommand(meshInfos);
-            AddCommand(command);
-        }
-
-        public void SendMeshConnection(MeshConnectionInfos meshConnectionInfos)
-        {
-            NetCommand command = NetGeometry.BuildMeshConnectionCommand(root, meshConnectionInfos);
+            NetCommand command = NetGeometry.BuildMeshCommand(root, meshInfos);
             AddCommand(command);
         }
 
@@ -2337,6 +2339,25 @@ namespace VRtist
         public void RestoreFromTrash(RestoreFromTrashInfo restoreFromTrash)
         {
             NetCommand command = NetGeometry.BuildRestoreFromTrashCommand(root, restoreFromTrash);
+            AddCommand(command);
+        }
+
+        public void SendAddObjectToColleciton(AddToCollectionInfo addToCollectionInfo)
+        {
+            string collectionName = addToCollectionInfo.collectionName;
+            if(!SyncData.collectionNodes.ContainsKey(collectionName))
+            {
+                NetCommand addCollectionCommand = NetGeometry.BuildAddCollecitonCommand(collectionName);
+                AddCommand(addCollectionCommand);
+            }
+
+            NetCommand command = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
+            AddCommand(command);
+        }
+
+        public void SendAddObjectToScene(AddObjectToSceneInfo addObjectToScene)
+        {
+            NetCommand command = NetGeometry.BuildAddObjectToScene(addObjectToScene);
             AddCommand(command);
         }
 
@@ -2400,9 +2421,6 @@ namespace VRtist
                     {
                         case MessageType.Mesh:
                             NetGeometry.BuildMesh(command.data);
-                            break;
-                        case MessageType.MeshConnection:
-                            NetGeometry.ConnectMesh(command.data);
                             break;
                         case MessageType.Transform:
                             NetGeometry.BuildTransform(prefab, command.data);
@@ -2501,8 +2519,6 @@ namespace VRtist
                     SendTransform(data as Transform); break;
                 case MessageType.Mesh:
                     SendMesh(data as MeshInfos); break;
-                case MessageType.MeshConnection:
-                    SendMeshConnection(data as MeshConnectionInfos); break;
                 case MessageType.Delete:
                     SendDelete(data as DeleteInfo); break;
                 case MessageType.Material:
@@ -2523,6 +2539,10 @@ namespace VRtist
                     SendToTrash(data as SendToTrashInfo); break;
                 case MessageType.RestoreFromTrash:
                     RestoreFromTrash(data as RestoreFromTrashInfo); break;
+                case MessageType.AddObjectToCollection:
+                    SendAddObjectToColleciton(data as AddToCollectionInfo); break;
+                case MessageType.AddObjectToScene:
+                    SendAddObjectToScene(data as AddObjectToSceneInfo); break;
             }
         }
     }
