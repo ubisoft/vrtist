@@ -9,6 +9,7 @@ namespace VRtist
         // "stylesheet"
         public static readonly Color default_color = new Color(0.8f, 0.8f, 0.8f, 1.0f); // light grey.
         public static readonly Color default_background_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
+        public static readonly Color default_disabled_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
         public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
         public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
 
@@ -20,6 +21,9 @@ namespace VRtist
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
         public Color baseColor = UIElement.default_color;
+        public Color disabledColor = UIElement.default_disabled_color;
+
+        private bool isDisabled = false;
 
         private Vector3 anchor = Vector3.zero; // local position of anchor for children.
 
@@ -32,6 +36,8 @@ namespace VRtist
         public float Width { get { return width; } set { width = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public float Height { get { return height; } set { height = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public Color BaseColor { get { return baseColor; } set { baseColor = value; SetColor(value); } }
+        public Color DisabledColor { get { return disabledColor; } set { disabledColor = value; SetColor(value); } }
+        public bool Disabled { get { return isDisabled; } set { isDisabled = value; SetColor(value?DisabledColor:BaseColor); } }
 
         public virtual void UpdateLocalPosition()
         {

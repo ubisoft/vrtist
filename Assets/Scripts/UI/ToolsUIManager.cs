@@ -38,8 +38,12 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
-        [SerializeField] private string defaultPanel;
+        [Header("Palette Settings")]
+        [SerializeField] private Transform handContainer;
+        [SerializeField] private Transform vehicleContainer;
         [SerializeField] private Transform paletteRoot;
+        [SerializeField] private UIButton paletteCloseButton;
+        [SerializeField] private UIButton palettePinButton;
         [SerializeField] private Transform tabButtonsContainer;
         [SerializeField] private Transform panelsContainer;
         [SerializeField] private float paletteScale = 0.5f;
@@ -91,7 +95,9 @@ namespace VRtist
 
         private static Dictionary<string, string> tabTool = new Dictionary<string, string>();
 
-        private bool forceShowPalette = false;
+        private bool isPalettePinned = false;
+        private bool isPaletteOpened = false;
+        private bool forcePaletteOpened = false;
         private bool showTools = true;
 
         private string currentToolName;
@@ -114,17 +120,24 @@ namespace VRtist
             OnToolChangedEvent += ToolsManager.OnChangeTool;
             OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
-            paletteRoot.transform.localScale = Vector3.zero;
-            tabButtonsContainer = paletteRoot.transform.GetChild(0);
+            isPalettePinned = false;
+            isPaletteOpened = false;
+            forcePaletteOpened = false;
 
-            ChangeTab(defaultPanel);
-            ChangeTool(ToolsManager.CurrentTool().name);
+            palettePinButton.Disabled = false;
+            paletteCloseButton.Disabled =  true;
+
+            string firstToolName = ToolsManager.CurrentTool().name;
+            ChangeTool(firstToolName);
+            ChangeTab(firstToolName);
+
+            paletteRoot.transform.localScale = Vector3.zero;
         }
 
         // Show/Hide palette
         public void TogglePalette()
         {
-            ShowPalette(!forceShowPalette);
+            PopUpPalette(!isPaletteOpened);
         }
 
         public void ChangeTab(string tabName)
@@ -219,12 +232,35 @@ namespace VRtist
 
         public void OnPaletteClose()
         {
+            // security
+            if (!isPalettePinned)
+                Debug.LogError("Palette is not pinned, we shouldnt be able to unpin it.");
 
+            // Re-parent to Hand
+            paletteRoot.transform.parent = handContainer.transform;
+            // Re-apply offset relative to hand.
+            paletteRoot.transform.localRotation = Quaternion.Euler(30.0f, 0.0f, 0.0f);
+            paletteRoot.transform.localPosition = new Vector3(-0.02f, 0.05f, 0.05f);
+            // Switch system buttons states
+            palettePinButton.Disabled = false;
+            paletteCloseButton.Disabled = true;
+
+            isPalettePinned = false;
         }
 
         public void OnPalettePin()
         {
+            // security
+            if (isPalettePinned)
+                Debug.LogError("Palette is already pinned, we shouldnt be able to pin it again.");
 
+            paletteRoot.transform.parent = vehicleContainer.transform;
+
+            // Switch system buttons states
+            palettePinButton.Disabled = true;
+            paletteCloseButton.Disabled = false;
+
+            isPalettePinned = true;
         }
 
         public void TogglePanel(string activePanelName)
@@ -252,19 +288,22 @@ namespace VRtist
                 audioClosePalette.Play();
         }
 
-        public void ShowPalette(bool value)
+        public void PopUpPalette(bool value)
         {
-            if (value != forceShowPalette)
+            if (!isPalettePinned) // if pinned, ignore popup commands.
             {
-                forceShowPalette = value;
+                if (value != isPaletteOpened)
+                {
+                    isPaletteOpened = value;
 
-                if (value)
-                {
-                    OpenWindow(paletteRoot.transform, paletteScale);
-                }
-                else
-                {
-                    CloseWindow(paletteRoot.transform, paletteScale);
+                    if (value)
+                    {
+                        OpenWindow(paletteRoot.transform, paletteScale);
+                    }
+                    else
+                    {
+                        CloseWindow(paletteRoot.transform, paletteScale);
+                    }
                 }
             }
         }

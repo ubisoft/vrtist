@@ -428,11 +428,11 @@ namespace VRtist
         {
             if (VRInput.GetValue(VRInput.leftController, CommonUsages.trigger) > deadZone)
             {
-                ToolsUIManager.Instance.ShowPalette(true);
+                ToolsUIManager.Instance.PopUpPalette(true);
             }
             else
             {
-                ToolsUIManager.Instance.ShowPalette(false);
+                ToolsUIManager.Instance.PopUpPalette(false);
             }
         }
     }
