@@ -118,7 +118,11 @@ namespace VRtist
                 isOnAWidget = false;
                 widgetTransform = null;
                 widgetHit = null;
-                GetComponentInChildren<MeshFilter>().gameObject.transform.localPosition = initialCursorLocalPosition;
+                MeshFilter meshFilter = GetComponentInChildren<MeshFilter>();
+                if(null != meshFilter)
+                {
+                    meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
+                }
             }
         }
 

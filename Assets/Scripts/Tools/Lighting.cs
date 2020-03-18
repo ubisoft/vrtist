@@ -310,6 +310,17 @@ namespace VRtist
             }
         }
 
+        public void OnGlobalCheckCastShadows(bool value)
+        {
+            // Set the cast shadows parameter to all lights
+            LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
+            foreach(LightController lightController in lightControllers) {
+                LightParameters parameters = lightController.GetParameters() as LightParameters;
+                parameters.castShadows = value;
+                SendLightParams(lightController.gameObject);
+            }
+        }
+
         public void OnIntensitySliderPressed()
         {
             OnSliderPressed("Light Intensity", "/LightController/parameters.intensity");
@@ -326,6 +337,19 @@ namespace VRtist
         public void OnCastShadowCheckboxPressed()
         {
             OnCheckboxPressed("Light Cast Shadows", "/LightController/parameters.castShadows");
+        }
+
+        public void OnGlobalCastShadowCheckboxPressed() {
+            // Get all lights
+            LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
+            List<GameObject> lights = new List<GameObject>();
+            foreach(LightController lightController in lightControllers)
+            {
+                lights.Add(lightController.gameObject);
+            }
+
+            // Create command for all the lights (not only selected ones)
+            parameterCommand = new CommandSetValue<bool>(lights, "Light Cast Shadows", "/LightController/parameters.castShadows");
         }
 
         public void OnColorPickerPressed()
