@@ -15,6 +15,11 @@ namespace VRtist
         static protected bool displayGizmos = true;
         public UICheckbox displayGizmosCheckbox = null;
 
+        static protected bool snapOnGrid = false;
+        public UICheckbox snapOnGridCheckbox = null;
+        static protected float snapPrecision = 1f;    // grid size 1 meter
+        static protected float snapGap = 0.1f;        // snap when close to 10 centimeters
+
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
         protected Color eraseColor = new Color(1f, 0f, 0f);
@@ -70,6 +75,10 @@ namespace VRtist
             Tooltips.SetTooltipVisibility(gripTooltip, false);
         }
 
+        public void SetSnapOnGrid(bool value) {
+            snapOnGrid = value;
+        }
+
         public void SetDisplayGizmos(bool value)
         {
             displayGizmos = value;
@@ -97,8 +106,14 @@ namespace VRtist
         protected override void OnEnable()
         {
             base.OnEnable();
+
             if( null != displayGizmosCheckbox)
                 displayGizmosCheckbox.Checked = displayGizmos;
+
+            if(null != snapOnGridCheckbox) {
+                snapOnGridCheckbox.Checked = snapOnGrid;
+            }
+
             OnSelectMode();
         }
 
@@ -106,6 +121,10 @@ namespace VRtist
         {
             if (null != displayGizmosCheckbox)
                 displayGizmosCheckbox.Checked = displayGizmos;
+
+            if(null != snapOnGridCheckbox) {
+                snapOnGridCheckbox.Checked = snapOnGrid;
+            }
 
             selectorRadius = selectorBrush.localScale.x;
             selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
@@ -340,14 +359,40 @@ namespace VRtist
 
                 if (data.Value.transform.localToWorldMatrix != transformed)
                 {
+                    // UI objects
                     if (data.Value.GetComponent<UIHandle>())
                     {
                         data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
                         data.Value.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2), transformed.GetColumn(1));
                         //data.Value.transform.localScale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
                     }
+                    // Standard game objects
                     else
                     {
+                        // Snap
+                        if(snapOnGrid) {
+                            Vector4 column = transformed.GetColumn(3);
+                            Vector3 position = new Vector3(column.x, column.y, column.z);
+                            Vector3 roundedPosition = new Vector3(
+                                Mathf.Round(column.x * snapPrecision) / snapPrecision,
+                                Mathf.Round(column.y * snapPrecision) / snapPrecision,
+                                Mathf.Round(column.z * snapPrecision) / snapPrecision
+                            );
+
+                            if(Mathf.Abs(position.x - roundedPosition.x) <= snapGap) {
+                                column.x = roundedPosition.x;
+                            }
+                            if(Mathf.Abs(position.y - roundedPosition.y) <= snapGap) {
+                                column.y = roundedPosition.y;
+                            }
+                            if(Mathf.Abs(position.z - roundedPosition.z) <= snapGap) {
+                                column.z = roundedPosition.z;
+                            }
+                            
+                            transformed.SetColumn(3, column);
+                        }
+
+                        // Set matrix
                         SyncData.SetTransform(data.Value.name, transformed);
                         CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                     }
