@@ -36,6 +36,10 @@ namespace VRtist
 
         int groupId = 0;
 
+        protected GameObject triggerTooltip;
+        protected GameObject gripTooltip;
+        protected GameObject joystickTooltip;
+
         void Start()
         {
             Init();
@@ -44,12 +48,26 @@ namespace VRtist
 
         protected void CreateTooltips()
         {
-            // Create tooltips
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Primary, "Duplicate");
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch Tool");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
+            triggerTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
+            gripTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
+            joystickTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
+            Tooltips.SetTooltipVisibility(triggerTooltip, false);
+            Tooltips.SetTooltipVisibility(gripTooltip, false);
+            Tooltips.SetTooltipVisibility(joystickTooltip, false);
+        }
+
+        public virtual void OnSelectorTriggerEnter(Collider other)
+        {
+            Tooltips.SetTooltipVisibility(triggerTooltip, true);
+            Tooltips.SetTooltipVisibility(gripTooltip, true);
+        }
+
+        public virtual void OnSelectorTriggerExit(Collider other)
+        {
+            Tooltips.SetTooltipVisibility(triggerTooltip, false);
+            Tooltips.SetTooltipVisibility(gripTooltip, false);
         }
 
         public void SetDisplayGizmos(bool value)
@@ -247,7 +265,9 @@ namespace VRtist
         {
             InitControllerMatrix();
             InitTransforms();
-            outOfDeadZone = false;            
+            outOfDeadZone = false;
+
+            Tooltips.SetTooltipVisibility(joystickTooltip, Selection.selection.Count > 0);
         }
 
         private void UpdateSelect(Vector3 position, Quaternion rotation)
