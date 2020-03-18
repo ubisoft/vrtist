@@ -55,10 +55,19 @@ namespace VRtist
         public void SetDisplayGizmos(bool value)
         {
             displayGizmos = value;
-            LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
-            foreach(LightController lightController in lightControllers)
+            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
+            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
+        }
+
+        private void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
+        {
+            foreach(var controller in controllers)
             {
-                lightController.gameObject.GetComponentInChildren<MeshFilter>(true).gameObject.SetActive(value);
+                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
+                foreach(MeshFilter meshFilter in meshFilters)
+                {
+                    meshFilter.gameObject.SetActive(value);
+                }
             }
         }
 
