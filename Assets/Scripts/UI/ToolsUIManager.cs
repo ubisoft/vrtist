@@ -102,7 +102,9 @@ namespace VRtist
 
         private string currentToolName;
         private string currentTabName;
-        
+
+        private Vector3 paletteOffsetPosition = new Vector3(-0.02f, 0.05f, 0.05f);
+        private Quaternion paletteOffsetRotation = Quaternion.Euler(30, 0, 0);
 
         // Map of the 3d object widgets. Used for passing messages by int instead of GameObject. Key is a Hash.
         private Dictionary<int, GameObject> ui3DObjects = new Dictionary<int, GameObject>();
@@ -128,8 +130,8 @@ namespace VRtist
             paletteCloseButton.Disabled =  true;
 
             string firstToolName = ToolsManager.CurrentTool().name;
-            ChangeTool(firstToolName);
             ChangeTab(firstToolName);
+            ChangeTool(firstToolName);
 
             paletteRoot.transform.localScale = Vector3.zero;
         }
@@ -177,6 +179,11 @@ namespace VRtist
         {
             showTools = doShowTools;
             ShowCurrentTool(showTools);
+        }
+
+        public void OnForcePaletteOpened(bool forceOpen)
+        {
+            forcePaletteOpened = forceOpen;
         }
 
         public void RegisterUI3DObject(GameObject go)
@@ -239,8 +246,8 @@ namespace VRtist
             // Re-parent to Hand
             paletteRoot.transform.parent = handContainer.transform;
             // Re-apply offset relative to hand.
-            paletteRoot.transform.localRotation = Quaternion.Euler(30.0f, 0.0f, 0.0f);
-            paletteRoot.transform.localPosition = new Vector3(-0.02f, 0.05f, 0.05f);
+            paletteRoot.transform.localPosition = paletteOffsetPosition;
+            paletteRoot.transform.localRotation = paletteOffsetRotation;
             // Switch system buttons states
             palettePinButton.Disabled = false;
             paletteCloseButton.Disabled = true;
@@ -254,8 +261,11 @@ namespace VRtist
             if (isPalettePinned)
                 Debug.LogError("Palette is already pinned, we shouldnt be able to pin it again.");
 
+            // get current offset to apply it later when closing the palette
+            paletteOffsetPosition = paletteRoot.transform.localPosition;
+            paletteOffsetRotation = paletteRoot.transform.localRotation;
+            // change parent -> vehicle
             paletteRoot.transform.parent = vehicleContainer.transform;
-
             // Switch system buttons states
             palettePinButton.Disabled = true;
             paletteCloseButton.Disabled = false;
@@ -294,15 +304,18 @@ namespace VRtist
             {
                 if (value != isPaletteOpened)
                 {
-                    isPaletteOpened = value;
+                    if (!forcePaletteOpened)
+                    {
+                        isPaletteOpened = value;
 
-                    if (value)
-                    {
-                        OpenWindow(paletteRoot.transform, paletteScale);
-                    }
-                    else
-                    {
-                        CloseWindow(paletteRoot.transform, paletteScale);
+                        if (value)
+                        {
+                            OpenWindow(paletteRoot.transform, paletteScale);
+                        }
+                        else
+                        {
+                            CloseWindow(paletteRoot.transform, paletteScale);
+                        }
                     }
                 }
             }
