@@ -27,8 +27,9 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Slider SubComponents Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float railMargin = 0.005f;
+        [CentimeterFloat] public float railMargin = 0.004f;
         [CentimeterFloat] public float railThickness = 0.001f;
+
         [CentimeterFloat] public float knobHeadWidth = 0.002f;
         [CentimeterFloat] public float knobHeadHeight = 0.013f;
         [CentimeterFloat] public float knobHeadDepth = 0.003f;
@@ -78,10 +79,10 @@ namespace VRtist
         public override void RebuildMesh()
         {
             // RAIL
-            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * sliderPositionBegin, -height / 2, -0.0f); // put z = 0 back
+            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * sliderPositionBegin, railMargin - height / 2, -railThickness);
             float railWidth = (width - 2 * margin) * (sliderPositionEnd - sliderPositionBegin);
-            float railHeight = 3 * railMargin;
-            
+            float railHeight = 2 * railMargin; // no inner rectangle, only margin driven rounded borders.
+
             rail.RebuildMesh(railWidth, railHeight, railThickness, railMargin);
             rail.transform.localPosition = railPosition;
 
@@ -488,11 +489,11 @@ namespace VRtist
             // RAIL
             //
 
-            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * slider_begin, -height / 2, -0.0f); // put z = 0 back
             float railWidth = (width - 2 * margin) * (slider_end - slider_begin);
             float railHeight = 3 * uiSlider.railMargin; // TODO: see if we can tie this to another variable, like height.
             float railThickness = uiSlider.railThickness;
             float railMargin = uiSlider.railMargin;
+            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * slider_begin, -height / 2, -railThickness); // put z = 0 back
 
             uiSlider.rail = UISliderRail.CreateUISliderRail("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, rail_material, rail_color);
 

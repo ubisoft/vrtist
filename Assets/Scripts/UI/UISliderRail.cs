@@ -41,7 +41,7 @@ namespace VRtist
         public void RebuildMesh(float newWidth, float newHeight, float newThickness, float newMargin)
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildHollowCubeEx(width, height, margin, thickness);
+            Mesh theNewMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
             theNewMesh.name = "UISliderRail_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
@@ -49,30 +49,7 @@ namespace VRtist
             height = newHeight;
             thickness = newThickness;
             margin = newMargin;
-
-            //UpdateColliderDimensions();
         }
-
-        //public void UpdateColliderDimensions()
-        //{
-        //    MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-        //    BoxCollider coll = gameObject.GetComponent<BoxCollider>();
-        //    if (meshFilter != null && coll != null)
-        //    {
-        //        Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-        //        Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-        //        if (initColliderSize.z < UIElement.collider_min_depth_deep)
-        //        {
-        //            coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
-        //            coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
-        //        }
-        //        else
-        //        {
-        //            coll.center = initColliderCenter;
-        //            coll.size = initColliderSize;
-        //        }
-        //    }
-        //}
 
         private void ApplyColor(Color c)
         {
@@ -118,32 +95,17 @@ namespace VRtist
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildHollowCubeEx(width, height, margin, thickness);
-                //uiColorPickerSaturation.Anchor = Vector3.zero;
-                //BoxCollider coll = go.GetComponent<BoxCollider>();
-                //if (coll != null)
-                //{
-                //    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                //    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                //    if (initColliderSize.z < UIElement.collider_min_depth_deep)
-                //    {
-                //        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
-                //        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
-                //    }
-                //    else
-                //    {
-                //        coll.center = initColliderCenter;
-                //        coll.size = initColliderSize;
-                //    }
-                //    coll.isTrigger = true;
-                //}
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                //BuildHollowCubeEx(width, height, margin, thickness);
             }
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
             if (meshRenderer != null && material != null)
             {
-                meshRenderer.sharedMaterial = Instantiate(material);
+                Material newMaterial = Instantiate(material);
+                newMaterial.name = "UISliderRail_Material";
+                meshRenderer.sharedMaterial = newMaterial;
                 uiSliderRail.Color = c;
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
