@@ -12,13 +12,21 @@ namespace VRtist
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
 
-        static protected bool displayGizmos = true;
+        [Header("UI Panel Options")]
         public UICheckbox displayGizmosCheckbox = null;
+        public UICheckbox snapToGridCheckbox = null;
+        public UISlider snapGridSizeSlider = null;
+        public UICheckbox snapOnXCheckbox = null;
+        public UICheckbox snapOnYCheckbox = null;
+        public UICheckbox snapOnZCheckbox = null;
 
-        static protected bool snapOnGrid = false;
-        public UICheckbox snapOnGridCheckbox = null;
+        static protected bool displayGizmos = true;
+        static protected bool snapToGrid = false;
         static protected float snapPrecision = 1f;    // grid size 1 meter
-        static protected float snapGap = 0.1f;        // snap when close to 10 centimeters
+        static protected float snapGap = 0.05f;       // 
+        static protected bool snapOnX = true;
+        static protected bool snapOnY = true;
+        static protected bool snapOnZ = false;
 
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
@@ -75,8 +83,28 @@ namespace VRtist
             Tooltips.SetTooltipVisibility(gripTooltip, false);
         }
 
-        public void SetSnapOnGrid(bool value) {
-            snapOnGrid = value;
+        public void SetSnapToGrid(bool value) {
+            snapToGrid = value;
+            if(null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
+            if(null != snapOnXCheckbox) { snapOnXCheckbox.Disabled = !snapToGrid; }
+            if(null != snapOnYCheckbox) { snapOnYCheckbox.Disabled = !snapToGrid; }
+            if(null != snapOnZCheckbox) { snapOnZCheckbox.Disabled = !snapToGrid; }
+        }
+
+        public void OnChangeSnapGridSize(float value) {
+            snapPrecision = value;
+        }
+
+        public void SetSnapOnX(bool value) {
+            snapOnX = value;
+        }
+
+        public void SetSnapOnY(bool value) {
+            snapOnY = value;
+        }
+
+        public void SetSnapOnZ(bool value) {
+            snapOnZ = value;
         }
 
         public void SetDisplayGizmos(bool value)
@@ -106,25 +134,38 @@ namespace VRtist
         protected override void OnEnable()
         {
             base.OnEnable();
+            InitUIPanel();
+            OnSelectMode();
+        }
 
-            if( null != displayGizmosCheckbox)
+        protected virtual void InitUIPanel() {
+            if(null != displayGizmosCheckbox)
                 displayGizmosCheckbox.Checked = displayGizmos;
 
-            if(null != snapOnGridCheckbox) {
-                snapOnGridCheckbox.Checked = snapOnGrid;
+            if(null != snapToGridCheckbox) {
+                snapToGridCheckbox.Checked = snapToGrid;
             }
-
-            OnSelectMode();
+            if(null != snapGridSizeSlider) {
+                snapGridSizeSlider.Value = snapPrecision;
+                snapGridSizeSlider.Disabled = !snapToGrid;
+            }
+            if(null != snapOnXCheckbox) {
+                snapOnXCheckbox.Checked = snapOnX;
+                snapOnXCheckbox.Disabled = !snapToGrid;
+            }
+            if(null != snapOnYCheckbox) {
+                snapOnYCheckbox.Checked = snapOnY;
+                snapOnYCheckbox.Disabled = !snapToGrid;
+            }
+            if(null != snapOnZCheckbox) {
+                snapOnZCheckbox.Checked = snapOnZ;
+                snapOnZCheckbox.Disabled = !snapToGrid;
+            }
         }
 
         protected void Init()
         {
-            if (null != displayGizmosCheckbox)
-                displayGizmosCheckbox.Checked = displayGizmos;
-
-            if(null != snapOnGridCheckbox) {
-                snapOnGridCheckbox.Checked = snapOnGrid;
-            }
+            InitUIPanel();
 
             selectorRadius = selectorBrush.localScale.x;
             selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
@@ -370,22 +411,23 @@ namespace VRtist
                     else
                     {
                         // Snap
-                        if(snapOnGrid) {
+                        if(snapToGrid) {
                             Vector4 column = transformed.GetColumn(3);
                             Vector3 position = new Vector3(column.x, column.y, column.z);
                             Vector3 roundedPosition = new Vector3(
-                                Mathf.Round(column.x * snapPrecision) / snapPrecision,
-                                Mathf.Round(column.y * snapPrecision) / snapPrecision,
-                                Mathf.Round(column.z * snapPrecision) / snapPrecision
+                                Mathf.Round(column.x / snapPrecision) * snapPrecision,
+                                Mathf.Round(column.y / snapPrecision) * snapPrecision,
+                                Mathf.Round(column.z / snapPrecision) * snapPrecision
                             );
 
-                            if(Mathf.Abs(position.x - roundedPosition.x) <= snapGap) {
+                            float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+                            if(snapOnX && Mathf.Abs(position.x - roundedPosition.x) <= snapGap / absWorldScale) {
                                 column.x = roundedPosition.x;
                             }
-                            if(Mathf.Abs(position.y - roundedPosition.y) <= snapGap) {
+                            if(snapOnY && Mathf.Abs(position.y - roundedPosition.y) <= snapGap / absWorldScale) {
                                 column.y = roundedPosition.y;
                             }
-                            if(Mathf.Abs(position.z - roundedPosition.z) <= snapGap) {
+                            if(snapOnZ && Mathf.Abs(position.z - roundedPosition.z) <= snapGap / absWorldScale) {
                                 column.z = roundedPosition.z;
                             }
                             
