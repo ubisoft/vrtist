@@ -209,16 +209,18 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            // TODO: pass the Cursor to the button, test the object instead of a hardcoded name.
+            if (Disabled) return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
 
         private void OnTriggerExit(Collider otherCollider)
         {
+            if (Disabled) return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
@@ -227,6 +229,8 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
+            if (Disabled) return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onHoverEvent.Invoke();

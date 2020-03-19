@@ -35,6 +35,11 @@ namespace VRtist
 
         private bool needRebuild = false;
 
+        private void OnEnable()
+        {
+            CurrentColor = CurrentColor;
+        }
+
         void Start()
         {
 #if UNITY_EDITOR

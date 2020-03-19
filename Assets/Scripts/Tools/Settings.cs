@@ -11,6 +11,12 @@ namespace VRtist
         [Header("Settings Parameters")]
         public AudioMixer mixer = null;
 
+        private void Start()
+        {
+            // tmp
+            mixer.SetFloat("Volume_Master", -25.0f);
+        }
+
         public void OnChangeMasterVolume(float volume)
         {
             if (mixer)
