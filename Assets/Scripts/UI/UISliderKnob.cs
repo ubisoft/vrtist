@@ -8,76 +8,25 @@ namespace VRtist
     [ExecuteInEditMode]
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer))]
-     //RequireComponent(typeof(BoxCollider))]
     public class UISliderKnob : MonoBehaviour
     {
-        public float headWidth;
-        public float headHeight;
-        public float headDepth;
-        public float footWidth;
-        public float footHeight;
-        public float footDepth;
-
-        // TODO: OnValidate() on width/heigt/etc... ??? Controlled by UISlider already.
+        public float radius;
+        public float depth;
 
         private Color _color;
         public Color Color { get { return _color; } set { _color = value; ApplyColor(_color); } }
 
-        void Awake()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                // Why did I copy these lines from the ColorPicker???
-
-                //width = GetComponent<MeshFilter>().mesh.bounds.size.x;
-                //height = GetComponent<MeshFilter>().mesh.bounds.size.y;
-                //thickness = GetComponent<MeshFilter>().mesh.bounds.size.z;
-                //margin = GetComponent<MeshFilter>().mesh.bounds.size.z;
-            }
-        }
-
-        public void RebuildMesh(float newHeadWidth, float newHeadHeight, float newHeadDepth, 
-                                float newFootWidth, float newFootHeight, float newFootDepth)
+        public void RebuildMesh(float newKnobRadius, float newKnobDepth)
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildSliderKnobEx(newHeadWidth, newHeadHeight, newHeadDepth, newFootWidth, newFootHeight, newFootDepth);
+            // Make a cylinder using RoundedBox
+            Mesh theNewMesh = UIUtils.BuildRoundedBox(2.0f * newKnobRadius, 2.0f * newKnobRadius, newKnobRadius, newKnobDepth);
             theNewMesh.name = "UISliderKnob_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
-            headWidth = newHeadWidth;
-            headHeight = newHeadHeight;
-            headDepth = newHeadDepth;
-            footWidth = newFootWidth;
-            footHeight = newFootHeight;
-            footDepth = newFootDepth;
-
-            //UpdateColliderDimensions();
+            radius = newKnobRadius;
+            depth = newKnobDepth;
         }
-
-        //public void UpdateColliderDimensions()
-        //{
-        //    MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-        //    BoxCollider coll = gameObject.GetComponent<BoxCollider>();
-        //    if (meshFilter != null && coll != null)
-        //    {
-        //        Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-        //        Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-        //        if (initColliderSize.z < UIElement.collider_min_depth_deep)
-        //        {
-        //            coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
-        //            coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
-        //        }
-        //        else
-        //        {
-        //            coll.center = initColliderCenter;
-        //            coll.size = initColliderSize;
-        //        }
-        //    }
-        //}
 
         private void ApplyColor(Color c)
         {
@@ -88,12 +37,8 @@ namespace VRtist
             string objectName,
             Transform parent,
             Vector3 relativeLocation,
-            float head_width,
-            float head_height,
+            float head_radius,
             float head_depth,
-            float foot_width,
-            float foot_height,
-            float foot_depth,
             Material material,
             Color c)
         {
@@ -116,36 +61,14 @@ namespace VRtist
             uiSliderKnob.transform.localPosition = parentAnchor + relativeLocation;
             uiSliderKnob.transform.localRotation = Quaternion.identity;
             uiSliderKnob.transform.localScale = Vector3.one;
-            uiSliderKnob.headWidth = head_width;
-            uiSliderKnob.headHeight = head_height;
-            uiSliderKnob.headDepth = head_depth;
-            uiSliderKnob.footWidth = foot_width;
-            uiSliderKnob.footHeight = foot_height;
-            uiSliderKnob.footDepth = foot_depth;
+            uiSliderKnob.radius = head_radius;
+            uiSliderKnob.depth = head_depth;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildSliderKnobEx(head_width, head_height, head_depth, foot_width, foot_height, foot_depth);
-                //uiColorPickerSaturation.Anchor = Vector3.zero;
-                //BoxCollider coll = go.GetComponent<BoxCollider>();
-                //if (coll != null)
-                //{
-                //    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                //    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                //    if (initColliderSize.z < UIElement.collider_min_depth_deep)
-                //    {
-                //        coll.center = new Vector3(initColliderCenter.x, initColliderCenter.y, UIElement.collider_min_depth_deep / 2.0f);
-                //        coll.size = new Vector3(initColliderSize.x, initColliderSize.y, UIElement.collider_min_depth_deep);
-                //    }
-                //    else
-                //    {
-                //        coll.center = initColliderCenter;
-                //        coll.size = initColliderSize;
-                //    }
-                //    coll.isTrigger = true;
-                //}
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(2.0f * head_radius, 2.0f * head_radius, head_radius, head_depth);
             }
 
             // Setup the MeshRenderer

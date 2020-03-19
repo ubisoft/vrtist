@@ -30,13 +30,8 @@ namespace VRtist
         [CentimeterFloat] public float railMargin = 0.004f;
         [CentimeterFloat] public float railThickness = 0.001f;
 
-        [CentimeterFloat] public float knobHeadWidth = 0.002f;
-        [CentimeterFloat] public float knobHeadHeight = 0.013f;
-        [CentimeterFloat] public float knobHeadDepth = 0.003f;
-        [CentimeterFloat] public float knobFootWidth = 0.001f;
-        [CentimeterFloat] public float knobFootHeight = 0.005f;
-        [CentimeterFloat] public float knobFootDepth = 0.001f; // == railThickness
-        // TODO: add colors here?
+        [CentimeterFloat] public float knobRadius = 0.01f;
+        [CentimeterFloat] public float knobDepth = 0.005f;
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
         public float minValue = 0.0f;
@@ -87,14 +82,10 @@ namespace VRtist
             rail.transform.localPosition = railPosition;
 
             // KNOB
-            float newKnobHeadWidth = knobHeadWidth;
-            float newKnobHeadHeight = knobHeadHeight;
-            float newKnobHeadDepth = knobHeadDepth;
-            float newKnobFootWidth = knobFootWidth;
-            float newKnobFootHeight = knobFootHeight;
-            float newKnobFootDepth = knobFootDepth;
+            float newKnobRadius = knobRadius;
+            float newKnobDepth = knobDepth;
 
-            knob.RebuildMesh(newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth);
+            knob.RebuildMesh(newKnobRadius, newKnobDepth);
             
             // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
@@ -273,7 +264,7 @@ namespace VRtist
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
             float posX = startX + pct * (endX - startX);
 
-            Vector3 knobPosition = new Vector3(posX, -height / 2.0f, 0.0f);
+            Vector3 knobPosition = new Vector3(posX - knobRadius, knobRadius - (height / 2.0f), -knobDepth);
 
             knob.transform.localPosition = knobPosition;
         }
@@ -407,6 +398,8 @@ namespace VRtist
             float slider_end,
             float rail_margin,
             float rail_thickness,
+            float knob_radius,
+            float knob_depth,
             float min_slider_value,
             float max_slider_value,
             float cur_slider_value,
@@ -444,6 +437,10 @@ namespace VRtist
             uiSlider.thickness = thickness;
             uiSlider.sliderPositionBegin = slider_begin;
             uiSlider.sliderPositionEnd = slider_end;
+            uiSlider.railMargin = rail_margin;
+            uiSlider.railThickness = rail_thickness;
+            uiSlider.knobRadius = knob_radius;
+            uiSlider.knobDepth = knob_depth;
             uiSlider.minValue = min_slider_value;
             uiSlider.maxValue = max_slider_value;
             uiSlider.currentValue = cur_slider_value;
@@ -500,16 +497,10 @@ namespace VRtist
 
             // KNOB
             Vector3 knobPosition = new Vector3(0, 0, 0);
-            float newKnobHeadWidth = uiSlider.knobHeadWidth;
-            float newKnobHeadHeight = uiSlider.knobHeadHeight;
-            float newKnobHeadDepth = uiSlider.knobHeadDepth;
-            float newKnobFootWidth = uiSlider.knobFootWidth;
-            float newKnobFootHeight = uiSlider.knobFootHeight;
-            float newKnobFootDepth = uiSlider.knobFootDepth;
+            float newKnobRadius = uiSlider.knobRadius;
+            float newKnobDepth = uiSlider.knobDepth;
 
-            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, 
-                newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth, 
-                knob_material, knob_color);
+            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, newKnobRadius, newKnobDepth, knob_material, knob_color);
 
             //
             // CANVAS (to hold the 2 texts)
