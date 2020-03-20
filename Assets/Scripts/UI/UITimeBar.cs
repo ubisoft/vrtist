@@ -25,7 +25,7 @@ namespace VRtist
         public int currentValue = 0;
         
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public IntChangedEvent onSlideEvent = new IntChangedEvent(); // TODO: maybe make 2 callbacks, one for floats, one for ints
+        public IntChangedEvent onSlideEvent = new IntChangedEvent();
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 

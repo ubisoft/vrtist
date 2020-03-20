@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using UnityEditor;
 using UnityEngine.UI;
 using System;
+using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -43,7 +44,8 @@ namespace VRtist
         //       precision, step?
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public FloatChangedEvent onSlideEvent = new FloatChangedEvent(); // TODO: maybe make 2 callbacks, one for floats, one for ints
+        public FloatChangedEvent onSlideEvent = new FloatChangedEvent();
+        public IntChangedEvent onSlideEventInt = new IntChangedEvent();
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
@@ -332,6 +334,9 @@ namespace VRtist
                 // NOTE: The correct "currentValue" is already computed in the HandleCursorBehavior callback.
                 //       Just call the listeners here.
                 onSlideEvent.Invoke(currentValue);
+
+                int intValue = Mathf.RoundToInt(currentValue);
+                onSlideEventInt.Invoke(intValue);
             }
         }
 
@@ -378,13 +383,17 @@ namespace VRtist
 
                 float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
 
-                Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                // Actually move the slider ONLY if RIGHT_TRIGGER is pressed.
+                bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
+                if (triggerState)
+                {
+                    Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                }
 
                 // Haptic intensity as we go deeper into the widget.
                 float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
                 intensity *= intensity; // ease-in
 
-                // TODO : Re-enable
                 VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
             }
 
