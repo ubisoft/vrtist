@@ -124,5 +124,25 @@ namespace VRtist
 
             return tooltip;
         }
+
+        public static void SetTooltipVisibility(GameObject controller, Anchors anchor, bool visible)
+        {
+            if(controller.name != "right_controller" && controller.name != "left_controller")
+            {
+                throw new System.Exception("Expected a prefab controller");
+            }
+
+            string tooltipName = anchor.ToString();
+            GameObject tooltip = FindTooltip(controller, tooltipName);
+            if(null != tooltip)
+            {
+                SetTooltipVisibility(tooltip, visible);
+            }
+        }
+
+        public static void SetTooltipVisibility(GameObject tooltip, bool visible)
+        {
+            tooltip.SetActive(visible);
+        }
     }
 }

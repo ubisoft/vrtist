@@ -12,8 +12,21 @@ namespace VRtist
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
 
-        static protected bool displayGizmos = true;
+        [Header("UI Panel Options")]
         public UICheckbox displayGizmosCheckbox = null;
+        public UICheckbox snapToGridCheckbox = null;
+        public UISlider snapGridSizeSlider = null;
+        public UICheckbox snapOnXCheckbox = null;
+        public UICheckbox snapOnYCheckbox = null;
+        public UICheckbox snapOnZCheckbox = null;
+
+        static protected bool displayGizmos = true;
+        static protected bool snapToGrid = false;
+        static protected float snapPrecision = 1f;    // grid size 1 meter
+        static protected float snapGap = 0.05f;       // 
+        static protected bool snapOnX = true;
+        static protected bool snapOnY = true;
+        static protected bool snapOnZ = false;
 
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
@@ -36,6 +49,10 @@ namespace VRtist
 
         int groupId = 0;
 
+        protected GameObject triggerTooltip;
+        protected GameObject gripTooltip;
+        protected GameObject joystickTooltip;
+
         void Start()
         {
             Init();
@@ -44,21 +61,68 @@ namespace VRtist
 
         protected void CreateTooltips()
         {
-            // Create tooltips
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Primary, "Duplicate");
             Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch Tool");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
+            triggerTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
+            gripTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
+            joystickTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
+            Tooltips.SetTooltipVisibility(triggerTooltip, false);
+            Tooltips.SetTooltipVisibility(gripTooltip, false);
+            Tooltips.SetTooltipVisibility(joystickTooltip, false);
+        }
+
+        public virtual void OnSelectorTriggerEnter(Collider other)
+        {
+            Tooltips.SetTooltipVisibility(triggerTooltip, true);
+            Tooltips.SetTooltipVisibility(gripTooltip, true);
+        }
+
+        public virtual void OnSelectorTriggerExit(Collider other)
+        {
+            Tooltips.SetTooltipVisibility(triggerTooltip, false);
+            Tooltips.SetTooltipVisibility(gripTooltip, false);
+        }
+
+        public void SetSnapToGrid(bool value) {
+            snapToGrid = value;
+            if(null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
+            if(null != snapOnXCheckbox) { snapOnXCheckbox.Disabled = !snapToGrid; }
+            if(null != snapOnYCheckbox) { snapOnYCheckbox.Disabled = !snapToGrid; }
+            if(null != snapOnZCheckbox) { snapOnZCheckbox.Disabled = !snapToGrid; }
+        }
+
+        public void OnChangeSnapGridSize(float value) {
+            snapPrecision = value;
+        }
+
+        public void SetSnapOnX(bool value) {
+            snapOnX = value;
+        }
+
+        public void SetSnapOnY(bool value) {
+            snapOnY = value;
+        }
+
+        public void SetSnapOnZ(bool value) {
+            snapOnZ = value;
         }
 
         public void SetDisplayGizmos(bool value)
         {
             displayGizmos = value;
-            LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
-            foreach(LightController lightController in lightControllers)
+            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
+            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
+        }
+
+        private void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
+        {
+            foreach(var controller in controllers)
             {
-                lightController.gameObject.GetComponentInChildren<MeshFilter>(true).gameObject.SetActive(value);
+                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
+                foreach(MeshFilter meshFilter in meshFilters)
+                {
+                    meshFilter.gameObject.SetActive(value);
+                }
             }
         }
 
@@ -70,15 +134,38 @@ namespace VRtist
         protected override void OnEnable()
         {
             base.OnEnable();
-            if( null != displayGizmosCheckbox)
-                displayGizmosCheckbox.Checked = displayGizmos;
+            InitUIPanel();
             OnSelectMode();
+        }
+
+        protected virtual void InitUIPanel() {
+            if(null != displayGizmosCheckbox)
+                displayGizmosCheckbox.Checked = displayGizmos;
+
+            if(null != snapToGridCheckbox) {
+                snapToGridCheckbox.Checked = snapToGrid;
+            }
+            if(null != snapGridSizeSlider) {
+                snapGridSizeSlider.Value = snapPrecision;
+                snapGridSizeSlider.Disabled = !snapToGrid;
+            }
+            if(null != snapOnXCheckbox) {
+                snapOnXCheckbox.Checked = snapOnX;
+                snapOnXCheckbox.Disabled = !snapToGrid;
+            }
+            if(null != snapOnYCheckbox) {
+                snapOnYCheckbox.Checked = snapOnY;
+                snapOnYCheckbox.Disabled = !snapToGrid;
+            }
+            if(null != snapOnZCheckbox) {
+                snapOnZCheckbox.Checked = snapOnZ;
+                snapOnZCheckbox.Disabled = !snapToGrid;
+            }
         }
 
         protected void Init()
         {
-            if (null != displayGizmosCheckbox)
-                displayGizmosCheckbox.Checked = displayGizmos;
+            InitUIPanel();
 
             selectorRadius = selectorBrush.localScale.x;
             selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
@@ -238,7 +325,9 @@ namespace VRtist
         {
             InitControllerMatrix();
             InitTransforms();
-            outOfDeadZone = false;            
+            outOfDeadZone = false;
+
+            Tooltips.SetTooltipVisibility(joystickTooltip, Selection.selection.Count > 0);
         }
 
         private void UpdateSelect(Vector3 position, Quaternion rotation)
@@ -311,14 +400,41 @@ namespace VRtist
 
                 if (data.Value.transform.localToWorldMatrix != transformed)
                 {
+                    // UI objects
                     if (data.Value.GetComponent<UIHandle>())
                     {
                         data.Value.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
                         data.Value.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2), transformed.GetColumn(1));
                         //data.Value.transform.localScale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
                     }
+                    // Standard game objects
                     else
                     {
+                        // Snap
+                        if(snapToGrid) {
+                            Vector4 column = transformed.GetColumn(3);
+                            Vector3 position = new Vector3(column.x, column.y, column.z);
+                            Vector3 roundedPosition = new Vector3(
+                                Mathf.Round(column.x / snapPrecision) * snapPrecision,
+                                Mathf.Round(column.y / snapPrecision) * snapPrecision,
+                                Mathf.Round(column.z / snapPrecision) * snapPrecision
+                            );
+
+                            float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+                            if(snapOnX && Mathf.Abs(position.x - roundedPosition.x) <= snapGap / absWorldScale) {
+                                column.x = roundedPosition.x;
+                            }
+                            if(snapOnY && Mathf.Abs(position.y - roundedPosition.y) <= snapGap / absWorldScale) {
+                                column.y = roundedPosition.y;
+                            }
+                            if(snapOnZ && Mathf.Abs(position.z - roundedPosition.z) <= snapGap / absWorldScale) {
+                                column.z = roundedPosition.z;
+                            }
+                            
+                            transformed.SetColumn(3, column);
+                        }
+
+                        // Set matrix
                         SyncData.SetTransform(data.Value.name, transformed);
                         CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                     }

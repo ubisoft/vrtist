@@ -1642,9 +1642,6 @@ namespace VRtist
             path[path.Length - 1] = greasePencilName;
             Transform prefab = SyncData.GetOrCreatePrefabPath(String.Join("/", path));
 
-            // Grabbable (by its children colliders)
-            prefab.gameObject.AddComponent<RootObject>();
-
             SyncData.greasePencilsNameToPrefab[greasePencilName] = prefab.name;
         }
 

@@ -241,6 +241,8 @@ namespace VRtist
                     if (joystickAxis.y < -deadZone)
                         scale /= fixedScaleFactor;
 
+                    GlobalState.worldScale = scale;
+
                     // TODO: draw scale factor.
                 }
 
@@ -305,6 +307,8 @@ namespace VRtist
                         s = oldScale;
                     }
 
+                    GlobalState.worldScale = s;
+
                     // Rotation for the line text
                     Vector3 middleForward180 = Vector3.Cross(middleXVector, pivot.up).normalized;
                     Vector3 rolledUp = Vector3.Cross(-middleXVector, middleForward180).normalized;
@@ -329,6 +333,7 @@ namespace VRtist
 
                     lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentLeftControllerPosition_W, currentLeftControllerMatrix_W.rotation, world.localScale.x);
                 }
+                GlobalState.worldScale = world.localScale.x;
 
                 UpdateCameraClipPlanes();
             }
@@ -402,6 +407,7 @@ namespace VRtist
         {
             initWorldMatrix_W = world.localToWorldMatrix;
             scale = 1f;
+            GlobalState.worldScale = scale;
         }
 
         private void ResetDistance()
