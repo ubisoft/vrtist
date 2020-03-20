@@ -1003,7 +1003,7 @@ namespace VRtist
             byte[] roughness = FloatToBytes(1f - material.GetFloat("_Smoothness"));
             byte[] roughnessTexture = StringToBytes("");
             byte[] normalMapTexture = StringToBytes("");
-            byte[] emissionColor = ColorToBytes(material.GetColor("_EmissionColor"));
+            byte[] emissionColor = ColorToBytes(Color.black);
             byte[] emissionColorTexture = StringToBytes("");
 
             List<byte[]> buffers = new List<byte[]> { name, opacity, opacityMapTexture, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture, emissionColor, emissionColorTexture };
@@ -1642,9 +1642,6 @@ namespace VRtist
             path[path.Length - 1] = greasePencilName;
             Transform prefab = SyncData.GetOrCreatePrefabPath(String.Join("/", path));
 
-            // Grabbable (by its children colliders)
-            prefab.gameObject.AddComponent<RootObject>();
-
             SyncData.greasePencilsNameToPrefab[greasePencilName] = prefab.name;
         }
 
@@ -1696,10 +1693,13 @@ namespace VRtist
 
                 x = (p1 - p0).normalized;
                 y = (p2 - p1).normalized;
-                z = Vector3.Cross(x, y).normalized;
-                x = Vector3.Cross(y, z).normalized;
-                Vector4 pos = new Vector4(p0.x, p0.y, p0.z, 1);
-                mat = new Matrix4x4(x, y, z, pos);
+                if (x != y)
+                {
+                    z = Vector3.Cross(x, y).normalized;
+                    x = Vector3.Cross(y, z).normalized;
+                    Vector4 pos = new Vector4(p0.x, p0.y, p0.z, 1);
+                    mat = new Matrix4x4(x, y, z, pos);
+                }
             }
             Matrix4x4 invMat = mat.inverse;
 

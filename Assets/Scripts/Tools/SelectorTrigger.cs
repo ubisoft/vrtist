@@ -67,35 +67,22 @@ namespace VRtist
 
         }
 
-        /// <summary>
-        /// Resolve which object is selected from the given collided one.
-        /// </summary>
-        /// <param name="obj">Collided object</param>
-        /// <returns>Object to select</returns>
-        private GameObject ResolveSelectedObject(GameObject obj)
-        {
-            RootObject rootObject = obj.gameObject.GetComponentInParent<RootObject>();
-            return null == rootObject ? obj : rootObject.gameObject;
-        }
-
         private void OnTriggerEnter(Collider other)
         {
             if (other.tag == "PhysicObject")
             {
-                //collidedObjects.Add(ResolveSelectedObject(other.gameObject));
                 collidedObjects.Add(other.gameObject);
                 gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
+                selector.OnSelectorTriggerEnter(other);
             }
         }
 
         private void OnTriggerExit(Collider other)
         {
-            {
-                //collidedObjects.Remove(ResolveSelectedObject(other.gameObject));
-                collidedObjects.Remove(other.gameObject);
-                if (collidedObjects.Count == 0)
-                    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
-            }
+            collidedObjects.Remove(other.gameObject);
+            if (collidedObjects.Count == 0)
+                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
+            selector.OnSelectorTriggerExit(other);
         }
 
         private void UpdateSelection(GameObject gObject)

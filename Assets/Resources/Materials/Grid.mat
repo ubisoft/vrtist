@@ -33,7 +33,6 @@ Material:
     MotionVector: User
     RenderType: Transparent
   disabledShaderPasses:
-  - MOTIONVECTORS
   - TransparentBackface
   m_SavedProperties:
     serializedVersion: 3
@@ -51,6 +50,7 @@ Material:
     - _DoubleSidedNormalMode: 1
     - _DstBlend: 10
     - _EnableFogOnTransparent: 1
+    - _Line_Thickness: 0.01
     - _ReceivesSSR: 0
     - _RenderQueueType: 5
     - _RequireSplitLighting: 0
@@ -66,6 +66,7 @@ Material:
     - _StencilWriteMaskGBuffer: 14
     - _StencilWriteMaskMV: 40
     - _SurfaceType: 1
+    - _Tiling: 100
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentSortPriority: 0
@@ -79,3 +80,4 @@ Material:
     - Color_1C438011: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Line_Color: {r: 0.6037736, g: 0.6037736, b: 0.6037736, a: 0}

@@ -39,7 +39,7 @@ namespace VRtist
 
             // Create tooltips
             CreateTooltips();
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Deform");
+            triggerTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Deform");
 
             Transform primitives = panel.transform.Find("Primitives");
             if (primitives == null)
@@ -338,6 +338,16 @@ namespace VRtist
             UIObject = null;
         }
 
+        public override void OnSelectorTriggerEnter(Collider other)
+        {
+            Tooltips.SetTooltipVisibility(gripTooltip, true);
+        }
+
+        public override void OnSelectorTriggerExit(Collider other)
+        {
+            Tooltips.SetTooltipVisibility(gripTooltip, false);
+        }
+
 
         protected override void DoUpdateGui()
         {
@@ -462,6 +472,12 @@ namespace VRtist
                 {
                     Color selectColor = new Color(selectionColor.r, selectionColor.g, selectionColor.b, 0.2f);
                     activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_PlaneColor", selectColor);
+
+                    Tooltips.SetTooltipVisibility(triggerTooltip, true);
+                }
+                else
+                {
+                    Tooltips.SetTooltipVisibility(triggerTooltip, false);
                 }
 
                 selectorTrigger.enabled = (plane == null);
