@@ -5,6 +5,7 @@ using UnityEngine.Events;
 using UnityEditor;
 using UnityEngine.UI;
 using System;
+using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -27,15 +28,11 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Slider SubComponents Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float railMargin = 0.005f;
+        [CentimeterFloat] public float railMargin = 0.004f;
         [CentimeterFloat] public float railThickness = 0.001f;
-        [CentimeterFloat] public float knobHeadWidth = 0.002f;
-        [CentimeterFloat] public float knobHeadHeight = 0.013f;
-        [CentimeterFloat] public float knobHeadDepth = 0.003f;
-        [CentimeterFloat] public float knobFootWidth = 0.001f;
-        [CentimeterFloat] public float knobFootHeight = 0.005f;
-        [CentimeterFloat] public float knobFootDepth = 0.001f; // == railThickness
-        // TODO: add colors here?
+
+        [CentimeterFloat] public float knobRadius = 0.01f;
+        [CentimeterFloat] public float knobDepth = 0.005f;
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
         public float minValue = 0.0f;
@@ -47,7 +44,8 @@ namespace VRtist
         //       precision, step?
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public FloatChangedEvent onSlideEvent = new FloatChangedEvent(); // TODO: maybe make 2 callbacks, one for floats, one for ints
+        public FloatChangedEvent onSlideEvent = new FloatChangedEvent();
+        public IntChangedEvent onSlideEventInt = new IntChangedEvent();
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
@@ -78,22 +76,18 @@ namespace VRtist
         public override void RebuildMesh()
         {
             // RAIL
-            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * sliderPositionBegin, -height / 2, -0.0f); // put z = 0 back
+            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * sliderPositionBegin, railMargin - height / 2, -railThickness);
             float railWidth = (width - 2 * margin) * (sliderPositionEnd - sliderPositionBegin);
-            float railHeight = 3 * railMargin;
-            
+            float railHeight = 2 * railMargin; // no inner rectangle, only margin driven rounded borders.
+
             rail.RebuildMesh(railWidth, railHeight, railThickness, railMargin);
             rail.transform.localPosition = railPosition;
 
             // KNOB
-            float newKnobHeadWidth = knobHeadWidth;
-            float newKnobHeadHeight = knobHeadHeight;
-            float newKnobHeadDepth = knobHeadDepth;
-            float newKnobFootWidth = knobFootWidth;
-            float newKnobFootHeight = knobFootHeight;
-            float newKnobFootDepth = knobFootDepth;
+            float newKnobRadius = knobRadius;
+            float newKnobDepth = knobDepth;
 
-            knob.RebuildMesh(newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth);
+            knob.RebuildMesh(newKnobRadius, newKnobDepth);
             
             // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
@@ -272,7 +266,7 @@ namespace VRtist
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
             float posX = startX + pct * (endX - startX);
 
-            Vector3 knobPosition = new Vector3(posX, -height / 2.0f, 0.0f);
+            Vector3 knobPosition = new Vector3(posX - knobRadius, knobRadius - (height / 2.0f), -knobDepth);
 
             knob.transform.localPosition = knobPosition;
         }
@@ -340,6 +334,9 @@ namespace VRtist
                 // NOTE: The correct "currentValue" is already computed in the HandleCursorBehavior callback.
                 //       Just call the listeners here.
                 onSlideEvent.Invoke(currentValue);
+
+                int intValue = Mathf.RoundToInt(currentValue);
+                onSlideEventInt.Invoke(intValue);
             }
         }
 
@@ -386,13 +383,17 @@ namespace VRtist
 
                 float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
 
-                Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                // Actually move the slider ONLY if RIGHT_TRIGGER is pressed.
+                bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
+                if (triggerState)
+                {
+                    Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                }
 
                 // Haptic intensity as we go deeper into the widget.
                 float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
                 intensity *= intensity; // ease-in
 
-                // TODO : Re-enable
                 VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
             }
 
@@ -412,6 +413,8 @@ namespace VRtist
             float slider_end,
             float rail_margin,
             float rail_thickness,
+            float knob_radius,
+            float knob_depth,
             float min_slider_value,
             float max_slider_value,
             float cur_slider_value,
@@ -449,6 +452,10 @@ namespace VRtist
             uiSlider.thickness = thickness;
             uiSlider.sliderPositionBegin = slider_begin;
             uiSlider.sliderPositionEnd = slider_end;
+            uiSlider.railMargin = rail_margin;
+            uiSlider.railThickness = rail_thickness;
+            uiSlider.knobRadius = knob_radius;
+            uiSlider.knobDepth = knob_depth;
             uiSlider.minValue = min_slider_value;
             uiSlider.maxValue = max_slider_value;
             uiSlider.currentValue = cur_slider_value;
@@ -494,27 +501,21 @@ namespace VRtist
             // RAIL
             //
 
-            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * slider_begin, -height / 2, -0.0f); // put z = 0 back
             float railWidth = (width - 2 * margin) * (slider_end - slider_begin);
             float railHeight = 3 * uiSlider.railMargin; // TODO: see if we can tie this to another variable, like height.
             float railThickness = uiSlider.railThickness;
             float railMargin = uiSlider.railMargin;
+            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * slider_begin, -height / 2, -railThickness); // put z = 0 back
 
             uiSlider.rail = UISliderRail.CreateUISliderRail("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, rail_material, rail_color);
 
 
             // KNOB
             Vector3 knobPosition = new Vector3(0, 0, 0);
-            float newKnobHeadWidth = uiSlider.knobHeadWidth;
-            float newKnobHeadHeight = uiSlider.knobHeadHeight;
-            float newKnobHeadDepth = uiSlider.knobHeadDepth;
-            float newKnobFootWidth = uiSlider.knobFootWidth;
-            float newKnobFootHeight = uiSlider.knobFootHeight;
-            float newKnobFootDepth = uiSlider.knobFootDepth;
+            float newKnobRadius = uiSlider.knobRadius;
+            float newKnobDepth = uiSlider.knobDepth;
 
-            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, 
-                newKnobHeadWidth, newKnobHeadHeight, newKnobHeadDepth, newKnobFootWidth, newKnobFootHeight, newKnobFootDepth, 
-                knob_material, knob_color);
+            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, newKnobRadius, newKnobDepth, knob_material, knob_color);
 
             //
             // CANVAS (to hold the 2 texts)
