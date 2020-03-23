@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -9,6 +8,7 @@ namespace VRtist
         public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, Pointer, System }
 
         private static GameObject tooltipPrefab = null;
+        private static GameObject displayPrefab = null;
 
         public static GameObject FindTooltip(GameObject gObject, string name)
         {
@@ -119,10 +119,59 @@ namespace VRtist
             }
 
             // Set text
-            TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            tmpro.text = text;
+            SetTooltipText(tooltip, text);
 
             return tooltip;
+        }
+
+        public static GameObject CreateDisplay(GameObject controller, int slot, string text, string icon = "") {
+            if(controller.name != "right_controller" && controller.name != "left_controller") {
+                throw new System.Exception("Expected a prefab controller");
+            }
+
+            if(null == displayPrefab) {
+                displayPrefab = (GameObject) Resources.Load("Prefabs/UI/DisplayTooltip");
+            }
+
+            string name = "displayInfo";
+            GameObject display = FindTooltip(controller, name);
+            if(null == display) {
+                display = GameObject.Instantiate(displayPrefab);
+                display.name = name;
+                display.transform.parent = controller.transform.Find("DisplayAnchor");
+
+                // Reset tooltip's transform after parent is set
+                display.transform.localPosition = Vector3.zero;
+                display.transform.localRotation = Quaternion.identity;
+                display.transform.localScale = Vector3.one;
+            }
+
+            SetDisplaySlot(display, slot, text, icon);
+
+            return display;
+        }
+
+        public static void SetDisplaySlot(GameObject display, int index, string text, string icon = "") {
+            string slotName = $"Slot_{index}";
+            Transform slotTransform = display.transform.Find($"Frame/Canvas/{slotName}");
+            if(null == slotTransform) {
+                return;
+            }
+
+            GameObject slot = slotTransform.gameObject;
+            SetTooltipText(slot, text);
+            SetSlotIcon(slot, icon);
+        }
+
+        public static void SetDisplaySlotText(GameObject display, int index, string text) {
+            string slotName = $"Slot_{index}";
+            Transform slotTransform = display.transform.Find($"Frame/Canvas/{slotName}");
+            if(null == slotTransform) {
+                return;
+            }
+
+            GameObject slot = slotTransform.gameObject;
+            SetTooltipText(slot, text);
         }
 
         public static void SetTooltipVisibility(GameObject controller, Anchors anchor, bool visible)
@@ -143,6 +192,42 @@ namespace VRtist
         public static void SetTooltipVisibility(GameObject tooltip, bool visible)
         {
             tooltip.SetActive(visible);
+        }
+
+        public static void SetTooltipText(GameObject controller, Anchors anchor, string text)
+        {
+            if(controller.name != "right_controller" && controller.name != "left_controller")
+            {
+                throw new System.Exception("Expected a prefab controller");
+            }
+
+            string tooltipName = anchor.ToString();
+            GameObject tooltip = FindTooltip(controller, tooltipName);
+            if(null != tooltip)
+            {
+                SetTooltipText(tooltip, text);
+            }
+        }
+
+        public static void SetTooltipText(GameObject tooltip, string text)
+        {
+            TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            tmpro.text = text;
+        }
+
+        public static void SetSlotIcon(GameObject slot, string icon) {
+            GameObject imageObject = slot.transform.GetChild(0).gameObject;
+            Image image = imageObject.GetComponent<Image>();
+            if(null == image) { return; }
+
+            if(icon.Length > 0) {
+                Sprite sprite = Resources.Load<Sprite>(icon);
+                if(null == sprite) { return; }
+                imageObject.SetActive(true);
+                image.sprite = sprite;
+            } else {
+                imageObject.SetActive(false);
+            }
         }
     }
 }

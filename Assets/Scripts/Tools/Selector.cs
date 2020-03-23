@@ -52,6 +52,7 @@ namespace VRtist
         protected GameObject triggerTooltip;
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
+        protected GameObject displayTooltip;
 
         void Start()
         {
@@ -61,11 +62,13 @@ namespace VRtist
 
         protected void CreateTooltips()
         {
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Primary, "Duplicate");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch Tool");
-            triggerTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
-            gripTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
-            joystickTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
+            GameObject controller = transform.Find("right_controller").gameObject;
+            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
+            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Secondary, "Switch Tool");
+            triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
+            gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
+            joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
+            displayTooltip = Tooltips.CreateDisplay(controller, 0, "0", "Textures/UI/select_object");
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
@@ -174,14 +177,10 @@ namespace VRtist
 
             Selection.selectionMaterial = selectionMaterial;
             Selection.OnSelectionChanged += OnSelectionChanged;
-
-
         }
 
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
-            //if (uiTools.isOverUI()) { return; }
-
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
                 // Change selector size
@@ -314,9 +313,8 @@ namespace VRtist
             {
                 ManageMoveObjectsUndo();
             }
-                undoGroup.Submit();
-                undoGroup = null;
-            //}
+            undoGroup.Submit();
+            undoGroup = null;
 
             gripped = false;
         }
@@ -328,6 +326,7 @@ namespace VRtist
             outOfDeadZone = false;
 
             Tooltips.SetTooltipVisibility(joystickTooltip, Selection.selection.Count > 0);
+            Tooltips.SetDisplaySlotText(displayTooltip, 0, Selection.selection.Count.ToString());
         }
 
         private void UpdateSelect(Vector3 position, Quaternion rotation)
