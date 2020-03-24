@@ -68,7 +68,7 @@ namespace VRtist
             triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
             gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
             joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
-            displayTooltip = Tooltips.CreateDisplay(controller, 0, "0", "Textures/UI/select_object");
+            displayTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Info, "0\nselected");
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
@@ -325,8 +325,12 @@ namespace VRtist
             InitTransforms();
             outOfDeadZone = false;
 
-            Tooltips.SetTooltipVisibility(joystickTooltip, Selection.selection.Count > 0);
-            Tooltips.SetDisplaySlotText(displayTooltip, 0, Selection.selection.Count.ToString());
+            int numSelected = Selection.selection.Count;
+            Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
+            Tooltips.SetTooltipVisibility(displayTooltip, numSelected > 0);
+            if(numSelected > 0) {
+                Tooltips.SetTooltipText(displayTooltip, $"{numSelected}\nselected");
+            }
         }
 
         private void UpdateSelect(Vector3 position, Quaternion rotation)

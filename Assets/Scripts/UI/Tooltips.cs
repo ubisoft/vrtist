@@ -5,10 +5,9 @@ namespace VRtist
 {
     public class Tooltips
     {
-        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, Pointer, System }
+        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, Pointer, System, Info }
 
         private static GameObject tooltipPrefab = null;
-        private static GameObject displayPrefab = null;
 
         public static GameObject FindTooltip(GameObject gObject, string name)
         {
@@ -56,6 +55,7 @@ namespace VRtist
                 Vector3 framePosition = frame.localPosition;
                 Vector3 linePosition = new Vector3(-0.025f, 0f, 0f);  // for line renderer (go to the left of the anchor)
                 float yOffset = 0.01f;
+                bool hasLine = true;
 
                 // Put the tooltip as a child of the controller's anchor
                 // Default position.x is based on the right controller
@@ -95,6 +95,11 @@ namespace VRtist
                         linePosition.x *= -1f;
                         framePosition.x *= -1f;
                         break;
+                    case Anchors.Info:
+                        tooltip.transform.parent = controller.transform.Find("DisplayAnchor");
+                        framePosition = Vector3.zero;
+                        hasLine = false;
+                        break;
                 }
 
                 // Reset tooltip's transform after parent is set
@@ -111,8 +116,12 @@ namespace VRtist
 
                 // Set the line renderer positions
                 LineRenderer line = tooltip.GetComponent<LineRenderer>();
-                line.SetPosition(0, Vector3.zero);
-                line.SetPosition(1, linePosition);
+                if(hasLine) {
+                    line.SetPosition(0, Vector3.zero);
+                    line.SetPosition(1, linePosition);
+                } else {
+                    line.enabled = false;
+                }
 
                 // Set the frame position
                 frame.localPosition = framePosition;
@@ -122,56 +131,6 @@ namespace VRtist
             SetTooltipText(tooltip, text);
 
             return tooltip;
-        }
-
-        public static GameObject CreateDisplay(GameObject controller, int slot, string text, string icon = "") {
-            if(controller.name != "right_controller" && controller.name != "left_controller") {
-                throw new System.Exception("Expected a prefab controller");
-            }
-
-            if(null == displayPrefab) {
-                displayPrefab = (GameObject) Resources.Load("Prefabs/UI/DisplayTooltip");
-            }
-
-            string name = "displayInfo";
-            GameObject display = FindTooltip(controller, name);
-            if(null == display) {
-                display = GameObject.Instantiate(displayPrefab);
-                display.name = name;
-                display.transform.parent = controller.transform.Find("DisplayAnchor");
-
-                // Reset tooltip's transform after parent is set
-                display.transform.localPosition = Vector3.zero;
-                display.transform.localRotation = Quaternion.identity;
-                display.transform.localScale = Vector3.one;
-            }
-
-            SetDisplaySlot(display, slot, text, icon);
-
-            return display;
-        }
-
-        public static void SetDisplaySlot(GameObject display, int index, string text, string icon = "") {
-            string slotName = $"Slot_{index}";
-            Transform slotTransform = display.transform.Find($"Frame/Canvas/{slotName}");
-            if(null == slotTransform) {
-                return;
-            }
-
-            GameObject slot = slotTransform.gameObject;
-            SetTooltipText(slot, text);
-            SetSlotIcon(slot, icon);
-        }
-
-        public static void SetDisplaySlotText(GameObject display, int index, string text) {
-            string slotName = $"Slot_{index}";
-            Transform slotTransform = display.transform.Find($"Frame/Canvas/{slotName}");
-            if(null == slotTransform) {
-                return;
-            }
-
-            GameObject slot = slotTransform.gameObject;
-            SetTooltipText(slot, text);
         }
 
         public static void SetTooltipVisibility(GameObject controller, Anchors anchor, bool visible)
@@ -213,21 +172,6 @@ namespace VRtist
         {
             TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             tmpro.text = text;
-        }
-
-        public static void SetSlotIcon(GameObject slot, string icon) {
-            GameObject imageObject = slot.transform.GetChild(0).gameObject;
-            Image image = imageObject.GetComponent<Image>();
-            if(null == image) { return; }
-
-            if(icon.Length > 0) {
-                Sprite sprite = Resources.Load<Sprite>(icon);
-                if(null == sprite) { return; }
-                imageObject.SetActive(true);
-                image.sprite = sprite;
-            } else {
-                imageObject.SetActive(false);
-            }
         }
     }
 }
