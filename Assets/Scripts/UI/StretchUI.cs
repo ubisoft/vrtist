@@ -86,20 +86,22 @@ namespace VRtist
             //
             // Stretch bar
             //
+            if (line != null)
+            {
+                if (lineMode == LineMode.SINGLE)
+                {
+                    line.SetPosition(0, left);
+                    line.SetPosition(1, right);
+                }
+                else
+                {
+                    float m = borderMarginsPct; // margin left and right
+                    float w = 1.0f - 2.0f * m;
+                    line.SetPosition(0, Vector3.Lerp(left, right, m));
+                    line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
+                }
+            }
 
-            if (lineMode == LineMode.SINGLE)
-            {
-                line.SetPosition(0, left);
-                line.SetPosition(1, right);
-            }
-            else
-            {
-                float m = borderMarginsPct; // margin left and right
-                float w = 1.0f - 2.0f * m;
-                line.SetPosition(0, Vector3.Lerp(left, right, m));
-                line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
-            }
-            
             //
             // Text
             //
