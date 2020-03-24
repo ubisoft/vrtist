@@ -13,20 +13,18 @@ namespace VRtist
         [SerializeField] private float deadZoneDistance = 0.005f;
 
         [Header("UI Panel Options")]
-        public UICheckbox displayGizmosCheckbox = null;
         public UICheckbox snapToGridCheckbox = null;
         public UISlider snapGridSizeSlider = null;
         public UICheckbox snapOnXCheckbox = null;
         public UICheckbox snapOnYCheckbox = null;
         public UICheckbox snapOnZCheckbox = null;
 
-        static protected bool displayGizmos = true;
-        static protected bool snapToGrid = false;
-        static protected float snapPrecision = 1f;    // grid size 1 meter
-        static protected float snapGap = 0.05f;       // 
-        static protected bool snapOnX = true;
-        static protected bool snapOnY = true;
-        static protected bool snapOnZ = false;
+        protected bool snapToGrid = false;
+        protected float snapPrecision = 1f;    // grid size 1 meter
+        protected float snapGap = 0.05f;       // 
+        protected bool snapOnX = true;
+        protected bool snapOnY = true;
+        protected bool snapOnZ = false;
 
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
@@ -52,6 +50,7 @@ namespace VRtist
         protected GameObject triggerTooltip;
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
+        protected GameObject displayTooltip;
 
         void Start()
         {
@@ -61,14 +60,17 @@ namespace VRtist
 
         protected void CreateTooltips()
         {
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Primary, "Duplicate");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch Tool");
-            triggerTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Select");
-            gripTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Grip, "Select & Move");
-            joystickTooltip = Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Scale");
+            GameObject controller = transform.Find("right_controller").gameObject;
+            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
+            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Secondary, "Switch Tool");
+            triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
+            gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
+            joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
+            displayTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Info, "0\nselected");
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
+            Tooltips.SetTooltipVisibility(displayTooltip, false);
         }
 
         public virtual void OnSelectorTriggerEnter(Collider other)
@@ -107,30 +109,6 @@ namespace VRtist
             snapOnZ = value;
         }
 
-        public void SetDisplayGizmos(bool value)
-        {
-            displayGizmos = value;
-            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
-            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
-        }
-
-        private void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
-        {
-            foreach(var controller in controllers)
-            {
-                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
-                foreach(MeshFilter meshFilter in meshFilters)
-                {
-                    meshFilter.gameObject.SetActive(value);
-                }
-            }
-        }
-
-        public bool DisplayGizmos()
-        {
-            return displayGizmos;
-        }
-
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -139,9 +117,7 @@ namespace VRtist
         }
 
         protected virtual void InitUIPanel() {
-            if(null != displayGizmosCheckbox)
-                displayGizmosCheckbox.Checked = displayGizmos;
-
+            // Useless right now since we don't load any settings
             if(null != snapToGridCheckbox) {
                 snapToGridCheckbox.Checked = snapToGrid;
             }
@@ -174,14 +150,10 @@ namespace VRtist
 
             Selection.selectionMaterial = selectionMaterial;
             Selection.OnSelectionChanged += OnSelectionChanged;
-
-
         }
 
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
-            //if (uiTools.isOverUI()) { return; }
-
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
                 // Change selector size
@@ -300,23 +272,30 @@ namespace VRtist
             if (GlobalState.isGrippingWorld)
                 return;
 
+            List<ParametersController> controllers = new List<ParametersController>();
             foreach (var item in Selection.selection)
             {
                 LightController lightController = item.Value.GetComponentInChildren<LightController>();
-                if (null == lightController)
+                if(null != lightController) {
+                    controllers.Add(lightController);
                     continue;
-                MeshFilter meshFilter = item.Value.GetComponentInChildren<MeshFilter>(true);
-                if(null != meshFilter)
-                    meshFilter.gameObject.SetActive(displayGizmos);
+                }
+                CameraController cameraController = item.Value.GetComponentInChildren<CameraController>();
+                if(null != cameraController) {
+                    controllers.Add(cameraController);
+                    continue;
+                }
+            }
+            if(controllers.Count > 0) {
+                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.displayGizmos);
             }
 
             if (!Selection.IsHandleSelected())
             {
                 ManageMoveObjectsUndo();
             }
-                undoGroup.Submit();
-                undoGroup = null;
-            //}
+            undoGroup.Submit();
+            undoGroup = null;
 
             gripped = false;
         }
@@ -327,7 +306,12 @@ namespace VRtist
             InitTransforms();
             outOfDeadZone = false;
 
-            Tooltips.SetTooltipVisibility(joystickTooltip, Selection.selection.Count > 0);
+            int numSelected = Selection.selection.Count;
+            Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
+            Tooltips.SetTooltipVisibility(displayTooltip, numSelected > 0);
+            if(numSelected > 0) {
+                Tooltips.SetTooltipText(displayTooltip, $"{numSelected}\nselected");
+            }
         }
 
         private void UpdateSelect(Vector3 position, Quaternion rotation)
