@@ -13,20 +13,18 @@ namespace VRtist
         [SerializeField] private float deadZoneDistance = 0.005f;
 
         [Header("UI Panel Options")]
-        public UICheckbox displayGizmosCheckbox = null;
         public UICheckbox snapToGridCheckbox = null;
         public UISlider snapGridSizeSlider = null;
         public UICheckbox snapOnXCheckbox = null;
         public UICheckbox snapOnYCheckbox = null;
         public UICheckbox snapOnZCheckbox = null;
 
-        static protected bool displayGizmos = true;
-        static protected bool snapToGrid = false;
-        static protected float snapPrecision = 1f;    // grid size 1 meter
-        static protected float snapGap = 0.05f;       // 
-        static protected bool snapOnX = true;
-        static protected bool snapOnY = true;
-        static protected bool snapOnZ = false;
+        protected bool snapToGrid = false;
+        protected float snapPrecision = 1f;    // grid size 1 meter
+        protected float snapGap = 0.05f;       // 
+        protected bool snapOnX = true;
+        protected bool snapOnY = true;
+        protected bool snapOnZ = false;
 
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
@@ -72,6 +70,7 @@ namespace VRtist
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
+            Tooltips.SetTooltipVisibility(displayTooltip, false);
         }
 
         public virtual void OnSelectorTriggerEnter(Collider other)
@@ -110,30 +109,6 @@ namespace VRtist
             snapOnZ = value;
         }
 
-        public void SetDisplayGizmos(bool value)
-        {
-            displayGizmos = value;
-            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
-            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
-        }
-
-        private void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
-        {
-            foreach(var controller in controllers)
-            {
-                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
-                foreach(MeshFilter meshFilter in meshFilters)
-                {
-                    meshFilter.gameObject.SetActive(value);
-                }
-            }
-        }
-
-        public bool DisplayGizmos()
-        {
-            return displayGizmos;
-        }
-
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -142,9 +117,7 @@ namespace VRtist
         }
 
         protected virtual void InitUIPanel() {
-            if(null != displayGizmosCheckbox)
-                displayGizmosCheckbox.Checked = displayGizmos;
-
+            // Useless right now since we don't load any settings
             if(null != snapToGridCheckbox) {
                 snapToGridCheckbox.Checked = snapToGrid;
             }
@@ -299,14 +272,22 @@ namespace VRtist
             if (GlobalState.isGrippingWorld)
                 return;
 
+            List<ParametersController> controllers = new List<ParametersController>();
             foreach (var item in Selection.selection)
             {
                 LightController lightController = item.Value.GetComponentInChildren<LightController>();
-                if (null == lightController)
+                if(null != lightController) {
+                    controllers.Add(lightController);
                     continue;
-                MeshFilter meshFilter = item.Value.GetComponentInChildren<MeshFilter>(true);
-                if(null != meshFilter)
-                    meshFilter.gameObject.SetActive(displayGizmos);
+                }
+                CameraController cameraController = item.Value.GetComponentInChildren<CameraController>();
+                if(null != cameraController) {
+                    controllers.Add(cameraController);
+                    continue;
+                }
+            }
+            if(controllers.Count > 0) {
+                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.displayGizmos);
             }
 
             if (!Selection.IsHandleSelected())

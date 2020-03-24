@@ -21,6 +21,10 @@ namespace VRtist
             GlobalState.showFps = show;
         }
 
+        public void OnDisplayGizmos(bool show) {
+            GlobalState.SetDisplayGizmos(show);
+        }
+
         public void OnChangeMasterVolume(float volume)
         {
             if (mixer)

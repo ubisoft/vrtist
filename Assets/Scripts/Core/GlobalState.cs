@@ -8,7 +8,9 @@ namespace VRtist
     {
         [Header("Parameters")]
         public GameObject leftController = null;
+        public UICheckbox displayGizmosCheckbox = null;
 
+        // FPS
         public static bool showFps = false;
         public static int fps { get; private set; }
         public static int fpsFrameRange = 60;
@@ -16,12 +18,17 @@ namespace VRtist
         private static int fpsBufferIndex = 0;
         private GameObject displayTooltip = null;
 
+        // World
         public static bool isGrippingWorld = false;
         public static float worldScale = 1f;
 
+        // Animation
         public static int startFrame = 1;
         public static int endFrame = 250;
         public static int currentFrame = 1;
+
+        // Gizmos
+        public static bool displayGizmos = true;
 
         private void Start() {
             if(null != leftController) {
@@ -72,6 +79,25 @@ namespace VRtist
         public void LateUpdate()
         {
             VRInput.UpdateControllerValues();
+        }
+
+        public static void SetDisplayGizmos(bool value)
+        {
+            displayGizmos = value;
+            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
+            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
+        }
+
+        public static void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
+        {
+            foreach(var controller in controllers)
+            {
+                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
+                foreach(MeshFilter meshFilter in meshFilters)
+                {
+                    meshFilter.gameObject.SetActive(value);
+                }
+            }
         }
     }
 }
