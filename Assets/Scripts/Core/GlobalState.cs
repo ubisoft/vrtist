@@ -8,7 +8,6 @@ namespace VRtist
     {
         [Header("Parameters")]
         public GameObject leftController = null;
-        public UICheckbox displayGizmosCheckbox = null;
 
         // FPS
         public static bool showFps = false;
