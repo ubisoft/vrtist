@@ -1,12 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace VRtist
 {
     public class Tooltips
     {
-        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, JoystickClick, Pointer, System }
+        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, JoystickClick, Pointer, System, Info }
 
         private static GameObject tooltipPrefab = null;
 
@@ -56,6 +55,7 @@ namespace VRtist
                 Vector3 framePosition = frame.localPosition;
                 Vector3 linePosition = new Vector3(-0.025f, 0f, 0f);  // for line renderer (go to the left of the anchor)
                 float yOffset = 0.01f;
+                bool hasLine = true;
 
                 // Put the tooltip as a child of the controller's anchor
                 // Default position.x is based on the right controller
@@ -104,6 +104,11 @@ namespace VRtist
                         linePosition.x *= -1f;
                         framePosition.x *= -1f;
                         break;
+                    case Anchors.Info:
+                        tooltip.transform.parent = controller.transform.Find("DisplayAnchor");
+                        framePosition = Vector3.zero;
+                        hasLine = false;
+                        break;
                 }
 
                 // Reset tooltip's transform after parent is set
@@ -120,8 +125,12 @@ namespace VRtist
 
                 // Set the line renderer positions
                 LineRenderer line = tooltip.GetComponent<LineRenderer>();
-                line.SetPosition(0, Vector3.zero);
-                line.SetPosition(1, linePosition);
+                if(hasLine) {
+                    line.SetPosition(0, Vector3.zero);
+                    line.SetPosition(1, linePosition);
+                } else {
+                    line.enabled = false;
+                }
 
                 // Set the frame position
                 frame.localPosition = framePosition;
@@ -171,6 +180,21 @@ namespace VRtist
         public static void SetTooltipVisibility(GameObject tooltip, bool visible)
         {
             tooltip.SetActive(visible);
+        }
+
+        public static void SetTooltipText(GameObject controller, Anchors anchor, string text)
+        {
+            if(controller.name != "right_controller" && controller.name != "left_controller")
+            {
+                throw new System.Exception("Expected a prefab controller");
+            }
+
+            string tooltipName = anchor.ToString();
+            GameObject tooltip = FindTooltip(controller, tooltipName);
+            if(null != tooltip)
+            {
+                SetTooltipText(tooltip, text);
+            }
         }
 
         public static void SetTooltipText(GameObject tooltip, string text)
