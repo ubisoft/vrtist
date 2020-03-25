@@ -217,6 +217,26 @@ namespace VRtist
             return bytes;
         }
 
+        public static Vector3 GetVector4(byte[] data, ref int currentIndex)
+        {
+            float[] buffer = new float[4];
+            int size = 4 * sizeof(float);
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+            currentIndex += size;
+            return new Vector4(buffer[0], buffer[1], buffer[2], buffer[3]);
+        }
+
+        public static byte[] Vector4ToBytes(Vector4 vector)
+        {
+            byte[] bytes = new byte[4 * sizeof(float)];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, 0 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, 1 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, 2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.w), 0, bytes, 3 * sizeof(float), sizeof(float));
+            return bytes;
+        }
+
         public static Vector2 GetVector2(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[2];
@@ -240,6 +260,32 @@ namespace VRtist
             }
             return bytes;
         }
+
+        public static Matrix4x4 GetMatrix(byte[] data, ref int index)
+        {
+            float[] matrixBuffer = new float[16];
+
+            int size = 4 * 4 * sizeof(float);
+            Buffer.BlockCopy(data, index, matrixBuffer, 0, size);
+            Matrix4x4 m = new Matrix4x4(new Vector4(matrixBuffer[0], matrixBuffer[1], matrixBuffer[2], matrixBuffer[3]),
+                                        new Vector4(matrixBuffer[4], matrixBuffer[5], matrixBuffer[6], matrixBuffer[7]),
+                                        new Vector4(matrixBuffer[8], matrixBuffer[9], matrixBuffer[10], matrixBuffer[11]),
+                                        new Vector4(matrixBuffer[12], matrixBuffer[13], matrixBuffer[14], matrixBuffer[15])
+                                        );
+            index += size;
+            return m;
+        }
+
+        public static byte[] MatrixToBytes(Matrix4x4 matrix)
+        {
+            byte[] column0Buffer = Vector4ToBytes(matrix.GetColumn(0));
+            byte[] column1Buffer = Vector4ToBytes(matrix.GetColumn(1));
+            byte[] column2Buffer = Vector4ToBytes(matrix.GetColumn(2));
+            byte[] column3Buffer = Vector4ToBytes(matrix.GetColumn(3));
+            List<byte[]> buffers = new List<byte[]> { column0Buffer, column1Buffer, column2Buffer, column3Buffer };
+            return ConcatenateBuffers(buffers);
+        }
+
 
         public static Quaternion GetQuaternion(byte[] data, ref int currentIndex)
         {
@@ -352,12 +398,12 @@ namespace VRtist
             if (srcPath == null)
                 return;
 
-            string dstName = GetString(data, ref bufferIndex);
+            string name = GetString(data, ref bufferIndex);
             Vector3 position = GetVector3(data, ref bufferIndex);
             Quaternion rotation = GetQuaternion(data, ref bufferIndex);
             Vector3 scale = GetVector3(data, ref bufferIndex);
 
-            GameObject newGameObject = SyncData.Duplicate(srcPath.gameObject, dstName);
+            GameObject newGameObject = SyncData.Duplicate(srcPath.gameObject, name);
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
             newGameObject.transform.localScale = scale;
@@ -899,7 +945,7 @@ namespace VRtist
             Transform parent = root;
             foreach (string subPath in splitted)
             {
-                Transform transform = parent.Find(subPath);
+                Transform transform = SyncData.FindChild(parent,subPath);
                 if (transform == null)
                 {
                     return null;
@@ -920,9 +966,9 @@ namespace VRtist
         public static string GetPathName(Transform root, Transform transform)
         {
             string result = transform.name;
-            while (transform.parent && transform.parent != root)
+            while (transform.parent && transform.parent.parent && transform.parent.parent != root)
             {
-                transform = transform.parent;
+                transform = transform.parent.parent; // skip blender pseudo-parent
                 result = transform.name + "/" + result;
             }
             return result;
@@ -939,25 +985,29 @@ namespace VRtist
         public static Transform BuildTransform(Transform prefab, byte[] data)
         {
             int currentIndex = 0;
+            int size;
+
             Transform transform = BuildPath(data, ref currentIndex, true);
+
+            Matrix4x4 parentInverse = GetMatrix(data, ref currentIndex);
+            Matrix4x4 basis = GetMatrix(data, ref currentIndex);
+            Matrix4x4 local = GetMatrix(data, ref currentIndex);
+
+            Vector3 t, s;
+            Quaternion r;
+            Maths.DecomposeMatrix(parentInverse, out t, out r, out s);
+            transform.parent.localPosition = t;
+            transform.parent.localRotation = r;
+            transform.parent.localScale = s;
+
+            Matrix4x4 localMatrix = parentInverse.inverse * local;
+            Maths.DecomposeMatrix(localMatrix, out t, out r, out s);
+            transform.localPosition = t;
+            transform.localRotation = r;
+            transform.localScale = s;
 
             float[] buffer = new float[4];
             bool[] boolBuffer = new bool[1];
-            int size = 3 * sizeof(float);
-
-            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-            currentIndex += size;
-            transform.localPosition = new Vector3(buffer[0], buffer[1], buffer[2]);
-
-            size = 4 * sizeof(float);
-            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-            currentIndex += size;
-            transform.localRotation = new Quaternion(buffer[0], buffer[1], buffer[2], buffer[3]);
-
-            size = 3 * sizeof(float);
-            Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-            currentIndex += size;
-            transform.localScale = new Vector3(buffer[0], buffer[1], buffer[2]);
 
             size = sizeof(bool);
             Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
@@ -977,13 +1027,22 @@ namespace VRtist
          * -------------------------------------------------------------------------------------------*/
         public static NetCommand BuildTransformCommand(Transform root, Transform transform)
         {
-            byte[] name = StringToBytes(transform.name);
-            byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
-            byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
-            byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
+            string parentName = "";
+            if (SyncData.nodes.ContainsKey(transform.name))
+            {
+                Node node = SyncData.nodes[transform.name];
+                if (null != node.parent)
+                    parentName = node.parent.prefab.name + "/";
+            }
+            byte[] name = StringToBytes(parentName + transform.name);
+            Matrix4x4 parentMatrix = Matrix4x4.TRS(transform.parent.localPosition, transform.parent.localRotation, transform.parent.localScale).inverse;
+            Matrix4x4 basisMatrix = Matrix4x4.TRS(transform.localPosition, transform.localRotation, transform.localScale);
+            byte[] invertParentMatrixBuffer = MatrixToBytes(parentMatrix.inverse);
+            byte[] basisMatrixBuffer = MatrixToBytes(basisMatrix);
+            byte[] localMatrixBuffer = MatrixToBytes(parentMatrix * basisMatrix);
             byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
 
-            List<byte[]> buffers = new List<byte[]> { name, positionBuffer, rotationBuffer, scaleBuffer, visibilityBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer, visibilityBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
@@ -1109,11 +1168,9 @@ namespace VRtist
             byte[] dstName = StringToBytes(duplicate.dstObject.name);
 
             Transform transform = duplicate.dstObject.transform;
-            byte[] positionBuffer = Vector3ToBytes(transform.localPosition);
-            byte[] rotationBuffer = QuaternionToBytes(transform.localRotation);
-            byte[] scaleBuffer = Vector3ToBytes(transform.localScale);
+            byte[] matrixBuffer = MatrixToBytes(Matrix4x4.TRS(transform.localPosition, transform.localRotation, transform.localScale));
 
-            List<byte[]> buffers = new List<byte[]> { srcPath, dstName, positionBuffer, rotationBuffer, scaleBuffer };
+            List<byte[]> buffers = new List<byte[]> { srcPath, dstName, matrixBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Duplicate);
             return command;
         }
@@ -1249,11 +1306,10 @@ namespace VRtist
             GameObject camGameObject = null;
             string[] splittedPath = path.Split('/');
             string name = splittedPath[splittedPath.Length - 1];
-            Transform camTransform = transform.Find(name);
+            Transform camTransform = SyncData.FindChild(transform,name);
             if (camTransform == null)
             {
-                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform);
-                camGameObject.name = name;
+                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, name);
                 Node node = SyncData.CreateNode(name);
                 node.prefab = camGameObject;
 
@@ -1319,23 +1375,22 @@ namespace VRtist
             GameObject lightGameObject = null;
             string[] splittedPath = path.Split('/');
             string name = splittedPath[splittedPath.Length - 1];
-            Transform lightTransform = transform.Find(name);
+            Transform lightTransform = SyncData.FindChild(transform,name);
             if (lightTransform == null)
             {
                 switch (lightType)
                 {
                     case LightType.Directional:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform);
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform, name);
                         break;
                     case LightType.Point:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform);
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform, name);
                         break;
                     case LightType.Spot:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform);
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform, name);
                         break;
                 }
                 //lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
-                lightGameObject.name = name;
                 Node node = SyncData.CreateNode(name);
                 node.prefab = lightGameObject;
             }

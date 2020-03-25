@@ -529,8 +529,7 @@ namespace VRtist
             }
 
 
-            GameObject instance = Utils.CreateInstance(objectNode.prefab, transform);
-            instance.name = objectName;
+            GameObject instance = Utils.CreateInstance(objectNode.prefab, transform, objectName);
             AddInstanceToNode(instance, objectNode, collectionInstanceName);
 
             // Reparent to parent
@@ -634,14 +633,15 @@ namespace VRtist
 
         public static void Reparent(Transform t, Transform parent)
         {
-            Vector3 position = t.localPosition;
-            Quaternion rotation = t.localRotation;
-            Vector3 scale = t.localScale;
+            Transform parentTransform = t.parent;
+            Vector3 position = parentTransform.localPosition;
+            Quaternion rotation = parentTransform.localRotation;
+            Vector3 scale = parentTransform.localScale;
 
-            t.parent = parent;
-            t.localPosition = position;
-            t.localRotation = rotation;
-            t.localScale = scale;
+            parentTransform.parent = parent;
+            parentTransform.localPosition = position;
+            parentTransform.localRotation = rotation;
+            parentTransform.localScale = scale;
         }
 
         public static void ApplyReparent(Node parent, Node node)
@@ -680,6 +680,27 @@ namespace VRtist
             }
         }
 
+        public static GameObject CreateGameObject(string name)
+        {
+            GameObject gObjectParent = new GameObject(name + "_parent");
+            GameObject gObject = new GameObject(name);
+            gObject.transform.parent = gObjectParent.transform;
+            return gObject;
+        }
+
+        public static Transform FindChild(Transform transform, string childName)
+        {
+            int count = transform.childCount;
+            for(int i = 0; i < count ; i++)
+            {
+                Transform child = transform.GetChild(i);
+                Transform found = child.Find(childName);
+                if (null != found)
+                    return found;
+            }
+            return null;
+        }
+
         public static Transform GetOrCreatePrefabPath(string path)
         {
             string[] splitted = path.Split('/');
@@ -695,18 +716,18 @@ namespace VRtist
                 else
                 {
                     parentNode = CreateNode(parentName);
-                    GameObject parentObject = new GameObject(parentName);
+                    GameObject parentObject = CreateGameObject(parentName);
                     Reparent(parentObject.transform, prefab);
                     parentNode.prefab = parentObject;
                 }
             }
 
             string objectName = splitted[splitted.Length - 1];
-            Transform transform = prefab.Find(objectName);
+            Transform transform = FindChild(prefab,objectName);
             Node node = null;
             if (null == transform)
             {
-                transform = new GameObject(objectName).transform;
+                transform = CreateGameObject(objectName).transform;
                 Reparent(transform, prefab);
                 node = CreateNode(objectName, parentNode);
                 node.prefab = transform.gameObject;
@@ -790,13 +811,12 @@ namespace VRtist
             }
         }
 
-        public static GameObject Duplicate(GameObject srcInstance, string name = "")
+        public static GameObject Duplicate(GameObject srcInstance, string name = null)
         {
             Node srcNode = nodes[srcInstance.name];
             GameObject srcPrefab = srcNode.prefab;
-            GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent);
-            if (name.Length > 0)
-                prefabClone.name = name;
+
+            GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent, name);
             Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
             prefabCloneNode.prefab = prefabClone;
             GameObject clone = AddObjectToScene(root, prefabClone.name, "/");
