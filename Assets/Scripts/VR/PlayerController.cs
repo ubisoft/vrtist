@@ -12,13 +12,13 @@ namespace VRtist
         [SerializeField] private Transform buttonsContainer = null;
         [SerializeField] private Transform leftHandle = null;
         [SerializeField] private Transform pivot = null;
-
-        [Header("BiManual Navigation Mode")]
-        public StretchUI lineUI = null;
         [Tooltip("Player can be xxx times bigger than the world")]
         public float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
         [Tooltip("Player can be xxx times smaller than the world")]
         public float minPlayerScale = 50.0f; // world scale = 50.0f;
+
+        [Header("BiManual Navigation Mode")]
+        public StretchUI lineUI = null;
 
         [Header("Fly Navigation")]
         [Tooltip("Speed in m/s")]
@@ -31,6 +31,10 @@ namespace VRtist
         private Vector3 initCameraPosition; // for reset
         private Quaternion initCameraRotation; // for reset
 
+        private GameObject tooltipPalette = null;
+        private GameObject tooltipUndo = null;
+        private GameObject tooltipRedo = null;
+        private GameObject tooltipReset = null;
 
         void Start()
         {
@@ -41,6 +45,11 @@ namespace VRtist
 
             if (leftHandle == null) { Debug.LogWarning("Cannot find 'LeftHandle' game object"); }
             if (pivot == null) { Debug.LogWarning("Cannot find 'Pivot' game object"); }
+
+            tooltipPalette = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
+            tooltipUndo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
+            tooltipRedo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Secondary, "Redo");
+            tooltipReset = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.JoystickClick, "Reset");
 
             OnChangeNavigationMode("BiManual");
 
@@ -128,12 +137,53 @@ namespace VRtist
             });
         }
 
+        private void HandleCommonTooltipsVisibility()
+        {
+            if (currentNavigationMode == null)
+                return;
+
+            if (currentNavigationMode.IsCompatibleWithReset())
+            {
+                Tooltips.SetTooltipVisibility(tooltipReset, true);
+                Tooltips.SetTooltipText(tooltipReset, "Reset");
+            }
+            else
+            {
+                Tooltips.SetTooltipVisibility(tooltipReset, false);
+            }
+
+            if (currentNavigationMode.IsCompatibleWithPalette())
+            {
+                Tooltips.SetTooltipVisibility(tooltipPalette, true);
+                Tooltips.SetTooltipText(tooltipPalette, "Display Palette");
+            }
+            else
+            {
+                Tooltips.SetTooltipVisibility(tooltipPalette, false);
+            }
+
+            if (currentNavigationMode.IsCompatibleWithUndoRedo())
+            {
+                Tooltips.SetTooltipVisibility(tooltipUndo, true);
+                Tooltips.SetTooltipText(tooltipUndo, "Undo");
+
+                Tooltips.SetTooltipVisibility(tooltipRedo, true);
+                Tooltips.SetTooltipText(tooltipRedo, "Redo");
+            }
+            else
+            {
+                Tooltips.SetTooltipVisibility(tooltipUndo, false);
+                Tooltips.SetTooltipVisibility(tooltipRedo, false);
+            }
+        }
+
         #region OnNavMode
 
         // Callback for the NavigationMode buttons.
         public void OnChangeNavigationMode(string buttonName)
         {
             UpdateRadioButtons(buttonName);
+            Tooltips.HideAllTooltips(leftHandle.Find("left_controller").gameObject);
             switch (buttonName)
             {
                 case "BiManual": OnNavMode_BiManual(); break;
@@ -144,22 +194,17 @@ namespace VRtist
                 case "Fly": OnNavMode_Fly(); break;
                 default: Debug.LogError("Unknown navigation mode button name was passed."); break;
             }
+            HandleCommonTooltipsVisibility();
         }
 
         public void OnNavMode_BiManual()
         {
-            if (currentNavigationMode != null)
-                currentNavigationMode.DeInit();
-
             currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
         }
 
         public void OnNavMode_Teleport()
         {
-            if (currentNavigationMode != null)
-                currentNavigationMode.DeInit();
-
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Teleport();
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
@@ -167,9 +212,6 @@ namespace VRtist
 
         public void OnNavMode_Orbit()
         {
-            if (currentNavigationMode != null)
-                currentNavigationMode.DeInit();
-
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Orbit();
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
@@ -177,9 +219,6 @@ namespace VRtist
 
         public void OnNavMode_Fps()
         {
-            if (currentNavigationMode != null)
-                currentNavigationMode.DeInit();
-
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Fps();
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
@@ -187,9 +226,6 @@ namespace VRtist
 
         public void OnNavMode_Drone()
         {
-            if (currentNavigationMode != null)
-                currentNavigationMode.DeInit();
-
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Drone();
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
@@ -197,10 +233,7 @@ namespace VRtist
 
         public void OnNavMode_Fly()
         {
-            if (currentNavigationMode != null)
-                currentNavigationMode.DeInit();
-
-            currentNavigationMode = new NavigationMode_Fly(flySpeed);
+            currentNavigationMode = new NavigationMode_Fly(flySpeed, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
         }
 

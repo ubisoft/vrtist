@@ -62,18 +62,8 @@ namespace VRtist
 
             lineUI.Show(false);
 
-
             // Create tooltips
-            //Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
-            //Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
-            //Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Secondary, "Redo");
-            ////Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Move / Turn");
-            //Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip World");
-        }
-
-        public override void DeInit()
-        {
-            base.DeInit();
+            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip World");
         }
 
         public override void Update()
@@ -106,7 +96,7 @@ namespace VRtist
 
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
 
-                    lineUI.Show(true, StretchUI.LineMode.SINGLE);
+                    //lineUI.Show(true, StretchUI.LineMode.SINGLE);
                     GlobalState.isGrippingWorld = false;
                 }
 
@@ -158,10 +148,9 @@ namespace VRtist
                     ResetInitControllerMatrices(ResetType.LEFT_ONLY);
                     ResetInitWorldMatrix();
 
-                    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
+                    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
-                    //lineUI.Show(false);
-                    lineUI.Show(true, StretchUI.LineMode.SINGLE);
+                    //lineUI.Show(true, StretchUI.LineMode.SINGLE);
                     GlobalState.isGrippingWorld = false;
                 }
 
@@ -174,18 +163,18 @@ namespace VRtist
                 float prevScale = scale;
 
                 // Scale using left joystick.
-                if (!isRightGripped)
-                {
-                    Vector2 joystickAxis = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
-                    if (joystickAxis.y > deadZone)
-                        scale *= fixedScaleFactor;
-                    if (joystickAxis.y < -deadZone)
-                        scale /= fixedScaleFactor;
+                //if (!isRightGripped)
+                //{
+                //    Vector2 joystickAxis = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
+                //    if (joystickAxis.y > deadZone)
+                //        scale *= fixedScaleFactor;
+                //    if (joystickAxis.y < -deadZone)
+                //        scale /= fixedScaleFactor;
 
-                    GlobalState.worldScale = scale;
+                //    GlobalState.worldScale = scale;
 
-                    // TODO: draw scale factor.
-                }
+                //    // TODO: draw scale factor.
+                //}
 
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
@@ -260,19 +249,19 @@ namespace VRtist
                 }
                 else
                 {
-                    Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
-                    Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
+                    //Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
+                    //Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
 
-                    world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                    world.localRotation = transformed.rotation;
-                    float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / maxPlayerScale, minPlayerScale);
-                    world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
-                    if (transformed.lossyScale.x != clampedScale)
-                    {
-                        scale = prevScale;
-                    }
+                    //world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                    //world.localRotation = transformed.rotation;
+                    //float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / maxPlayerScale, minPlayerScale);
+                    //world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
+                    //if (transformed.lossyScale.x != clampedScale)
+                    //{
+                    //    scale = prevScale;
+                    //}
 
-                    lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentLeftControllerPosition_W, currentLeftControllerMatrix_W.rotation, world.localScale.x);
+                    //lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentLeftControllerPosition_W, currentLeftControllerMatrix_W.rotation, world.localScale.x);
                 }
                 GlobalState.worldScale = world.localScale.x;
 
