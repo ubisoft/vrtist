@@ -17,6 +17,14 @@ namespace VRtist
             mixer.SetFloat("Volume_Master", -25.0f);
         }
 
+        public void OnDisplayFPS(bool show) {
+            GlobalState.showFps = show;
+        }
+
+        public void OnDisplayGizmos(bool show) {
+            GlobalState.SetDisplayGizmos(show);
+        }
+
         public void OnChangeMasterVolume(float volume)
         {
             if (mixer)
