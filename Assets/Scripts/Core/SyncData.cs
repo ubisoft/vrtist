@@ -792,6 +792,13 @@ namespace VRtist
                 }
             }
 
+            // Enable/Disable light
+            LightController lightController = obj.GetComponent<LightController>();
+            if(lightController)
+            {
+                lightController.SetLightEnable(node.containerVisible & node.visible & inheritVisible);
+            }
+
             //obj.SetActive(node.containerVisible & node.visible);
         }
 
