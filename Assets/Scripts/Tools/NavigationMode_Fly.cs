@@ -92,13 +92,13 @@ namespace VRtist
 
                 SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
                 isLeftGripped = true;
-                GlobalState.isGrippingWorld = true;
+                GlobalState.IsGrippingWorld = true;
             },
             () =>
             {
                 SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
                 isLeftGripped = false;
-                GlobalState.isGrippingWorld = false;
+                GlobalState.IsGrippingWorld = false;
             });
 
             // NOTE: we test isLeftGrip because we can be ungripped but still over the deadzone, strangely.
