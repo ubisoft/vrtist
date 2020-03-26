@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR;
@@ -118,7 +118,7 @@ namespace VRtist
 
         protected virtual void InitUIPanel() {
             // Useless right now since we don't load any settings
-            if(null != snapToGridCheckbox) {
+            if (null != snapToGridCheckbox) {
                 snapToGridCheckbox.Checked = snapToGrid;
             }
             if(null != snapGridSizeSlider) {

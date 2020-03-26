@@ -418,26 +418,7 @@ namespace VRtist
             MeshCollider collider = parent.AddComponent<MeshCollider>();
             
             progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
-        }
-
-        private void DecomposeMatrix(Matrix4x4 m, out Vector3 scale, out Quaternion rotation, out Vector3 position)
-        {
-            // Extract new local position
-            position = m.GetColumn(3);
-
-            // Extract new local rotation
-            rotation = Quaternion.LookRotation(
-                m.GetColumn(2),
-                m.GetColumn(1)
-            );
-
-            // Extract new local scale
-            scale = new Vector3(
-                m.GetColumn(0).magnitude,
-                m.GetColumn(1).magnitude,
-                m.GetColumn(2).magnitude
-            );
-        }
+        }        
 
         private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
         {            
@@ -455,7 +436,7 @@ namespace VRtist
 
             Vector3 position, scale;
             Quaternion rotation;
-            DecomposeMatrix(mat, out scale, out rotation, out position);
+            Maths.DecomposeMatrix(mat, out position, out rotation, out scale);
 
             if (node.Parent != null)
             {
