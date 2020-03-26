@@ -24,6 +24,10 @@ namespace VRtist
         [Tooltip("Speed in m/s")]
         public float flySpeed = 0.2f;
 
+        [Header("Orbit Navigation")]
+        [Tooltip("Speed in degrees/s")]
+        public float rotationalSpeed = 10.0f;
+
         private NavigationMode currentNavigationMode = null;
 
         private const float deadZone = 0.3f; // for palette pop
@@ -212,8 +216,7 @@ namespace VRtist
 
         public void OnNavMode_Orbit()
         {
-            currentNavigationMode = new NavigationMode();
-            //currentNavigationMode = new NavigationMode_Orbit();
+            currentNavigationMode = new NavigationMode_Orbit(rotationalSpeed, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
         }
 
