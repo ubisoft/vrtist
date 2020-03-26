@@ -222,16 +222,31 @@ namespace VRtist
         protected bool gripped = false;
         protected CommandGroup undoGroup = null;
 
+        protected bool gripPrevented = false;
+        protected bool gripInterrupted = false;
+
+        public void OnGripWorld(bool value)
+        {
+            if (value)
+            {
+                if (!gripPrevented && gripped) // no need to interrupt if the grip was prevented
+                {
+                    OnEndGrip(); // prematurely end the grip action
+                    gripInterrupted = true; // set bool to return immediately in the "real" OnEndGrip called when ungripping the controller.
+                }
+            }
+        }
+
         protected void OnStartGrip()
         {
-            if (GlobalState.isGrippingWorld)
-                return;
-
-            //if (!IsHandleSelected())
+            if (GlobalState.IsGrippingWorld)
             {
-                undoGroup = new CommandGroup();
+                gripPrevented = true;
+                return;
             }
 
+            undoGroup = new CommandGroup();
+            
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
@@ -269,8 +284,17 @@ namespace VRtist
         }
         protected void OnEndGrip()
         {
-            if (GlobalState.isGrippingWorld)
+            if (gripPrevented)
+            {
+                gripPrevented = false;
                 return;
+            }
+
+            if (gripInterrupted)
+            {
+                gripInterrupted = false;
+                return;
+            }
 
             List<ParametersController> controllers = new List<ParametersController>();
             foreach (var item in Selection.selection)

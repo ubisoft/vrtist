@@ -78,7 +78,7 @@ namespace VRtist
                 // left AFTER right => reset all
                 // NOTE: isRightGripped && Selection.selection.Count > 0 means that the selectionTool will/has gripped objects,
                 //       and is no longer able to be used for two-hands interaction.
-                if (isRightGripped && Selection.selection.Count == 0)
+                if (isRightGripped) // && Selection.selection.Count == 0)
                 {
                     ResetInitControllerMatrices(ResetType.LEFT_AND_RIGHT);
                     ResetInitWorldMatrix();
@@ -87,7 +87,7 @@ namespace VRtist
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
                     lineUI.Show(true, StretchUI.LineMode.DOUBLE);
-                    GlobalState.isGrippingWorld = true;
+                    GlobalState.IsGrippingWorld = true;
                 }
                 else // only left => reset left
                 {
@@ -97,7 +97,7 @@ namespace VRtist
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
 
                     //lineUI.Show(true, StretchUI.LineMode.SINGLE);
-                    GlobalState.isGrippingWorld = false;
+                    GlobalState.IsGrippingWorld = true;
                 }
 
                 isLeftGripped = true;
@@ -107,7 +107,7 @@ namespace VRtist
                 SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
                 lineUI.Show(false);
-                GlobalState.isGrippingWorld = false;
+                GlobalState.IsGrippingWorld = false;
 
                 isLeftGripped = false;
             });
@@ -116,13 +116,13 @@ namespace VRtist
             // RIGHT GRIP WORLD
             //
 
-            // TODO: 
-            //  * on a un souci d'ordre de recuperation d'evenement.
-            //    on ne peut pas garantir que le selection tool va essayer de grip avant ou apres le player controller.
+            // NOTE: On ne peut predire dans quel ordre les Update vont s'executer. Le Selector/SelectorTrigger peuvent
+            //       recuperer le LeftGrip avant nous, et commencer a grip un objet avant qu'on ait pu set la property
+            //       GlobalState.IsGrippingWorld. Cela pose-t-il encore un probleme?
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton,
             () =>
             {
-                if (Selection.selection.Count == 0)
+                //if (Selection.selection.Count == 0)
                 {
                     // right AFTER left and no selection, reset all
                     if (isLeftGripped)
@@ -133,7 +133,7 @@ namespace VRtist
 
                         SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
                         lineUI.Show(true, StretchUI.LineMode.DOUBLE);
-                        GlobalState.isGrippingWorld = true;
+                        GlobalState.IsGrippingWorld = true;
                     }
 
                     // even if no left gripped, just flag the right as gripped for the next update
@@ -151,7 +151,7 @@ namespace VRtist
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
                     //lineUI.Show(true, StretchUI.LineMode.SINGLE);
-                    GlobalState.isGrippingWorld = false;
+                    GlobalState.IsGrippingWorld = false;
                 }
 
                 isRightGripped = false;
