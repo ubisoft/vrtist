@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR;
@@ -62,11 +63,16 @@ namespace VRtist
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
         protected GameObject displayTooltip;
+        protected GameObject pointerTooltip;
+
+        protected GameObject plusPrefab;
 
         void Start()
         {
             Init();
             CreateTooltips();
+
+            plusPrefab = Resources.Load<GameObject>("Prefabs/Plus");
         }
 
         protected void CreateTooltips()
@@ -78,10 +84,12 @@ namespace VRtist
             gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
             joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
             displayTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Info, "0\nselected");
+            pointerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Pointer, "");
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
             Tooltips.SetTooltipVisibility(displayTooltip, false);
+            Tooltips.SetTooltipVisibility(pointerTooltip, false);
         }
 
         public virtual void OnSelectorTriggerEnter(Collider other)
@@ -315,6 +323,7 @@ namespace VRtist
             if (GlobalState.isGrippingWorld)
                 return;
 
+            // Hide gizmos (if needed) if selected objects where gizmos
             List<ParametersController> controllers = new List<ParametersController>();
             foreach (var item in Selection.selection)
             {
@@ -360,14 +369,29 @@ namespace VRtist
         private void UpdateSelect(Vector3 position, Quaternion rotation)
         {
             // Move & Duplicate selection
-            bool buttonAJustPressed = false;
 
-            // get rightPrimaryState
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton, 
-                () =>
-                {
-                    buttonAJustPressed = true;
-                });            
+            // Duplicate
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
+                () => {},
+                () => {
+                    if(!Selection.IsHandleSelected() && Selection.selection.Count > 0) {
+                        DuplicateSelection();
+
+                        // Add a selectionVFX behavior on selected objects and spawn the vfx
+                        foreach(GameObject gobj in Selection.selection.Values) {
+                            SelectionVFX selectionVFX = gobj.GetComponent<SelectionVFX>();
+                            if(null == selectionVFX) {
+                                selectionVFX = gobj.AddComponent<SelectionVFX>();
+                            }
+                            selectionVFX.SpawnDuplicateVFX();
+                        }
+
+                        InitControllerMatrix();
+                        InitTransforms();
+                        outOfDeadZone = true;
+                    }
+                }
+            );            
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 
@@ -375,15 +399,6 @@ namespace VRtist
 
             if (gripped)
             {
-                // Duplicate selection (except if it is a UI handle)
-                if (buttonAJustPressed && !Selection.IsHandleSelected())
-                {
-                    DuplicateSelection();
-                    InitControllerMatrix();
-                    InitTransforms();
-                    outOfDeadZone = true;
-                }
-
                 Vector3 p;
                 Quaternion r;
                 VRInput.GetControllerTransform(VRInput.rightController, out p, out r);
