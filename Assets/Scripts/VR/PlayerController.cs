@@ -26,6 +26,7 @@ namespace VRtist
 
         [Header("Orbit Navigation")]
         [Tooltip("Speed in degrees/s")]
+        public StraightRay ray = null;
         public float rotationalSpeed = 10.0f;
 
         private NavigationMode currentNavigationMode = null;
@@ -187,7 +188,12 @@ namespace VRtist
         public void OnChangeNavigationMode(string buttonName)
         {
             UpdateRadioButtons(buttonName);
+
             Tooltips.HideAllTooltips(leftHandle.Find("left_controller").gameObject);
+
+            if (currentNavigationMode != null)
+                currentNavigationMode.DeInit();
+
             switch (buttonName)
             {
                 case "BiManual": OnNavMode_BiManual(); break;
@@ -216,7 +222,7 @@ namespace VRtist
 
         public void OnNavMode_Orbit()
         {
-            currentNavigationMode = new NavigationMode_Orbit(rotationalSpeed, minPlayerScale, maxPlayerScale);
+            currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
         }
 

@@ -8,8 +8,9 @@ namespace VRtist
     public class NavigationMode_Orbit : NavigationMode
     {
         public Transform target = null; // the target object, pointed and gripped by the ray.
-        //public PointerRay ray = null; // the ray object. Put it somewhere like the StretchUI object.
+        public StraightRay ray = null; // the ray object. Put it somewhere like the StretchUI object.
 
+        private bool rayIsColliding = false;
 
         private float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
         private float minPlayerScale = 50.0f; // world scale = 50.0f;
@@ -26,8 +27,9 @@ namespace VRtist
         private const float deadZone = 0.3f;
         private const float fixedScaleFactor = 1.05f; // for grip world scale
 
-        public NavigationMode_Orbit(float speed, float minScale, float maxScale)
+        public NavigationMode_Orbit(StraightRay theRay, float speed, float minScale, float maxScale)
         {
+            ray = theRay;
             rotationalSpeed = speed;
             minPlayerScale = minScale;
             maxPlayerScale = maxScale;
@@ -57,10 +59,47 @@ namespace VRtist
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip Object");
 
             // How to go closer/farther, and change scale? Right joystick?
+
+            if (ray != null)
+                ray.gameObject.SetActive(true);
+        }
+
+        public override void DeInit()
+        {
+            base.DeInit();
+
+            if (ray != null)
+                ray.gameObject.SetActive(false);
         }
 
         public override void Update()
         {
+            // RAY
+            if (ray != null)
+            {
+                RaycastHit hit;
+                Vector3 worldStart = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
+                Vector3 worldEnd = leftHandle.TransformPoint(0, 0, 3);
+                Vector3 worldDirection = worldEnd - worldStart;
+                Ray r = new Ray(worldStart, worldDirection);
+                int layersMask = LayerMask.GetMask(new string[] { "Default", "Selection" });
+                if (Physics.Raycast(r, out hit, 10.0f, layersMask))
+                {
+                    rayIsColliding = true;
+                    ray.SetStartPosition(worldStart);
+                    ray.SetEndPosition(hit.point);
+                }
+                else
+                {
+                    rayIsColliding = false;
+                    ray.SetStartPosition(worldStart);
+                    ray.SetEndPosition(worldEnd);
+                }
+
+                // TODO: grip to lock on targetted object/point.
+            }
+
+
             // TODO: on garde le rotate 45 degres ou on le reserve au mode teleport (et on fait du continu vomitif pour le mode fly)?
 
             //
