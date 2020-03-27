@@ -235,8 +235,7 @@ namespace VRtist
 
         public void OnNavMode_Drone()
         {
-            currentNavigationMode = new NavigationMode();
-            //currentNavigationMode = new NavigationMode_Drone();
+            currentNavigationMode = new NavigationMode_Drone();
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
         }
 

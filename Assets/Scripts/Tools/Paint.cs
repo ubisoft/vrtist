@@ -225,5 +225,63 @@ namespace VRtist
             paintTool = PaintTools.FlatPencil;
             updateButtonsColor();
         }
+
+        // DEBUG
+
+        public void GenerateRandomBrushStroke()
+        {
+            //
+            // START
+            //
+            currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, paintColor));
+            ++paintId;
+            paintPrevPosition = Vector3.zero;
+            freeDraw = new FreeDraw();
+            //freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
+            freeDraw.matrix = Matrix4x4.identity;
+
+            //
+            // SPIRAL
+            //
+            int nbSteps = 200;
+            float radius = 1.0f;
+            for (int i = 0; i < nbSteps; ++i)
+            {
+                float t = (float)i / (float)(nbSteps - 1);
+                float growingRadius = (0.1f + radius * t * t);
+                Vector3 pos = new Vector3(
+                    growingRadius * Mathf.Cos(t * 5.0f * 2.0f * Mathf.PI),
+                    growingRadius * Mathf.Sin(t * 5.0f * 2.0f * Mathf.PI),
+                    t * 1.0f);
+                freeDraw.AddControlPoint(pos, 0.01f);
+            }
+            
+
+            // set mesh components
+            MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
+            Mesh mesh = meshFilter.mesh;
+            mesh.Clear();
+            mesh.vertices = freeDraw.vertices;
+            mesh.normals = freeDraw.normals;
+            mesh.triangles = freeDraw.triangles;
+
+
+
+
+
+            //
+            // END
+            //
+            if (currentPaintLine != null)
+            {
+                MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
+                PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
+                paintParameters.color = paintColor;
+                paintParameters.controlPoints = freeDraw.controlPoints;
+                paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
+                new CommandAddGameObject(currentPaintLine).Submit();
+                currentPaintLine = null;
+            }
+        }
     }
 }
