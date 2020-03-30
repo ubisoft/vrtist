@@ -7,15 +7,18 @@ namespace VRtist
 { 
     public class NavigationMode_Orbit : NavigationMode
     {
-        public Transform target = null; // the target object, pointed and gripped by the ray.
         public StraightRay ray = null; // the ray object. Put it somewhere like the StretchUI object.
 
-        private bool rayIsColliding = false;
+        private bool isLocked = false;
+        private float distance = 0.0f;
+        
+        private Transform target = null; // the target object, pointed and gripped by the ray.
+        private Vector3 targetPosition = Vector3.zero; // the target object, pointed and gripped by the ray.
 
         private float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
         private float minPlayerScale = 50.0f; // world scale = 50.0f;
 
-        private float rotationalSpeed = 10.0f;
+        private float rotationalSpeed = 3.0f;
         private bool rotating = false;
 
         private Matrix4x4 initLeftControllerMatrix_WtoL;
@@ -61,7 +64,10 @@ namespace VRtist
             // How to go closer/farther, and change scale? Right joystick?
 
             if (ray != null)
+            {
                 ray.gameObject.SetActive(true);
+                ray.SetDefaultColor();
+            }
         }
 
         public override void DeInit()
@@ -69,13 +75,20 @@ namespace VRtist
             base.DeInit();
 
             if (ray != null)
+            {
                 ray.gameObject.SetActive(false);
+            }
         }
 
         public override void Update()
         {
-            // RAY
-            if (ray != null)
+            if (ray == null)
+                return;
+
+            //
+            // RAY - collision with scene objects.
+            //
+            if (!isLocked)
             {
                 RaycastHit hit;
                 Vector3 worldStart = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
@@ -85,45 +98,68 @@ namespace VRtist
                 int layersMask = LayerMask.GetMask(new string[] { "Default", "Selection" });
                 if (Physics.Raycast(r, out hit, 10.0f, layersMask))
                 {
-                    rayIsColliding = true;
+
+                    target = hit.collider.transform;
+                    targetPosition = hit.collider.bounds.center;
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(hit.point);
                 }
                 else
                 {
-                    rayIsColliding = false;
+                    target = null;
+                    targetPosition = Vector3.zero;
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(worldEnd);
                 }
+            }
+            else 
+            {
+                //
+                // Joystick -- left/right = rotate left/right.
+                //             up/down = rotate up/down.
 
-                // TODO: grip to lock on targetted object/point.
+                Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
+                if (val != Vector2.zero)
+                {
+                    float rotate_amount_h = val.x * rotationalSpeed;
+                    float rotate_amount_v = val.y * rotationalSpeed; // TODO: clamp vertical angle.
+                    camera.RotateAround(targetPosition, pivot.up, rotate_amount_h);
+                    // camera.position = ...;
+                    // camera.rotation = ...;
+                }
+
+                // Position the ray AFTER the rotation of the camera, to avoid a one frame shift.
+                ray.SetStartPosition(leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f));
+                ray.SetEndPosition(targetPosition);
             }
 
 
-            // TODO: on garde le rotate 45 degres ou on le reserve au mode teleport (et on fait du continu vomitif pour le mode fly)?
-
             //
-            // Joystick -- go forward/backward, and rotate 45 degrees.
+            // LEFT GRIP (click) - lock on targetted object/point.
             //
 
-            //Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
-            //if (val != Vector2.zero)
-            //{
-            //    float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
+            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
+            () =>
+            {
+                if (target != null)
+                {
+                    isLocked = true;
+                    ray.SetActiveColor();
+                    distance = Vector3.Distance(targetPosition, camera.position);
+                        // TODO: find the UP and RIGHT vectors of reference.
+                    }
 
-            //    Vector3 velocity = Camera.main.transform.forward * val.y * d;
-            //    camera.position += velocity * flySpeed;
+                GlobalState.IsGrippingWorld = true;
+            },
+            () =>
+            {
+                isLocked = false;
+                ray.SetDefaultColor();
+                GlobalState.IsGrippingWorld = false;
+            });
 
-            //    if (Mathf.Abs(val.x) > 0.95f && !rotating)
-            //    {
-            //        camera.rotation *= Quaternion.Euler(0f, Mathf.Sign(val.x) * 45f, 0f);
-            //        rotating = true;
-            //    }
-            //    if (Mathf.Abs(val.x) <= 0.95f && rotating)
-            //    {
-            //        rotating = false;
-            //    }
-            //}
+
+
 
             //
             // LEFT GRIP WORLD (on click)
@@ -161,7 +197,7 @@ namespace VRtist
             //    GlobalState.worldScale = scale;
 
             //    // TODO: draw scale factor.
-                
+
             //    // update left joystick
             //    Vector3 currentLeftControllerPosition_L;
             //    Quaternion currentLeftControllerRotation_L;

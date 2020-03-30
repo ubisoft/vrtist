@@ -27,7 +27,7 @@ namespace VRtist
         [Header("Orbit Navigation")]
         [Tooltip("Speed in degrees/s")]
         public StraightRay ray = null;
-        public float rotationalSpeed = 10.0f;
+        public float rotationalSpeed = 3.0f;
 
         private NavigationMode currentNavigationMode = null;
 
@@ -50,6 +50,9 @@ namespace VRtist
 
             if (leftHandle == null) { Debug.LogWarning("Cannot find 'LeftHandle' game object"); }
             if (pivot == null) { Debug.LogWarning("Cannot find 'Pivot' game object"); }
+            
+            if (ray != null)
+                ray.gameObject.SetActive(false);
 
             tooltipPalette = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
             tooltipUndo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
