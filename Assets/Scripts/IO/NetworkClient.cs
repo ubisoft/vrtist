@@ -46,6 +46,11 @@ namespace VRtist
         Frame,
         FrameStartEnd,
         CameraAnimation,
+        RemoveObjectFromScene,
+        RemoveCollectionFromScene,
+        Scene,
+        SceneRemoved,
+        AddObjectToDocument,
         Optimized_Commands = 200,
         Transform,
         Mesh,
@@ -512,16 +517,20 @@ namespace VRtist
             SyncData.AddCollectionInstance(transform, collectionName);
         }
 
-        public static void BuildAddObjectToScene(Transform root, byte[] data)
+        public static void BuildAddObjectToDocument(Transform root, byte[] data)
         {
             int bufferIndex = 0;
+            string sceneName = GetString(data, ref bufferIndex);
+            if (sceneName != SyncData.currentSceneName)
+                return;
             string objectName = GetString(data, ref bufferIndex);
-            SyncData.AddObjectToScene(root, objectName, "/");
+            SyncData.AddObjectToDocument(root, objectName, "/");
         }
 
         public static void BuilAddCollectionToScene(Transform root, byte[] data)
         {
             int bufferIndex = 0;
+            string sceneName = GetString(data, ref bufferIndex);
             string collectionName = GetString(data, ref bufferIndex);
             SyncData.sceneCollections.Add(collectionName);
         }
@@ -1450,6 +1459,7 @@ namespace VRtist
                 lightParameters.SetInnerAngle((1f - spotBlend) * 100f);
             }
             lightParameters.castShadows = shadow != 0 ? true : false;
+            lightController.SetParameters(lightParameters);
             lightController.FireValueChanged();
         }
 
@@ -2531,8 +2541,8 @@ namespace VRtist
                         case MessageType.CollectionInstance:
                             NetGeometry.BuildCollectionInstance(command.data);
                             break;
-                        case MessageType.AddObjectToScene:
-                            NetGeometry.BuildAddObjectToScene(root, command.data);
+                        case MessageType.AddObjectToDocument:
+                            NetGeometry.BuildAddObjectToDocument(root, command.data);
                             break;
                         case MessageType.AddCollectionToScene:
                             NetGeometry.BuilAddCollectionToScene(root, command.data);

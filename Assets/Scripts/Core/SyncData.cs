@@ -338,7 +338,7 @@ namespace VRtist
                     if (t.Item2.Length > 1)
                         subCollectionInstanceName = t.Item2 + subCollectionInstanceName;
 
-                    AddObjectToScene(offsetObject, objectNode.prefab.name, subCollectionInstanceName);
+                    AddObjectToDocument(offsetObject, objectNode.prefab.name, subCollectionInstanceName);
                 }
             }
 
@@ -507,7 +507,7 @@ namespace VRtist
         {
             foreach (Node collectionObject in collectionNode.objects)
             {
-                AddObjectToScene(transform, collectionObject.prefab.name, collectionInstanceName);
+                AddObjectToDocument(transform, collectionObject.prefab.name, collectionInstanceName);
             }
             foreach (CollectionNode collectionChild in collectionNode.children)
             {
@@ -516,7 +516,7 @@ namespace VRtist
         }
 
 
-        public static GameObject AddObjectToScene(Transform transform, string objectName, string collectionInstanceName = "/")
+        public static GameObject AddObjectToDocument(Transform transform, string objectName, string collectionInstanceName = "/")
         {
             if (!nodes.ContainsKey(objectName))
                 return null;
@@ -826,7 +826,7 @@ namespace VRtist
             GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent, name);
             Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
             prefabCloneNode.prefab = prefabClone;
-            GameObject clone = AddObjectToScene(root, prefabClone.name, "/");
+            GameObject clone = AddObjectToDocument(root, prefabClone.name, "/");
 
             return clone;
         }
@@ -850,7 +850,7 @@ namespace VRtist
         {
             Node node = CreateNode(newPrefab.name);
             node.prefab = newPrefab;
-            GameObject instance = AddObjectToScene(root, newPrefab.name);
+            GameObject instance = AddObjectToDocument(root, newPrefab.name);
             return instance;
         }
 
