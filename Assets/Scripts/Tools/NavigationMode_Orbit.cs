@@ -133,9 +133,13 @@ namespace VRtist
 
                     if (Mathf.Abs(val.y) > deadZone)
                     {
-                        //if (!limitVertical || Mathf.Abs(Vector3.Dot(up, forward)) < 0.8f) // clamp.
+                        float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone)/ (1.0f - deadZone); // remap
+                        float dot = Vector3.Dot(up, forward);
+                        bool in_safe_zone = (Mathf.Abs(dot) < 0.8f);
+                        bool above_but_going_down = (dot > 0.8f) && (value < 0.0f);
+                        bool below_but_going_up = (dot < -0.8f) && (value > 0.0f);
+                        if (!limitVertical || in_safe_zone || above_but_going_down || below_but_going_up) // only within limits
                         {
-                            float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone)/ (1.0f - deadZone); // remap
                             float rotate_amount_v = value * rotationalSpeed;
                             world.RotateAround(targetPosition, right, rotate_amount_v);
                         }
