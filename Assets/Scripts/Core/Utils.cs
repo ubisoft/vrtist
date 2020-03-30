@@ -147,5 +147,29 @@ namespace VRtist
         }
 
 
+        public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite) {
+            RenderTexture renderTexture = new RenderTexture(width, height, depth, format);
+            renderTexture.enableRandomWrite = randomWrite;
+            renderTexture.Create();
+            return renderTexture;
+        }
+        public static RenderTexture CreateRenderTexture(RenderTexture source) {
+            return CreateRenderTexture(source.width, source.height, 0, source.format, true);
+        }
+
+        public static void TryDispose(System.IDisposable obj) {
+            if(null == obj) { return; }
+            obj.Dispose();
+        }
+        public static void TryDestroy(UnityEngine.Object obj) {
+            if(null == obj) { return; }
+            UnityEngine.Object.Destroy(obj);
+        }
+
+        public static void SwapBuffers(ref ComputeBuffer buf1, ref ComputeBuffer buf2) {
+            var temp = buf1;
+            buf1 = buf2;
+            buf2 = temp;
+        }
     }
 }

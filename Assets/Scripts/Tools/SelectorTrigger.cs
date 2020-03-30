@@ -147,11 +147,11 @@ namespace VRtist
                 collidedObjects.Clear();
                 grippedGameObject = false;
 
-                SelectionVFX selectionVFX = gObject.GetComponent<SelectionVFX>();
-                if(null == selectionVFX) {
-                    selectionVFX = gObject.AddComponent<SelectionVFX>();
-                }
-                selectionVFX.SpawnDeleteVFX();
+                //SelectionVFX selectionVFX = gObject.GetComponent<SelectionVFX>();
+                //if(null == selectionVFX) {
+                //    selectionVFX = gObject.AddComponent<SelectionVFX>();
+                //}
+                //selectionVFX.SpawnDeleteVFX();
 
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.2f);
                 new CommandRemoveGameObject(gObject).Submit();

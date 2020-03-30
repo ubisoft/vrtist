@@ -377,13 +377,11 @@ namespace VRtist
                     if(!Selection.IsHandleSelected() && Selection.selection.Count > 0) {
                         DuplicateSelection();
 
-                        // Add a selectionVFX behavior on selected objects and spawn the vfx
+                        // Add a selectionVFX instance on the duplicated objects
+                        GameObject prefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
                         foreach(GameObject gobj in Selection.selection.Values) {
-                            SelectionVFX selectionVFX = gobj.GetComponent<SelectionVFX>();
-                            if(null == selectionVFX) {
-                                selectionVFX = gobj.AddComponent<SelectionVFX>();
-                            }
-                            selectionVFX.SpawnDuplicateVFX();
+                            GameObject vfxInstance = Instantiate(prefab);
+                            vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(gobj);
                         }
 
                         InitControllerMatrix();
