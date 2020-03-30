@@ -8,27 +8,21 @@ namespace VRtist
     public class NavigationMode_Orbit : NavigationMode
     {
         public StraightRay ray = null; // the ray object. Put it somewhere like the StretchUI object.
+        public bool limitVertical = true;
 
         private bool isLocked = false;
         private float distance = 0.0f;
         
+        // TODO: handle distance from object, and world scale using the right joystick.
+
         private Transform target = null; // the target object, pointed and gripped by the ray.
         private Vector3 targetPosition = Vector3.zero; // the target object, pointed and gripped by the ray.
 
+        private float rotationalSpeed = 3.0f;
+        private const float deadZone = 0.5f;
+
         private float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
         private float minPlayerScale = 50.0f; // world scale = 50.0f;
-
-        private float rotationalSpeed = 3.0f;
-        private bool rotating = false;
-
-        private Matrix4x4 initLeftControllerMatrix_WtoL;
-        private Matrix4x4 initWorldMatrix_W;
-
-        private float scale;
-        private bool isLeftGripped = false;
-
-        private const float deadZone = 0.3f;
-        private const float fixedScaleFactor = 1.05f; // for grip world scale
 
         public NavigationMode_Orbit(StraightRay theRay, float speed, float minScale, float maxScale)
         {
@@ -121,11 +115,31 @@ namespace VRtist
                 Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)
                 {
-                    float rotate_amount_h = val.x * rotationalSpeed;
-                    float rotate_amount_v = val.y * rotationalSpeed; // TODO: clamp vertical angle.
-                    camera.RotateAround(targetPosition, pivot.up, rotate_amount_h);
-                    // camera.position = ...;
-                    // camera.rotation = ...;
+                    // Horizontal rotation
+                    //Vector3 up = Vector3.up;
+                    //Vector3 up = camera.up;
+                    Vector3 up = world.up;
+                    //Vector3 up = pivot.up;
+                    if (Mathf.Abs(val.x) > deadZone)
+                    {
+                        float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
+                        float rotate_amount_h = value * rotationalSpeed;
+                        world.RotateAround(targetPosition, up, rotate_amount_h);
+                    }
+
+                    // Vertical rotation
+                    Vector3 forward = Vector3.Normalize(pivot.position - targetPosition);
+                    Vector3 right = Vector3.Cross(up, forward);
+
+                    if (Mathf.Abs(val.y) > deadZone)
+                    {
+                        //if (!limitVertical || Mathf.Abs(Vector3.Dot(up, forward)) < 0.8f) // clamp.
+                        {
+                            float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone)/ (1.0f - deadZone); // remap
+                            float rotate_amount_v = value * rotationalSpeed;
+                            world.RotateAround(targetPosition, right, rotate_amount_v);
+                        }
+                    }
                 }
 
                 // Position the ray AFTER the rotation of the camera, to avoid a one frame shift.
@@ -146,8 +160,7 @@ namespace VRtist
                     isLocked = true;
                     ray.SetActiveColor();
                     distance = Vector3.Distance(targetPosition, camera.position);
-                        // TODO: find the UP and RIGHT vectors of reference.
-                    }
+                }
 
                 GlobalState.IsGrippingWorld = true;
             },
@@ -161,26 +174,7 @@ namespace VRtist
 
 
 
-            //
-            // LEFT GRIP WORLD (on click)
-            //
 
-            //VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
-            //() =>
-            //{
-            //    ResetInitControllerMatrices();
-            //    ResetInitWorldMatrix();
-
-            //    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
-            //    isLeftGripped = true;
-            //    GlobalState.IsGrippingWorld = true;
-            //},
-            //() =>
-            //{
-            //    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
-            //    isLeftGripped = false;
-            //    GlobalState.IsGrippingWorld = false;
-            //});
 
             // NOTE: we test isLeftGrip because we can be ungripped but still over the deadzone, strangely.
             //if (isLeftGripped && VRInput.GetValue(VRInput.leftController, CommonUsages.grip) > deadZone)
@@ -222,22 +216,6 @@ namespace VRtist
 
             //    UpdateCameraClipPlanes();
             //}
-        }
-
-        private void ResetInitControllerMatrices()
-        {
-            Vector3 initLeftControllerPosition_L;
-            Quaternion initLeftControllerRotation_L;
-            VRInput.GetControllerTransform(VRInput.leftController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
-            Matrix4x4 initLeftControllerMatrix_L = Matrix4x4.TRS(initLeftControllerPosition_L, initLeftControllerRotation_L, Vector3.one);
-            initLeftControllerMatrix_WtoL = (pivot.localToWorldMatrix * initLeftControllerMatrix_L).inverse;
-        }
-
-        private void ResetInitWorldMatrix()
-        {
-            initWorldMatrix_W = world.localToWorldMatrix;
-            scale = 1f;
-            GlobalState.worldScale = scale;
         }
     }
 }
