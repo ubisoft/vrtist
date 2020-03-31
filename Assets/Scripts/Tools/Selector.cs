@@ -1,3 +1,4 @@
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,6 +19,10 @@ namespace VRtist
         public UICheckbox snapOnXCheckbox = null;
         public UICheckbox snapOnYCheckbox = null;
         public UICheckbox snapOnZCheckbox = null;
+        public UISlider snapAngleSlider = null;
+        public UICheckbox snapAroundXCheckbox = null;
+        public UICheckbox snapAroundYCheckbox = null;
+        public UICheckbox snapAroundZCheckbox = null;
 
         protected bool snapToGrid = false;
         protected float snapPrecision = 1f;    // grid size 1 meter
@@ -25,6 +30,13 @@ namespace VRtist
         protected bool snapOnX = true;
         protected bool snapOnY = true;
         protected bool snapOnZ = false;
+
+        protected bool snapRotation = false;
+        protected float snapAngle = 45f;       // in degrees
+        protected float snapAngleGap = 0.2f;   // percentage
+        protected bool snapAroundX = false;
+        protected bool snapAroundY = false;
+        protected bool snapAroundZ = true;
 
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f/255f, 1f);
@@ -52,10 +64,16 @@ namespace VRtist
         protected GameObject joystickTooltip;
         protected GameObject displayTooltip;
 
+        public GameObject selectionVFXPrefab = null;
+
         void Start()
         {
             Init();
             CreateTooltips();
+
+            if(null == selectionVFXPrefab) {
+                selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
+            }
         }
 
         protected void CreateTooltips()
@@ -109,6 +127,26 @@ namespace VRtist
             snapOnZ = value;
         }
 
+        public void SetSnapRotation(bool value) {
+            snapRotation = value;
+        }
+
+        public void OnChangeSnapAngle(float value) {
+            snapAngle = value;
+        }
+
+        public void SetSnapAroundX(bool value) {
+            snapAroundX = value;
+        }
+
+        public void SetSnapAroundY(bool value) {
+            snapAroundY = value;
+        }
+
+        public void SetSnapAroundZ(bool value) {
+            snapAroundZ = value;
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -117,8 +155,7 @@ namespace VRtist
         }
 
         protected virtual void InitUIPanel() {
-            // Useless right now since we don't load any settings
-            if (null != snapToGridCheckbox) {
+            if(null != snapToGridCheckbox) {
                 snapToGridCheckbox.Checked = snapToGrid;
             }
             if(null != snapGridSizeSlider) {
@@ -136,6 +173,19 @@ namespace VRtist
             if(null != snapOnZCheckbox) {
                 snapOnZCheckbox.Checked = snapOnZ;
                 snapOnZCheckbox.Disabled = !snapToGrid;
+            }
+
+            if(null != snapAngleSlider) {
+                snapAngleSlider.Value = snapAngle;
+            }
+            if(null != snapAroundXCheckbox) {
+                snapAroundXCheckbox.Checked = snapAroundX;
+            }
+            if(null != snapAroundYCheckbox) {
+                snapAroundYCheckbox.Checked = snapAroundY;
+            }
+            if(null != snapAroundZCheckbox) {
+                snapAroundZCheckbox.Checked = snapAroundZ;
             }
         }
 
@@ -341,14 +391,26 @@ namespace VRtist
         private void UpdateSelect(Vector3 position, Quaternion rotation)
         {
             // Move & Duplicate selection
-            bool buttonAJustPressed = false;
 
-            // get rightPrimaryState
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton, 
-                () =>
-                {
-                    buttonAJustPressed = true;
-                });            
+            // Duplicate
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
+                () => {},
+                () => {
+                    if(!Selection.IsHandleSelected() && Selection.selection.Count > 0) {
+                        DuplicateSelection();
+
+                        // Add a selectionVFX instance on the duplicated objects
+                        foreach(GameObject gobj in Selection.selection.Values) {
+                            GameObject vfxInstance = Instantiate(selectionVFXPrefab);
+                            vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(gobj);
+                        }
+
+                        InitControllerMatrix();
+                        InitTransforms();
+                        outOfDeadZone = true;
+                    }
+                }
+            );
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 
@@ -356,15 +418,6 @@ namespace VRtist
 
             if (gripped)
             {
-                // Duplicate selection (except if it is a UI handle)
-                if (buttonAJustPressed && !Selection.IsHandleSelected())
-                {
-                    DuplicateSelection();
-                    InitControllerMatrix();
-                    InitTransforms();
-                    outOfDeadZone = true;
-                }
-
                 Vector3 p;
                 Quaternion r;
                 VRInput.GetControllerTransform(VRInput.rightController, out p, out r);
@@ -418,8 +471,8 @@ namespace VRtist
                     // Standard game objects
                     else
                     {
-                        // Snap
-                        if(snapToGrid) {
+                        // Snap coordinates
+                        if(snapToGrid && (snapOnX || snapOnY || snapOnZ)) {
                             Vector4 column = transformed.GetColumn(3);
                             Vector3 position = new Vector3(column.x, column.y, column.z);
                             Vector3 roundedPosition = new Vector3(
@@ -440,6 +493,32 @@ namespace VRtist
                             }
                             
                             transformed.SetColumn(3, column);
+                        }
+
+                        // Snap rotation
+                        if(snapRotation && (snapAroundX || snapAroundY || snapAroundZ)) {
+                            Quaternion rotation = transformed.rotation;
+                            Vector3 eulerAngles = rotation.eulerAngles;
+                            Vector3 roundedAngles = new Vector3(
+                                Mathf.Round(eulerAngles.x / snapAngle) * snapAngle,
+                                Mathf.Round(eulerAngles.y / snapAngle) * snapAngle,
+                                Mathf.Round(eulerAngles.z / snapAngle) * snapAngle
+                            );
+
+                            if(snapAroundX && Mathf.Abs(eulerAngles.x - roundedAngles.x) <= snapAngleGap * snapAngle) {
+                                eulerAngles.x = roundedAngles.x;
+                            }
+                            if(snapAroundY && Mathf.Abs(eulerAngles.y - roundedAngles.y) <= snapAngleGap * snapAngle) {
+                                eulerAngles.y = roundedAngles.y;
+                            }
+                            if(snapAroundZ && Mathf.Abs(eulerAngles.z - roundedAngles.z) <= snapAngleGap * snapAngle) {
+                                eulerAngles.z = roundedAngles.z;
+                            }
+
+                            Vector3 position = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                            rotation = Quaternion.Euler(eulerAngles);
+                            Vector3 scale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
+                            transformed.SetTRS(position, rotation, scale);
                         }
 
                         // Set matrix

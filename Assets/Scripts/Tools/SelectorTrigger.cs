@@ -143,6 +143,11 @@ namespace VRtist
                 selector.RemoveSiblingsFromSelection(gObject, false);
                 collidedObjects.Clear();
                 grippedGameObject = false;
+
+                // Add a selectionVFX instance on the deleted object
+                GameObject vfxInstance = Instantiate(selector.selectionVFXPrefab);
+                vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(gObject);
+
                 VRInput.rightController.SendHapticImpulse(0, 1, 0.2f);
                 new CommandRemoveGameObject(gObject).Submit();
             }
