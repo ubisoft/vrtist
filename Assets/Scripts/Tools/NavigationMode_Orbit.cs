@@ -32,30 +32,15 @@ namespace VRtist
             maxPlayerScale = maxScale;
         }
 
-        public override bool IsCompatibleWithPalette()
+        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform)
         {
-            return true;
-        }
-
-        public override bool IsCompatibleWithUndoRedo()
-        {
-            return true;
-        }
-
-        public override bool IsCompatibleWithReset()
-        { 
-            return true;
-        }
-
-        public override void Init(Transform cameraTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform)
-        {
-            base.Init(cameraTransform, worldTransform, leftHandleTransform, pivotTransform);
+            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform);
 
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Turn");
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip Object");
 
-            // How to go closer/farther, and change scale? Right joystick?
+            usedControls = UsedControls.LEFT_GRIP | UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
 
             if (ray != null)
             {
@@ -163,7 +148,7 @@ namespace VRtist
                 {
                     isLocked = true;
                     ray.SetActiveColor();
-                    distance = Vector3.Distance(targetPosition, camera.position);
+                    distance = Vector3.Distance(targetPosition, rig.position);
                 }
 
                 GlobalState.IsGrippingWorld = true;

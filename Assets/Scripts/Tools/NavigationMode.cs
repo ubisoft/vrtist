@@ -2,20 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-// Est-ce qu'il faudrait pas en faire une property, qui Invoke un event sur lequel le Selector/SelectorTrigger peut etre branche.
-// Comme ca le grip de selection pourrait lacher au moment ou on GripWorld.
-// GlobalState.isGrippingWorld = true; 
-// GlobalState.GrippingWorld = true;  <----
-
 namespace VRtist
 {
     public class NavigationMode
     {
-        protected Transform camera = null;
+        protected Transform rig = null;
         protected Transform world = null;
         protected Transform leftHandle = null;
         protected Transform pivot = null;
+        protected Transform camera = null;
+
+        public UsedControls usedControls = UsedControls.NONE;
 
         // Clip Planes config. Can be set back to PlayerController if we need tweaking.
         private bool useScaleFactor = false;
@@ -26,19 +23,43 @@ namespace VRtist
 
         protected enum ControllerVisibility { SHOW_NORMAL, HIDE, SHOW_GRIP };
 
+        [System.Flags]
+        public enum UsedControls 
+        {
+            NONE                 = (1 << 0),
+
+            LEFT_JOYSTICK        = (1 << 1),
+            LEFT_JOYSTICK_CLICK  = (1 << 2),
+            LEFT_TRIGGER         = (1 << 3),
+            LEFT_GRIP            = (1 << 4),
+            LEFT_PRIMARY         = (1 << 5), 
+            LEFT_SECONDARY       = (1 << 6),
+
+            RIGHT_JOYSTICK       = (1 << 7),
+            RIGHT_JOYSTICK_CLICK = (1 << 8),
+            RIGHT_TRIGGER        = (1 << 9),
+            RIGHT_GRIP           = (1 << 10),
+            RIGHT_PRIMARY        = (1 << 11),
+            RIGHT_SECONDARY      = (1 << 12)
+        }
+
+        public static bool HasFlag(UsedControls a, UsedControls b)
+        {
+            return (a & b) == b;
+        }
+
         //
         // Virtual functions used for navigation by the PlayerController
         //
-        public virtual bool IsCompatibleWithPalette() { return true; } // doesn't use the Trigger button
-        public virtual bool IsCompatibleWithUndoRedo() { return true; } // doesn't use the Primary and Secondary buttons
-        public virtual bool IsCompatibleWithReset() { return true; } // doesn't use the primary2DAxisClick
 
-        public virtual void Init(Transform cameraTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform) 
+        // Pass only rig and world and Find("") the other nodes?
+        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform) 
         {
-            camera = cameraTransform;
+            rig = rigTransform;
             world = worldTransform;
             leftHandle = leftHandleTransform;
             pivot = pivotTransform;
+            camera = cameraTransform;
 
             UpdateCameraClipPlanes();
         }
