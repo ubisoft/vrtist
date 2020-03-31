@@ -65,14 +65,16 @@ namespace VRtist
         protected GameObject displayTooltip;
         protected GameObject pointerTooltip;
 
-        protected GameObject plusPrefab;
+        public GameObject selectionVFXPrefab = null;
 
         void Start()
         {
             Init();
             CreateTooltips();
 
-            plusPrefab = Resources.Load<GameObject>("Prefabs/Plus");
+            if(null == selectionVFXPrefab) {
+                selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
+            }
         }
 
         protected void CreateTooltips()
@@ -378,9 +380,8 @@ namespace VRtist
                         DuplicateSelection();
 
                         // Add a selectionVFX instance on the duplicated objects
-                        GameObject prefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
                         foreach(GameObject gobj in Selection.selection.Values) {
-                            GameObject vfxInstance = Instantiate(prefab);
+                            GameObject vfxInstance = Instantiate(selectionVFXPrefab);
                             vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(gobj);
                         }
 

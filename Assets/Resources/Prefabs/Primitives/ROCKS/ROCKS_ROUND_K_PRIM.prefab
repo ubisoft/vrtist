@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4405490490444083426}
   m_Layer: 0
   m_Name: ROCKS_ROUND_K_PRIM
-  m_TagString: Untagged
+  m_TagString: PhysicObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
