@@ -129,7 +129,6 @@ namespace VRtist {
                     }
                 }
             }
-            Debug.Log($"Number of vertices: {positionList.Count}");
         }
 
 
