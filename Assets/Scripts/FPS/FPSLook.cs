@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class FPSLook : MonoBehaviour
 {
+    public Transform rotateX;
     public float sensitivity = 400;
-    public Transform playerBody;
     float xRotation = 0f;
     // Start is called before the first frame update
     void Start()
@@ -29,7 +29,7 @@ public class FPSLook : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        playerBody.Rotate(Vector3.up * mouseX);
+        transform.Rotate(Vector3.up * mouseX);
+        rotateX.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 }

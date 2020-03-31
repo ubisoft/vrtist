@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FPSMove : MonoBehaviour
 {
-    public Transform playerBody;
+    public Transform rotateX;
     public float speed = 1f;
 
     // Update is called once per frame
@@ -13,7 +13,7 @@ public class FPSMove : MonoBehaviour
         float x = Input.GetAxis("Horizontal") * speed;
         float y = Input.GetAxis("Vertical") * speed;
 
-        Vector3 move = transform.right * x + transform.forward * y;
-        playerBody.localPosition += move;
+        Vector3 move = rotateX.right * x + rotateX.forward * y;
+        transform.localPosition += move;
     }
 }
