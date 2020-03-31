@@ -156,14 +156,17 @@ namespace VRtist
         {
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
-                // Change selector size
-                Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                if (val != Vector2.zero)
+                if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                 {
-                    if (val.y > deadZone) { selectorRadius *= scaleFactor; }//+= 0.001f; }
-                    if (val.y < -deadZone) { selectorRadius /= scaleFactor; }//-= 0.001f; }
-                    selectorRadius = Mathf.Clamp(selectorRadius, 0.001f, 0.5f);
-                    selectorBrush.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
+                    // Change selector size
+                    Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                    if (val != Vector2.zero)
+                    {
+                        if (val.y > deadZone) { selectorRadius *= scaleFactor; }//+= 0.001f; }
+                        if (val.y < -deadZone) { selectorRadius /= scaleFactor; }//-= 0.001f; }
+                        selectorRadius = Mathf.Clamp(selectorRadius, 0.001f, 0.5f);
+                        selectorBrush.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
+                    }
                 }
             }
 
@@ -378,11 +381,14 @@ namespace VRtist
                 // Joystick zoom only for non-handle objects
                 if (!Selection.IsHandleSelected())
                 {
-                    Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                    if (joystickAxis.y > deadZone)
-                        scale *= scaleFactor;
-                    if (joystickAxis.y < -deadZone)
-                        scale /= scaleFactor;
+                    if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+                    {
+                        Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                        if (joystickAxis.y > deadZone)
+                            scale *= scaleFactor;
+                        if (joystickAxis.y < -deadZone)
+                            scale /= scaleFactor;
+                    }
                 }
 
                 Transform parent = transform.parent;

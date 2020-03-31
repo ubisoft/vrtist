@@ -210,6 +210,8 @@ namespace VRtist
                 default: Debug.LogError("Unknown navigation mode button name was passed."); break;
             }
             HandleCommonTooltipsVisibility();
+
+            GlobalState.currentNavigationMode = currentNavigationMode;
         }
 
         public void OnNavMode_BiManual()

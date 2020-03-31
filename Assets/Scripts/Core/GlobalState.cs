@@ -20,8 +20,10 @@ namespace VRtist
         // World
         public static float worldScale = 1f;
         private static bool isGrippingWorld = false;
-        public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent();
+        public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
         public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
+
+        public static NavigationMode currentNavigationMode = null;
 
         // Animation
         public static int startFrame = 1;
@@ -117,6 +119,11 @@ namespace VRtist
                     meshFilter.gameObject.SetActive(value);
                 }
             }
+        }
+
+        public static bool CanUseControls(NavigationMode.UsedControls controls)
+        {
+            return (currentNavigationMode == null) ? true : !currentNavigationMode.usedControls.HasFlag(controls);
         }
     }
 }

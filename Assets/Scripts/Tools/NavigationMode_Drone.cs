@@ -18,7 +18,9 @@ namespace VRtist
             cameraForward = Camera.main.transform.TransformDirection(Vector3.forward).normalized;
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Altitude / Strafe");
-            Tooltips.CreateTooltip(leftHandle.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Move Forward, Backward / Turn");
+            // TODO: trouver un moyen d'aller changer un tooltip sur le right_controller (le bon, il y en a un par outil), et lui remettre
+            // ses tooltips quand on change d'outil.
+            //Tooltips.CreateTooltip(leftHandle.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Move Forward, Backward / Turn");
 
             usedControls = UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
         }
