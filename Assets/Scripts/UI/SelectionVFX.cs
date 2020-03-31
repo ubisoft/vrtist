@@ -61,12 +61,12 @@ namespace VRtist {
 
 
         public void SpawnDuplicateVFX(GameObject source) {
-            SpawnVFX(source, duplicateVFXPrefab, 3f);
+            SpawnVFX(source, duplicateVFXPrefab, 1.5f);
         }
 
 
         public void SpawnDeleteVFX(GameObject source) {
-            SpawnVFX(source, deleteVFXPrefab, 2f);
+            SpawnVFX(source, deleteVFXPrefab, 1f);
         }
 
 
@@ -129,6 +129,7 @@ namespace VRtist {
                     }
                 }
             }
+            Debug.Log($"Number of vertices: {positionList.Count}");
         }
 
 
