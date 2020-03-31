@@ -11,13 +11,14 @@ namespace VRtist
         public bool limitVertical = true;
 
         private bool isLocked = false;
-        private float distance = 0.0f;
-        
-        // TODO: handle distance from object, and world scale using the right joystick.
+        private float minDistance = 0.0f;
 
         private Transform target = null; // the target object, pointed and gripped by the ray.
         private Vector3 targetPosition = Vector3.zero; // the target object, pointed and gripped by the ray.
 
+        private float scaleSpeed = 1.0f;
+        private float moveSpeed = 0.1f;
+        private float minMoveDistance = 0.01f;
         private float rotationalSpeed = 3.0f;
         private const float deadZone = 0.5f;
 
@@ -80,6 +81,7 @@ namespace VRtist
 
                     target = hit.collider.transform;
                     targetPosition = hit.collider.bounds.center;
+                    minDistance = hit.collider.bounds.extents.magnitude;
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(hit.point);
                 }
@@ -87,6 +89,7 @@ namespace VRtist
                 {
                     target = null;
                     targetPosition = Vector3.zero;
+                    minDistance = 0.0f;
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(worldEnd);
                 }
@@ -94,17 +97,21 @@ namespace VRtist
             else 
             {
                 //
-                // Joystick -- left/right = rotate left/right.
-                //             up/down = rotate up/down.
+                // Left Joystick -- left/right = rotate left/right.
+                //                  up/down = rotate up/down.
+
+                //Vector3 up = Vector3.up;
+                //Vector3 up = camera.up;
+                Vector3 up = world.up;
+                //Vector3 up = pivot.up;
+                Vector3 forward = Vector3.Normalize(camera.position - targetPosition);
+                Vector3 right = Vector3.Cross(up, forward);
+                float distance = Vector3.Distance(camera.position, targetPosition);
 
                 Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)
                 {
                     // Horizontal rotation
-                    //Vector3 up = Vector3.up;
-                    //Vector3 up = camera.up;
-                    Vector3 up = world.up;
-                    //Vector3 up = pivot.up;
                     if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
@@ -113,9 +120,6 @@ namespace VRtist
                     }
 
                     // Vertical rotation
-                    Vector3 forward = Vector3.Normalize(pivot.position - targetPosition);
-                    Vector3 right = Vector3.Cross(up, forward);
-
                     if (Mathf.Abs(val.y) > deadZone)
                     {
                         float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone)/ (1.0f - deadZone); // remap
@@ -128,6 +132,33 @@ namespace VRtist
                             float rotate_amount_v = value * rotationalSpeed;
                             world.RotateAround(targetPosition, right, rotate_amount_v);
                         }
+                    }
+                }
+
+                //
+                // Right Joystick -- left/right = ???
+                //                   up/down = ???
+                val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                if (val != Vector2.zero)
+                {
+                    if (Mathf.Abs(val.x) > deadZone)
+                    {
+                        float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
+                        float remainingDistance = distance - minDistance;
+                        Debug.Log("d: " + distance + " md: " + minDistance + " rd: " + remainingDistance);
+                        bool in_safe_zone = (remainingDistance > 0.0f);
+                        bool too_close_but_going_back = (remainingDistance <= 0.0f) && (value < 0.0f);
+                        if (in_safe_zone || too_close_but_going_back)
+                        {
+                            Vector3 offset = forward * value * (minMoveDistance + moveSpeed * Mathf.Abs(remainingDistance));
+                            world.position += offset;
+                            targetPosition += offset;
+                        }
+                    }
+
+                    if (Mathf.Abs(val.y) > deadZone)
+                    {
+                        float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone) / (1.0f - deadZone); // remap
                     }
                 }
 
@@ -148,7 +179,6 @@ namespace VRtist
                 {
                     isLocked = true;
                     ray.SetActiveColor();
-                    distance = Vector3.Distance(targetPosition, rig.position);
                 }
 
                 GlobalState.IsGrippingWorld = true;
