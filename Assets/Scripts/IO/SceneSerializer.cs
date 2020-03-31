@@ -51,14 +51,6 @@ namespace VRtist
     {
         [JsonProperty("id")]
         public int id;
-        [JsonProperty("sunLightSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public SunLightParameters sunLightSerializer = null;
-        [JsonProperty("pointLightSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public PointLightParameters pointLightSerializer = null;
-        [JsonProperty("spotLightSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public SpotLightParameters spotLightSerializer = null;
-        [JsonProperty("cameraSerializer", NullValueHandling = NullValueHandling.Ignore)]
-        public CameraParameters cameraSerializer = null;
         [JsonProperty("geometrySerializer", NullValueHandling = NullValueHandling.Ignore)]
         public GeometryParameters geometrySerializer = null;
         [JsonProperty("paintSerializer", NullValueHandling = NullValueHandling.Ignore)]
@@ -106,26 +98,6 @@ namespace VRtist
         {
             Transform rootTransform = null;
 
-            if (sunLightSerializer != null)
-            {
-                GameObject root = Utils.FindGameObject("Lights");
-                rootTransform = sunLightSerializer.Deserialize(root.transform);
-            }
-            if (spotLightSerializer != null)
-            {
-                GameObject root = Utils.FindGameObject("Lights");
-                rootTransform = spotLightSerializer.Deserialize(root.transform);
-            }
-            if (pointLightSerializer != null)
-            {
-                GameObject root = Utils.FindGameObject("Lights");
-                rootTransform = pointLightSerializer.Deserialize(root.transform);
-            }
-            if (cameraSerializer != null)
-            {
-                GameObject root = Utils.FindGameObject("Cameras");
-                rootTransform = cameraSerializer.Deserialize(root.transform);                
-            }
             if (paintSerializer != null)
             {
                 GameObject root = Utils.FindGameObject("Paintings");
@@ -177,18 +149,6 @@ namespace VRtist
                     break;
                 case GeometryParameters geometryParameters:
                     assetSerializer.geometrySerializer = geometryParameters;
-                    break;
-                case SunLightParameters sunLightParameters:
-                    assetSerializer.sunLightSerializer = sunLightParameters;
-                    break;
-                case SpotLightParameters spotLightParameters:
-                    assetSerializer.spotLightSerializer = spotLightParameters;
-                    break;
-                case PointLightParameters pointLightParameters:
-                    assetSerializer.pointLightSerializer = pointLightParameters;
-                    break;
-                case CameraParameters cameraParameters:
-                    assetSerializer.cameraSerializer = cameraParameters;
                     break;
             }
         }

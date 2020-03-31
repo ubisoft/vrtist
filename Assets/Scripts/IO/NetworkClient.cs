@@ -1271,8 +1271,10 @@ namespace VRtist
 
         public static NetCommand BuildAddObjectToScene(AddObjectToSceneInfo info)
         {
+            byte[] sceneNameBuffer = StringToBytes(SyncData.currentSceneName);
             byte[] objectNameBuffer = StringToBytes(info.transform.name);
-            NetCommand command = new NetCommand(objectNameBuffer, MessageType.AddObjectToScene);
+            List<byte[]> buffers = new List<byte[]> { sceneNameBuffer, objectNameBuffer };
+            NetCommand command = new NetCommand(objectNameBuffer, MessageType.AddObjectToDocument);
             return command;
         }
 
@@ -1352,18 +1354,11 @@ namespace VRtist
             if (cam == null)
                 return;
 
-            // Is it necessary ?
-            /////////////////
             CameraController cameraController = camGameObject.GetComponent<CameraController>();
-            CameraParameters cameraParameters = (CameraParameters)cameraController.GetParameters();
-            cameraParameters.focal = focal;
-            //cameraParameters.gateFit = gateFit;
-            /////////////////
+            cameraController.focal = focal;
 
             cam.focalLength = focal;
             cam.gateFit = gateFit;
-
-            cameraParameters.focal = focal;
             cam.focalLength = focal;
             cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
 
@@ -1430,36 +1425,35 @@ namespace VRtist
             LightController lightController = lightGameObject.GetComponent<LightController>();
             if (!lightController)
                 return;
-            LightParameters lightParameters = (LightParameters)lightController.GetParameters();
+            lightController.color = lightColor;
+            switch (lightType)
+            {
+                case LightType.Point:
+                    lightController.intensity = power / 10f;
+                    break;
+                case LightType.Directional:
+                    lightController.intensity = power * 1.5f;
+                    break;
+                case LightType.Spot:
+                    lightController.intensity = power * 0.4f / 3f;
+                    break;
+            }
+            if (lightType == LightType.Spot)
+            {
+                lightController.range = 1000f;
+                lightController.outerAngle = spotSize * 180f / 3.14f;
+                lightController.innerAngle = (1f - spotBlend) * 100f;
+            }
+            lightController.castShadows = shadow != 0 ? true : false;
 
             foreach (Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
             {
                 GameObject gobj = t.Item1;
                 LightController lightContr = gobj.GetComponent<LightController>();
-                lightContr.parameters = lightParameters;
-            }
-            lightParameters.color = lightColor;
-            switch (lightType)
-            {
-                case LightType.Point:
-                    lightParameters.intensity = power / 10f;
-                    break;
-                case LightType.Directional:
-                    lightParameters.intensity = power * 1.5f;
-                    break;
-                case LightType.Spot:
-                    lightParameters.intensity = power * 0.4f / 3f;
-                    break;
+
+                lightContr.CopyParameters(lightController);
             }
 
-            if (lightType == LightType.Spot)
-            {
-                lightParameters.SetRange(1000f);
-                lightParameters.SetOuterAngle(spotSize * 180f / 3.14f);
-                lightParameters.SetInnerAngle((1f - spotBlend) * 100f);
-            }
-            lightParameters.castShadows = shadow != 0 ? true : false;
-            lightController.SetParameters(lightParameters);
             lightController.FireValueChanged();
         }
 
