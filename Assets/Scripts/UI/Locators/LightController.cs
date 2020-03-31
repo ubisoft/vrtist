@@ -8,12 +8,17 @@ namespace VRtist
     {
         public LightParameters parameters = null;
         public override Parameters GetParameters() { return parameters; }
+        public void SetParameters(LightParameters p) { parameters = p; }
 
         private Light lightObject = null;
 
-        // Start is called before the first frame update
-        void Awake()
-        {            
+        public void SetLightEnable(bool enable)
+        {
+            lightObject.gameObject.SetActive(enable);
+        }
+
+        public void Init()
+        {
             Light l = transform.GetComponentInChildren<Light>();
             LightType ltype = l.type;
             lightObject = l;
@@ -29,6 +34,12 @@ namespace VRtist
                     parameters = new SpotLightParameters();
                     break;
             }
+        }
+
+        // Start is called before the first frame update
+        void Awake()
+        {
+            Init();
         }
 
         // Update is called once per frame

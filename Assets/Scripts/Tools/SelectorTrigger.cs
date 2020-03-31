@@ -8,9 +8,6 @@ namespace VRtist
     {
         public Selector selector = null;
 
-        [Header("UI")]
-        //[SerializeField] protected ToolsUIManager uiTools;        
-
         const float deadZone = 0.3f;
         private bool selectionHasChanged = false;
 
@@ -101,7 +98,7 @@ namespace VRtist
 
             // Mono-selection using the grip button
             if (!grippedGameObject && gripState && !triggerState && !primaryButtonState && !multiSelecting
-             && !GlobalState.isGrippingWorld)
+             && !GlobalState.IsGrippingWorld)
             {
                 selector.ClearSelection();
                 selector.AddSiblingsToSelection(gObject);

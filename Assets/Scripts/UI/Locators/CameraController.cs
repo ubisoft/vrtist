@@ -11,8 +11,6 @@ namespace VRtist
         
         private Camera cameraObject = null;
 
-        bool firstTime = true;
-
         // Start is called before the first frame update
         void Awake()
         {
@@ -32,12 +30,6 @@ namespace VRtist
             cameraObject.nearClipPlane = parameters.near * scale;
 
             cameraObject.focalLength = parameters.focal;
-
-            /*
-            bool isSelected = Selection.IsSelected(gameObject);
-            cameraObject.enabled = isSelected || firstTime;
-            firstTime = false;
-            */
         }
     }
 }

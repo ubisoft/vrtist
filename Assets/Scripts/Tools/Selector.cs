@@ -63,7 +63,6 @@ namespace VRtist
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
         protected GameObject displayTooltip;
-        protected GameObject pointerTooltip;
 
         public GameObject selectionVFXPrefab = null;
 
@@ -86,12 +85,10 @@ namespace VRtist
             gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
             joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
             displayTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Info, "0\nselected");
-            pointerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Pointer, "");
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
             Tooltips.SetTooltipVisibility(displayTooltip, false);
-            Tooltips.SetTooltipVisibility(pointerTooltip, false);
         }
 
         public virtual void OnSelectorTriggerEnter(Collider other)
@@ -275,16 +272,31 @@ namespace VRtist
         protected bool gripped = false;
         protected CommandGroup undoGroup = null;
 
+        protected bool gripPrevented = false;
+        protected bool gripInterrupted = false;
+
+        public void OnGripWorld(bool value)
+        {
+            if (value)
+            {
+                if (!gripPrevented && gripped) // no need to interrupt if the grip was prevented
+                {
+                    OnEndGrip(); // prematurely end the grip action
+                    gripInterrupted = true; // set bool to return immediately in the "real" OnEndGrip called when ungripping the controller.
+                }
+            }
+        }
+
         protected void OnStartGrip()
         {
-            if (GlobalState.isGrippingWorld)
-                return;
-
-            //if (!IsHandleSelected())
+            if (GlobalState.IsGrippingWorld)
             {
-                undoGroup = new CommandGroup();
+                gripPrevented = true;
+                return;
             }
 
+            undoGroup = new CommandGroup();
+            
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
@@ -322,10 +334,18 @@ namespace VRtist
         }
         protected void OnEndGrip()
         {
-            if (GlobalState.isGrippingWorld)
+            if (gripPrevented)
+            {
+                gripPrevented = false;
                 return;
+            }
 
-            // Hide gizmos (if needed) if selected objects where gizmos
+            if (gripInterrupted)
+            {
+                gripInterrupted = false;
+                return;
+            }
+
             List<ParametersController> controllers = new List<ParametersController>();
             foreach (var item in Selection.selection)
             {
@@ -390,7 +410,7 @@ namespace VRtist
                         outOfDeadZone = true;
                     }
                 }
-            );            
+            );
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 

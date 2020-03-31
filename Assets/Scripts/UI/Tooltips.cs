@@ -5,7 +5,7 @@ namespace VRtist
 {
     public class Tooltips
     {
-        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, Pointer, System, Info }
+        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, JoystickClick, Pointer, System, Info }
 
         private static GameObject tooltipPrefab = null;
 
@@ -68,6 +68,15 @@ namespace VRtist
                         tooltip.transform.parent = controller.transform.Find("JoystickTopAnchor");
                         linePosition.x *= -1f;
                         framePosition.x *= -1f;
+                        linePosition.y += 0.5f * yOffset;
+                        framePosition.y += 0.5f * yOffset;
+                        break;
+                    case Anchors.JoystickClick:
+                        tooltip.transform.parent = controller.transform.Find("JoystickBaseAnchor");
+                        linePosition.x *= -1f;
+                        framePosition.x *= -1f;
+                        linePosition.y -= 1.5f * yOffset;
+                        framePosition.y -= 1.5f * yOffset;
                         break;
                     case Anchors.Pointer:
                         tooltip.transform.parent = controller.transform.Find("FrontAnchor");
@@ -87,8 +96,8 @@ namespace VRtist
                         tooltip.transform.parent = controller.transform.Find("TriggerButtonAnchor");
                         linePosition.x *= -1f;
                         framePosition.x *= -1f;
-                        linePosition.y += yOffset;
-                        framePosition.y += yOffset;
+                        linePosition.y += 2.0f * yOffset;
+                        framePosition.y += 2.0f * yOffset;
                         break;
                     case Anchors.System:
                         tooltip.transform.parent = controller.transform.Find("SystemButtonAnchor");
@@ -130,7 +139,27 @@ namespace VRtist
             // Set text
             SetTooltipText(tooltip, text);
 
+            // Show tooltip (if Create is used on an already existing tooltip, which may have be hidden).
+            SetTooltipVisibility(tooltip, true);
+
             return tooltip;
+        }
+
+        public static void HideAllTooltips(GameObject controller)
+        {
+            if (controller.name != "right_controller" && controller.name != "left_controller")
+            {
+                throw new System.Exception("Expected a prefab controller");
+            }
+
+            // foreach anchor in Anchors???
+            SetTooltipVisibility(controller, Anchors.Grip, false);
+            SetTooltipVisibility(controller, Anchors.Joystick, false);
+            SetTooltipVisibility(controller, Anchors.Pointer, false);
+            SetTooltipVisibility(controller, Anchors.Primary, false);
+            SetTooltipVisibility(controller, Anchors.Secondary, false);
+            SetTooltipVisibility(controller, Anchors.System, false);
+            SetTooltipVisibility(controller, Anchors.Trigger, false);
         }
 
         public static void SetTooltipVisibility(GameObject controller, Anchors anchor, bool visible)

@@ -86,9 +86,9 @@ namespace VRtist
             //
             // Stretch bar
             //
-            if(null != line)
+            if (line != null)
             {
-                if(lineMode == LineMode.SINGLE)
+                if (lineMode == LineMode.SINGLE)
                 {
                     line.SetPosition(0, left);
                     line.SetPosition(1, right);
@@ -101,7 +101,7 @@ namespace VRtist
                     line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
                 }
             }
-            
+
             //
             // Text
             //

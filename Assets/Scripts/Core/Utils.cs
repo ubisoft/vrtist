@@ -88,13 +88,23 @@ namespace VRtist
             return name;
         }
 
-        public static GameObject CreateInstance(GameObject gObject, Transform parent)
-        {            
+        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null)
+        {
+            GameObject intermediateParent = new GameObject();
+            intermediateParent.transform.parent = parent;
+            Transform srcParent = gObject.transform.parent;
+            if (null != srcParent)
+            {
+                intermediateParent.transform.localPosition = gObject.transform.parent.localPosition;
+                intermediateParent.transform.localRotation = gObject.transform.parent.localRotation;
+                intermediateParent.transform.localScale = gObject.transform.parent.localScale;
+            }
+
             GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
             {
-                res = builder.CreateInstance(gObject, parent);
+                res = builder.CreateInstance(gObject, intermediateParent.transform);
                 ParametersController parametersController = res.GetComponentInParent<ParametersController>();
                 if (parametersController)
                 {
@@ -106,7 +116,7 @@ namespace VRtist
             else
             {
                 // duplicate object or subobject
-                res = GameObject.Instantiate(gObject, parent);
+                res = GameObject.Instantiate(gObject, intermediateParent.transform);
                 ParametersController parametersController = res.GetComponent<ParametersController>();
                 if (parametersController)
                 {
@@ -115,8 +125,18 @@ namespace VRtist
                 }
             }
 
-            string baseName = gObject.name.Split('.')[0];
-            res.name = CreateUniqueName(res, baseName);
+            string appliedName;
+            if (null == name)
+            {
+                string baseName = gObject.name.Split('.')[0];
+                appliedName = CreateUniqueName(res, baseName);
+            }
+            else
+            {
+                appliedName = name;
+            }
+            res.name = appliedName;
+            intermediateParent.name = appliedName + "_parent";
 
             return res;
         }

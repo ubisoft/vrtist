@@ -18,8 +18,10 @@ namespace VRtist
         private GameObject displayTooltip = null;
 
         // World
-        public static bool isGrippingWorld = false;
         public static float worldScale = 1f;
+        private static bool isGrippingWorld = false;
+        public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent();
+        public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
 
         // Animation
         public static int startFrame = 1;
@@ -28,6 +30,24 @@ namespace VRtist
 
         // Gizmos
         public static bool displayGizmos = true;
+
+        private static GlobalState instance = null;
+        private static GlobalState Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = GameObject.FindObjectOfType<GlobalState>();
+                }
+                return instance;
+            }
+        }
+
+        void Awake()
+        {
+            _ = Instance;
+        }
 
         private void Start() {
             if(null != leftController) {
