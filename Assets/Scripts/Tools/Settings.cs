@@ -10,11 +10,19 @@ namespace VRtist
     {
         [Header("Settings Parameters")]
         public AudioMixer mixer = null;
+        public GameObject worldGrid;
+
+        [Header("UI Widgets")]
+        public UICheckbox worldGridCheckbox;
 
         private void Start()
         {
             // tmp
             mixer.SetFloat("Volume_Master", -25.0f);
+
+            if(null != worldGridCheckbox) {
+                worldGridCheckbox.Checked = true;
+            }
         }
 
         public void OnDisplayFPS(bool show) {
@@ -23,6 +31,10 @@ namespace VRtist
 
         public void OnDisplayGizmos(bool show) {
             GlobalState.SetDisplayGizmos(show);
+        }
+
+        public void OnDisplayWorldGrid(bool show) {
+            worldGrid.SetActive(show);
         }
 
         public void OnChangeMasterVolume(float volume)
