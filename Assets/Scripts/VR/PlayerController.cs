@@ -10,6 +10,7 @@ namespace VRtist
         [Header("Base Parameters")]
         [SerializeField] private Transform world = null;
         [SerializeField] private Transform buttonsContainer = null;
+        [SerializeField] private Transform parametersContainer = null;
         [SerializeField] private Transform leftHandle = null;
         [SerializeField] private Transform pivot = null;
         [SerializeField] private Transform vrCamera = null;
@@ -217,39 +218,39 @@ namespace VRtist
         public void OnNavMode_BiManual()
         {
             currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
-            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, parametersContainer);
         }
 
         public void OnNavMode_Teleport()
         {
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Teleport();
-            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, parametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
             currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, minPlayerScale, maxPlayerScale);
-            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, parametersContainer);
         }
 
         public void OnNavMode_Fps()
         {
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Fps();
-            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, parametersContainer);
         }
 
         public void OnNavMode_Drone()
         {
             currentNavigationMode = new NavigationMode_Drone();
-            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, parametersContainer);
         }
 
         public void OnNavMode_Fly()
         {
             currentNavigationMode = new NavigationMode_Fly(flySpeed, minPlayerScale, maxPlayerScale);
-            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, parametersContainer);
         }
 
         private void UpdateRadioButtons(string activeButtonName)

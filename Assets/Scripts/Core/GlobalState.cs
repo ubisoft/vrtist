@@ -23,7 +23,11 @@ namespace VRtist
         public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
         public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
 
+        // Navigation
         public static NavigationMode currentNavigationMode = null;
+        public static float flightSpeed = 5f;
+        public static float flightRotationSpeed = 5f;
+        public static float flightDamping = 5f;
 
         // Animation
         public static int startFrame = 1;
@@ -124,6 +128,19 @@ namespace VRtist
         public static bool CanUseControls(NavigationMode.UsedControls controls)
         {
             return (currentNavigationMode == null) ? true : !currentNavigationMode.usedControls.HasFlag(controls);
+        }
+
+        public void OnFlightSpeedChange(float value)
+        {
+            flightSpeed = value;
+        }
+        public void OnFlightRotationSpeedChange(float value)
+        {
+            flightRotationSpeed = value;
+        }
+        public void OnFlightDampingChange(float value)
+        {
+            flightDamping = value;
         }
     }
 }

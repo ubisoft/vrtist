@@ -12,9 +12,9 @@ namespace VRtist
 
         private Vector3 cameraForward;
 
-        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform)
+        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
-            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform);
+            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform, parametersTransform);
             cameraForward = Camera.main.transform.TransformDirection(Vector3.forward).normalized;
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Altitude / Strafe");
@@ -23,14 +23,25 @@ namespace VRtist
             //Tooltips.CreateTooltip(leftHandle.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Move Forward, Backward / Turn");
 
             usedControls = UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
+
+            Transform drone = parametersTransform.Find("Drone");
+            drone.gameObject.SetActive(true);
+        }
+
+        public override void DeInit() 
+        {
+            Transform drone = parameters.Find("Drone");
+            drone.gameObject.SetActive(false);
         }
 
         // Update is called once per frame
         public override void Update()
         {
+            float speed = flySpeed * GlobalState.flightSpeed;
             Vector2 leftJoyValue = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
             if (leftJoyValue != Vector2.zero)
             {
+                float rSpeed = rotationSpeed * GlobalState.flightRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
 
                 // move up
@@ -38,10 +49,10 @@ namespace VRtist
                 Vector3 upDownVelocity = up * leftJoyValue.y * d;
                 Vector3 right = Vector3.Cross(up, cameraForward).normalized;
 
-                rig.position += upDownVelocity * flySpeed;
+                rig.position += upDownVelocity * speed;
 
                 // rotate
-                Quaternion rotation = Quaternion.AngleAxis(leftJoyValue.x * rotationSpeed, up);
+                Quaternion rotation = Quaternion.AngleAxis(leftJoyValue.x * rSpeed, up);
                 rig.rotation = rotation * rig.rotation;
 
                 // update forward
@@ -67,7 +78,7 @@ namespace VRtist
                 // strafe
                 Vector3 leftRightVelocity = right * rightJoyValue.x * d;
 
-                rig.position += forwardVelocity * flySpeed + leftRightVelocity * flySpeed;
+                rig.position += forwardVelocity * speed + leftRightVelocity * speed;
             }
         }
     }
