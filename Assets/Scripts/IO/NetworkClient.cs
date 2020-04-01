@@ -1557,6 +1557,8 @@ namespace VRtist
 
             int bakedMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
+            if (bakedMeshDataSize == 0)
+                return null;
 
             int verticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
