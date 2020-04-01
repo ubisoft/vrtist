@@ -16,7 +16,11 @@ namespace VRtist
         private Transform target = null; // the target object, pointed and gripped by the ray.
         private Vector3 targetPosition = Vector3.zero; // the target object, pointed and gripped by the ray.
 
-        private float scaleSpeed = 1.0f;
+        //private Matrix4x4 initWorldMatrix_W;
+
+        //private float scale = 1.0f;
+        private float initWorldScale = 1.0f;
+        private float scaleSpeed = 0.01f; // percent of scale / frame
         private float moveSpeed = 0.1f;
         private float minMoveDistance = 0.01f;
         private float rotationalSpeed = 3.0f;
@@ -46,7 +50,7 @@ namespace VRtist
             if (ray != null)
             {
                 ray.gameObject.SetActive(true);
-                ray.SetDefaultColor();
+                ray.SetDefaultColor(); // TODO: does not seem to work.
             }
         }
 
@@ -93,6 +97,8 @@ namespace VRtist
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(worldEnd);
                 }
+
+                ray.SetDefaultColor(); // because the color change did not work in Init :(
             }
             else 
             {
@@ -141,12 +147,12 @@ namespace VRtist
                 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)
                 {
+                    float remainingDistance = distance - minDistance;
+                    bool in_safe_zone = (remainingDistance > 0.0f);
+
                     if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
-                        float remainingDistance = distance - minDistance;
-                        Debug.Log("d: " + distance + " md: " + minDistance + " rd: " + remainingDistance);
-                        bool in_safe_zone = (remainingDistance > 0.0f);
                         bool too_close_but_going_back = (remainingDistance <= 0.0f) && (value < 0.0f);
                         if (in_safe_zone || too_close_but_going_back)
                         {
@@ -156,10 +162,44 @@ namespace VRtist
                         }
                     }
 
+                    // NOTE: scale is not cumulative, it is a quantity of scale to apply to the captured scene dimensions and positions when we gripped.
+                    //       this scale can go up or down, scaling a bit more or a bit less the captured scene.
+                    /*
                     if (Mathf.Abs(val.y) > deadZone)
                     {
                         float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone) / (1.0f - deadZone); // remap
+                        //float prevScale = scale; // save previous scaleFactor, to get it back if the new scale is clamped
+                        bool too_close_but_scaling_down = (remainingDistance <= 0.0f) && (value < 0.0f);
+                        if (in_safe_zone || too_close_but_scaling_down)
+                        {
+                            if (value > 0.0f)
+                                scale *= scaleSpeed;
+                            if (value < 0.0f)
+                                scale /= scaleSpeed;
+
+                            GlobalState.worldScale = scale;
+
+                            Vector3 scalePivot = targetPosition;
+                            Vector3 pivot_to_world = world.position - scalePivot;
+                            pivot_to_world.Scale(new Vector3(scale, scale, scale)); // scale the distance between pivot and world center.
+                            world.position = scalePivot + pivot_to_world; // move the world closer/farther from the pivot.
+                            targetPosition = world.position - pivot_to_world; // also move the gripped object from the new world position, in the other direction.
+
+                            float finalScale = scale * initWorldScale;
+                            float clampedScale = Mathf.Clamp(finalScale, 1.0f / maxPlayerScale, minPlayerScale); // 
+                            Debug.Log("d: " + pivot_to_world.magnitude + " s: " + scale + " fs: " + finalScale + " cs: " + clampedScale + " d:" + remainingDistance);
+                            world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
+                            if (finalScale != clampedScale)
+                            {
+                                //scale = prevScale; // if clamped, get back the previous scale factor.
+                            }
+
+                            GlobalState.worldScale = world.localScale.x;
+
+                            UpdateCameraClipPlanes();
+                        }
                     }
+                    */
                 }
 
                 // Position the ray AFTER the rotation of the camera, to avoid a one frame shift.
@@ -178,6 +218,7 @@ namespace VRtist
                 if (target != null)
                 {
                     isLocked = true;
+                    ResetScale();
                     ray.SetActiveColor();
                 }
 
@@ -189,52 +230,13 @@ namespace VRtist
                 ray.SetDefaultColor();
                 GlobalState.IsGrippingWorld = false;
             });
+        }
 
-
-
-
-
-
-            // NOTE: we test isLeftGrip because we can be ungripped but still over the deadzone, strangely.
-            //if (isLeftGripped && VRInput.GetValue(VRInput.leftController, CommonUsages.grip) > deadZone)
-            //{
-            //    float prevScale = scale;
-
-            //    // Scale using left joystick.
-            //    Vector2 joystickAxis = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
-            //    if (joystickAxis.y > deadZone)
-            //        scale *= fixedScaleFactor;
-            //    if (joystickAxis.y < -deadZone)
-            //        scale /= fixedScaleFactor;
-
-            //    GlobalState.worldScale = scale;
-
-            //    // TODO: draw scale factor.
-
-            //    // update left joystick
-            //    Vector3 currentLeftControllerPosition_L;
-            //    Quaternion currentLeftControllerRotation_L;
-            //    VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
-            //    Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
-            //    Matrix4x4 currentLeftControllerMatrix_W = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled;
-            //    Vector3 currentLeftControllerPosition_W = currentLeftControllerMatrix_W.MultiplyPoint(Vector3.zero);
-
-            //    Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
-            //    Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
-
-            //    world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-            //    world.localRotation = transformed.rotation;
-            //    float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / maxPlayerScale, minPlayerScale);
-            //    world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
-            //    if (transformed.lossyScale.x != clampedScale)
-            //    {
-            //        scale = prevScale;
-            //    }
-
-            //    GlobalState.worldScale = world.localScale.x;
-
-            //    UpdateCameraClipPlanes();
-            //}
+        private void ResetScale()
+        {
+            //scale = 1f;
+            //initWorldScale = world.localScale.x;
+            //GlobalState.worldScale = scale;
         }
     }
 }
