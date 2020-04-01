@@ -8,10 +8,16 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 1
-    path: Assets/Scenes/Main.unity
-    guid: 595b34f89924f0c428fba06252e6973d
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
     path: Assets/Scenes/TestAssimp.unity
     guid: 524f9e50287bfac449ad4d194a9bbb00
+  - enabled: 0
+    path: Assets/Scenes/COVID-19-Thomas.unity
+    guid: e5e17dd2c2c4c774b9e9b7690f9e945d
+  - enabled: 1
+    path: Assets/Scenes/Main.unity
+    guid: 7d5e0dc6473df1b45b3513285a7e952b
   m_configObjects: {}

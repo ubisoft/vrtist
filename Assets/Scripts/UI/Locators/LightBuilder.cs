@@ -10,8 +10,6 @@ namespace VRtist
         {
             GameObject newLight = GameObject.Instantiate(source, parent);
             LightController lightController = source.GetComponentInChildren<LightController>();
-            lightController.Init();
-            newLight.GetComponentInChildren<LightController>().parameters = lightController.GetParameters() as LightParameters;
             VRInput.DeepSetLayer(newLight, 5);
 
             return newLight;
