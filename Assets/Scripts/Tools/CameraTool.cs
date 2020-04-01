@@ -42,10 +42,7 @@ namespace VRtist
                     CameraController cameraControler = gobject.GetComponent<CameraController>();
                     if (null == cameraControler)
                         continue;
-                    CameraParameters cameraParameters = cameraControler.GetParameters() as CameraParameters;
-                    if (null == cameraParameters)
-                        continue;
-                    cameraParameters.focal = value;
+                    cameraControler.focal = value;
                 }
             }
         }
@@ -325,19 +322,16 @@ namespace VRtist
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;
-                CameraParameters cameraParameters = cameraController.GetParameters() as CameraParameters;
-                if (null == cameraParameters)
-                    continue;
-
+                
                 // Update the Dopesheet
                 if (dopesheet != null)
-                    dopesheet.UpdateFromCamera(cameraParameters); // anim parameters? to be generic
+                    dopesheet.UpdateFromCamera(cameraController); // anim parameters? to be generic
             
                 // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
                 {
-                    sliderComp.Value = cameraParameters.focal;
+                    sliderComp.Value = cameraController.focal;
                     focalSlider.gameObject.SetActive(true);
                 }
 
@@ -363,10 +357,7 @@ namespace VRtist
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;
-                CameraParameters cameraParameters = cameraController.GetParameters() as CameraParameters;
-                if (null == cameraParameters)
-                    continue;
-
+                
                 AddListener(cameraController);
             }
 
@@ -375,26 +366,26 @@ namespace VRtist
 
         public void OnFocalSliderPressed()
         {
-            OnSliderPressed("Camera Focal", "/CameraController/parameters.focal");
+            OnSliderPressed("Camera Focal", "/CameraController/focal");
         }
 
         public void OnAddKeyframe(int i)
         {
             // TODO:
-            // - add a keyframe to the currently selected camera cameraParameters
+            // - add a keyframe to the currently selected camera cameraController
         }
 
         public void OnRemoveKeyframe(int i)
         {
             // TODO:
-            // - remove a keyframe to the currently selected camera cameraParameters
+            // - remove a keyframe to the currently selected camera cameraController
         }
 
         static int the_next_keyframe = 1; // TMP
         public void OnNextKeyframe(int currentKeyframe)
         {
             // TODO: 
-            // - find the next keyframe, using the current one provided, and cameraParameters keyframes.
+            // - find the next keyframe, using the current one provided, and cameraController keyframes.
             // - call the dopesheet to tell it the new current keyframe
             if (dopesheet != null)
             {
@@ -407,7 +398,7 @@ namespace VRtist
         public void OnPreviousKeyframe(int currentKeyframe)
         {
             // TODO: 
-            // - find the previous keyframe, using the current one provided, and cameraParameters keyframes.
+            // - find the previous keyframe, using the current one provided, and cameraController keyframes.
             // - call the dopesheet to tell it the new current keyframe
 
             if (dopesheet != null)

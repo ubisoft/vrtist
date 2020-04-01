@@ -43,6 +43,8 @@ namespace VRtist
             UpdateCameraClipPlanes();
         }
 
+        public virtual void DeInit() { }
+
         public virtual void Update() { }
 
         //

@@ -90,12 +90,12 @@ namespace VRtist
             }
         }
 
-        public void UpdateFromCamera(CameraParameters cameraParameters)
+        public void UpdateFromCamera(CameraController cameraController)
         {
-            // use cameraParameters keyframes arrays to update the tracks.
-            //cameraParameters.position_kf;
-            //cameraParameters.rotation_kf;
-            //cameraParameters.focal_kf;
+            // use cameraController keyframes arrays to update the tracks.
+            //cameraController.position_kf;
+            //cameraController.rotation_kf;
+            //cameraController.focal_kf;
         }
 
         public void Clear()

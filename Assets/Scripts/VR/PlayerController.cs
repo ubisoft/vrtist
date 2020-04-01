@@ -24,6 +24,11 @@ namespace VRtist
         [Tooltip("Speed in m/s")]
         public float flySpeed = 0.2f;
 
+        [Header("Orbit Navigation")]
+        [Tooltip("Speed in degrees/s")]
+        public StraightRay ray = null;
+        public float rotationalSpeed = 3.0f;
+
         private NavigationMode currentNavigationMode = null;
 
         private const float deadZone = 0.3f; // for palette pop
@@ -45,6 +50,9 @@ namespace VRtist
 
             if (leftHandle == null) { Debug.LogWarning("Cannot find 'LeftHandle' game object"); }
             if (pivot == null) { Debug.LogWarning("Cannot find 'Pivot' game object"); }
+            
+            if (ray != null)
+                ray.gameObject.SetActive(false);
 
             tooltipPalette = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
             tooltipUndo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
@@ -183,7 +191,12 @@ namespace VRtist
         public void OnChangeNavigationMode(string buttonName)
         {
             UpdateRadioButtons(buttonName);
+
             Tooltips.HideAllTooltips(leftHandle.Find("left_controller").gameObject);
+
+            if (currentNavigationMode != null)
+                currentNavigationMode.DeInit();
+
             switch (buttonName)
             {
                 case "BiManual": OnNavMode_BiManual(); break;
@@ -212,8 +225,7 @@ namespace VRtist
 
         public void OnNavMode_Orbit()
         {
-            currentNavigationMode = new NavigationMode();
-            //currentNavigationMode = new NavigationMode_Orbit();
+            currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot);
         }
 

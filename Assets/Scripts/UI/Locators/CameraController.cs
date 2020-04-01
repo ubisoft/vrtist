@@ -6,10 +6,10 @@ namespace VRtist
 {
     public class CameraController : ParametersController
     {
-        public CameraParameters parameters = new CameraParameters();
-        public override Parameters GetParameters() { return parameters; }
-        
         private Camera cameraObject = null;
+        public float focal = 35f;
+        public float near = 0.07f;
+        public float far = 1000f;
 
         // Start is called before the first frame update
         void Awake()
@@ -26,10 +26,10 @@ namespace VRtist
                 GetWorldTransform();
 
             float scale = world.localScale.x;
-            cameraObject.farClipPlane = parameters.far * scale;
-            cameraObject.nearClipPlane = parameters.near * scale;
+            cameraObject.farClipPlane = far * scale;
+            cameraObject.nearClipPlane = near * scale;
 
-            cameraObject.focalLength = parameters.focal;
+            cameraObject.focalLength = focal;
         }
     }
 }
