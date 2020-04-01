@@ -89,12 +89,15 @@ namespace VRtist
 
         public virtual void SetColor(Color color)
         {
-            Material material = GetComponent<MeshRenderer>().material; // THIS triggers the warning in editor.
+            // NOTE: est-ce qu'on a vraiment besoin d'acceder a material, sachant que le sharedMaterial est deja
+            // une instance manuelle, et qu'il ne share rien, c'est son unique instance???
+            //Material material = GetComponent<MeshRenderer>().material; // THIS triggers the warning in editor.
+            Material material = GetComponent<MeshRenderer>().sharedMaterial;
             material.SetColor("_BaseColor", color);
         }
 
         public virtual void RebuildMesh() { }
-
+        public virtual void ResetMaterial() { }
         public virtual bool HandlesCursorBehavior() { return false; }
         public virtual void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform) { }
     }

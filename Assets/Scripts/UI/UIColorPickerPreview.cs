@@ -18,7 +18,8 @@ namespace VRtist
 
         public void SetColor(Color color)
         {
-            GetComponent<MeshRenderer>().material.SetColor("_Color", color);
+            //GetComponent<MeshRenderer>().material.SetColor("_Color", color);
+            GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", color);
         }
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness)

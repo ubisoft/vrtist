@@ -43,7 +43,8 @@ namespace VRtist
         {
             baseColor = clr;
             var renderer = GetComponent<MeshRenderer>();
-            renderer.material.SetColor("_Color", clr);
+            //renderer.material.SetColor("_Color", clr);
+            renderer.sharedMaterial.SetColor("_Color", clr);
         }
 
         public Vector2 GetSaturation()
