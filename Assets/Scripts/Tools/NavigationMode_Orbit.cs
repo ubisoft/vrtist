@@ -16,12 +16,8 @@ namespace VRtist
         private Transform target = null; // the target object, pointed and gripped by the ray.
         private Vector3 targetPosition = Vector3.zero; // the target object, pointed and gripped by the ray.
 
-        //private Matrix4x4 initWorldMatrix_W;
-
-        //private float scale = 1.0f;
-        private float initWorldScale = 1.0f;
-        private float scaleSpeed = 0.01f; // percent of scale / frame
-        private float moveSpeed = 0.1f;
+        private float scaleSpeed = 0.02f; // percent of scale / frame
+        private float moveSpeed = 0.05f;
         private float minMoveDistance = 0.01f;
         private float rotationalSpeed = 3.0f;
         private const float deadZone = 0.5f;
@@ -102,18 +98,14 @@ namespace VRtist
             }
             else 
             {
-                //
-                // Left Joystick -- left/right = rotate left/right.
-                //                  up/down = rotate up/down.
-
-                //Vector3 up = Vector3.up;
-                //Vector3 up = camera.up;
                 Vector3 up = world.up;
-                //Vector3 up = pivot.up;
                 Vector3 forward = Vector3.Normalize(camera.position - targetPosition);
                 Vector3 right = Vector3.Cross(up, forward);
                 float distance = Vector3.Distance(camera.position, targetPosition);
 
+                //
+                // Left Joystick -- left/right = rotate left/right.
+                //                  up/down = rotate up/down.
                 Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)
                 {
@@ -142,14 +134,15 @@ namespace VRtist
                 }
 
                 //
-                // Right Joystick -- left/right = ???
-                //                   up/down = ???
+                // Right Joystick -- left/right = move closer/farther
+                //                   up/down = scale world
                 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)
                 {
                     float remainingDistance = distance - minDistance;
                     bool in_safe_zone = (remainingDistance > 0.0f);
 
+                    // Move the world closer/farther
                     if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
@@ -162,44 +155,31 @@ namespace VRtist
                         }
                     }
 
-                    // NOTE: scale is not cumulative, it is a quantity of scale to apply to the captured scene dimensions and positions when we gripped.
-                    //       this scale can go up or down, scaling a bit more or a bit less the captured scene.
-                    /*
+                    // Scale the world
                     if (Mathf.Abs(val.y) > deadZone)
                     {
                         float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone) / (1.0f - deadZone); // remap
-                        //float prevScale = scale; // save previous scaleFactor, to get it back if the new scale is clamped
                         bool too_close_but_scaling_down = (remainingDistance <= 0.0f) && (value < 0.0f);
                         if (in_safe_zone || too_close_but_scaling_down)
                         {
-                            if (value > 0.0f)
-                                scale *= scaleSpeed;
-                            if (value < 0.0f)
-                                scale /= scaleSpeed;
-
-                            GlobalState.worldScale = scale;
+                            float scale = 1.0f + (value * scaleSpeed);
 
                             Vector3 scalePivot = targetPosition;
                             Vector3 pivot_to_world = world.position - scalePivot;
-                            pivot_to_world.Scale(new Vector3(scale, scale, scale)); // scale the distance between pivot and world center.
-                            world.position = scalePivot + pivot_to_world; // move the world closer/farther from the pivot.
-                            targetPosition = world.position - pivot_to_world; // also move the gripped object from the new world position, in the other direction.
+                            pivot_to_world.Scale(new Vector3(scale, scale, scale));
+                            world.position = scalePivot + pivot_to_world;
+                            targetPosition = world.position - pivot_to_world;
+                            minDistance *= scale;
 
-                            float finalScale = scale * initWorldScale;
-                            float clampedScale = Mathf.Clamp(finalScale, 1.0f / maxPlayerScale, minPlayerScale); // 
-                            Debug.Log("d: " + pivot_to_world.magnitude + " s: " + scale + " fs: " + finalScale + " cs: " + clampedScale + " d:" + remainingDistance);
+                            float finalScale = scale * world.localScale.x;
+                            float clampedScale = Mathf.Clamp(finalScale, 1.0f / maxPlayerScale, minPlayerScale);
                             world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
-                            if (finalScale != clampedScale)
-                            {
-                                //scale = prevScale; // if clamped, get back the previous scale factor.
-                            }
-
+                            
                             GlobalState.worldScale = world.localScale.x;
 
                             UpdateCameraClipPlanes();
                         }
                     }
-                    */
                 }
 
                 // Position the ray AFTER the rotation of the camera, to avoid a one frame shift.
@@ -218,7 +198,6 @@ namespace VRtist
                 if (target != null)
                 {
                     isLocked = true;
-                    ResetScale();
                     ray.SetActiveColor();
                 }
 
@@ -230,13 +209,6 @@ namespace VRtist
                 ray.SetDefaultColor();
                 GlobalState.IsGrippingWorld = false;
             });
-        }
-
-        private void ResetScale()
-        {
-            //scale = 1f;
-            //initWorldScale = world.localScale.x;
-            //GlobalState.worldScale = scale;
         }
     }
 }
