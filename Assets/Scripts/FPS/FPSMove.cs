@@ -13,6 +13,9 @@ public class FPSMove : MonoBehaviour
         float x = Input.GetAxis("Horizontal") * speed;
         float y = Input.GetAxis("Vertical") * speed;
 
+        if (x == 0f && y == 0f)
+            return;
+
         Vector3 move = rotateX.right * x + rotateX.forward * y;
         transform.localPosition += move;
     }
