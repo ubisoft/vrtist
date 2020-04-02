@@ -600,6 +600,9 @@ namespace VRtist
 
         public static void SetScene(string sceneName)
         {
+            if (sceneName == currentSceneName)
+                return;
+
             currentSceneName = sceneName;
 
             sceneCollections.Clear();

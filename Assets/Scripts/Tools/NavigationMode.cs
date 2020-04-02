@@ -11,6 +11,7 @@ namespace VRtist
         protected Transform leftHandle = null;
         protected Transform pivot = null;
         protected Transform camera = null;
+        protected Transform parameters = null;
 
         public UsedControls usedControls = UsedControls.NONE;
 
@@ -53,13 +54,14 @@ namespace VRtist
         //
 
         // Pass only rig and world and Find("") the other nodes?
-        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform) 
+        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform) 
         {
             rig = rigTransform;
             world = worldTransform;
             leftHandle = leftHandleTransform;
             pivot = pivotTransform;
             camera = cameraTransform;
+            parameters = parametersTransform;
 
             UpdateCameraClipPlanes();
         }

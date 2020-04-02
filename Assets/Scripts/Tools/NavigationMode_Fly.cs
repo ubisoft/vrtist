@@ -29,9 +29,9 @@ namespace VRtist
             maxPlayerScale = maxScale;
         }
 
-        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform)
+        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
-            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform);
+            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Move / Turn");
