@@ -27,9 +27,11 @@ namespace VRtist
         public float flySpeed = 0.2f;
 
         [Header("Orbit Navigation")]
-        [Tooltip("Speed in degrees/s")]
         public StraightRay ray = null;
+        public float moveSpeed = 0.05f;
+        [Tooltip("Speed in degrees/s")]
         public float rotationalSpeed = 3.0f;
+        public float scaleSpeed = 0.02f;
 
         [Header("Teleport Navigation")]
         //public TeleportArc arc = null;
@@ -235,7 +237,7 @@ namespace VRtist
 
         public void OnNavMode_Orbit()
         {
-            currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, minPlayerScale, maxPlayerScale);
+            currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, scaleSpeed, moveSpeed, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 

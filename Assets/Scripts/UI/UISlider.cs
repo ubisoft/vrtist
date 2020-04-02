@@ -21,7 +21,7 @@ namespace VRtist
         [CentimeterFloat] public float thickness = 0.001f;
         public float sliderPositionBegin = 0.3f;
         public float sliderPositionEnd = 0.8f;
-        public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);
+        public Color pushedColor = new Color(0f, 0.6549f, 1f);
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;

@@ -18,17 +18,21 @@ namespace VRtist
 
         private float scaleSpeed = 0.02f; // percent of scale / frame
         private float moveSpeed = 0.05f;
-        private float minMoveDistance = 0.01f;
         private float rotationalSpeed = 3.0f;
+
+        private float minMoveDistance = 0.01f;
         private const float deadZone = 0.5f;
 
         private float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
         private float minPlayerScale = 50.0f; // world scale = 50.0f;
 
-        public NavigationMode_Orbit(StraightRay theRay, float speed, float minScale, float maxScale)
+        public NavigationMode_Orbit(StraightRay theRay, float rotSpeed, float scSpeed, float mvSpeed, float minScale, float maxScale)
         {
             ray = theRay;
-            rotationalSpeed = speed;
+            rotationalSpeed = rotSpeed;
+            scaleSpeed = scSpeed;
+            moveSpeed = mvSpeed;
+
             minPlayerScale = minScale;
             maxPlayerScale = maxScale;
         }
@@ -40,9 +44,33 @@ namespace VRtist
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Turn");
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip Object");
+            // TODO: find a way to reach the current right_controller (via GlobalState???)
 
             usedControls = UsedControls.LEFT_GRIP | UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
 
+            // Activate Panel and set initial slider values.
+            Transform orbitPanel = parametersTransform.Find("Orbit");
+            if (orbitPanel != null)
+            {
+                orbitPanel.gameObject.SetActive(true);
+                UISlider moveSpeedSlider = orbitPanel.Find("MoveSpeed")?.GetComponent<UISlider>();
+                if (moveSpeedSlider != null)
+                {
+                    moveSpeedSlider.Value = moveSpeed;
+                }
+                UISlider scaleSpeedSlider = orbitPanel.Find("ScaleSpeed")?.GetComponent<UISlider>();
+                if (scaleSpeedSlider)
+                {
+                    scaleSpeedSlider.Value = scaleSpeed;
+                }
+                UISlider rotateSpeedSlider = orbitPanel.Find("RotateSpeed")?.GetComponent<UISlider>();
+                if (rotateSpeedSlider)
+                {
+                    rotateSpeedSlider.Value = rotationalSpeed;
+                }
+            }
+
+            // Activate the ray.
             if (ray != null)
             {
                 ray.gameObject.SetActive(true);
@@ -53,6 +81,9 @@ namespace VRtist
         public override void DeInit()
         {
             base.DeInit();
+
+            Transform orbitPanel = parameters.Find("Orbit");
+            orbitPanel.gameObject.SetActive(false);
 
             if (ray != null)
             {
@@ -113,7 +144,7 @@ namespace VRtist
                     if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
-                        float rotate_amount_h = value * rotationalSpeed;
+                        float rotate_amount_h = value * GlobalState.orbitRotationalSpeed;//rotationalSpeed;
                         world.RotateAround(targetPosition, up, rotate_amount_h);
                     }
 
@@ -127,7 +158,7 @@ namespace VRtist
                         bool below_but_going_up = (dot < -0.8f) && (value > 0.0f);
                         if (!limitVertical || in_safe_zone || above_but_going_down || below_but_going_up) // only within limits
                         {
-                            float rotate_amount_v = value * rotationalSpeed;
+                            float rotate_amount_v = value * GlobalState.orbitRotationalSpeed; //rotationalSpeed;
                             world.RotateAround(targetPosition, right, rotate_amount_v);
                         }
                     }
@@ -149,7 +180,7 @@ namespace VRtist
                         bool too_close_but_going_back = (remainingDistance <= 0.0f) && (value < 0.0f);
                         if (in_safe_zone || too_close_but_going_back)
                         {
-                            Vector3 offset = forward * value * (minMoveDistance + moveSpeed * Mathf.Abs(remainingDistance));
+                            Vector3 offset = forward * value * (minMoveDistance + GlobalState.orbitMoveSpeed * Mathf.Abs(remainingDistance)); //moveSpeed 
                             world.position += offset;
                             targetPosition += offset;
                         }
@@ -162,7 +193,7 @@ namespace VRtist
                         bool too_close_but_scaling_down = (remainingDistance <= 0.0f) && (value < 0.0f);
                         if (in_safe_zone || too_close_but_scaling_down)
                         {
-                            float scale = 1.0f + (value * scaleSpeed);
+                            float scale = 1.0f + (value * GlobalState.orbitScaleSpeed); // scaleSpeed
 
                             Vector3 scalePivot = targetPosition;
                             Vector3 pivot_to_world = world.position - scalePivot;

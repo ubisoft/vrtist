@@ -30,7 +30,7 @@ namespace VRtist
 
         private void ApplyColor(Color c)
         {
-            GetComponent<MeshRenderer>().material.SetColor("_BaseColor", c);
+            GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", c);
         }
 
         public static UISliderKnob CreateUISliderKnob(
