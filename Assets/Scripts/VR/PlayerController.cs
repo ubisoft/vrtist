@@ -34,7 +34,7 @@ namespace VRtist
         public float scaleSpeed = 0.02f;
 
         [Header("Teleport Navigation")]
-        //public TeleportArc arc = null;
+        public Transform teleport = null;
 
         private NavigationMode currentNavigationMode = null;
 
@@ -231,7 +231,7 @@ namespace VRtist
 
         public void OnNavMode_Teleport()
         {
-            currentNavigationMode = new NavigationMode_Teleport(/*arc*/);
+            currentNavigationMode = new NavigationMode_Teleport(teleport);
             currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
