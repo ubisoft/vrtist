@@ -5,7 +5,7 @@ using UnityEngine;
 public class FPSLook : MonoBehaviour
 {
     public Transform rotateX;
-    public float sensitivity = 400;
+    private float sensitivity = 400;
     float xRotation = 0f;
     // Start is called before the first frame update
     void Start()
