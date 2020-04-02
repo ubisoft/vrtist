@@ -7,7 +7,6 @@ TagManager:
   - PhysicObject
   - UIObject
   - UICollider
-  - DeformerCollider
   layers:
   - Default
   - TransparentFX

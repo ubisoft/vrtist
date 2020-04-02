@@ -6,7 +6,7 @@ namespace VRtist
 {
     public class SelectorTrigger : MonoBehaviour
     {
-        public Selector selector = null;
+        public SelectorBase selector = null;
 
         const float deadZone = 0.3f;
         private bool selectionHasChanged = false;
@@ -57,8 +57,8 @@ namespace VRtist
                 GameObject collidedObject = collidedObjects[count - 1];
                 switch (selector.mode)
                 {
-                    case Selector.SelectorModes.Select: UpdateSelection(collidedObject); break;
-                    case Selector.SelectorModes.Eraser: UpdateEraser(collidedObject); break;
+                    case SelectorBase.SelectorModes.Select: UpdateSelection(collidedObject); break;
+                    case SelectorBase.SelectorModes.Eraser: UpdateEraser(collidedObject); break;
                 }
             }
 
