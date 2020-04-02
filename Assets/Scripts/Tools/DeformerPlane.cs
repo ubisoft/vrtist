@@ -7,13 +7,13 @@ namespace VRtist
 {
     public class DeformerPlane : MonoBehaviour
     {
-        public Deformer deformer;
+        public Selector deformer;
         public Transform opposite;
         public Vector3 direction;
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.tag == "DeformerCollider")
+            if (null != other.gameObject.GetComponent<DeformerTrigger>())  // tag == "DeformerCollider"
             {
                 if(deformer.ActivePlane() == null)
                     deformer.SetActivePLane(this);
@@ -22,7 +22,7 @@ namespace VRtist
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.tag == "DeformerCollider")
+            if (null != other.gameObject.GetComponent<DeformerTrigger>())  // tag == "DeformerCollider"
             {
                 if (deformer.ActivePlane() == this)
                     deformer.SetActivePLane(null);
