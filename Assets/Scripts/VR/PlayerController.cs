@@ -10,8 +10,10 @@ namespace VRtist
         [Header("Base Parameters")]
         [SerializeField] private Transform world = null;
         [SerializeField] private Transform buttonsContainer = null;
+        [SerializeField] private Transform navigationParametersContainer= null;
         [SerializeField] private Transform leftHandle = null;
         [SerializeField] private Transform pivot = null;
+        [SerializeField] private Transform vrCamera = null;
         [Tooltip("Player can be xxx times bigger than the world")]
         public float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
         [Tooltip("Player can be xxx times smaller than the world")]
@@ -48,9 +50,10 @@ namespace VRtist
                 Debug.LogWarning("PlayerController cannot VRInput.TryGetDevices().");
             }
 
+            if (vrCamera == null) { Debug.LogWarning("Cannot find 'VRCamera' game object"); }
             if (leftHandle == null) { Debug.LogWarning("Cannot find 'LeftHandle' game object"); }
             if (pivot == null) { Debug.LogWarning("Cannot find 'Pivot' game object"); }
-            
+
             if (ray != null)
                 ray.gameObject.SetActive(false);
 
@@ -73,19 +76,19 @@ namespace VRtist
                 HandleNavigation();
 
                 // RESET/FIT -- Left Joystick Click
-                if (currentNavigationMode == null || currentNavigationMode.IsCompatibleWithReset())
+                if (currentNavigationMode == null || IsCompatibleWithReset(currentNavigationMode))
                 {
                     HandleReset(); // TODO: FIT instead of reset.
                 }
 
                 // PALETTE POP -- Left Trigger
-                if (currentNavigationMode == null || currentNavigationMode.IsCompatibleWithPalette())
+                if (currentNavigationMode == null || IsCompatibleWithPalette(currentNavigationMode))
                 {
                     HandlePalette();
                 }
 
                 // UNDO/REDO -- Left A/B
-                if (currentNavigationMode == null || currentNavigationMode.IsCompatibleWithUndoRedo())
+                if (currentNavigationMode == null || IsCompatibleWithUndoRedo(currentNavigationMode))
                 {
                     HandleUndoRedo();
                 }
@@ -150,7 +153,7 @@ namespace VRtist
             if (currentNavigationMode == null)
                 return;
 
-            if (currentNavigationMode.IsCompatibleWithReset())
+            if (IsCompatibleWithReset(currentNavigationMode))
             {
                 Tooltips.SetTooltipVisibility(tooltipReset, true);
                 Tooltips.SetTooltipText(tooltipReset, "Reset");
@@ -160,7 +163,7 @@ namespace VRtist
                 Tooltips.SetTooltipVisibility(tooltipReset, false);
             }
 
-            if (currentNavigationMode.IsCompatibleWithPalette())
+            if (IsCompatibleWithPalette(currentNavigationMode))
             {
                 Tooltips.SetTooltipVisibility(tooltipPalette, true);
                 Tooltips.SetTooltipText(tooltipPalette, "Display Palette");
@@ -170,7 +173,7 @@ namespace VRtist
                 Tooltips.SetTooltipVisibility(tooltipPalette, false);
             }
 
-            if (currentNavigationMode.IsCompatibleWithUndoRedo())
+            if (IsCompatibleWithUndoRedo(currentNavigationMode))
             {
                 Tooltips.SetTooltipVisibility(tooltipUndo, true);
                 Tooltips.SetTooltipText(tooltipUndo, "Undo");
@@ -208,44 +211,46 @@ namespace VRtist
                 default: Debug.LogError("Unknown navigation mode button name was passed."); break;
             }
             HandleCommonTooltipsVisibility();
+
+            GlobalState.currentNavigationMode = currentNavigationMode;
         }
 
         public void OnNavMode_BiManual()
         {
             currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
-            currentNavigationMode.Init(transform, world, leftHandle, pivot);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Teleport()
         {
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Teleport();
-            currentNavigationMode.Init(transform, world, leftHandle, pivot);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
             currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, minPlayerScale, maxPlayerScale);
-            currentNavigationMode.Init(transform, world, leftHandle, pivot);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fps()
         {
             currentNavigationMode = new NavigationMode();
             //currentNavigationMode = new NavigationMode_Fps();
-            currentNavigationMode.Init(transform, world, leftHandle, pivot);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Drone()
         {
             currentNavigationMode = new NavigationMode_Drone();
-            currentNavigationMode.Init(transform, world, leftHandle, pivot);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fly()
         {
             currentNavigationMode = new NavigationMode_Fly(flySpeed, minPlayerScale, maxPlayerScale);
-            currentNavigationMode.Init(transform, world, leftHandle, pivot);
+            currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         private void UpdateRadioButtons(string activeButtonName)
@@ -265,5 +270,9 @@ namespace VRtist
         }
 
         #endregion
+
+        private bool IsCompatibleWithPalette(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.LEFT_TRIGGER); }
+        private bool IsCompatibleWithUndoRedo(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.LEFT_PRIMARY | NavigationMode.UsedControls.LEFT_SECONDARY); }
+        private bool IsCompatibleWithReset(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.LEFT_JOYSTICK_CLICK); }
     }
 }

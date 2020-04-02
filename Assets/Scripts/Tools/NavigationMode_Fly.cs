@@ -29,28 +29,15 @@ namespace VRtist
             maxPlayerScale = maxScale;
         }
 
-        public override bool IsCompatibleWithPalette()
+        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
-            return true;
-        }
-
-        public override bool IsCompatibleWithUndoRedo()
-        {
-            return true;
-        }
-
-        public override bool IsCompatibleWithReset()
-        { 
-            return true;
-        }
-
-        public override void Init(Transform cameraTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform)
-        {
-            base.Init(cameraTransform, worldTransform, leftHandleTransform, pivotTransform);
+            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Move / Turn");
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip World");
+
+            usedControls = UsedControls.LEFT_GRIP | UsedControls.LEFT_JOYSTICK;
         }
 
         public override void Update()
@@ -67,11 +54,11 @@ namespace VRtist
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
 
                 Vector3 velocity = Camera.main.transform.forward * val.y * d;
-                camera.position += velocity * flySpeed;
+                rig.position += velocity * flySpeed;
 
                 if (Mathf.Abs(val.x) > 0.95f && !rotating)
                 {
-                    camera.rotation *= Quaternion.Euler(0f, Mathf.Sign(val.x) * 45f, 0f);
+                    rig.rotation *= Quaternion.Euler(0f, Mathf.Sign(val.x) * 45f, 0f);
                     rotating = true;
                 }
                 if (Mathf.Abs(val.x) <= 0.95f && rotating)

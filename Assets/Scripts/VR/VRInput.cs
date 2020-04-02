@@ -246,7 +246,26 @@ namespace VRtist
             ControllerValues controllerValue = controllerValues[controller];
             if (usage == CommonUsages.primary2DAxis)
             {
-                return controllerValue.primary2DAxis;
+                Vector2 value = controllerValue.primary2DAxis;
+                Vector2 absvalue = new Vector2(Mathf.Abs(value.x), Mathf.Abs(value.y));
+                if (absvalue.x >= deadZoneIn)
+                {
+                    value.x = Mathf.Sign(value.x) * (absvalue.x - deadZoneIn) * (1f / (1f - deadZoneIn));
+                }
+                else
+                {
+                    value.x = 0;
+                }
+                if (absvalue.y >= deadZoneIn)
+                {
+                    value.y = Mathf.Sign(value.y) * (absvalue.y - deadZoneIn) * (1f / (1f - deadZoneIn));
+                }
+                else
+                {
+                    value.y = 0;
+                }
+                return value;
+                //return controllerValue.primary2DAxis;
             }
             return Vector2.zero;
         }

@@ -18,7 +18,7 @@ namespace VRtist
             Transform primitives = panel.transform.Find("Primitives");
             if (primitives == null)
             {
-                Debug.LogWarning("Deformer Panel needs an object named \"Primitives\"");
+                Debug.LogWarning("AssetBankPanel needs an object named \"Primitives\"");
             }
             else
             {

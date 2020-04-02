@@ -41,29 +41,16 @@ namespace VRtist
             maxPlayerScale = maxScale;
         }
 
-        public override bool IsCompatibleWithPalette()
+        public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
-            return true;
-        }
-
-        public override bool IsCompatibleWithUndoRedo()
-        {
-            return true;
-        }
-
-        public override bool IsCompatibleWithReset()
-        { 
-            return true;
-        }
-
-        public override void Init(Transform cameraTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform)
-        {
-            base.Init(cameraTransform, worldTransform, leftHandleTransform, pivotTransform);
+            base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
             lineUI.Show(false);
 
             // Create tooltips
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip World");
+
+            usedControls = UsedControls.LEFT_GRIP | UsedControls.RIGHT_GRIP;
         }
 
         public override void Update()
