@@ -121,7 +121,7 @@ namespace VRtist
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static HashSet<string> texturesFlipY = new HashSet<string>();
 
-        public static byte[] StringsToBytes(string[] values)
+        public static byte[] StringsToBytes(string[] values, bool storeSize = true)
         {
             int size = sizeof(int);
             for (int i = 0; i < values.Length; i++)
@@ -132,8 +132,12 @@ namespace VRtist
 
 
             byte[] bytes = new byte[size];
-            Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
-            int index = sizeof(int);
+            int index = 0;
+            if (storeSize)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
+                index += sizeof(int);
+            }
             for (int i = 0; i < values.Length; i++)
             {
                 string value = values[i];
@@ -1206,10 +1210,13 @@ namespace VRtist
             return command;
         }
 
+
         public static NetCommand BuildMeshCommand(Transform root, MeshInfos meshInfos)
         {
             Mesh mesh = meshInfos.meshFilter.mesh;
             byte[] name = StringToBytes(mesh.name);
+
+            byte[] baseMeshSize = intToBytes(0);
 
             byte[] positions = Vector3ToBytes(mesh.vertices);
             byte[] normals = Vector3ToBytes(mesh.normals);
@@ -1236,7 +1243,6 @@ namespace VRtist
             foreach (Material material in materials)
             {
                 materialNames[index++] = material.name;
-
             }
             byte[] materialsBuffer = StringsToBytes(materialNames);
 
@@ -1244,7 +1250,22 @@ namespace VRtist
             string path = GetPathName(root, transform);
             byte[] pathBuffer = StringToBytes(path);
 
-            List<byte[]> buffers = new List<byte[]> { pathBuffer, name, positions, normals, uvs, materialIndices, triangles, materialsBuffer };
+            byte[] bakedMeshSize = intToBytes(positions.Length + normals.Length + uvs.Length + materialIndices.Length + triangles.Length);
+
+            // necessary to satisfy baked mesh server format
+            //////////////////////////////////////////////////
+            int materialCount = materials.Length;
+            byte[] materialLinksBuffer = new byte[sizeof(int) * materialCount];
+            index = 0;
+            for (int i = 0; i < materialCount; i++)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(1), 0, materialLinksBuffer, index, sizeof(int));
+                index += sizeof(int);
+            }
+            byte[] materialLinkNamesBuffer = StringsToBytes(materialNames, false);
+            //////////////////////////////////////////////////
+
+            List<byte[]> buffers = new List<byte[]> { pathBuffer, name, baseMeshSize, bakedMeshSize, positions, normals, uvs, materialIndices, triangles, materialsBuffer, materialLinksBuffer, materialLinkNamesBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
             return command;
         }
@@ -1530,6 +1551,14 @@ namespace VRtist
             int currentIndex = 0;
             Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = GetString(data, ref currentIndex);
+
+            int baseMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += 4 + baseMeshDataSize;
+
+            int bakedMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += 4;
+            if (bakedMeshDataSize == 0)
+                return null;
 
             int verticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
