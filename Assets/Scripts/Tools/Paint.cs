@@ -124,13 +124,16 @@ namespace VRtist
             float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);
 
             // Change brush size
-            Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-            if (val != Vector2.zero)
+            if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
-                if (val.y > 0.3f) { brushSize += 0.001f; }
-                if (val.y < -0.3f) { brushSize -= 0.001f; }
-                brushSize = Mathf.Clamp(brushSize, 0.001f, 0.5f);
-                paintBrush.localScale = new Vector3(brushSize, brushSize, brushSize);
+                Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                if (val != Vector2.zero)
+                {
+                    if (val.y > 0.3f) { brushSize += 0.001f; }
+                    if (val.y < -0.3f) { brushSize -= 0.001f; }
+                    brushSize = Mathf.Clamp(brushSize, 0.001f, 0.5f);
+                    paintBrush.localScale = new Vector3(brushSize, brushSize, brushSize);
+                }
             }
 
             paintLineRenderer.enabled = false;
