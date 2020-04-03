@@ -6,7 +6,7 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
-    public class CameraTool : Selector
+    public class CameraTool : SelectorBase
     {
         // Start is called before the first frame update
         public GameObject cameraPrefab;

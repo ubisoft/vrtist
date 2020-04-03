@@ -43,7 +43,6 @@ namespace VRtist
         GreasePencilMaterial,
         GreasePencilConnection,
         GreasePencilTimeOffset,
-        Frame,
         FrameStartEnd,
         CameraAnimation,
         RemoveObjectFromScene,
@@ -55,6 +54,7 @@ namespace VRtist
         Transform,
         Mesh,
         Material,
+        Frame,
     }
 
     public class NetCommand
@@ -1048,9 +1048,9 @@ namespace VRtist
                     parentName = node.parent.prefab.name + "/";
             }
             byte[] name = StringToBytes(parentName + transform.name);
-            Matrix4x4 parentMatrix = Matrix4x4.TRS(transform.parent.localPosition, transform.parent.localRotation, transform.parent.localScale).inverse;
+            Matrix4x4 parentMatrix = Matrix4x4.TRS(transform.parent.localPosition, transform.parent.localRotation, transform.parent.localScale);
             Matrix4x4 basisMatrix = Matrix4x4.TRS(transform.localPosition, transform.localRotation, transform.localScale);
-            byte[] invertParentMatrixBuffer = MatrixToBytes(parentMatrix.inverse);
+            byte[] invertParentMatrixBuffer = MatrixToBytes(parentMatrix);
             byte[] basisMatrixBuffer = MatrixToBytes(basisMatrix);
             byte[] localMatrixBuffer = MatrixToBytes(parentMatrix * basisMatrix);
             byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
@@ -1280,6 +1280,17 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildAddCollectionToScene(string collectionName)
+        {
+            byte[] sceneNameBuffer = StringToBytes(SyncData.currentSceneName);
+            byte[] collectionNameBuffer = StringToBytes(collectionName);
+            List<byte[]> buffers = new List<byte[]> { sceneNameBuffer, collectionNameBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddCollectionToScene);
+            SyncData.sceneCollections.Add(collectionName);
+            return command;
+        }
+
+
         public static NetCommand BuildAddObjectToCollecitonCommand(AddToCollectionInfo info)
         {
             byte[] collectionNameBuffer = StringToBytes(info.collectionName);
@@ -1295,7 +1306,7 @@ namespace VRtist
             byte[] sceneNameBuffer = StringToBytes(SyncData.currentSceneName);
             byte[] objectNameBuffer = StringToBytes(info.transform.name);
             List<byte[]> buffers = new List<byte[]> { sceneNameBuffer, objectNameBuffer };
-            NetCommand command = new NetCommand(objectNameBuffer, MessageType.AddObjectToDocument);
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddObjectToDocument);
             return command;
         }
 
@@ -2433,14 +2444,19 @@ namespace VRtist
         public void SendAddObjectToColleciton(AddToCollectionInfo addToCollectionInfo)
         {
             string collectionName = addToCollectionInfo.collectionName;
-            if(!SyncData.collectionNodes.ContainsKey(collectionName))
+            if (!SyncData.collectionNodes.ContainsKey(collectionName))
             {
                 NetCommand addCollectionCommand = NetGeometry.BuildAddCollecitonCommand(collectionName);
                 AddCommand(addCollectionCommand);
             }
 
-            NetCommand command = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
-            AddCommand(command);
+            NetCommand commandAddObjectToCollection = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
+            AddCommand(commandAddObjectToCollection);
+            if (!SyncData.sceneCollections.Contains(collectionName))
+            {
+                NetCommand commandAddCollectionToScene = NetGeometry.BuildAddCollectionToScene(collectionName);
+                AddCommand(commandAddCollectionToScene);
+            }
         }
 
         public void SendAddObjectToScene(AddObjectToSceneInfo addObjectToScene)
@@ -2497,6 +2513,9 @@ namespace VRtist
 
         void Update()
         {
+            DateTime before = DateTime.Now;
+            int commandProcessedCount = 0;
+
             lock (this)
             {
                 if (receivedCommands.Count == 0)
@@ -2593,6 +2612,15 @@ namespace VRtist
                             break;
                     }
                     i++;
+
+                    DateTime after = DateTime.Now;
+                    TimeSpan duration = after.Subtract(before);
+                    commandProcessedCount++;
+                    if (duration.Milliseconds > 40)
+                    {
+                        receivedCommands.RemoveRange(0, commandProcessedCount);
+                        return;
+                    }
                 }
                 receivedCommands.Clear();
             }

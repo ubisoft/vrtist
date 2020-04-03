@@ -32,6 +32,9 @@ namespace VRtist
         public static float orbitMoveSpeed = 0.05f; // 0-1 slider *100
         public static float orbitRotationalSpeed = 3.0f; // 0-10
 
+        // Lights
+        public static bool castShadows = false;
+
         // Animation
         public static int startFrame = 1;
         public static int endFrame = 250;
@@ -165,6 +168,11 @@ namespace VRtist
         public void OnOrbitRotationalSpeedChange(float value)
         {
             orbitRotationalSpeed = value;
+        }
+        
+        public void OnLightsCastShadows(bool value)
+        {
+            castShadows = value;
         }
     }
 }

@@ -14,9 +14,8 @@ namespace VRtist
             parametersController = gObject.GetComponentInParent<ParametersController>();
             if (parametersController)
             {
-                Parameters parameters = parametersController.GetParameters();
                 GameObject root = parametersController.gameObject;
-                if (parameters.GetType() == typeof(GeometryParameters) && root.transform.childCount > 0)
+                if (parametersController.GetType() == typeof(GeometryParameters) && root.transform.childCount > 0)
                 {
                     objectPath = Utils.BuildTransformPath(gObject);
                 }
@@ -58,14 +57,17 @@ namespace VRtist
             if(parametersController)
             {
                 Parameters parameters = parametersController.GetParameters();
-                if (objectPath != null)
+                if (null != parameters)
                 {
-                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
-                    assetSerializer.CreateDeletedSerializer(objectPath);
-                }
-                else
-                {
-                    serializer.RemoveAsset(parameters);
+                    if (objectPath != null)
+                    {
+                        AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
+                        assetSerializer.CreateDeletedSerializer(objectPath);
+                    }
+                    else
+                    {
+                        serializer.RemoveAsset(parameters);
+                    }
                 }
             }
         }

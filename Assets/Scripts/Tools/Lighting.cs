@@ -7,7 +7,7 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
-    public class Lighting : Selector
+    public class Lighting : SelectorBase
     {
         [Header("Lighting Parameters")]
         [SerializeField] private Transform parentContainer;
