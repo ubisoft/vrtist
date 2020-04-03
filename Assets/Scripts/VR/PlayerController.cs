@@ -34,7 +34,8 @@ namespace VRtist
         public float scaleSpeed = 0.02f;
 
         [Header("Teleport Navigation")]
-        public Transform teleport = null;
+        public TeleportUI teleport = null;
+        public TrajectoryParams trajectoryParams = new TrajectoryParams();
 
         private NavigationMode currentNavigationMode = null;
 
@@ -62,8 +63,8 @@ namespace VRtist
             if (ray != null)
                 ray.gameObject.SetActive(false);
 
-            //if (arc != null)
-            //    arc.gameObject.SetActive(false);
+            if (teleport != null)
+                teleport.gameObject.SetActive(false);
 
             tooltipPalette = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
             tooltipUndo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
@@ -231,7 +232,7 @@ namespace VRtist
 
         public void OnNavMode_Teleport()
         {
-            currentNavigationMode = new NavigationMode_Teleport(teleport);
+            currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams);
             currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 

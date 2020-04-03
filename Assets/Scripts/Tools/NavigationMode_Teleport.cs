@@ -44,27 +44,24 @@ namespace VRtist
 
     public class NavigationMode_Teleport : NavigationMode
     {
-        private Transform teleport = null;
-
-        private bool isLocked = false;
-
-        private Vector3 targetPosition = Vector3.zero;
+        private TeleportUI teleport = null;
+        private LineRenderer teleportRay = null;
+        private Transform teleportTargetObject;
 
         private const float deadZone = 0.5f;
 
-
         private bool teleporting;
-        private bool teleportingRay;
-        private Vector3 teleportTarget;
-        private LineRenderer teleportRay;
-        private Transform teleportTargetObject;
+        private bool isValidLocationHit;
+        private Vector3 teleportTarget = Vector3.zero;
         private Transform teleportStart;
-        private TrajectoryParams trajectoryParams;
+        private TrajectoryParams trajectoryParams = null;
 
-
-        public NavigationMode_Teleport(Transform teleportObject)
+        public NavigationMode_Teleport(TeleportUI teleportObject, TrajectoryParams trajectoryP)
         {
             teleport = teleportObject;
+            teleportRay = teleport.transform.Find("Ray").GetComponent<LineRenderer>();
+            teleportTargetObject = teleport.transform.Find("Target");
+            trajectoryParams = trajectoryP;
         }
 
         public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
@@ -75,84 +72,79 @@ namespace VRtist
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Target/Turn");
 
             usedControls = UsedControls.LEFT_JOYSTICK;
-
-            //if (arc != null)
-            //{
-            //    arc.gameObject.SetActive(true);
-            //    arc.SetDefaultColor();
-            //}
         }
 
         public override void DeInit()
         {
             base.DeInit();
 
-            //if (arc != null)
-            //{
-            //    arc.gameObject.SetActive(false);
-            //}
+            if (teleport != null)
+            {
+                teleport.gameObject.SetActive(false);
+            }
         }
 
         public override void Update()
         {
-            //if (arc == null)
-            //    return;
+            if (teleport == null)
+                return;
 
             // Teleport
             Vector2 leftJoyValue = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
             float pressedValue = leftJoyValue.y;
-            if (pressedValue > 0.5f)
+            if (pressedValue > deadZone)
             {
-                teleportRay.enabled = true;
-                teleportTargetObject.gameObject.SetActive(true);
+                teleport.gameObject.SetActive(true);
 
-                //Vector3 position;
-                //Quaternion rotation;
-                //GetControllerTransform(leftController, out position, out rotation);
-                //leftHandle.localPosition = position;
-                //leftHandle.localRotation = rotation;
+                Vector3 rayStartPosition = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
+                Vector3 rayStartDirection = leftHandle.forward;
+
+                // TODO: once locked in teleport mode, use the leftJoyValue direction to find the rotation angle,
+                // and its magnitude to know if we are releasing the joyStick to teleport.
+                
+                //float joyMag = leftJoyValue.magnitude;
 
                 List<Vector3> points;
                 RaycastHit hitInfo;
-                bool hit = ComputeTrajectory(teleportStart, trajectoryParams, out points, out hitInfo);
+                bool hit = ComputeTrajectory(rayStartPosition, rayStartDirection, trajectoryParams, out points, out hitInfo);
                 if (hit)
                 {
-                    teleportingRay = true;
+                    isValidLocationHit = true;
                     teleportTarget = hitInfo.point;
+                    teleport.SetActiveColor();
+                }
+                else
+                {
+                    teleport.SetImpossibleColor();
                 }
                 teleportRay.positionCount = points.Count;
                 teleportRay.SetPositions(points.ToArray());
-                teleportRay.material.SetColor("_BaseColor", new Color(0.3f, 1f, 0.3f, 0.7f));
                 teleportTargetObject.position = teleportTarget + new Vector3(0f, 0.01f, 0f);
-                teleportTargetObject.rotation = Quaternion.Euler(90f, Camera.main.transform.rotation.eulerAngles.y, 0f);
-                teleportTargetObject.gameObject.layer = 2;
-                //teleportTool.SetActive(true);
+                teleportTargetObject.rotation = Quaternion.Euler(0.0f, Camera.main.transform.rotation.eulerAngles.y, 0.0f);
+                teleportTargetObject.gameObject.layer = 2; // Ignore Raycast
                 teleporting = true;
             }
-            else if (pressedValue <= 0.5f && teleporting)
+            else if (pressedValue <= deadZone && teleporting)
             {
                 teleporting = false;
 
-                if (teleportingRay)
+                if (isValidLocationHit)
                 {
                     rig.position = teleportTarget;
-                    teleportingRay = false;
+                    //rig.rotation = ;
+                    isValidLocationHit = false;
                 }
-                teleportRay.material.SetColor("_BaseColor", new Color(0f, 0f, 0f, 0f));
-                teleportRay.enabled = false;
-                teleportTargetObject.gameObject.SetActive(false);
-                //teleportTool.SetActive(false);
+
+                teleport.gameObject.SetActive(false);
             }
         }
 
-        
-
-        public static bool ComputeTrajectory(Transform handle, TrajectoryParams tParams, out List<Vector3> points, out RaycastHit hitInfo)
+        public static bool ComputeTrajectory(Vector3 rayStartPosition, Vector3 rayStartDirection, TrajectoryParams tParams, out List<Vector3> points, out RaycastHit hitInfo)
         {
             points = new List<Vector3>();
             Ray startRay = new Ray();
-            startRay.origin = handle.position;
-            startRay.direction = handle.forward;
+            startRay.origin = rayStartPosition;
+            startRay.direction = rayStartDirection;
 
             var aimPosition = startRay.origin;
             var aimDirection = startRay.direction * tParams.aimVelocity;
@@ -174,6 +166,5 @@ namespace VRtist
 
             return hit;
         }
-
     }
 }
