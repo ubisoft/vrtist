@@ -1286,6 +1286,7 @@ namespace VRtist
             byte[] collectionNameBuffer = StringToBytes(collectionName);
             List<byte[]> buffers = new List<byte[]> { sceneNameBuffer, collectionNameBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddCollectionToScene);
+            SyncData.sceneCollections.Add(collectionName);
             return command;
         }
 
@@ -1305,7 +1306,7 @@ namespace VRtist
             byte[] sceneNameBuffer = StringToBytes(SyncData.currentSceneName);
             byte[] objectNameBuffer = StringToBytes(info.transform.name);
             List<byte[]> buffers = new List<byte[]> { sceneNameBuffer, objectNameBuffer };
-            NetCommand command = new NetCommand(objectNameBuffer, MessageType.AddObjectToDocument);
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddObjectToDocument);
             return command;
         }
 
@@ -2443,7 +2444,7 @@ namespace VRtist
         public void SendAddObjectToColleciton(AddToCollectionInfo addToCollectionInfo)
         {
             string collectionName = addToCollectionInfo.collectionName;
-            if(!SyncData.collectionNodes.ContainsKey(collectionName))
+            if (!SyncData.collectionNodes.ContainsKey(collectionName))
             {
                 NetCommand addCollectionCommand = NetGeometry.BuildAddCollecitonCommand(collectionName);
                 AddCommand(addCollectionCommand);
@@ -2451,8 +2452,11 @@ namespace VRtist
 
             NetCommand commandAddObjectToCollection = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
             AddCommand(commandAddObjectToCollection);
-            NetCommand commandAddCollectionToScene = NetGeometry.BuildAddCollectionToScene(collectionName);
-            AddCommand(commandAddCollectionToScene);
+            if (!SyncData.sceneCollections.Contains(collectionName))
+            {
+                NetCommand commandAddCollectionToScene = NetGeometry.BuildAddCollectionToScene(collectionName);
+                AddCommand(commandAddCollectionToScene);
+            }
         }
 
         public void SendAddObjectToScene(AddObjectToSceneInfo addObjectToScene)
