@@ -43,7 +43,6 @@ namespace VRtist
         GreasePencilMaterial,
         GreasePencilConnection,
         GreasePencilTimeOffset,
-        Frame,
         FrameStartEnd,
         CameraAnimation,
         RemoveObjectFromScene,
@@ -55,6 +54,7 @@ namespace VRtist
         Transform,
         Mesh,
         Material,
+        Frame,
     }
 
     public class NetCommand
@@ -1048,9 +1048,9 @@ namespace VRtist
                     parentName = node.parent.prefab.name + "/";
             }
             byte[] name = StringToBytes(parentName + transform.name);
-            Matrix4x4 parentMatrix = Matrix4x4.TRS(transform.parent.localPosition, transform.parent.localRotation, transform.parent.localScale).inverse;
+            Matrix4x4 parentMatrix = Matrix4x4.TRS(transform.parent.localPosition, transform.parent.localRotation, transform.parent.localScale);
             Matrix4x4 basisMatrix = Matrix4x4.TRS(transform.localPosition, transform.localRotation, transform.localScale);
-            byte[] invertParentMatrixBuffer = MatrixToBytes(parentMatrix.inverse);
+            byte[] invertParentMatrixBuffer = MatrixToBytes(parentMatrix);
             byte[] basisMatrixBuffer = MatrixToBytes(basisMatrix);
             byte[] localMatrixBuffer = MatrixToBytes(parentMatrix * basisMatrix);
             byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
@@ -2497,6 +2497,9 @@ namespace VRtist
 
         void Update()
         {
+            DateTime before = DateTime.Now;
+            int commandProcessedCount = 0;
+
             lock (this)
             {
                 if (receivedCommands.Count == 0)
@@ -2593,6 +2596,15 @@ namespace VRtist
                             break;
                     }
                     i++;
+
+                    DateTime after = DateTime.Now;
+                    TimeSpan duration = after.Subtract(before);
+                    commandProcessedCount++;
+                    if (duration.Milliseconds > 40)
+                    {
+                        receivedCommands.RemoveRange(0, commandProcessedCount);
+                        return;
+                    }
                 }
                 receivedCommands.Clear();
             }

@@ -29,6 +29,9 @@ namespace VRtist
         public static float flightRotationSpeed = 5f;
         public static float flightDamping = 5f;
 
+        // Lights
+        public static bool castShadows = false;
+
         // Animation
         public static int startFrame = 1;
         public static int endFrame = 250;
@@ -141,6 +144,10 @@ namespace VRtist
         public void OnFlightDampingChange(float value)
         {
             flightDamping = value;
+        }
+        public void OnLightsCastShadows(bool value)
+        {
+            castShadows = value;
         }
     }
 }
