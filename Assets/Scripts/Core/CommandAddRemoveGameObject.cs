@@ -68,7 +68,7 @@ namespace VRtist
         protected void AddObjectToScene()
         {
             AddToCollectionInfo addObjectToCollection = new AddToCollectionInfo();
-            addObjectToCollection.collectionName = "Collection";
+            addObjectToCollection.collectionName = "VRtistCollection";
             addObjectToCollection.transform = gObject.transform;
             CommandManager.SendEvent(MessageType.AddObjectToCollection, addObjectToCollection);
 

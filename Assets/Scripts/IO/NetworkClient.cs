@@ -1280,6 +1280,16 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildAddCollectionToScene(string collectionName)
+        {
+            byte[] sceneNameBuffer = StringToBytes(SyncData.currentSceneName);
+            byte[] collectionNameBuffer = StringToBytes(collectionName);
+            List<byte[]> buffers = new List<byte[]> { sceneNameBuffer, collectionNameBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddCollectionToScene);
+            return command;
+        }
+
+
         public static NetCommand BuildAddObjectToCollecitonCommand(AddToCollectionInfo info)
         {
             byte[] collectionNameBuffer = StringToBytes(info.collectionName);
@@ -2439,8 +2449,10 @@ namespace VRtist
                 AddCommand(addCollectionCommand);
             }
 
-            NetCommand command = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
-            AddCommand(command);
+            NetCommand commandAddObjectToCollection = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
+            AddCommand(commandAddObjectToCollection);
+            NetCommand commandAddCollectionToScene = NetGeometry.BuildAddCollectionToScene(collectionName);
+            AddCommand(commandAddCollectionToScene);
         }
 
         public void SendAddObjectToScene(AddObjectToSceneInfo addObjectToScene)
