@@ -11,6 +11,12 @@ namespace VRtist
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+
+            UIElement uiElem = target as UIElement;
+            if (GUILayout.Button("Reset Material"))
+            {
+                uiElem.ResetMaterial();
+            }
         }
 
         private bool HasUIElemParent()

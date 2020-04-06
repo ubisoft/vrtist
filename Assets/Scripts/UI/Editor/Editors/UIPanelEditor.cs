@@ -11,9 +11,14 @@ namespace VRtist
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+
+            UIElement uiElem = target as UIElement;
+            if (GUILayout.Button("Reset Material"))
+            {
+                uiElem.ResetMaterial();
+            }
         }
 
-        // TODO: factor, also used in UIButtonEditor
         private bool HasUIElemParent()
         {
             UIElement uiElem = (UIElement)target;
@@ -21,21 +26,13 @@ namespace VRtist
             return parentElem != null;
         }
 
-        // TODO: factor, also used in UIButtonEditor
         private void OnEnable()
         {
-            //if (HasUIElemParent())
-            {
-                // Hide the default handles, so that they don't get in the way.
-                // But not if this panel is a top level GUI widget.
-                Tools.hidden = true;
-            }
+            Tools.hidden = true;
         }
 
-        // TODO: factor, also used in UIButtonEditor
         private void OnDisable()
         {
-            // Restore the default handles.
             Tools.hidden = false;
         }
 

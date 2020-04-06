@@ -21,7 +21,7 @@ namespace VRtist
         [CentimeterFloat] public float thickness = 0.001f;
         public float sliderPositionBegin = 0.3f;
         public float sliderPositionEnd = 0.8f;
-        public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);
+        public Color pushedColor = new Color(0f, 0.6549f, 1f);
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -143,6 +143,60 @@ namespace VRtist
 
                 rectTextValue.sizeDelta = new Vector2((width - 2 * margin) * (1 - sliderPositionEnd), height);
                 rectTextValue.localPosition = new Vector3(textPosRight, -height / 2.0f, -0.002f);
+            }
+        }
+
+        public override void ResetMaterial()
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+
+                Material material = UIUtils.LoadMaterial("UIPanel");
+                Material materialInstance = Instantiate(material);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UISlider_Material_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+
+            meshRenderer = rail.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+
+                Material material = UIUtils.LoadMaterial("UISliderRail");
+                Material materialInstance = Instantiate(material);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UISliderRail_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+
+            meshRenderer = knob.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+
+                Material material = UIUtils.LoadMaterial("UISliderKnob");
+                Material materialInstance = Instantiate(material);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UISliderKnob_Material_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
             }
         }
 

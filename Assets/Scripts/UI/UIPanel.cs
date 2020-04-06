@@ -100,6 +100,26 @@ namespace VRtist
             meshFilter.sharedMesh = theNewMesh;
         }
 
+        public override void ResetMaterial()
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+
+                Material material = UIUtils.LoadMaterial("UIPanel");
+                Material materialInstance = Instantiate(material);
+                
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UIPanel_Material_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+        }
+
         public static Mesh BuildRoundedRectTube(float width, float height, float margin, float radius)
         {
             const int default_circleSubdiv = 8;

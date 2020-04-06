@@ -27,9 +27,15 @@ namespace VRtist
         public float flySpeed = 0.2f;
 
         [Header("Orbit Navigation")]
-        [Tooltip("Speed in degrees/s")]
         public StraightRay ray = null;
+        public float moveSpeed = 0.05f;
+        [Tooltip("Speed in degrees/s")]
         public float rotationalSpeed = 3.0f;
+        public float scaleSpeed = 0.02f;
+
+        [Header("Teleport Navigation")]
+        public TeleportUI teleport = null;
+        public TrajectoryParams trajectoryParams = new TrajectoryParams();
 
         private NavigationMode currentNavigationMode = null;
 
@@ -56,6 +62,9 @@ namespace VRtist
 
             if (ray != null)
                 ray.gameObject.SetActive(false);
+
+            if (teleport != null)
+                teleport.gameObject.SetActive(false);
 
             tooltipPalette = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
             tooltipUndo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
@@ -223,14 +232,13 @@ namespace VRtist
 
         public void OnNavMode_Teleport()
         {
-            currentNavigationMode = new NavigationMode();
-            //currentNavigationMode = new NavigationMode_Teleport();
+            currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams);
             currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
-            currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, minPlayerScale, maxPlayerScale);
+            currentNavigationMode = new NavigationMode_Orbit(ray, rotationalSpeed, scaleSpeed, moveSpeed, minPlayerScale, maxPlayerScale);
             currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 

@@ -72,6 +72,26 @@ namespace VRtist
             }
         }
 
+        public override void ResetMaterial()
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+
+                Material material = UIUtils.LoadMaterial("UIElementTransparent");
+                Material materialInstance = Instantiate(material);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UILabel_Material_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+        }
+
         private void UpdateCanvasDimensions()
         {
             Canvas canvas = gameObject.GetComponentInChildren<Canvas>();

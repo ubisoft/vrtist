@@ -187,6 +187,26 @@ namespace VRtist
 #endif
         }
 
+        public override void ResetMaterial()
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+
+                Material material = UIUtils.LoadMaterial("UIPanel");
+                Material materialInstance = Instantiate(material);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UIButton_Meterial_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+        }
+
         private string GetText()
         {
             Text text = GetComponentInChildren<Text>();

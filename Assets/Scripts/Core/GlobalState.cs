@@ -28,6 +28,9 @@ namespace VRtist
         public static float flightSpeed = 5f;
         public static float flightRotationSpeed = 5f;
         public static float flightDamping = 5f;
+        public static float orbitScaleSpeed = 0.02f; // 0-1 slider en pct
+        public static float orbitMoveSpeed = 0.05f; // 0-1 slider *100
+        public static float orbitRotationalSpeed = 3.0f; // 0-10
 
         // Lights
         public static bool castShadows = false;
@@ -133,6 +136,12 @@ namespace VRtist
             return (currentNavigationMode == null) ? true : !currentNavigationMode.usedControls.HasFlag(controls);
         }
 
+        // TODO: put in PlayerController?
+        //       d'autant plus qu'on a pas de mecanisme pour mettre a jour les sliders avec les valeurs de GlobalState
+        //       (mais on peut aussi le faire dans les NavModes, avec des Find sur les sliders).
+        //       et si on le fait dans PlayerController, on devra passer les nouveaux params au mode de navigation?
+        //       ou alors il pourra aller les lire comme un grand.
+
         public void OnFlightSpeedChange(float value)
         {
             flightSpeed = value;
@@ -145,6 +154,22 @@ namespace VRtist
         {
             flightDamping = value;
         }
+
+        public void OnOrbitScaleSpeedChange(float value)
+        {
+            orbitScaleSpeed = value / 100.0f;
+        }
+
+        public void OnOrbitMoveSpeedChange(float value)
+        {
+            orbitMoveSpeed = value / 100.0f;
+        }
+
+        public void OnOrbitRotationalSpeedChange(float value)
+        {
+            orbitRotationalSpeed = value;
+        }
+        
         public void OnLightsCastShadows(bool value)
         {
             castShadows = value;
