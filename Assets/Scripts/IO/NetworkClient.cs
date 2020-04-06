@@ -18,6 +18,17 @@ namespace VRtist
         JoinRoom = 1,
         CreateRoom,
         LeaveRoom,
+        ListRooms,
+        Content,
+        ClearContent,
+        DeleteRoom,
+        ClearRoom,
+        ListRoomClients,
+        ListClients,
+        SetClientName,
+        SendError,
+        ConnectionLost,
+        ListAllClients,
 
         Command = 100,
         Delete,
@@ -2498,6 +2509,8 @@ namespace VRtist
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
             AddCommand(command);
+            NetCommand commandClientName = new NetCommand(System.Text.Encoding.UTF8.GetBytes("VRtist"), MessageType.SetClientName);
+            AddCommand(commandClientName);
         }
 
         void Send(byte[] data)
