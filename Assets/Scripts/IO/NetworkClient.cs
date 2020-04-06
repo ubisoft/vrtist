@@ -2248,6 +2248,46 @@ namespace VRtist
             SyncData.Init(prefab, root);
         }
 
+        IPAddress GetIpAddressFromHostname(string hostname)
+        {
+            string[] splitted = hostname.Split('.');
+            if(splitted.Length == 4)
+            {
+                bool error = false;
+                byte[] baddr = new byte[4];
+                for(int i = 0; i < 4; i++)
+                {
+                    int val;
+                    if (Int32.TryParse(splitted[i], out val) && val >= 0 && val <= 255)
+                    {
+                        baddr[i] = (byte)val;
+                    }
+                    else
+                    {
+                        error = true;
+                        break;
+                    }
+                }
+                if (!error)
+                    return new IPAddress(baddr);
+            }
+
+            IPAddress ipAddress = null;
+
+            IPHostEntry ipHostInfo = Dns.GetHostEntry(hostname);
+            if (ipHostInfo.AddressList.Length == 0)
+                return ipAddress;
+
+            for (int i = ipHostInfo.AddressList.Length - 1; i >= 0; i--)
+            {
+                IPAddress addr = ipHostInfo.AddressList[i];                
+                ipAddress = addr;
+                break;
+            }
+
+            return ipAddress;
+        }
+
         public void Connect()
         {
             connected = false;
@@ -2256,8 +2296,10 @@ namespace VRtist
             string hostname = "localhost";
             int port = 12800;
 
-            //hostname = "lgy-wks-054880";
-            //room = "thomas.capelle";
+            hostname = "lgy-wks-054880";
+            room = "thomas.capelle";
+            //hostname = "192.168.1.93";
+            //room = "Local";
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -2278,20 +2320,7 @@ namespace VRtist
 
             }
             
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(hostname);
-            if (ipHostInfo.AddressList.Length == 0)
-                return;
-
-            IPAddress ipAddress = null;
-            for (int i = ipHostInfo.AddressList.Length - 1; i >= 0; i --)
-            {
-                IPAddress addr = ipHostInfo.AddressList[i];
-                if (addr.ToString().Contains(":"))
-                    continue;
-                ipAddress = addr;
-                break;
-            }
-
+            IPAddress ipAddress = GetIpAddressFromHostname(hostname);
             if (null == ipAddress)
                 return;
                 
