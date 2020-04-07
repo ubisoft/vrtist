@@ -12,6 +12,8 @@ namespace VRtist
             LightController lightController = source.GetComponentInChildren<LightController>();
             VRInput.DeepSetLayer(newLight, 5);
 
+            newLight.GetComponentInChildren<LightController>().CopyParameters(lightController);
+
             return newLight;
         }
     }

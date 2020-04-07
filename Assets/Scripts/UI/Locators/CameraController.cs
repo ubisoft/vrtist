@@ -31,5 +31,15 @@ namespace VRtist
 
             cameraObject.focalLength = focal;
         }
+
+        public override void CopyParameters(ParametersController otherController)
+        {
+            base.CopyParameters(otherController);
+
+            CameraController other = otherController as CameraController;
+            focal = other.focal;
+            near = other.near;
+            far = other.far;            
+        }
     }
 }

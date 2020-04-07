@@ -26,8 +26,11 @@ namespace VRtist
             lightObject.gameObject.SetActive(enable);
         }
 
-        public void CopyParameters(LightController other)
+        public override void CopyParameters(ParametersController otherController)
         {
+            base.CopyParameters(otherController);
+
+            LightController other = otherController as LightController;
             lightType = other.lightType;
             intensity = other.intensity;
             minIntensity = other.minIntensity;

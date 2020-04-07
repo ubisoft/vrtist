@@ -1332,19 +1332,42 @@ namespace VRtist
             return command;
         }
 
-        public static void BuildCameraAimation(Transform root, byte[] data)
+        public static void BuildAnimation(Transform root, byte[] data)
         {
             int currentIndex = 0;
             string objectName = GetString(data, ref currentIndex);
             string animationChannel = GetString(data, ref currentIndex);
-            UInt32 keyCochannelIndex = BitConverter.ToUInt32(data, currentIndex);
+            int keyChannelIndex = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
+
+            if (keyChannelIndex != -1)
+                animationChannel += $"[{keyChannelIndex}]";
 
             UInt32 keyCount = BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
             float[] floatBuffer = new float[keyCount * 2];
-            Buffer.BlockCopy(data, currentIndex, floatBuffer, 0, (int)keyCount * 2 * sizeof(float));            
+            Buffer.BlockCopy(data, currentIndex, floatBuffer, 0, (int)keyCount * 2 * sizeof(float));
+
+            //AnimationKey[] keys = new AnimationKey[keyCount];
+            //Buffer.BlockCopy(data, currentIndex, keys, 0, (int)keyCount * 2 * sizeof(float));
+
+            AnimationKey[] keys = new AnimationKey[keyCount];
+            for (int i = 0; i < keyCount; i++)
+            {
+                keys[i] = new AnimationKey(floatBuffer[2 * i], floatBuffer[2 * i + 1]);
+            }
+
+            Node node = SyncData.nodes[objectName];
+            node.prefab.GetComponent<ParametersController>().AddAnimationChannel(animationChannel, keys);
+
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                ParametersController controller = gobj.GetComponent<ParametersController>();
+                controller.AddAnimationChannel(animationChannel, keys);
+            }
         }
 
         public static void BuildCamera(Transform root, byte[] data)
@@ -2211,7 +2234,7 @@ namespace VRtist
         {
             int index = 0;
             int frame = GetInt(data, ref index);
-            GreasePencil.currentFrame = frame;
+            GlobalState.currentFrame = frame;
         }
 
         public static void BuildFrameStartEnd(byte[] data)
@@ -2219,7 +2242,8 @@ namespace VRtist
             int index = 0;
             int start = GetInt(data, ref index);
             int end = GetInt(data, ref index);
-            // TODO : send data to
+            GlobalState.startFrame = start;
+            GlobalState.endFrame = end;
         }
     }
 
@@ -2307,11 +2331,9 @@ namespace VRtist
             string hostname = "localhost";
             int port = 12800;
 
-            hostname = "lgy-wks-054880";
-            room = "thomas.capelle";
-            //hostname = "192.168.1.93";
-            //room = "Local";
-
+            //hostname = "lgy-wks-054880";
+            //room = "thomas.capelle";
+            
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "--room")
@@ -2581,7 +2603,7 @@ namespace VRtist
                             NetGeometry.BuildCamera(prefab, command.data);
                             break;
                         case MessageType.CameraAnimation:
-                            NetGeometry.BuildCameraAimation(prefab, command.data);
+                            NetGeometry.BuildAnimation(prefab, command.data);
                             break;
                         case MessageType.Light:
                             NetGeometry.BuildLight(prefab, command.data);

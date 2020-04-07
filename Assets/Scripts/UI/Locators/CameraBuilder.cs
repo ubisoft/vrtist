@@ -22,6 +22,9 @@ namespace VRtist
 
 
             VRInput.DeepSetLayer(newCamera, 5);
+
+            newCamera.GetComponentInChildren<CameraController>().CopyParameters(source.GetComponentInChildren<CameraController>());
+
             return newCamera;
         }
     }

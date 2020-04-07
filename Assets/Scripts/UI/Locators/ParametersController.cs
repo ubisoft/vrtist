@@ -10,10 +10,39 @@ namespace VRtist
     {
     }
 
+    public class AnimationKey
+    {
+        public AnimationKey(float time, float value)
+        {
+            this.time = time;
+            this.value = value;
+        }
+        public float time;
+        public float value;
+    }
+
+    public class AnimationChannel
+    {
+        public AnimationChannel(string name, AnimationKey[] keys)
+        {
+            this.name = name;
+            this.keys = keys;
+        }
+
+        public string name;
+        public AnimationKey[] keys;
+    }
+
     public class ParametersController : MonoBehaviour
     {
         private ParametersEvent onChangedEvent;
         protected Transform world = null;
+        protected Dictionary<string, AnimationChannel> channels = new Dictionary<string, AnimationChannel>();
+
+        public virtual void CopyParameters(ParametersController sourceController)
+        {
+            channels = new Dictionary<string, AnimationChannel>(sourceController.channels);
+        }
 
         protected Transform GetWorldTransform()
         {
@@ -49,6 +78,30 @@ namespace VRtist
         {
             if(null != onChangedEvent)
                 onChangedEvent.Invoke(gameObject);
+        }
+
+        public void AddAnimationChannel(string name, AnimationKey[] keys)
+        {
+            AnimationChannel channel = null;
+            if (!channels.TryGetValue(name, out channel))
+            {
+                channel = new AnimationChannel(name, keys);
+                channels[name] = channel;
+            }
+            else
+            {
+                channel.keys = keys;
+            }
+        }
+
+        public bool HasAnimation()
+        {
+            return channels.Count > 0;
+        }
+
+        public Dictionary<string, AnimationChannel> GetAnimationChannels()
+        {
+            return channels;
         }
 
         public virtual Parameters GetParameters() { return null;  }

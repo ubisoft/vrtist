@@ -46,6 +46,7 @@ namespace VRtist
         protected GameObject displayTooltip;
 
         public GameObject selectionVFXPrefab = null;
+        private Dopesheet dopesheet;
 
         void Start()
         {
@@ -86,6 +87,9 @@ namespace VRtist
             {
                 selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
             }
+
+            dopesheet = GameObject.FindObjectOfType<Dopesheet>();
+            UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
         }
 
         protected void CreateTooltips()
@@ -272,6 +276,19 @@ namespace VRtist
             gripped = false;
         }
 
+        private ParametersController GetFirstAnimation()
+        {
+            foreach(GameObject gObject in Selection.selection.Values)
+            {
+                ParametersController controller = gObject.GetComponent<ParametersController>();
+                if (null == controller)
+                    continue;
+                if (controller.HasAnimation())
+                    return controller;
+            }
+            return null;
+        }
+
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
             InitControllerMatrix();
@@ -284,6 +301,12 @@ namespace VRtist
             if(numSelected > 0)
             {
                 Tooltips.SetTooltipText(displayTooltip, $"{numSelected}\nselected");
+
+                ParametersController controller = GetFirstAnimation();
+                if (null != controller)
+                {
+                    dopesheet.UpdateFromController(controller);
+                }
             }
         }
 

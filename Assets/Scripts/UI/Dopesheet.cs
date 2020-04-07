@@ -29,6 +29,8 @@ namespace VRtist
         public int LastFrame { get { return lastFrame; } set { lastFrame = value; UpdateLastFrame(); } }
         public int CurrentFrame { get { return currentFrame; } set { currentFrame = value; UpdateCurrentFrame(); } }
 
+        private GameObject keyframePrefab;
+
         void Start()
         {
             mainPanel = transform.Find("MainPanel");
@@ -38,6 +40,8 @@ namespace VRtist
                 firstFrameLabel = mainPanel.Find("FirstFrameLabel").GetComponent<UILabel>();
                 lastFrameLabel = mainPanel.Find("LastFrameLabel").GetComponent<UILabel>();
                 currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
+
+                keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
             }
         }
 
@@ -90,8 +94,37 @@ namespace VRtist
             }
         }
 
-        public void UpdateFromCamera(CameraController cameraController)
+        public void UpdateFromController(ParametersController controller)
         {
+            Dictionary<string, AnimationChannel> channels = controller.GetAnimationChannels();
+            foreach(AnimationChannel channel in channels.Values)
+            {
+                if(channel.name == "location[0]")
+                {
+                    Transform keyframes = transform.Find("MainPanel/FakeTrackButton/Keyframes");
+                    for (int i = keyframes.childCount - 1 ; i >= 0 ; i--)
+                    {
+                        Destroy(keyframes.GetChild(i).gameObject);
+                    }
+
+                    foreach(AnimationKey key in channel.keys)
+                    {
+                        GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
+
+                        float currentValue = key.time;
+                        float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
+
+                        float startX = 0.0f;
+                        float endX = timeBar.width;
+                        float posX = startX + pct * (endX - startX);
+
+                        Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
+
+                        keyframe.transform.localPosition = knobPosition;
+                    }
+                    
+                }
+            }
             // use cameraController keyframes arrays to update the tracks.
             //cameraController.position_kf;
             //cameraController.rotation_kf;

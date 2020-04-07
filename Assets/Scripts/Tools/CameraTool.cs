@@ -325,7 +325,7 @@ namespace VRtist
                 
                 // Update the Dopesheet
                 if (dopesheet != null)
-                    dopesheet.UpdateFromCamera(cameraController); // anim parameters? to be generic
+                    dopesheet.UpdateFromController(cameraController); // anim parameters? to be generic
             
                 // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();

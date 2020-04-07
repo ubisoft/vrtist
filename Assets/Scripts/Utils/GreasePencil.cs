@@ -11,6 +11,7 @@ namespace VRtist
         {
             GameObject newGreasePencil = GameObject.Instantiate(source, parent);
             newGreasePencil.GetComponent<GreasePencil>().data = source.GetComponent<GreasePencil>().data;
+
             return newGreasePencil;
         }
     }
@@ -32,8 +33,6 @@ namespace VRtist
 
     public class GreasePencil : MonoBehaviour
     {
-        public static int currentFrame = 1;
-
         public GreasePencilData data;
         private int frame = -1;
        
@@ -95,9 +94,9 @@ namespace VRtist
         // Update is called once per frame
         void Update()
         {
-            if (currentFrame == frame)
+            if (GlobalState.currentFrame == frame)
                 return;
-            frame = currentFrame;
+            frame = GlobalState.currentFrame;
 
             ForceUpdate();
         }

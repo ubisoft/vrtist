@@ -105,24 +105,11 @@ namespace VRtist
             if (builder)
             {
                 res = builder.CreateInstance(gObject, intermediateParent.transform);
-                ParametersController parametersController = res.GetComponentInParent<ParametersController>();
-                if (parametersController)
-                {
-                    Parameters parameters = parametersController.GetParameters();
-                    if (parameters != null)
-                        parameters.InitId();
-                }
             }
             else
             {
                 // duplicate object or subobject
-                res = GameObject.Instantiate(gObject, intermediateParent.transform);
-                ParametersController parametersController = res.GetComponent<ParametersController>();
-                if (parametersController)
-                {
-                    Parameters parameters = parametersController.GetParameters();
-                    parameters.InitId(); // reuild id only for objects
-                }
+                res = GameObject.Instantiate(gObject, intermediateParent.transform);                
             }
 
             string appliedName;
