@@ -14,6 +14,7 @@ namespace VRtist
 
         [Header("UI Widgets")]
         public UICheckbox worldGridCheckbox;
+        public UILabel versionLabel;
 
         private void Start()
         {
@@ -22,6 +23,11 @@ namespace VRtist
 
             if(null != worldGridCheckbox) {
                 worldGridCheckbox.Checked = true;
+            }
+
+            if(null != versionLabel)
+            {
+                versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}";
             }
         }
 
