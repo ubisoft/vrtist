@@ -50,8 +50,9 @@ namespace VRtist
 
         private const float deadZone = 0.5f;
 
-        private bool teleporting;
-        private bool isValidLocationHit;
+        private bool rotating = false;
+        private bool teleporting = false;
+        private bool isValidLocationHit = false;
         private Vector3 teleportTarget = Vector3.zero;
         private Transform teleportStart;
         private TrajectoryParams trajectoryParams = null;
@@ -93,6 +94,7 @@ namespace VRtist
             Vector2 leftJoyValue = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
             float joyMag = leftJoyValue.magnitude;
             float yVal = leftJoyValue.y;
+            float xVal = leftJoyValue.x;
             if (teleporting)
             {
                 if (joyMag > deadZone)
@@ -148,6 +150,19 @@ namespace VRtist
                     teleporting = true;
                     teleport.gameObject.SetActive(true);
                     teleportTargetObject.gameObject.layer = 2; // Ignore Raycast - TODO: put in prefab.
+                }
+                else
+                {
+                    // ROTATE +/- 45 degrees using Left/Right impulses.
+                    if (Mathf.Abs(xVal) > 0.8f && !rotating)
+                    {
+                        rig.RotateAround(camera.position, Vector3.up, Mathf.Sign(xVal) * 45f);
+                        rotating = true;
+                    }
+                    if (Mathf.Abs(xVal) <= 0.8f && rotating)
+                    {
+                        rotating = false;
+                    }
                 }
             }
         }
