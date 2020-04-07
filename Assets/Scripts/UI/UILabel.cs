@@ -97,6 +97,8 @@ namespace VRtist
             Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
             if (canvas != null)
             {
+                canvas.sortingOrder = 1;
+
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
                 canvasRT.sizeDelta = new Vector2(width, height);
 
@@ -320,6 +322,7 @@ namespace VRtist
 
             Canvas c = canvas.AddComponent<Canvas>();
             c.renderMode = RenderMode.WorldSpace;
+            c.sortingOrder = 1;
 
             RectTransform rt = canvas.GetComponent<RectTransform>(); // auto added when adding Canvas
             rt.localScale = Vector3.one;
