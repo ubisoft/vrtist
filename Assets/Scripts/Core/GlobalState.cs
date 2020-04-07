@@ -28,6 +28,9 @@ namespace VRtist
         public static float flightSpeed = 5f;
         public static float flightRotationSpeed = 5f;
         public static float flightDamping = 5f;
+        public static float fpsSpeed = 5f;
+        public static float fpsRotationSpeed = 5f;
+        public static float fpsDamping = 0f;
         public static float orbitScaleSpeed = 0.02f; // 0-1 slider en pct
         public static float orbitMoveSpeed = 0.05f; // 0-1 slider *100
         public static float orbitRotationalSpeed = 3.0f; // 0-10
@@ -153,6 +156,19 @@ namespace VRtist
         public void OnFlightDampingChange(float value)
         {
             flightDamping = value;
+        }
+
+        public void OnFPSSpeedChange(float value)
+        {
+            fpsSpeed = value;
+        }
+        public void OnFPSRotationSpeedChange(float value)
+        {
+            fpsRotationSpeed = value;
+        }
+        public void OnFPSDampingChange(float value)
+        {
+            fpsDamping = value;
         }
 
         public void OnOrbitScaleSpeedChange(float value)
