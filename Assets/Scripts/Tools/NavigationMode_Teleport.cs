@@ -50,8 +50,9 @@ namespace VRtist
 
         private const float deadZone = 0.5f;
 
-        private bool teleporting;
-        private bool isValidLocationHit;
+        private bool rotating = false;
+        private bool teleporting = false;
+        private bool isValidLocationHit = false;
         private Vector3 teleportTarget = Vector3.zero;
         private Transform teleportStart;
         private TrajectoryParams trajectoryParams = null;
@@ -91,51 +92,78 @@ namespace VRtist
 
             // Teleport
             Vector2 leftJoyValue = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
-            float pressedValue = leftJoyValue.y;
-            if (pressedValue > deadZone)
+            float joyMag = leftJoyValue.magnitude;
+            float yVal = leftJoyValue.y;
+            float xVal = leftJoyValue.x;
+            if (teleporting)
             {
-                teleport.gameObject.SetActive(true);
-
-                Vector3 rayStartPosition = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
-                Vector3 rayStartDirection = leftHandle.forward;
-
-                // TODO: once locked in teleport mode, use the leftJoyValue direction to find the rotation angle,
-                // and its magnitude to know if we are releasing the joyStick to teleport.
-                
-                //float joyMag = leftJoyValue.magnitude;
-
-                List<Vector3> points;
-                RaycastHit hitInfo;
-                bool hit = ComputeTrajectory(rayStartPosition, rayStartDirection, trajectoryParams, out points, out hitInfo);
-                if (hit)
+                if (joyMag > deadZone)
                 {
-                    isValidLocationHit = true;
-                    teleportTarget = hitInfo.point;
-                    teleport.SetActiveColor();
+                    Vector3 rayStartPosition = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
+                    Vector3 rayStartDirection = leftHandle.forward;
+
+                    List<Vector3> points;
+                    RaycastHit hitInfo;
+                    bool hit = ComputeTrajectory(rayStartPosition, rayStartDirection, trajectoryParams, out points, out hitInfo);
+                    if (hit)
+                    {
+                        isValidLocationHit = true;
+                        teleportTarget = hitInfo.point;
+                        teleport.SetActiveColor();
+                    }
+                    else
+                    {
+                        teleport.SetImpossibleColor();
+                    }
+
+                    float cameraYAngle = Camera.main.transform.rotation.eulerAngles.y;
+                    float joyAngle = 90.0f - Mathf.Rad2Deg * Mathf.Atan2(leftJoyValue.y, leftJoyValue.x);
+                    teleportRay.positionCount = points.Count;
+                    teleportRay.SetPositions(points.ToArray());
+                    teleportTargetObject.position = teleportTarget + new Vector3(0f, 0.01f, 0f);
+                    teleportTargetObject.rotation = Quaternion.Euler(0.0f, cameraYAngle + joyAngle, 0.0f);
+                }
+                else // GO OUT of teleport mode, and TELEPORT
+                {
+                    teleporting = false;
+
+                    if (isValidLocationHit)
+                    {
+                        Vector3 cameraForwardProj = new Vector3(camera.forward.x, 0.0f, camera.forward.z).normalized;
+                        Quaternion deltaRotation = Quaternion.FromToRotation(cameraForwardProj, teleportTargetObject.forward);
+                        Vector3 camera_to_rig = rig.transform.position - camera.transform.position;
+                        Vector3 new_camera_to_target = new Vector3(0.0f, teleportTarget.y - camera.transform.position.y, 0.0f); // place camera above target
+                        Vector3 deltaPosition = camera_to_rig - new_camera_to_target;
+                        rig.position = teleportTarget + deltaPosition;
+                        rig.rotation = rig.rotation * deltaRotation;
+                        isValidLocationHit = false;
+                    }
+
+                    teleport.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                // GO IN teleport mode
+                if (yVal > deadZone)
+                {
+                    teleporting = true;
+                    teleport.gameObject.SetActive(true);
+                    teleportTargetObject.gameObject.layer = 2; // Ignore Raycast - TODO: put in prefab.
                 }
                 else
                 {
-                    teleport.SetImpossibleColor();
+                    // ROTATE +/- 45 degrees using Left/Right impulses.
+                    if (Mathf.Abs(xVal) > 0.8f && !rotating)
+                    {
+                        rig.RotateAround(camera.position, Vector3.up, Mathf.Sign(xVal) * 45f);
+                        rotating = true;
+                    }
+                    if (Mathf.Abs(xVal) <= 0.8f && rotating)
+                    {
+                        rotating = false;
+                    }
                 }
-                teleportRay.positionCount = points.Count;
-                teleportRay.SetPositions(points.ToArray());
-                teleportTargetObject.position = teleportTarget + new Vector3(0f, 0.01f, 0f);
-                teleportTargetObject.rotation = Quaternion.Euler(0.0f, Camera.main.transform.rotation.eulerAngles.y, 0.0f);
-                teleportTargetObject.gameObject.layer = 2; // Ignore Raycast
-                teleporting = true;
-            }
-            else if (pressedValue <= deadZone && teleporting)
-            {
-                teleporting = false;
-
-                if (isValidLocationHit)
-                {
-                    rig.position = teleportTarget;
-                    //rig.rotation = ;
-                    isValidLocationHit = false;
-                }
-
-                teleport.gameObject.SetActive(false);
             }
         }
 

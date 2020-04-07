@@ -244,8 +244,7 @@ namespace VRtist
 
         public void OnNavMode_Fps()
         {
-            currentNavigationMode = new NavigationMode();
-            //currentNavigationMode = new NavigationMode_Fps();
+            currentNavigationMode = new NavigationMode_FPS();
             currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
