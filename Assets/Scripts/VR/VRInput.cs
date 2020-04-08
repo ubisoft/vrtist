@@ -39,6 +39,9 @@ namespace VRtist
         public static InputDevice head;
         public static InputDevice leftController;
         public static InputDevice rightController;
+        public static bool rightHanded = true;
+        private static bool remapLeftRightHandedDevices = true;
+        public static Dictionary<InputDevice, InputDevice> invertedController = new Dictionary<InputDevice, InputDevice>();
 
         public static ControllerValues leftControllerValues = new ControllerValues();
         public static ControllerValues rightControllerValues = new ControllerValues();
@@ -136,8 +139,10 @@ namespace VRtist
         {
             bool bPrevValue;
             bool bCurrValue;
+            remapLeftRightHandedDevices = false;
             bPrevValue = GetPrevValue(controller, usage);
             bCurrValue = GetValue(controller, usage);
+            remapLeftRightHandedDevices = true;
             InputPair pair = new InputPair(controller, usage);
             if (bPrevValue == bCurrValue)
             {
@@ -216,6 +221,13 @@ namespace VRtist
                 controllerValue.gripButtonPressed = value;
             }
         }
+
+        private static InputDevice GetLeftOrRightHandedController(InputDevice controller)
+        {
+            if (rightHanded || !remapLeftRightHandedDevices)
+                return controller;
+            return invertedController[controller];
+        }
         public static Vector2 GetValue(InputDevice controller, InputFeatureUsage<Vector2> usage)
         {
             return _GetValue(currentControllerValues, controller, usage);
@@ -242,8 +254,9 @@ namespace VRtist
         }
 
         static Vector2 _GetValue(Dictionary<InputDevice, ControllerValues> controllerValues, InputDevice controller, InputFeatureUsage<Vector2> usage)
-        {            
-            ControllerValues controllerValue = controllerValues[controller];
+        {
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            ControllerValues controllerValue = controllerValues[c];
             if (usage == CommonUsages.primary2DAxis)
             {
                 Vector2 value = controllerValue.primary2DAxis;
@@ -272,7 +285,8 @@ namespace VRtist
 
         static float _GetValue(Dictionary<InputDevice, ControllerValues> controllerValues, InputDevice controller, InputFeatureUsage<float> usage)
         {
-            ControllerValues controllerValue = controllerValues[controller];
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            ControllerValues controllerValue = controllerValues[c];
             if (usage == CommonUsages.trigger)
             {
                 return controllerValue.triggerValue;
@@ -286,7 +300,8 @@ namespace VRtist
 
         static bool _GetValue(Dictionary<InputDevice, ControllerValues> controllerValues, InputDevice controller, InputFeatureUsage<bool> usage)
         {
-            ControllerValues controllerValue = controllerValues[controller];
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            ControllerValues controllerValue = controllerValues[c];
             if (usage == CommonUsages.primary2DAxisClick)
             {
                 return controllerValue.primary2DAxisClickState;
@@ -317,7 +332,8 @@ namespace VRtist
 
         public static void ButtonEvent(InputDevice controller, InputFeatureUsage<bool> usage, System.Action onPress = null, System.Action onRelease = null)
         {
-            InputPair pair = new InputPair(controller, usage);
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            InputPair pair = new InputPair(c, usage);
             if (onPress != null && justPressed.Contains(pair))
             {
                 onPress();
@@ -326,6 +342,16 @@ namespace VRtist
             if (onRelease != null && justReleased.Contains(pair))
             {
                 onRelease();
+            }
+        }
+
+        public static void InitInvertedControllers()
+        {
+            if (invertedController.Count == 0 && leftController.isValid && rightController.isValid)
+            {
+                invertedController[leftController] = rightController;
+                invertedController[rightController] = leftController;
+                Debug.Log("Got left/right handed controllers");
             }
         }
 
@@ -357,10 +383,12 @@ namespace VRtist
                 }
                 if (currentControllerValues.Count == 2)
                 {
+                    InitInvertedControllers();
                     FillCurrentControllerValues();
                     UpdateControllerValues();
                 }
             }
+
             return head.isValid && leftController.isValid && rightController.isValid;
         }
 
@@ -373,13 +401,15 @@ namespace VRtist
 
         public static void GetControllerTransform(InputDevice controller, out Vector3 position, out Quaternion rotation)
         {
+            InputDevice c = GetLeftOrRightHandedController(controller);
+
             rotation = Quaternion.identity;
-            if (!controller.TryGetFeatureValue(CommonUsages.deviceRotation, out rotation))
+            if (!c.TryGetFeatureValue(CommonUsages.deviceRotation, out rotation))
             {
                 Debug.Log("Error getting device rotation");
             }
             position = Vector3.zero;
-            if (!controller.TryGetFeatureValue(CommonUsages.devicePosition, out position))
+            if (!c.TryGetFeatureValue(CommonUsages.devicePosition, out position))
             {
                 Debug.Log("Error getting device position");
             }
@@ -395,10 +425,10 @@ namespace VRtist
             }
 #endif
             // Filter left and right controllers
-            if (!prevDeviceTransform.ContainsKey(controller))
-                prevDeviceTransform[controller] = new DeviceTransform();
+            if (!prevDeviceTransform.ContainsKey(c))
+                prevDeviceTransform[c] = new DeviceTransform();
 
-            DeviceTransform prevTransform = prevDeviceTransform[controller];
+            DeviceTransform prevTransform = prevDeviceTransform[c];
             rotation = Quaternion.Slerp(prevTransform.rotation, rotation, 0.3f);
             position = Vector3.Lerp(prevTransform.position, position, 0.3f);
             prevTransform.rotation = rotation;

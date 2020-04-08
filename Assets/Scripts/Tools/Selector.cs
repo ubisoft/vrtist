@@ -58,7 +58,8 @@ namespace VRtist
 
         private bool deformEnabled = false;
 
-        void Start() {
+        void Start() 
+        {
             Init();
         }
 
@@ -469,7 +470,7 @@ namespace VRtist
             Vector3 controllerPosition;
             Quaternion controllerRotation;
             VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
-            controllerPosition = transform.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
+            controllerPosition = rightHandle.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
             controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer)
@@ -551,7 +552,6 @@ namespace VRtist
                 sphere.gameObject.SetActive(show);
             }
 
-            Transform rightController = gameObject.transform.Find("right_controller");
             if(rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;

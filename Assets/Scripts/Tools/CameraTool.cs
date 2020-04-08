@@ -125,7 +125,7 @@ namespace VRtist
 
             // Create tooltips
             CreateTooltips();
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Zoom");
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Zoom");
         }
 
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
@@ -317,7 +317,6 @@ namespace VRtist
                 sphere.gameObject.SetActive(show);
             }
 
-            Transform rightController = gameObject.transform.Find("right_controller");
             if (rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
