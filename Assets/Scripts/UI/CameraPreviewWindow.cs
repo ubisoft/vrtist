@@ -7,13 +7,16 @@ namespace VRtist
 {
     public class CameraPreviewWindow : MonoBehaviour
     {
-        [SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
-        [SerializeField] private Transform mainPanel = null;
+        //[SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
+        private Transform mainPanel = null;
+        private Transform handle = null;
+        private Transform previewImagePlane = null;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public FloatChangedEvent onChangeFocalEvent = new FloatChangedEvent();
         public UnityEvent onRecordEvent = new UnityEvent();
 
+        private CameraController currentCameraController = null;
 
 //        private int firstFrame = 0;
 
@@ -22,6 +25,9 @@ namespace VRtist
         void Start()
         {
             mainPanel = transform.Find("MainPanel");
+            handle = transform.parent;
+            previewImagePlane = mainPanel.Find("PreviewImage");
+
             //if (mainPanel != null)
             //{
             //    timeBar = mainPanel.Find("TimeBar").GetComponent<UITimeBar>();
@@ -53,42 +59,28 @@ namespace VRtist
             }
         }
 
-        public void UpdateFromController(ParametersController controller)
+        public void UpdateFromController(CameraController cameraController)
         {
-            //Dictionary<string, AnimationChannel> channels = controller.GetAnimationChannels();
-            //foreach(AnimationChannel channel in channels.Values)
-            //{
-            //    if(channel.name == "location[0]")
-            //    {
-            //        Transform keyframes = transform.Find("MainPanel/FakeTrackButton/Keyframes");
-            //        for (int i = keyframes.childCount - 1 ; i >= 0 ; i--)
-            //        {
-            //            Destroy(keyframes.GetChild(i).gameObject);
-            //        }
+            currentCameraController = cameraController;
 
-            //        foreach(AnimationKey key in channel.keys)
-            //        {
-            //            GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
+            // Get the renderTexture of the camera, and set it on the material of the previewImagePanel
+            RenderTexture rt = currentCameraController.gameObject.GetComponentInChildren<Camera>(true).targetTexture;
+            previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", rt);
 
-            //            float currentValue = key.time;
-            //            float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
+            // Get the name of the camera, and set it in the title bar
+            ToolsUIManager.Instance.SetWindowTitle(handle, cameraController.gameObject.name);
+        }
 
-            //            float startX = 0.0f;
-            //            float endX = timeBar.width;
-            //            float posX = startX + pct * (endX - startX);
-
-            //            Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
-
-            //            keyframe.transform.localPosition = knobPosition;
-            //        }
-                    
-            //    }
-            //}
+        private void Update()
+        {
+            // refresh... things..
         }
 
         public void Clear()
         {
-
+            currentCameraController = null;
+            ToolsUIManager.Instance.SetWindowTitle(handle, "Camera Preview");
+            previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", null);
         }
         
         // called by the slider when moved

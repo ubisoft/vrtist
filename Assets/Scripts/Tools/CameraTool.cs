@@ -30,7 +30,7 @@ namespace VRtist
 
         private bool showTimeline = false;
         private Transform showDopesheetCheckbox = null;
-        private Dopesheet dopesheet;
+        //private Dopesheet dopesheet; // already in SelectorBase 
 
         private bool showCameraPreview = false;
         private Transform showCameraPreviewCheckbox = null;
@@ -99,8 +99,8 @@ namespace VRtist
             }
             else
             {
-                dopesheet = dopesheetHandle.GetComponentInChildren<Dopesheet>();
-                dopesheetHandle.transform.localScale = Vector3.zero;
+                //dopesheet = dopesheetHandle.GetComponentInChildren<Dopesheet>();
+                dopesheetHandle.transform.localScale = Vector3.zero; // si tous les tools ont une ref sur la dopesheet, qui la cache au demarrage? ToolsUIManager?
             }
 
             if (!cameraPreviewHandle)

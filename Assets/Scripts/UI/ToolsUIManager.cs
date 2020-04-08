@@ -284,6 +284,19 @@ namespace VRtist
             }
         }
 
+        public void SetWindowTitle(Transform window, string text)
+        {
+            Transform textComponentTransform = window.Find("TitleBar/Canvas/Text");
+            if (textComponentTransform != null)
+            {
+                Text textComponent = textComponentTransform.GetComponent<Text>();
+                if (textComponent != null)
+                {
+                    textComponent.text = text;
+                }
+            }
+        }
+
         public void OpenWindow(Transform window, float scaleFactor)
         {
             Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false));
