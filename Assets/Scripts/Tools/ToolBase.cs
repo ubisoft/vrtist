@@ -19,14 +19,25 @@ namespace VRtist
         protected ICommand parameterCommand = null;
         protected List<ParametersController> connectedObjects = new List<ParametersController>();
 
+        protected Transform rightHandle;
+        protected Transform rightController;
+
         protected virtual void Awake()
         {
             ToolsManager.RegisterTool(gameObject);
         }
 
+        protected virtual void Init()
+        {
+            rightController = transform.parent.parent.Find("right_controller");
+            UnityEngine.Assertions.Assert.IsNotNull(rightController);
+            rightHandle = rightController.parent;
+            UnityEngine.Assertions.Assert.IsNotNull(rightHandle);
+        }
+
         void Start()
         {
-
+            Init();
         }
 
         // Update is called once per frame
@@ -38,8 +49,14 @@ namespace VRtist
                 Vector3 position;
                 Quaternion rotation;
                 VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+                rightHandle.localPosition = position;
+                rightHandle.localRotation = rotation;
+                /*
+                rightController.localPosition = position;
+                rightController.localRotation = rotation;
                 transform.localPosition = position;
                 transform.localRotation = rotation;
+                */
                 Vector3 r = rotation.eulerAngles;
 
                 // Toggle selection

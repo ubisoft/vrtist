@@ -71,8 +71,10 @@ namespace VRtist
             Tooltips.SetTooltipVisibility(gripTooltip, false);
         }
 
-        protected virtual void Init()
+        protected override void Init()
         {
+            base.Init();
+
             CreateTooltips();
 
             selectorRadius = selectorBrush.localScale.x;
@@ -94,7 +96,7 @@ namespace VRtist
 
         protected void CreateTooltips()
         {
-            GameObject controller = transform.Find("right_controller").gameObject;
+            GameObject controller = rightController.gameObject;
             Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
             Tooltips.CreateTooltip(controller, Tooltips.Anchors.Secondary, "Switch Tool");
             triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
@@ -139,8 +141,7 @@ namespace VRtist
             {
                 sphere.gameObject.SetActive(show);
             }
-
-            Transform rightController = gameObject.transform.Find("right_controller");
+            
             if(rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
@@ -155,7 +156,7 @@ namespace VRtist
         protected void InitControllerMatrix()
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
-            initTransformation = (transform.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
+            initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
         }
 
         protected void InitTransforms()
@@ -365,8 +366,7 @@ namespace VRtist
                     }
                 }
 
-                Transform parent = transform.parent;
-                Matrix4x4 controllerMatrix = parent.localToWorldMatrix * Matrix4x4.TRS(p, r, new Vector3(scale, scale, scale));
+                Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, new Vector3(scale, scale, scale));
 
                 TransformSelection(controllerMatrix);
             }

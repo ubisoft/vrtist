@@ -28,6 +28,8 @@ namespace VRtist
         // Start is called before the first frame update
         void Start()
         {
+            Init();
+
             paintLineRenderer = transform.gameObject.GetComponent<LineRenderer>();
             if (paintLineRenderer == null) { Debug.LogWarning("Expected a line renderer on the paintItem game object."); }
             else { paintLineRenderer.startWidth = 0.005f; paintLineRenderer.endWidth = 0.005f; }
@@ -39,9 +41,9 @@ namespace VRtist
             OnPaintColor(paintColor);
             
             // Create tooltips
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Trigger, "Draw");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
-            Tooltips.CreateTooltip(transform.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Brush Size");
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Brush Size");
         }
 
         protected override void OnEnable()
@@ -77,7 +79,6 @@ namespace VRtist
                 sphere.gameObject.SetActive(show);
             }
 
-            Transform rightController = gameObject.transform.Find("right_controller");
             if (rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
@@ -107,8 +108,8 @@ namespace VRtist
             },            
              () =>
              {
-                // Bake line renderer into a mesh so we can raycast on it
-                if (currentPaintLine != null)
+                 // Bake line renderer into a mesh so we can raycast on it
+                 if (currentPaintLine != null)
                 {
                      MeshCollider collider = currentPaintLine.GetComponent<MeshCollider>();
                      collider.sharedMesh = currentPaintLine.GetComponent<MeshFilter>().sharedMesh;
@@ -122,6 +123,7 @@ namespace VRtist
                      //VRInput.rightController.StopHaptics();
                 }
             });
+
             float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);
 
             // Change brush size
