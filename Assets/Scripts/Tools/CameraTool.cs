@@ -15,6 +15,7 @@ namespace VRtist
         public Transform world;
         public Transform backgroundFeedback;
         public Transform dopesheetHandle = null;
+        public Transform cameraPreviewHandle = null;
         public TextMeshProUGUI tm;
         public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;
@@ -25,11 +26,21 @@ namespace VRtist
         private float cameraFeedbackScaleFactor = 1.1f;
         private GameObject UIObject = null;
         private bool feedbackPositioning = false;
-        private bool showTimeline = false;
         private Transform focalSlider = null;
+
+        private bool showTimeline = false;
         private Transform showDopesheetCheckbox = null;
         private Dopesheet dopesheet;
-        
+
+        private bool showCameraPreview = false;
+        private Transform showCameraPreviewCheckbox = null;
+        private CameraPreviewWindow cameraPreviewWindow;
+
+        public float deadZone = 0.8f;
+
+        private Transform controller;
+        private Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
+
         public float Focal
         {
             get { return focal; }
@@ -46,11 +57,6 @@ namespace VRtist
                 }
             }
         }
-
-        public float deadZone = 0.8f;
-
-        private Transform controller;
-        private Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
 
         protected override void OnEnable()
         {
@@ -84,6 +90,7 @@ namespace VRtist
             {
                 focalSlider = panel.Find("Focal");
                 showDopesheetCheckbox = panel.Find("ShowDopesheet");
+                showCameraPreviewCheckbox = panel.Find("ShowCameraPreview");
             }
 
             if (!dopesheetHandle)
@@ -94,6 +101,16 @@ namespace VRtist
             {
                 dopesheet = dopesheetHandle.GetComponentInChildren<Dopesheet>();
                 dopesheetHandle.transform.localScale = Vector3.zero;
+            }
+
+            if (!cameraPreviewHandle)
+            {
+                Debug.LogWarning("You forgot to give the CameraPreview to the Camera Tool.");
+            }
+            else
+            {
+                cameraPreviewWindow = cameraPreviewHandle.GetComponentInChildren<CameraPreviewWindow>();
+                cameraPreviewHandle.transform.localScale = Vector3.zero;
             }
 
             DisableUI();
@@ -173,6 +190,33 @@ namespace VRtist
                 else
                 {
                     ToolsUIManager.Instance.CloseWindow(dopesheetHandle.transform, 1.0f);
+                }
+            }
+        }
+
+        public void OnCloseCameraPreview()
+        {
+            OnCheckShowCameraPreview(false);
+
+            UICheckbox cb = showCameraPreviewCheckbox.GetComponent<UICheckbox>();
+            if (cb != null)
+            {
+                cb.Checked = false;
+            }
+        }
+
+        public void OnCheckShowCameraPreview(bool value)
+        {
+            showCameraPreview = value;
+            if (cameraPreviewWindow != null && cameraPreviewHandle != null)
+            {
+                if (value)
+                {
+                    ToolsUIManager.Instance.OpenWindow(cameraPreviewHandle.transform, 1.0f);
+                }
+                else
+                {
+                    ToolsUIManager.Instance.CloseWindow(cameraPreviewHandle.transform, 1.0f);
                 }
             }
         }
@@ -324,9 +368,12 @@ namespace VRtist
                     continue;
                 
                 // Update the Dopesheet
-                if (dopesheet != null)
-                    dopesheet.UpdateFromController(cameraController); // anim parameters? to be generic
-            
+                //if (dopesheet != null)
+                //    dopesheet.UpdateFromController(cameraController); // anim parameters? to be generic
+
+                if (cameraPreviewWindow != null)
+                    cameraPreviewWindow.UpdateFromController(cameraController);
+
                 // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
@@ -343,6 +390,9 @@ namespace VRtist
 
             if (dopesheet != null)
                 dopesheet.Clear();
+
+            if (cameraPreviewWindow != null)
+                cameraPreviewWindow.Clear();
 
             focalSlider.gameObject.SetActive(false);
         }
