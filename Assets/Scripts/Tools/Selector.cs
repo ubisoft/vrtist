@@ -61,6 +61,7 @@ namespace VRtist
         void Start() 
         {
             Init();
+            ShowMouthpiece(selectorBrush, true);
         }
 
         protected override void Init()
@@ -546,11 +547,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            Transform sphere = gameObject.transform.Find("Sphere");
-            if(sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
+            ShowMouthpiece(selectorBrush, show);
 
             if(rightController != null)
             {

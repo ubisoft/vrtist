@@ -72,7 +72,7 @@ namespace VRtist
                 if (null != UIObject)
                 {
                     GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
-                    Matrix4x4 matrix = container.worldToLocalMatrix * transform.localToWorldMatrix /** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
+                    Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));/** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
                     SyncData.SetTransform(newObject.name, matrix);
                     new CommandAddGameObject(newObject).Submit();
 

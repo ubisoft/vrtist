@@ -255,7 +255,7 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.05f, 0.05f, 0.05f));
+                    Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
                     GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
                     if (newCamera)
                     {
@@ -311,11 +311,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            Transform sphere = gameObject.transform.Find("Sphere");
-            if (sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
+            ShowMouthpiece(selectorBrush, show);
 
             if (rightController != null)
             {

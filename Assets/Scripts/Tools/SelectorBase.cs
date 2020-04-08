@@ -136,13 +136,9 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            Transform sphere = gameObject.transform.Find("Sphere");
-            if(sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
-            
-            if(rightController != null)
+            ShowMouthpiece(selectorBrush, show);
+
+            if (rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
             }
@@ -156,7 +152,8 @@ namespace VRtist
         protected void InitControllerMatrix()
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
-            initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one)).inverse;
+            // compute rightMouthpiece local to world matrix with initial controller position/rotation
+            initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one)).inverse;
         }
 
         protected void InitTransforms()
@@ -366,7 +363,9 @@ namespace VRtist
                     }
                 }
 
-                Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, new Vector3(scale, scale, scale));
+                // compute rightMouthpiece local to world matrix with controller position/rotation
+                Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
+                    Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation,  new Vector3(scale, scale, scale));
 
                 TransformSelection(controllerMatrix);
             }

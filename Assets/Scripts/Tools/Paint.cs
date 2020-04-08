@@ -73,11 +73,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            Transform sphere = gameObject.transform.Find("Brush");
-            if (sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
+            ShowMouthpiece(paintBrush, show);
 
             if (rightController != null)
             {

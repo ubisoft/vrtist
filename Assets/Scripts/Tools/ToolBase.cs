@@ -20,6 +20,7 @@ namespace VRtist
         protected List<ParametersController> connectedObjects = new List<ParametersController>();
 
         protected Transform rightHandle;
+        protected Transform rightMouthpiece;
         protected Transform rightController;
 
         protected virtual void Awake()
@@ -33,6 +34,18 @@ namespace VRtist
             UnityEngine.Assertions.Assert.IsNotNull(rightController);
             rightHandle = rightController.parent;
             UnityEngine.Assertions.Assert.IsNotNull(rightHandle);
+            rightMouthpiece = rightHandle.Find("mouthpieces");
+            UnityEngine.Assertions.Assert.IsNotNull(rightMouthpiece);
+        }
+
+        protected void ShowMouthpiece(Transform mouthPiece, bool show)
+        {
+            Transform container = mouthPiece.parent;
+            for (int i = 0; i < container.childCount ; i++)
+            {
+                Transform child = container.GetChild(i);
+                child.gameObject.SetActive(show && child == mouthPiece);
+            }
         }
 
         void Start()
