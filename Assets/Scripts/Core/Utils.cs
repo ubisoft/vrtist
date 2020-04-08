@@ -130,27 +130,29 @@ namespace VRtist
 
         public static GameObject CreatePaint(Transform parent, Color color)
         {
-            GameObject lineObject = new GameObject();
-            lineObject.transform.parent = parent;
-            lineObject.name = CreateUniqueName(lineObject, "Paint");
+            GameObject paint = new GameObject();
+            paint.transform.parent = parent;
+            paint.name = CreateUniqueName(paint, "Paint");
 
-            lineObject.transform.localPosition = Vector3.zero;
-            lineObject.transform.localRotation = Quaternion.identity;
-            lineObject.transform.localScale = Vector3.one;
-            lineObject.tag = "PhysicObject";
+            paint.transform.localPosition = Vector3.zero;
+            paint.transform.localRotation = Quaternion.identity;
+            paint.transform.localScale = Vector3.one;
+            paint.tag = "PhysicObject";
 
             Mesh mesh = new Mesh();
-            MeshFilter meshFilter = lineObject.AddComponent<MeshFilter>();
+            MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
-            MeshRenderer renderer = lineObject.AddComponent<MeshRenderer>();
+            MeshRenderer renderer = paint.AddComponent<MeshRenderer>();
             Material paintMaterial = Resources.Load("Materials/Paint") as Material;
             renderer.material = GameObject.Instantiate<Material>(paintMaterial);
             renderer.material.SetColor("_BaseColor", color);
             renderer.material.name = "Paint_" + color.ToString();
 
-            PaintController paintController = lineObject.AddComponent<PaintController>();
+            paint.AddComponent<MeshCollider>();
 
-            return lineObject;
+            PaintController paintController = paint.AddComponent<PaintController>();
+
+            return paint;
         }
 
 
