@@ -23,7 +23,7 @@ namespace VRtist
         private bool isGrounded;
         private LayerMask groundMask = LayerMask.NameToLayer("Water");
 
-        private float jumpHeight = 3f;
+        private float jumpHeight = 0.002f;
 
         public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
@@ -129,7 +129,14 @@ namespace VRtist
                 controller.Move(forwardVelocity * speed + leftRightVelocity * speed);
             }
 
-            isGrounded = Physics.CheckSphere(rig.position, groundDistance, groundMask);
+            isGrounded = Physics.CheckSphere(rig.position - Vector3.up, groundDistance, 5);
+            Ray ray = new Ray(rig.position, -Vector3.up);
+            RaycastHit hit;
+            if(Physics.Raycast(ray, out hit))
+            {
+                Vector3 hitPoint = hit.point;
+                isGrounded = Mathf.Abs(hitPoint.y - rig.position.y) < 0.1f;
+            }
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
             () => 
@@ -139,7 +146,7 @@ namespace VRtist
             });
 
             if (isGrounded && velocity.y < 0)
-                velocity.y = -2f;
+                velocity.y = 0f;
 
             velocity.y -= GlobalState.fpsGravity * Time.deltaTime * Time.deltaTime;
             controller.Move(velocity);
