@@ -31,6 +31,8 @@ namespace VRtist
         public static float fpsSpeed = 5f;
         public static float fpsRotationSpeed = 5f;
         public static float fpsDamping = 0f;
+        public static float fpsGravity = 9.8f;
+
         public static float orbitScaleSpeed = 0.02f; // 0-1 slider en pct
         public static float orbitMoveSpeed = 0.05f; // 0-1 slider *100
         public static float orbitRotationalSpeed = 3.0f; // 0-10

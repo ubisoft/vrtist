@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -15,9 +16,20 @@ namespace VRtist
 
         private Vector3 cameraForward;
 
+        private Vector3 velocity;
+        CharacterController controller;
+
+        private float groundDistance = 0.01f;
+        private bool isGrounded;
+        private LayerMask groundMask = LayerMask.NameToLayer("Water");
+
+        private float jumpHeight = 3f;
+
         public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
             base.Init(rigTransform, worldTransform, leftHandleTransform, pivotTransform, cameraTransform, parametersTransform);
+            controller = rigTransform.GetComponent<CharacterController>();
+            controller.enabled = true;
 
             cameraForward = Camera.main.transform.TransformDirection(Vector3.forward).normalized;
             // Create tooltips
@@ -30,6 +42,7 @@ namespace VRtist
 
         public override void DeInit() 
         {
+            controller.enabled = false;
             Transform drone = parameters.Find("FPS");
             drone.gameObject.SetActive(false);
         }
@@ -75,21 +88,17 @@ namespace VRtist
             float speed = fpsSpeed * GlobalState.fpsSpeed;
             Vector4 joystickValue = GetJoysticksValue();
 
-            Vector2 leftJoyValue = new Vector2(joystickValue.x, joystickValue.y);
-            if (leftJoyValue != Vector2.zero)
+            Vector2 rightJoyValue = new Vector2(joystickValue.z, joystickValue.w);
+            if (rightJoyValue != Vector2.zero)
             {
                 float rSpeed = fpsRotationSpeed * GlobalState.fpsRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
-
                 // move up
                 Vector3 up = Vector3.up;
-                Vector3 upDownVelocity = up * leftJoyValue.y * d;
                 Vector3 right = Vector3.Cross(up, cameraForward).normalized;
 
-                rig.position += upDownVelocity * speed;
-
                 // rotate
-                Quaternion rotation = Quaternion.AngleAxis(leftJoyValue.x * rSpeed, up);
+                Quaternion rotation = Quaternion.AngleAxis(rightJoyValue.x * rSpeed, up);
                 rig.rotation = rotation * rig.rotation;
 
                 // update forward
@@ -102,8 +111,8 @@ namespace VRtist
                 cameraForward = rotated.GetColumn(2).normalized;
             }
 
-            Vector2 rightJoyValue = new Vector2(joystickValue.z, joystickValue.w);
-            if (rightJoyValue != Vector2.zero)
+            Vector2 leftJoyValue = new Vector2(joystickValue.x, joystickValue.y);
+            if (leftJoyValue != Vector2.zero)
             {
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
 
@@ -111,13 +120,29 @@ namespace VRtist
                 Vector3 up = Vector3.up;
                 Vector3 right = Vector3.Cross(up, cameraForward).normalized;
                 Vector3 forward = Vector3.Cross(right, up).normalized;
-                Vector3 forwardVelocity = forward * rightJoyValue.y * d;
+                Vector3 forwardVelocity = forward * leftJoyValue.y * d;
 
                 // strafe
-                Vector3 leftRightVelocity = right * rightJoyValue.x * d;
+                Vector3 leftRightVelocity = right * leftJoyValue.x * d;
 
-                rig.position += forwardVelocity * speed + leftRightVelocity * speed;
+                //rig.position += forwardVelocity * speed + leftRightVelocity * speed;
+                controller.Move(forwardVelocity * speed + leftRightVelocity * speed);
             }
+
+            isGrounded = Physics.CheckSphere(rig.position, groundDistance, groundMask);
+
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
+            () => 
+            {
+                if(isGrounded)
+                    velocity.y = Mathf.Sqrt(jumpHeight * 2f * GlobalState.fpsGravity);
+            });
+
+            if (isGrounded && velocity.y < 0)
+                velocity.y = -2f;
+
+            velocity.y -= GlobalState.fpsGravity * Time.deltaTime * Time.deltaTime;
+            controller.Move(velocity);
         }
     }
 }
