@@ -110,7 +110,8 @@ namespace VRtist
                 // Bake line renderer into a mesh so we can raycast on it
                 if (currentPaintLine != null)
                 {
-                     MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
+                     MeshCollider collider = currentPaintLine.GetComponent<MeshCollider>();
+                     collider.sharedMesh = currentPaintLine.GetComponent<MeshFilter>().sharedMesh;
                      PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
                      paintParameters.color = paintColor;
                      paintParameters.controlPoints = freeDraw.controlPoints;

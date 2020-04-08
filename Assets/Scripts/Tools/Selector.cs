@@ -72,13 +72,13 @@ namespace VRtist
         {
             base.OnEnable();
             InitUIPanel();
-            planesContainer.SetActive(false);
+            if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            planesContainer.SetActive(false);
+            if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         public void SetSnapToGrid(bool value)
