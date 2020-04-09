@@ -38,10 +38,8 @@ namespace VRtist
         public float minValue = 0.0f;
         public float maxValue = 1.0f;
         public float currentValue = 0.5f;
-        
 
-        // TODO: type? handle int and float.
-        //       precision, step?
+        // TODO: precision, step?
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public FloatChangedEvent onSlideEvent = new FloatChangedEvent();
@@ -246,7 +244,7 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(baseColor);
+                    SetColor(Disabled ? disabledColor : baseColor);
                 }
                 catch(Exception e)
                 {
@@ -396,12 +394,12 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(pushedColor);
+            SetColor(Disabled ? disabledColor : pushedColor);
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(baseColor);
+            SetColor(Disabled ? disabledColor : baseColor);
         }
 
         public void OnSlide(float f)

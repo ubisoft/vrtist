@@ -188,7 +188,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(baseColor);
+                SetColor(Disabled ? disabledColor : baseColor);
                 needRebuild = false;
             }
         }
@@ -265,14 +265,14 @@ namespace VRtist
 
         public void OnPushCheckbox()
         {
-            SetColor(pushedColor);
+            SetColor(Disabled ? disabledColor : pushedColor);
             Checked = !Checked;
             onCheckEvent.Invoke(Checked);
         }
 
         public void OnReleaseCheckbox()
         {
-            SetColor(baseColor);
+            SetColor(Disabled ? disabledColor : baseColor);
         }
 
 

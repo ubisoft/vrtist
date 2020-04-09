@@ -67,7 +67,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(baseColor);
+                SetColor(Disabled ? disabledColor : baseColor);
                 needRebuild = false;
             }
         }

@@ -7,9 +7,13 @@ namespace VRtist
     public class UIElement : MonoBehaviour
     {
         // "stylesheet"
-        public static readonly Color default_color = new Color(0.8f, 0.8f, 0.8f, 1.0f); // light grey.
-        public static readonly Color default_background_color = new Color(0.2f, 0.2f, 0.2f, 1.0f); // dark grey.
-        public static readonly Color default_disabled_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
+        public static readonly Color default_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
+        public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
+        public static readonly Color default_pushed_color = new Color(0.0f, 0.65f, 1.0f, 1.0f); // light vivid blue
+        public static readonly Color default_checked_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // light vivid blue
+        //public static readonly Color default_disabled_color = new Color(0.20f, 0.23f, 0.25f); // dark grey blue
+        //public static readonly Color default_disabled_color = new Color(0.4708f, 0.7317f, 0.8679f); // light grey blue
+        public static readonly Color default_disabled_color = new Color(0.5873f, 0.6170f, 0.6320f); // middle grey blue
         public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
         public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
 
@@ -20,7 +24,7 @@ namespace VRtist
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
-        public Color baseColor = UIElement.default_color;
+        public Color baseColor = UIElement.default_background_color;
         public Color disabledColor = UIElement.default_disabled_color;
 
         private bool isDisabled = false;

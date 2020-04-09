@@ -13,7 +13,7 @@ namespace VRtist
         private static readonly float default_margin = 0.005f;
         private static readonly float default_thickness = 0.001f;
         private static readonly Material default_material = null; // use LoadDefault...
-        private static readonly Color default_color = UIElement.default_color;
+        private static readonly Color default_color = UIElement.default_background_color;
         private static readonly string default_text = "Button";
         private static readonly Sprite default_icon = null; // use LoadDefault...
 

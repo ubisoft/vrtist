@@ -118,7 +118,7 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(baseColor);
+                    SetColor(Disabled ? disabledColor : baseColor);
                 }
                 catch (Exception e)
                 {
@@ -435,12 +435,12 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(pushedColor);
+            SetColor(Disabled ? disabledColor : pushedColor);
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(baseColor);
+            SetColor(Disabled ? disabledColor : baseColor);
         }
 
         public void OnSlide(float f)

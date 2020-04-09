@@ -164,7 +164,7 @@ namespace VRtist
                 UpdateAnchor();
                 UpdateChildren();
                 if(!EditorApplication.isPlaying)
-                    SetColor(baseColor);
+                    SetColor(Disabled ? disabledColor : baseColor);
                 needRebuild = false;
             }
 #endif

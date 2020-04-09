@@ -38,7 +38,7 @@ namespace VRtist
         public bool Checked
         {
             get { return isChecked; }
-            set { isChecked = value; SetColor(value ? checkedColor : baseColor); }
+            set { isChecked = value; SetColor(Disabled ? disabledColor : (value ? checkedColor : baseColor)); }
         }
 
         void Start()
@@ -162,8 +162,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                if(!EditorApplication.isPlaying)
-                    SetColor(baseColor);
+                SetColor(Disabled ? disabledColor : baseColor);
                 needRebuild = false;
             }
 #endif
@@ -259,12 +258,12 @@ namespace VRtist
 
         public void OnPushButton()
         {
-            SetColor(pushedColor);
+            SetColor(Disabled ? disabledColor : pushedColor);
         }
 
         public void OnReleaseButton()
         {
-            SetColor(isChecked ? checkedColor : baseColor);
+            SetColor(Disabled? disabledColor: (isChecked ? checkedColor : baseColor));
         }
 
         public static void CreateUIButton(
