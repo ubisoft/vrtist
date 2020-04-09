@@ -58,8 +58,10 @@ namespace VRtist
 
         private bool deformEnabled = false;
 
-        void Start() {
+        void Start() 
+        {
             Init();
+            ShowMouthpiece(selectorBrush, true);
         }
 
         protected override void Init()
@@ -72,13 +74,13 @@ namespace VRtist
         {
             base.OnEnable();
             InitUIPanel();
-            planesContainer.SetActive(false);
+            if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            planesContainer.SetActive(false);
+            if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         public void SetSnapToGrid(bool value)
@@ -469,7 +471,7 @@ namespace VRtist
             Vector3 controllerPosition;
             Quaternion controllerRotation;
             VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
-            controllerPosition = transform.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
+            controllerPosition = rightHandle.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
             controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer)
@@ -545,13 +547,8 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            Transform sphere = gameObject.transform.Find("Sphere");
-            if(sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
+            ShowMouthpiece(selectorBrush, show);
 
-            Transform rightController = gameObject.transform.Find("right_controller");
             if(rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;

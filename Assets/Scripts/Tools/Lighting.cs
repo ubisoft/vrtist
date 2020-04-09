@@ -96,7 +96,7 @@ namespace VRtist
 
             if (light)
             {
-                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * transform.localToWorldMatrix * Matrix4x4.Scale(new Vector3(0.1f, 0.1f, 0.1f));
+                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(10f, 10f, 10f));
                 GameObject instance = SyncData.InstantiateUnityPrefab(light, matrix);
 
                 CommandGroup undoGroup = new CommandGroup();
@@ -132,13 +132,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            Transform sphere = gameObject.transform.Find("Sphere");
-            if (sphere != null)
-            {
-                sphere.gameObject.SetActive(show);
-            }
-
-            Transform rightController = gameObject.transform.Find("right_controller");
+            ShowMouthpiece(selectorBrush, show);
             if (rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
