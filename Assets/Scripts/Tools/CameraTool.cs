@@ -22,18 +22,21 @@ namespace VRtist
         public RenderTexture renderTexture = null;
 
         private float focal;
-        private float cameraFeedbackScale = 1f;
-        private float cameraFeedbackScaleFactor = 1.1f;
         private GameObject UIObject = null;
-        private bool feedbackPositioning = false;
         private Transform focalSlider = null;
 
+        private bool showCameraFeedback = false;
+        private UICheckbox showCameraFeedbackCheckbox = null;
+        private UICheckbox feedbackPositionningCheckbox = null;
+        private bool feedbackPositioning = false;
+        private float cameraFeedbackScale = 1f;
+        private float cameraFeedbackScaleFactor = 1.1f;
+
         private bool showTimeline = false;
-        private Transform showDopesheetCheckbox = null;
-        //private Dopesheet dopesheet; // already in SelectorBase 
+        private UICheckbox showDopesheetCheckbox = null;
 
         private bool showCameraPreview = false;
-        private Transform showCameraPreviewCheckbox = null;
+        private UICheckbox showCameraPreviewCheckbox = null;
         private CameraPreviewWindow cameraPreviewWindow;
 
         public float deadZone = 0.8f;
@@ -62,6 +65,8 @@ namespace VRtist
         {
             base.OnEnable();
 
+            InitUIPanel();
+
             OnSelectionChanged(null, null);
             foreach (Camera camera in SelectedCameras())
                 ComputeFocal(camera);
@@ -71,11 +76,6 @@ namespace VRtist
         {
             base.OnDisable();
             feedbackPositioning = false;
-        }
-
-        void DisableUI()
-        {
-            focalSlider.gameObject.SetActive(false);
         }
 
         protected override void Awake()
@@ -89,8 +89,10 @@ namespace VRtist
             else
             {
                 focalSlider = panel.Find("Focal");
-                showDopesheetCheckbox = panel.Find("ShowDopesheet");
-                showCameraPreviewCheckbox = panel.Find("ShowCameraPreview");
+                showCameraFeedbackCheckbox = panel.Find("ShowFeedback")?.gameObject.GetComponent<UICheckbox>();
+                feedbackPositionningCheckbox = panel.Find("Feedback")?.gameObject.GetComponent<UICheckbox>();
+                showDopesheetCheckbox = panel.Find("ShowDopesheet")?.gameObject.GetComponent<UICheckbox>();
+                showCameraPreviewCheckbox = panel.Find("ShowCameraPreview")?.gameObject.GetComponent<UICheckbox>();
             }
 
             if (!dopesheetHandle)
@@ -112,14 +114,12 @@ namespace VRtist
                 cameraPreviewWindow = cameraPreviewHandle.GetComponentInChildren<CameraPreviewWindow>();
                 cameraPreviewHandle.transform.localScale = Vector3.zero;
             }
-
-            DisableUI();
+            
+            cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
             Init();
+            
             ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
-            //ToolsUIManager.Instance.OnBoolToolParameterChangedEvent += OnBoolChangeParameter;
-
-            cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
             Selection.OnSelectionChanged += OnSelectionChanged;
 
@@ -128,12 +128,37 @@ namespace VRtist
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Zoom");
         }
 
+        protected override void Init()
+        {
+            base.Init();
+
+            //showCameraFeedback = true;
+            //feedbackPositioning = true;
+            showCameraFeedback = false;
+            focalSlider.gameObject.SetActive(false);
+
+            InitUIPanel();
+        }
+
+        protected void InitUIPanel()
+        {
+            if (showCameraFeedbackCheckbox != null)
+            {
+                showCameraFeedbackCheckbox.Checked = showCameraFeedback;
+            }
+
+            if (feedbackPositionningCheckbox != null)
+            {
+                feedbackPositionningCheckbox.Checked = feedbackPositioning;
+                feedbackPositionningCheckbox.Disabled = !showCameraFeedback;
+            }
+        }
+
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
         {
             List<Camera> cameras = SelectedCameras();
             if (cameras.Count > 0)
             {
-
                 float far = Camera.main.farClipPlane * 0.7f;
                 backgroundFeedback.position = position + direction.normalized * far;
                 backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
@@ -148,7 +173,6 @@ namespace VRtist
             {
                 backgroundFeedback.gameObject.SetActive(false);
             }
-
         }
 
         public override void OnUIObjectEnter(int gohash)
@@ -160,6 +184,19 @@ namespace VRtist
         public override void OnUIObjectExit(int gohash)
         {
             UIObject = null;
+        }
+
+        public void OnCheckShowCameraFeedback(bool value)
+        {
+            showCameraFeedback = value;
+
+            backgroundFeedback.gameObject.SetActive(value);
+
+            UICheckbox feedbackPositionningCB = feedbackPositionningCheckbox.GetComponent<UICheckbox>();
+            if (feedbackPositionningCB != null)
+            {
+                feedbackPositionningCB.Disabled = !value;
+            }
         }
 
         public void OnCheckFeedbackPositionning(bool value)
@@ -285,25 +322,28 @@ namespace VRtist
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
             // Update feedback position and scale
-            bool trigger = false;
-            if (feedbackPositioning
-                && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton ))
+            if (showCameraFeedback)
             {
-                cameraPreviewDirection = transform.forward;
-                trigger = true;
-            }
-            UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
-            if(trigger)
-            {
-                // Cam feedback scale
-                Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                if (joystickAxis.y > deadZone)
-                    cameraFeedbackScale *= cameraFeedbackScaleFactor;
-                if (joystickAxis.y < -deadZone)
-                    cameraFeedbackScale /= cameraFeedbackScaleFactor;
+                bool trigger = false;
+                if (feedbackPositioning
+                    && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
+                {
+                    cameraPreviewDirection = transform.forward;
+                    trigger = true;
+                }
+                UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
+                if (trigger)
+                {
+                    // Cam feedback scale
+                    Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                    if (joystickAxis.y > deadZone)
+                        cameraFeedbackScale *= cameraFeedbackScaleFactor;
+                    if (joystickAxis.y < -deadZone)
+                        cameraFeedbackScale /= cameraFeedbackScaleFactor;
+                }
             }
 
-            if (!feedbackPositioning)
+            if (!showCameraFeedback || !feedbackPositioning)
             {
                 base.DoUpdate(position, rotation);
             }
@@ -361,10 +401,6 @@ namespace VRtist
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;
-                
-                // Update the Dopesheet
-                //if (dopesheet != null)
-                //    dopesheet.UpdateFromController(cameraController); // anim parameters? to be generic
 
                 if (cameraPreviewWindow != null)
                     cameraPreviewWindow.UpdateFromController(cameraController);
