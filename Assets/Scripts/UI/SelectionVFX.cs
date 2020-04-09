@@ -95,6 +95,8 @@ namespace VRtist {
             elapsedTime += Time.deltaTime;
 
             GetData();
+            if(positionList.Count == 0) { return; }
+
             TransferData();
             UpdateVFX();
 
@@ -112,8 +114,11 @@ namespace VRtist {
                 Mesh mesh = new Mesh();
                 foreach(SkinnedMeshRenderer renderer in renderers) {
                     renderer.BakeMesh(mesh);
-                    positionList.AddRange(mesh.vertices);
-                    normalList.AddRange(mesh.normals);
+                    if(mesh.isReadable)
+                    {
+                        positionList.AddRange(mesh.vertices);
+                        normalList.AddRange(mesh.normals);
+                    }
                 }
             }
 
@@ -124,8 +129,11 @@ namespace VRtist {
                     positionList.Clear();
                     normalList.Clear();
                     foreach(MeshFilter meshFilter in meshFilters) {
-                        positionList.AddRange(meshFilter.mesh.vertices);
-                        normalList.AddRange(meshFilter.mesh.normals);
+                        if(meshFilter.mesh.isReadable)
+                        {
+                            positionList.AddRange(meshFilter.mesh.vertices);
+                            normalList.AddRange(meshFilter.mesh.normals);
+                        }
                     }
                 }
             }
