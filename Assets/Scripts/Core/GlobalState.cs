@@ -48,6 +48,9 @@ namespace VRtist
         // Gizmos
         public static bool displayGizmos = true;
 
+        // Right-Handed
+        public static bool rightHanded = true;
+
         private static GlobalState instance = null;
         private static GlobalState Instance
         {

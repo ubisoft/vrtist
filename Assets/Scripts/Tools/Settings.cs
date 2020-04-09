@@ -15,6 +15,7 @@ namespace VRtist
         [Header("UI Widgets")]
         public UICheckbox worldGridCheckbox;
         public UILabel versionLabel;
+        public UICheckbox rightHandedCheckbox;
 
         private void Start()
         {
@@ -25,7 +26,11 @@ namespace VRtist
                 worldGridCheckbox.Checked = true;
             }
 
-            if(null != versionLabel)
+            if(null != rightHandedCheckbox) {
+                rightHandedCheckbox.Checked = GlobalState.rightHanded;
+            }
+
+            if (null != versionLabel)
             {
                 versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}";
             }
@@ -41,6 +46,10 @@ namespace VRtist
 
         public void OnDisplayWorldGrid(bool show) {
             worldGrid.SetActive(show);
+        }
+
+        public void OnRightHanded(bool value) {
+            GlobalState.rightHanded = value;
         }
 
         public void OnChangeMasterVolume(float volume)

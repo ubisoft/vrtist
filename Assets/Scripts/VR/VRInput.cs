@@ -39,7 +39,6 @@ namespace VRtist
         public static InputDevice head;
         public static InputDevice leftController;
         public static InputDevice rightController;
-        public static bool rightHanded = true;
         private static bool remapLeftRightHandedDevices = true;
         public static Dictionary<InputDevice, InputDevice> invertedController = new Dictionary<InputDevice, InputDevice>();
 
@@ -224,7 +223,7 @@ namespace VRtist
 
         private static InputDevice GetLeftOrRightHandedController(InputDevice controller)
         {
-            if (rightHanded || !remapLeftRightHandedDevices)
+            if (GlobalState.rightHanded || !remapLeftRightHandedDevices)
                 return controller;
             return invertedController[controller];
         }
