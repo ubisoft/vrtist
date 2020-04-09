@@ -18,7 +18,7 @@ namespace VRtist
 
         // TODO: OnValidate() on width/heigt/etc... ??? Controlled by UISlider already.
 
-        private Color _color;
+        public Color _color;
         public Color Color { get { return _color; } set { _color = value; ApplyColor(_color); } }
 
         void Awake()

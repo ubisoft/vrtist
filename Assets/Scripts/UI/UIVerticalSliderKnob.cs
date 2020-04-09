@@ -15,7 +15,7 @@ namespace VRtist
         public float radius;
         public float depth;
 
-        private Color _color;
+        public Color _color;
         public Color Color { get { return _color; } set { _color = value; ApplyColor(_color); } }
 
         public void RebuildMesh(float newKnobRadius, float newKnobDepth)

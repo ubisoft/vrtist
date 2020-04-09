@@ -316,7 +316,7 @@ namespace VRtist
                 Text txt = textValueTransform.gameObject.GetComponent<Text>();
                 if (txt != null)
                 {
-                    txt.text = currentValue.ToString("#.00");
+                    txt.text = currentValue.ToString("#0.00");
                 }
             }
         }
@@ -638,7 +638,7 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 //t.font = (Font)Resources.Load("MyLocalFont");
-                t.text = cur_slider_value.ToString("#.00");
+                t.text = cur_slider_value.ToString("#0.00");
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleRight;
