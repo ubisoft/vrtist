@@ -148,7 +148,7 @@ namespace VRtist
                 GameObject vfxInstance = Instantiate(selector.selectionVFXPrefab);
                 vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(gObject);
 
-                VRInput.rightController.SendHapticImpulse(0, 1, 0.2f);
+                VRInput.SendHapticImpulse(VRInput.rightController,0, 1, 0.2f);
                 new CommandRemoveGameObject(gObject).Submit();
             }
         }

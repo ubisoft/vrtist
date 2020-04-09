@@ -462,7 +462,14 @@ namespace VRtist
         // amplitude in [0..1]
         public static void SendHaptic(InputDevice controller, float duration, float amplitude = 1f)
         {
-            controller.SendHapticImpulse(0, amplitude, duration);
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            c.SendHapticImpulse(0, amplitude, duration);
+        }
+
+        public static void SendHapticImpulse(InputDevice controller, uint channel, float amplitude, float duration = 1)
+        {
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            c.SendHapticImpulse(channel, amplitude, duration);
         }
     }
 }

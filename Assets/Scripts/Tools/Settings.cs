@@ -11,6 +11,9 @@ namespace VRtist
         [Header("Settings Parameters")]
         public AudioMixer mixer = null;
         public GameObject worldGrid;
+        public Transform leftHandle;
+        public Transform rightHandle;
+        public Transform cursor;
 
         [Header("UI Widgets")]
         public UICheckbox worldGridCheckbox;
@@ -50,6 +53,26 @@ namespace VRtist
 
         public void OnRightHanded(bool value) {
             GlobalState.rightHanded = value;
+            GameObject leftController = Resources.Load("Prefabs/left_controller") as GameObject;
+            GameObject rightController = Resources.Load("Prefabs/right_controller") as GameObject;
+
+            Destroy(leftHandle.Find("left_controller").gameObject);
+            Destroy(rightHandle.Find("right_controller").gameObject);
+
+            if(value)
+            {
+                GameObject newLeftController = Instantiate(leftController, leftHandle);
+                newLeftController.name = "left_controller";
+                GameObject newRightController = Instantiate(rightController, rightHandle);
+                newRightController.name = "right_controller";
+            }
+            else
+            {
+                GameObject newLeftController = Instantiate(rightController, leftHandle);
+                newLeftController.name = "left_controller";
+                GameObject newRightController = Instantiate(leftController, rightHandle);
+                newRightController.name = "right_controller";
+            }
         }
 
         public void OnChangeMasterVolume(float volume)
