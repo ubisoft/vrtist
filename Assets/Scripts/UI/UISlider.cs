@@ -149,7 +149,11 @@ namespace VRtist
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = BaseColor;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UIPanel");
                 Material materialInstance = Instantiate(material);
@@ -166,7 +170,11 @@ namespace VRtist
             meshRenderer = rail.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = rail.Color;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UISliderRail");
                 Material materialInstance = Instantiate(material);
@@ -183,7 +191,11 @@ namespace VRtist
             meshRenderer = knob.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = knob.Color;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UISliderKnob");
                 Material materialInstance = Instantiate(material);

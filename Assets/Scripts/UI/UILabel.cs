@@ -77,7 +77,11 @@ namespace VRtist
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = BaseColor;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UIElementTransparent");
                 Material materialInstance = Instantiate(material);

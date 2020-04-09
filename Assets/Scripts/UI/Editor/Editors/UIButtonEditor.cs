@@ -14,7 +14,8 @@ namespace VRtist
             DrawDefaultInspector();
 
             UIElement uiElem = target as UIElement;
-            if (GUILayout.Button("Reset Material"))
+            GUI.backgroundColor = Color.magenta;
+            if (GUILayout.Button("Fix Material"))
             {
                 uiElem.ResetMaterial();
             }
