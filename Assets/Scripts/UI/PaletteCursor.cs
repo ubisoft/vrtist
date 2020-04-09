@@ -24,14 +24,14 @@ namespace VRtist
         {
             // Get the initial transform of the cursor mesh, in order to
             // be able to restore it when we go out of a widget.
-            MeshFilter mf = GetComponentInChildren<MeshFilter>();
+            MeshFilter mf = GetComponentInChildren<MeshFilter>(true);
             GameObject go = mf.gameObject;
             Transform t = go.transform;
             Vector3 lp = t.localPosition;
 
-            audioClick = GetComponentInChildren<AudioSource>();
+            audioClick = GetComponentInChildren<AudioSource>(true);
 
-            initialCursorLocalPosition = GetComponentInChildren<MeshFilter>().gameObject.transform.localPosition;
+            initialCursorLocalPosition = GetComponentInChildren<MeshFilter>(true).gameObject.transform.localPosition;
 
             arrowCursor = transform.Find("Arrow");
             grabberCursor = transform.Find("Grabber");
@@ -118,7 +118,7 @@ namespace VRtist
                 isOnAWidget = false;
                 widgetTransform = null;
                 widgetHit = null;
-                MeshFilter meshFilter = GetComponentInChildren<MeshFilter>();
+                MeshFilter meshFilter = GetComponentInChildren<MeshFilter>(true);
                 if(null != meshFilter)
                 {
                     meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
