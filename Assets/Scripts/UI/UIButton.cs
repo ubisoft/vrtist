@@ -17,6 +17,9 @@ namespace VRtist
         [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = 0.005f;
         [CentimeterFloat] public float thickness = 0.001f;
+        [CentimeterFloat] public float iconMargin = 0.0f;
+        public enum IconMarginBehavior { UseButtonMargin, UseIconMargin };
+        public IconMarginBehavior iconMarginBehavior = IconMarginBehavior.UseButtonMargin;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
         public Color checkedColor = new Color(0.8f, 0.8f, 0.8f);
 
@@ -103,8 +106,16 @@ namespace VRtist
                     RectTransform rt = image.gameObject.GetComponent<RectTransform>();
                     if (rt)
                     {
-                        rt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                        rt.localPosition = new Vector3(margin, -margin, -0.001f);
+                        if (iconMarginBehavior == IconMarginBehavior.UseButtonMargin)
+                        {
+                            rt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
+                            rt.localPosition = new Vector3(margin, -margin, -0.001f);
+                        }
+                        else // IconMarginBehavior.UseIconMargin for the moment
+                        {
+                            rt.sizeDelta = new Vector2(minSide - 2.0f * iconMargin, minSide - 2.0f * iconMargin);
+                            rt.localPosition = new Vector3(iconMargin, -iconMargin, -0.001f);
+                        }
                     }
                 }
 
@@ -116,7 +127,8 @@ namespace VRtist
                     if (rt != null)
                     {
                         rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
-                        float textPosLeft = image != null ? minSide : 0.0f;
+                        bool noImage = (image == null) || !image.IsActive();
+                        float textPosLeft = noImage ? margin : minSide;
                         rt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
                     }
                 }
@@ -307,6 +319,8 @@ namespace VRtist
             uiButton.height = height;
             uiButton.margin = margin;
             uiButton.thickness = thickness;
+            uiButton.iconMarginBehavior = IconMarginBehavior.UseButtonMargin; // TODO: pass from Wizard?
+            uiButton.iconMargin = 0.0f; // TODO: pass from Wizard?
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -394,8 +408,16 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 // TODO: non square icons ratio...
-                trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                trt.localPosition = new Vector3(margin, -margin, -0.001f);
+                if (uiButton.iconMarginBehavior == IconMarginBehavior.UseButtonMargin)
+                {
+                    trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
+                    trt.localPosition = new Vector3(margin, -margin, -0.001f);
+                }
+                else // IconMarginBehavior.UseIconMargin for the moment
+                {
+                    trt.sizeDelta = new Vector2(minSide - 2.0f * uiButton.iconMargin, minSide - 2.0f * uiButton.iconMargin);
+                    trt.localPosition = new Vector3(uiButton.iconMargin, -uiButton.iconMargin, -0.001f);
+                }
             }
 
             // Add a Text under the Canvas
@@ -420,7 +442,7 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
-                float textPosLeft = icon != null ? minSide : 0.0f;
+                float textPosLeft = icon != null ? minSide : margin;
                 trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
             }
         }
