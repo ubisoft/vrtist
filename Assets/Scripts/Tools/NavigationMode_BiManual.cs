@@ -26,6 +26,9 @@ namespace VRtist
         private const float deadZone = 0.3f;
         private const float fixedScaleFactor = 1.05f; // for grip world scale
 
+        private Vector3 deltaFromLeftControllerCenter = new Vector3(0.0188f, 0, 0); // see "left_controller" since left controller mesh is not centered
+        private Vector3 deltaFromRightControllerCenter = new Vector3(0, 0, 0);
+
         enum ResetType { LEFT_ONLY, LEFT_AND_RIGHT };
 
         public NavigationMode_BiManual(StretchUI line, float minScale, float maxScale)
@@ -167,7 +170,7 @@ namespace VRtist
                 Vector3 currentLeftControllerPosition_L;
                 Quaternion currentLeftControllerRotation_L;
                 VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
-                Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
+                Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L + deltaFromLeftControllerCenter, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
                 Matrix4x4 currentLeftControllerMatrix_W = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled;
                 Vector3 currentLeftControllerPosition_W = currentLeftControllerMatrix_W.MultiplyPoint(Vector3.zero);
 
@@ -177,7 +180,7 @@ namespace VRtist
                     Vector3 currentRightControllerPosition_L;
                     Quaternion currentRightControllerRotation_L;
                     VRInput.GetControllerTransform(VRInput.rightController, out currentRightControllerPosition_L, out currentRightControllerRotation_L);
-                    Matrix4x4 currentRightControllerMatrix_L_Scaled = Matrix4x4.TRS(currentRightControllerPosition_L, currentRightControllerRotation_L, new Vector3(scale, scale, scale));
+                    Matrix4x4 currentRightControllerMatrix_L_Scaled = Matrix4x4.TRS(currentRightControllerPosition_L + deltaFromRightControllerCenter, currentRightControllerRotation_L, new Vector3(scale, scale, scale));
                     Vector3 currentRightControllerPosition_W = (pivot.localToWorldMatrix * currentRightControllerMatrix_L_Scaled).MultiplyPoint(Vector3.zero);
 
                     Vector3 currentMiddleControllerPosition_W = (currentLeftControllerPosition_W + currentRightControllerPosition_W) * 0.5f;

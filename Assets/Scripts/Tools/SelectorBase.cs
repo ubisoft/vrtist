@@ -146,7 +146,8 @@ namespace VRtist
 
         void SetControllerVisible(bool visible)
         {
-            transform.localScale = visible ? Vector3.one : Vector3.zero;
+            rightHandle.Find("right_controller").gameObject.SetActive(visible);
+            rightHandle.Find("mouthpieces").gameObject.SetActive(visible);
         }
 
         protected void InitControllerMatrix()
