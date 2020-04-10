@@ -24,7 +24,7 @@ namespace VRtist
         private static readonly Material default_background_material = null;
         private static readonly Material default_rail_material = null;
         private static readonly Material default_knob_material = null;
-        private static readonly Color default_background_color = UIElement.default_color;
+        private static readonly Color default_background_color = UIElement.default_background_color;
         private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
         private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
         private static readonly string default_text = "Slider";

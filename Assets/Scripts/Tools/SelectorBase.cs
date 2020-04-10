@@ -46,7 +46,7 @@ namespace VRtist
         protected GameObject displayTooltip;
 
         public GameObject selectionVFXPrefab = null;
-        private Dopesheet dopesheet;
+        protected Dopesheet dopesheet;
 
         void Start()
         {

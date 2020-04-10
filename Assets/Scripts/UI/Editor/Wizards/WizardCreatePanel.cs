@@ -15,7 +15,7 @@ namespace VRtist
         public float margin = 0.02f;
         public float radius = 0.01f;
         public Material uiMaterial = null;
-        public Color color = Color.white;
+        public Color color = UIElement.default_background_color;
 
         private static readonly float default_width = 0.4f;
         private static readonly float default_height = 0.6f;
