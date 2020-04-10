@@ -348,6 +348,7 @@ namespace VRtist
         {
             if (invertedController.Count == 0 && leftController.isValid && rightController.isValid)
             {
+                invertedController[head] = head;
                 invertedController[leftController] = rightController;
                 invertedController[rightController] = leftController;
                 Debug.Log("Got left/right handed controllers");

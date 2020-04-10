@@ -166,21 +166,48 @@ namespace VRtist
                 //    // TODO: draw scale factor.
                 //}
 
+                // Get head position
+                Vector3 HeadPosition;
+                Quaternion headRotation;
+                VRInput.GetControllerTransform(VRInput.head, out HeadPosition, out headRotation);
+                Matrix4x4 invHeadMatrix = Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
+
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
                 Quaternion currentLeftControllerRotation_L;
                 VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
-                Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L + deltaFromLeftControllerCenter, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
+                currentLeftControllerPosition_L += deltaFromLeftControllerCenter;
+
+                Vector3 currentRightControllerPosition_L;
+                Quaternion currentRightControllerRotation_L;
+                VRInput.GetControllerTransform(VRInput.rightController, out currentRightControllerPosition_L, out currentRightControllerRotation_L);
+                currentRightControllerPosition_L += deltaFromRightControllerCenter;
+
+                // Project left & right controller into head matrix to determine which one is on the left
+                Vector3 leftControllerInHeadMatrix = invHeadMatrix.MultiplyPoint(currentLeftControllerPosition_L);
+                Vector3 rightControllerInHeadMatrix = invHeadMatrix.MultiplyPoint(currentRightControllerPosition_L);
+
+                // invert Left/Right if necessary
+                if(leftControllerInHeadMatrix.x > rightControllerInHeadMatrix.x)
+                {
+                    Vector3 tmp = currentLeftControllerPosition_L;
+                    currentLeftControllerPosition_L = currentRightControllerPosition_L;
+                    currentRightControllerPosition_L = tmp;
+
+                    Quaternion tmpQ = currentLeftControllerRotation_L;
+                    currentLeftControllerRotation_L = currentRightControllerRotation_L;
+                    currentRightControllerRotation_L = tmpQ;
+                }
+
+
+                Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
                 Matrix4x4 currentLeftControllerMatrix_W = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled;
                 Vector3 currentLeftControllerPosition_W = currentLeftControllerMatrix_W.MultiplyPoint(Vector3.zero);
 
                 if (isRightGripped)
                 {
                     // update right joystick
-                    Vector3 currentRightControllerPosition_L;
-                    Quaternion currentRightControllerRotation_L;
-                    VRInput.GetControllerTransform(VRInput.rightController, out currentRightControllerPosition_L, out currentRightControllerRotation_L);
-                    Matrix4x4 currentRightControllerMatrix_L_Scaled = Matrix4x4.TRS(currentRightControllerPosition_L + deltaFromRightControllerCenter, currentRightControllerRotation_L, new Vector3(scale, scale, scale));
+                    Matrix4x4 currentRightControllerMatrix_L_Scaled = Matrix4x4.TRS(currentRightControllerPosition_L, currentRightControllerRotation_L, new Vector3(scale, scale, scale));
                     Vector3 currentRightControllerPosition_W = (pivot.localToWorldMatrix * currentRightControllerMatrix_L_Scaled).MultiplyPoint(Vector3.zero);
 
                     Vector3 currentMiddleControllerPosition_W = (currentLeftControllerPosition_W + currentRightControllerPosition_W) * 0.5f;
