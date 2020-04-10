@@ -7,49 +7,27 @@ namespace VRtist
 {
     public class CameraPreviewWindow : MonoBehaviour
     {
-        //[SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
-        private Transform mainPanel = null;
         private Transform handle = null;
+        private Transform mainPanel = null;
         private Transform previewImagePlane = null;
-
-        [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public FloatChangedEvent onChangeFocalEvent = new FloatChangedEvent();
-        public UnityEvent onRecordEvent = new UnityEvent();
-
+        private UIVerticalSlider focalSlider = null;
+        private UIVerticalSlider focusSlider = null;
+        
         private CameraController currentCameraController = null;
 
-//        private int firstFrame = 0;
-
-//        public int FirstFrame { get { return firstFrame; } set { firstFrame = value; UpdateFirstFrame(); } }
-  
         void Start()
         {
-            mainPanel = transform.Find("MainPanel");
             handle = transform.parent;
-            previewImagePlane = mainPanel.Find("PreviewImage");
+            mainPanel = transform.Find("MainPanel");
+            if (mainPanel != null)
+            {
+                previewImagePlane = mainPanel.Find("PreviewImage/Plane");
+                focalSlider = mainPanel.Find("Focal")?.GetComponent<UIVerticalSlider>();
+                focusSlider = mainPanel.Find("Focus")?.GetComponent<UIVerticalSlider>();
+            }
 
-            //if (mainPanel != null)
-            //{
-            //    timeBar = mainPanel.Find("TimeBar").GetComponent<UITimeBar>();
-            //    firstFrameLabel = mainPanel.Find("FirstFrameLabel").GetComponent<UILabel>();
-            //    lastFrameLabel = mainPanel.Find("LastFrameLabel").GetComponent<UILabel>();
-            //    currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
-
-            //    keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
-            //}
+            Selection.OnSelectionChanged += OnSelectionChanged;
         }
-
-        //private void UpdateFirstFrame()
-        //{
-        //    if (firstFrameLabel != null)
-        //    {
-        //        firstFrameLabel.Text = firstFrame.ToString();
-        //    }
-        //    if (timeBar != null)
-        //    {
-        //        timeBar.MinValue = firstFrame; // updates knob position
-        //    }
-        //}
 
         public void Show(bool doShow)
         {
@@ -57,6 +35,25 @@ namespace VRtist
             {
                 mainPanel.gameObject.SetActive(doShow);
             }
+        }
+
+        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        {
+            // updates the panel from selection
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            {
+                GameObject gobject = data.Value;
+                CameraController cameraController = gobject.GetComponent<CameraController>();
+                if (null == cameraController)
+                    continue;
+
+                UpdateFromController(cameraController);
+
+                // Use only the first camera.
+                return;
+            }
+
+            Clear();
         }
 
         public void UpdateFromController(CameraController cameraController)
@@ -67,6 +64,20 @@ namespace VRtist
             RenderTexture rt = currentCameraController.gameObject.GetComponentInChildren<Camera>(true).targetTexture;
             previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", rt);
 
+            // Update focal
+            if (focalSlider != null)
+            {
+                focalSlider.Disabled = false;
+                focalSlider.Value = cameraController.focal;
+            }
+
+            // TODO: put focus in cameraController
+            if (focusSlider != null)
+            {
+                focusSlider.Disabled = false;
+                focusSlider.Value = 0.5f * (focusSlider.maxValue - focusSlider.minValue); // cameraController.focus;
+            }
+
             // Get the name of the camera, and set it in the title bar
             ToolsUIManager.Instance.SetWindowTitle(handle, cameraController.gameObject.name);
         }
@@ -74,6 +85,7 @@ namespace VRtist
         private void Update()
         {
             // refresh... things..
+            // UpdateFromController(currentCameraController); // faudrait ca mais qui refresh que ce qui a change.
         }
 
         public void Clear()
@@ -81,17 +93,10 @@ namespace VRtist
             currentCameraController = null;
             ToolsUIManager.Instance.SetWindowTitle(handle, "Camera Preview");
             previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", null);
-        }
-        
-        // called by the slider when moved
-        public void OnChangeFocal(float f)
-        {
-            onChangeFocalEvent.Invoke(f);
-        }
-
-        public void OnRecord()
-        {
-            onRecordEvent.Invoke();
+            focalSlider.Value = 0.5f * (focalSlider.maxValue - focalSlider.minValue);
+            focalSlider.Disabled = true;
+            focusSlider.Value = 0.5f * (focusSlider.maxValue - focusSlider.minValue);
+            focusSlider.Disabled = true;
         }
     }
 }

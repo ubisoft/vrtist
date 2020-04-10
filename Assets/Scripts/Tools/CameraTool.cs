@@ -402,8 +402,8 @@ namespace VRtist
                 if (null == cameraController)
                     continue;
 
-                if (cameraPreviewWindow != null)
-                    cameraPreviewWindow.UpdateFromController(cameraController);
+                //if (cameraPreviewWindow != null)
+                //    cameraPreviewWindow.UpdateFromController(cameraController);
 
                 // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
@@ -422,8 +422,8 @@ namespace VRtist
             if (dopesheet != null)
                 dopesheet.Clear();
 
-            if (cameraPreviewWindow != null)
-                cameraPreviewWindow.Clear();
+            //if (cameraPreviewWindow != null)
+            //    cameraPreviewWindow.Clear();
 
             focalSlider.gameObject.SetActive(false);
         }
