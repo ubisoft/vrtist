@@ -117,7 +117,8 @@ namespace VRtist
                 tooltip.transform.localScale = Vector3.one;
 
                 // Invert positions for left controller
-                if (controller.name == "left_controller")
+                bool rightHanded = GlobalState.rightHanded;
+                if ((rightHanded && controller.name == "left_controller") || (!rightHanded && controller.name == "right_controller"))
                 {
                     linePosition.x *= -1f;
                     framePosition.x *= -1f;

@@ -146,7 +146,8 @@ namespace VRtist
 
         void SetControllerVisible(bool visible)
         {
-            transform.localScale = visible ? Vector3.one : Vector3.zero;
+            rightHandle.Find("right_controller").gameObject.SetActive(visible);
+            rightHandle.Find("mouthpieces").gameObject.SetActive(visible);
         }
 
         protected void InitControllerMatrix()
@@ -455,7 +456,7 @@ namespace VRtist
 
             if(haptic && objectsAddedToSelection.Count > 0)
             {
-                VRInput.rightController.SendHapticImpulse(0, 1, 0.1f);
+                VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
             }
 
             new CommandAddToSelection(objectsAddedToSelection).Submit();
@@ -484,7 +485,7 @@ namespace VRtist
 
             if(haptic && objectsRemovedFromSelection.Count > 0)
             {
-                VRInput.rightController.SendHapticImpulse(0, 1, 0.1f);
+                VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
             }
 
             new CommandRemoveFromSelection(objectsRemovedFromSelection).Submit();
