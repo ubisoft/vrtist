@@ -88,7 +88,7 @@ namespace VRtist
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UILabel_Material_Instance";

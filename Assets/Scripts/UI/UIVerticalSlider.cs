@@ -326,7 +326,7 @@ namespace VRtist
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UIBase_Instance_for_UIVerticalSlider";
@@ -347,7 +347,7 @@ namespace VRtist
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UISliderRail_Instance_for_UIVerticalSliderRail";
@@ -368,7 +368,7 @@ namespace VRtist
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UISliderKnob_Instance_for_UIVerticalSliderKnob";
