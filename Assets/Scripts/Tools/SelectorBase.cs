@@ -185,7 +185,7 @@ namespace VRtist
             }
         }
 
-        protected void OnStartGrip()
+        protected virtual void OnStartGrip()
         {
             if(GlobalState.IsGrippingWorld)
             {
@@ -230,7 +230,7 @@ namespace VRtist
                 new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
         }
 
-        protected void OnEndGrip()
+        protected virtual void OnEndGrip()
         {
             if(gripPrevented)
             {
@@ -399,7 +399,7 @@ namespace VRtist
                     else
                     {
                         Matrix4x4 currentMat = meshParentMatrixInverse * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
-                        OnPreTransformSelection(currentMat, ref transformed);
+                        OnPreTransformSelection(data.Value.transform, currentMat, ref transformed);
 
                         // Set matrix
                         SyncData.SetTransform(data.Value.name, transformed);
@@ -409,7 +409,7 @@ namespace VRtist
             }
         }
 
-        public virtual void OnPreTransformSelection(Matrix4x4 current, ref Matrix4x4 transformed) { }
+        public virtual void OnPreTransformSelection(Transform gobj, Matrix4x4 current, ref Matrix4x4 transformed) { }
 
         private void UpdateEraser(Vector3 position, Quaternion rotation)
         {
