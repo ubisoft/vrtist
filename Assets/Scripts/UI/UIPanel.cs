@@ -67,7 +67,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(baseColor);
+                SetColor(Disabled ? disabledColor : baseColor);
                 needRebuild = false;
             }
         }
@@ -105,14 +105,18 @@ namespace VRtist
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = BaseColor;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UIPanel");
                 Material materialInstance = Instantiate(material);
                 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UIPanel_Material_Instance";

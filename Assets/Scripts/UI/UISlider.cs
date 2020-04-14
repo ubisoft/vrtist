@@ -38,10 +38,8 @@ namespace VRtist
         public float minValue = 0.0f;
         public float maxValue = 1.0f;
         public float currentValue = 0.5f;
-        
 
-        // TODO: type? handle int and float.
-        //       precision, step?
+        // TODO: precision, step?
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public FloatChangedEvent onSlideEvent = new FloatChangedEvent();
@@ -151,14 +149,18 @@ namespace VRtist
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = BaseColor;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UIPanel");
                 Material materialInstance = Instantiate(material);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UISlider_Material_Instance";
@@ -168,14 +170,18 @@ namespace VRtist
             meshRenderer = rail.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = rail.Color;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UISliderRail");
                 Material materialInstance = Instantiate(material);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UISliderRail_Instance";
@@ -185,14 +191,18 @@ namespace VRtist
             meshRenderer = knob.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                Color prevColor = knob.Color;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
 
                 Material material = UIUtils.LoadMaterial("UISliderKnob");
                 Material materialInstance = Instantiate(material);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
                 sharedMaterialInstance.name = "UISliderKnob_Material_Instance";
@@ -246,7 +256,7 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(baseColor);
+                    SetColor(Disabled ? disabledColor : baseColor);
                 }
                 catch(Exception e)
                 {
@@ -306,7 +316,7 @@ namespace VRtist
                 Text txt = textValueTransform.gameObject.GetComponent<Text>();
                 if (txt != null)
                 {
-                    txt.text = currentValue.ToString("#.00");
+                    txt.text = currentValue.ToString("#0.00");
                 }
             }
         }
@@ -396,12 +406,12 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(pushedColor);
+            SetColor(Disabled ? disabledColor : pushedColor);
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(baseColor);
+            SetColor(Disabled ? disabledColor : baseColor);
         }
 
         public void OnSlide(float f)
@@ -628,7 +638,7 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 //t.font = (Font)Resources.Load("MyLocalFont");
-                t.text = cur_slider_value.ToString("#.00");
+                t.text = cur_slider_value.ToString("#0.00");
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleRight;
