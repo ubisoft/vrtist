@@ -62,6 +62,7 @@ namespace VRtist
         private bool deformEnabled = false;
 
         private Vector3 previousControllerPosition;
+        private Matrix4x4 inverseHeadMatrix;
 
         void Start() 
         {
@@ -213,7 +214,14 @@ namespace VRtist
         protected override void OnStartGrip()
         {
             base.OnStartGrip();
-            previousControllerPosition = initControllerPosition;
+
+            // Get head position
+            Vector3 HeadPosition;
+            Quaternion headRotation;
+            VRInput.GetControllerTransform(VRInput.head, out HeadPosition, out headRotation);
+            inverseHeadMatrix =  Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
+
+            previousControllerPosition = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
         }
 
         public override void OnPreTransformSelection(Transform transform, Matrix4x4 current, ref Matrix4x4 transformed)
@@ -269,83 +277,41 @@ namespace VRtist
             // Constrain rotation
             if(!turnAroundAll)
             {
+                // compute rotation angle from start controller position to current controller position
+                // in X axis (left/right) local to initial head direction
                 Vector3 controllerPosition;
                 Quaternion controllerRotation;
                 VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
-                float angle = (controllerPosition.z - previousControllerPosition.z) * 1000f;
+                controllerPosition = inverseHeadMatrix.MultiplyPoint(controllerPosition);
+                float angle = (controllerPosition.x - previousControllerPosition.x) * 1000f;
 
-                bool changed;
-                Vector3 eulers = transform.rotation.eulerAngles;
-                Vector3 newEulers;
+                Quaternion newQuaternion = new Quaternion();
                 if(snapRotation)
                 {
-                    newEulers = new Vector3(
-                        turnAroundX ? Mathf.Round((eulers.x + angle) / snapAngle) * snapAngle : eulers.x,
-                        turnAroundY ? Mathf.Round((eulers.y + angle) / snapAngle) * snapAngle : eulers.y,
-                        turnAroundZ ? Mathf.Round((eulers.z + angle) / snapAngle) * snapAngle : eulers.z
+                    newQuaternion.eulerAngles = new Vector3(
+                        turnAroundX ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
+                        turnAroundY ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
+                        turnAroundZ ? Mathf.Round(angle / snapAngle) * snapAngle : 0
                     );
-                    changed = newEulers != eulers;
                 }
                 else
                 {
-                    newEulers = new Vector3(
-                        turnAroundX ? eulers.x + angle : eulers.x,
-                        turnAroundY ? eulers.y + angle : eulers.y,
-                        turnAroundZ ? eulers.z + angle : eulers.z
+                    newQuaternion.eulerAngles = new Vector3(
+                        turnAroundX ? angle : 0,
+                        turnAroundY ? angle : 0,
+                        turnAroundZ ? angle : 0
                     );
-                    changed = true;
                 }
-                transform.eulerAngles = newEulers;
 
-                //Vector3 axis = Vector3.zero;
-                //if(turnAroundX) { axis = Vector3.up; }
-                //if(turnAroundY) { axis = Vector3.right; }
-                //if(turnAroundZ) { axis = Vector3.forward; }
-                //Quaternion rotation = Quaternion.AngleAxis(angle, axis);
-                //transform.localRotation = rotation * transform.localRotation;
+                Matrix4x4 objectInitGlobalMatrix = initParentMatrix[transform.gameObject] * Matrix4x4.TRS(initPositions[transform.gameObject], initRotations[transform.gameObject], initScales[transform.gameObject]);
+                Matrix4x4 objectInitWorldMatrix = world.worldToLocalMatrix * objectInitGlobalMatrix;
+                Matrix4x4 globalRotation = world.localToWorldMatrix * Matrix4x4.TRS(Vector3.zero, newQuaternion, Vector3.one);
 
-                //transform.Rotate(
-                //    turnAroundX ? angle : 0f,
-                //    turnAroundY ? angle : 0f,
-                //    turnAroundZ ? angle : 0f,
-                //    Space.World
-                //);
+                Matrix4x4 globalRotatedObject = globalRotation * objectInitWorldMatrix;
+                Matrix4x4 localRotatedObject = initParentMatrix[transform.gameObject].inverse * globalRotatedObject;
 
-                //if(snapRotation)
-                //{
-                //    Vector3 eulers = transform.rotation.eulerAngles;
-                //    Vector3 roundedEulers = new Vector3(
-                //        Mathf.Round(eulers.x / snapAngle) * snapAngle,
-                //        Mathf.Round(eulers.y / snapAngle) * snapAngle,
-                //        Mathf.Round(eulers.z / snapAngle) * snapAngle
-                //    );
-
-                //    //if(turnAroundX && Mathf.Abs(eulers.x - roundedEulers.x) <= snapAngle * snapAngleGap) {
-                //    //    transform.rotation = Quaternion.Euler(roundedEulers.x, eulers.y, eulers.z);
-                //    //}
-                //    //if(turnAroundY && Mathf.Abs(eulers.y - roundedEulers.y) <= snapAngle * snapAngleGap) {
-                //    //    transform.rotation = Quaternion.Euler(eulers.x, roundedEulers.y, eulers.z);
-                //    //}
-                //    //if(turnAroundZ && Mathf.Abs(eulers.z - roundedEulers.z) <= snapAngle * snapAngleGap) {
-                //    //    transform.rotation = Quaternion.Euler(eulers.x, eulers.y, roundedEulers.z);
-                //    //}
-
-                //    Vector3 delta = new Vector3(
-                //        turnAroundX ? eulers.y - roundedEulers.y : 0f,
-                //        turnAroundY ? eulers.x - roundedEulers.x : 0f,
-                //        turnAroundZ ? eulers.z - roundedEulers.z : 0f
-                //    );
-                //    transform.Rotate(delta, Space.World);
-                //}
-
-                transformed = Matrix4x4.TRS(
-                    transform.localPosition,
-                    transform.localRotation,
-                    transform.localScale
-                );
-
-                //previousControllerPosition = snapRotation ? initControllerPosition : controllerPosition;
-                previousControllerPosition = changed ? controllerPosition : initControllerPosition;
+                // transformation matrix (local)
+                transformed = Matrix4x4.TRS(initPositions[transform.gameObject], Maths.GetRotationFromMatrix(localRotatedObject), initScales[transform.gameObject]);
             }
         }
 

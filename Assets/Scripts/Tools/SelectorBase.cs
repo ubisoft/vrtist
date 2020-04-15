@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -7,6 +8,7 @@ namespace VRtist
     public class SelectorBase : ToolBase
     {
         [Header("Selector Parameters")]
+        [SerializeField] protected Transform world;
         [SerializeField] protected Transform selectorBrush;
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
@@ -15,10 +17,10 @@ namespace VRtist
         protected Color selectionColor = new Color(0f, 167f / 255f, 1f);
         protected Color eraseColor = new Color(1f, 0f, 0f);
 
-        Dictionary<GameObject, Matrix4x4> initParentMatrix = new Dictionary<GameObject, Matrix4x4>();
-        Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
-        Dictionary<GameObject, Quaternion> initRotations = new Dictionary<GameObject, Quaternion>();
-        Dictionary<GameObject, Vector3> initScales = new Dictionary<GameObject, Vector3>();
+        protected Dictionary<GameObject, Matrix4x4> initParentMatrix = new Dictionary<GameObject, Matrix4x4>();
+        protected Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
+        protected Dictionary<GameObject, Quaternion> initRotations = new Dictionary<GameObject, Quaternion>();
+        protected Dictionary<GameObject, Vector3> initScales = new Dictionary<GameObject, Vector3>();
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
 
@@ -154,7 +156,9 @@ namespace VRtist
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
             // compute rightMouthpiece local to world matrix with initial controller position/rotation
-            initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one)).inverse;
+            //initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one)).inverse;
+            initTransformation = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one);
+            initTransformation = initTransformation.inverse;
         }
 
         protected void InitTransforms()
@@ -309,6 +313,24 @@ namespace VRtist
             }
         }
 
+        private Matrix4x4 SnapController(Matrix4x4 controllerMatrix)
+        {
+            Matrix4x4 controllerMatrixInWorld = world.worldToLocalMatrix * controllerMatrix;
+            Vector3 controllerTranslate, controllerScale;
+            Quaternion controllerRotation;
+            Maths.DecomposeMatrix(controllerMatrixInWorld, out controllerTranslate, out controllerRotation, out controllerScale);
+            controllerTranslate = new Vector3((float)Math.Round(controllerTranslate.x, 0), (float)Math.Round(controllerTranslate.y, 0), (float)Math.Round(controllerTranslate.z, 0));
+
+            float snapXAngle = 90;
+            float snapYAngle = 90;
+            float snapZAngle = 90;
+            Vector3 eulerAngles = controllerRotation.eulerAngles;
+            eulerAngles = new Vector3((float)Math.Round(eulerAngles.x / snapXAngle, 0) * snapXAngle, (float)Math.Round(eulerAngles.y / snapYAngle, 0) * snapYAngle, (float)Math.Round(eulerAngles.z / snapZAngle, 0) * snapZAngle);
+            controllerRotation.eulerAngles = eulerAngles;
+            
+            return world.localToWorldMatrix * Matrix4x4.TRS(controllerTranslate, Quaternion.identity, Vector3.one) * Matrix4x4.TRS(Vector3.zero, controllerRotation, Vector3.one);
+        }
+
         private void UpdateSelect(Vector3 position, Quaternion rotation)
         {
             // Move & Duplicate selection
@@ -398,7 +420,7 @@ namespace VRtist
                     // Standard game objects
                     else
                     {
-                        Matrix4x4 currentMat = meshParentMatrixInverse * initParentMatrix[data.Value] * Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
+                        Matrix4x4 currentMat = Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
                         OnPreTransformSelection(data.Value.transform, currentMat, ref transformed);
 
                         // Set matrix

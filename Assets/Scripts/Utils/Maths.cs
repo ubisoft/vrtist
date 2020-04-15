@@ -84,5 +84,13 @@ namespace VRtist
                 r.GetColumn(1)
                 );
         }
+
+        public static Quaternion GetRotationFromMatrix(Matrix4x4 m)
+        {
+            Vector3 p, s;
+            Quaternion q;
+            DecomposeMatrix(m, out p, out q, out s);
+            return q;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -73,7 +74,14 @@ namespace VRtist
                 {
                     GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
                     Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));/** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
-                    SyncData.SetTransform(newObject.name, matrix);
+
+                    Vector3 t, s;
+                    Quaternion r;
+                    Maths.DecomposeMatrix(matrix, out t, out r, out s);
+                    t = new Vector3((float)Math.Round(t.x, 0), (float)Math.Round(t.y, 0), (float)Math.Round(t.z, 0));
+                    SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10,10,10)));
+
+                    //SyncData.SetTransform(newObject.name, matrix);
                     new CommandAddGameObject(newObject).Submit();
 
                     ClearSelection();
