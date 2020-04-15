@@ -138,18 +138,23 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            ShowMouthpiece(selectorBrush, show);
+            ActivateMouthpiece(selectorBrush, show);
 
             if (rightController != null)
             {
-                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
+                rightController.localScale = show ? Vector3.one : Vector3.zero;
             }
         }
 
         void SetControllerVisible(bool visible)
         {
             rightHandle.Find("right_controller").gameObject.SetActive(visible);
-            rightHandle.Find("mouthpieces").gameObject.SetActive(visible);
+
+            // Mouth pieces have the selectorTrigger script attached to them which has to be always enabled
+            // So don't deactivate mouth pieces, but scale them to 0 instead to hide them
+            //rightHandle.Find("mouthpieces").gameObject.SetActive(visible);
+            Transform mouthPieces = rightHandle.Find("mouthpieces");
+            mouthPieces.localScale = visible ? Vector3.one : Vector3.zero;
         }
 
         protected void InitControllerMatrix()
@@ -313,23 +318,24 @@ namespace VRtist
             }
         }
 
-        private Matrix4x4 SnapController(Matrix4x4 controllerMatrix)
-        {
-            Matrix4x4 controllerMatrixInWorld = world.worldToLocalMatrix * controllerMatrix;
-            Vector3 controllerTranslate, controllerScale;
-            Quaternion controllerRotation;
-            Maths.DecomposeMatrix(controllerMatrixInWorld, out controllerTranslate, out controllerRotation, out controllerScale);
-            controllerTranslate = new Vector3((float)Math.Round(controllerTranslate.x, 0), (float)Math.Round(controllerTranslate.y, 0), (float)Math.Round(controllerTranslate.z, 0));
+        // A ref for snapping controller
+        //private Matrix4x4 SnapController(Matrix4x4 controllerMatrix)
+        //{
+        //    Matrix4x4 controllerMatrixInWorld = world.worldToLocalMatrix * controllerMatrix;
+        //    Vector3 controllerTranslate, controllerScale;
+        //    Quaternion controllerRotation;
+        //    Maths.DecomposeMatrix(controllerMatrixInWorld, out controllerTranslate, out controllerRotation, out controllerScale);
+        //    controllerTranslate = new Vector3((float)Math.Round(controllerTranslate.x, 0), (float)Math.Round(controllerTranslate.y, 0), (float)Math.Round(controllerTranslate.z, 0));
 
-            float snapXAngle = 90;
-            float snapYAngle = 90;
-            float snapZAngle = 90;
-            Vector3 eulerAngles = controllerRotation.eulerAngles;
-            eulerAngles = new Vector3((float)Math.Round(eulerAngles.x / snapXAngle, 0) * snapXAngle, (float)Math.Round(eulerAngles.y / snapYAngle, 0) * snapYAngle, (float)Math.Round(eulerAngles.z / snapZAngle, 0) * snapZAngle);
-            controllerRotation.eulerAngles = eulerAngles;
+        //    float snapXAngle = 90;
+        //    float snapYAngle = 90;
+        //    float snapZAngle = 90;
+        //    Vector3 eulerAngles = controllerRotation.eulerAngles;
+        //    eulerAngles = new Vector3((float)Math.Round(eulerAngles.x / snapXAngle, 0) * snapXAngle, (float)Math.Round(eulerAngles.y / snapYAngle, 0) * snapYAngle, (float)Math.Round(eulerAngles.z / snapZAngle, 0) * snapZAngle);
+        //    controllerRotation.eulerAngles = eulerAngles;
             
-            return world.localToWorldMatrix * Matrix4x4.TRS(controllerTranslate, Quaternion.identity, Vector3.one) * Matrix4x4.TRS(Vector3.zero, controllerRotation, Vector3.one);
-        }
+        //    return world.localToWorldMatrix * Matrix4x4.TRS(controllerTranslate, Quaternion.identity, Vector3.one) * Matrix4x4.TRS(Vector3.zero, controllerRotation, Vector3.one);
+        //}
 
         private void UpdateSelect(Vector3 position, Quaternion rotation)
         {
@@ -420,18 +426,18 @@ namespace VRtist
                     // Standard game objects
                     else
                     {
-                        Matrix4x4 currentMat = Matrix4x4.TRS(initPositions[data.Value], initRotations[data.Value], initScales[data.Value]);
-                        OnPreTransformSelection(data.Value.transform, currentMat, ref transformed);
+                        Matrix4x4 mat = transformed;  // copy
+                        OnPreTransformSelection(data.Value.transform, ref mat);
 
                         // Set matrix
-                        SyncData.SetTransform(data.Value.name, transformed);
+                        SyncData.SetTransform(data.Value.name, mat);
                         CommandManager.SendEvent(MessageType.Transform, data.Value.transform);
                     }
                 }
             }
         }
 
-        public virtual void OnPreTransformSelection(Transform gobj, Matrix4x4 current, ref Matrix4x4 transformed) { }
+        public virtual void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed) { }
 
         private void UpdateEraser(Vector3 position, Quaternion rotation)
         {

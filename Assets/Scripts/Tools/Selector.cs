@@ -61,13 +61,13 @@ namespace VRtist
 
         private bool deformEnabled = false;
 
-        private Vector3 previousControllerPosition;
+        private Vector3 initControllerPositionRelativeToHead;
         private Matrix4x4 inverseHeadMatrix;
 
         void Start() 
         {
             Init();
-            ShowMouthpiece(selectorBrush, true);
+            ActivateMouthpiece(selectorBrush, true);
         }
 
         protected override void Init()
@@ -221,17 +221,16 @@ namespace VRtist
             VRInput.GetControllerTransform(VRInput.head, out HeadPosition, out headRotation);
             inverseHeadMatrix =  Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
 
-            previousControllerPosition = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
+            initControllerPositionRelativeToHead = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
         }
 
-        public override void OnPreTransformSelection(Transform transform, Matrix4x4 current, ref Matrix4x4 transformed)
+        public override void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed)
         {
             // Constrain movement
             if(turnAroundAll)
             {
                 if(!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
                 {
-                    //Vector4 oldColumn = current.GetColumn(3);
                     Vector4 column = transformed.GetColumn(3);
 
                     float absWorldScale = Mathf.Abs(GlobalState.worldScale);
@@ -242,21 +241,18 @@ namespace VRtist
                         Mathf.Round(column.z / snapPrecision) * snapPrecision
                     );
 
-                    //if(!moveOnX) { column.x = oldColumn.x; }
                     if(!moveOnX) { column.x = transform.localPosition.x; }
                     else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapGap / absWorldScale)
                     {
                         column.x = roundedPosition.x;
                     }
 
-                    //if(!moveOnY) { column.y = oldColumn.y; }
                     if(!moveOnY) { column.y = transform.localPosition.y; }
                     else if(snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapGap / absWorldScale)
                     {
                         column.y = roundedPosition.y;
                     }
 
-                    //if(!moveOnZ) { column.z = oldColumn.z; }
                     if(!moveOnZ) { column.z = transform.localPosition.z; }
                     else if(snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapGap / absWorldScale)
                     {
@@ -268,8 +264,6 @@ namespace VRtist
             }
             else  // don't move while turning around a single axis
             {
-                //Vector4 oldColumn = current.GetColumn(3);
-                //transformed.SetColumn(3, oldColumn);
                 Vector4 column = new Vector4(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z, 1f);
                 transformed.SetColumn(3, column);
             }
@@ -283,7 +277,7 @@ namespace VRtist
                 Quaternion controllerRotation;
                 VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
                 controllerPosition = inverseHeadMatrix.MultiplyPoint(controllerPosition);
-                float angle = (controllerPosition.x - previousControllerPosition.x) * 1000f;
+                float angle = (controllerPosition.x - initControllerPositionRelativeToHead.x) * 1000f;
 
                 Quaternion newQuaternion = new Quaternion();
                 if(snapRotation)
@@ -623,7 +617,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            ShowMouthpiece(selectorBrush, show);
+            ActivateMouthpiece(selectorBrush, show);
 
             if(rightController != null)
             {

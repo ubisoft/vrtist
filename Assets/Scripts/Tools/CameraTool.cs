@@ -351,7 +351,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            ShowMouthpiece(selectorBrush, show);
+            ActivateMouthpiece(selectorBrush, show);
 
             if (rightController != null)
             {

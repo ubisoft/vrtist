@@ -73,7 +73,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            ShowMouthpiece(paintBrush, show);
+            ActivateMouthpiece(paintBrush, show);
 
             if (rightController != null)
             {
