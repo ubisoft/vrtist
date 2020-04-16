@@ -84,7 +84,7 @@ namespace VRtist
                     
                     if (useDefaultInstantiationScale)
                     {
-                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));/** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
+                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));
 
                         Vector3 t, s;
                         Quaternion r;
@@ -93,7 +93,7 @@ namespace VRtist
                     }
                     else
                     {
-                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(100f * UIObject.transform.localScale);
+                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(10f * UIObject.transform.localScale);
                         SyncData.SetTransform(newObject.name, matrix);
                     }
 
