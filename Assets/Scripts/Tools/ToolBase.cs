@@ -38,13 +38,13 @@ namespace VRtist
             UnityEngine.Assertions.Assert.IsNotNull(rightMouthpiece);
         }
 
-        protected void ShowMouthpiece(Transform mouthPiece, bool show)
+        protected void ActivateMouthpiece(Transform mouthPiece, bool activate)
         {
             Transform container = mouthPiece.parent;
-            for (int i = 0; i < container.childCount ; i++)
+            for(int i = 0; i < container.childCount; i++)
             {
                 Transform child = container.GetChild(i);
-                child.gameObject.SetActive(show && child == mouthPiece);
+                child.gameObject.SetActive(activate && child == mouthPiece);
             }
         }
 
@@ -53,7 +53,6 @@ namespace VRtist
             Init();
         }
 
-        // Update is called once per frame
         void Update()
         {                
             if (VRInput.TryGetDevices())

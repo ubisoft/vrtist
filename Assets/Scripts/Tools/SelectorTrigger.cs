@@ -8,16 +8,13 @@ namespace VRtist
     {
         public SelectorBase selector = null;
 
-        const float deadZone = 0.3f;
         private bool selectionHasChanged = false;
-
-        private List<GameObject> collidedObjects = new List<GameObject>();
+        private HashSet<GameObject> collidedObjects = new HashSet<GameObject>();
+        private GameObject lastCollidedObject = null;
         private bool grippedGameObject = false;
-
         private bool multiSelecting = false;
-        private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
-        private bool hasUIObject = false;
+        private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
         protected CommandGroup undoGroup = null;
 
@@ -43,6 +40,7 @@ namespace VRtist
                     selector.ClearSelection();
                     grippedGameObject = false;
                     multiSelecting = false;
+                    lastCollidedObject = null;
                 }
                 if (null != undoGroup)
                 {
@@ -54,11 +52,10 @@ namespace VRtist
             int count = collidedObjects.Count;
             if (count > 0)
             {
-                GameObject collidedObject = collidedObjects[count - 1];
                 switch (selector.mode)
                 {
-                    case SelectorBase.SelectorModes.Select: UpdateSelection(collidedObject); break;
-                    case SelectorBase.SelectorModes.Eraser: UpdateEraser(collidedObject); break;
+                    case SelectorBase.SelectorModes.Select: UpdateSelection(lastCollidedObject); break;
+                    case SelectorBase.SelectorModes.Eraser: UpdateEraser(lastCollidedObject); break;
                 }
             }
 
@@ -68,7 +65,15 @@ namespace VRtist
         {
             if (other.tag == "PhysicObject")
             {
+                int oldCount = collidedObjects.Count;
                 collidedObjects.Add(other.gameObject);
+                int newCount = collidedObjects.Count;
+
+                if(newCount != oldCount)
+                {
+                    lastCollidedObject = other.gameObject;
+                }
+
                 gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
                 selector.OnSelectorTriggerEnter(other);
             }
@@ -76,34 +81,31 @@ namespace VRtist
 
         private void OnTriggerExit(Collider other)
         {
-            collidedObjects.Remove(other.gameObject);
-            if (collidedObjects.Count == 0)
-                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
-            selector.OnSelectorTriggerExit(other);
+            if(other.tag == "PhysicObject")
+            {
+                collidedObjects.Remove(other.gameObject);
+                if(collidedObjects.Count == 0) {
+                    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
+                }
+                selector.OnSelectorTriggerExit(other);
+            }
         }
 
         private void UpdateSelection(GameObject gObject)
         {
-            // get rightPrimaryState
+            // Get right controller buttons states
             bool primaryButtonState = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
             bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
             bool gripState = VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton);
 
-            if(!gripState && hasUIObject)
-            {
-                hasUIObject = false;
-            }
-
-            if (hasUIObject) return;
-
             // Mono-selection using the grip button
-            if (!grippedGameObject && gripState && !triggerState && !primaryButtonState && !multiSelecting
-             && !GlobalState.IsGrippingWorld)
+            if (!grippedGameObject && gripState && !triggerState && !primaryButtonState && !multiSelecting && !GlobalState.IsGrippingWorld)
             {
                 selector.ClearSelection();
                 selector.AddSiblingsToSelection(gObject);
                 collidedObjects.Clear();
                 selectionHasChanged = true;
+                lastCollidedObject = null;
                 grippedGameObject = true;
             }
 
