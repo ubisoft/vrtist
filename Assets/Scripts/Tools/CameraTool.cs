@@ -12,7 +12,6 @@ namespace VRtist
         public GameObject cameraPrefab;
         public Transform cameraContainer;
         public Material screenShotMaterial;
-        public Transform world;
         public Transform backgroundFeedback;
         public Transform dopesheetHandle = null;
         public Transform cameraPreviewHandle = null;
@@ -38,6 +37,9 @@ namespace VRtist
         private bool showCameraPreview = false;
         private UICheckbox showCameraPreviewCheckbox = null;
         private CameraPreviewWindow cameraPreviewWindow;
+
+        public static bool showCameraFrustum = false;
+        private UICheckbox showCameraFrustumCheckbox = null;
 
         public float deadZone = 0.8f;
 
@@ -93,6 +95,7 @@ namespace VRtist
                 feedbackPositionningCheckbox = panel.Find("Feedback")?.gameObject.GetComponent<UICheckbox>();
                 showDopesheetCheckbox = panel.Find("ShowDopesheet")?.gameObject.GetComponent<UICheckbox>();
                 showCameraPreviewCheckbox = panel.Find("ShowCameraPreview")?.gameObject.GetComponent<UICheckbox>();
+                showCameraFrustumCheckbox = panel.Find("ShowFrustum")?.gameObject.GetComponent<UICheckbox>();
             }
 
             if (!dopesheetHandle)
@@ -151,6 +154,11 @@ namespace VRtist
             {
                 feedbackPositionningCheckbox.Checked = feedbackPositioning;
                 feedbackPositionningCheckbox.Disabled = !showCameraFeedback;
+            }
+
+            if(null != showCameraFrustumCheckbox)
+            {
+                showCameraFrustumCheckbox.Checked = showCameraFrustum;
             }
         }
 
@@ -487,6 +495,11 @@ namespace VRtist
                 int f = the_previous_keyframe--;
                 dopesheet.CurrentFrame = f;
             }
+        }
+
+        public void OnCheckShowCameraFrustum(bool value)
+        {
+            showCameraFrustum = value;
         }
     }
 }
