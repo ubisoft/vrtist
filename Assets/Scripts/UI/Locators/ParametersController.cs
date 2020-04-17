@@ -56,7 +56,7 @@ namespace VRtist
             return world;
         }
 
-        private void Start()
+        protected virtual void Start()
         {
             onChangedEvent = new ParametersEvent();
         }
