@@ -81,20 +81,19 @@ namespace VRtist
                 if (null != UIObject)
                 {
                     GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
-                    
-                    if (useDefaultInstantiationScale)
-                    {
-                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));
 
-                        Vector3 t, s;
-                        Quaternion r;
-                        Maths.DecomposeMatrix(matrix, out t, out r, out s);
-                        SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)));
+                    Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix;
+                    if (!useDefaultInstantiationScale)
+                    {
+                        SyncData.SetTransform(newObject.name, matrix * Matrix4x4.Scale(10f * UIObject.transform.localScale));
                     }
                     else
                     {
-                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(10f * UIObject.transform.localScale);
-                        SyncData.SetTransform(newObject.name, matrix);
+                        Vector3 t, s;
+                        Quaternion r;
+                        Maths.DecomposeMatrix(matrix, out t, out r, out s);
+                        // Cancel scale
+                        SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)));
                     }
 
                     new CommandAddGameObject(newObject).Submit();
