@@ -155,6 +155,29 @@ namespace VRtist
 #endif
         }
 
+        public override void ResetMaterial()
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = BaseColor;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
+
+                Material material = UIUtils.LoadMaterial("UIPanel");
+                Material materialInstance = Instantiate(material);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UIPanel_Instance_for_UITimebar";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+        }
+
         private void UpdateTimeBarPosition()
         {
             float pct = (float)(currentValue - minValue) / (float)(maxValue - minValue);
@@ -287,7 +310,7 @@ namespace VRtist
             cursorShapeTransform.position = worldProjectedWidgetPosition;
         }
 
-        public static void CreateUITimeBar(
+        public static void Create(
             string sliderName,
             Transform parent,
             Vector3 relativeLocation,
