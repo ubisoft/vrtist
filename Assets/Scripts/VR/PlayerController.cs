@@ -87,7 +87,13 @@ namespace VRtist
                 // RESET/FIT -- Left Joystick Click
                 if (currentNavigationMode == null || IsCompatibleWithReset(currentNavigationMode))
                 {
-                    HandleReset(); // TODO: FIT instead of reset.
+                    HandleReset();
+                }
+
+                // RESET SCALE -- Right Joystick Click
+                if (currentNavigationMode == null || IsCompatibleWithResetScale(currentNavigationMode))
+                {
+                    HandleResetScale();
                 }
 
                 // PALETTE POP -- Left Trigger
@@ -117,17 +123,114 @@ namespace VRtist
             currentNavigationMode.Update();
         }
 
+        private void FitToSelection()
+        {
+            Transform cam = vrCamera.transform;
+            
+            Vector3 bmin = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
+            Vector3 bmax = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
+
+            Vector3[] points = new Vector3[8];
+            Vector3 center = Vector3.zero;
+            int bboxCount = 0;
+
+            // parse selection
+            foreach (var item in Selection.selection)
+            {
+                // get all meshes of selected object
+                GameObject gobj = item.Value;
+                MeshFilter[] meshFilters = gobj.GetComponentsInChildren<MeshFilter>();
+                foreach (MeshFilter meshFilter in meshFilters)
+                {
+                    Mesh mesh = meshFilter.mesh;
+                    if (null == mesh)
+                        continue;
+
+                    Bounds bounds = mesh.bounds;
+                    Vector3 omin = bounds.min;
+                    Vector3 omax = bounds.max;
+                    bboxCount++;
+
+                    Matrix4x4 meshMatrix = meshFilter.transform.localToWorldMatrix;
+                    // Get absolute bbox center
+                    Vector3 globalBoundCenter = meshMatrix.MultiplyPoint(bounds.center);
+                    center += globalBoundCenter;
+
+                    // Get all points of the bounding box
+                    points[0] = meshMatrix.MultiplyPoint(new Vector3(omin.x, omin.y, omin.z));
+                    points[1] = meshMatrix.MultiplyPoint(new Vector3(omin.x, omin.y, omax.z));
+                    points[2] = meshMatrix.MultiplyPoint(new Vector3(omin.x, omax.y, omin.z));
+                    points[3] = meshMatrix.MultiplyPoint(new Vector3(omin.x, omax.y, omax.z));
+                    points[4] = meshMatrix.MultiplyPoint(new Vector3(omax.x, omin.y, omin.z));
+                    points[5] = meshMatrix.MultiplyPoint(new Vector3(omax.x, omin.y, omax.z));
+                    points[6] = meshMatrix.MultiplyPoint(new Vector3(omax.x, omax.y, omin.z));
+                    points[7] = meshMatrix.MultiplyPoint(new Vector3(omax.x, omax.y, omax.z));
+
+                    // check min/max
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Vector3 p = points[i];
+                        if (p.x < bmin.x) bmin.x = p.x;
+                        if (p.y < bmin.y) bmin.y = p.y;
+                        if (p.z < bmin.z) bmin.z = p.z;
+                        if (p.x > bmax.x) bmax.x = p.x;
+                        if (p.y > bmax.y) bmax.y = p.y;
+                        if (p.z > bmax.z) bmax.z = p.z;
+                    }
+                }
+            }
+
+            center /= (float)bboxCount;
+
+            // compute distance to camera;
+            float max = Mathf.Max(bmax.x - bmin.x, bmax.y - bmin.y);
+            max = Mathf.Max(max, bmax.z - bmin.z);
+            float newDistance = 3 * max;
+
+            // clamp distance with near/far camera planes
+            float near = cam.GetComponent<Camera>().nearClipPlane * 1.2f;
+            float far = cam.GetComponent<Camera>().farClipPlane * 0.8f;
+            if (newDistance < near)
+                newDistance = near;
+            if (newDistance > far)
+                newDistance = far;
+
+            // compute new camera position
+            Vector3 cameraGlobalForward = cam.forward;
+            Vector3 newCameraPosition = center - cameraGlobalForward * newDistance;
+            
+            // do not apply the position to the camera but invert it and apply to world
+            Vector3 deltaCamera = newCameraPosition - cam.position;
+            world.position -= deltaCamera;
+        }
+
         private void HandleReset()
         {
             VRInput.ButtonEvent(VRInput.leftController, CommonUsages.primary2DAxisClick,
             () =>
             {
-                world.localPosition = Vector3.zero;
-                world.localRotation = Quaternion.identity;
-                world.localScale = Vector3.one;
+                if (Selection.selection.Count == 0)
+                {
+                    world.localPosition = Vector3.zero;
+                    world.localRotation = Quaternion.identity;
+                    world.localScale = Vector3.one;
 
-                transform.position = initCameraPosition;
-                transform.rotation = initCameraRotation;
+                    transform.position = initCameraPosition;
+                    transform.rotation = initCameraRotation;
+                }
+                else
+                {
+                    FitToSelection();
+                }
+            });
+        }
+
+        private void HandleResetScale()
+        {
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primary2DAxisClick,
+            () =>
+            {
+                world.localScale = Vector3.one;
             });
         }
 
@@ -281,5 +384,6 @@ namespace VRtist
         private bool IsCompatibleWithPalette(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.LEFT_TRIGGER); }
         private bool IsCompatibleWithUndoRedo(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.LEFT_PRIMARY | NavigationMode.UsedControls.LEFT_SECONDARY); }
         private bool IsCompatibleWithReset(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.LEFT_JOYSTICK_CLICK); }
+        private bool IsCompatibleWithResetScale(NavigationMode n) { return !n.usedControls.HasFlag(NavigationMode.UsedControls.RIGHT_JOYSTICK_CLICK); }
     }
 }

@@ -62,7 +62,7 @@ namespace VRtist
         public CommandAddRemoveGameObject(GameObject o)
         {
             gObject = o;
-            parent = o.transform.parent;
+            parent = o.transform.parent.parent;
         }        
 
         protected void AddObjectToScene()
