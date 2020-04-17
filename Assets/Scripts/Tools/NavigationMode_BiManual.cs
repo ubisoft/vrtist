@@ -187,19 +187,6 @@ namespace VRtist
                 Vector3 leftControllerInHeadMatrix = invHeadMatrix.MultiplyPoint(currentLeftControllerPosition_L);
                 Vector3 rightControllerInHeadMatrix = invHeadMatrix.MultiplyPoint(currentRightControllerPosition_L);
 
-                // invert Left/Right if necessary
-                if(leftControllerInHeadMatrix.x > rightControllerInHeadMatrix.x)
-                {
-                    Vector3 tmp = currentLeftControllerPosition_L;
-                    currentLeftControllerPosition_L = currentRightControllerPosition_L;
-                    currentRightControllerPosition_L = tmp;
-
-                    Quaternion tmpQ = currentLeftControllerRotation_L;
-                    currentLeftControllerRotation_L = currentRightControllerRotation_L;
-                    currentRightControllerRotation_L = tmpQ;
-                }
-
-
                 Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
                 Matrix4x4 currentLeftControllerMatrix_W = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled;
                 Vector3 currentLeftControllerPosition_W = currentLeftControllerMatrix_W.MultiplyPoint(Vector3.zero);
@@ -209,8 +196,6 @@ namespace VRtist
                     // update right joystick
                     Matrix4x4 currentRightControllerMatrix_L_Scaled = Matrix4x4.TRS(currentRightControllerPosition_L, currentRightControllerRotation_L, new Vector3(scale, scale, scale));
                     Vector3 currentRightControllerPosition_W = (pivot.localToWorldMatrix * currentRightControllerMatrix_L_Scaled).MultiplyPoint(Vector3.zero);
-
-                    Vector3 currentMiddleControllerPosition_W = (currentLeftControllerPosition_W + currentRightControllerPosition_W) * 0.5f;
 
                     // scale handling (before computing the "transformed" matrix with the new scale)
                     float newDistance = Vector3.Distance(currentLeftControllerPosition_W, currentRightControllerPosition_W);
@@ -256,12 +241,19 @@ namespace VRtist
 
                     GlobalState.worldScale = s;
 
+                    // reverse text if right and left hands are crossed
+                    if (leftControllerInHeadMatrix.x > rightControllerInHeadMatrix.x)
+                    {
+                        middleXVector = -middleXVector;
+                    }
+
                     // Rotation for the line text
                     Vector3 middleForward180 = Vector3.Cross(middleXVector, pivot.up).normalized;
                     Vector3 rolledUp = Vector3.Cross(-middleXVector, middleForward180).normalized;
                     Quaternion middleRotationWithRoll_L = Quaternion.LookRotation(middleForward180, rolledUp);
                     Matrix4x4 middleMatrixWithRoll_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotationWithRoll_L, new Vector3(s, s, s));
                     Quaternion middleRotationWithRoll_W = (pivot.localToWorldMatrix * middleMatrixWithRoll_L_Scaled).rotation;
+
                     lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentRightControllerPosition_W, middleRotationWithRoll_W, world.localScale.x);
                 }
                 else

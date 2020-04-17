@@ -878,7 +878,7 @@ namespace VRtist
         /// Set the transform of the given object (its prefab) and to all of its instances.
         /// </summary>
         /// <param name="objectName">object name</param>
-        /// <param name="matrix">transform</param>
+        /// <param name="matrix">local transform</param>
         public static void SetTransform(string objectName, Matrix4x4 matrix)
         {
             Node node = nodes[objectName];

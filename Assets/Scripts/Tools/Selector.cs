@@ -9,12 +9,14 @@ namespace VRtist
         [Header("Movement & Snapping parameters")]
         public UICheckbox snapToGridCheckbox = null;
         public UISlider snapGridSizeSlider = null;
+        public UIButton moveOnAllButton = null;
         public UICheckbox moveOnXCheckbox = null;
         public UICheckbox moveOnYCheckbox = null;
         public UICheckbox moveOnZCheckbox = null;
 
         public UICheckbox snapRotationCheckbox = null;
         public UISlider snapAngleSlider = null;
+        public UIButton turnAroundAllButton = null;
         public UICheckbox turnAroundXCheckbox = null;
         public UICheckbox turnAroundYCheckbox = null;
         public UICheckbox turnAroundZCheckbox = null;
@@ -28,7 +30,8 @@ namespace VRtist
 
         protected bool snapRotation = false;
         protected float snapAngle = 45f;       // in degrees
-        protected float snapAngleGap = 0.2f;   // percentage
+        protected float snapAngleGap = 0.25f;   // percentage
+        protected bool turnAroundAll = true;
         protected bool turnAroundX = true;
         protected bool turnAroundY = true;
         protected bool turnAroundZ = true;
@@ -58,10 +61,13 @@ namespace VRtist
 
         private bool deformEnabled = false;
 
+        private Vector3 initControllerPositionRelativeToHead;
+        private Matrix4x4 inverseHeadMatrix;
+
         void Start() 
         {
             Init();
-            ShowMouthpiece(selectorBrush, true);
+            ActivateMouthpiece(selectorBrush, true);
         }
 
         protected override void Init()
@@ -94,6 +100,12 @@ namespace VRtist
             snapPrecision = value;
         }
 
+        public void OnMoveOnAll()
+        {
+            moveOnX = moveOnY = moveOnZ = true;
+            InitUIPanel();
+        }
+
         public void SetMoveOnX(bool value)
         {
             moveOnX = value;
@@ -112,6 +124,7 @@ namespace VRtist
         public void SetSnapRotation(bool value)
         {
             snapRotation = value;
+            InitUIPanel();
         }
 
         public void OnChangeSnapAngle(float value)
@@ -119,19 +132,47 @@ namespace VRtist
             snapAngle = value;
         }
 
+        public void OnTurnAroundAll()
+        {
+            turnAroundAll = true;
+            turnAroundX = turnAroundY = turnAroundZ = true;
+            InitUIPanel();
+        }
+
         public void SetTurnAroundX(bool value)
         {
-            turnAroundX = value;
+            if(value || !value && turnAroundAll)  // as a radio button
+            {
+                turnAroundAll = false;
+                turnAroundX = true;
+                turnAroundY = false;
+                turnAroundZ = false;
+            }
+            InitUIPanel();
         }
 
         public void SetTurnAroundY(bool value)
         {
-            turnAroundY = value;
+            if(value || !value && turnAroundAll)  // as a radio button
+            {
+                turnAroundAll = false;
+                turnAroundX = false;
+                turnAroundY = true;
+                turnAroundZ = false;
+            }
+            InitUIPanel();
         }
 
         public void SetTurnAroundZ(bool value)
         {
-            turnAroundZ = value;
+            if(value || !value && turnAroundAll)  // as a radio button
+            {
+                turnAroundAll = false;
+                turnAroundX = false;
+                turnAroundY = false;
+                turnAroundZ = true;
+            }
+            InitUIPanel();
         }
 
         public void EnableDeformMode(bool enabled)
@@ -170,72 +211,101 @@ namespace VRtist
             if(null != turnAroundZCheckbox) { turnAroundZCheckbox.Checked = turnAroundZ; }
         }
 
-        public override void OnPreTransformSelection(Matrix4x4 current, ref Matrix4x4 transformed)
+        protected override void OnStartGrip()
+        {
+            base.OnStartGrip();
+
+            // Get head position
+            Vector3 HeadPosition;
+            Quaternion headRotation;
+            VRInput.GetControllerTransform(VRInput.head, out HeadPosition, out headRotation);
+            inverseHeadMatrix =  Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
+
+            initControllerPositionRelativeToHead = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
+        }
+
+        public override void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed)
         {
             // Constrain movement
-            if(!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
+            if(turnAroundAll)
             {
-                Vector4 oldColumn = current.GetColumn(3);
-                Vector4 column = transformed.GetColumn(3);
+                if(!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
+                {
+                    Vector4 column = transformed.GetColumn(3);
 
-                float absWorldScale = Mathf.Abs(GlobalState.worldScale);
-                Vector3 position = new Vector3(column.x, column.y, column.z);
-                Vector3 roundedPosition = new Vector3(
-                    Mathf.Round(column.x / snapPrecision) * snapPrecision,
-                    Mathf.Round(column.y / snapPrecision) * snapPrecision,
-                    Mathf.Round(column.z / snapPrecision) * snapPrecision
-                );
+                    float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+                    Vector3 position = new Vector3(column.x, column.y, column.z);
+                    Vector3 roundedPosition = new Vector3(
+                        Mathf.Round(column.x / snapPrecision) * snapPrecision,
+                        Mathf.Round(column.y / snapPrecision) * snapPrecision,
+                        Mathf.Round(column.z / snapPrecision) * snapPrecision
+                    );
 
-                if(!moveOnX) { column.x = oldColumn.x; }
-                else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapGap / absWorldScale) {
-                    column.x = roundedPosition.x;
+                    if(!moveOnX) { column.x = transform.localPosition.x; }
+                    else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapGap / absWorldScale)
+                    {
+                        column.x = roundedPosition.x;
+                    }
+
+                    if(!moveOnY) { column.y = transform.localPosition.y; }
+                    else if(snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapGap / absWorldScale)
+                    {
+                        column.y = roundedPosition.y;
+                    }
+
+                    if(!moveOnZ) { column.z = transform.localPosition.z; }
+                    else if(snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapGap / absWorldScale)
+                    {
+                        column.z = roundedPosition.z;
+                    }
+
+                    transformed.SetColumn(3, column);
                 }
-
-                if(!moveOnY) { column.y = oldColumn.y; }
-                else if(snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapGap / absWorldScale) {
-                    column.y = roundedPosition.y;
-                }
-
-                if(!moveOnZ) { column.z = oldColumn.z; }
-                else if(snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapGap / absWorldScale) {
-                    column.z = roundedPosition.z;
-                }
-
+            }
+            else  // don't move while turning around a single axis
+            {
+                Vector4 column = new Vector4(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z, 1f);
                 transformed.SetColumn(3, column);
             }
 
             // Constrain rotation
-            if(!turnAroundX || !turnAroundY || !turnAroundZ || snapRotation)
+            if(!turnAroundAll)
             {
-                Quaternion oldRotation = current.rotation;
-                Quaternion rotation = transformed.rotation;
-                Vector3 OldEulerAngles = oldRotation.eulerAngles;
-                Vector3 eulerAngles = rotation.eulerAngles;
-                Vector3 roundedAngles = new Vector3(
-                    Mathf.Round(eulerAngles.x / snapAngle) * snapAngle,
-                    Mathf.Round(eulerAngles.y / snapAngle) * snapAngle,
-                    Mathf.Round(eulerAngles.z / snapAngle) * snapAngle
-                );
+                // compute rotation angle from start controller position to current controller position
+                // in X axis (left/right) local to initial head direction
+                Vector3 controllerPosition;
+                Quaternion controllerRotation;
+                VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
+                controllerPosition = inverseHeadMatrix.MultiplyPoint(controllerPosition);
+                float angle = (controllerPosition.x - initControllerPositionRelativeToHead.x) * 1000f;
 
-                if(!turnAroundX) { eulerAngles.x = OldEulerAngles.x; }
-                else if(snapRotation && Mathf.Abs(eulerAngles.x - roundedAngles.x) <= snapAngleGap * snapAngle) {
-                    eulerAngles.x = roundedAngles.x;
+                Quaternion newQuaternion = new Quaternion();
+                if(snapRotation)
+                {
+                    newQuaternion.eulerAngles = new Vector3(
+                        turnAroundX ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
+                        turnAroundY ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
+                        turnAroundZ ? Mathf.Round(angle / snapAngle) * snapAngle : 0
+                    );
+                }
+                else
+                {
+                    newQuaternion.eulerAngles = new Vector3(
+                        turnAroundX ? angle : 0,
+                        turnAroundY ? angle : 0,
+                        turnAroundZ ? angle : 0
+                    );
                 }
 
-                if(!turnAroundY) { eulerAngles.y = OldEulerAngles.y; }
-                else if(snapRotation && Mathf.Abs(eulerAngles.y - roundedAngles.y) <= snapAngleGap * snapAngle) {
-                    eulerAngles.y = roundedAngles.y;
-                }
+                Matrix4x4 objectInitGlobalMatrix = initParentMatrix[transform.gameObject] * Matrix4x4.TRS(initPositions[transform.gameObject], initRotations[transform.gameObject], initScales[transform.gameObject]);
+                Matrix4x4 objectInitWorldMatrix = world.worldToLocalMatrix * objectInitGlobalMatrix;
+                Matrix4x4 globalRotation = world.localToWorldMatrix * Matrix4x4.TRS(Vector3.zero, newQuaternion, Vector3.one);
 
-                if(!turnAroundZ) { eulerAngles.z = OldEulerAngles.z; }
-                else if(snapRotation && Mathf.Abs(eulerAngles.z - roundedAngles.z) <= snapAngleGap * snapAngle) {
-                    eulerAngles.z = roundedAngles.z;
-                }
+                Matrix4x4 globalRotatedObject = globalRotation * objectInitWorldMatrix;
+                Matrix4x4 localRotatedObject = initParentMatrix[transform.gameObject].inverse * globalRotatedObject;
 
-                Vector3 position = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                rotation = Quaternion.Euler(eulerAngles);
-                Vector3 scale = new Vector3(transformed.GetColumn(0).magnitude, transformed.GetColumn(1).magnitude, transformed.GetColumn(2).magnitude);
-                transformed.SetTRS(position, rotation, scale);
+                // transformation matrix (local)
+                transformed = Matrix4x4.TRS(initPositions[transform.gameObject], Maths.GetRotationFromMatrix(localRotatedObject), initScales[transform.gameObject]);
             }
         }
 
@@ -547,7 +617,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            ShowMouthpiece(selectorBrush, show);
+            ActivateMouthpiece(selectorBrush, show);
 
             if(rightController != null)
             {

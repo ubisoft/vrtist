@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -8,12 +9,15 @@ namespace VRtist
         [Header("Parameters")]
         public Transform container;
         public int maxPages = 3;
+        private bool useDefaultInstantiationScale = false;
         private Transform[] pages = null;
         private int current_page = 0;
 
         void Start()
         {
             Init();
+
+            panel.transform.Find("Primitives");
 
             Transform primitives = panel.transform.Find("Primitives");
             if (primitives == null)
@@ -65,6 +69,11 @@ namespace VRtist
             UIObject = null;
         }
 
+        public void OnUseDefaultScale(bool value)
+        {
+            useDefaultInstantiationScale = value;
+        }
+
         protected override void DoUpdateGui()
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
@@ -72,8 +81,22 @@ namespace VRtist
                 if (null != UIObject)
                 {
                     GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
-                    Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));/** Matrix4x4.Translate(selectorBrush.localPosition)  * Matrix4x4.Scale(UIObject.transform.lossyScale)*/;
-                    SyncData.SetTransform(newObject.name, matrix);
+                    
+                    if (useDefaultInstantiationScale)
+                    {
+                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(100f, 100f, 100f));
+
+                        Vector3 t, s;
+                        Quaternion r;
+                        Maths.DecomposeMatrix(matrix, out t, out r, out s);
+                        SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)));
+                    }
+                    else
+                    {
+                        Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(10f * UIObject.transform.localScale);
+                        SyncData.SetTransform(newObject.name, matrix);
+                    }
+
                     new CommandAddGameObject(newObject).Submit();
 
                     ClearSelection();
