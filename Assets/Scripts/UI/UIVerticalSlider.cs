@@ -408,7 +408,9 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            if(Disabled) { return; }
+            if (!UIEnabled) return;
+
+            if (Disabled) { return; }
 
             if (otherCollider.gameObject.name == "Cursor")
             {
@@ -420,7 +422,9 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
-            if(Disabled) { return; }
+            if (!UIEnabled) return;
+
+            if (Disabled) { return; }
 
             if (otherCollider.gameObject.name == "Cursor")
             {
@@ -432,7 +436,9 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
-            if(Disabled) { return; }
+            if (!UIEnabled) return;
+
+            if (Disabled) { return; }
 
             if (otherCollider.gameObject.name == "Cursor")
             {

@@ -151,13 +151,15 @@ MonoBehaviour:
   m_FilterSizeTraced: 16
   m_SunLightConeAngle: 0.5
   m_LightShadowRadius: 0.5
+  m_SemiTransparentShadow: 0
+  m_ColorShadow: 1
   m_EvsmExponent: 15
   m_EvsmLightLeakBias: 0
   m_EvsmVarianceBias: 0.00001
   m_EvsmBlurPasses: 0
   m_LightlayersMask: 1
   m_LinkShadowLayers: 1
-  m_ShadowNearPlane: 0.1
+  m_ShadowNearPlane: 0.01
   m_BlockerSampleCount: 24
   m_FilterSampleCount: 16
   m_MinFilterSize: 0.01
@@ -258,14 +260,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parameters:
-    id: 21
-    lightType: 1
-    intensity: 8
-    minIntensity: 0
-    maxIntensity: 10
-    color: {r: 1, g: 1, b: 1, a: 1}
-    castShadows: 0
+  lightType: 0
+  intensity: 8
+  minIntensity: 0
+  maxIntensity: 100
+  color: {r: 1, g: 1, b: 1, a: 1}
+  castShadows: 0
+  near: 0.01
+  range: 5
+  minRange: 0
+  maxRange: 100
+  outerAngle: 20
+  innerAngle: 30
 --- !u!114 &7606024625253914099
 MonoBehaviour:
   m_ObjectHideFlags: 0

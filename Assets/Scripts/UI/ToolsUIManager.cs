@@ -296,7 +296,6 @@ namespace VRtist
                 }
             }
         }
-
         public void OpenWindow(Transform window, float scaleFactor)
         {
             Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false));
@@ -317,7 +316,7 @@ namespace VRtist
             {
                 if (value != isPaletteOpened)
                 {
-                    if (!forcePaletteOpened)
+                    if (!isPaletteOpened || !forcePaletteOpened)
                     {
                         isPaletteOpened = value;
 
@@ -336,6 +335,8 @@ namespace VRtist
 
         private IEnumerator AnimateWindowOpen(Transform window, AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve, float scaleFactor, int nbFrames, bool reverse = false)
         {
+            UIElement.UIEnabled = false;
+
             for (int i = 0; i < nbFrames; i++)
             {
                 float t = (float)i / (nbFrames - 1);
@@ -347,6 +348,8 @@ namespace VRtist
                 window.localScale = s;
                 yield return new WaitForEndOfFrame();
             }
+
+            UIElement.UIEnabled = true;
         }
     }
 }

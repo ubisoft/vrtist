@@ -76,7 +76,8 @@ namespace VRtist
                         // Haptic intensity as we go deeper into the widget.
                         float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
                         intensity *= intensity; // ease-in
-                        VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+                        if (UIElement.UIEnabled)
+                            VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
                     }
                 }
             }
@@ -99,8 +100,11 @@ namespace VRtist
                 isOnAWidget = true;
                 widgetTransform = other.transform;
                 widgetHit = other.GetComponent<UIElement>();
-                VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
-                audioClick.Play();
+                if (UIElement.UIEnabled)
+                {
+                    VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
+                    audioClick.Play();
+                }
             }
         }
 
