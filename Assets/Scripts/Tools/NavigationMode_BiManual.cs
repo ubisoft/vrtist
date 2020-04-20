@@ -33,13 +33,7 @@ namespace VRtist
 
         public NavigationMode_BiManual(StretchUI line, float minScale, float maxScale)
         {
-            if (lineUI == null) 
-            { 
-                Debug.LogWarning("Cannot find the stretch ui object"); 
-            }
-
             lineUI = line;
-
             minPlayerScale = minScale;
             maxPlayerScale = maxScale;
         }

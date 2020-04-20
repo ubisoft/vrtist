@@ -12,7 +12,7 @@ namespace VRtist
         public GameObject cameraPrefab;
         public Transform cameraContainer;
         public Material screenShotMaterial;
-        public Transform world;
+        //public Transform world;
         public Transform backgroundFeedback;
         public Transform dopesheetHandle = null;
         public Transform cameraPreviewHandle = null;

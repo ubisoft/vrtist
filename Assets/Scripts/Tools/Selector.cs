@@ -21,6 +21,8 @@ namespace VRtist
         public UICheckbox turnAroundYCheckbox = null;
         public UICheckbox turnAroundZCheckbox = null;
 
+        public GridVFX grid = null;
+
         protected bool snapToGrid = false;
         protected float snapPrecision = 1f;    // grid size 1 meter
         protected float snapGap = 0.05f;       // 
@@ -43,7 +45,7 @@ namespace VRtist
         [CentimeterFloat] public float cameraSpaceGap = 0.01f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
         public SelectorTrigger selectorTrigger;
-        public Transform world;
+        //public Transform world;
         public UICheckbox uniformScaleCheckbox = null;
         public bool uniformScale = false;
 
@@ -68,11 +70,14 @@ namespace VRtist
         {
             Init();
             ActivateMouthpiece(selectorBrush, true);
+            //ActivateGrid(grid.transform, Selection.selection.Count > 0 && snapToGrid);
+            
         }
 
         protected override void Init()
         {
             base.Init();
+            Selection.OnSelectionChanged += UpdateGridFromSelection;
             InitUIPanel();
         }
 
@@ -80,45 +85,80 @@ namespace VRtist
         {
             base.OnEnable();
             InitUIPanel();
+            UpdateGrid();
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
+            if(null != grid) { grid.gameObject.SetActive(false); }
             if(null != planesContainer) { planesContainer.SetActive(false); }
+        }
+
+        protected void UpdateGrid()
+        {
+            int numSelected = Selection.selection.Count;
+            bool showGrid = numSelected > 0 && snapToGrid;
+            if (grid != null)
+            {
+                bool wasActive = grid.gameObject.activeInHierarchy;
+                grid.gameObject.SetActive(showGrid);
+                if (showGrid)
+                {
+                    if (!wasActive)
+                    {
+                        float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+                        grid.SetStepSize(snapPrecision * absWorldScale);
+                        grid.SetAxis(moveOnX, moveOnY, moveOnZ);
+                    }
+
+                    foreach (GameObject gobj in Selection.selection.Values)
+                    {
+                        // place the grid at the pivot of the object.
+                        grid.transform.position = gobj.transform.position;
+                        break;
+                    }
+                }
+            }
         }
 
         public void SetSnapToGrid(bool value)
         {
             snapToGrid = value;
-            if(null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
+            UpdateGrid();
+            if (null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
         }
 
         public void OnChangeSnapGridSize(float value)
         {
-            snapPrecision = value;
+            snapPrecision = value / 100.0f;
+            grid.SetStepSize(snapPrecision);
         }
 
         public void OnMoveOnAll()
         {
             moveOnX = moveOnY = moveOnZ = true;
+            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
             InitUIPanel();
         }
 
         public void SetMoveOnX(bool value)
         {
             moveOnX = value;
+            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
         }
 
         public void SetMoveOnY(bool value)
         {
             moveOnY = value;
+            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
         }
 
         public void SetMoveOnZ(bool value)
         {
             moveOnZ = value;
+            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
         }
 
         public void SetSnapRotation(bool value)
@@ -194,7 +234,7 @@ namespace VRtist
             if(null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
             if(null != snapGridSizeSlider)
             {
-                snapGridSizeSlider.Value = snapPrecision;
+                snapGridSizeSlider.Value = snapPrecision * 100.0f;
                 snapGridSizeSlider.Disabled = !snapToGrid;
             }
             if(null != moveOnXCheckbox) { moveOnXCheckbox.Checked = moveOnX; }
@@ -330,6 +370,11 @@ namespace VRtist
             SetActivePLane(null);
 
             ManageMoveObjectsUndo();
+        }
+
+        private void UpdateGridFromSelection(object sender, SelectionChangedArgs args)
+        {
+            UpdateGrid();
         }
 
         private Mesh CreatePlaneMesh(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
@@ -613,13 +658,17 @@ namespace VRtist
             // Bounds
             if(deformEnabled)
                 ComputeSelectionBounds();
+
+            // Move grid with object(s), enable/disable it.
+            UpdateGrid();
         }
 
         protected override void ShowTool(bool show)
         {
             ActivateMouthpiece(selectorBrush, show);
+            UpdateGrid();
 
-            if(rightController != null)
+            if (rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
             }
