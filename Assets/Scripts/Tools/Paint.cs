@@ -52,6 +52,11 @@ namespace VRtist
             colorPicker.CurrentColor = paintColor;
         }
 
+        protected override void OnDisable()
+        {
+            EndCurrentPaint();
+            base.OnDisable();
+        }
         protected override void DoUpdate(Vector3 position, Quaternion rotation)
         {
             // Manage over UI
@@ -109,6 +114,22 @@ namespace VRtist
             mesh.RecalculateBounds();
         }
 
+        private void EndCurrentPaint()
+        {
+            // Bake line renderer into a mesh so we can raycast on it
+            if (currentPaintLine != null)
+            {
+                TranslatePaintToItsCenter();
+                PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
+                paintParameters.color = paintColor;
+                paintParameters.controlPoints = freeDraw.controlPoints;
+                paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
+                new CommandAddGameObject(currentPaintLine).Submit();
+                currentPaintLine = null;
+            }
+
+        }
+
         private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation, bool flat)
         {
             // Activate a new paint            
@@ -130,21 +151,9 @@ namespace VRtist
                 freeDraw.AddControlPoint(new Vector3(20, 0, 20), 1f);
                 */
             },            
-             () =>
-             {
-                 // Bake line renderer into a mesh so we can raycast on it
-                 if (currentPaintLine != null)
-                {
-                     TranslatePaintToItsCenter();
-                     PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
-                     paintParameters.color = paintColor;
-                     paintParameters.controlPoints = freeDraw.controlPoints;
-                     paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
-                     new CommandAddGameObject(currentPaintLine).Submit();
-                     currentPaintLine = null;
-                     //OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
-                     //VRInput.rightController.StopHaptics();
-                }
+            () =>
+            {
+                EndCurrentPaint();
             });
 
             float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);

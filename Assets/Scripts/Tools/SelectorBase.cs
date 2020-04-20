@@ -61,6 +61,13 @@ namespace VRtist
             OnSelectMode();
         }
 
+        protected override void OnDisable()
+        {
+            if (gripped)
+                OnEndGrip();
+            base.OnDisable();
+        }
+
         public virtual void OnSelectorTriggerEnter(Collider other)
         {
             Tooltips.SetTooltipVisibility(triggerTooltip, true);
