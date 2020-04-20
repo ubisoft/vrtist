@@ -230,7 +230,15 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primary2DAxisClick,
             () =>
             {
+                Transform cam = vrCamera.transform;
+
+                Vector3 initCameraInWorldPosition = world.worldToLocalMatrix.MultiplyPoint(cam.position);
                 world.localScale = Vector3.one;
+                Vector3 initGlobalCamera = world.localToWorldMatrix.MultiplyPoint(initCameraInWorldPosition);
+                world.position += cam.position - initGlobalCamera;
+
+                // reset world up vector as well
+                world.up = Vector3.up;
             });
         }
 

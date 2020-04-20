@@ -15,7 +15,6 @@ namespace VRtist
         Vector3 paintPrevPosition;
         GameObject currentPaintLine;
         float brushSize = 0.01f;
-        float brushFactor = 2f;//0.01f;  // factor between the brush size and the line renderer width
         enum PaintTools { Pencil = 0, FlatPencil }
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
@@ -81,6 +80,35 @@ namespace VRtist
             }
         }
 
+        private void TranslatePaintToItsCenter()
+        {
+            // determine center
+            PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
+            Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
+            Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
+            foreach(Vector3 pos in freeDraw.controlPoints)
+            {
+                if (pos.x < min.x) min.x = pos.x;
+                if (pos.y < min.y) min.y = pos.y;
+                if (pos.z < min.z) min.z = pos.z;
+                if (pos.x > max.x) max.x = pos.x;
+                if (pos.y > max.y) max.y = pos.y;
+                if (pos.z > max.z) max.z = pos.z;
+            }
+            Vector3 center = (max + min) * 0.5f;
+
+            currentPaintLine.transform.localPosition += center;
+
+            MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
+            Mesh mesh = meshFilter.mesh;
+            for (int i = 0; i < freeDraw.vertices.Length; i++)
+            {
+                freeDraw.vertices[i] -= center;
+            }
+            mesh.vertices = freeDraw.vertices;
+            mesh.RecalculateBounds();
+        }
+
         private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation, bool flat)
         {
             // Activate a new paint            
@@ -107,8 +135,7 @@ namespace VRtist
                  // Bake line renderer into a mesh so we can raycast on it
                  if (currentPaintLine != null)
                 {
-                     MeshCollider collider = currentPaintLine.GetComponent<MeshCollider>();
-                     collider.sharedMesh = currentPaintLine.GetComponent<MeshFilter>().sharedMesh;
+                     TranslatePaintToItsCenter();
                      PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
                      paintParameters.color = paintColor;
                      paintParameters.controlPoints = freeDraw.controlPoints;
