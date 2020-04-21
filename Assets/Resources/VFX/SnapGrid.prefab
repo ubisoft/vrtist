@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6681316485098376971}
   - component: {fileID: 6681316485098376974}
   m_Layer: 0
-  m_Name: Grid
+  m_Name: SnapGrid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -7,6 +7,7 @@ public class GridVFX : MonoBehaviour
 {
     private VisualEffect vfx = null;
     private int stepID = -1;
+    private int pointSizeID = -1;
     private int snapXID = -1;
     private int snapYID = -1;
     private int snapZID = -1;
@@ -15,6 +16,7 @@ public class GridVFX : MonoBehaviour
     {
         vfx = GetComponent<VisualEffect>();
         stepID = Shader.PropertyToID("Step");
+        pointSizeID = Shader.PropertyToID("PointSize");
         snapXID = Shader.PropertyToID("SnapX");
         snapYID = Shader.PropertyToID("SnapY");
         snapZID = Shader.PropertyToID("SnapZ");
@@ -48,6 +50,14 @@ public class GridVFX : MonoBehaviour
         }
     }
 
+    public void SetPointSize(float s)
+    {
+        if (vfx != null)
+        {
+            vfx.SetFloat(pointSizeID, s);
+        }
+    }
+
     public void SetAxis(bool x, bool y, bool z)
     {
         if (vfx != null)
@@ -55,9 +65,6 @@ public class GridVFX : MonoBehaviour
             vfx.SetBool(snapXID, x);
             vfx.SetBool(snapYID, y);
             vfx.SetBool(snapZID, z);
-            //vfx.SetBool("SnapX", x);
-            //vfx.SetBool("SnapY", y);
-            //vfx.SetBool("SnapZ", z);
         }
     }
 }

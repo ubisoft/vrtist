@@ -24,8 +24,8 @@ namespace VRtist
         public GridVFX grid = null;
 
         protected bool snapToGrid = false;
-        protected float snapPrecision = 1f;    // grid size 1 meter
-        protected float snapGap = 0.05f;       // 
+        protected float snapPrecision = 0.05f;    // grid size 5 centimeters (old = 1 meter)
+        protected float snapGap = 0.05f;       // relative? percentage?
         protected bool moveOnX = true;
         protected bool moveOnY = true;
         protected bool moveOnZ = true;
@@ -106,16 +106,17 @@ namespace VRtist
                 grid.gameObject.SetActive(showGrid);
                 if (showGrid)
                 {
-                    if (!wasActive)
+                    //if (!wasActive)
                     {
                         float absWorldScale = Mathf.Abs(GlobalState.worldScale);
                         grid.SetStepSize(snapPrecision * absWorldScale);
-                        grid.SetAxis(moveOnX, moveOnY, moveOnZ);
+                        //grid.SetPointSize(0.01f / absWorldScale);
+                        grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     }
 
                     foreach (GameObject gobj in Selection.selection.Values)
                     {
-                        // place the grid at the pivot of the object.
+                        // place the grid at the pivot of the object, in world space.
                         grid.transform.position = gobj.transform.position;
                         break;
                     }
@@ -132,33 +133,34 @@ namespace VRtist
 
         public void OnChangeSnapGridSize(float value)
         {
-            snapPrecision = value / 100.0f;
-            grid.SetStepSize(snapPrecision);
+            snapPrecision = value / 100.0f; // centimeters-to-meters
+            float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+            grid.SetStepSize(snapPrecision * absWorldScale);
         }
 
         public void OnMoveOnAll()
         {
             moveOnX = moveOnY = moveOnZ = true;
-            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
+            grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
             InitUIPanel();
         }
 
         public void SetMoveOnX(bool value)
         {
             moveOnX = value;
-            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
+            grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
         }
 
         public void SetMoveOnY(bool value)
         {
             moveOnY = value;
-            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
+            grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
         }
 
         public void SetMoveOnZ(bool value)
         {
             moveOnZ = value;
-            grid.SetAxis(moveOnX, moveOnY, moveOnZ);
+            grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
         }
 
         public void SetSnapRotation(bool value)
@@ -234,7 +236,7 @@ namespace VRtist
             if(null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
             if(null != snapGridSizeSlider)
             {
-                snapGridSizeSlider.Value = snapPrecision * 100.0f;
+                snapGridSizeSlider.Value = snapPrecision * 100.0f; // meters-to-centimeters
                 snapGridSizeSlider.Disabled = !snapToGrid;
             }
             if(null != moveOnXCheckbox) { moveOnXCheckbox.Checked = moveOnX; }
@@ -281,20 +283,22 @@ namespace VRtist
                         Mathf.Round(column.z / snapPrecision) * snapPrecision
                     );
 
-                    if(!moveOnX) { column.x = transform.localPosition.x; }
-                    else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapGap / absWorldScale)
+                    float snapThreshold = (snapGap * snapPrecision) / absWorldScale;
+
+                    if (!moveOnX) { column.x = transform.localPosition.x; }
+                    else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapThreshold)
                     {
                         column.x = roundedPosition.x;
                     }
 
                     if(!moveOnY) { column.y = transform.localPosition.y; }
-                    else if(snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapGap / absWorldScale)
+                    else if(snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapThreshold)
                     {
                         column.y = roundedPosition.y;
                     }
 
                     if(!moveOnZ) { column.z = transform.localPosition.z; }
-                    else if(snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapGap / absWorldScale)
+                    else if(snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapThreshold)
                     {
                         column.z = roundedPosition.z;
                     }
