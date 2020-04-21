@@ -6,6 +6,7 @@ using UnityEngine.VFX;
 public class GridVFX : MonoBehaviour
 {
     private VisualEffect vfx = null;
+    private int radiusID = -1;
     private int stepID = -1;
     private int pointSizeID = -1;
     private int snapXID = -1;
@@ -15,6 +16,7 @@ public class GridVFX : MonoBehaviour
     private void Awake()
     {
         vfx = GetComponent<VisualEffect>();
+        radiusID = Shader.PropertyToID("Radius");
         stepID = Shader.PropertyToID("Step");
         pointSizeID = Shader.PropertyToID("PointSize");
         snapXID = Shader.PropertyToID("SnapX");
@@ -40,6 +42,14 @@ public class GridVFX : MonoBehaviour
     private void OnDisable()
     {
         vfx.Stop();
+    }
+
+    public void SetRadius(float r)
+    {
+        if (vfx != null)
+        {
+            vfx.SetFloat(radiusID, r);
+        }
     }
 
     public void SetStepSize(float s)

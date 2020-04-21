@@ -110,6 +110,7 @@ namespace VRtist
                     {
                         float absWorldScale = Mathf.Abs(GlobalState.worldScale);
                         grid.SetStepSize(snapPrecision * absWorldScale);
+                        grid.SetRadius(0.5f / absWorldScale);
                         //grid.SetPointSize(0.01f / absWorldScale);
                         grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     }
