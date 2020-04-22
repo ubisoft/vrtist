@@ -25,15 +25,15 @@ namespace VRtist
 
         public void OnNextKey()
         {
-            // TODO
-            float keyTime = 0.0f;
+            float keyTime = dopesheet.GetNextKeyFrame();
+            dopesheet.CurrentFrame = (int)keyTime; // TMP
             NetworkClient.GetInstance().SendEvent<float>(MessageType.Frame, keyTime);
         }
 
         public void OnPrevKey()
         {
-            // TODO
-            float keyTime = 0.0f;
+            float keyTime = dopesheet.GetPreviousKeyFrame();
+            dopesheet.CurrentFrame = (int)keyTime; // TMP
             NetworkClient.GetInstance().SendEvent<float>(MessageType.Frame, keyTime);
         }
 

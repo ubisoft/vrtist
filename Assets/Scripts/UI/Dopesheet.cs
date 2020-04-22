@@ -193,6 +193,31 @@ namespace VRtist
             }
         }
 
+        public float GetNextKeyFrame()
+        {
+            foreach (float t in keys.Keys)
+            {
+                // TODO: dichotomic search
+                if (t > (float)CurrentFrame)
+                    return t;
+            }
+
+            return (float)FirstFrame;
+        }
+
+        public float GetPreviousKeyFrame()
+        {
+            for(int i = keys.Keys.Count - 1; i >= 0; i--)
+            {
+                // TODO: dichotomic search
+                float t = keys.Keys[i];
+                if (t < (float)CurrentFrame)
+                    return t;
+            }
+
+            return (float)LastFrame;
+        }
+
         public void Clear()
         {
             Transform tracks = transform.Find("MainPanel/Tracks");
