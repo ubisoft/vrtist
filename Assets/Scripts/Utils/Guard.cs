@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 
 // Use example :
-// Guardable<int> guardable = new Guardable<int>(5);
-// using (var guard = guardable.Guard(10))
+// Guard<int> myInt = new Guard<int>(5); // 5 is the original value
+// using (var guard = myInt.Guard(10))
 // {
-//   Console.WriteLine(guardable.Value);
+//   Console.WriteLine(myInt.Value);
 // }
-// Console.WriteLine(guardable.Value);
+// Console.WriteLine(myInt.Value);
 
 namespace VRtist
 {
