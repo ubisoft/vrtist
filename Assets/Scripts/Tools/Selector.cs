@@ -117,8 +117,13 @@ namespace VRtist
 
                     foreach (GameObject gobj in Selection.selection.Values)
                     {
-                        // place the grid at the pivot of the object, in world space.
-                        grid.transform.position = gobj.transform.position;
+                        Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
+                        float snappedX = moveOnX ? Mathf.Round(targetPositionInWorldObject.x / snapPrecision) * snapPrecision : targetPositionInWorldObject.x;
+                        float snappedY = moveOnZ ? Mathf.Round(targetPositionInWorldObject.y / snapPrecision) * snapPrecision : targetPositionInWorldObject.y; // NOTE: right handed.
+                        float snappedZ = moveOnY ? Mathf.Round(targetPositionInWorldObject.z / snapPrecision) * snapPrecision : targetPositionInWorldObject.z;
+                        Vector3 snappedPosition = new Vector3(snappedX, snappedY, snappedZ);
+                        grid.transform.localPosition = snappedPosition; // position in world-object space.
+
                         break;
                     }
                 }
