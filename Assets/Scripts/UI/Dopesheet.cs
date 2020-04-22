@@ -1,10 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Specialized;
 
 namespace VRtist
 {
+    public class SetKeyInfo
+    {
+        public string objectName;
+        public string channelName;
+        public int channelIndex;
+        public float value;
+    };
+
     public class Dopesheet : MonoBehaviour
     {
         [SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
@@ -30,6 +40,20 @@ namespace VRtist
         public int CurrentFrame { get { return currentFrame; } set { currentFrame = value; UpdateCurrentFrame(); } }
 
         private GameObject keyframePrefab;
+        private ParametersController controller = null;
+
+        public class AnimKey
+        {
+            public AnimKey(string name, float value)
+            {
+                this.name = name;
+                this.value = value;
+            }
+            public string name;
+            public float value;
+        }
+
+        private SortedList<float, List<AnimKey>> keys = new SortedList<float, List<AnimKey>>();
 
         void Start()
         {
@@ -42,6 +66,24 @@ namespace VRtist
                 currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
 
                 keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
+            }
+        }
+
+        private void Update()
+        {
+            if (FirstFrame != GlobalState.startFrame)
+            {
+                FirstFrame = GlobalState.startFrame;
+            }
+
+            if (LastFrame != GlobalState.endFrame)
+            {
+                LastFrame = GlobalState.endFrame;
+            }
+
+            if (CurrentFrame != GlobalState.currentFrame)
+            {
+                CurrentFrame = GlobalState.currentFrame;
             }
         }
 
@@ -86,54 +128,87 @@ namespace VRtist
             if (mainPanel != null)
             {
                 mainPanel.gameObject.SetActive(doShow);
+            }
+        }
 
-                // TMP
-                FirstFrame = 11;
-                LastFrame = 265;
-                CurrentFrame = 54;
+        protected virtual void OnParametersChanged(GameObject gObject)
+        {
+            Clear();
+
+            Dictionary<string, AnimationChannel> channels = controller.GetAnimationChannels();
+            foreach (AnimationChannel channel in channels.Values)
+            {
+                foreach (AnimationKey key in channel.keys)
+                {
+                    List<AnimKey> keyList = null;
+                    if (!keys.TryGetValue(key.time, out keyList))
+                    {
+                        keyList = new List<AnimKey>();
+                        keys[key.time] = keyList;
+                    }
+
+                    keyList.Add(new AnimKey(channel.name, key.value));
+                }
+            }
+
+            Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
+            UILabel track = keyframes.gameObject.GetComponent<UILabel>();
+            foreach (float time in keys.Keys)
+            {
+                GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
+
+                float currentValue = time;
+                float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
+
+                float startX = 0.0f;
+                float endX = timeBar.width;
+                float posX = startX + pct * (endX - startX);
+
+                Vector3 knobPosition = new Vector3(posX, -0.5f * track.height, 0.0f);
+
+                keyframe.transform.localPosition = knobPosition;
+                if (currentValue < (float)FirstFrame || currentValue > (float)LastFrame)
+                {
+                    keyframe.SetActive(false); // clip out of range keyframes
+                }
             }
         }
 
         public void UpdateFromController(ParametersController controller)
         {
-            Dictionary<string, AnimationChannel> channels = controller.GetAnimationChannels();
-            foreach(AnimationChannel channel in channels.Values)
+            if (this.controller != null)
             {
-                if(channel.name == "location[0]")
-                {
-                    Transform keyframes = transform.Find("MainPanel/FakeTrackButton/Keyframes");
-                    for (int i = keyframes.childCount - 1 ; i >= 0 ; i--)
-                    {
-                        Destroy(keyframes.GetChild(i).gameObject);
-                    }
-
-                    foreach(AnimationKey key in channel.keys)
-                    {
-                        GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
-
-                        float currentValue = key.time;
-                        float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
-
-                        float startX = 0.0f;
-                        float endX = timeBar.width;
-                        float posX = startX + pct * (endX - startX);
-
-                        Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
-
-                        keyframe.transform.localPosition = knobPosition;
-                    }
-                    
-                }
+                this.controller.RemoveListener(OnParametersChanged);
             }
-            // use cameraController keyframes arrays to update the tracks.
-            //cameraController.position_kf;
-            //cameraController.rotation_kf;
-            //cameraController.focal_kf;
+
+            this.controller = controller;
+            if (this.controller != null)
+            {
+                this.controller.AddListener(OnParametersChanged);
+                OnParametersChanged(controller.gameObject);
+            }
+            else
+            {
+                Clear();
+            }
         }
 
         public void Clear()
         {
-            // empty all tracks, no camera is selected.
+            Transform tracks = transform.Find("MainPanel/Tracks");
+            for(int i = 0; i < tracks.childCount; ++i)
+            {
+                Transform track = tracks.GetChild(i);
+                string channelName = track.name;
+                string trackName = $"MainPanel/Tracks/{channelName}/Keyframes";
+                Transform keyframes = transform.Find(trackName);
+                for (int j = keyframes.childCount - 1; j >= 0; j--)
+                {
+                    Destroy(keyframes.GetChild(j).gameObject);
+                }
+            }
+
+            keys.Clear();
         }
         
         // called by the slider when moved
@@ -153,13 +228,54 @@ namespace VRtist
             onNextKeyframeEvent.Invoke(CurrentFrame);
         }
 
+        private void SendKeyInfo(string channelName, int channelIndex, float value)
+        {
+            SetKeyInfo keyInfo = new SetKeyInfo()
+            {
+                objectName = controller.gameObject.name,
+                channelName = channelName,
+                channelIndex = channelIndex,
+                value = value
+            };
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.SetKey, keyInfo);
+        }
+
+        private void SendDeleteKeyInfo(string channelName, int channelIndex)
+        {
+            SetKeyInfo keyInfo = new SetKeyInfo()
+            {
+                objectName = controller.gameObject.name,
+                channelName = channelName,
+                channelIndex = channelIndex,
+                value = 0.0f
+            };
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKey, keyInfo);
+        }
+
         public void OnAddKeyFrame()
         {
+            SendKeyInfo("location", 0, controller.transform.localPosition.x);
+            SendKeyInfo("location", 1, controller.transform.localPosition.y);
+            SendKeyInfo("location", 2, controller.transform.localPosition.z);
+            Vector3 angles = controller.transform.localRotation.eulerAngles;
+            SendKeyInfo("rotation", 0, angles.x);
+            SendKeyInfo("rotation", 1, angles.y);
+            SendKeyInfo("rotation", 2, angles.z);
+            SendKeyInfo("lens", -1, (controller as CameraController).focal);
+
             onAddKeyframeEvent.Invoke(CurrentFrame);
         }
 
         public void OnRemoveKeyFrame()
         {
+            SendDeleteKeyInfo("location", 0);
+            SendDeleteKeyInfo("location", 1);
+            SendDeleteKeyInfo("location", 2);
+            SendDeleteKeyInfo("rotation", 0);
+            SendDeleteKeyInfo("rotation", 1);
+            SendDeleteKeyInfo("rotation", 2);
+            SendDeleteKeyInfo("lens", -1);
+
             onRemoveKeyframeEvent.Invoke(CurrentFrame);
         }
     }

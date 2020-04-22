@@ -61,11 +61,16 @@ namespace VRtist
         Scene,
         SceneRemoved,
         AddObjectToDocument,
+        SetKey,
+        RemoveKey,
+
         Optimized_Commands = 200,
         Transform,
         Mesh,
         Material,
         Frame,
+        Play,
+        Pause
     }
 
     public class NetCommand
@@ -350,7 +355,7 @@ namespace VRtist
             return buffer[0];
         }
 
-        public static byte[] intToBytes(int value)
+        public static byte[] IntToBytes(int value)
         {
             byte[] bytes = new byte[sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(int));
@@ -1227,7 +1232,7 @@ namespace VRtist
             Mesh mesh = meshInfos.meshFilter.mesh;
             byte[] name = StringToBytes(mesh.name);
 
-            byte[] baseMeshSize = intToBytes(0);
+            byte[] baseMeshSize = IntToBytes(0);
 
             byte[] positions = Vector3ToBytes(mesh.vertices);
             byte[] normals = Vector3ToBytes(mesh.normals);
@@ -1261,7 +1266,7 @@ namespace VRtist
             string path = GetPathName(root, transform);
             byte[] pathBuffer = StringToBytes(path);
 
-            byte[] bakedMeshSize = intToBytes(positions.Length + normals.Length + uvs.Length + materialIndices.Length + triangles.Length);
+            byte[] bakedMeshSize = IntToBytes(positions.Length + normals.Length + uvs.Length + materialIndices.Length + triangles.Length);
 
             // necessary to satisfy baked mesh server format
             //////////////////////////////////////////////////
@@ -1367,6 +1372,8 @@ namespace VRtist
                 GameObject gobj = t.Item1;
                 ParametersController controller = gobj.GetComponent<ParametersController>();
                 controller.AddAnimationChannel(animationChannel, keys);
+
+                controller.FireValueChanged();
             }
         }
 
@@ -2237,6 +2244,34 @@ namespace VRtist
             GlobalState.currentFrame = frame;
         }
 
+        public static NetCommand BuildSendFrameCommand(float data)
+        {
+            byte[] buffer = NetGeometry.FloatToBytes(data);
+            NetCommand cmd = new NetCommand(buffer, MessageType.Frame);
+            return cmd;
+        }
+
+        public static NetCommand BuildSendSetKey(SetKeyInfo data)
+        {
+            byte[] objectNameBuffer = StringToBytes(data.objectName);
+            byte[] channelNameBuffer = StringToBytes(data.channelName);
+            byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
+            byte[] valueBuffer = FloatToBytes(data.value);
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, valueBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.SetKey);
+        }
+
+        public static NetCommand BuildSendRemoveKey(SetKeyInfo data)
+        {
+            byte[] objectNameBuffer = StringToBytes(data.objectName);
+            byte[] channelNameBuffer = StringToBytes(data.channelName);
+            byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.RemoveKey);
+        }
+
         public static void BuildFrameStartEnd(byte[] data)
         {
             int index = 0;
@@ -2485,6 +2520,36 @@ namespace VRtist
             AddCommand(command);
         }
 
+        public void SendFrame(FrameInfo frame)
+        {
+            NetCommand command = NetGeometry.BuildSendFrameCommand(frame.frame);
+            AddCommand(command);
+        }
+
+        public void SendPlay()
+        {
+            byte[] buffer = new byte[0];
+            AddCommand(new NetCommand(buffer, MessageType.Play));
+        }
+
+        public void SendSetKey(SetKeyInfo data)
+        {
+            NetCommand command = NetGeometry.BuildSendSetKey(data);
+            AddCommand(command);
+        }
+
+        public void SendRemoveKey(SetKeyInfo data)
+        {
+            NetCommand command = NetGeometry.BuildSendRemoveKey(data);
+            AddCommand(command);
+        }
+
+        public void SendPause()
+        {
+            byte[] buffer = new byte[0];
+            AddCommand(new NetCommand(buffer, MessageType.Pause));
+        }
+
         public void SendDuplicate(DuplicateInfos duplicate)
         {
             NetCommand command = NetGeometry.BuildDuplicateCommand(root, duplicate);
@@ -2723,6 +2788,16 @@ namespace VRtist
                     SendAddObjectToColleciton(data as AddToCollectionInfo); break;
                 case MessageType.AddObjectToScene:
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
+                case MessageType.Frame:
+                    SendFrame(data as FrameInfo); break;
+                case MessageType.Play:
+                    SendPlay(); break;
+                case MessageType.Pause:
+                    SendPause(); break;
+                case MessageType.SetKey:
+                    SendSetKey(data as SetKeyInfo); break;
+                case MessageType.RemoveKey:
+                    SendRemoveKey(data as SetKeyInfo); break;
             }
         }
     }
