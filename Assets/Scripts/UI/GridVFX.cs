@@ -6,31 +6,25 @@ using UnityEngine.VFX;
 public class GridVFX : MonoBehaviour
 {
     private VisualEffect vfx = null;
+
     private int radiusID = -1;
     private int stepID = -1;
+    private int oldStepID = -1;
     private int pointSizeID = -1;
     private int snapXID = -1;
     private int snapYID = -1;
     private int snapZID = -1;
-    private int rotationAxisXID = -1;
-    private int rotationAxisYID = -1;
-    private int rotationAxisZID = -1;
-    private int anglesID = -1;
 
     private void Awake()
     {
         vfx = GetComponent<VisualEffect>();
         radiusID = Shader.PropertyToID("Radius");
         stepID = Shader.PropertyToID("Step");
+        oldStepID = Shader.PropertyToID("OldStep");
         pointSizeID = Shader.PropertyToID("PointSize");
         snapXID = Shader.PropertyToID("SnapX");
         snapYID = Shader.PropertyToID("SnapY");
         snapZID = Shader.PropertyToID("SnapZ");
-        rotationAxisXID = Shader.PropertyToID("RotationAxisX");
-        rotationAxisYID = Shader.PropertyToID("RotationAxisY");
-        rotationAxisZID = Shader.PropertyToID("RotationAxisZ");
-        anglesID = Shader.PropertyToID("Angles");
-
     }
 
     void Start()
@@ -53,6 +47,14 @@ public class GridVFX : MonoBehaviour
         vfx.Stop();
     }
 
+    public void Restart()
+    {
+        if (vfx != null)
+        {
+            vfx.Reinit();
+        }
+    }
+
     public void SetRadius(float r)
     {
         if (vfx != null)
@@ -66,6 +68,14 @@ public class GridVFX : MonoBehaviour
         if (vfx != null)
         {
             vfx.SetFloat(stepID, s);
+        }
+    }
+
+    public void SetOldStepSize(float s)
+    {
+        if (vfx != null)
+        {
+            vfx.SetFloat(oldStepID, s);
         }
     }
 
@@ -84,32 +94,6 @@ public class GridVFX : MonoBehaviour
             vfx.SetBool(snapXID, x);
             vfx.SetBool(snapYID, y);
             vfx.SetBool(snapZID, z);
-        }
-    }
-
-    public void SetAngles(Vector3 angles)
-    {
-        if (vfx != null)
-        {
-            vfx.SetVector3(anglesID, angles);
-        }
-    }
-
-    public void SetRotationAxis(Vector3 ax, Vector3 ay, Vector3 az)
-    {
-        if (vfx != null)
-        {
-            vfx.SetVector3(rotationAxisXID, ax);
-            vfx.SetVector3(rotationAxisYID, ay);
-            vfx.SetVector3(rotationAxisZID, az);
-        }
-    }
-
-    public void SetTargetPositionWorld(Vector3 p)
-    {
-        if (vfx != null)
-        {
-            vfx.SetVector3(Shader.PropertyToID("TargetPositionWorld"), p);
         }
     }
 }

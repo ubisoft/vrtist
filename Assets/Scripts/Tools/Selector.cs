@@ -95,27 +95,36 @@ namespace VRtist
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
+        float previousStepSize = 1.0f;
+        bool firstSetStep = true;
+
         protected void UpdateGrid()
         {
             int numSelected = Selection.selection.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
             if (grid != null)
             {
-                bool wasActive = grid.gameObject.activeInHierarchy;
                 grid.gameObject.SetActive(showGrid);
                 if (showGrid)
                 {
-                    //if (!wasActive)
+                    float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+                        
+                    float newStepSize = snapPrecision * absWorldScale;
+                    if (firstSetStep)
                     {
-                        float absWorldScale = Mathf.Abs(GlobalState.worldScale);
-                        grid.SetStepSize(snapPrecision * absWorldScale);
-                        grid.SetRadius(0.5f / absWorldScale);
-                        //grid.SetPointSize(0.01f / absWorldScale);
-                        grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
+                        previousStepSize = newStepSize;
+                        firstSetStep = false;
                     }
+                    grid.SetStepSize(newStepSize);
+                    grid.SetOldStepSize(previousStepSize);
+                    previousStepSize = newStepSize;
 
+                    grid.SetRadius(0.5f / absWorldScale);
+                    grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
+                    
                     foreach (GameObject gobj in Selection.selection.Values)
                     {
+                        // Snap VFX position in (world object) local space.
                         Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
                         float snappedX = moveOnX ? Mathf.Round(targetPositionInWorldObject.x / snapPrecision) * snapPrecision : targetPositionInWorldObject.x;
                         float snappedY = moveOnZ ? Mathf.Round(targetPositionInWorldObject.y / snapPrecision) * snapPrecision : targetPositionInWorldObject.y; // NOTE: right handed.
@@ -139,14 +148,14 @@ namespace VRtist
         public void OnChangeSnapGridSize(float value)
         {
             snapPrecision = value / 100.0f; // centimeters-to-meters
-            float absWorldScale = Mathf.Abs(GlobalState.worldScale);
-            grid.SetStepSize(snapPrecision * absWorldScale);
+            UpdateGrid();
         }
 
         public void OnMoveOnAll()
         {
             moveOnX = moveOnY = moveOnZ = true;
             grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
+            grid.Restart(); // re-start the vfx to single-burst a new set of particles with the new axis configuration.
             InitUIPanel();
         }
 
@@ -154,18 +163,21 @@ namespace VRtist
         {
             moveOnX = value;
             grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
+            grid.Restart();
         }
 
         public void SetMoveOnY(bool value)
         {
             moveOnY = value;
             grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
+            grid.Restart();
         }
 
         public void SetMoveOnZ(bool value)
         {
             moveOnZ = value;
             grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
+            grid.Restart();
         }
 
         public void SetSnapRotation(bool value)
