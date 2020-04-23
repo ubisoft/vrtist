@@ -61,6 +61,13 @@ namespace VRtist
             OnSelectMode();
         }
 
+        protected override void OnDisable()
+        {
+            if (gripped)
+                OnEndGrip();
+            base.OnDisable();
+        }
+
         public virtual void OnSelectorTriggerEnter(Collider other)
         {
             Tooltips.SetTooltipVisibility(triggerTooltip, true);
@@ -278,9 +285,12 @@ namespace VRtist
             {
                 ManageMoveObjectsUndo();
             }
-            undoGroup.Submit();
-            undoGroup = null;
 
+            if (null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
             gripped = false;
         }
 

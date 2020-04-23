@@ -45,7 +45,6 @@ namespace VRtist
         [CentimeterFloat] public float cameraSpaceGap = 0.01f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
         public SelectorTrigger selectorTrigger;
-        //public Transform world;
         public UICheckbox uniformScaleCheckbox = null;
         public bool uniformScale = false;
 
@@ -277,6 +276,7 @@ namespace VRtist
             // Constrain movement
             if(turnAroundAll)
             {
+                // Translate
                 if(!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
                 {
                     Vector4 column = transformed.GetColumn(3);
@@ -309,18 +309,15 @@ namespace VRtist
                         column.z = roundedPosition.z;
                     }
 
-                    transformed.SetColumn(3, column);
+                    // Set new translation and lock rotation
+                    transformed.SetTRS(column, initRotations[transform.gameObject], initScales[transform.gameObject]);
                 }
             }
-            else  // don't move while turning around a single axis
+            else  // Rotate & lock translation
             {
                 Vector4 column = new Vector4(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z, 1f);
                 transformed.SetColumn(3, column);
-            }
-
-            // Constrain rotation
-            if(!turnAroundAll)
-            {
+            
                 // compute rotation angle from start controller position to current controller position
                 // in X axis (left/right) local to initial head direction
                 Vector3 controllerPosition;
@@ -332,18 +329,25 @@ namespace VRtist
                 Quaternion newQuaternion = new Quaternion();
                 if(snapRotation)
                 {
+                    float roundedAngle = Mathf.Round(angle / snapAngle) * snapAngle;
+                    Vector3 initAngles = world.worldToLocalMatrix * initParentMatrix[transform.gameObject] * initRotations[transform.gameObject].eulerAngles;
                     newQuaternion.eulerAngles = new Vector3(
-                        turnAroundX ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
-                        turnAroundY ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
-                        turnAroundZ ? Mathf.Round(angle / snapAngle) * snapAngle : 0
+                        turnAroundX ? roundedAngle - initAngles.x : 0,
+                        turnAroundZ ? roundedAngle - initAngles.y : 0,
+                        turnAroundY ? -(roundedAngle - initAngles.z) : 0
                     );
+                    //newQuaternion.eulerAngles = new Vector3(
+                    //    turnAroundX ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
+                    //    turnAroundY ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
+                    //    turnAroundZ ? Mathf.Round(angle / snapAngle) * snapAngle : 0
+                    //);
                 }
                 else
                 {
                     newQuaternion.eulerAngles = new Vector3(
                         turnAroundX ? angle : 0,
-                        turnAroundY ? angle : 0,
-                        turnAroundZ ? angle : 0
+                        turnAroundZ ? angle : 0,
+                        turnAroundY ? -angle : 0
                     );
                 }
 

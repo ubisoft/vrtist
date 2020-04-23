@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace VRtist
         private Transform currentShapeTransform = null;
         private Transform arrowCursor = null;
         private Transform grabberCursor = null;
+        private IDisposable UIEnabled = null;
 
         void Start()
         {
@@ -53,6 +55,9 @@ namespace VRtist
                 transform.localPosition = position;
                 transform.localRotation = rotation;
 
+                if (!UIElement.UIEnabled.Value)
+                    return;
+
                 if (isOnAWidget)
                 {
                     Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
@@ -76,38 +81,56 @@ namespace VRtist
                         // Haptic intensity as we go deeper into the widget.
                         float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
                         intensity *= intensity; // ease-in
-                        VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+                        if (UIElement.UIEnabled.Value)
+                            VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
                     }
                 }
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void ReleaseUIEnabledGuard()
         {
+            if (null != UIEnabled)
+            {
+                UIEnabled.Dispose();
+                UIEnabled = null;
+            }
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {            
             if (other.GetComponent<UIVolumeTag>() != null)
             {
+                ReleaseUIEnabledGuard();
+                if (CommandManager.IsUndoGroupOpened())
+                {
+                    UIEnabled = UIElement.UIEnabled.SetValue(false);
+                    return;
+                }
+
                 // deactivate all tools
                 //tools.SetActive(false);
-                if (!CommandManager.IsUndoGroupOpened())
-                {
-                    ToolsUIManager.Instance.ShowTools(false);
-                    SetCursorShape(0); // arrow
-                }
+                ToolsUIManager.Instance.ShowTools(false);
+                SetCursorShape(0); // arrow
             }
             else if (other.gameObject.tag == "UICollider")
             {
                 isOnAWidget = true;
                 widgetTransform = other.transform;
                 widgetHit = other.GetComponent<UIElement>();
-                VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
-                audioClick.Play();
+                if (UIElement.UIEnabled.Value)
+                {
+                    VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
+                    audioClick.Play();
+                }
             }
         }
 
         private void OnTriggerExit(Collider other)
-        {
+        {            
             if (other.GetComponent<UIVolumeTag>() != null)
             {
+                ReleaseUIEnabledGuard();
                 // reactivate all tools
                 //tools.SetActive(true);
                 ToolsUIManager.Instance.ShowTools(true);

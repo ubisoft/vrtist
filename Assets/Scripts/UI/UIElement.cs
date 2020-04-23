@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +20,8 @@ namespace VRtist
 
         public static readonly float collider_min_depth_shallow = 0.03f;
         public static readonly float collider_min_depth_deep = 0.1f;
+
+        public static OrderedGuard<bool> UIEnabled = new OrderedGuard<bool>(true);
 
         [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor

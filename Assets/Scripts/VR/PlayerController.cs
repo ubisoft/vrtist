@@ -120,7 +120,8 @@ namespace VRtist
             // Update left controller transform
             VRInput.UpdateTransformFromVRDevice(leftHandle, VRInput.leftController);
 
-            currentNavigationMode.Update();
+            if(null != currentNavigationMode)
+                currentNavigationMode.Update();
         }
 
         private void FitToSelection()
@@ -244,6 +245,9 @@ namespace VRtist
 
         private void HandlePalette()
         {
+            if (null == ToolsUIManager.Instance)
+                return;
+
             if (VRInput.GetValue(VRInput.leftController, CommonUsages.trigger) > deadZone)
             {
                 ToolsUIManager.Instance.PopUpPalette(true);

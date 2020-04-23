@@ -42,6 +42,9 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
+            if (!UIElement.UIEnabled.Value)
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
@@ -55,6 +58,9 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
+            if (!UIElement.UIEnabled.Value)
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
@@ -68,6 +74,8 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
+            if (!UIElement.UIEnabled.Value)
+                return;
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onHoverEvent.Invoke();
