@@ -262,7 +262,7 @@ namespace VRtist
                 channelIndex = channelIndex,
                 value = value
             };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.SetKey, keyInfo);
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
         }
 
         private void SendDeleteKeyInfo(string channelName, int channelIndex)
@@ -274,7 +274,7 @@ namespace VRtist
                 channelIndex = channelIndex,
                 value = 0.0f
             };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKey, keyInfo);
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
         public void OnAddKeyFrame()

@@ -61,8 +61,12 @@ namespace VRtist
         Scene,
         SceneRemoved,
         AddObjectToDocument,
-        SetKey,
-        RemoveKey,
+        _ObjectVisibility,
+        _GroupBegin,
+        _GroupEnd,
+        _SceneRenamed,
+        AddKeyframe,
+        RemoveKeyframe,
 
         Optimized_Commands = 200,
         Transform,
@@ -2259,7 +2263,7 @@ namespace VRtist
             byte[] valueBuffer = FloatToBytes(data.value);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, valueBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
-            return new NetCommand(buffer, MessageType.SetKey);
+            return new NetCommand(buffer, MessageType.AddKeyframe);
         }
 
         public static NetCommand BuildSendRemoveKey(SetKeyInfo data)
@@ -2269,7 +2273,7 @@ namespace VRtist
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
-            return new NetCommand(buffer, MessageType.RemoveKey);
+            return new NetCommand(buffer, MessageType.RemoveKeyframe);
         }
 
         public static void BuildFrameStartEnd(byte[] data)
@@ -2794,9 +2798,9 @@ namespace VRtist
                     SendPlay(); break;
                 case MessageType.Pause:
                     SendPause(); break;
-                case MessageType.SetKey:
+                case MessageType.AddKeyframe:
                     SendSetKey(data as SetKeyInfo); break;
-                case MessageType.RemoveKey:
+                case MessageType.RemoveKeyframe:
                     SendRemoveKey(data as SetKeyInfo); break;
             }
         }
