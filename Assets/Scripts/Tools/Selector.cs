@@ -25,7 +25,7 @@ namespace VRtist
 
         protected bool snapToGrid = false;
         protected float snapPrecision = 0.05f;    // grid size 5 centimeters (old = 1 meter)
-        protected float snapGap = 0.05f;       // relative? percentage?
+        protected float snapGap = 0.3f; //0.05f;       // relative? percentage?
         protected bool moveOnX = true;
         protected bool moveOnY = true;
         protected bool moveOnZ = true;
@@ -69,8 +69,6 @@ namespace VRtist
         {
             Init();
             ActivateMouthpiece(selectorBrush, true);
-            //ActivateGrid(grid.transform, Selection.selection.Count > 0 && snapToGrid);
-            
         }
 
         protected override void Init()
@@ -119,7 +117,8 @@ namespace VRtist
                     grid.SetOldStepSize(previousStepSize);
                     previousStepSize = newStepSize;
 
-                    grid.SetRadius(0.5f / absWorldScale);
+                    //grid.SetRadius(0.5f);// / absWorldScale);
+                    grid.SetRadius(0.5f * absWorldScale);
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     
                     foreach (GameObject gobj in Selection.selection.Values)
@@ -131,6 +130,7 @@ namespace VRtist
                         float snappedZ = moveOnY ? Mathf.Round(targetPositionInWorldObject.z / snapPrecision) * snapPrecision : targetPositionInWorldObject.z;
                         Vector3 snappedPosition = new Vector3(snappedX, snappedY, snappedZ);
                         grid.transform.localPosition = snappedPosition; // position in world-object space.
+                        grid.SetTargetPosition(gobj.transform.position); // world space position of target object.
 
                         break;
                     }
