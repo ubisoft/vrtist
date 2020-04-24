@@ -1352,11 +1352,14 @@ namespace VRtist
             if (keyChannelIndex != -1)
                 animationChannel += $"[{keyChannelIndex}]";
 
-            UInt32 keyCount = BitConverter.ToUInt32(data, currentIndex);
+            int keyCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
-            float[] floatBuffer = new float[keyCount * 2];
-            Buffer.BlockCopy(data, currentIndex, floatBuffer, 0, (int)keyCount * 2 * sizeof(float));
+            int[] intBuffer = new int[keyCount];
+            float[] floatBuffer = new float[keyCount];
+
+            Buffer.BlockCopy(data, currentIndex, intBuffer, 0, keyCount * sizeof(int));
+            Buffer.BlockCopy(data, currentIndex + keyCount * sizeof(int), floatBuffer, 0, keyCount * sizeof(float));
 
             //AnimationKey[] keys = new AnimationKey[keyCount];
             //Buffer.BlockCopy(data, currentIndex, keys, 0, (int)keyCount * 2 * sizeof(float));
@@ -1364,7 +1367,7 @@ namespace VRtist
             AnimationKey[] keys = new AnimationKey[keyCount];
             for (int i = 0; i < keyCount; i++)
             {
-                keys[i] = new AnimationKey(floatBuffer[2 * i], floatBuffer[2 * i + 1]);
+                keys[i] = new AnimationKey(intBuffer[i], floatBuffer[i]);
             }
 
             Node node = SyncData.nodes[objectName];
@@ -2248,9 +2251,9 @@ namespace VRtist
             GlobalState.currentFrame = frame;
         }
 
-        public static NetCommand BuildSendFrameCommand(float data)
+        public static NetCommand BuildSendFrameCommand(int data)
         {
-            byte[] buffer = NetGeometry.FloatToBytes(data);
+            byte[] buffer = NetGeometry.IntToBytes(data);
             NetCommand cmd = new NetCommand(buffer, MessageType.Frame);
             return cmd;
         }

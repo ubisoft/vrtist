@@ -12,12 +12,12 @@ namespace VRtist
 
     public class AnimationKey
     {
-        public AnimationKey(float time, float value)
+        public AnimationKey(int time, float value)
         {
             this.time = time;
             this.value = value;
         }
-        public float time;
+        public int time;
         public float value;
     }
 
