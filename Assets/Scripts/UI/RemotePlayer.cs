@@ -6,7 +6,7 @@ namespace VRtist
 {
     public class FrameInfo
     {
-        public float frame;
+        public int frame;
     }
 
     public class RemotePlayer : MonoBehaviour
@@ -25,42 +25,42 @@ namespace VRtist
 
         public void OnNextKey()
         {
-            float keyTime = dopesheet.GetNextKeyFrame();
-            dopesheet.CurrentFrame = (int)keyTime; // TMP
-            NetworkClient.GetInstance().SendEvent<float>(MessageType.Frame, keyTime);
+            int keyTime = dopesheet.GetNextKeyFrame();
+            FrameInfo info = new FrameInfo() { frame = keyTime };
+            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnPrevKey()
         {
-            float keyTime = dopesheet.GetPreviousKeyFrame();
-            dopesheet.CurrentFrame = (int)keyTime; // TMP
-            NetworkClient.GetInstance().SendEvent<float>(MessageType.Frame, keyTime);
+            int keyTime = dopesheet.GetPreviousKeyFrame();
+            FrameInfo info = new FrameInfo() { frame = keyTime };
+            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnNextFrame()
         {
-            float keyTime = (float)Mathf.Min(dopesheet.LastFrame, dopesheet.CurrentFrame + 1);
+            int keyTime = Mathf.Min(dopesheet.LastFrame, dopesheet.CurrentFrame + 1);
             FrameInfo info = new FrameInfo() { frame = keyTime };
             NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnPrevFrame()
         {
-            float keyTime = (float)Mathf.Max(dopesheet.FirstFrame, dopesheet.CurrentFrame - 1);
+            int keyTime = Mathf.Max(dopesheet.FirstFrame, dopesheet.CurrentFrame - 1);
             FrameInfo info = new FrameInfo() { frame = keyTime };
             NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnFirstFrame()
         {
-            float keyTime = (float)dopesheet.FirstFrame;
+            int keyTime = dopesheet.FirstFrame;
             FrameInfo info = new FrameInfo() { frame = keyTime };
             NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnLastFrame()
         {
-            float keyTime = (float)dopesheet.LastFrame;
+            int keyTime = dopesheet.LastFrame;
             FrameInfo info = new FrameInfo() { frame = keyTime };
             NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }

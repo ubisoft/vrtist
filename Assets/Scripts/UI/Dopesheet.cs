@@ -53,7 +53,7 @@ namespace VRtist
             public float value;
         }
 
-        private SortedList<float, List<AnimKey>> keys = new SortedList<float, List<AnimKey>>();
+        private SortedList<int, List<AnimKey>> keys = new SortedList<int, List<AnimKey>>();
 
         void Start()
         {
@@ -151,13 +151,16 @@ namespace VRtist
                 }
             }
 
+            UnityEngine.UI.Text trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<UnityEngine.UI.Text>();
+            trackLabel.text = gObject.name;
+
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
             UILabel track = keyframes.gameObject.GetComponent<UILabel>();
-            foreach (float time in keys.Keys)
+            foreach (int time in keys.Keys)
             {
                 GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
 
-                float currentValue = time;
+                float currentValue = (float)time;
                 float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
 
                 float startX = 0.0f;
@@ -167,7 +170,7 @@ namespace VRtist
                 Vector3 knobPosition = new Vector3(posX, -0.5f * track.height, 0.0f);
 
                 keyframe.transform.localPosition = knobPosition;
-                if (currentValue < (float)FirstFrame || currentValue > (float)LastFrame)
+                if (time < FirstFrame || time > LastFrame)
                 {
                     keyframe.SetActive(false); // clip out of range keyframes
                 }
@@ -193,29 +196,29 @@ namespace VRtist
             }
         }
 
-        public float GetNextKeyFrame()
+        public int GetNextKeyFrame()
         {
-            foreach (float t in keys.Keys)
+            foreach (int t in keys.Keys)
             {
                 // TODO: dichotomic search
-                if (t > (float)CurrentFrame)
+                if (t > CurrentFrame)
                     return t;
             }
 
-            return (float)FirstFrame;
+            return FirstFrame;
         }
 
-        public float GetPreviousKeyFrame()
+        public int GetPreviousKeyFrame()
         {
             for(int i = keys.Keys.Count - 1; i >= 0; i--)
             {
                 // TODO: dichotomic search
-                float t = keys.Keys[i];
-                if (t < (float)CurrentFrame)
+                int t = keys.Keys[i];
+                if (t < CurrentFrame)
                     return t;
             }
 
-            return (float)LastFrame;
+            return LastFrame;
         }
 
         public void Clear()
@@ -240,6 +243,10 @@ namespace VRtist
         public void OnChangeCurrentFrame(int i)
         {
             CurrentFrame = i;
+
+            FrameInfo info = new FrameInfo() { frame = i };
+            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+
             onChangeCurrentKeyframeEvent.Invoke(i);
         }
 
@@ -262,7 +269,7 @@ namespace VRtist
                 channelIndex = channelIndex,
                 value = value
             };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.SetKey, keyInfo);
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
         }
 
         private void SendDeleteKeyInfo(string channelName, int channelIndex)
@@ -274,7 +281,7 @@ namespace VRtist
                 channelIndex = channelIndex,
                 value = 0.0f
             };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKey, keyInfo);
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
         public void OnAddKeyFrame()
@@ -282,10 +289,13 @@ namespace VRtist
             SendKeyInfo("location", 0, controller.transform.localPosition.x);
             SendKeyInfo("location", 1, controller.transform.localPosition.y);
             SendKeyInfo("location", 2, controller.transform.localPosition.z);
-            Vector3 angles = controller.transform.localRotation.eulerAngles;
-            SendKeyInfo("rotation", 0, angles.x);
-            SendKeyInfo("rotation", 1, angles.y);
-            SendKeyInfo("rotation", 2, angles.z);
+            Quaternion quaternion = controller.transform.localRotation;
+            Quaternion bquaternion = new Quaternion(quaternion.y, quaternion.z, quaternion.w, quaternion.x);
+
+            Vector3 angles = bquaternion.eulerAngles;
+            SendKeyInfo("rotation_euler", 0, angles.x * 3.14f / 180f);
+            SendKeyInfo("rotation_euler", 1, angles.y * 3.14f / 180f);
+            SendKeyInfo("rotation_euler", 2, angles.z * 3.14f / 180f);
             SendKeyInfo("lens", -1, (controller as CameraController).focal);
 
             onAddKeyframeEvent.Invoke(CurrentFrame);
@@ -296,9 +306,9 @@ namespace VRtist
             SendDeleteKeyInfo("location", 0);
             SendDeleteKeyInfo("location", 1);
             SendDeleteKeyInfo("location", 2);
-            SendDeleteKeyInfo("rotation", 0);
-            SendDeleteKeyInfo("rotation", 1);
-            SendDeleteKeyInfo("rotation", 2);
+            SendDeleteKeyInfo("rotation_euler", 0);
+            SendDeleteKeyInfo("rotation_euler", 1);
+            SendDeleteKeyInfo("rotation_euler", 2);
             SendDeleteKeyInfo("lens", -1);
 
             onRemoveKeyframeEvent.Invoke(CurrentFrame);

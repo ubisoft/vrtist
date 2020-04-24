@@ -61,8 +61,12 @@ namespace VRtist
         Scene,
         SceneRemoved,
         AddObjectToDocument,
-        SetKey,
-        RemoveKey,
+        _ObjectVisibility,
+        _GroupBegin,
+        _GroupEnd,
+        _SceneRenamed,
+        AddKeyframe,
+        RemoveKeyframe,
 
         Optimized_Commands = 200,
         Transform,
@@ -1348,11 +1352,14 @@ namespace VRtist
             if (keyChannelIndex != -1)
                 animationChannel += $"[{keyChannelIndex}]";
 
-            UInt32 keyCount = BitConverter.ToUInt32(data, currentIndex);
+            int keyCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
-            float[] floatBuffer = new float[keyCount * 2];
-            Buffer.BlockCopy(data, currentIndex, floatBuffer, 0, (int)keyCount * 2 * sizeof(float));
+            int[] intBuffer = new int[keyCount];
+            float[] floatBuffer = new float[keyCount];
+
+            Buffer.BlockCopy(data, currentIndex, intBuffer, 0, keyCount * sizeof(int));
+            Buffer.BlockCopy(data, currentIndex + keyCount * sizeof(int), floatBuffer, 0, keyCount * sizeof(float));
 
             //AnimationKey[] keys = new AnimationKey[keyCount];
             //Buffer.BlockCopy(data, currentIndex, keys, 0, (int)keyCount * 2 * sizeof(float));
@@ -1360,7 +1367,7 @@ namespace VRtist
             AnimationKey[] keys = new AnimationKey[keyCount];
             for (int i = 0; i < keyCount; i++)
             {
-                keys[i] = new AnimationKey(floatBuffer[2 * i], floatBuffer[2 * i + 1]);
+                keys[i] = new AnimationKey(intBuffer[i], floatBuffer[i]);
             }
 
             Node node = SyncData.nodes[objectName];
@@ -2244,9 +2251,9 @@ namespace VRtist
             GlobalState.currentFrame = frame;
         }
 
-        public static NetCommand BuildSendFrameCommand(float data)
+        public static NetCommand BuildSendFrameCommand(int data)
         {
-            byte[] buffer = NetGeometry.FloatToBytes(data);
+            byte[] buffer = NetGeometry.IntToBytes(data);
             NetCommand cmd = new NetCommand(buffer, MessageType.Frame);
             return cmd;
         }
@@ -2259,7 +2266,7 @@ namespace VRtist
             byte[] valueBuffer = FloatToBytes(data.value);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, valueBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
-            return new NetCommand(buffer, MessageType.SetKey);
+            return new NetCommand(buffer, MessageType.AddKeyframe);
         }
 
         public static NetCommand BuildSendRemoveKey(SetKeyInfo data)
@@ -2269,7 +2276,7 @@ namespace VRtist
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
-            return new NetCommand(buffer, MessageType.RemoveKey);
+            return new NetCommand(buffer, MessageType.RemoveKeyframe);
         }
 
         public static void BuildFrameStartEnd(byte[] data)
@@ -2794,9 +2801,9 @@ namespace VRtist
                     SendPlay(); break;
                 case MessageType.Pause:
                     SendPause(); break;
-                case MessageType.SetKey:
+                case MessageType.AddKeyframe:
                     SendSetKey(data as SetKeyInfo); break;
-                case MessageType.RemoveKey:
+                case MessageType.RemoveKeyframe:
                     SendRemoveKey(data as SetKeyInfo); break;
             }
         }
