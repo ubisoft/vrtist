@@ -298,6 +298,7 @@ namespace VRtist
             SendKeyInfo("rotation_euler", 2, angles.z * 3.14f / 180f);
             SendKeyInfo("lens", -1, (controller as CameraController).focal);
 
+            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, controller.gameObject.name);
             onAddKeyframeEvent.Invoke(CurrentFrame);
         }
 
@@ -310,7 +311,7 @@ namespace VRtist
             SendDeleteKeyInfo("rotation_euler", 1);
             SendDeleteKeyInfo("rotation_euler", 2);
             SendDeleteKeyInfo("lens", -1);
-
+            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, controller.gameObject.name);
             onRemoveKeyframeEvent.Invoke(CurrentFrame);
         }
     }

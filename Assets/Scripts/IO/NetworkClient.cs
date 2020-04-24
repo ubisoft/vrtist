@@ -67,6 +67,8 @@ namespace VRtist
         _SceneRenamed,
         AddKeyframe,
         RemoveKeyframe,
+        QueryCurrentFrame,
+        QueryObjectData,
 
         Optimized_Commands = 200,
         Transform,
@@ -2279,6 +2281,16 @@ namespace VRtist
             return new NetCommand(buffer, MessageType.RemoveKeyframe);
         }
 
+        public static NetCommand BuildSendQueryObjectData(string name)
+        {
+            return new NetCommand(StringToBytes(name), MessageType.QueryObjectData);
+        }
+
+        public static NetCommand BuildSendQueryCurrentFrame()
+        {
+            return new NetCommand(new byte[0], MessageType.QueryCurrentFrame);
+        }
+
         public static void BuildFrameStartEnd(byte[] data)
         {
             int index = 0;
@@ -2539,15 +2551,26 @@ namespace VRtist
             AddCommand(new NetCommand(buffer, MessageType.Play));
         }
 
-        public void SendSetKey(SetKeyInfo data)
+        public void SendAddKeyframe(SetKeyInfo data)
         {
             NetCommand command = NetGeometry.BuildSendSetKey(data);
             AddCommand(command);
         }
 
-        public void SendRemoveKey(SetKeyInfo data)
+        public void SendRemoveKeyframe(SetKeyInfo data)
         {
             NetCommand command = NetGeometry.BuildSendRemoveKey(data);
+            AddCommand(command);
+        }
+
+        public void SendQueryObjectData(string name)
+        {
+            NetCommand command = NetGeometry.BuildSendQueryObjectData(name);
+            AddCommand(command);
+        }
+        public void SendQueryCurrentFrame()
+        {
+            NetCommand command = NetGeometry.BuildSendQueryCurrentFrame();
             AddCommand(command);
         }
 
@@ -2796,15 +2819,21 @@ namespace VRtist
                 case MessageType.AddObjectToScene:
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
                 case MessageType.Frame:
-                    SendFrame(data as FrameInfo); break;
+                    SendFrame(data as FrameInfo);
+                    SendQueryCurrentFrame();
+                    break;
                 case MessageType.Play:
                     SendPlay(); break;
                 case MessageType.Pause:
                     SendPause(); break;
                 case MessageType.AddKeyframe:
-                    SendSetKey(data as SetKeyInfo); break;
+                    SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
-                    SendRemoveKey(data as SetKeyInfo); break;
+                    SendRemoveKeyframe(data as SetKeyInfo); break;
+                case MessageType.QueryCurrentFrame:
+                    SendQueryCurrentFrame(); break;
+                case MessageType.QueryObjectData:
+                    SendQueryObjectData(data as string); break;
             }
         }
     }
