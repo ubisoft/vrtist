@@ -284,18 +284,26 @@ namespace VRtist
             NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
+        Vector3 ThreeAxisRotation(float r11, float r12, float r21, float r31, float r32)
+        {
+            return new Vector3(Mathf.Atan2(r31, r32), Mathf.Asin(r21), Mathf.Atan2(r11, r12));
+        }
+
         public void OnAddKeyFrame()
         {
             SendKeyInfo("location", 0, controller.transform.localPosition.x);
             SendKeyInfo("location", 1, controller.transform.localPosition.y);
             SendKeyInfo("location", 2, controller.transform.localPosition.z);
-            Quaternion quaternion = controller.transform.localRotation;
-            Quaternion bquaternion = new Quaternion(quaternion.y, quaternion.z, quaternion.w, quaternion.x);
-
-            Vector3 angles = bquaternion.eulerAngles;
-            SendKeyInfo("rotation_euler", 0, angles.x * 3.14f / 180f);
-            SendKeyInfo("rotation_euler", 1, angles.y * 3.14f / 180f);
-            SendKeyInfo("rotation_euler", 2, angles.z * 3.14f / 180f);
+            Quaternion q = controller.transform.localRotation;
+            // convert to ZYX euler
+            Vector3 angles = ThreeAxisRotation(2 * (q.x * q.y + q.w * q.z),
+                     q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z,
+                    -2 * (q.x * q.z - q.w * q.y),
+                     2 * (q.y * q.z + q.w * q.x),
+                     q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+            SendKeyInfo("rotation_euler", 0, angles.x);
+            SendKeyInfo("rotation_euler", 1, angles.y);
+            SendKeyInfo("rotation_euler", 2, angles.z);
             SendKeyInfo("lens", -1, (controller as CameraController).focal);
 
             NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, controller.gameObject.name);
