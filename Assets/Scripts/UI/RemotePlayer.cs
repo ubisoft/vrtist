@@ -23,6 +23,18 @@ namespace VRtist
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
         }
 
+        public void OnPlayOrPause(bool play)
+        {
+            if (play)
+            {
+                OnPlay();
+            }
+            else
+            {
+                OnPause();
+            }
+        }
+
         public void OnNextKey()
         {
             int keyTime = dopesheet.GetNextKeyFrame();
@@ -73,6 +85,18 @@ namespace VRtist
         public void OnStopRecord()
         {
 
+        }
+
+        public void OnRecordOrStop(bool record)
+        {
+            if (record)
+            {
+                OnBeginRecord();
+            }
+            else
+            {
+                OnStopRecord();
+            }
         }
     }
 }
