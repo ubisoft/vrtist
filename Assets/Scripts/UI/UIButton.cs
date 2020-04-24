@@ -8,6 +8,7 @@ using UnityEngine.UI;
 namespace VRtist
 {
     [ExecuteInEditMode]
+    [CanEditMultipleObjects]
     [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
@@ -22,15 +23,19 @@ namespace VRtist
         public IconMarginBehavior iconMarginBehavior = IconMarginBehavior.UseButtonMargin;
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
         public Color checkedColor = new Color(0.8f, 0.8f, 0.8f);
+        public Sprite checkedSprite = null;
+        public Sprite uncheckedSprite = null;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public UnityEvent onHoverEvent = null;
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
+        public bool isCheckable = false;
+        public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
+        public UnityEvent onHoverEvent = null;
 
         private bool needRebuild = false;
 
@@ -41,7 +46,7 @@ namespace VRtist
         public bool Checked
         {
             get { return isChecked; }
-            set { isChecked = value; SetColor(Disabled ? disabledColor : (value ? checkedColor : baseColor)); }
+            set { isChecked = value; SetColor(Disabled ? disabledColor : (value ? checkedColor : baseColor)); UpdateCheckIcon(); }
         }
 
         void Start()
@@ -86,6 +91,15 @@ namespace VRtist
                     coll.center = initColliderCenter;
                     coll.size = initColliderSize;
                 }
+            }
+        }
+
+        private void UpdateCheckIcon()
+        {
+            Image img = gameObject.GetComponentInChildren<Image>();
+            if (img != null)
+            {
+                img.sprite = isChecked ? checkedSprite : uncheckedSprite;
             }
         }
 
@@ -217,7 +231,7 @@ namespace VRtist
                 //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 Material sharedMaterialInstance = meshRenderer.sharedMaterial;
-                sharedMaterialInstance.name = "UIButton_Meterial_Instance";
+                sharedMaterialInstance.name = "UIButton_Material_Instance";
                 sharedMaterialInstance.SetColor("_BaseColor", prevColor);
             }
         }
@@ -263,6 +277,12 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
+
+                if (isCheckable)
+                {
+                    Checked = !Checked;
+                    onCheckEvent.Invoke(Checked);
+                }
             }
         }
 
@@ -285,7 +305,7 @@ namespace VRtist
 
         public void OnReleaseButton()
         {
-            SetColor(Disabled? disabledColor: (isChecked ? checkedColor : baseColor));
+            SetColor(Disabled ? disabledColor : (isChecked ? checkedColor : baseColor));
         }
 
         public static void CreateUIButton(
