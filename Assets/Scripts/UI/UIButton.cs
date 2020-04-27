@@ -8,7 +8,6 @@ using UnityEngine.UI;
 namespace VRtist
 {
     [ExecuteInEditMode]
-    [CanEditMultipleObjects]
     [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
@@ -97,7 +96,7 @@ namespace VRtist
         private void UpdateCheckIcon()
         {
             Image img = gameObject.GetComponentInChildren<Image>();
-            if (img != null)
+            if (img != null && isCheckable)
             {
                 img.sprite = isChecked ? checkedSprite : uncheckedSprite;
             }
