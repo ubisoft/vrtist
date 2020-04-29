@@ -1366,10 +1366,10 @@ namespace VRtist
             //AnimationKey[] keys = new AnimationKey[keyCount];
             //Buffer.BlockCopy(data, currentIndex, keys, 0, (int)keyCount * 2 * sizeof(float));
 
-            AnimationKey[] keys = new AnimationKey[keyCount];
+            List<AnimationKey> keys = new List<AnimationKey>();
             for (int i = 0; i < keyCount; i++)
             {
-                keys[i] = new AnimationKey(intBuffer[i], floatBuffer[i]);
+                keys.Add(new AnimationKey(intBuffer[i], floatBuffer[i]));
             }
 
             Node node = SyncData.nodes[objectName];
@@ -2265,8 +2265,9 @@ namespace VRtist
             byte[] objectNameBuffer = StringToBytes(data.objectName);
             byte[] channelNameBuffer = StringToBytes(data.channelName);
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
+            byte[] frameBuffer = IntToBytes(data.frame);
             byte[] valueBuffer = FloatToBytes(data.value);
-            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, valueBuffer };
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.AddKeyframe);
         }
