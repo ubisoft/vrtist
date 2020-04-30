@@ -15,7 +15,7 @@ namespace VRtist
         private static readonly int default_max_value = 250;
         private static readonly int default_current_value = 0;
         private static readonly Material default_background_material = null;
-        private static readonly Color default_background_color = UIElement.default_color;
+        private static readonly Color default_background_color = UIElement.default_background_color;
         private static readonly string default_text = "TimeBar";
 
         public UIPanel parentPanel = null;
@@ -46,7 +46,7 @@ namespace VRtist
                 parent = T;
             }
 
-            UITimeBar.CreateUITimeBar(default_slider_name, parent,
+            UITimeBar.Create(default_slider_name, parent,
                 Vector3.zero, default_width, default_height, default_thickness, default_min_value, default_max_value, default_current_value,
                 UIUtils.LoadMaterial("UIPanel"), default_background_color, default_text);
         }
@@ -63,7 +63,7 @@ namespace VRtist
 
         private void OnWizardCreate()
         {
-            UITimeBar.CreateUITimeBar(sliderName, parentPanel ? parentPanel.transform : null, Vector3.zero, 
+            UITimeBar.Create(sliderName, parentPanel ? parentPanel.transform : null, Vector3.zero, 
                 width, height, thickness,
                 min_value, max_value, current_value, 
                 uiBackgroundMaterial, backgroundColor, caption);

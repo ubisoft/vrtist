@@ -11,6 +11,13 @@ namespace VRtist
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
+
+            UIElement uiElem = target as UIElement;
+            GUI.backgroundColor = Color.magenta;
+            if (GUILayout.Button("Fix Material"))
+            {
+                uiElem.ResetMaterial();
+            }
         }
 
         private bool HasUIElemParent()
