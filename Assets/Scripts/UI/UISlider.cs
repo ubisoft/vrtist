@@ -367,7 +367,7 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            if (!UIEnabled) return;
+            if (!UIEnabled.Value) return;
 
             if (Disabled) { return; }
 
@@ -381,7 +381,7 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
-            if (!UIEnabled) return;
+            if (!UIEnabled.Value) return;
 
             if (Disabled) { return; }
 
@@ -395,7 +395,7 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
-            if (!UIEnabled) return;
+            if (!UIEnabled.Value) return;
 
             if (Disabled) { return; }
 

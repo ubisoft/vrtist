@@ -335,21 +335,20 @@ namespace VRtist
 
         private IEnumerator AnimateWindowOpen(Transform window, AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve, float scaleFactor, int nbFrames, bool reverse = false)
         {
-            UIElement.UIEnabled = false;
-
-            for (int i = 0; i < nbFrames; i++)
+            using (var guard = UIElement.UIEnabled.SetValue(false))
             {
-                float t = (float)i / (nbFrames - 1);
-                if (reverse) t = 1.0f - t;
-                float tx = scaleFactor * xCurve.Evaluate(t);
-                float ty = scaleFactor * yCurve.Evaluate(t);
-                float tz = scaleFactor * zCurve.Evaluate(t);
-                Vector3 s = new Vector3(tx, ty, tz);
-                window.localScale = s;
-                yield return new WaitForEndOfFrame();
+                for (int i = 0; i < nbFrames; i++)
+                {
+                    float t = (float)i / (nbFrames - 1);
+                    if (reverse) t = 1.0f - t;
+                    float tx = scaleFactor * xCurve.Evaluate(t);
+                    float ty = scaleFactor * yCurve.Evaluate(t);
+                    float tz = scaleFactor * zCurve.Evaluate(t);
+                    Vector3 s = new Vector3(tx, ty, tz);
+                    window.localScale = s;
+                    yield return new WaitForEndOfFrame();
+                }
             }
-
-            UIElement.UIEnabled = true;
         }
     }
 }

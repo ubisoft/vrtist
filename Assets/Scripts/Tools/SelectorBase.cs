@@ -285,10 +285,24 @@ namespace VRtist
             {
                 ManageMoveObjectsUndo();
             }
-            undoGroup.Submit();
-            undoGroup = null;
 
+            if (null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
             gripped = false;
+        }
+
+        private ParametersController GetFirstController()
+        {
+            foreach (GameObject gObject in Selection.selection.Values)
+            {
+                ParametersController controller = gObject.GetComponent<ParametersController>();
+                if (null != controller)
+                    return controller;
+            }
+            return null;
         }
 
         private ParametersController GetFirstAnimation()
@@ -313,16 +327,12 @@ namespace VRtist
             int numSelected = Selection.selection.Count;
             Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
             Tooltips.SetTooltipVisibility(displayTooltip, numSelected > 0);
-            if(numSelected > 0)
+            if (numSelected > 0)
             {
                 Tooltips.SetTooltipText(displayTooltip, $"{numSelected}\nselected");
-
-                ParametersController controller = GetFirstAnimation();
-                if (null != controller)
-                {
-                    dopesheet.UpdateFromController(controller);
-                }
             }
+            ParametersController controller = GetFirstController();
+            dopesheet.UpdateFromController(controller);
         }
 
         // A ref for snapping controller

@@ -12,25 +12,45 @@ namespace VRtist
 
     public class AnimationKey
     {
-        public AnimationKey(float time, float value)
+        public AnimationKey(int time, float value)
         {
             this.time = time;
             this.value = value;
         }
-        public float time;
+        public int time;
         public float value;
     }
 
     public class AnimationChannel
     {
-        public AnimationChannel(string name, AnimationKey[] keys)
+        public AnimationChannel(string name)
+        {
+            this.name = name;
+            keys = new List<AnimationKey>();
+        }
+        public AnimationChannel(string name, List<AnimationKey> keys)
         {
             this.name = name;
             this.keys = keys;
         }
 
+        public void GetChannelInfo(out string name, out int index)
+        {
+            int i = this.name.IndexOf('[');
+            if (-1 == i)
+            {
+                name = this.name;
+                index = -1;
+            }
+            else
+            {
+                name = this.name.Substring(0, i);
+                index = int.Parse(this.name.Substring(i + 1, 1));
+            }
+        }
+
         public string name;
-        public AnimationKey[] keys;
+        public List<AnimationKey> keys;
     }
 
     public class ParametersController : MonoBehaviour
@@ -80,7 +100,7 @@ namespace VRtist
                 onChangedEvent.Invoke(gameObject);
         }
 
-        public void AddAnimationChannel(string name, AnimationKey[] keys)
+        public void AddAnimationChannel(string name, List<AnimationKey> keys)
         {
             AnimationChannel channel = null;
             if (!channels.TryGetValue(name, out channel))
