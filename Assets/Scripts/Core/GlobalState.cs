@@ -18,6 +18,7 @@ namespace VRtist
         private GameObject displayTooltip = null;
 
         // World
+        public Transform world = null;
         public static float worldScale = 1f;
         private static bool isGrippingWorld = false;
         public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
@@ -76,13 +77,7 @@ namespace VRtist
         }
 
         private void UpdateFps() {
-            if(null != displayTooltip) {
-                Tooltips.SetTooltipVisibility(displayTooltip, showFps);
-            }
-
-            if(!showFps) {
-                return;
-            }
+            if(!showFps) { return; }
 
             // Initialize
             if(null == fpsBuffer || fpsBuffer.Length != fpsFrameRange) {
@@ -104,15 +99,20 @@ namespace VRtist
                 sum += fpsBuffer[i];
             }
             fps = sum / fpsFrameRange;
-
-            if(null != displayTooltip) {
-                Tooltips.SetTooltipText(displayTooltip, $"{fps} fps");
-            }
         }
 
         private void Update()
         {
-            UpdateFps();
+            if(null != displayTooltip)
+            {
+                string infoText = worldScale < 1f ? $"Scale down: {1f / worldScale:F2}" : $"Scale up: {worldScale:F2}";
+                if(showFps)
+                {
+                    UpdateFps();
+                    infoText += $"\n{fps} fps";
+                }
+                Tooltips.SetTooltipText(displayTooltip, infoText);
+            }
         }
 
         public void LateUpdate()

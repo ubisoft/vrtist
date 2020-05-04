@@ -214,6 +214,7 @@ namespace VRtist
                     world.localPosition = Vector3.zero;
                     world.localRotation = Quaternion.identity;
                     world.localScale = Vector3.one;
+                    GlobalState.worldScale = 1f;
 
                     transform.position = initCameraPosition;
                     transform.rotation = initCameraRotation;
@@ -234,6 +235,7 @@ namespace VRtist
 
                 Vector3 initCameraInWorldPosition = world.worldToLocalMatrix.MultiplyPoint(cam.position);
                 world.localScale = Vector3.one;
+                GlobalState.worldScale = 1f;
                 Vector3 initGlobalCamera = world.localToWorldMatrix.MultiplyPoint(initCameraInWorldPosition);
                 world.position += cam.position - initGlobalCamera;
 
