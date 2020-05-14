@@ -65,6 +65,33 @@ namespace VRtist
             return handleSelected;
         }
 
+        public static bool AddToHover(GameObject gObject)
+        {
+            SetRecursiveLayer(gObject, "Hover");
+
+            return true;
+        }
+
+        public static bool RemoveFromHover(GameObject gObject)
+        {
+            string layerName = "Default";
+
+            if (selection.ContainsKey(gObject.GetInstanceID()))
+            {
+                layerName = "Selection";
+            }
+            else if (  gObject.GetComponent<LightController>()
+                    || gObject.GetComponent<CameraController>()
+                    || gObject.GetComponent<UIHandle>())
+            {
+                layerName = "UI";
+            }
+
+            SetRecursiveLayer(gObject, layerName);
+
+            return true;
+        }
+
         public static bool AddToSelection(GameObject gObject)
         {
             if (selection.ContainsKey(gObject.GetInstanceID()))
