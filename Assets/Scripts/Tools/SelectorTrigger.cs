@@ -75,6 +75,11 @@ namespace VRtist
                 }
 
                 gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
+
+                // object is touched by the selector: hover fx + haptic
+                Selection.AddToHover(other.gameObject);
+                VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.1f, 0.1f);
+
                 selector.OnSelectorTriggerEnter(other);
             }
         }
@@ -87,6 +92,10 @@ namespace VRtist
                 if(collidedObjects.Count == 0) {
                     gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
                 }
+
+                // TODO: guard to ensure enter/exit
+                Selection.RemoveFromHover(other.gameObject);
+
                 selector.OnSelectorTriggerExit(other);
             }
         }
