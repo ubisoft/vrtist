@@ -88,7 +88,7 @@ namespace VRtist
                 else // TODO: voir si il faut pas quand meme faire DoUpdate dans tous les cas.
                 // le probleme de faire les deux vient quand ils reagissent au meme input (ex: Grip dans UI)
                 {
-                    DoUpdate(position, rotation); // call children DoUpdate
+                    DoUpdate(); // call children DoUpdate
                 }
             }
         }
@@ -149,7 +149,7 @@ namespace VRtist
                 parameterCommand = null;
             }
         }
-        protected abstract void DoUpdate(Vector3 position, Quaternion rotation);
+        protected abstract void DoUpdate();
         protected virtual void DoUpdateGui() { }
         protected virtual void ShowTool(bool show) { }
 

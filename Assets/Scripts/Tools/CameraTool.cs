@@ -327,7 +327,7 @@ namespace VRtist
         }
 
 
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdate()
         {
             // Update feedback position and scale
             if (showCameraFeedback)
@@ -353,7 +353,7 @@ namespace VRtist
 
             if (!showCameraFeedback || !feedbackPositioning)
             {
-                base.DoUpdate(position, rotation);
+                base.DoUpdate();
             }
         }
 

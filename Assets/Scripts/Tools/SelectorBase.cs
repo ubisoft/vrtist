@@ -50,6 +50,23 @@ namespace VRtist
         public GameObject selectionVFXPrefab = null;
         protected Dopesheet dopesheet;
 
+        struct ControllerDamping
+        {
+            public ControllerDamping(float time, Vector3 position, Quaternion rotation)
+            {
+                this.time = time;
+                this.position = position;
+                this.rotation = rotation;
+            }
+
+            public float time;
+            public Vector3 position;
+            public Quaternion rotation;
+        }
+        List<ControllerDamping> damping = new List<ControllerDamping>();
+        protected Vector3 rightControllerPosition;
+        protected Quaternion rightControllerRotation;
+
         void Start()
         {
             Init();
@@ -118,7 +135,7 @@ namespace VRtist
             Tooltips.SetTooltipVisibility(displayTooltip, false);
         }
 
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdate()
         {
             if(VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
@@ -138,8 +155,8 @@ namespace VRtist
 
             switch(mode)
             {
-                case SelectorModes.Select: UpdateSelect(position, rotation); break;
-                case SelectorModes.Eraser: UpdateEraser(position, rotation); break;
+                case SelectorModes.Select: UpdateSelect(); break;
+                case SelectorModes.Eraser: UpdateEraser(); break;
             }
         }
 
@@ -167,6 +184,9 @@ namespace VRtist
         protected void InitControllerMatrix()
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
+
+            //initControllerPosition = rightControllerPosition;
+            //initControllerRotation = rightControllerRotation;
             // compute rightMouthpiece local to world matrix with initial controller position/rotation
             //initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one)).inverse;
             initTransformation = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one);
@@ -211,10 +231,10 @@ namespace VRtist
 
             undoGroup = new CommandGroup();
 
+            gripped = true;
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
-            gripped = true;
         }
 
         protected void ManageMoveObjectsUndo()
@@ -335,6 +355,67 @@ namespace VRtist
             dopesheet.UpdateFromController(controller);
         }
 
+        protected bool HasDamping()
+        {
+            if (!gripped)
+                return false;
+            Dictionary<int, GameObject> selection = Selection.selection;
+            if (selection.Count != 1)
+                return false;
+
+            foreach(GameObject gObject in selection.Values)
+            {
+                if (null == gObject.GetComponent<CameraController>())
+                    return false;
+            }
+            return true;
+        }
+
+        private void GetControllerPositionRotation()
+        {
+            Vector3 position;
+            Quaternion rotation;
+            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+
+            if(!HasDamping())
+            {
+                damping.Clear();
+                rightControllerPosition = position;
+                rightControllerRotation = rotation;
+                return;
+            }
+
+            // Compute damping
+            float curretnTime = Time.time;
+            ControllerDamping dampingElement = new ControllerDamping(curretnTime, position, rotation);
+            damping.Add(dampingElement);
+
+            // remove too old values
+            ControllerDamping elem = damping[0];
+            float dampingDuration = GlobalState.cameraDamping / 100f * 0.5f;
+            while (curretnTime - elem.time > dampingDuration)
+            {
+                damping.RemoveAt(0);
+                elem = damping[0];
+            }
+
+            Vector3 positionSum = Vector3.zero;
+            Quaternion rotationSum = Quaternion.identity;
+            rotationSum.w = 0f;
+            float count = (float)damping.Count;
+            float factor = 1f / count;
+            foreach(ControllerDamping dampingElem in damping)
+            {
+                positionSum += factor * dampingElem.position;
+                rotationSum.x += factor * dampingElem.rotation.x;
+                rotationSum.y += factor * dampingElem.rotation.y;
+                rotationSum.z += factor * dampingElem.rotation.z;
+                rotationSum.w += factor * dampingElem.rotation.w;
+            }
+            rightControllerPosition = positionSum;
+            rightControllerRotation = rotationSum.normalized;
+        }
+
         // A ref for snapping controller
         //private Matrix4x4 SnapController(Matrix4x4 controllerMatrix)
         //{
@@ -350,12 +431,13 @@ namespace VRtist
         //    Vector3 eulerAngles = controllerRotation.eulerAngles;
         //    eulerAngles = new Vector3((float)Math.Round(eulerAngles.x / snapXAngle, 0) * snapXAngle, (float)Math.Round(eulerAngles.y / snapYAngle, 0) * snapYAngle, (float)Math.Round(eulerAngles.z / snapZAngle, 0) * snapZAngle);
         //    controllerRotation.eulerAngles = eulerAngles;
-            
+
         //    return world.localToWorldMatrix * Matrix4x4.TRS(controllerTranslate, Quaternion.identity, Vector3.one) * Matrix4x4.TRS(Vector3.zero, controllerRotation, Vector3.one);
         //}
 
-        private void UpdateSelect(Vector3 position, Quaternion rotation)
+        private void UpdateSelect()
         {
+            GetControllerPositionRotation();
             // Move & Duplicate selection
 
             // Duplicate
@@ -386,9 +468,8 @@ namespace VRtist
 
             if(gripped)
             {
-                Vector3 p;
-                Quaternion r;
-                VRInput.GetControllerTransform(VRInput.rightController, out p, out r);
+                Vector3 p = rightControllerPosition;
+                Quaternion r = rightControllerRotation;
 
                 if(!outOfDeadZone && Vector3.Distance(p, initControllerPosition) > deadZoneDistance)
                     outOfDeadZone = true;
@@ -456,7 +537,7 @@ namespace VRtist
 
         public virtual void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed) { }
 
-        private void UpdateEraser(Vector3 position, Quaternion rotation)
+        private void UpdateEraser()
         {
             // Nothing for now
         }

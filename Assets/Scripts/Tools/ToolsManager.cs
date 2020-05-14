@@ -97,14 +97,6 @@ namespace VRtist
             Instance.currentToolRef.SetActive(false);
             Instance.currentToolRef = Instance.Tools[args.toolName];
             Instance.currentToolRef.SetActive(true);
-
-            /*
-            Vector3 position;
-            Quaternion rotation;
-            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
-            Instance.currentToolRef.transform.parent.Find("right_controller").localPosition = position;
-            Instance.currentToolRef.transform.parent.Find("right_controller").localRotation = rotation;
-            */
         }
 
         public static void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)

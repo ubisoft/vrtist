@@ -57,21 +57,16 @@ namespace VRtist
             EndCurrentPaint();
             base.OnDisable();
         }
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdate()
         {
-            // Manage over UI
-            /*
-            if (uiTools.isOverUI())
-            {
-                paintLineRenderer.enabled = false;
-                return;
-            }*/
+            Vector3 position;
+            Quaternion rotation;
+            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
 
             switch (paintTool)
             {
                 case PaintTools.Pencil: UpdateToolPaintPencil(position, rotation, false); break;
                 case PaintTools.FlatPencil: UpdateToolPaintPencil(position, rotation, true); break;
-                //case PaintTools.Eraser: UpdateToolPaintEraser(position, rotation); break;
             }
         }
 

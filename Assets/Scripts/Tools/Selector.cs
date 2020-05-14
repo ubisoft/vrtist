@@ -332,9 +332,8 @@ namespace VRtist
             
                 // compute rotation angle from start controller position to current controller position
                 // in X axis (left/right) local to initial head direction
-                Vector3 controllerPosition;
-                Quaternion controllerRotation;
-                VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
+                Vector3 controllerPosition = rightControllerPosition;
+                Quaternion controllerRotation = rightControllerRotation;
                 controllerPosition = inverseHeadMatrix.MultiplyPoint(controllerPosition);
                 float angle = (controllerPosition.x - initControllerPositionRelativeToHead.x) * 1000f;
 
@@ -609,9 +608,8 @@ namespace VRtist
 
         protected Vector3 FilterControllerDirection()
         {
-            Vector3 controllerPosition;
-            Quaternion controllerRotation;
-            VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
+            Vector3 controllerPosition = rightControllerPosition;
+            Quaternion controllerRotation = rightControllerRotation;
             controllerPosition = rightHandle.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
@@ -620,10 +618,10 @@ namespace VRtist
             return controllerPosition;
         }
 
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdate()
         {
             // Base selection update
-            base.DoUpdate(position, rotation);
+            base.DoUpdate();
 
             // Deform
             if(deformEnabled && activePlane != null)

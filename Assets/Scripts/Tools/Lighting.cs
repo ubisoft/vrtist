@@ -119,17 +119,6 @@ namespace VRtist
             }, OnEndGrip);
         }
 
-        // Update is called once per frame
-        //protected override void DoUpdate(Vector3 position, Quaternion rotation)
-        //{
-        //    VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
-        //    {
-        //        OnStartGrip();
-        //    }, OnEndGrip);
-
-        //    base.DoUpdate(position, rotation);
-        //}
-
         protected override void ShowTool(bool show)
         {
             ActivateMouthpiece(selectorBrush, show);

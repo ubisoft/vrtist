@@ -52,6 +52,9 @@ namespace VRtist
         // Right-Handed
         public static bool rightHanded = true;
 
+        // Camera damping
+        public static float cameraDamping = 50f;
+
         private static GlobalState instance = null;
         private static GlobalState Instance
         {
@@ -194,6 +197,11 @@ namespace VRtist
         public void OnLightsCastShadows(bool value)
         {
             castShadows = value;
+        }
+
+        public void OnCameraDamping(float value)
+        {
+            cameraDamping = value;
         }
     }
 }
