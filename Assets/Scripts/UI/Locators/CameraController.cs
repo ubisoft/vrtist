@@ -11,25 +11,42 @@ namespace VRtist
         public float near = 0.07f;
         public float far = 1000f;
 
-        private LineRenderer frustumRenderer;
+        private LineRenderer frustumRenderer = null;
+
+        private void Awake()
+        {
+            Init();
+        }
 
         protected override void Start()
         {
-            cameraObject = gameObject.GetComponentInChildren<Camera>();
-            GameObject frustum = transform.Find("Frustum").gameObject;
-            frustumRenderer = frustum.GetComponent<LineRenderer>();
-            frustumRenderer.enabled = false;
+            base.Start();
+            Init();
+        }
+
+        private void Init()
+        {
+            if(null == cameraObject) {
+                cameraObject = gameObject.GetComponentInChildren<Camera>();
+            }
+            if(null == frustumRenderer) {
+                GameObject frustum = transform.Find("Frustum").gameObject;
+                frustumRenderer = frustum.GetComponent<LineRenderer>();
+                frustumRenderer.enabled = false;
+            }
         }
 
         void Update()
         {
             if (null == cameraObject)
-                return;
-
-            float scale = GlobalState.worldScale;
-            cameraObject.farClipPlane = far * scale;
-            cameraObject.nearClipPlane = near * scale;
-            cameraObject.focalLength = focal;
+                cameraObject = gameObject.GetComponentInChildren<Camera>();
+            if(null != cameraObject)
+            {
+                float scale = GlobalState.worldScale;
+                cameraObject.farClipPlane = far * scale;
+                cameraObject.nearClipPlane = near * scale;
+                cameraObject.focalLength = focal;
+            }
 
             // Only draw frustum for selected camera
             if(CameraTool.showCameraFrustum && gameObject.layer == LayerMask.NameToLayer("Selection"))

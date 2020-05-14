@@ -15,6 +15,7 @@ namespace VRtist
         public Transform backgroundFeedback;
         public Transform dopesheetHandle = null;
         public Transform cameraPreviewHandle = null;
+        public Transform paletteHandle = null;
         public TextMeshProUGUI tm;
         public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;
@@ -31,10 +32,12 @@ namespace VRtist
         private float cameraFeedbackScale = 1f;
         private float cameraFeedbackScaleFactor = 1.1f;
 
-        private bool showTimeline = false;
+        private bool showDopesheet = false;
+        private bool firstTimeShowDopesheet = true;
         private UICheckbox showDopesheetCheckbox = null;
 
         private bool showCameraPreview = false;
+        private bool firstTimeShowCameraPreview = true;
         private UICheckbox showCameraPreviewCheckbox = null;
         private CameraPreviewWindow cameraPreviewWindow;
 
@@ -225,11 +228,18 @@ namespace VRtist
 
         public void OnCheckShowDopesheet(bool value)
         {
-            showTimeline = value;
+            showDopesheet = value;
             if (dopesheet != null && dopesheetHandle != null)
             {
                 if (value)
                 {
+                    if (firstTimeShowDopesheet)
+                    {
+                        Vector3 offset = new Vector3(0.25f, 0.0f, 0.0f);
+                        dopesheetHandle.transform.position = paletteHandle.TransformPoint(offset);
+                        dopesheetHandle.transform.rotation = paletteHandle.rotation;
+                        firstTimeShowDopesheet = false;
+                    }
                     ToolsUIManager.Instance.OpenWindow(dopesheetHandle.transform, 1.0f);
                 }
                 else
@@ -257,6 +267,13 @@ namespace VRtist
             {
                 if (value)
                 {
+                    if (firstTimeShowCameraPreview)
+                    {
+                        Vector3 offset = new Vector3(0.5f, 0.5f, 0.0f);
+                        cameraPreviewHandle.transform.position = paletteHandle.TransformPoint(offset);
+                        cameraPreviewHandle.transform.rotation = paletteHandle.rotation;
+                        firstTimeShowCameraPreview = false;
+                    }
                     ToolsUIManager.Instance.OpenWindow(cameraPreviewHandle.transform, 1.0f);
                 }
                 else
