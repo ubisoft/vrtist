@@ -74,7 +74,6 @@ namespace VRtist
         protected override void Init()
         {
             base.Init();
-            Selection.OnSelectionChanged += UpdateGridFromSelection;
             InitUIPanel();
         }
 
@@ -83,13 +82,15 @@ namespace VRtist
             base.OnEnable();
             InitUIPanel();
             UpdateGrid();
-            if(null != planesContainer) { planesContainer.SetActive(false); }
+            Selection.OnSelectionChanged += UpdateGridFromSelection;
+            if (null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            if(null != grid) { grid.gameObject.SetActive(false); }
+            Selection.OnSelectionChanged -= UpdateGridFromSelection;
+            if (null != grid) { grid.gameObject.SetActive(false); }
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
