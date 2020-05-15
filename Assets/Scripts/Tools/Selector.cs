@@ -106,20 +106,8 @@ namespace VRtist
                 grid.gameObject.SetActive(showGrid);
                 if (showGrid)
                 {
-                    float absWorldScale = Mathf.Abs(GlobalState.worldScale);
-                        
-                    float newStepSize = snapPrecision * absWorldScale;
-                    if (firstSetStep)
-                    {
-                        previousStepSize = newStepSize;
-                        firstSetStep = false;
-                    }
-                    grid.SetStepSize(newStepSize);
-                    grid.SetOldStepSize(previousStepSize);
-                    previousStepSize = newStepSize;
+                    grid.SetStepSize(snapPrecision);
 
-                    //grid.SetRadius(0.5f);// / absWorldScale);
-                    grid.SetRadius(0.5f * absWorldScale);
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     
                     foreach (GameObject gobj in Selection.selection.Values)
@@ -149,7 +137,8 @@ namespace VRtist
         public void OnChangeSnapGridSize(float value)
         {
             snapPrecision = value / 100.0f; // centimeters-to-meters
-            UpdateGrid();
+            grid.SetStepSize(snapPrecision);
+            grid.Restart();
         }
 
         public void OnMoveOnAll()
