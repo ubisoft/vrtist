@@ -74,7 +74,6 @@ namespace VRtist
         protected override void Init()
         {
             base.Init();
-            Selection.OnSelectionChanged += UpdateGridFromSelection;
             InitUIPanel();
         }
 
@@ -83,13 +82,15 @@ namespace VRtist
             base.OnEnable();
             InitUIPanel();
             UpdateGrid();
-            if(null != planesContainer) { planesContainer.SetActive(false); }
+            Selection.OnSelectionChanged += UpdateGridFromSelection;
+            if (null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            if(null != grid) { grid.gameObject.SetActive(false); }
+            Selection.OnSelectionChanged -= UpdateGridFromSelection;
+            if (null != grid) { grid.gameObject.SetActive(false); }
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
@@ -105,20 +106,8 @@ namespace VRtist
                 grid.gameObject.SetActive(showGrid);
                 if (showGrid)
                 {
-                    float absWorldScale = Mathf.Abs(GlobalState.worldScale);
-                        
-                    float newStepSize = snapPrecision * absWorldScale;
-                    if (firstSetStep)
-                    {
-                        previousStepSize = newStepSize;
-                        firstSetStep = false;
-                    }
-                    grid.SetStepSize(newStepSize);
-                    grid.SetOldStepSize(previousStepSize);
-                    previousStepSize = newStepSize;
+                    grid.SetStepSize(snapPrecision);
 
-                    //grid.SetRadius(0.5f);// / absWorldScale);
-                    grid.SetRadius(0.5f * absWorldScale);
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     
                     foreach (GameObject gobj in Selection.selection.Values)
@@ -148,7 +137,8 @@ namespace VRtist
         public void OnChangeSnapGridSize(float value)
         {
             snapPrecision = value / 100.0f; // centimeters-to-meters
-            UpdateGrid();
+            grid.SetStepSize(snapPrecision);
+            grid.Restart();
         }
 
         public void OnMoveOnAll()
