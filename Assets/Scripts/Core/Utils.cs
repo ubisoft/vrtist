@@ -146,7 +146,7 @@ namespace VRtist
             Material paintMaterial = Resources.Load("Materials/Paint") as Material;
             renderer.material = GameObject.Instantiate<Material>(paintMaterial);
             renderer.material.SetColor("_BaseColor", color);
-            renderer.material.name = "Paint_" + color.ToString();
+            renderer.material.name = "Mat_" + paint.name;// "Paint_" + color.ToString();
 
             paint.AddComponent<MeshCollider>();
 

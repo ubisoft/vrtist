@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-//using UnityEngine.UI.Extensions.ColorPicker;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -17,7 +14,6 @@ namespace VRtist
 
         enum LightTools { None = 0, Sun, Spot, Point }
 
-        private Transform picker;
         private Transform intensitySlider;
         private Transform rangeSlider;
         //private Transform innerAngleSlider;
@@ -27,11 +23,8 @@ namespace VRtist
 
         private GameObject UIObject = null;
 
-        private UIColorPicker colorPicker = null;
-
         void DisableUI()
         {
-            picker.gameObject.SetActive(false);
             intensitySlider.gameObject.SetActive(false);
             rangeSlider.gameObject.SetActive(false);
             //innerAngleSlider.gameObject.SetActive(false);
@@ -50,8 +43,6 @@ namespace VRtist
         {
             base.Awake();
 
-            picker = panel.Find("ColorPicker");
-            colorPicker = picker.GetComponent<UIColorPicker>();
             intensitySlider = panel.Find("Intensity");
             rangeSlider = panel.Find("Range");
             //innerAngleSlider = panel.Find("InnerAngle");
@@ -65,6 +56,13 @@ namespace VRtist
             enableToggleTool = false;
             Selection.OnSelectionChanged += OnSelectionChanged;
             CreateTooltips();
+        }
+
+        private void Start()
+        {
+            GlobalState.colorChangedEvent.AddListener(OnLightColor);
+            GlobalState.colorClickedEvent.AddListener(OnColorPickerPressed);
+            GlobalState.colorReleasedEvent.AddListener((Color color) => OnReleased());
         }
 
         public override void OnUIObjectEnter(int gohash)
@@ -168,7 +166,7 @@ namespace VRtist
                 if (null == lightController)
                     continue;
 
-                colorPicker.CurrentColor = lightController.color;
+                GlobalState.CurrentColor = lightController.color;
 
                 SetSliderValues(intensitySlider, lightController.intensity, lightController.minIntensity, lightController.maxIntensity);
                 SetSliderValues(rangeSlider, lightController.range, lightController.minRange, lightController.maxRange);
@@ -225,7 +223,6 @@ namespace VRtist
                 return;
             }
 
-            picker.gameObject.SetActive(true);
             intensitySlider.gameObject.SetActive(true);
             rangeSlider.gameObject.SetActive(sunCount == 0);
 
@@ -240,13 +237,14 @@ namespace VRtist
 
         public void SendLightParams(GameObject light)
         {
-            LightInfo lightInfo = new LightInfo();
-            lightInfo.transform = light.transform;
+            LightInfo lightInfo = new LightInfo { transform = light.transform };
             CommandManager.SendEvent(MessageType.Light, lightInfo);
         }
 
         public void OnLightColor(Color color)
         {
+            if(!gameObject.activeSelf) { return; }
+
             // update selection light color from UI
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
@@ -336,6 +334,7 @@ namespace VRtist
 
         public void OnColorPickerPressed()
         {
+            if(!gameObject.activeSelf) { return; }
             OnColorPressed("Light Color", "/LightController/color");
         }
 

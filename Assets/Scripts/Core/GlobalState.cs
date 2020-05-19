@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -8,6 +9,7 @@ namespace VRtist
     {
         [Header("Parameters")]
         public GameObject leftController = null;
+        public GameObject colorPanel = null;
 
         // FPS
         public static bool showFps = false;
@@ -52,6 +54,22 @@ namespace VRtist
         // Right-Handed
         public static bool rightHanded = true;
 
+        // Color
+        private static Color currentColor = Color.blue;
+        public static Color CurrentColor {
+            get { return currentColor; }
+            set {
+                Instance.colorPicker.CurrentColor = value;
+                Instance.OnChangeColor(value);
+                colorChangedEvent.Invoke(value);
+            }
+        }
+        private UIColorPicker colorPicker;
+        public static ColorChangedEvent colorChangedEvent;   // realtime change
+        public static ColorChangedEvent colorReleasedEvent;  // on release change
+        public static UnityEvent colorClickedEvent;          // on click
+
+        // Singleton
         private static GlobalState instance = null;
         private static GlobalState Instance
         {
@@ -67,7 +85,16 @@ namespace VRtist
 
         void Awake()
         {
-            _ = Instance;
+            instance = Instance;
+
+            // Color
+            instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);
+            instance.colorPicker.CurrentColor = currentColor;
+            colorChangedEvent = colorPicker.onColorChangedEvent;
+            instance.colorPicker.onColorChangedEvent.AddListener(OnChangeColor);
+            colorReleasedEvent = new ColorChangedEvent();
+            instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
+            colorClickedEvent = colorPicker.onClickEvent;
         }
 
         private void Start() {
@@ -194,6 +221,16 @@ namespace VRtist
         public void OnLightsCastShadows(bool value)
         {
             castShadows = value;
+        }
+
+        public void OnChangeColor(Color color)
+        {
+            currentColor = color;
+        }
+
+        public void OnReleaseColor()
+        {
+            colorReleasedEvent.Invoke(currentColor);
         }
     }
 }

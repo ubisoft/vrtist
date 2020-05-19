@@ -92,7 +92,6 @@ namespace VRtist
             new Keyframe(1, 1, 0, 0)
         );
 
-
         private static Dictionary<string, string> tabTool = new Dictionary<string, string>();
 
         private bool isPalettePinned = false;
@@ -105,6 +104,8 @@ namespace VRtist
 
         private Vector3 paletteOffsetPosition = new Vector3(-0.02f, 0.05f, 0.05f);
         private Quaternion paletteOffsetRotation = Quaternion.Euler(30, 0, 0);
+
+        private GameObject colorPanel = null;
 
         // Map of the 3d object widgets. Used for passing messages by int instead of GameObject. Key is a Hash.
         private Dictionary<int, GameObject> ui3DObjects = new Dictionary<int, GameObject>();
@@ -134,6 +135,8 @@ namespace VRtist
             ChangeTool(firstToolName);
 
             paletteRoot.transform.localScale = Vector3.zero;
+
+            colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
         }
 
         // Show/Hide palette
@@ -179,6 +182,11 @@ namespace VRtist
         {
             showTools = doShowTools;
             ShowCurrentTool(showTools);
+        }
+
+        public void ShowColorPanel(bool visible)
+        {
+            colorPanel.SetActive(visible);
         }
 
         public void OnForcePaletteOpened(bool forceOpen)
