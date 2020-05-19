@@ -74,6 +74,7 @@ namespace VRtist
         Transform,
         Mesh,
         Material,
+        AssignMaterial,
         Frame,
         Play,
         Pause
@@ -969,6 +970,35 @@ namespace VRtist
             currentMaterial = material;
         }
 
+        public static void BuildAssignMaterial(byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            string materialName = GetString(data, ref currentIndex);
+
+            Material material = materials[materialName];
+            Node prefabNode = SyncData.nodes[objectName];
+            MeshRenderer[] renderers = prefabNode.prefab.GetComponentsInChildren<MeshRenderer>();
+            if(renderers.Length > 0)
+            {
+                foreach(MeshRenderer renderer in renderers)
+                {
+                    renderer.material = material;
+                }
+                foreach(Tuple<GameObject, string> item in prefabNode.instances)
+                {
+                    MeshRenderer[] rends = item.Item1.GetComponentsInChildren<MeshRenderer>();
+                    if(rends.Length > 0)
+                    {
+                        foreach(MeshRenderer rend in rends)
+                        {
+                            rend.material = material;
+                        }
+                    }
+                }
+            }
+        }
+
         public static Transform FindPath(Transform root, byte[] data, int startIndex, out int bufferIndex)
         {
             int pathLength = (int)BitConverter.ToUInt32(data, startIndex);
@@ -1094,7 +1124,7 @@ namespace VRtist
             byte[] baseColorTexture = StringToBytes("");
             byte[] metallic = FloatToBytes(material.GetFloat("_Metallic"));
             byte[] metallicTexture = StringToBytes("");
-            byte[] roughness = FloatToBytes(1f - material.GetFloat("_Smoothness"));
+            byte[] roughness = FloatToBytes(material.HasProperty("_Smoothness") ? 1f - material.GetFloat("_Smoothness") : material.GetFloat("_Roughness"));
             byte[] roughnessTexture = StringToBytes("");
             byte[] normalMapTexture = StringToBytes("");
             byte[] emissionColor = ColorToBytes(Color.black);
@@ -1102,6 +1132,15 @@ namespace VRtist
 
             List<byte[]> buffers = new List<byte[]> { name, opacity, opacityMapTexture, baseColor, baseColorTexture, metallic, metallicTexture, roughness, roughnessTexture, normalMapTexture, emissionColor, emissionColorTexture };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Material);
+            return command;
+        }
+
+        public static NetCommand BuildAssignMaterialCommand(AssignMaterialInfo info)
+        {
+            byte[] objectName = StringToBytes(info.objectName);
+            byte[] materialName = StringToBytes(info.materialName);
+            List<byte[]> buffers = new List<byte[]> { objectName, materialName };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AssignMaterial);
             return command;
         }
 
@@ -1557,8 +1596,11 @@ namespace VRtist
         public static MeshCollider GetOrCreateMeshCollider(GameObject obj)
         {
             MeshCollider meshCollider = obj.GetComponent<MeshCollider>();
-            if (meshCollider == null)
+            if(meshCollider == null)
+            {
                 meshCollider = obj.AddComponent<MeshCollider>();
+                meshCollider.convex = true;
+            }
             return meshCollider;
         }
 
@@ -2524,6 +2566,13 @@ namespace VRtist
             NetCommand command = NetGeometry.BuildMaterialCommand(material);
             AddCommand(command);
         }
+
+        public void SendAssignMaterial(AssignMaterialInfo info)
+        {
+            NetCommand command = NetGeometry.BuildAssignMaterialCommand(info);
+            AddCommand(command);
+        }
+
         public void SendCamera(CameraInfo cameraInfo)
         {
             NetCommand command = NetGeometry.BuildCameraCommand(root, cameraInfo);
@@ -2695,6 +2744,9 @@ namespace VRtist
                         case MessageType.Material:
                             NetGeometry.BuildMaterial(command.data);
                             break;
+                        case MessageType.AssignMaterial:
+                            NetGeometry.BuildAssignMaterial(command.data);
+                            break;
                         case MessageType.Camera:
                             NetGeometry.BuildCamera(prefab, command.data);
                             break;
@@ -2799,6 +2851,8 @@ namespace VRtist
                     SendDelete(data as DeleteInfo); break;
                 case MessageType.Material:
                     SendMaterial(data as Material); break;
+                case MessageType.AssignMaterial:
+                    SendAssignMaterial(data as AssignMaterialInfo); break;
                 case MessageType.Camera:
                     SendCamera(data as CameraInfo);
                     SendTransform((data as CameraInfo).transform);

@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.XR;
-//using UnityEngine.UI.Extensions.ColorPicker;
 
 namespace VRtist
 {
@@ -11,6 +9,7 @@ namespace VRtist
         [SerializeField] private Transform paintContainer;
         [SerializeField] private Transform paintBrush;
         [SerializeField] private Material paintMaterial;
+
         // Paint tool
         Vector3 paintPrevPosition;
         GameObject currentPaintLine;
@@ -19,7 +18,6 @@ namespace VRtist
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
         int paintId = 0;
-        Color paintColor = Color.blue;
         bool paintOnSurface = false;
 
         FreeDraw freeDraw;
@@ -37,19 +35,14 @@ namespace VRtist
             updateButtonsColor();
 
             brushSize = paintBrush.localScale.x;
-            OnPaintColor(paintColor);
+            OnPaintColor(GlobalState.CurrentColor);
             
             // Create tooltips
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Brush Size");
-        }
 
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            UIColorPicker colorPicker = panel.gameObject.GetComponentInChildren<UIColorPicker>(true);
-            colorPicker.CurrentColor = paintColor;
+            GlobalState.colorChangedEvent.AddListener(OnPaintColor);
         }
 
         protected override void OnDisable()
@@ -62,7 +55,6 @@ namespace VRtist
             Vector3 position;
             Quaternion rotation;
             VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
-
             switch (paintTool)
             {
                 case PaintTools.Pencil: UpdateToolPaintPencil(position, rotation, false); break;
@@ -116,7 +108,7 @@ namespace VRtist
             {
                 TranslatePaintToItsCenter();
                 PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
-                paintParameters.color = paintColor;
+                paintParameters.color = GlobalState.CurrentColor;
                 paintParameters.controlPoints = freeDraw.controlPoints;
                 paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
                 new CommandAddGameObject(currentPaintLine).Submit();
@@ -131,7 +123,7 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
             {
                 // Create an empty game object with a mesh
-                currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, paintColor));
+                currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
                 ++paintId;
                 paintPrevPosition = Vector3.zero;
                 freeDraw = new FreeDraw();
@@ -213,7 +205,6 @@ namespace VRtist
 
         public void OnPaintColor(Color color)
         {
-            paintColor = color;
             paintBrush.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", color);
         }
 
@@ -266,7 +257,7 @@ namespace VRtist
             //
             // START
             //
-            currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, paintColor));
+            currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
             ++paintId;
             paintPrevPosition = Vector3.zero;
             freeDraw = new FreeDraw();
@@ -298,10 +289,6 @@ namespace VRtist
             mesh.normals = freeDraw.normals;
             mesh.triangles = freeDraw.triangles;
 
-
-
-
-
             //
             // END
             //
@@ -309,7 +296,7 @@ namespace VRtist
             {
                 MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
                 PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
-                paintParameters.color = paintColor;
+                paintParameters.color = GlobalState.CurrentColor;
                 paintParameters.controlPoints = freeDraw.controlPoints;
                 paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
                 new CommandAddGameObject(currentPaintLine).Submit();

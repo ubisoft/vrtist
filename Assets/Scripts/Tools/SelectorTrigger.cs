@@ -119,19 +119,18 @@ namespace VRtist
                  () => { Selection.SetGrippedObject(null); });
 
             // Mono-selection using the grip button
-            if (triggerState)  // Multi-selection using the trigger button
+            if (triggerState && null != gObject)  // Multi-selection using the trigger button
             {
+                selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
                     selector.AddSiblingsToSelection(gObject);
                     collidedObjects.Clear();
-                    selectionHasChanged = true;
                 }
                 else
                 {
                     selector.RemoveSiblingsFromSelection(gObject);
                     collidedObjects.Clear();
-                    selectionHasChanged = true;
                 }
             }
         }

@@ -46,16 +46,16 @@ namespace VRtist
                 cameraObject.farClipPlane = far * scale;
                 cameraObject.nearClipPlane = near * scale;
                 cameraObject.focalLength = focal;
-            }
 
-            // Only draw frustum for selected camera
-            if(CameraTool.showCameraFrustum && gameObject.layer == LayerMask.NameToLayer("Selection"))
-            {
-                DrawFrustum();
-            }
-            else
-            {
-                frustumRenderer.enabled = false;
+                // Only draw frustum for selected camera
+                if(CameraTool.showCameraFrustum && (gameObject.layer == LayerMask.NameToLayer("Selection") || gameObject.layer == LayerMask.NameToLayer("Hover")))
+                {
+                    DrawFrustum();
+                }
+                else
+                {
+                    frustumRenderer.enabled = false;
+                }
             }
         }
 

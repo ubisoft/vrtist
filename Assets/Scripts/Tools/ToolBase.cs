@@ -143,6 +143,7 @@ namespace VRtist
         }
         public void OnReleased()
         {
+            if(!gameObject.activeSelf) { return; }
             if (null != parameterCommand)
             {
                 parameterCommand.Submit();
