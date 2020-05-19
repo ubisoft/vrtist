@@ -567,12 +567,18 @@ namespace VRtist
 
         public bool AddToSelection(GameObject gObject)
         {
-            if(gObject.GetComponent<UIHandle>())
+            // Selection is EXCLUSIVE between windows and objects.
+            if (gObject.GetComponent<UIHandle>()) // if we select a UI handle, deselect all other objects first.
             {
-                // if we select a UI handle, deselect all other objects first.
                 ClearSelection();
+                return Selection.AddToSelection(gObject);
             }
-            return Selection.AddToSelection(gObject);
+            else if (!Selection.IsHandleSelected()) // Dont select things if we have a window selected.
+            {
+                return Selection.AddToSelection(gObject);
+            }
+
+            return false;
         }
 
         public void AddSiblingsToSelection(GameObject gObject, bool haptic = true)
