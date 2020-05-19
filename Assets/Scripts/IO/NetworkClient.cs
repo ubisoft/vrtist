@@ -1596,8 +1596,11 @@ namespace VRtist
         public static MeshCollider GetOrCreateMeshCollider(GameObject obj)
         {
             MeshCollider meshCollider = obj.GetComponent<MeshCollider>();
-            if (meshCollider == null)
+            if(meshCollider == null)
+            {
                 meshCollider = obj.AddComponent<MeshCollider>();
+                meshCollider.convex = true;
+            }
             return meshCollider;
         }
 
