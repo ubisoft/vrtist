@@ -123,13 +123,13 @@ namespace VRtist
             {
                 if (!primaryButtonState)
                 {
-                    selector.AddSiblingsToSelection(gObject);
+                    if(null != gObject) { selector.AddSiblingsToSelection(gObject); }
                     collidedObjects.Clear();
                     selectionHasChanged = true;
                 }
                 else
                 {
-                    selector.RemoveSiblingsFromSelection(gObject);
+                    if(null != gObject) { selector.RemoveSiblingsFromSelection(gObject); }
                     collidedObjects.Clear();
                     selectionHasChanged = true;
                 }

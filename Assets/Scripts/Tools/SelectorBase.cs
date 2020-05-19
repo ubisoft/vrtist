@@ -583,6 +583,8 @@ namespace VRtist
 
         public void AddSiblingsToSelection(GameObject gObject, bool haptic = true)
         {
+            if(null == gObject) { return; }
+
             List<GameObject> objects = GetGroupSiblings(gObject);
             List<GameObject> objectsAddedToSelection = new List<GameObject>();
             foreach(GameObject gobj in objects)

@@ -59,7 +59,7 @@ namespace VRtist
             uiInitialized = false;
         }
 
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdate()
         {
             if(!uiInitialized)
             {
@@ -128,7 +128,7 @@ namespace VRtist
             else { roughnessSlider.Value = renderer.material.GetFloat("_Roughness"); }
             metallicSlider.Value = renderer.material.GetFloat("_Metallic");
             UpdatePreview();
-            VRInput.SendHaptic(VRInput.rightController, 0.1f, 0.2f)
+            VRInput.SendHaptic(VRInput.rightController, 0.1f, 0.2f);
         }
 
         private void SelectObjects(List<GameObject> gobjects)
