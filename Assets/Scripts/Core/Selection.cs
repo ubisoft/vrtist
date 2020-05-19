@@ -20,6 +20,10 @@ namespace VRtist
 
         public static Material selectionMaterial;
 
+        private static GameObject grippedObject = null;
+        private static GameObject hoveredObject = null;
+        private static GameObject outlinedObject = null;
+
         public static void TriggerSelectionChanged()
         {
             SelectionChangedArgs args = new SelectionChangedArgs();
@@ -51,14 +55,91 @@ namespace VRtist
             }
         }
 
+        static void SetCameraEnabled(GameObject obj, bool value)
+        {
+            Camera cam = obj.GetComponentInChildren<Camera>(true);
+            if (cam)
+                cam.gameObject.SetActive(value);
+        }
+
+        static void UpdateCurrentObjectOutline()
+        {
+            if(outlinedObject)
+            {
+                RemoveFromHover(outlinedObject);
+                outlinedObject = null;
+            }
+
+            if(grippedObject)
+            {
+                outlinedObject = grippedObject;
+            }
+            else
+            {
+                if (hoveredObject)
+                {
+                    outlinedObject = hoveredObject;
+                    VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.1f, 0.1f);
+                }
+            }
+
+            if (outlinedObject)
+                AddToHover(outlinedObject);
+        }
+
+        public static GameObject GetHoveredObject()
+        {
+            return hoveredObject;
+        }
+
+        public static void SetHoveredObject(GameObject obj)
+        {
+            hoveredObject = obj;
+            UpdateCurrentObjectOutline();
+        }
+
+        public static GameObject GetGrippedObject()
+        {
+            return grippedObject;
+        }
+
+        public static void SetGrippedObject(GameObject obj)
+        {
+            if(grippedObject)
+                SetCameraEnabled(grippedObject, false);
+            grippedObject = obj;
+            if (grippedObject)
+                SetCameraEnabled(obj, true);
+            UpdateCurrentObjectOutline();
+            TriggerSelectionChanged();
+        }
+
+        public static List<GameObject> GetObjects()
+        {
+            List<GameObject> gameObjects = new List<GameObject>();
+            if (grippedObject && !IsSelected(grippedObject))
+            {
+                gameObjects.Add(grippedObject);
+            }
+            else
+            {
+                foreach (GameObject obj in selection.Values)
+                    gameObjects.Add(obj);
+            }
+            return gameObjects;
+        }
+
+
         public static bool IsHandleSelected()
         {
             bool handleSelected = false;
-            if (selection.Count == 1)
+            List<GameObject> objects = GetObjects();
+
+            if (objects.Count == 1)
             {
-                foreach (KeyValuePair<int, GameObject> data in selection)
+                foreach (GameObject obj in objects)
                 {
-                    if (data.Value.GetComponent<UIHandle>())
+                    if (obj.GetComponent<UIHandle>())
                         handleSelected = true;
                 }
             }
@@ -97,14 +178,15 @@ namespace VRtist
             if (selection.ContainsKey(gObject.GetInstanceID()))
                 return false;
 
+            if (gObject.GetComponent<UIHandle>())
+                return false;
+
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
-            Camera cam = gObject.GetComponentInChildren<Camera>(true);
-            if (cam)
-                cam.gameObject.SetActive(true);
+            SetCameraEnabled(gObject, true);
 
             SetRecursiveLayer(gObject, "Selection");
 
@@ -125,9 +207,7 @@ namespace VRtist
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
 
-            Camera cam = gObject.GetComponentInChildren<Camera>(true);
-            if (cam)
-                cam.gameObject.SetActive(false);
+            SetCameraEnabled(gObject, false);
 
             selection.Remove(gObject.GetInstanceID());
 

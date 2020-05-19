@@ -104,6 +104,7 @@ namespace VRtist
                 ClearSelection();
                 AddToSelection(instance);
                 undoGroup.Submit();
+                selectorTrigger.SetLastCollidedObject(instance);
             }
         }
 
@@ -183,17 +184,16 @@ namespace VRtist
 
             ClearListeners();
 
-            Dictionary<int, GameObject> selectedLights = new Dictionary<int, GameObject>();
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            List<GameObject> selectedLights = new List<GameObject>();
+            foreach (GameObject gobject in Selection.GetObjects())
             {
-                GameObject gobject = data.Value;
                 LightController lightController = gobject.GetComponent<LightController>();
                 if (null == lightController)
                     continue;
 
                 AddListener(lightController);
 
-                selectedLights[data.Key] = data.Value;
+                selectedLights.Add(gobject);
                 switch(lightController.lightType)
                 {
                     case LightType.Directional:

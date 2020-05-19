@@ -285,9 +285,8 @@ namespace VRtist
 
         private List<Camera> SelectedCameras()
         {
-            var selection = Selection.selection.Values;
             List<Camera> selectedCameras = new List<Camera>();
-            foreach (var selectedItem in selection)
+            foreach (var selectedItem in Selection.GetObjects())
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
@@ -299,9 +298,8 @@ namespace VRtist
 
         private List<GameObject> SelectedCameraObjects()
         {
-            var selection = Selection.selection.Values;
             List<GameObject> selectedCameras = new List<GameObject>();
-            foreach (var selectedItem in selection)
+            foreach (var selectedItem in Selection.GetObjects())
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();               
                 if (!cam)
@@ -326,6 +324,7 @@ namespace VRtist
                         ClearSelection();
                         AddToSelection(newCamera);
                         undoGroup.Submit();
+                        selectorTrigger.SetLastCollidedObject(newCamera);
                     }
                 }
                 OnStartGrip();
@@ -457,9 +456,8 @@ namespace VRtist
         {
             ClearListeners();
 
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.GetObjects())
             {
-                GameObject gobject = data.Value;
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;

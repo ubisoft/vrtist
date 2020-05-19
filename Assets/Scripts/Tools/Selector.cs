@@ -44,7 +44,6 @@ namespace VRtist
         public GameObject planesContainer;
         [CentimeterFloat] public float cameraSpaceGap = 0.01f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
-        public SelectorTrigger selectorTrigger;
         public UICheckbox uniformScaleCheckbox = null;
         public bool uniformScale = false;
 
@@ -94,12 +93,10 @@ namespace VRtist
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
-        float previousStepSize = 1.0f;
-        bool firstSetStep = true;
-
         protected void UpdateGrid()
         {
-            int numSelected = Selection.selection.Count;
+            List<GameObject> objects = Selection.GetObjects();
+            int numSelected = objects.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
             if (grid != null)
             {
@@ -110,7 +107,7 @@ namespace VRtist
 
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     
-                    foreach (GameObject gobj in Selection.selection.Values)
+                    foreach (GameObject gobj in objects)
                     {
                         // Snap VFX position in (world object) local space.
                         Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
@@ -261,7 +258,7 @@ namespace VRtist
         }
 
         protected override void OnStartGrip()
-        {
+        {            
             base.OnStartGrip();
 
             // Get head position
