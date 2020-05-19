@@ -57,35 +57,11 @@ public class GridVFX : MonoBehaviour
         }
     }
 
-    public void SetRadius(float r)
-    {
-        if (vfx != null)
-        {
-            vfx.SetFloat(radiusID, r);
-        }
-    }
-
     public void SetStepSize(float s)
     {
         if (vfx != null)
         {
             vfx.SetFloat(stepID, s);
-        }
-    }
-
-    public void SetOldStepSize(float s)
-    {
-        if (vfx != null)
-        {
-            vfx.SetFloat(oldStepID, s);
-        }
-    }
-
-    public void SetPointSize(float s)
-    {
-        if (vfx != null)
-        {
-            vfx.SetFloat(pointSizeID, s);
         }
     }
 

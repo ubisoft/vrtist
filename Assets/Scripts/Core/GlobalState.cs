@@ -69,6 +69,9 @@ namespace VRtist
         public static ColorChangedEvent colorReleasedEvent;  // on release change
         public static UnityEvent colorClickedEvent;          // on click
 
+        // Camera damping
+        public static float cameraDamping = 50f;
+
         // Singleton
         private static GlobalState instance = null;
         private static GlobalState Instance
@@ -223,6 +226,7 @@ namespace VRtist
             castShadows = value;
         }
 
+<<<<<<< HEAD
         public void OnChangeColor(Color color)
         {
             currentColor = color;
@@ -231,6 +235,11 @@ namespace VRtist
         public void OnReleaseColor()
         {
             colorReleasedEvent.Invoke(currentColor);
+=======
+        public void OnCameraDamping(float value)
+        {
+            cameraDamping = value;
+>>>>>>> fc83c98e912317f32dfc9c5597fd3b4944e757de
         }
     }
 }

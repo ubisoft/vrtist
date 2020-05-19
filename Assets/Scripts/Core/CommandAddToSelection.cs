@@ -8,6 +8,12 @@ namespace VRtist
     {
         List<GameObject> objects = new List<GameObject>();
 
+        public CommandAddToSelection(GameObject selectedObject)
+        {
+            objects = new List<GameObject>();
+            objects.Add(selectedObject);
+        }
+
         public CommandAddToSelection(List<GameObject> selectedObjects)
         {
             objects = selectedObjects;

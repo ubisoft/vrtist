@@ -40,9 +40,8 @@ namespace VRtist
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
             // updates the panel from selection
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.GetObjects())
             {
-                GameObject gobject = data.Value;
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;

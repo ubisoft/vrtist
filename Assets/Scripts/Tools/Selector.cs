@@ -44,7 +44,6 @@ namespace VRtist
         public GameObject planesContainer;
         [CentimeterFloat] public float cameraSpaceGap = 0.01f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
-        public SelectorTrigger selectorTrigger;
         public UICheckbox uniformScaleCheckbox = null;
         public bool uniformScale = false;
 
@@ -74,7 +73,6 @@ namespace VRtist
         protected override void Init()
         {
             base.Init();
-            Selection.OnSelectionChanged += UpdateGridFromSelection;
             InitUIPanel();
         }
 
@@ -83,45 +81,33 @@ namespace VRtist
             base.OnEnable();
             InitUIPanel();
             UpdateGrid();
-            if(null != planesContainer) { planesContainer.SetActive(false); }
+            Selection.OnSelectionChanged += UpdateGridFromSelection;
+            if (null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
-            if(null != grid) { grid.gameObject.SetActive(false); }
+            Selection.OnSelectionChanged -= UpdateGridFromSelection;
+            if (null != grid) { grid.gameObject.SetActive(false); }
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
-        float previousStepSize = 1.0f;
-        bool firstSetStep = true;
-
         protected void UpdateGrid()
         {
-            int numSelected = Selection.selection.Count;
+            List<GameObject> objects = Selection.GetObjects();
+            int numSelected = objects.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
             if (grid != null)
             {
                 grid.gameObject.SetActive(showGrid);
                 if (showGrid)
                 {
-                    float absWorldScale = Mathf.Abs(GlobalState.worldScale);
-                        
-                    float newStepSize = snapPrecision * absWorldScale;
-                    if (firstSetStep)
-                    {
-                        previousStepSize = newStepSize;
-                        firstSetStep = false;
-                    }
-                    grid.SetStepSize(newStepSize);
-                    grid.SetOldStepSize(previousStepSize);
-                    previousStepSize = newStepSize;
+                    grid.SetStepSize(snapPrecision);
 
-                    //grid.SetRadius(0.5f);// / absWorldScale);
-                    grid.SetRadius(0.5f * absWorldScale);
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
                     
-                    foreach (GameObject gobj in Selection.selection.Values)
+                    foreach (GameObject gobj in objects)
                     {
                         // Snap VFX position in (world object) local space.
                         Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
@@ -148,7 +134,8 @@ namespace VRtist
         public void OnChangeSnapGridSize(float value)
         {
             snapPrecision = value / 100.0f; // centimeters-to-meters
-            UpdateGrid();
+            grid.SetStepSize(snapPrecision);
+            grid.Restart();
         }
 
         public void OnMoveOnAll()
@@ -271,7 +258,7 @@ namespace VRtist
         }
 
         protected override void OnStartGrip()
-        {
+        {            
             base.OnStartGrip();
 
             // Get head position
@@ -332,9 +319,8 @@ namespace VRtist
             
                 // compute rotation angle from start controller position to current controller position
                 // in X axis (left/right) local to initial head direction
-                Vector3 controllerPosition;
-                Quaternion controllerRotation;
-                VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
+                Vector3 controllerPosition = rightControllerPosition;
+                Quaternion controllerRotation = rightControllerRotation;
                 controllerPosition = inverseHeadMatrix.MultiplyPoint(controllerPosition);
                 float angle = (controllerPosition.x - initControllerPositionRelativeToHead.x) * 1000f;
 
@@ -609,9 +595,8 @@ namespace VRtist
 
         protected Vector3 FilterControllerDirection()
         {
-            Vector3 controllerPosition;
-            Quaternion controllerRotation;
-            VRInput.GetControllerTransform(VRInput.rightController, out controllerPosition, out controllerRotation);
+            Vector3 controllerPosition = rightControllerPosition;
+            Quaternion controllerRotation = rightControllerRotation;
             controllerPosition = rightHandle.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
@@ -620,10 +605,10 @@ namespace VRtist
             return controllerPosition;
         }
 
-        protected override void DoUpdate(Vector3 position, Quaternion rotation)
+        protected override void DoUpdate()
         {
             // Base selection update
-            base.DoUpdate(position, rotation);
+            base.DoUpdate();
 
             // Deform
             if(deformEnabled && activePlane != null)

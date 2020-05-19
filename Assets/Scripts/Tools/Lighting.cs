@@ -102,6 +102,7 @@ namespace VRtist
                 ClearSelection();
                 AddToSelection(instance);
                 undoGroup.Submit();
+                selectorTrigger.SetLastCollidedObject(instance);
             }
         }
 
@@ -116,17 +117,6 @@ namespace VRtist
                 OnStartGrip();
             }, OnEndGrip);
         }
-
-        // Update is called once per frame
-        //protected override void DoUpdate(Vector3 position, Quaternion rotation)
-        //{
-        //    VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
-        //    {
-        //        OnStartGrip();
-        //    }, OnEndGrip);
-
-        //    base.DoUpdate(position, rotation);
-        //}
 
         protected override void ShowTool(bool show)
         {
@@ -192,17 +182,16 @@ namespace VRtist
 
             ClearListeners();
 
-            Dictionary<int, GameObject> selectedLights = new Dictionary<int, GameObject>();
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            List<GameObject> selectedLights = new List<GameObject>();
+            foreach (GameObject gobject in Selection.GetObjects())
             {
-                GameObject gobject = data.Value;
                 LightController lightController = gobject.GetComponent<LightController>();
                 if (null == lightController)
                     continue;
 
                 AddListener(lightController);
 
-                selectedLights[data.Key] = data.Value;
+                selectedLights.Add(gobject);
                 switch(lightController.lightType)
                 {
                     case LightType.Directional:

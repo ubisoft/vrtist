@@ -100,6 +100,7 @@ namespace VRtist
 
                     ClearSelection();
                     AddToSelection(newObject);
+                    selectorTrigger.SetLastCollidedObject(newObject);
                 }
                 OnStartGrip();
             }, OnEndGrip);
