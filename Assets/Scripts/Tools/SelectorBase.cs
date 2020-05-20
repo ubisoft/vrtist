@@ -79,10 +79,13 @@ namespace VRtist
         {
             base.OnEnable();
             OnSelectMode();
+            Selection.OnSelectionChanged += OnSelectionChanged;
+
         }
 
         protected override void OnDisable()
         {
+            Selection.OnSelectionChanged -= OnSelectionChanged;
             if (gripped)
                 OnEndGrip();
             base.OnDisable();
@@ -113,7 +116,6 @@ namespace VRtist
             updateButtonsColor();
 
             Selection.selectionMaterial = selectionMaterial;
-            Selection.OnSelectionChanged += OnSelectionChanged;
 
             if(null == selectionVFXPrefab)
             {
@@ -235,7 +237,7 @@ namespace VRtist
                 return;
             }
 
-            Selection.SetGrippedObject(selectorTrigger.GetLastCollidedObject());
+            Selection.SetGrippedObject(Selection.GetHoveredObject());
 
             undoGroup = new CommandGroup();
 
@@ -255,7 +257,7 @@ namespace VRtist
             List<Quaternion> endRotations = new List<Quaternion>();
             List<Vector3> endScales = new List<Vector3>();
 
-            foreach (GameObject obj in Selection.GetObjects())
+            foreach (GameObject obj in initPositions.Keys)
             {
                 if(initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
                     continue;
@@ -346,10 +348,8 @@ namespace VRtist
             return null;
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            InitControllerMatrix();
-            InitTransforms();
             outOfDeadZone = false;
 
             int numSelected = Selection.selection.Count;
@@ -583,8 +583,6 @@ namespace VRtist
 
         public void AddSiblingsToSelection(GameObject gObject, bool haptic = true)
         {
-            if(null == gObject) { return; }
-
             List<GameObject> objects = GetGroupSiblings(gObject);
             List<GameObject> objectsAddedToSelection = new List<GameObject>();
             foreach(GameObject gobj in objects)
