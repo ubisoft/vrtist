@@ -12,7 +12,7 @@ toto:
 tata:
   stage: test_CI_CD
   script:
-    - echo "${CI_COMMIT_SHORT_SHA}"
+    - echo ${CI_COMMIT_SHORT_SHA}
     - exit 1
   tags:
     - linux
