@@ -106,26 +106,33 @@ namespace VRtist
                 Vector3 worldEnd = leftHandle.TransformPoint(0, 0, 3);
                 Vector3 worldDirection = worldEnd - worldStart;
                 Ray r = new Ray(worldStart, worldDirection);
-                int layersMask = LayerMask.GetMask(new string[] { "Default", "Selection" });
+                int layersMask = LayerMask.GetMask(new string[] { "Default", "Selection", "Hover" });
                 if (Physics.Raycast(r, out hit, 100.0f, layersMask))
                 {
-
                     target = hit.collider.transform;
                     targetPosition = hit.collider.bounds.center;
                     minDistance = hit.collider.bounds.extents.magnitude;
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(hit.point);
+                    ray.SetActiveColor();
+                    if (target)
+                    {
+                        Selection.AddToHover(target.gameObject);
+                    }
                 }
                 else
                 {
+                    if (target)
+                    {
+                        Selection.RemoveFromHover(target.gameObject);
+                    }
                     target = null;
                     targetPosition = Vector3.zero;
                     minDistance = 0.0f;
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(worldEnd);
+                    ray.SetDefaultColor();
                 }
-
-                ray.SetDefaultColor(); // because the color change did not work in Init :(
             }
             else 
             {
@@ -229,7 +236,7 @@ namespace VRtist
                 if (target != null)
                 {
                     isLocked = true;
-                    ray.SetActiveColor();
+                    ray.gameObject.SetActive(false); // hide ray on grip
                 }
 
                 GlobalState.IsGrippingWorld = true;
@@ -237,7 +244,7 @@ namespace VRtist
             () =>
             {
                 isLocked = false;
-                ray.SetDefaultColor();
+                ray.gameObject.SetActive(true);
                 GlobalState.IsGrippingWorld = false;
             });
         }
