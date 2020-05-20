@@ -68,27 +68,37 @@ namespace VRtist
             }
         }
 
+        private void RemoveCollidedObject(GameObject obj)
+        {
+            collidedObjects.Remove(obj);
+            GameObject hoveredObject = Selection.GetHoveredObject();
+            if(hoveredObject == obj)
+            {
+                hoveredObject = null;
+                while (collidedObjects.Count > 0)
+                {
+                    int index = collidedObjects.Count - 1;
+                    hoveredObject = collidedObjects[index];
+                    if (!Utils.IsInTrash(hoveredObject))
+                        break;
+                    collidedObjects.RemoveAt(index);
+                    hoveredObject = null;
+                }
+                Selection.SetHoveredObject(hoveredObject);
+            }
+
+        }
+
         private void OnTriggerExit(Collider other)
         {
             if(other.tag == "PhysicObject")
             {
-                collidedObjects.Remove(other.gameObject);
-                GameObject hoveredObject = Selection.GetHoveredObject();
-                if (other.gameObject == hoveredObject)
+                if (other.gameObject == Selection.GetHoveredObject())
                 {
-                    hoveredObject = null;
-                    while (collidedObjects.Count > 0)
-                    {
-                        int index = collidedObjects.Count - 1;
-                        hoveredObject = collidedObjects[index];
-                        if (!Utils.IsInTrash(hoveredObject))
-                            break;
-                        collidedObjects.RemoveAt(index);
-                        hoveredObject = null;
-                    }
-                    Selection.SetHoveredObject(hoveredObject);
                     selector.OnSelectorTriggerExit(other);
-                }                
+                }
+
+                RemoveCollidedObject(other.gameObject);
             }
         }
 
@@ -131,6 +141,7 @@ namespace VRtist
 
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
             {
+                RemoveCollidedObject(hoveredObject);
                 selector.RemoveSiblingsFromSelection(hoveredObject, false);
 
                 // Add a selectionVFX instance on the deleted object
