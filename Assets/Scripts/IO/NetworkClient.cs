@@ -1599,7 +1599,7 @@ namespace VRtist
             if(meshCollider == null)
             {
                 meshCollider = obj.AddComponent<MeshCollider>();
-                meshCollider.convex = true;
+                //meshCollider.convex = true;
             }
             return meshCollider;
         }
