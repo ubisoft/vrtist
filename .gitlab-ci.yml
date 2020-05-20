@@ -1,0 +1,25 @@
+stages:
+	- test_CI_CD
+	- thomas
+	
+toto:
+	stage: test_CI_CD
+	script:
+		- echo "toto"
+	tags:
+		- linux
+		
+tata:
+	stage: test_CI_CD
+	script:
+		- echo "${CI_COMMIT_SHORT_SHA}"
+		- exit 1
+	tags:
+		- linux
+
+after_toto:
+	stage: thomas
+	script:
+		- echo "toto"
+	tags:
+		- linux
