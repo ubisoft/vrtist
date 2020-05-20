@@ -54,7 +54,6 @@ namespace VRtist
 
             Init();
             enableToggleTool = false;
-            Selection.OnSelectionChanged += OnSelectionChanged;
             CreateTooltips();
         }
 
@@ -102,7 +101,7 @@ namespace VRtist
                 ClearSelection();
                 AddToSelection(instance);
                 undoGroup.Submit();
-                selectorTrigger.SetLastCollidedObject(instance);
+                Selection.SetHoveredObject(instance);
             }
         }
 
@@ -171,8 +170,9 @@ namespace VRtist
             }
         }
 
-        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
+            base.OnSelectionChanged(sender, args);
             // update lighting panel from selection
             ////////////////////////////////////////
 

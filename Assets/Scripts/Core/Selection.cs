@@ -59,7 +59,16 @@ namespace VRtist
         {
             Camera cam = obj.GetComponentInChildren<Camera>(true);
             if (cam)
-                cam.gameObject.SetActive(value);
+            {
+                if (value)
+                {
+                    cam.gameObject.SetActive(true);
+                }
+                else if (!IsSelected(obj))
+                {
+                    cam.gameObject.SetActive(false);
+                }
+            }
         }
 
         static void UpdateCurrentObjectOutline()
@@ -105,11 +114,7 @@ namespace VRtist
 
         public static void SetGrippedObject(GameObject obj)
         {
-            if(grippedObject)
-                SetCameraEnabled(grippedObject, false);
             grippedObject = obj;
-            if (grippedObject)
-                SetCameraEnabled(obj, true);
             UpdateCurrentObjectOutline();
             TriggerSelectionChanged();
         }
@@ -148,7 +153,11 @@ namespace VRtist
 
         public static bool AddToHover(GameObject gObject)
         {
-            SetRecursiveLayer(gObject, "Hover");
+            if (gObject)
+            {
+                SetRecursiveLayer(gObject, "Hover");
+                SetCameraEnabled(gObject, true);
+            }
 
             return true;
         }
@@ -168,7 +177,11 @@ namespace VRtist
                 layerName = "UI";
             }
 
-            SetRecursiveLayer(gObject, layerName);
+            if (gObject)
+            {
+                SetRecursiveLayer(gObject, layerName);
+                SetCameraEnabled(gObject, false);
+            }
 
             return true;
         }
@@ -207,9 +220,9 @@ namespace VRtist
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
 
-            SetCameraEnabled(gObject, false);
-
             selection.Remove(gObject.GetInstanceID());
+
+            SetCameraEnabled(gObject, false);
 
             string layerName = "Default";
             if (gObject.GetComponent<LightController>()

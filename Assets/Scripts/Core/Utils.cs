@@ -24,6 +24,14 @@ namespace VRtist
             return trash;
         }
 
+        public static bool IsInTrash(GameObject obj)
+        {
+            GameObject trash = GetTrash();
+            if (obj.transform.parent.parent.gameObject == trash)
+                return true;
+            return false;
+        }
+
         public static GameObject FindWorld()
         {
             Scene scene = SceneManager.GetActiveScene();
