@@ -20,6 +20,9 @@ namespace VRtist
         int paintId = 0;
         bool paintOnSurface = false;
 
+        GameObject volumeCursor;
+        GameObject flatCursor;
+
         FreeDraw freeDraw;
 
         // Start is called before the first frame update
@@ -36,7 +39,12 @@ namespace VRtist
 
             brushSize = paintBrush.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
-            
+
+            volumeCursor = paintBrush.transform.Find("curve").gameObject;
+            flatCursor = paintBrush.transform.Find("flat_curve").gameObject;
+            volumeCursor.SetActive(paintTool == PaintTools.Pencil);
+            flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
+
             // Create tooltips
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
@@ -241,12 +249,16 @@ namespace VRtist
         public void PaintSelectPencil()
         {
             paintTool = PaintTools.Pencil;
+            volumeCursor.SetActive(true);
+            flatCursor.SetActive(false);
             updateButtonsColor();
         }
 
         public void PaintSelectFlatPencil()
         {
             paintTool = PaintTools.FlatPencil;
+            volumeCursor.SetActive(false);
+            flatCursor.SetActive(true);
             updateButtonsColor();
         }
 
