@@ -130,12 +130,15 @@ namespace VRtist
                     if (isValidLocationHit)
                     {
                         Vector3 cameraForwardProj = new Vector3(camera.forward.x, 0.0f, camera.forward.z).normalized;
-                        Quaternion deltaRotation = Quaternion.FromToRotation(cameraForwardProj, teleportTargetObject.forward);
+                        float YAngleDelta = Vector3.SignedAngle(cameraForwardProj, teleportTargetObject.forward, Vector3.up);
+                        Quaternion deltaRotation = Quaternion.Euler(0.0f, YAngleDelta, 0.0f);
+                        rig.rotation = rig.rotation * deltaRotation;
+                        
                         Vector3 camera_to_rig = rig.transform.position - camera.transform.position;
                         Vector3 new_camera_to_target = new Vector3(0.0f, teleportTarget.y - camera.transform.position.y, 0.0f); // place camera above target
                         Vector3 deltaPosition = camera_to_rig - new_camera_to_target;
                         rig.position = teleportTarget + deltaPosition;
-                        rig.rotation = rig.rotation * deltaRotation;
+                        
                         isValidLocationHit = false;
                     }
 
