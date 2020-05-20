@@ -127,8 +127,6 @@ namespace VRtist
             
             ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
 
-            Selection.OnSelectionChanged += OnSelectionChanged;
-
             // Create tooltips
             CreateTooltips();
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Zoom");
@@ -324,7 +322,7 @@ namespace VRtist
                         ClearSelection();
                         AddToSelection(newCamera);
                         undoGroup.Submit();
-                        selectorTrigger.SetLastCollidedObject(newCamera);
+                        Selection.SetHoveredObject(newCamera);
                     }
                 }
                 OnStartGrip();
@@ -452,8 +450,10 @@ namespace VRtist
             focalSlider.gameObject.SetActive(false);
         }
 
-        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
+            base.OnSelectionChanged(sender, args);
+
             ClearListeners();
 
             foreach (GameObject gobject in Selection.GetObjects())

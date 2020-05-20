@@ -9,8 +9,7 @@ namespace VRtist
         public SelectorBase selector = null;
 
         private bool selectionHasChanged = false;
-        private HashSet<GameObject> collidedObjects = new HashSet<GameObject>();
-        private GameObject lastCollidedObject = null;
+        private List<GameObject> collidedObjects = new List<GameObject>();
 
         private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
@@ -18,21 +17,14 @@ namespace VRtist
 
         private void OnDisable()
         {
-            if(null !=undoGroup)
+            collidedObjects.Clear();
+            Selection.SetHoveredObject(null);
+
+            if (null !=undoGroup)
             {
                 undoGroup.Submit();
                 undoGroup = null;
             }
-        }
-
-        public void SetLastCollidedObject(GameObject gobject)
-        {
-            lastCollidedObject = gobject;
-        }
-
-        public GameObject GetLastCollidedObject()
-        {
-            return lastCollidedObject;
         }
 
         void Update()
@@ -46,7 +38,6 @@ namespace VRtist
                 if (!selectionHasChanged && !VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
                 {
                     selector.ClearSelection();
-                    //lastCollidedObject = null;
                 }
                 if (null != undoGroup)
                 {
@@ -57,8 +48,8 @@ namespace VRtist
 
             switch (selector.mode)
             {
-                case SelectorBase.SelectorModes.Select: UpdateSelection(lastCollidedObject); break;
-                case SelectorBase.SelectorModes.Eraser: UpdateEraser(lastCollidedObject); break;
+                case SelectorBase.SelectorModes.Select: UpdateSelection(); break;
+                case SelectorBase.SelectorModes.Eraser: UpdateEraser(); break;
             }
 
         }
@@ -67,20 +58,13 @@ namespace VRtist
         {
             if (other.tag == "PhysicObject")
             {
-                int oldCount = collidedObjects.Count;
-                collidedObjects.Add(other.gameObject);
-                int newCount = collidedObjects.Count;
-
-                if(newCount != oldCount)
+                if(!collidedObjects.Contains(other.gameObject))
+                    collidedObjects.Add(other.gameObject);
+                if (Selection.GetHoveredObject() != other.gameObject)
                 {
-                    lastCollidedObject = other.gameObject;
+                    Selection.SetHoveredObject(other.gameObject);
+                    selector.OnSelectorTriggerEnter(other);
                 }
-
-                gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor() + highlightColorOffset);
-
-                Selection.SetHoveredObject(other.gameObject);
-
-                selector.OnSelectorTriggerEnter(other);
             }
         }
 
@@ -88,70 +72,73 @@ namespace VRtist
         {
             if(other.tag == "PhysicObject")
             {
-                if (other.gameObject == lastCollidedObject)
-                {
-                    lastCollidedObject = null;
-                }
-
                 collidedObjects.Remove(other.gameObject);
-                if(collidedObjects.Count == 0) 
+                GameObject hoveredObject = Selection.GetHoveredObject();
+                if (other.gameObject == hoveredObject)
                 {
-                    gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selector.GetModeColor());
-                }
-
-                // TODO: guard to ensure enter/exit
-                if(Selection.GetHoveredObject() == other.gameObject)
-                    Selection.SetHoveredObject(null);
-
-                selector.OnSelectorTriggerExit(other);
+                    hoveredObject = null;
+                    while (collidedObjects.Count > 0)
+                    {
+                        int index = collidedObjects.Count - 1;
+                        hoveredObject = collidedObjects[index];
+                        if (!Utils.IsInTrash(hoveredObject))
+                            break;
+                        collidedObjects.RemoveAt(index);
+                        hoveredObject = null;
+                    }
+                    Selection.SetHoveredObject(hoveredObject);
+                    selector.OnSelectorTriggerExit(other);
+                }                
             }
         }
 
-        private void UpdateSelection(GameObject gObject)
+        private void UpdateSelection()
         {
             // Get right controller buttons states
             bool primaryButtonState = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
             bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
             bool gripState = VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton);
 
+            GameObject hoveredObject = Selection.GetHoveredObject();
+
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip,
-                 () => { Selection.SetGrippedObject(lastCollidedObject); },
+                 () => { Selection.SetGrippedObject(hoveredObject); },
                  () => { Selection.SetGrippedObject(null); });
 
             // Mono-selection using the grip button
-            if (triggerState && null != gObject)  // Multi-selection using the trigger button
+            if (triggerState && null != hoveredObject)  // Multi-selection using the trigger button
             {
                 selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
-                    selector.AddSiblingsToSelection(gObject);
-                    collidedObjects.Clear();
+                    selector.AddSiblingsToSelection(hoveredObject);
                 }
                 else
                 {
-                    selector.RemoveSiblingsFromSelection(gObject);
-                    collidedObjects.Clear();
+                    selector.RemoveSiblingsFromSelection(hoveredObject);
                 }
             }
         }
 
-        private void UpdateEraser(GameObject gObject)
+        private void UpdateEraser()
         {
+            GameObject hoveredObject = Selection.GetHoveredObject();
+            if (null == hoveredObject)
+                return;
             // Don't delete UI handles
-            if (gObject.GetComponent<UIHandle>())
+            if (hoveredObject.GetComponent<UIHandle>())
                 return;
 
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
             {
-                selector.RemoveSiblingsFromSelection(gObject, false);
-                collidedObjects.Clear();
+                selector.RemoveSiblingsFromSelection(hoveredObject, false);
 
                 // Add a selectionVFX instance on the deleted object
                 GameObject vfxInstance = Instantiate(selector.selectionVFXPrefab);
-                vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(gObject);
+                vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(hoveredObject);
 
                 VRInput.SendHapticImpulse(VRInput.rightController,0, 1, 0.2f);
-                new CommandRemoveGameObject(gObject).Submit();
+                new CommandRemoveGameObject(hoveredObject).Submit();
             }
         }
     }
