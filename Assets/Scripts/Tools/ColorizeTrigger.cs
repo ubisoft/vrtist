@@ -10,9 +10,12 @@ namespace VRtist
         [SerializeField] private Colorize colorizer;
 
         private HashSet<GameObject> collidedObjects = new HashSet<GameObject>();
+        private MeshRenderer paintingRenderer;
 
         private void Start()
         {
+            paintingRenderer = gameObject.transform.Find("bucket/Plane").gameObject.GetComponent<MeshRenderer>();
+
             GlobalState.colorChangedEvent.AddListener(OnGlobalColorChanged);
             OnGlobalColorChanged(GlobalState.CurrentColor);
         }
@@ -60,6 +63,7 @@ namespace VRtist
         private void OnGlobalColorChanged(Color color)
         {
             gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", color);
+            paintingRenderer.material.SetColor("_BaseColor", color);
         }
     }
 }
