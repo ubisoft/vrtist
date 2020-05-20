@@ -102,12 +102,12 @@ namespace VRtist
             if (!isLocked)
             {
                 RaycastHit hit;
-                Vector3 worldStart = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
+                Vector3 worldStart = leftHandle.TransformPoint(0.01f, 0.0f, 0.05f);
                 Vector3 worldEnd = leftHandle.TransformPoint(0, 0, 3);
                 Vector3 worldDirection = worldEnd - worldStart;
                 Ray r = new Ray(worldStart, worldDirection);
                 int layersMask = LayerMask.GetMask(new string[] { "Default", "Selection" });
-                if (Physics.Raycast(r, out hit, 10.0f, layersMask))
+                if (Physics.Raycast(r, out hit, 100.0f, layersMask))
                 {
 
                     target = hit.collider.transform;
@@ -214,7 +214,7 @@ namespace VRtist
                 }
 
                 // Position the ray AFTER the rotation of the camera, to avoid a one frame shift.
-                ray.SetStartPosition(leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f));
+                ray.SetStartPosition(leftHandle.TransformPoint(0.01f, 0.0f, 0.05f));
                 ray.SetEndPosition(targetPosition);
             }
 
