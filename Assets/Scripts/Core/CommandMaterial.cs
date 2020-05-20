@@ -108,6 +108,10 @@ namespace VRtist
         {
             foreach(GameObject gobject in oldValues.Keys)
             {
+                // Set the prefab and the object.
+                // Then when we duplicate the object, the material is also duplicated
+                Node node = SyncData.nodes[gobject.name];
+                SetMaterialValue(node.prefab, newValue);
                 SetMaterialValue(gobject, newValue);
             }
         }
@@ -116,6 +120,8 @@ namespace VRtist
         {
             foreach(KeyValuePair<GameObject, MaterialValue> item in oldValues)
             {
+                Node node = SyncData.nodes[item.Key.name];
+                SetMaterialValue(node.prefab, item.Value);
                 SetMaterialValue(item.Key, item.Value);
             }
         }
