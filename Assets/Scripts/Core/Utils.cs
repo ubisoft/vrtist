@@ -8,12 +8,21 @@ using UnityEngine.SceneManagement;
 
 namespace VRtist
 {
+    public class PrefabInstantiatedArgs : EventArgs
+    {
+        public GameObject prefab;
+        public GameObject instance;
+    }
+
     public class Utils
     {
         static GameObject trash = null;
         static int gameObjectNameId = 0;
         static long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
         static string hostname = Dns.GetHostName();
+
+        public static event EventHandler<PrefabInstantiatedArgs> OnPrefabInstantiated;
+
         public static GameObject GetTrash()
         {
             if (trash == null)
@@ -96,6 +105,18 @@ namespace VRtist
             return name;
         }
 
+        public static void TriggerPrefabInstantiated(GameObject prefab, GameObject instance)
+        {
+            PrefabInstantiatedArgs args = new PrefabInstantiatedArgs();
+            args.prefab = prefab;
+            args.instance = instance;
+            EventHandler<PrefabInstantiatedArgs> handler = OnPrefabInstantiated;
+            if (handler != null)
+            {
+                handler(null, args);
+            }
+        }
+
         public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null)
         {
             GameObject intermediateParent = new GameObject();
@@ -133,6 +154,7 @@ namespace VRtist
             res.name = appliedName;
             intermediateParent.name = appliedName + "_parent";
 
+            TriggerPrefabInstantiated(gObject, res);
             return res;
         }
 

@@ -39,51 +39,53 @@ namespace VRtist
             grabberCursor = transform.Find("Grabber");
             SetCursorShape(0); // arrow
             HideAllCursors();
+
+            Utils.OnPrefabInstantiated += OnPrefabInstantiated;
         }
 
         void Update()
         {
-            if (VRInput.TryGetDevices())
+            if (!VRInput.TryGetDevices())
+                return;
+
+            // Device rotation
+            Vector3 position;
+            Quaternion rotation;
+            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+
+            // The main cursor object always follows the controller
+            // so that the collider sticks to the actual hand position.
+            transform.localPosition = position;
+            transform.localRotation = rotation;
+
+            if (!UIElement.UIEnabled.Value)
+                return;
+
+            if (isOnAWidget)
             {
-                // Device rotation
-                Vector3 position;
-                Quaternion rotation;
-                VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+                Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
+                Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
 
-                // The main cursor object always follows the controller
-                // so that the collider sticks to the actual hand position.
-                transform.localPosition = position;
-                transform.localRotation = rotation;
-
-                if (!UIElement.UIEnabled.Value)
-                    return;
-
-                if (isOnAWidget)
+                if (widgetHit != null && widgetHit.HandlesCursorBehavior())
                 {
-                    Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
-                    Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
+                    widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref currentShapeTransform);
+                    // TODO: est-ce qu'on gere le son dans les widgets, ou au niveau du curseur ???
+                    //       On peut faire ca dans le HandleCursorBehavior().
+                    //audioClick.Play();
+                }
+                else
+                { 
+                    //Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
+                    Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
+                    Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+                    Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
+                    currentShapeTransform.position = worldProjectedWidgetPosition;
 
-                    if (widgetHit != null && widgetHit.HandlesCursorBehavior())
-                    {
-                        widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref currentShapeTransform);
-                        // TODO: est-ce qu'on gere le son dans les widgets, ou au niveau du curseur ???
-                        //       On peut faire ca dans le HandleCursorBehavior().
-                        //audioClick.Play();
-                    }
-                    else
-                    { 
-                        //Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
-                        Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
-                        Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-                        Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
-                        currentShapeTransform.position = worldProjectedWidgetPosition;
-
-                        // Haptic intensity as we go deeper into the widget.
-                        float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                        intensity *= intensity; // ease-in
-                        if (UIElement.UIEnabled.Value)
-                            VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-                    }
+                    // Haptic intensity as we go deeper into the widget.
+                    float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+                    intensity *= intensity; // ease-in
+                    if (UIElement.UIEnabled.Value)
+                        VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
                 }
             }
         }
@@ -95,6 +97,18 @@ namespace VRtist
                 UIEnabled.Dispose();
                 UIEnabled = null;
             }
+        }
+
+        void OnPrefabInstantiated(object sender, PrefabInstantiatedArgs args)
+        {
+            ResetCursor();
+        }
+
+        private void ResetCursor()
+        {
+            ReleaseUIEnabledGuard();
+            ToolsUIManager.Instance.ShowTools(true);
+            HideAllCursors();
         }
 
         private void OnTriggerEnter(Collider other)
@@ -130,11 +144,7 @@ namespace VRtist
         {            
             if (other.GetComponent<UIVolumeTag>() != null)
             {
-                ReleaseUIEnabledGuard();
-                // reactivate all tools
-                //tools.SetActive(true);
-                ToolsUIManager.Instance.ShowTools(true);
-                HideAllCursors();
+                ResetCursor();
             }
             else if (other.gameObject.tag == "UICollider")
             {
@@ -146,6 +156,7 @@ namespace VRtist
                 {
                     meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
                 }
+                SetCursorShape(0);
             }
         }
 
@@ -161,7 +172,7 @@ namespace VRtist
                 case 1: grabberCursor.gameObject.SetActive(true); currentShapeTransform = grabberCursor.transform; break;
             }
         }
-
+        
         public void PushCursorShape(int shape)
         {
             previousShapeId = currentShapeId;
@@ -171,7 +182,7 @@ namespace VRtist
         public void PopCursorShape()
         {
             SetCursorShape(previousShapeId);
-        }
+        }        
 
         private void HideAllCursors()
         {
