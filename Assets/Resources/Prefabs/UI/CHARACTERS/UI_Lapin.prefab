@@ -58,9 +58,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69f1f2c46695ec0478c12669fe6daa37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  relativeLocation: {x: 0, y: 0, z: 0}
+  width: 1
+  height: 1
+  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
+  disabledColor: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
   prefab: {fileID: 3616547830633962841, guid: 698d3d79b76c7be4c82644de6e5d00a2, type: 3}
   hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
   onEnterUI3DObject:
     m_PersistentCalls:
       m_Calls:
@@ -179,22 +183,22 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2100000, guid: 178e0894a7d2a93489eb909ac3602885, type: 2}
+      objectReference: {fileID: 2100000, guid: 430de13d1229a1f4ea9dd073290f6fd1, type: 2}
     - target: {fileID: -1504981713932161579, guid: ad7ad9f404a907d41bdd5f75eb2a0464,
         type: 3}
       propertyPath: m_Materials.Array.data[2]
       value: 
-      objectReference: {fileID: 2100000, guid: 178e0894a7d2a93489eb909ac3602885, type: 2}
+      objectReference: {fileID: 2100000, guid: 430de13d1229a1f4ea9dd073290f6fd1, type: 2}
     - target: {fileID: -1504981713932161579, guid: ad7ad9f404a907d41bdd5f75eb2a0464,
         type: 3}
       propertyPath: m_Materials.Array.data[7]
       value: 
-      objectReference: {fileID: 2100000, guid: 178e0894a7d2a93489eb909ac3602885, type: 2}
+      objectReference: {fileID: 2100000, guid: 430de13d1229a1f4ea9dd073290f6fd1, type: 2}
     - target: {fileID: -1504981713932161579, guid: ad7ad9f404a907d41bdd5f75eb2a0464,
         type: 3}
       propertyPath: m_Materials.Array.data[8]
       value: 
-      objectReference: {fileID: 2100000, guid: 178e0894a7d2a93489eb909ac3602885, type: 2}
+      objectReference: {fileID: 2100000, guid: 430de13d1229a1f4ea9dd073290f6fd1, type: 2}
     - target: {fileID: -1504981713932161579, guid: ad7ad9f404a907d41bdd5f75eb2a0464,
         type: 3}
       propertyPath: m_CastShadows

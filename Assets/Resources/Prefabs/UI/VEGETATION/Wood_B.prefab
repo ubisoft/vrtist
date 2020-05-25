@@ -45,9 +45,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69f1f2c46695ec0478c12669fe6daa37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  relativeLocation: {x: 0, y: 0, z: 0}
+  width: 1
+  height: 1
+  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
+  disabledColor: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
   prefab: {fileID: 6740774563708598471, guid: 9c22799416eda334ca129eff2b14eec3, type: 3}
   hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
   onEnterUI3DObject:
     m_PersistentCalls:
       m_Calls:
@@ -185,6 +189,11 @@ PrefabInstance:
       propertyPath: m_RenderingLayerMask
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: -1504981713932161579, guid: 3950f2c4b6731d64ab881db640c971d8,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 430de13d1229a1f4ea9dd073290f6fd1, type: 2}
     - target: {fileID: -927199367670048503, guid: 3950f2c4b6731d64ab881db640c971d8,
         type: 3}
       propertyPath: m_Name
