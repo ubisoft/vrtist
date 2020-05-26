@@ -7,44 +7,39 @@ namespace VRtist
 {
     // Perform a build
     // Typical command line:
-    // "C:\Program Files\Unity\Editor\Unity.exe" -quit -batchmode -projectPath "C:\Users\UserName\Documents\MyProject" -executeMethod VRtist.Builder.PerformBuild
-    //
-    // Some options can be added for the build:
-    //  --buildDir: to specify the build directory.
+    //   "C:\Program Files\Unity\Editor\Unity.exe" -quit -batchmode -projectPath "C:\Users\UserName\Documents\MyProject" -executeMethod VRtist.Builder.PerformBuild
+    // Other options:
+    //   --buildDir to override the default build directory name (which is made from the current date).
     public class Builder
     {
         private const string BUILD_DIR_OPTION = "--buildDir";
-        private const string DEFAULT_BUILD_DIR = "Build";
+        private const string ROOT_BUILD_DIR = "Build";
         private const string EXE_NAME = "VRtist.exe";
 
         public static void PerformBuild()
         {
-            // Get command line arguments
             string[] args = System.Environment.GetCommandLineArgs();
 
             BuildPlayerOptions buildOptions = new BuildPlayerOptions();
             buildOptions.scenes = new[] { "Assets/Scenes/Main.unity" };
             buildOptions.target = BuildTarget.StandaloneWindows64;
-
+            buildOptions.options = BuildOptions.None;
             int index = Array.IndexOf(args, BUILD_DIR_OPTION);
             if(-1 != index)
             {
                 try
                 {
-                    buildOptions.locationPathName = args[index + 1];
+                    buildOptions.locationPathName = $"{ROOT_BUILD_DIR}/{args[index + 1]}/{EXE_NAME}";
                 }
                 catch(IndexOutOfRangeException)
                 {
-                    buildOptions.locationPathName = DEFAULT_BUILD_DIR;
+                    buildOptions.locationPathName = GetDefaultBuildDir();
                 }
             }
             else
             {
-                buildOptions.locationPathName = DEFAULT_BUILD_DIR;
+                buildOptions.locationPathName = GetDefaultBuildDir();
             }
-            DateTime now = DateTime.Now;
-            buildOptions.locationPathName += $"/{now:yyyy_MM_dd-HH_mm_ss}/{EXE_NAME}";
-            buildOptions.options = BuildOptions.None;
 
             BuildReport report = BuildPipeline.BuildPlayer(buildOptions);
             BuildSummary summary = report.summary;
@@ -66,6 +61,12 @@ namespace VRtist
                 // Will force an exit code != 0
                 throw new Exception("Build Failed");
             }
+        }
+
+        private static string GetDefaultBuildDir()
+        {
+            DateTime now = DateTime.Now;
+            return $"{ROOT_BUILD_DIR}/{now:yyyy_MM_dd-HH_mm_ss}/{EXE_NAME}";
         }
     }
 }
