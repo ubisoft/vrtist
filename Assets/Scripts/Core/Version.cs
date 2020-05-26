@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 
 
@@ -6,10 +7,29 @@ namespace VRtist
 {
     public class Version
     {
-        public static string version = "0.1.0";      // our version
-        public static string syncVersion = "0.1.0";  // supported sync version
+        private static string VERSION_PATH = "version.txt";
 
-        private static Regex versionRegex = new Regex(@"(?<major>\d+)\.(?<minor>\d+)\.(?<debug>\d+)(\.(?<other>.+))?", RegexOptions.Compiled);
+        // Our version
+        private static string _version = "";
+        public static string version
+        {
+            get
+            {
+                if(_version.Length == 0)
+                {
+                    if(File.Exists(VERSION_PATH))
+                        _version = File.ReadAllText(VERSION_PATH);
+                    else
+                        _version = "dev-build";
+                }
+                return _version;
+            }
+        }
+
+        // Supported sync version (Mixer)
+        public static string syncVersion = "v0.1.0";
+
+        private static Regex versionRegex = new Regex(@"v?(?<major>\d+)\.(?<minor>\d+)\.(?<debug>\d+)(\.(?<other>.+))?", RegexOptions.Compiled);
 
         public static bool UnpackVersionNumber(string v, out int major, out int minor, out int debug, out string other)
         {
