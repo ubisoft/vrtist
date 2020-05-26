@@ -20,6 +20,9 @@ namespace VRtist
         private MeshRenderer previewRenderer;
 
         private bool uiInitialized = false;
+        private bool selectionHasChanged = false;
+
+        private GameObject triggerTooltip;
 
         private enum ColorOp
         {
@@ -27,8 +30,9 @@ namespace VRtist
             Pick,
             UpdateSelection
         };
-        
+
         private ColorOp colorOp = ColorOp.Colorize;
+        private ColorOp previousColorOp = ColorOp.Colorize;
 
         void Start()
         {
@@ -50,6 +54,12 @@ namespace VRtist
             roughnessSlider.onReleaseEvent.AddListener(UpdateMaterial);
             metallicSlider.onReleaseEvent.AddListener(UpdateMaterial);
             GlobalState.colorReleasedEvent.AddListener((Color color) => UpdateMaterial());
+
+            // Tooltips
+            GameObject controller = rightController.gameObject;
+            triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "-");
+            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Pick Material");
+            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale Tool");
         }
 
         protected override void OnEnable()
@@ -61,13 +71,45 @@ namespace VRtist
 
         protected override void DoUpdate()
         {
+            // Alt button
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton, () =>
+            {
+                previousColorOp = colorOp;
+                colorOp = ColorOp.Pick;
+                uiInitialized = false;
+            }, () =>
+            {
+                colorOp = previousColorOp;
+                uiInitialized = false;
+            });
+
+            // Update UI
             if(!uiInitialized)
             {
                 uiInitialized = true;
-                colorizeButton.Checked = (colorOp == ColorOp.Colorize);
-                pickButton.Checked = (colorOp == ColorOp.Pick);
-                updateSelectionButton.Checked = (colorOp == ColorOp.UpdateSelection);
+                switch(colorOp)
+                {
+                    case ColorOp.Colorize: OnSetColorize(); break;
+                    case ColorOp.UpdateSelection: OnSetUpdateSelection(); break;
+                    case ColorOp.Pick: OnSetPick(); break;
+                }
                 UpdatePreview();
+            }
+
+            // Clear selection: only when triggering on nothing with the ColorOp.UpdateSelection
+            if(ColorOp.UpdateSelection == colorOp)
+            {
+                VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton, () =>
+                {
+                    selectionHasChanged = false;
+                }, () => {
+                    if(!selectionHasChanged && ColorOp.UpdateSelection == colorOp)
+                    {
+                        CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.selection.Values.ToList());
+                        command.Redo();
+                        command.Submit();
+                    }
+                });
             }
         }
 
@@ -139,6 +181,7 @@ namespace VRtist
             else { command = new CommandRemoveFromSelection(gobjects); }
             command.Redo();
             command.Submit();
+            selectionHasChanged = true;
         }
 
         // Buttons callbacks
@@ -148,6 +191,7 @@ namespace VRtist
             colorizeButton.Checked = true;
             pickButton.Checked = false;
             updateSelectionButton.Checked = false;
+            Tooltips.SetTooltipText(triggerTooltip, "Set Material");
         }
 
         public void OnSetPick()
@@ -156,6 +200,7 @@ namespace VRtist
             colorizeButton.Checked = false;
             pickButton.Checked = true;
             updateSelectionButton.Checked = false;
+            Tooltips.SetTooltipText(triggerTooltip, "Pick Material");
         }
 
         public void OnSetUpdateSelection()
@@ -164,6 +209,7 @@ namespace VRtist
             colorizeButton.Checked = false;
             pickButton.Checked = false;
             updateSelectionButton.Checked = true;
+            Tooltips.SetTooltipText(triggerTooltip, "Select Object");
             UpdateMaterial();
         }
     }
