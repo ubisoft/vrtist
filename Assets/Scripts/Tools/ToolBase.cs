@@ -54,7 +54,7 @@ namespace VRtist
         }
 
         void Update()
-        {                
+        {
             if (VRInput.TryGetDevices())
             {
                 // Device rotation
@@ -79,6 +79,10 @@ namespace VRtist
                         ToolsManager.ToggleTool();
                     });
                 }
+
+                // if tool has switch, THIS is now disabled, we dont want updates.
+                if (!gameObject.activeSelf)
+                    return;
 
                 // Custom tool update
                 if (IsInGui)
