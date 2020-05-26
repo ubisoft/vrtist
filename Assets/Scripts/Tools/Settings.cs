@@ -52,6 +52,15 @@ namespace VRtist
             worldGrid.SetActive(show);
         }
 
+        public void OnExitApplication()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
         private void InvertTooltip(Transform anchor)
         {
             for (int i = 0; i < anchor.childCount; i++)
