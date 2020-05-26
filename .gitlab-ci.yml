@@ -11,7 +11,7 @@ build:
   extends: .tag_only
   stage: build
   script:
-    - echo %cd%
+    - Get-Location
     - build.bat --buildDir "${CI_COMMIT_TAG}"
     - echo ${CI_COMMIT_TAG} > "Build\${CI_COMMIT_TAG}\version.txt"
   artifacts:
