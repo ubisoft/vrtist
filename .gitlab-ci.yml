@@ -1,25 +1,28 @@
 stages:
-  - test_CI_CD
-  - thomas
-  
-toto:
-  stage: test_CI_CD
-  script:
-    - echo "toto"
-  tags:
-    - linux
-    
-tata:
-  stage: test_CI_CD
-  script:
-    - echo ${CI_COMMIT_SHORT_SHA}
-    - exit 1
-  tags:
-    - linux
+  - build
+  - deploy
 
-after_toto:
-  stage: thomas
+.tag_only:
+  only:
+    refs:
+      - tags
+
+build:
+  extends: .tag_only
+  stage: build
   script:
-    - echo "toto"
+    - build.bat --buildDir "${CI_COMMIT_TAG}"
+  artifacts:
+    name: "VRtist_${CI_COMMIT_TAG}"
+    paths:
+      - "Build/VRtist_${CI_COMMIT_TAG}"
   tags:
-    - linux
+    - unity
+
+deploy:
+  extends: .tag_only
+  stage: deploy
+  script:
+    - xcopy /y/s/e Build/VRtist_${CI_COMMIT_TAG} \\ubisoft.org\mtrstudio\World\UAS\Tech\VRTist\Releases\
+  tags:
+    - uas
