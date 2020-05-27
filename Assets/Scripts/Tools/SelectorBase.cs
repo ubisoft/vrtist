@@ -30,7 +30,6 @@ namespace VRtist
         public SelectorModes mode = SelectorModes.Select;
 
         const float deadZone = 0.3f;
-        const float scaleFactor = 1.1f;
 
         float scale = 1f;
         bool outOfDeadZone = false;
@@ -153,8 +152,9 @@ namespace VRtist
                     Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                     if(val != Vector2.zero)
                     {
-                        if(val.y > deadZone) { selectorRadius *= scaleFactor; }//+= 0.001f; }
-                        if(val.y < -deadZone) { selectorRadius /= scaleFactor; }//-= 0.001f; }
+                        float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        if(val.y > deadZone) { selectorRadius *= scaleFactor; }
+                        if(val.y < -deadZone) { selectorRadius /= scaleFactor; }
                         selectorRadius = Mathf.Clamp(selectorRadius, 0.001f, 0.5f);
                         selectorBrush.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
                     }
@@ -490,7 +490,8 @@ namespace VRtist
                     if(GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                     {
                         Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                        if(joystickAxis.y > deadZone)
+                        float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        if (joystickAxis.y > deadZone)
                             scale *= scaleFactor;
                         if(joystickAxis.y < -deadZone)
                             scale /= scaleFactor;

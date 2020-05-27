@@ -10,6 +10,9 @@ namespace VRtist
         [Header("Parameters")]
         public GameObject leftController = null;
         public GameObject colorPanel = null;
+        [Range(1.0f, 100.0f)]
+        public float scaleSpeed = 50f;
+        public static float ScaleSpeed { get { return Instance.scaleSpeed; } }
 
         // FPS
         public static bool showFps = false;
@@ -50,7 +53,7 @@ namespace VRtist
 
         // Gizmos
         public static bool displayGizmos = true;
-
+        
         // Right-Handed
         public static bool rightHanded = true;
 
