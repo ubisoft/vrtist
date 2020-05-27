@@ -53,7 +53,6 @@ namespace VRtist
             DisableUI();
 
             Init();
-            enableToggleTool = false;
             CreateTooltips();
         }
 
