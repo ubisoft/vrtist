@@ -487,7 +487,9 @@ namespace VRtist
             bool visible = GetBool(data, ref bufferIndex);
             Vector3 offset = GetVector3(data, ref bufferIndex);
 
-            SyncData.AddCollection(collectionName, offset, visible);
+            bool tempVisible = GetBool(data, ref bufferIndex);
+
+            SyncData.AddCollection(collectionName, offset, visible, tempVisible);
         }
 
         public static void BuildCollectionRemoved(byte[] data)
@@ -1071,14 +1073,11 @@ namespace VRtist
             transform.localRotation = r;
             transform.localScale = s;
 
-            float[] buffer = new float[4];
-            bool[] boolBuffer = new bool[1];
+            bool visible = GetBool(data, ref currentIndex);
+            bool tempVisible = GetBool(data, ref currentIndex);
 
-            size = sizeof(bool);
-            Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
-            currentIndex += size;
-            
-            SyncData.nodes[transform.name].visible = (bool)boolBuffer[0];
+            SyncData.nodes[transform.name].visible = visible;
+            SyncData.nodes[transform.name].tempVisible = tempVisible;
             SyncData.ApplyTransformToInstances(transform);
 
             return transform;
@@ -1092,10 +1091,12 @@ namespace VRtist
          * -------------------------------------------------------------------------------------------*/
         public static NetCommand BuildTransformCommand(Transform root, Transform transform)
         {
+            bool tempVisible = true;
             string parentName = "";
             if (SyncData.nodes.ContainsKey(transform.name))
             {
                 Node node = SyncData.nodes[transform.name];
+                tempVisible = node.tempVisible;
                 if (null != node.parent)
                     parentName = node.parent.prefab.name + "/";
             }
@@ -1106,8 +1107,9 @@ namespace VRtist
             byte[] basisMatrixBuffer = MatrixToBytes(basisMatrix);
             byte[] localMatrixBuffer = MatrixToBytes(parentMatrix * basisMatrix);
             byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
+            byte[] tempVisibilityBuffer = boolToBytes(tempVisible);
 
-            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer, visibilityBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer, visibilityBuffer, tempVisibilityBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
