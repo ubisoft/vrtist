@@ -577,7 +577,11 @@ namespace VRtist
             if (materials.ContainsKey(name))
                 return materials[name];
 
+#if UNITY_EDITOR
+            Shader hdrplit = Shader.Find("VRtist/BlenderImportEditor");
+#else
             Shader hdrplit = Shader.Find("VRtist/BlenderImport");
+#endif
             Material material = new Material(hdrplit);
             material.name = name;
             material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
@@ -854,9 +858,15 @@ namespace VRtist
                 material = materials[name];
             else
             {
+#if UNITY_EDITOR
+                Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
+                    ? Shader.Find("VRtist/BlenderImportTransparentEditor")
+                    : Shader.Find("VRtist/BlenderImportEditor");
+#else
                 Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
                     ? Shader.Find("VRtist/BlenderImportTransparent")
                     : Shader.Find("VRtist/BlenderImport");
+#endif
                 material = new Material(importShader);
                 material.name = name;
                 material.enableInstancing = true;
