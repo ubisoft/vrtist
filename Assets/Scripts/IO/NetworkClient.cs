@@ -69,6 +69,8 @@ namespace VRtist
         RemoveKeyframe,
         QueryCurrentFrame,
         QueryObjectData,
+        _BlenderDataUpdate,
+        CameraAttributes,
 
         Optimized_Commands = 200,
         Transform,
@@ -1440,6 +1442,28 @@ namespace VRtist
             }
         }
 
+        public static void BuildCameraAttributes(Transform root, byte[] data)
+        {
+            int currentIndex = 0;
+            string cameraName = GetString(data, ref currentIndex);
+
+            Node node = SyncData.nodes[cameraName];
+            CameraController cameraController = node.prefab.GetComponent<CameraController>();
+            cameraController.focal = GetFloat(data, ref currentIndex);
+
+            //float aperture = GetFloat(data, ref currentIndex);
+            //float focus_distance = GetFloat(data, ref currentIndex);
+
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                CameraController controller = gobj.GetComponent<CameraController>();
+                controller.focal = cameraController.focal;
+                controller.FireValueChanged();
+            }
+        }
+
         public static void BuildCamera(Transform root, byte[] data)
         {
             int currentIndex = 0;
@@ -2767,6 +2791,9 @@ namespace VRtist
                         case MessageType.CameraAnimation:
                             NetGeometry.BuildAnimation(prefab, command.data);
                             break;
+                        case MessageType.CameraAttributes:
+                            NetGeometry.BuildCameraAttributes(prefab, command.data);
+                            break;
                         case MessageType.Light:
                             NetGeometry.BuildLight(prefab, command.data);
                             break;
@@ -2888,9 +2915,7 @@ namespace VRtist
                 case MessageType.AddObjectToScene:
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
                 case MessageType.Frame:
-                    SendFrame(data as FrameInfo);
-                    SendQueryCurrentFrame();
-                    break;
+                    SendFrame(data as FrameInfo); break;
                 case MessageType.Play:
                     SendPlay(); break;
                 case MessageType.Pause:
