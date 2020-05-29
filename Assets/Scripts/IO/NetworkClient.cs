@@ -1165,7 +1165,8 @@ namespace VRtist
                 current = current.parent;
                 path = current.name + "/" + path;
             }
-            byte[] name = StringToBytes(path);
+            byte[] bpath = StringToBytes(path);
+            byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int)cam.gateFit;
@@ -1179,7 +1180,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.x), 0, paramsBuffer, 4 * sizeof(float) + sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.y), 0, paramsBuffer, 5 * sizeof(float) + sizeof(int), sizeof(float));
 
-            List<byte[]> buffers = new List<byte[]> { name, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Camera);
             return command;
         }
@@ -1193,7 +1194,8 @@ namespace VRtist
                 current = current.parent;
                 path = current.name + "/" + path;
             }
-            byte[] name = StringToBytes(path);
+            byte[] bpath = StringToBytes(path);
+            byte[] bname = StringToBytes(lightInfo.transform.name);
 
             Light light = lightInfo.transform.GetComponentInChildren<Light>();
             int shadow = light.shadows != LightShadows.None ? 1 : 0;
@@ -1232,7 +1234,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(spotSize), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(spotBlend), 0, paramsBuffer, 2 * sizeof(int) + 6 * sizeof(float), sizeof(float));
 
-            List<byte[]> buffers = new List<byte[]> { name, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Light);
             return command;
 
@@ -1442,14 +1444,13 @@ namespace VRtist
             int currentIndex = 0;
             string path = GetString(data, ref currentIndex);
 
-
             Transform transform = root;
             if (transform == null)
                 return;
 
+            string name = GetString(data, ref currentIndex);
+
             GameObject camGameObject = null;
-            string[] splittedPath = path.Split('/');
-            string name = splittedPath[splittedPath.Length - 1];
             Transform camTransform = SyncData.FindChild(transform,name);
             if (camTransform == null)
             {
@@ -1506,12 +1507,12 @@ namespace VRtist
             if (transform == null)
                 return;
 
+            string name = GetString(data, ref currentIndex);
+
             LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject = null;
-            string[] splittedPath = path.Split('/');
-            string name = splittedPath[splittedPath.Length - 1];
             Transform lightTransform = SyncData.FindChild(transform,name);
             if (lightTransform == null)
             {
