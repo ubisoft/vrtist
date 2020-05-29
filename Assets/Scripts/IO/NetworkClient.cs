@@ -1350,7 +1350,8 @@ namespace VRtist
             byte[] collectionNameBuffer = StringToBytes(collectionName);
             byte[] visible = boolToBytes(true);
             byte[] offset = Vector3ToBytes(Vector3.zero);
-            List<byte[]> buffers = new List<byte[]> { collectionNameBuffer, visible, offset };
+            byte[] temporaryVisible = boolToBytes(true);
+            List<byte[]> buffers = new List<byte[]> { collectionNameBuffer, visible, offset, temporaryVisible };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Collection);
             return command;
         }
