@@ -154,6 +154,13 @@ namespace VRtist
             res.name = appliedName;
             intermediateParent.name = appliedName + "_parent";
 
+            // Name material too
+            MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>();
+            if(null != meshRenderer)
+            {
+                meshRenderer.material.name = GetMaterialName(res);
+            }
+
             TriggerPrefabInstantiated(gObject, res);
             return res;
         }
@@ -176,13 +183,18 @@ namespace VRtist
             Material paintMaterial = Resources.Load("Materials/Paint") as Material;
             renderer.material = GameObject.Instantiate<Material>(paintMaterial);
             renderer.material.SetColor("_BaseColor", color);
-            renderer.material.name = "Mat_" + paint.name;// "Paint_" + color.ToString();
+            renderer.material.name = GetMaterialName(paint);// "Paint_" + color.ToString();
 
             paint.AddComponent<MeshCollider>();
 
             PaintController paintController = paint.AddComponent<PaintController>();
 
             return paint;
+        }
+
+        public static string GetMaterialName(GameObject gobject)
+        {
+            return "Mat_" + gobject.name;
         }
 
 

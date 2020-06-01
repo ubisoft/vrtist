@@ -16,13 +16,6 @@ namespace VRtist
         public Color color;
         public float roughness;
         public float metallic;
-
-        public MaterialValue(Color color, float roughness, float metallic)
-        {
-            this.color = color;
-            this.roughness = roughness;
-            this.metallic = metallic;
-        }
     }
 
     public class CommandMaterial : ICommand
