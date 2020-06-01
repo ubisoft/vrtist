@@ -9,6 +9,8 @@
 [Rr]ecording/
 [Rr]ecordings/
 Assets/AssetStoreTools*
+Assets/AmplifyShaderEditor.meta
+AmplifyShaderEditor/
 
 # Visual Studio cache directory
 .vs/
