@@ -69,6 +69,8 @@ namespace VRtist
         RemoveKeyframe,
         QueryCurrentFrame,
         QueryObjectData,
+        _BlenderDataUpdate,
+        CameraAttributes,
 
         Optimized_Commands = 200,
         Transform,
@@ -487,7 +489,9 @@ namespace VRtist
             bool visible = GetBool(data, ref bufferIndex);
             Vector3 offset = GetVector3(data, ref bufferIndex);
 
-            SyncData.AddCollection(collectionName, offset, visible);
+            bool tempVisible = GetBool(data, ref bufferIndex);
+
+            SyncData.AddCollection(collectionName, offset, visible, tempVisible);
         }
 
         public static void BuildCollectionRemoved(byte[] data)
@@ -575,7 +579,11 @@ namespace VRtist
             if (materials.ContainsKey(name))
                 return materials[name];
 
+#if UNITY_EDITOR
+            Shader hdrplit = Shader.Find("VRtist/BlenderImportEditor");
+#else
             Shader hdrplit = Shader.Find("VRtist/BlenderImport");
+#endif
             Material material = new Material(hdrplit);
             material.name = name;
             material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
@@ -852,9 +860,15 @@ namespace VRtist
                 material = materials[name];
             else
             {
+#if UNITY_EDITOR
+                Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
+                    ? Shader.Find("VRtist/BlenderImportTransparentEditor")
+                    : Shader.Find("VRtist/BlenderImportEditor");
+#else
                 Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
                     ? Shader.Find("VRtist/BlenderImportTransparent")
                     : Shader.Find("VRtist/BlenderImport");
+#endif
                 material = new Material(importShader);
                 material.name = name;
                 material.enableInstancing = true;
@@ -1071,14 +1085,11 @@ namespace VRtist
             transform.localRotation = r;
             transform.localScale = s;
 
-            float[] buffer = new float[4];
-            bool[] boolBuffer = new bool[1];
+            bool visible = GetBool(data, ref currentIndex);
+            bool tempVisible = GetBool(data, ref currentIndex);
 
-            size = sizeof(bool);
-            Buffer.BlockCopy(data, currentIndex, boolBuffer, 0, size);
-            currentIndex += size;
-            
-            SyncData.nodes[transform.name].visible = (bool)boolBuffer[0];
+            SyncData.nodes[transform.name].visible = visible;
+            SyncData.nodes[transform.name].tempVisible = tempVisible;
             SyncData.ApplyTransformToInstances(transform);
 
             return transform;
@@ -1092,10 +1103,12 @@ namespace VRtist
          * -------------------------------------------------------------------------------------------*/
         public static NetCommand BuildTransformCommand(Transform root, Transform transform)
         {
+            bool tempVisible = true;
             string parentName = "";
             if (SyncData.nodes.ContainsKey(transform.name))
             {
                 Node node = SyncData.nodes[transform.name];
+                tempVisible = node.tempVisible;
                 if (null != node.parent)
                     parentName = node.parent.prefab.name + "/";
             }
@@ -1106,8 +1119,9 @@ namespace VRtist
             byte[] basisMatrixBuffer = MatrixToBytes(basisMatrix);
             byte[] localMatrixBuffer = MatrixToBytes(parentMatrix * basisMatrix);
             byte[] visibilityBuffer = boolToBytes(transform.gameObject.activeSelf);
+            byte[] tempVisibilityBuffer = boolToBytes(tempVisible);
 
-            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer, visibilityBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer, visibilityBuffer, tempVisibilityBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
@@ -1153,7 +1167,8 @@ namespace VRtist
                 current = current.parent;
                 path = current.name + "/" + path;
             }
-            byte[] name = StringToBytes(path);
+            byte[] bpath = StringToBytes(path);
+            byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int)cam.gateFit;
@@ -1167,7 +1182,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.x), 0, paramsBuffer, 4 * sizeof(float) + sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.y), 0, paramsBuffer, 5 * sizeof(float) + sizeof(int), sizeof(float));
 
-            List<byte[]> buffers = new List<byte[]> { name, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Camera);
             return command;
         }
@@ -1181,7 +1196,8 @@ namespace VRtist
                 current = current.parent;
                 path = current.name + "/" + path;
             }
-            byte[] name = StringToBytes(path);
+            byte[] bpath = StringToBytes(path);
+            byte[] bname = StringToBytes(lightInfo.transform.name);
 
             Light light = lightInfo.transform.GetComponentInChildren<Light>();
             int shadow = light.shadows != LightShadows.None ? 1 : 0;
@@ -1220,7 +1236,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(spotSize), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(spotBlend), 0, paramsBuffer, 2 * sizeof(int) + 6 * sizeof(float), sizeof(float));
 
-            List<byte[]> buffers = new List<byte[]> { name, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, paramsBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Light);
             return command;
 
@@ -1336,7 +1352,8 @@ namespace VRtist
             byte[] collectionNameBuffer = StringToBytes(collectionName);
             byte[] visible = boolToBytes(true);
             byte[] offset = Vector3ToBytes(Vector3.zero);
-            List<byte[]> buffers = new List<byte[]> { collectionNameBuffer, visible, offset };
+            byte[] temporaryVisible = boolToBytes(true);
+            List<byte[]> buffers = new List<byte[]> { collectionNameBuffer, visible, offset, temporaryVisible };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Collection);
             return command;
         }
@@ -1425,19 +1442,40 @@ namespace VRtist
             }
         }
 
+        public static void BuildCameraAttributes(Transform root, byte[] data)
+        {
+            int currentIndex = 0;
+            string cameraName = GetString(data, ref currentIndex);
+
+            Node node = SyncData.nodes[cameraName];
+            CameraController cameraController = node.prefab.GetComponent<CameraController>();
+            cameraController.focal = GetFloat(data, ref currentIndex);
+
+            //float aperture = GetFloat(data, ref currentIndex);
+            //float focus_distance = GetFloat(data, ref currentIndex);
+
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                CameraController controller = gobj.GetComponent<CameraController>();
+                controller.focal = cameraController.focal;
+                controller.FireValueChanged();
+            }
+        }
+
         public static void BuildCamera(Transform root, byte[] data)
         {
             int currentIndex = 0;
             string path = GetString(data, ref currentIndex);
 
-
             Transform transform = root;
             if (transform == null)
                 return;
 
+            string name = GetString(data, ref currentIndex);
+
             GameObject camGameObject = null;
-            string[] splittedPath = path.Split('/');
-            string name = splittedPath[splittedPath.Length - 1];
             Transform camTransform = SyncData.FindChild(transform,name);
             if (camTransform == null)
             {
@@ -1494,12 +1532,12 @@ namespace VRtist
             if (transform == null)
                 return;
 
+            string name = GetString(data, ref currentIndex);
+
             LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject = null;
-            string[] splittedPath = path.Split('/');
-            string name = splittedPath[splittedPath.Length - 1];
             Transform lightTransform = SyncData.FindChild(transform,name);
             if (lightTransform == null)
             {
@@ -2753,6 +2791,9 @@ namespace VRtist
                         case MessageType.CameraAnimation:
                             NetGeometry.BuildAnimation(prefab, command.data);
                             break;
+                        case MessageType.CameraAttributes:
+                            NetGeometry.BuildCameraAttributes(prefab, command.data);
+                            break;
                         case MessageType.Light:
                             NetGeometry.BuildLight(prefab, command.data);
                             break;
@@ -2874,9 +2915,7 @@ namespace VRtist
                 case MessageType.AddObjectToScene:
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
                 case MessageType.Frame:
-                    SendFrame(data as FrameInfo);
-                    SendQueryCurrentFrame();
-                    break;
+                    SendFrame(data as FrameInfo); break;
                 case MessageType.Play:
                     SendPlay(); break;
                 case MessageType.Pause:

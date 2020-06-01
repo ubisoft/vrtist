@@ -14,6 +14,7 @@ namespace VRtist
         public CollectionNode collectionInstance = null;    // this node is an instance of a collection
         public List<CollectionNode> collections = new List<CollectionNode>(); // Collections containing this node
         public bool visible = true;
+        public bool tempVisible = true;
         public bool containerVisible = true; // combination of Collections containing this node is visible
 
         public Node()
@@ -91,11 +92,12 @@ namespace VRtist
         public List<Node> prefabInstanceNodes = new List<Node>();           // Instances of collection
         public string name;
         public bool visible;
+        public bool tempVisible;
         public Vector3 offset;
 
         public bool IsVisible()
         {
-            if (!visible)
+            if (!visible || !tempVisible)
                 return false;
             if (null == parent)
                 return visible;
@@ -380,7 +382,7 @@ namespace VRtist
             }
         }
 
-        public static void AddCollection(string collectionName, Vector3 offset, bool visible)
+        public static void AddCollection(string collectionName, Vector3 offset, bool visible, bool tempVisible)
         {
             if (collectionName == "__Trash__")
                 return;
@@ -388,6 +390,7 @@ namespace VRtist
             CollectionNode collectionNode = collectionNodes.ContainsKey(collectionName) ? collectionNodes[collectionName] : CreateCollectionNode(null, collectionName);
 
             collectionNode.visible = visible;
+            collectionNode.tempVisible = tempVisible;
             collectionNode.offset = offset;
 
             List<Node> nodes = new List<Node>();
@@ -570,7 +573,7 @@ namespace VRtist
                 offsetObject.transform.localPosition = -collectionNode.offset;
                 offsetObject.transform.localRotation = Quaternion.identity;
                 offsetObject.transform.localScale = Vector3.one;
-                offsetObject.SetActive(collectionNode.visible & objectNode.visible);
+                offsetObject.SetActive(collectionNode.visible & collectionNode.tempVisible & objectNode.visible & objectNode.tempVisible);
 
                 string subCollectionInstanceName = "/" + instance.name;
                 if (collectionInstanceName.Length > 1)
@@ -754,13 +757,13 @@ namespace VRtist
                 foreach (Tuple<GameObject, string> item in n.instances)
                 {
                     if (item.Item2 == instanceName)
-                        ApplyVisibility(item.Item1, collectionNode.visible && inheritVisible, instanceName);
+                        ApplyVisibility(item.Item1, collectionNode.visible && collectionNode.tempVisible && inheritVisible, instanceName);
                 }
             }
 
             foreach (CollectionNode c in collectionNode.children)
             {
-                ApplyCollectionVisibility(c, instanceName, collectionNode.visible && c.visible && inheritVisible);
+                ApplyCollectionVisibility(c, instanceName, collectionNode.visible && collectionNode.tempVisible && c.visible && inheritVisible);
             }
         }
 
@@ -776,11 +779,11 @@ namespace VRtist
                     foreach (Tuple<GameObject, string> item in n.instances)
                     {
                         if (item.Item2 == instanceName)
-                            ApplyVisibility(item.Item1, collectionNode.visible && node.visible && inheritVisible, item.Item2);
+                            ApplyVisibility(item.Item1, collectionNode.visible && collectionNode.tempVisible && node.visible && node.tempVisible && inheritVisible, item.Item2);
                     }
                 }
 
-                ApplyCollectionVisibility(collectionNode, instanceName, collectionNode.visible && node.visible && inheritVisible);
+                ApplyCollectionVisibility(collectionNode, instanceName, collectionNode.visible && collectionNode.tempVisible && node.visible && node.tempVisible && inheritVisible);
                 obj = obj.transform.Find(OffsetTransformName).gameObject;
             }
 
@@ -791,7 +794,7 @@ namespace VRtist
                 var prop = componentType.GetProperty("enabled");
                 if (null != prop)
                 {
-                    prop.SetValue(component, node.containerVisible & node.visible & inheritVisible);
+                    prop.SetValue(component, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
                 }
             }
 
@@ -799,7 +802,7 @@ namespace VRtist
             LightController lightController = obj.GetComponent<LightController>();
             if(lightController)
             {
-                lightController.SetLightEnable(node.containerVisible & node.visible & inheritVisible);
+                lightController.SetLightEnable(node.containerVisible & node.visible & node.tempVisible & inheritVisible);
             }
 
             //obj.SetActive(node.containerVisible & node.visible);
