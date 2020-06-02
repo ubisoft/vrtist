@@ -363,6 +363,20 @@ namespace VRtist
             dopesheet.UpdateFromController(controller);
         }
 
+        protected CameraController GetSingleSelectedCamera()
+        {
+            List<GameObject> objecs = Selection.GetObjects();
+            if (objecs.Count != 1)
+                return null;
+
+            CameraController controller = null;
+            foreach (GameObject gObject in objecs)
+            {
+                controller = gObject.GetComponent<CameraController>();
+            }
+            return controller;
+        }
+
         protected bool HasDamping()
         {
             if (!gripped)
@@ -501,9 +515,37 @@ namespace VRtist
                 // compute rightMouthpiece local to world matrix with controller position/rotation
                 Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
                     Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation,  new Vector3(scale, scale, scale));
-
+                    
                 TransformSelection(controllerMatrix);
             }
+
+
+            if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+            {
+                Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                if (joystickAxis != Vector2.zero)
+                {
+                    CameraController cameraController = GetSingleSelectedCamera();
+                    if (null != cameraController)
+                    {
+                        float currentFocal = cameraController.focal;
+                        float focalFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+
+                        if (joystickAxis.x > deadZone)
+                            currentFocal *= focalFactor;
+                        if (joystickAxis.x < -deadZone)
+                            currentFocal /= focalFactor;
+
+                        if (currentFocal < 10f)
+                            currentFocal = 10f;
+                        if (currentFocal > 300f)
+                            currentFocal = 300f;
+
+                        cameraController.focal = currentFocal;
+                    }
+                }
+            }
+
         }
 
         protected void TransformSelection(Matrix4x4 transformation)
@@ -534,7 +576,6 @@ namespace VRtist
                     {
                         Matrix4x4 mat = transformed;  // copy
                         OnPreTransformSelection(obj.transform, ref mat);
-
                         // Set matrix
                         SyncData.SetTransform(obj.name, mat);
                         CommandManager.SendEvent(MessageType.Transform, obj.transform);
