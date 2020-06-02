@@ -62,6 +62,26 @@ namespace VRtist
             }
         }
 
+        // Create a command for a given game objects and its old value
+        public CommandSetValue(GameObject obj, string commandName, string propertyPath, T oldValue)
+        {
+            name = commandName;
+            ICommand.SplitPropertyPath(propertyPath, out objectPath, out componentName, out fieldName);
+            Component component = obj.GetComponent(componentName);
+            if (null == component) return;
+            oldValues[obj] = oldValue;
+        }
+
+        // Create a command for a given game objects
+        public CommandSetValue(GameObject obj, string commandName, string propertyPath)
+        {
+            name = commandName;
+            ICommand.SplitPropertyPath(propertyPath, out objectPath, out componentName, out fieldName);
+            Component component = obj.GetComponent(componentName);
+            if (null == component) return;
+            oldValues[obj] = GetValue(component, fieldName);
+        }
+
         // Create a command for a set of given game objects
         public CommandSetValue(List<GameObject> objects, string commandName, string propertyPath)
         {
