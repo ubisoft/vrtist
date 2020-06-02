@@ -82,6 +82,12 @@ namespace VRtist
                 {
                     GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
 
+                    MeshFilter meshFilter = newObject.GetComponentInChildren<MeshFilter>();
+                    if(null != meshFilter)
+                    {
+                        meshFilter.mesh.name = newObject.name;
+                    }
+
                     Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix;
                     if (!useDefaultInstantiationScale)
                     {
