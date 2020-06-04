@@ -9,6 +9,11 @@ namespace VRtist
     {
         public Dictionary<int, GameObject> selectionBefore = new Dictionary<int, GameObject>();
     }
+
+    public class ActiveCameraChangedArgs : EventArgs
+    {
+        public GameObject activeCamera = null;
+    }
     public class Selection
     {
         //public static Color SelectedColor = new Color(57f / 255f, 124f / 255f, 212f / 255f);
@@ -24,11 +29,25 @@ namespace VRtist
         private static GameObject hoveredObject = null;
         private static GameObject outlinedObject = null;
 
+        public static GameObject activeCamera = null;
+        public static event EventHandler<ActiveCameraChangedArgs> OnActiveCameraChanged;
+
         public static void TriggerSelectionChanged()
         {
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
+            if (handler != null)
+            {
+                handler(null, args);
+            }
+        }
+
+        public static void TriggerCurrentCameraChanged()
+        {
+            ActiveCameraChangedArgs args = new ActiveCameraChangedArgs();
+            args.activeCamera = activeCamera;
+            EventHandler<ActiveCameraChangedArgs> handler = OnActiveCameraChanged;
             if (handler != null)
             {
                 handler(null, args);
@@ -55,19 +74,34 @@ namespace VRtist
             }
         }
 
+        static void SetCurrentCamera(GameObject obj)
+        {
+            Camera cam = obj.GetComponentInChildren<Camera>(true);
+            if (null == cam)
+                return;
+            if (activeCamera == obj)
+                return;
+
+            if (null != activeCamera)
+            {
+                //SetCameraEnabled(currentCamera, false);
+                activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
+            }
+            activeCamera = obj;
+            if(null != activeCamera)
+            {
+                //SetCameraEnabled(currentCamera, true);
+                cam.gameObject.SetActive(true);
+            }
+            TriggerCurrentCameraChanged();
+        }
+
         static void SetCameraEnabled(GameObject obj, bool value)
         {
             Camera cam = obj.GetComponentInChildren<Camera>(true);
             if (cam)
             {
-                if (value)
-                {
-                    cam.gameObject.SetActive(true);
-                }
-                else if (!IsSelected(obj))
-                {
-                    cam.gameObject.SetActive(false);
-                }
+                cam.gameObject.SetActive(value);
             }
         }
 
@@ -156,7 +190,7 @@ namespace VRtist
             if (gObject)
             {
                 SetRecursiveLayer(gObject, "Hover");
-                SetCameraEnabled(gObject, true);
+                SetCurrentCamera(gObject);
             }
 
             return true;
@@ -180,7 +214,6 @@ namespace VRtist
             if (gObject)
             {
                 SetRecursiveLayer(gObject, layerName);
-                SetCameraEnabled(gObject, false);
             }
 
             return true;
@@ -199,7 +232,7 @@ namespace VRtist
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
-            SetCameraEnabled(gObject, true);
+            SetCurrentCamera(gObject);
 
             SetRecursiveLayer(gObject, "Selection");
 
@@ -222,8 +255,7 @@ namespace VRtist
 
             selection.Remove(gObject.GetInstanceID());
 
-            SetCameraEnabled(gObject, false);
-
+            
             string layerName = "Default";
             if (gObject.GetComponent<LightController>()
              || gObject.GetComponent<CameraController>()
@@ -254,11 +286,6 @@ namespace VRtist
                 {
                     layerName = "UI";
                 }
-
-                Camera cam = data.Value.GetComponentInChildren<Camera>(true);
-                if (cam)
-                    cam.gameObject.SetActive(false);
-
 
                 SetRecursiveLayer(data.Value, layerName);
             }

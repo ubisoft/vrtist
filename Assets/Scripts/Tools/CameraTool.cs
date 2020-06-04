@@ -55,9 +55,9 @@ namespace VRtist
             set 
             { 
                 focal = value;
-                foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+                
+                foreach (GameObject gobject in SelectedCameraObjects())
                 {
-                    GameObject gobject = data.Value;
                     CameraController cameraControler = gobject.GetComponent<CameraController>();
                     if (null == cameraControler)
                         continue;
@@ -165,22 +165,16 @@ namespace VRtist
 
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
         {
-            List<Camera> cameras = SelectedCameras();
-            if (cameras.Count > 0)
+            GameObject currentCamera = Selection.activeCamera;
+            if (null != currentCamera)
             {
                 float far = Camera.main.farClipPlane * 0.7f;
                 backgroundFeedback.position = position + direction.normalized * far;
                 backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
                 float scale = far * Mathf.Tan(Mathf.Deg2Rad * Camera.main.fieldOfView * 0.5f) * 0.5f * cameraFeedbackScale;
 
-                Camera cam = cameras[0].GetComponentInChildren<Camera>();
-                backgroundFeedback.gameObject.SetActive(true);
-                backgroundFeedback.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
+                Camera cam = currentCamera.GetComponentInChildren<Camera>();
                 backgroundFeedback.localScale = new Vector3(scale * cam.aspect, scale, scale);
-            }
-            else
-            {
-                backgroundFeedback.gameObject.SetActive(false);
             }
         }
 
@@ -297,13 +291,17 @@ namespace VRtist
         private List<GameObject> SelectedCameraObjects()
         {
             List<GameObject> selectedCameras = new List<GameObject>();
+
             foreach (var selectedItem in Selection.GetObjects())
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();               
                 if (!cam)
                     continue;
-                selectedCameras.Add(selectedItem);
+                if(selectedItem != Selection.activeCamera)
+                    selectedCameras.Add(selectedItem);
             }
+            if (null != Selection.activeCamera)
+                selectedCameras.Add(Selection.activeCamera);
             return selectedCameras;
         }
 
