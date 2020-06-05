@@ -868,7 +868,7 @@ namespace VRtist
         /// <returns></returns>
         public static GameObject InstantiateUnityPrefab(GameObject unityPrefab, Matrix4x4 matrix)
         {
-            GameObject newPrefab = Utils.CreateInstance(unityPrefab, prefab);
+            GameObject newPrefab = Utils.CreateInstance(unityPrefab, prefab, isPrefab: true);
 
             newPrefab.transform.localPosition = matrix.GetColumn(3);
             newPrefab.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));

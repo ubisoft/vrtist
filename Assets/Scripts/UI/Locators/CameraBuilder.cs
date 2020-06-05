@@ -1,14 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 namespace VRtist
 {
     public class CameraBuilder : GameObjectBuilder
     {
+        public static event EventHandler<GameObjectArgs> CameraCreatedEvent;
+
         public RenderTexture renderTexture = null;
 
-        public override GameObject CreateInstance(GameObject source, Transform parent = null)
+        public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newCamera = GameObject.Instantiate(source, parent);
             //RenderTexture newRenderTexture = new RenderTexture(renderTexture);
@@ -21,10 +22,19 @@ namespace VRtist
             newCamera.GetComponentInChildren<Camera>(true).targetTexture = newRenderTexture;
             newCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", newRenderTexture);
 
-
             VRInput.DeepSetLayer(newCamera, 5);
 
-            newCamera.GetComponentInChildren<CameraController>().CopyParameters(source.GetComponentInChildren<CameraController>());
+            newCamera.GetComponentInChildren<CameraController>(true).CopyParameters(source.GetComponentInChildren<CameraController>(true));
+
+            if(!isPrefab)
+            {
+                GameObjectArgs args = new GameObjectArgs { gobject = newCamera };
+                EventHandler<GameObjectArgs> handler = CameraCreatedEvent;
+                if(null != handler)
+                {
+                    handler(null, args);
+                }
+            }
 
             return newCamera;
         }

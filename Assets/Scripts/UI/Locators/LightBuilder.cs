@@ -6,7 +6,7 @@ namespace VRtist
 {
     public class LightBuilder : GameObjectBuilder
     {
-        public override GameObject CreateInstance(GameObject source, Transform parent = null)
+        public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newLight = GameObject.Instantiate(source, parent);
             LightController lightController = source.GetComponentInChildren<LightController>();

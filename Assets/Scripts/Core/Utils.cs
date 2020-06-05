@@ -115,7 +115,7 @@ namespace VRtist
             }
         }
 
-        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null)
+        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null, bool isPrefab = false)
         {
             GameObject intermediateParent = new GameObject();
             intermediateParent.transform.parent = parent;
@@ -131,7 +131,7 @@ namespace VRtist
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
             {
-                res = builder.CreateInstance(gObject, intermediateParent.transform);
+                res = builder.CreateInstance(gObject, intermediateParent.transform, isPrefab);
             }
             else
             {
