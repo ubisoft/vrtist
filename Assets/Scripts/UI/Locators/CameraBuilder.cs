@@ -13,7 +13,8 @@ namespace VRtist
             GameObject newCamera = GameObject.Instantiate(source, parent);
             //RenderTexture newRenderTexture = new RenderTexture(renderTexture);
             //RenderTexture newRenderTexture = new RenderTexture(1920,1080,24,RenderTextureFormat.RGB565);
-            RenderTexture newRenderTexture = new RenderTexture(1920, 1080, 24, RenderTextureFormat.RGB111110Float);
+            //RenderTexture newRenderTexture = new RenderTexture(1920, 1080, 24, RenderTextureFormat.RGB111110Float);
+            RenderTexture newRenderTexture = new RenderTexture(1920, 1080, 24, RenderTextureFormat.Default);
             if (null == newRenderTexture)
                 Debug.LogError("CAMERA FAILED");
 
