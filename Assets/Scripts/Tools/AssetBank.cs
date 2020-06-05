@@ -99,7 +99,8 @@ namespace VRtist
                         Quaternion r;
                         Maths.DecomposeMatrix(matrix, out t, out r, out s);
                         // Cancel scale
-                        SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)));
+                        Quaternion quarterRotation = Quaternion.Euler(new Vector3(-90f, 180f, 0));
+                        SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)) * Matrix4x4.Rotate(quarterRotation));
                     }
 
                     new CommandAddGameObject(newObject).Submit();

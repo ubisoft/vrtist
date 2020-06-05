@@ -47,6 +47,24 @@ namespace VRtist
                     Debug.Log("Pushed on Toggle Camera Panel");
                     uiManager.TogglePanel("Camera");
                 }
+                if (GUILayout.Button("Add Element To List", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    List<GameObject> list = new List<GameObject>();
+                    list.Add(Resources.Load("Prefabs/UI/DEBUG/DynListQuad") as GameObject);
+                    list.Add(Resources.Load("Prefabs/UI/DEBUG/DynListSphere") as GameObject);
+                    list.Add(Resources.Load("Prefabs/UI/DEBUG/DynListCapsule") as GameObject);
+                    GameObject obj = GameObject.Instantiate(list[Random.Range(0, list.Count)]);
+                    obj.GetComponentInChildren<MeshRenderer>().material.SetColor("_UnlitColor", Random.ColorHSV());
+                    uiManager.DEBUG_AddItemToList(obj.transform);
+                }
+                if (GUILayout.Button("Remove Last Element From List", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    uiManager.DEBUG_RemoveLastItemFromList();
+                }
+                if (GUILayout.Button("Reset DynList state", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    uiManager.DEBUG_ResetList();
+                }
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();

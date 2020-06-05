@@ -23,6 +23,7 @@ namespace VRtist
         protected Dictionary<GameObject, Vector3> initPositions = new Dictionary<GameObject, Vector3>();
         protected Dictionary<GameObject, Quaternion> initRotations = new Dictionary<GameObject, Quaternion>();
         protected Dictionary<GameObject, Vector3> initScales = new Dictionary<GameObject, Vector3>();
+        protected Dictionary<GameObject, float> initFocals = new Dictionary<GameObject, float>();
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
 
@@ -53,6 +54,7 @@ namespace VRtist
 
         protected SelectorTrigger selectorTrigger;
 
+        private CommandSetValue<float> cameraFocalCommand = null;
 
         struct ControllerDamping
         {
@@ -89,10 +91,20 @@ namespace VRtist
             Selection.OnSelectionChanged -= OnSelectionChanged;
             if (gripped)
                 OnEndGrip();
+            SubmitCameraFocalCommand();
             base.OnDisable();
         }
 
-        public virtual void OnSelectorTriggerEnter(Collider other)
+        protected void SubmitCameraFocalCommand()
+        {
+            if (null != cameraFocalCommand)
+            {
+                cameraFocalCommand.Submit();
+                cameraFocalCommand = null;
+            }
+        }
+
+    public virtual void OnSelectorTriggerEnter(Collider other)
         {
             Tooltips.SetTooltipVisibility(triggerTooltip, true);
             Tooltips.SetTooltipVisibility(gripTooltip, true);
@@ -209,12 +221,17 @@ namespace VRtist
             initPositions.Clear();
             initRotations.Clear();
             initScales.Clear();
-            foreach(GameObject obj in Selection.GetObjects())
+            initFocals.Clear();
+            foreach (GameObject obj in Selection.GetObjects())
             {
                 initParentMatrix[obj] = obj.transform.parent.localToWorldMatrix;
                 initPositions[obj] = obj.transform.localPosition;
                 initRotations[obj] = obj.transform.localRotation;
                 initScales[obj] = obj.transform.localScale;
+
+                CameraController cameraController = obj.GetComponent<CameraController>();
+                if(null != cameraController)
+                    initFocals[obj] = cameraController.focal;
             }
             scale = 1f;
         }
@@ -277,6 +294,19 @@ namespace VRtist
                 new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
         }
 
+        protected void ManageCamerasFocalsUndo()
+        {
+            foreach (GameObject obj in initFocals.Keys)
+            {
+                float oldValue = initFocals[obj];
+                if (oldValue != obj.GetComponent<CameraController>().focal)
+                {
+                    new CommandSetValue<float>(obj, "Camera Focal", "/CameraController/focal", oldValue).Submit();
+                }
+            }
+
+        }
+
         protected virtual void OnEndGrip()
         {
             gripped = false;
@@ -316,6 +346,7 @@ namespace VRtist
             if(!Selection.IsHandleSelected())
             {
                 ManageMoveObjectsUndo();
+                ManageCamerasFocalsUndo();
             }
 
             if (null != undoGroup)
@@ -392,6 +423,20 @@ namespace VRtist
                     lockedCheckbox.Disabled = true;
                 }
             }
+        }
+
+        protected CameraController GetSingleSelectedCamera()
+        {
+            List<GameObject> objecs = Selection.GetObjects();
+            if (objecs.Count != 1)
+                return null;
+
+            CameraController controller = null;
+            foreach (GameObject gObject in objecs)
+            {
+                controller = gObject.GetComponent<CameraController>();
+            }
+            return controller;
         }
 
         protected bool HasDamping()
@@ -532,9 +577,47 @@ namespace VRtist
                 // compute rightMouthpiece local to world matrix with controller position/rotation
                 Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
                     Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation,  new Vector3(scale, scale, scale));
-
+                    
                 TransformSelection(controllerMatrix);
             }
+
+
+            if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+            {
+                Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+
+                if (joystickAxis != Vector2.zero)
+                {
+                    CameraController cameraController = GetSingleSelectedCamera();
+                    if (null != cameraController)
+                    {
+                        if(null == cameraFocalCommand && null == undoGroup)
+                        {
+                            cameraFocalCommand = new CommandSetValue<float>(cameraController.gameObject, "Camera Focal", "/CameraController/focal");
+                        }
+
+                        float currentFocal = cameraController.focal;
+                        float focalFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+
+                        if (joystickAxis.x > deadZone)
+                            currentFocal *= focalFactor;
+                        if (joystickAxis.x < -deadZone)
+                            currentFocal /= focalFactor;
+
+                        if (currentFocal < 10f)
+                            currentFocal = 10f;
+                        if (currentFocal > 300f)
+                            currentFocal = 300f;
+
+                        cameraController.focal = currentFocal;
+                    }
+                }
+                else
+                {
+                    SubmitCameraFocalCommand();
+                }
+            }
+
         }
 
         protected void TransformSelection(Matrix4x4 transformation)
@@ -569,7 +652,6 @@ namespace VRtist
                     {
                         Matrix4x4 mat = transformed;  // copy
                         OnPreTransformSelection(obj.transform, ref mat);
-
                         // Set matrix
                         SyncData.SetTransform(obj.name, mat);
                         CommandManager.SendEvent(MessageType.Transform, obj.transform);

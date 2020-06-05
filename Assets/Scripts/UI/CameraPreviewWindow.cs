@@ -13,7 +13,7 @@ namespace VRtist
         private UIVerticalSlider focalSlider = null;
         private UIVerticalSlider focusSlider = null;
         
-        private CameraController currentCameraController = null;
+        private CameraController activeCameraController = null;
 
         void Start()
         {
@@ -26,7 +26,7 @@ namespace VRtist
                 focusSlider = mainPanel.Find("Focus")?.GetComponent<UIVerticalSlider>();
             }
 
-            Selection.OnSelectionChanged += OnSelectionChanged;
+            Selection.OnActiveCameraChanged += OnActiveCameraChanged;
         }
 
         public void Show(bool doShow)
@@ -37,37 +37,41 @@ namespace VRtist
             }
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
         {
-            // updates the panel from selection
-            foreach (GameObject gobject in Selection.GetObjects())
-            {
-                CameraController cameraController = gobject.GetComponent<CameraController>();
-                if (null == cameraController)
-                    continue;
-
+            CameraController cameraController = args.activeCamera.GetComponent<CameraController>();
+            if (null != cameraController)
                 UpdateFromController(cameraController);
-
-                // Use only the first camera.
-                return;
-            }
-
-            Clear();
+            else
+                Clear();
         }
 
         public void UpdateFromController(CameraController cameraController)
         {
-            currentCameraController = cameraController;
+            activeCameraController = cameraController;
 
             // Get the renderTexture of the camera, and set it on the material of the previewImagePanel
-            RenderTexture rt = currentCameraController.gameObject.GetComponentInChildren<Camera>(true).targetTexture;
+            RenderTexture rt = activeCameraController.gameObject.GetComponentInChildren<Camera>(true).targetTexture;
             previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", rt);
+
+            // Get the name of the camera, and set it in the title bar
+            ToolsUIManager.Instance.SetWindowTitle(handle, cameraController.gameObject.name);
+        }
+
+        private void Update()
+        {
+            if(null == activeCameraController)
+            {
+                focalSlider.Disabled = true;
+                focusSlider.Disabled = true;
+                return;
+            }
 
             // Update focal
             if (focalSlider != null)
             {
                 focalSlider.Disabled = false;
-                focalSlider.Value = cameraController.focal;
+                focalSlider.Value = activeCameraController.focal;
             }
 
             // TODO: put focus in cameraController
@@ -76,20 +80,11 @@ namespace VRtist
                 focusSlider.Disabled = false;
                 focusSlider.Value = 0.5f * (focusSlider.maxValue - focusSlider.minValue); // cameraController.focus;
             }
-
-            // Get the name of the camera, and set it in the title bar
-            ToolsUIManager.Instance.SetWindowTitle(handle, cameraController.gameObject.name);
-        }
-
-        private void Update()
-        {
-            // refresh... things..
-            // UpdateFromController(currentCameraController); // faudrait ca mais qui refresh que ce qui a change.
         }
 
         public void Clear()
         {
-            currentCameraController = null;
+            activeCameraController = null;
             ToolsUIManager.Instance.SetWindowTitle(handle, "Camera Preview");
             previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", null);
             focalSlider.Value = 0.5f * (focalSlider.maxValue - focalSlider.minValue);
