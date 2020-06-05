@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Net;
-using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace VRtist
@@ -117,7 +115,7 @@ namespace VRtist
             }
         }
 
-        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null)
+        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null, bool isPrefab = false)
         {
             GameObject intermediateParent = new GameObject();
             intermediateParent.transform.parent = parent;
@@ -133,7 +131,7 @@ namespace VRtist
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
             {
-                res = builder.CreateInstance(gObject, intermediateParent.transform);
+                res = builder.CreateInstance(gObject, intermediateParent.transform, isPrefab);
             }
             else
             {
@@ -221,6 +219,27 @@ namespace VRtist
             var temp = buf1;
             buf1 = buf2;
             buf2 = temp;
+        }
+
+        public static Texture2D CopyRenderTextureToTexture(RenderTexture renderTexture)
+        {
+            TextureCreationFlags flags = TextureCreationFlags.None;
+            Texture2D texture = new Texture2D(renderTexture.width, renderTexture.height, renderTexture.graphicsFormat, flags);
+
+            RenderTexture activeRT = RenderTexture.active;
+            RenderTexture.active = renderTexture;
+            texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            texture.Apply();
+            //Graphics.CopyTexture(renderTexture, texture); doesn't work :(
+            RenderTexture.active = activeRT;
+
+            return texture;
+        }
+
+        public static void SavePNG(Texture2D texture, string path)
+        {
+            byte[] data = texture.EncodeToPNG();
+            System.IO.File.WriteAllBytes(path, data);
         }
     }
 }

@@ -7,6 +7,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
+using System.Data.Common;
 
 namespace VRtist
 {
@@ -16,14 +17,14 @@ namespace VRtist
     // RequireComponent(typeof(MeshRenderer))]
     public class UIDynamicList : UIElement
     {
+        public event EventHandler<GameObjectArgs> ItemClickedEvent;
+
         [SpaceHeader("Panel Shape Parmeters", 6, 0.5f, 0.5f, 0.5f)]
         [CentimeterFloat] public float margin = 0.02f;
         [CentimeterFloat] public float itemWidth = 0.1f;
         [CentimeterFloat] public float itemHeight = 0.1f;
 
         public UILabel pageCountLabel = null;
-
-        public GameObjectHashChangedEvent onClicked = new GameObjectHashChangedEvent();
 
         // TMP visible
         [SpaceHeader("TMP Panel Layout Parameters", 6, 0.5f, 0.5f, 0.5f)]
@@ -40,7 +41,6 @@ namespace VRtist
         [SerializeField] private int nbItemsInLastPage = 0;
         [SerializeField] private int pagesCount = 0;
         [SerializeField] private int currentPage = 0;
-
 
         private bool needRebuild = false;
 
@@ -100,11 +100,14 @@ namespace VRtist
 
             GameObject gObj = new GameObject(t.gameObject.name);
             UIDynamicListItem item = gObj.AddComponent<UIDynamicListItem>();
+            item.list = this;
             item.Width = itemWidth;
             item.Height = itemHeight;
             item.Content = t;
-            item.onObjectClickedEvent.AddListener(OnItemClicked);
             item.transform.parent = transform;
+            item.transform.localPosition = Vector3.zero;
+            item.transform.localRotation = Quaternion.identity;
+            item.transform.localScale = Vector3.one;
             items.Add(item);
             
             needRebuild = true;
@@ -115,12 +118,13 @@ namespace VRtist
             return items.Count > 0 ? items[items.Count - 1] : null;
         }
 
-        public void DEBUG_Reset()
+        public void DEBUG_Reset() { Clear(); }
+
+        public void Clear()
         {
             for (int i = items.Count - 1; i >= 0; --i)
             {
                 UIDynamicListItem item = items[i];
-                item.onObjectClickedEvent.RemoveAllListeners();
                 items.RemoveAt(i);
                 GameObject.DestroyImmediate(item.gameObject);
             }
@@ -140,7 +144,6 @@ namespace VRtist
             {
                 if (items[i] == item)
                 {
-                    item.onClickEvent.RemoveAllListeners();
                     items.RemoveAt(i);
                     GameObject.DestroyImmediate(item.gameObject);
 
@@ -154,6 +157,16 @@ namespace VRtist
                     needRebuild = true;
                     return;
                 }
+            }
+        }
+
+        public void FireItem(Transform t)
+        {
+            GameObjectArgs args = new GameObjectArgs { gobject = t.gameObject };
+            EventHandler<GameObjectArgs> handler = ItemClickedEvent;
+            if(null != handler)
+            {
+                handler(null, args);
             }
         }
 
@@ -179,24 +192,6 @@ namespace VRtist
         {
             currentPage = pagesCount == 0 ? 0 : pagesCount - 1;
             needRebuild = true;
-        }
-
-        public void OnItemClicked(int gohash)
-        {
-            GameObject gObj = ToolsUIManager.Instance.GetUI3DObject(gohash);
-            if (gObj != null)
-            {
-                UIDynamicListItem item = gObj.GetComponent<UIDynamicListItem>();
-                if (item != null)
-                {
-                    Transform t = item.Content;
-                    if (t != null)
-                    {
-                        int hash = t.gameObject.GetHashCode();
-                        onClicked.Invoke(hash);
-                    }
-                }
-            }
         }
 
         // reposition every item depending on the itemWidth/Height, width/height, margin, and current page.

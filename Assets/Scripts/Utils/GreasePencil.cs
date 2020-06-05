@@ -7,7 +7,7 @@ namespace VRtist
 {
     public class GreasePencilBuilder : GameObjectBuilder
     {
-        public override GameObject CreateInstance(GameObject source, Transform parent = null)
+        public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newGreasePencil = GameObject.Instantiate(source, parent);
             newGreasePencil.GetComponent<GreasePencil>().data = source.GetComponent<GreasePencil>().data;

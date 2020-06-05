@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,6 +9,7 @@ namespace VRtist
     [RequireComponent(typeof(BoxCollider))]
     public class UIDynamicListItem : UIElement
     {
+        public UIDynamicList list;
         private Transform content = null;
         public Transform Content { get { return content; } set { content = value; value.parent = transform; AdaptContent(); } }
 
@@ -51,8 +53,8 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                int hash = gameObject.GetHashCode();
-                onObjectClickedEvent.Invoke(hash);
+
+                list.FireItem(Content);
             }
         }
 

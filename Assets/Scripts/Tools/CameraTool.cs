@@ -49,6 +49,9 @@ namespace VRtist
         private Transform controller;
         private Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
 
+        public UIDynamicList cameraList;
+        private GameObject cameraItemPrefab;
+
         public float Focal
         {
             get { return focal; }
@@ -130,6 +133,11 @@ namespace VRtist
             // Create tooltips
             CreateTooltips();
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Zoom");
+
+            // Camera list
+            CameraBuilder.CameraCreatedEvent += OnNewCameraCreated;
+            if(null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
+            cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }
 
         protected override void Init()
@@ -161,6 +169,14 @@ namespace VRtist
             {
                 showCameraFrustumCheckbox.Checked = showCameraFrustum;
             }
+        }
+
+        public void OnNewCameraCreated(object sender, GameObjectArgs args)
+        {
+            GameObject cameraItemObject = Instantiate(cameraItemPrefab);
+            CameraItem cameraItem = cameraItemObject.GetComponentInChildren<CameraItem>();
+            cameraItem.SetCameraObject(args.gobject);
+            cameraList.AddItem(cameraItem.transform);
         }
 
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
@@ -513,6 +529,20 @@ namespace VRtist
         public void OnCheckShowCameraFrustum(bool value)
         {
             showCameraFrustum = value;
+        }
+
+        public void OnSelectCameraItem(object sender, GameObjectArgs args)
+        {
+            GameObject item = args.gobject;
+            CameraItem cameraItem = item.GetComponent<CameraItem>();
+
+            // Select camera in scene
+            CommandGroup command = new CommandGroup();
+            Selection.ClearSelection();
+            new CommandRemoveFromSelection(Selection.GetObjects()).Submit();
+            Selection.AddToSelection(cameraItem.cameraObject);
+            new CommandAddToSelection(cameraItem.cameraObject).Submit();
+            command.Submit();
         }
     }
 }

@@ -59,9 +59,12 @@ namespace VRtist
         protected Transform world = null;
         protected Dictionary<string, AnimationChannel> channels = new Dictionary<string, AnimationChannel>();
 
+        public bool locked = false;
+
         public virtual void CopyParameters(ParametersController sourceController)
         {
             channels = new Dictionary<string, AnimationChannel>(sourceController.channels);
+            locked = sourceController.locked;
         }
 
         protected Transform GetWorldTransform()

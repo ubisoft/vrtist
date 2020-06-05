@@ -13,6 +13,8 @@ namespace VRtist
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
 
+        [SerializeField] protected UICheckbox lockedCheckbox;
+
         float selectorRadius;
         protected Color selectionColor = new Color(0f, 167f / 255f, 1f);
         protected Color eraseColor = new Color(1f, 0f, 0f);
@@ -392,6 +394,35 @@ namespace VRtist
             }
             ParametersController controller = GetFirstController();
             dopesheet.UpdateFromController(controller);
+
+            // Update locked checkbox if anyone
+            if(null != lockedCheckbox)
+            {
+                int numLocked = 0;
+                int numUnlocked = 0;
+                foreach(GameObject gobject in Selection.GetObjects())
+                {
+                    ParametersController parameters = gobject.GetComponent<ParametersController>();
+                    if(null != parameters)
+                    {
+                        if(parameters.locked) { ++numLocked; }
+                        else { ++numUnlocked; }
+                    }
+                }
+                lockedCheckbox.Disabled = false;
+                if(numLocked > 0 && numUnlocked == 0)
+                {
+                    lockedCheckbox.Checked = true;
+                }
+                else if(numUnlocked > 0 && numLocked == 0)
+                {
+                    lockedCheckbox.Checked = false;
+                }
+                else
+                {
+                    lockedCheckbox.Disabled = true;
+                }
+            }
         }
 
         protected CameraController GetSingleSelectedCamera()
@@ -595,6 +626,10 @@ namespace VRtist
 
             foreach(GameObject obj in Selection.GetObjects())
             {
+                // Some objects may be locked, so check that
+                ParametersController parameters = obj.GetComponent<ParametersController>();
+                if(null != parameters && parameters.locked) { continue; }
+
                 var meshParentTransform = obj.transform.parent;
                 Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
                 if(meshParentTransform)
@@ -725,7 +760,7 @@ namespace VRtist
             Selection.ClearSelection();
         }
 
-        public GameObject DuplicateObject(GameObject source)
+        public GameObject DuplicateObject(GameObject source, bool withVFX = true)
         {
             if (source.GetComponent<UIHandle>())
                 return null;
@@ -735,8 +770,11 @@ namespace VRtist
             new CommandDuplicateGameObject(clone, source).Submit();
 
             // Add a selectionVFX instance on the duplicated objects
-            GameObject vfxInstance = Instantiate(selectionVFXPrefab);
-            vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(clone);
+            if(withVFX)
+            {
+                GameObject vfxInstance = Instantiate(selectionVFXPrefab);
+                vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(clone);
+            }
 
             if (Selection.IsSelected(source))
             {
@@ -881,6 +919,18 @@ namespace VRtist
                     group.GetChild(i).parent = group.parent;
                 }
                 Destroy(group.gameObject);
+            }
+        }
+
+        public void OnSetLocked(bool locked)
+        {
+            foreach(GameObject gobject in Selection.GetObjects())
+            {
+                ParametersController parameters = gobject.GetComponent<ParametersController>();
+                if(null != parameters)
+                {
+                    parameters.locked = locked;
+                }
             }
         }
     }
