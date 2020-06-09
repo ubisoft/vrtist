@@ -1479,7 +1479,7 @@ namespace VRtist
             Transform camTransform = SyncData.FindChild(transform,name);
             if (camTransform == null)
             {
-                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, name);
+                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, name, isPrefab:true);
                 Node node = SyncData.CreateNode(name);
                 node.prefab = camGameObject;
 

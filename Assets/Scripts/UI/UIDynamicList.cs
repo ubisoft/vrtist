@@ -75,7 +75,7 @@ namespace VRtist
         private void Update()
         {
             if (needRebuild)
-            {
+            {                
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();

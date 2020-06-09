@@ -21,7 +21,6 @@ namespace VRtist
 
         private void Start()
         {
-            boxCollider = GetComponent<BoxCollider>();
         }
 
         public void AdaptContent()
@@ -29,15 +28,14 @@ namespace VRtist
             if (content != null)
             {
                 Vector3 childExtents = content.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents; // TODO: what is many meshFilters?
-                float maxChildDim = Mathf.Max(new float[] { childExtents.x, childExtents.y, childExtents.z });
-                float minDim = Mathf.Min(new float[] { width / 2.0f, height / 2.0f, width / 2.0f }); // depth?
-                float ratio = minDim / maxChildDim;
-                content.transform.localScale = new Vector3(ratio, ratio, ratio);
+                float w = (width / 2.0f) / childExtents.x;
+                float h = (height / 2.0f) / childExtents.y;
+
+                content.transform.localScale = new Vector3(w, h, 1f);
 
                 // adapt collider to the new mesh size (in local space)
-#if UNITY_EDITOR
                 boxCollider = GetComponent<BoxCollider>();
-#endif
+
                 Vector3 e = content.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents;
                 boxCollider.size = transform.InverseTransformVector(content.transform.TransformVector(new Vector3(2.0f * e.x, 2.0f * e.y, Mathf.Max(0.01f, 2.0f * e.z))));
                 boxCollider.isTrigger = true;
