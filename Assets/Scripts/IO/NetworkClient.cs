@@ -1208,7 +1208,9 @@ namespace VRtist
             float spotBlend = 0;
 
             float worldScale = root.parent.localScale.x;
-            float intensity = light.intensity / (worldScale * worldScale);
+
+            LightController lightController = lightInfo.transform.GetComponentInChildren<LightController>();
+            float intensity = lightController.intensity;
 
             switch (light.type)
             {
