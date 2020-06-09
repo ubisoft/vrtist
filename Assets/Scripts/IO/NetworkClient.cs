@@ -1552,6 +1552,8 @@ namespace VRtist
                     case LightType.Spot:
                         lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform, name);
                         break;
+                    default:
+                        return;
                 }
                 //lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 Node node = SyncData.CreateNode(name);
