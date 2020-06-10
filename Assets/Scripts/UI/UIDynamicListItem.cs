@@ -6,7 +6,9 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
-    [RequireComponent(typeof(BoxCollider))]
+    [RequireComponent(typeof(BoxCollider)),
+     RequireComponent(typeof(MeshFilter)),
+     RequireComponent(typeof(MeshRenderer))]
     public class UIDynamicListItem : UIElement
     {
         public UIDynamicList list;
