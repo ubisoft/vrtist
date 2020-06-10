@@ -101,6 +101,7 @@ namespace VRtist
 
             GameObject gObj = new GameObject(t.gameObject.name);
             UIDynamicListItem item = gObj.AddComponent<UIDynamicListItem>();
+            item.tag = "UICollider";
             item.list = this;
             item.Width = itemWidth;
             item.Height = itemHeight;
