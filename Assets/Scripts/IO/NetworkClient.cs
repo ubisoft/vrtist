@@ -2635,6 +2635,7 @@ namespace VRtist
         {
             NetCommand command = NetGeometry.BuildSendFrameCommand(frame.frame);
             AddCommand(command);
+            GlobalState.currentFrame = frame.frame;
         }
 
         public void SendPlay()
