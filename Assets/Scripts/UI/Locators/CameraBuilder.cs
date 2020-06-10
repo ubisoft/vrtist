@@ -5,8 +5,6 @@ namespace VRtist
 {
     public class CameraBuilder : GameObjectBuilder
     {
-        public static event EventHandler<GameObjectArgs> CameraCreatedEvent;
-
         public RenderTexture renderTexture = null;
 
         public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
@@ -25,16 +23,6 @@ namespace VRtist
             VRInput.DeepSetLayer(newCamera, 5);
 
             newCamera.GetComponentInChildren<CameraController>(true).CopyParameters(source.GetComponentInChildren<CameraController>(true));
-
-            if(!isPrefab)
-            {
-                GameObjectArgs args = new GameObjectArgs { gobject = newCamera };
-                EventHandler<GameObjectArgs> handler = CameraCreatedEvent;
-                if(null != handler)
-                {
-                    handler(null, args);
-                }
-            }
 
             return newCamera;
         }

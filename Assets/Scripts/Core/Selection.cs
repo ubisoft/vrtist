@@ -150,7 +150,7 @@ namespace VRtist
         {
             grippedObject = obj;
             UpdateCurrentObjectOutline();
-            TriggerSelectionChanged();
+            //TriggerSelectionChanged();
         }
 
         public static List<GameObject> GetObjects()

@@ -1431,7 +1431,10 @@ namespace VRtist
             }
 
             Node node = SyncData.nodes[objectName];
-            node.prefab.GetComponent<ParametersController>().AddAnimationChannel(animationChannel, keys);
+            ParametersController parameterController = node.prefab.GetComponent<ParametersController>();
+            if (!parameterController)
+                return;
+            parameterController.AddAnimationChannel(animationChannel, keys);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)

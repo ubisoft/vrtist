@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -74,6 +75,18 @@ namespace VRtist
 
         // Camera damping
         public static float cameraDamping = 50f;
+
+        public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
+        public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
+
+        public static void FireObjectAdded(GameObject gObject)
+        {
+            ObjectAddedEvent.Invoke(gObject);
+        }
+        public static void FireObjectRemoved(GameObject gObject)
+        {
+            ObjectRemovedEvent.Invoke(gObject);
+        }
 
         // Singleton
         private static GlobalState instance = null;

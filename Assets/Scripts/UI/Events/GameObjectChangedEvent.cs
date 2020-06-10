@@ -9,11 +9,11 @@ namespace VRtist
         public GameObject gobject;
     }
 
-    //[Serializable]
-    //public class GameObjectChangedEvent : UnityEvent<GameObject>
-    //{
+    [Serializable]
+    public class GameObjectChangedEvent : UnityEvent<GameObject>
+    {
 
-    //}
+    }
 
     [Serializable]
     public class GameObjectHashChangedEvent : UnityEvent<int>

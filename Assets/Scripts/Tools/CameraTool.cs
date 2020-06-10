@@ -135,7 +135,8 @@ namespace VRtist
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Zoom");
 
             // Camera list
-            CameraBuilder.CameraCreatedEvent += OnNewCameraCreated;
+            GlobalState.ObjectAddedEvent.AddListener(OnCameraAdded);
+            GlobalState.ObjectRemovedEvent.AddListener(OnCameraRemoved);
             if(null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }
@@ -171,12 +172,31 @@ namespace VRtist
             }
         }
 
-        public void OnNewCameraCreated(object sender, GameObjectArgs args)
+        public void OnCameraAdded(GameObject gObject)
         {
+            CameraController cameraController = gObject.GetComponent<CameraController>();
+            if (null == cameraController)
+                return;
             GameObject cameraItemObject = Instantiate(cameraItemPrefab);
             CameraItem cameraItem = cameraItemObject.GetComponentInChildren<CameraItem>();
-            cameraItem.SetCameraObject(args.gobject);
+            cameraItem.SetCameraObject(gObject);
             cameraList.AddItem(cameraItem.transform);
+        }
+
+        public void OnCameraRemoved(GameObject gObject)
+        {
+            CameraController cameraController = gObject.GetComponent<CameraController>();
+            if (null == cameraController)
+                return;
+            foreach(var item in cameraList.GetItems())
+            {
+                CameraItem cameraItem = item.Content.GetComponent<CameraItem>();
+                if(cameraItem.cameraObject == gObject)
+                {
+                    cameraList.RemoveItem(item);
+                    return;
+                }
+            }
         }
 
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)

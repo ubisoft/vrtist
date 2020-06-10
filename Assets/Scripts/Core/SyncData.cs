@@ -71,6 +71,7 @@ namespace VRtist
         public void AddInstance(GameObject obj, string collectionInstanceName = "/")
         {
             instances.Add(new Tuple<GameObject, string>(obj, collectionInstanceName));
+            GlobalState.FireObjectAdded(obj);
         }
         public void RemoveInstance(GameObject obj)
         {
@@ -79,6 +80,7 @@ namespace VRtist
                 if (item.Item1 == obj)
                 {
                     instances.Remove(item);
+                    GlobalState.FireObjectRemoved(obj);
                     break;
                 }
             }

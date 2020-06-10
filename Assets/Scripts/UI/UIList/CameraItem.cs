@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
 namespace VRtist
@@ -14,6 +13,12 @@ namespace VRtist
         {
             Selection.OnSelectionChanged += OnSelectionChanged;
             Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+        }
+
+        public void OnDestroy()
+        {
+            Selection.OnSelectionChanged -= OnSelectionChanged;
+            Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
         }
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)

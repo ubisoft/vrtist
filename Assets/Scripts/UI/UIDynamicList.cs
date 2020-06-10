@@ -92,6 +92,11 @@ namespace VRtist
         // API
         //
 
+        public List<UIDynamicListItem> GetItems()
+        {
+            return items;
+        }
+
         public void AddItem(Transform t)
         {
             // full page, add one page

@@ -50,7 +50,6 @@ namespace VRtist
             {
                 SendMesh();
             }
-
         }
 
         public override void Serialize(SceneSerializer serializer)
