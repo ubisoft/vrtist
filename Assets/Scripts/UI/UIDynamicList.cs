@@ -23,6 +23,7 @@ namespace VRtist
         [CentimeterFloat] public float margin = 0.02f;
         [CentimeterFloat] public float itemWidth = 0.1f;
         [CentimeterFloat] public float itemHeight = 0.1f;
+        [CentimeterFloat] public float itemDepth = 0.1f;
 
         public UILabel pageCountLabel = null;
 
@@ -103,6 +104,7 @@ namespace VRtist
             item.list = this;
             item.Width = itemWidth;
             item.Height = itemHeight;
+            item.Depth = itemDepth;
             item.Content = t;
             item.transform.parent = transform;
             item.transform.localPosition = Vector3.zero;
@@ -241,6 +243,7 @@ namespace VRtist
                         item.transform.localRotation = Quaternion.identity;
                         item.Width = itemWidth;
                         item.Height = itemHeight;
+                        item.Depth = itemDepth;
                         item.AdaptContent();
                     }
                 }
@@ -296,6 +299,8 @@ namespace VRtist
                     Vector3 bl = transform.TransformPoint(new Vector3(margin + col * (itemHMargin + itemWidth),             -margin - row * (itemVMargin + itemHeight) - itemHeight, 0));
                     Vector3 br = transform.TransformPoint(new Vector3(margin + col * (itemHMargin + itemWidth) + itemWidth, -margin - row * (itemVMargin + itemHeight) - itemHeight, 0));
 
+                    // TODO: draw depth
+
                     Gizmos.color = Color.blue;
                     Gizmos.DrawLine(tl, tr);
                     Gizmos.DrawLine(tr, br);
@@ -313,7 +318,8 @@ namespace VRtist
             float height,
             float margin,
             float item_width,
-            float item_height)
+            float item_height,
+            float item_depth)
         {
             GameObject go = new GameObject(listName);
 

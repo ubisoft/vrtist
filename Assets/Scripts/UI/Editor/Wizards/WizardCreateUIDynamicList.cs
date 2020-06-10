@@ -14,12 +14,14 @@ namespace VRtist
         public float margin = 0.02f;
         public float itemWidth = 0.1f;
         public float itemHeight = 0.1f;
+        public float itemDepth = 0.1f;
 
         private static readonly float default_width = 0.4f;
         private static readonly float default_height = 0.6f;
         private static readonly float default_margin = 0.02f;
         private static readonly float default_item_width = 0.1f;
         private static readonly float default_item_height = 0.1f;
+        private static readonly float default_item_depth = 0.1f;
 
         [MenuItem("VRtist/Create UI Dynamic List")]
         static void CreateWizard()
@@ -37,7 +39,7 @@ namespace VRtist
                 parent = T;
             }
 
-            UIDynamicList.Create("List", parent, Vector3.zero, default_width, default_height, default_margin, default_item_width, default_item_height);
+            UIDynamicList.Create("List", parent, Vector3.zero, default_width, default_height, default_margin, default_item_width, default_item_height, default_item_depth);
         }
 
         private void OnWizardUpdate()
@@ -47,7 +49,7 @@ namespace VRtist
 
         private void OnWizardCreate()
         {
-            UIDynamicList.Create(listName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, itemWidth, itemHeight);
+            UIDynamicList.Create(listName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, itemWidth, itemHeight, itemDepth);
         }
     }
 }
