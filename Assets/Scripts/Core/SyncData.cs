@@ -831,7 +831,7 @@ namespace VRtist
             Node srcNode = nodes[srcInstance.name];
             GameObject srcPrefab = srcNode.prefab;
 
-            GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent, name);
+            GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent.parent, name);
             Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
             prefabCloneNode.prefab = prefabClone;
             GameObject clone = AddObjectToDocument(root, prefabClone.name, "/");

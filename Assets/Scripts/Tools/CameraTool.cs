@@ -361,10 +361,13 @@ namespace VRtist
                 }
                 OnStartGrip();
             },
-           () =>
-           {
-               OnEndGrip();
-           });
+            () =>
+            {
+                OnEndGrip();
+            });
+
+            // called to update focal slider value
+            UpdateUI();
         }
 
         public void SendCameraParams(GameObject camera)
@@ -373,7 +376,6 @@ namespace VRtist
             cameraInfo.transform = camera.transform;
             CommandManager.SendEvent(MessageType.Camera, cameraInfo);
         }
-
 
         protected override void DoUpdate()
         {
@@ -398,6 +400,9 @@ namespace VRtist
                         cameraFeedbackScale /= cameraFeedbackScaleFactor;
                 }
             }
+
+            // called to update focal slider value
+            UpdateUI();
 
             if (!showCameraFeedback || !feedbackPositioning)
             {

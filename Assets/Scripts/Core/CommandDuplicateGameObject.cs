@@ -21,7 +21,7 @@ namespace VRtist
         {
             srcObject = src;
             gObject = copy;
-            parent = copy.transform.parent;
+            parent = copy.transform.parent.parent;
         }
 
         private void SendDuplicate()

@@ -428,7 +428,7 @@ namespace VRtist
         public static void Duplicate(Transform prefab, byte[] data)
         {
             int bufferIndex = 0;
-            Transform srcPath = FindPath(prefab, data, 0, out bufferIndex);
+            Transform srcPath = FindPath(prefab, data, ref bufferIndex);
             if (srcPath == null)
                 return;
 
@@ -446,10 +446,10 @@ namespace VRtist
         public static void BuildSendToTrash(Transform root, byte[] data)
         {
             int bufferIndex = 0;
-            Transform objectPath = FindPath(root, data, 0, out bufferIndex);
+            Transform objectPath = FindPath(root, data, ref bufferIndex);
             if (null == objectPath)
                 return;
-            objectPath.parent = Utils.GetTrash().transform;
+            objectPath.parent.parent = Utils.GetTrash().transform;
 
             Node node = SyncData.nodes[objectPath.name];
             node.RemoveInstance(objectPath.gameObject);
@@ -458,8 +458,8 @@ namespace VRtist
         {
             int bufferIndex = 0;
             string objectName = GetString(data, ref bufferIndex);
-            Transform parent = FindPath(root, data, bufferIndex, out bufferIndex);
-            Transform trf = Utils.GetTrash().transform.Find(objectName);
+            Transform parent = FindPath(root, data, ref bufferIndex);
+            Transform trf = Utils.GetTrash().transform.Find(objectName+"_parent");
             if (null != trf)
             {
                 trf.parent = parent;
@@ -1013,11 +1013,9 @@ namespace VRtist
             }
         }
 
-        public static Transform FindPath(Transform root, byte[] data, int startIndex, out int bufferIndex)
+        public static Transform FindPath(Transform root, byte[] data, ref int bufferIndex)
         {
-            int pathLength = (int)BitConverter.ToUInt32(data, startIndex);
-            string path = System.Text.Encoding.UTF8.GetString(data, 4, pathLength);
-            bufferIndex = startIndex + pathLength + 4;
+            string path = NetGeometry.GetString(data, ref bufferIndex);
 
             char[] separator = { '/' };
             string[] splitted = path.Split(separator);
