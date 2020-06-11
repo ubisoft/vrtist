@@ -434,23 +434,6 @@ namespace VRtist
             }
         }
 
-        private void OnTriggerStay(Collider otherCollider)
-        {
-            if (!UIEnabled.Value) return;
-
-            if (Disabled) { return; }
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                // NOTE: The correct "currentValue" is already computed in the HandleCursorBehavior callback.
-                //       Just call the listeners here.
-                onSlideEvent.Invoke(currentValue);
-
-                int intValue = Mathf.RoundToInt(currentValue);
-                onSlideEventInt.Invoke(intValue);
-            }
-        }
-
         public void OnClickSlider()
         {
             SetColor(Disabled ? disabledColor : pushedColor);
@@ -498,6 +481,9 @@ namespace VRtist
                 if (triggerState)
                 {
                     Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    onSlideEvent.Invoke(Value);
+                    int intValue = Mathf.RoundToInt(Value);
+                    onSlideEventInt.Invoke(intValue);
                 }
 
                 // Haptic intensity as we go deeper into the widget.

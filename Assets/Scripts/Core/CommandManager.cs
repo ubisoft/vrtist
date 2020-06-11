@@ -69,6 +69,8 @@ namespace VRtist
 
         public static void Undo()
         {
+            if (null != currentGroup)
+                return;
             int count = undoStack.Count;
             if (count == 0)
                 return;
@@ -80,6 +82,8 @@ namespace VRtist
 
         public static void Redo()
         {
+            if (null != currentGroup)
+                return;
             int count = redoStack.Count;
             if (redoStack.Count == 0)
                 return;

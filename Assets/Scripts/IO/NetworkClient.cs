@@ -2778,99 +2778,106 @@ namespace VRtist
 
                 foreach (NetCommand command in receivedCommands)
                 {
-                    Debug.Log("Command Id " + command.id.ToString());
-                    switch (command.messageType)
+                    try
                     {
-                        case MessageType.Mesh:
-                            NetGeometry.BuildMesh(command.data);
-                            break;
-                        case MessageType.Transform:
-                            NetGeometry.BuildTransform(prefab, command.data);
-                            break;
-                        case MessageType.Material:
-                            NetGeometry.BuildMaterial(command.data);
-                            break;
-                        case MessageType.AssignMaterial:
-                            NetGeometry.BuildAssignMaterial(command.data);
-                            break;
-                        case MessageType.Camera:
-                            NetGeometry.BuildCamera(prefab, command.data);
-                            break;
-                        case MessageType.CameraAnimation:
-                            NetGeometry.BuildAnimation(prefab, command.data);
-                            break;
-                        case MessageType.CameraAttributes:
-                            NetGeometry.BuildCameraAttributes(prefab, command.data);
-                            break;
-                        case MessageType.Light:
-                            NetGeometry.BuildLight(prefab, command.data);
-                            break;
-                        case MessageType.Delete:
-                            NetGeometry.Delete(prefab, command.data);
-                            break;
-                        case MessageType.Rename:
-                            NetGeometry.Rename(prefab, command.data);
-                            break;
-                        case MessageType.Duplicate:
-                            NetGeometry.Duplicate(prefab, command.data);
-                            break;
-                        case MessageType.SendToTrash:
-                            NetGeometry.BuildSendToTrash(root, command.data);
-                            break;
-                        case MessageType.RestoreFromTrash:
-                            NetGeometry.BuildRestoreFromTrash(root, command.data);
-                            break;
-                        case MessageType.Texture:
-                            NetGeometry.BuildTexture(command.data);
-                            break;
-                        case MessageType.Collection:
-                            NetGeometry.BuildCollection(command.data);
-                            break;
-                        case MessageType.CollectionRemoved:
-                            NetGeometry.BuildCollectionRemoved(command.data);
-                            break;
-                        case MessageType.AddCollectionToCollection:
-                            NetGeometry.BuildAddCollectionToCollection(prefab, command.data);
-                            break;
-                        case MessageType.RemoveCollectionFromCollection:
-                            NetGeometry.BuildRemoveCollectionFromCollection(prefab, command.data);
-                            break;
-                        case MessageType.AddObjectToCollection:
-                            NetGeometry.BuildAddObjectToCollection(prefab, command.data);
-                            break;
-                        case MessageType.RemoveObjectFromCollection:
-                            NetGeometry.BuildRemoveObjectFromCollection(prefab, command.data);
-                            break;
-                        case MessageType.CollectionInstance:
-                            NetGeometry.BuildCollectionInstance(command.data);
-                            break;
-                        case MessageType.AddObjectToDocument:
-                            NetGeometry.BuildAddObjectToDocument(root, command.data);
-                            break;
-                        case MessageType.AddCollectionToScene:
-                            NetGeometry.BuilAddCollectionToScene(root, command.data);
-                            break;
-                        case MessageType.SetScene:
-                            NetGeometry.BuilSetScene(command.data);
-                            break;
-                        case MessageType.GreasePencilMaterial:
-                            NetGeometry.BuildGreasePencilMaterial(command.data);
-                            break;
-                        case MessageType.GreasePencilMesh:
-                            NetGeometry.BuildGreasePencilMesh(command.data);
-                            break;
-                        case MessageType.GreasePencilConnection:
-                            NetGeometry.BuildGreasePencilConnection(command.data);
-                            break;
-                        case MessageType.GreasePencilTimeOffset:
-                            NetGeometry.BuildGreasePencilTimeOffset(command.data);
-                            break;
-                        case MessageType.Frame:
-                            NetGeometry.BuildFrame(command.data);
-                            break;
-                        case MessageType.FrameStartEnd:
-                            NetGeometry.BuildFrameStartEnd(command.data);
-                            break;
+                        switch (command.messageType)
+                        {
+                            case MessageType.Mesh:
+                                NetGeometry.BuildMesh(command.data);
+                                break;
+                            case MessageType.Transform:
+                                NetGeometry.BuildTransform(prefab, command.data);
+                                break;
+                            case MessageType.Material:
+                                NetGeometry.BuildMaterial(command.data);
+                                break;
+                            case MessageType.AssignMaterial:
+                                NetGeometry.BuildAssignMaterial(command.data);
+                                break;
+                            case MessageType.Camera:
+                                NetGeometry.BuildCamera(prefab, command.data);
+                                break;
+                            case MessageType.CameraAnimation:
+                                NetGeometry.BuildAnimation(prefab, command.data);
+                                break;
+                            case MessageType.CameraAttributes:
+                                NetGeometry.BuildCameraAttributes(prefab, command.data);
+                                break;
+                            case MessageType.Light:
+                                NetGeometry.BuildLight(prefab, command.data);
+                                break;
+                            case MessageType.Delete:
+                                NetGeometry.Delete(prefab, command.data);
+                                break;
+                            case MessageType.Rename:
+                                NetGeometry.Rename(prefab, command.data);
+                                break;
+                            case MessageType.Duplicate:
+                                NetGeometry.Duplicate(prefab, command.data);
+                                break;
+                            case MessageType.SendToTrash:
+                                NetGeometry.BuildSendToTrash(root, command.data);
+                                break;
+                            case MessageType.RestoreFromTrash:
+                                NetGeometry.BuildRestoreFromTrash(root, command.data);
+                                break;
+                            case MessageType.Texture:
+                                NetGeometry.BuildTexture(command.data);
+                                break;
+                            case MessageType.Collection:
+                                NetGeometry.BuildCollection(command.data);
+                                break;
+                            case MessageType.CollectionRemoved:
+                                NetGeometry.BuildCollectionRemoved(command.data);
+                                break;
+                            case MessageType.AddCollectionToCollection:
+                                NetGeometry.BuildAddCollectionToCollection(prefab, command.data);
+                                break;
+                            case MessageType.RemoveCollectionFromCollection:
+                                NetGeometry.BuildRemoveCollectionFromCollection(prefab, command.data);
+                                break;
+                            case MessageType.AddObjectToCollection:
+                                NetGeometry.BuildAddObjectToCollection(prefab, command.data);
+                                break;
+                            case MessageType.RemoveObjectFromCollection:
+                                NetGeometry.BuildRemoveObjectFromCollection(prefab, command.data);
+                                break;
+                            case MessageType.CollectionInstance:
+                                NetGeometry.BuildCollectionInstance(command.data);
+                                break;
+                            case MessageType.AddObjectToDocument:
+                                NetGeometry.BuildAddObjectToDocument(root, command.data);
+                                break;
+                            case MessageType.AddCollectionToScene:
+                                NetGeometry.BuilAddCollectionToScene(root, command.data);
+                                break;
+                            case MessageType.SetScene:
+                                NetGeometry.BuilSetScene(command.data);
+                                break;
+                            case MessageType.GreasePencilMaterial:
+                                NetGeometry.BuildGreasePencilMaterial(command.data);
+                                break;
+                            case MessageType.GreasePencilMesh:
+                                NetGeometry.BuildGreasePencilMesh(command.data);
+                                break;
+                            case MessageType.GreasePencilConnection:
+                                NetGeometry.BuildGreasePencilConnection(command.data);
+                                break;
+                            case MessageType.GreasePencilTimeOffset:
+                                NetGeometry.BuildGreasePencilTimeOffset(command.data);
+                                break;
+                            case MessageType.Frame:
+                                NetGeometry.BuildFrame(command.data);
+                                break;
+                            case MessageType.FrameStartEnd:
+                                NetGeometry.BuildFrameStartEnd(command.data);
+                                break;
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        string message = $"Network exception (Command#{i}) Type {command.messageType}\n{e}";
+                        Debug.LogError(message);
                     }
                     i++;
 
