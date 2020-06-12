@@ -20,7 +20,6 @@ namespace VRtist
         public AnimationChannel zRotation;
         public AnimationChannel lens;
     }
-
     public class RemotePlayer : MonoBehaviour
     {
         public Dopesheet dopesheet = null;
@@ -131,8 +130,11 @@ namespace VRtist
 
             foreach(GameObject item in Selection.selection.Values)
             {
-                if (null != item.GetComponent<CameraController>())
+                CameraController cameraController = item.GetComponent<CameraController>();
+                if (null != cameraController)
                 {
+                    cameraController.ClearAnimations();
+
                     AnimationSet animationSet = new AnimationSet();
                     animationSet.xPosition = new AnimationChannel("location[0]");
                     animationSet.yPosition = new AnimationChannel("location[1]");

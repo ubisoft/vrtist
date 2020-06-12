@@ -53,6 +53,11 @@ namespace VRtist
         public List<AnimationKey> keys;
     }
 
+    public class ClearAnimationInfo
+    {
+        public GameObject gObject;
+    }
+
     public class ParametersController : MonoBehaviour
     {
         private ParametersEvent onChangedEvent;
@@ -101,6 +106,16 @@ namespace VRtist
         {
             if(null != onChangedEvent)
                 onChangedEvent.Invoke(gameObject);
+        }
+
+        public void ClearAnimations()
+        {
+            channels.Clear();
+
+            ClearAnimationInfo info = new ClearAnimationInfo { gObject = gameObject };
+            NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
+        
+            FireValueChanged();
         }
 
         public void AddAnimationChannel(string name, List<AnimationKey> keys)

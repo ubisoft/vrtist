@@ -71,6 +71,7 @@ namespace VRtist
         QueryObjectData,
         _BlenderDataUpdate,
         CameraAttributes,
+        ClearAnimations,
 
         Optimized_Commands = 200,
         Transform,
@@ -1624,6 +1625,12 @@ namespace VRtist
             lightController.FireValueChanged();
         }
 
+        public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
+        {
+            NetCommand command = new NetCommand(StringToBytes(info.gObject.name), MessageType.ClearAnimations);
+            return command;
+        }
+
         public static MeshFilter GetOrCreateMeshFilter(GameObject obj)
         {
             MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
@@ -2719,6 +2726,12 @@ namespace VRtist
             AddCommand(command);
         }
 
+        public void SendClearAnimations(ClearAnimationInfo info)
+        {
+            NetCommand command = NetGeometry.BuildSendClearAnimations(info);
+            AddCommand(command);
+        }
+
         public void JoinRoom(string roomName)
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
@@ -2944,6 +2957,8 @@ namespace VRtist
                     SendQueryCurrentFrame(); break;
                 case MessageType.QueryObjectData:
                     SendQueryObjectData(data as string); break;
+                case MessageType.ClearAnimations:
+                    SendClearAnimations(data as ClearAnimationInfo); break;
             }
         }
     }
