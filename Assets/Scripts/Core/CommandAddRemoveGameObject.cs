@@ -23,6 +23,7 @@ namespace VRtist
     public class RestoreFromTrashInfo
     {
         public Transform transform;
+        public Transform parent;
     }
 
     public class CameraInfo

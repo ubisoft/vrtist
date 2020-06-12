@@ -465,7 +465,7 @@ namespace VRtist
                 trf.parent = parent;
 
                 Node node = SyncData.nodes[objectName];
-                node.AddInstance(trf.gameObject);
+                node.AddInstance(trf.GetChild(0).gameObject);
             }
         }
 
@@ -1016,6 +1016,8 @@ namespace VRtist
         public static Transform FindPath(Transform root, byte[] data, ref int bufferIndex)
         {
             string path = NetGeometry.GetString(data, ref bufferIndex);
+            if (path == "")
+                return root;
 
             char[] separator = { '/' };
             string[] splitted = path.Split(separator);
@@ -1042,6 +1044,9 @@ namespace VRtist
 
         public static string GetPathName(Transform root, Transform transform)
         {
+            if (root == transform)
+                return "";
+
             string result = transform.name;
             while (transform.parent && transform.parent.parent && transform.parent.parent != root)
             {
@@ -1273,14 +1278,12 @@ namespace VRtist
             return command;
         }
 
-        public static NetCommand BuildRestoreFromTrashCommand(Transform root, RestoreFromTrashInfo sendToTrash)
+        public static NetCommand BuildRestoreFromTrashCommand(Transform root, RestoreFromTrashInfo restoreFromTrash)
         {
-            string path = "";
-            if (sendToTrash.transform.parent != root)
-                path = GetPathName(root, sendToTrash.transform.parent);
+            string parentPath = GetPathName(root, restoreFromTrash.parent);
 
-            byte[] nameBuffer = StringToBytes(sendToTrash.transform.name);
-            byte[] pathBuffer = StringToBytes(path);
+            byte[] nameBuffer = StringToBytes(restoreFromTrash.transform.name);
+            byte[] pathBuffer = StringToBytes(parentPath);
 
             List<byte[]> buffers = new List<byte[]> { nameBuffer, pathBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.RestoreFromTrash);

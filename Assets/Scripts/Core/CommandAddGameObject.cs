@@ -30,7 +30,7 @@ namespace VRtist
             Node node = SyncData.nodes[gObject.name];
             node.AddInstance(gObject);
 
-            RestoreFromTrash(gObject);
+            RestoreFromTrash(gObject, parent);
         }
         public override void Submit()
         {

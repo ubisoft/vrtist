@@ -50,10 +50,11 @@ namespace VRtist
             CommandManager.SendEvent(MessageType.SendToTrash, trashInfo);
         }
 
-        protected void RestoreFromTrash(GameObject gObject)
+        protected void RestoreFromTrash(GameObject gObject, Transform parent)
         {
             RestoreFromTrashInfo trashInfo = new RestoreFromTrashInfo();
             trashInfo.transform = gObject.transform;
+            trashInfo.parent = parent;
             CommandManager.SendEvent(MessageType.RestoreFromTrash, trashInfo);
         }
 
