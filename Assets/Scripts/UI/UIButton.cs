@@ -261,9 +261,11 @@ namespace VRtist
 
             if (Disabled) return;
 
-            if (otherCollider.gameObject.name == "Cursor")
+            float currentTime = Time.unscaledTime;
+            if ((currentTime - prevTime) > 0.4f && otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
+                prevTime = currentTime;
             }
         }
 

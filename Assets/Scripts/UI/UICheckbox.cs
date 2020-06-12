@@ -241,10 +241,12 @@ namespace VRtist
 
             if (Disabled) { return; }
 
-            // TODO: pass the Cursor to the checkbox, test the object instead of a hardcoded name.
-            if (otherCollider.gameObject.name == "Cursor")
-            {
+            // TODO: pass the Cursor to the checkbox, test the object instead of a hardcoded name. 
+            float currentTime = Time.unscaledTime;
+            if ( (currentTime - prevTime)>0.4f && otherCollider.gameObject.name == "Cursor")
+            {               
                 onClickEvent.Invoke();
+                prevTime = currentTime;
                 //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }

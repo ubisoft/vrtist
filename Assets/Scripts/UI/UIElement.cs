@@ -47,6 +47,8 @@ namespace VRtist
         public Color DisabledColor { get { return disabledColor; } set { disabledColor = value; SetColor(value); } }
         public bool Disabled { get { return isDisabled; } set { isDisabled = value; SetColor(value?DisabledColor:BaseColor); } }
 
+        protected float prevTime = -1f;
+
         public virtual void UpdateLocalPosition()
         {
             UIElement parentElem = transform.parent ? transform.parent.gameObject.GetComponent<UIElement>() : null;
