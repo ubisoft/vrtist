@@ -341,36 +341,42 @@ namespace VRtist
         {
             // TODO: Scriptable NEW ou CreateInstance(SO), ou avoir une liste de SO dans PlayerController.
             options.currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
+            options.currentNavigationMode.options = options;
             options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Teleport()
         {
             options.currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams);
+            options.currentNavigationMode.options = options;
             options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
             options.currentNavigationMode = new NavigationMode_Orbit(ray, options.orbitRotationalSpeed, options.orbitScaleSpeed, options.orbitMoveSpeed, minPlayerScale, maxPlayerScale);
+            options.currentNavigationMode.options = options;
             options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fps()
         {
             options.currentNavigationMode = new NavigationMode_FPS();
+            options.currentNavigationMode.options = options;
             options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Drone()
         {
             options.currentNavigationMode = new NavigationMode_Drone();
+            options.currentNavigationMode.options = options;
             options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fly()
         {
             options.currentNavigationMode = new NavigationMode_Fly(options.flySpeed, minPlayerScale, maxPlayerScale);
+            options.currentNavigationMode.options = options;
             options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
