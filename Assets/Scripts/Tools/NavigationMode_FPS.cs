@@ -6,6 +6,7 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
+    [CreateAssetMenu(menuName = "VRtist/NavigationModes/Fps")]
     public class NavigationMode_FPS : NavigationMode
     {
         private float fpsSpeed = 0.03f;
@@ -21,9 +22,14 @@ namespace VRtist
 
         private float groundDistance = 0.01f;
         private bool isGrounded;
-        private LayerMask groundMask = LayerMask.NameToLayer("Water");
+        private LayerMask groundMask;
 
         private float jumpHeight = 0.002f;
+
+        private void OnEnable()
+        {
+            groundMask = LayerMask.NameToLayer("Water");
+        }
 
         public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
@@ -53,7 +59,7 @@ namespace VRtist
             Vector2 rightJoyValue = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
             Vector4 currentValue = new Vector4(leftJoyValue.x, leftJoyValue.y, rightJoyValue.x, rightJoyValue.y);
 
-            float damping = GlobalState.fpsDamping * 5f;
+            float damping = options.fpsDamping * 5f;
             int elemCount = (int)damping;
 
             int currentSize = prevJoysticksStates.Count;
@@ -85,13 +91,13 @@ namespace VRtist
         // Update is called once per frame
         public override void Update()
         {
-            float speed = fpsSpeed * GlobalState.fpsSpeed;
+            float speed = fpsSpeed * options.fpsSpeed;
             Vector4 joystickValue = GetJoysticksValue();
 
             Vector2 rightJoyValue = new Vector2(joystickValue.z, joystickValue.w);
             if (rightJoyValue != Vector2.zero)
             {
-                float rSpeed = fpsRotationSpeed * GlobalState.fpsRotationSpeed;
+                float rSpeed = fpsRotationSpeed * options.fpsRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
                 // move up
                 Vector3 up = Vector3.up;
@@ -142,13 +148,13 @@ namespace VRtist
             () => 
             {
                 if(isGrounded)
-                    velocity.y = Mathf.Sqrt(jumpHeight * 2f * GlobalState.fpsGravity);
+                    velocity.y = Mathf.Sqrt(jumpHeight * 2f * options.fpsGravity);
             });
 
             if (isGrounded && velocity.y < 0)
                 velocity.y = 0f;
 
-            velocity.y -= GlobalState.fpsGravity * Time.deltaTime * Time.deltaTime;
+            velocity.y -= options.fpsGravity * Time.deltaTime * Time.deltaTime;
             controller.Move(velocity);
         }
     }

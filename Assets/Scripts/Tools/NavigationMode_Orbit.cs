@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
-{ 
+{
+    [CreateAssetMenu(menuName = "VRtist/NavigationModes/Orbit")]
     public class NavigationMode_Orbit : NavigationMode
     {
         public StraightRay ray = null; // the ray object. Put it somewhere like the StretchUI object.
@@ -151,7 +152,7 @@ namespace VRtist
                     if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
-                        float rotate_amount_h = value * GlobalState.orbitRotationalSpeed;//rotationalSpeed;
+                        float rotate_amount_h = value * options.orbitRotationalSpeed;//rotationalSpeed;
                         world.RotateAround(targetPosition, up, rotate_amount_h);
                     }
 
@@ -165,7 +166,7 @@ namespace VRtist
                         bool below_but_going_up = (dot < -0.8f) && (value > 0.0f);
                         if (!limitVertical || in_safe_zone || above_but_going_down || below_but_going_up) // only within limits
                         {
-                            float rotate_amount_v = value * GlobalState.orbitRotationalSpeed; //rotationalSpeed;
+                            float rotate_amount_v = value * options.orbitRotationalSpeed; //rotationalSpeed;
                             world.RotateAround(targetPosition, right, rotate_amount_v);
                         }
                     }
@@ -187,7 +188,7 @@ namespace VRtist
                         bool too_close_but_going_back = (remainingDistance <= 0.0f) && (value < 0.0f);
                         if (in_safe_zone || too_close_but_going_back)
                         {
-                            Vector3 offset = forward * value * (minMoveDistance + GlobalState.orbitMoveSpeed * Mathf.Abs(remainingDistance)); //moveSpeed 
+                            Vector3 offset = forward * value * (minMoveDistance + options.orbitMoveSpeed * Mathf.Abs(remainingDistance)); //moveSpeed 
                             world.position += offset;
                             targetPosition += offset;
                         }
@@ -200,7 +201,7 @@ namespace VRtist
                         bool too_close_but_scaling_down = (remainingDistance <= 0.0f) && (value < 0.0f);
                         if (in_safe_zone || too_close_but_scaling_down)
                         {
-                            float scale = 1.0f + (value * GlobalState.orbitScaleSpeed); // scaleSpeed
+                            float scale = 1.0f + (value * options.orbitScaleSpeed); // scaleSpeed
 
                             Vector3 scalePivot = targetPosition;
                             Vector3 pivot_to_world = world.position - scalePivot;

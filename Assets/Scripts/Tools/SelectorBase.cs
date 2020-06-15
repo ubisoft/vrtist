@@ -12,7 +12,7 @@ namespace VRtist
         [SerializeField] protected Transform selectorBrush;
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
-
+        [SerializeField] private NavigationOptions navigation;
         [SerializeField] protected UICheckbox lockedCheckbox;
 
         float selectorRadius;
@@ -160,7 +160,7 @@ namespace VRtist
         {
             if(VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
-                if(GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+                if(navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                 {
                     // Change selector size
                     Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
@@ -563,7 +563,7 @@ namespace VRtist
                 // Joystick zoom only for non-handle objects
                 if(!Selection.IsHandleSelected())
                 {
-                    if(GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+                    if(navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                     {
                         Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                         float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
@@ -582,7 +582,7 @@ namespace VRtist
             }
 
 
-            if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+            if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
                 Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
 

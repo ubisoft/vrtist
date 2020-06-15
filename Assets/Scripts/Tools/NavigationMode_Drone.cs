@@ -44,7 +44,7 @@ namespace VRtist
             Vector2 rightJoyValue = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
             Vector4 currentValue = new Vector4(leftJoyValue.x, leftJoyValue.y, rightJoyValue.x, rightJoyValue.y);
 
-            float damping = GlobalState.flightDamping * 5f;
+            float damping = options.flightDamping * 5f;
             int elemCount = (int)damping;
 
             int currentSize = prevJoysticksStates.Count;
@@ -76,13 +76,13 @@ namespace VRtist
         // Update is called once per frame
         public override void Update()
         {
-            float speed = flySpeed * GlobalState.flightSpeed;
+            float speed = flySpeed * options.flightSpeed;
             Vector4 joystickValue = GetJoysticksValue();
 
             Vector2 leftJoyValue = new Vector2(joystickValue.x, joystickValue.y);
             if (leftJoyValue != Vector2.zero)
             {
-                float rSpeed = rotationSpeed * GlobalState.flightRotationSpeed;
+                float rSpeed = rotationSpeed * options.flightRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
 
                 // move up

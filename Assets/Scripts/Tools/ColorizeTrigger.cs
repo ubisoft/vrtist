@@ -9,6 +9,8 @@ namespace VRtist
     {
         [SerializeField] private Colorize colorizer;
 
+        public NavigationOptions navigation;
+
         private HashSet<GameObject> collidedObjects = new HashSet<GameObject>();
         private MeshRenderer paintingRenderer;
 
@@ -46,7 +48,7 @@ namespace VRtist
             }
 
             // Scaling of collider
-            if(GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+            if(navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
                 Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                 if(val != Vector2.zero)
