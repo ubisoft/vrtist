@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
     public class CameraController : ParametersController
     {
-        private Camera cameraObject = null;
+        public Camera cameraObject = null;
         public float focal = 35f;
         public float near = 0.07f;
         public float far = 1000f;
@@ -26,10 +24,12 @@ namespace VRtist
 
         private void Init()
         {
-            if(null == cameraObject) {
-                cameraObject = gameObject.GetComponentInChildren<Camera>();
+            if(null == cameraObject)
+            {
+                cameraObject = gameObject.GetComponentInChildren<Camera>(true);
             }
-            if(null == frustumRenderer) {
+            if(null == frustumRenderer)
+            {
                 GameObject frustum = transform.Find("Frustum").gameObject;
                 frustumRenderer = frustum.GetComponent<LineRenderer>();
                 frustumRenderer.enabled = false;
@@ -38,7 +38,7 @@ namespace VRtist
 
         void Update()
         {
-            if (null == cameraObject)
+            if(null == cameraObject)
                 cameraObject = gameObject.GetComponentInChildren<Camera>();
             if(null != cameraObject)
             {
@@ -66,7 +66,7 @@ namespace VRtist
             CameraController other = otherController as CameraController;
             focal = other.focal;
             near = other.near;
-            far = other.far;            
+            far = other.far;
         }
 
         private void DrawFrustum()
@@ -83,23 +83,23 @@ namespace VRtist
             float farHalfHeight = halfHeightFactor * far;
 
             Vector3[] points = new Vector3[16];
-            points[0] = new Vector3( nearHalfWidth, -nearHalfHeight, near);
-            points[1] = new Vector3( nearHalfWidth,  nearHalfHeight, near);
-            points[2] = new Vector3(-nearHalfWidth,  nearHalfHeight, near);
+            points[0] = new Vector3(nearHalfWidth, -nearHalfHeight, near);
+            points[1] = new Vector3(nearHalfWidth, nearHalfHeight, near);
+            points[2] = new Vector3(-nearHalfWidth, nearHalfHeight, near);
             points[3] = new Vector3(-nearHalfWidth, -nearHalfHeight, near);
-            points[4] = new Vector3( nearHalfWidth, -nearHalfHeight, near);
+            points[4] = new Vector3(nearHalfWidth, -nearHalfHeight, near);
 
-            points[5] = new Vector3( farHalfWidth, -farHalfHeight, far);
-            points[6] = new Vector3( farHalfWidth,  farHalfHeight, far);
-            points[7] = new Vector3(-farHalfWidth,  farHalfHeight, far);
+            points[5] = new Vector3(farHalfWidth, -farHalfHeight, far);
+            points[6] = new Vector3(farHalfWidth, farHalfHeight, far);
+            points[7] = new Vector3(-farHalfWidth, farHalfHeight, far);
             points[8] = new Vector3(-farHalfWidth, -farHalfHeight, far);
-            points[9] = new Vector3( farHalfWidth, -farHalfHeight, far);
+            points[9] = new Vector3(farHalfWidth, -farHalfHeight, far);
 
-            points[10] = new Vector3(  farHalfWidth,   farHalfHeight, far);
-            points[11] = new Vector3( nearHalfWidth,  nearHalfHeight, near);
-            points[12] = new Vector3(-nearHalfWidth,  nearHalfHeight, near);
-            points[13] = new Vector3( -farHalfWidth,   farHalfHeight, far);
-            points[14] = new Vector3( -farHalfWidth,  -farHalfHeight, far);
+            points[10] = new Vector3(farHalfWidth, farHalfHeight, far);
+            points[11] = new Vector3(nearHalfWidth, nearHalfHeight, near);
+            points[12] = new Vector3(-nearHalfWidth, nearHalfHeight, near);
+            points[13] = new Vector3(-farHalfWidth, farHalfHeight, far);
+            points[14] = new Vector3(-farHalfWidth, -farHalfHeight, far);
             points[15] = new Vector3(-nearHalfWidth, -nearHalfHeight, near);
 
             // Remove camera object scale

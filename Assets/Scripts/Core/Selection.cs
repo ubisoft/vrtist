@@ -73,25 +73,33 @@ namespace VRtist
             }
         }
 
-        public static void SetActiveCamera(GameObject obj)
+        public static void SetActiveCamera(CameraController controller)
         {
-            Camera cam = obj.GetComponentInChildren<Camera>(true);
-            if(null == cam)
+            // Set no active camera
+            if(null == controller)
+            {
+                if(null != activeCamera)
+                {
+                    activeCamera.GetComponent<CameraController>().cameraObject.gameObject.SetActive(false);
+                    activeCamera = null;
+                    TriggerCurrentCameraChanged();
+                }
                 return;
+            }
+
+            // Set active camera
+            GameObject obj = controller.gameObject;
             if(activeCamera == obj)
                 return;
 
+            Camera cam = controller.cameraObject;
             if(null != activeCamera)
             {
-                //SetCameraEnabled(currentCamera, false);
-                activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
+                activeCamera.GetComponent<CameraController>().cameraObject.gameObject.SetActive(false);
             }
+
             activeCamera = obj;
-            if(null != activeCamera)
-            {
-                //SetCameraEnabled(currentCamera, true);
-                cam.gameObject.SetActive(true);
-            }
+            cam.gameObject.SetActive(true);
             TriggerCurrentCameraChanged();
         }
 
@@ -189,7 +197,8 @@ namespace VRtist
             if(gObject)
             {
                 SetRecursiveLayer(gObject, "Hover");
-                SetActiveCamera(gObject);
+                CameraController controller = gObject.GetComponent<CameraController>();
+                if(null != controller) { SetActiveCamera(controller); }
             }
 
             return true;
@@ -231,7 +240,8 @@ namespace VRtist
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
-            SetActiveCamera(gObject);
+            CameraController controller = gObject.GetComponent<CameraController>();
+            if(null != controller) { SetActiveCamera(controller); }
 
             SetRecursiveLayer(gObject, "Selection");
 

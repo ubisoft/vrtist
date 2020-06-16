@@ -1,16 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
     public class CameraFeedback : MonoBehaviour
     {
-        // Update is called once per frame
-        void Update()
+        private void Awake()
         {
-            GameObject activeCamera = Selection.activeCamera;
-            if (null != activeCamera)
+            Selection.OnActiveCameraChanged += OnCameraChanged;
+        }
+
+        private void OnEnable()
+        {
+            SetActiveCamera(Selection.activeCamera);
+        }
+
+        void OnCameraChanged(object sender, ActiveCameraChangedArgs args)
+        {
+            SetActiveCamera(args.activeCamera);
+        }
+
+        private void SetActiveCamera(GameObject activeCamera)
+        {
+            if(null != activeCamera)
             {
                 Camera cam = activeCamera.GetComponentInChildren<Camera>();
                 gameObject.SetActive(true);
