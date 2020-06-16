@@ -9,6 +9,7 @@ namespace VRtist
         [SerializeField] private Transform paintContainer;
         [SerializeField] private Transform paintBrush;
         [SerializeField] private Material paintMaterial;
+        [SerializeField] private NavigationOptions navigation;
 
         // Paint tool
         Vector3 paintPrevPosition;
@@ -154,7 +155,7 @@ namespace VRtist
             float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);
 
             // Change brush size
-            if (GlobalState.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+            if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
                 Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)

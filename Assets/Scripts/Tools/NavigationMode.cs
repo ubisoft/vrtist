@@ -1,11 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
-    public class NavigationMode
+    [CreateAssetMenu(menuName = "VRtist/NavigationMode(base class)")]
+    public class NavigationMode : ScriptableObject
     {
+        public NavigationOptions options;
+
         protected Transform rig = null;
         protected Transform world = null;
         protected Transform leftHandle = null;
