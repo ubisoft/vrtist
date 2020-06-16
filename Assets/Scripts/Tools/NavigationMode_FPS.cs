@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
 {
-    [CreateAssetMenu(menuName = "VRtist/NavigationModes/Fps")]
     public class NavigationMode_FPS : NavigationMode
     {
         private float fpsSpeedFactor = 0.03f;
@@ -46,7 +43,7 @@ namespace VRtist
             fps.gameObject.SetActive(true);
         }
 
-        public override void DeInit() 
+        public override void DeInit()
         {
             controller.enabled = false;
             Transform drone = parameters.Find("FPS");
@@ -60,10 +57,10 @@ namespace VRtist
             Vector4 currentValue = new Vector4(leftJoyValue.x, leftJoyValue.y, rightJoyValue.x, rightJoyValue.y);
 
             float damping = options.fpsDamping * 5f;
-            int elemCount = (int)damping;
+            int elemCount = (int) damping;
 
             int currentSize = prevJoysticksStates.Count;
-            if (currentSize > elemCount)
+            if(currentSize > elemCount)
             {
                 prevJoysticksStates.RemoveRange(0, currentSize - elemCount);
                 deltaTimes.RemoveRange(0, currentSize - elemCount);
@@ -73,10 +70,10 @@ namespace VRtist
             deltaTimes.Add(Time.deltaTime);
 
             Vector4 average = Vector4.zero;
-            float invCount = 1f / (float)prevJoysticksStates.Count;
+            float invCount = 1f / (float) prevJoysticksStates.Count;
 
             float dtSum = 0;
-            foreach (float dt in deltaTimes)
+            foreach(float dt in deltaTimes)
                 dtSum += dt;
 
             float invDtSum = 1f / dtSum;
@@ -95,7 +92,7 @@ namespace VRtist
             Vector4 joystickValue = GetJoysticksValue();
 
             Vector2 rightJoyValue = new Vector2(joystickValue.z, joystickValue.w);
-            if (rightJoyValue != Vector2.zero)
+            if(rightJoyValue != Vector2.zero)
             {
                 float rSpeed = fpsRotationSpeedFactor * options.fpsRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
@@ -118,7 +115,7 @@ namespace VRtist
             }
 
             Vector2 leftJoyValue = new Vector2(joystickValue.x, joystickValue.y);
-            if (leftJoyValue != Vector2.zero)
+            if(leftJoyValue != Vector2.zero)
             {
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
 
@@ -145,13 +142,13 @@ namespace VRtist
             }
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
-            () => 
+            () =>
             {
                 if(isGrounded)
                     velocity.y = Mathf.Sqrt(jumpHeight * 2f * options.fpsGravity);
             });
 
-            if (isGrounded && velocity.y < 0)
+            if(isGrounded && velocity.y < 0)
                 velocity.y = 0f;
 
             velocity.y -= options.fpsGravity * Time.deltaTime * Time.deltaTime;

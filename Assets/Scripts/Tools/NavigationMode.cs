@@ -2,8 +2,7 @@
 
 namespace VRtist
 {
-    [CreateAssetMenu(menuName = "VRtist/NavigationMode(base class)")]
-    public class NavigationMode : ScriptableObject
+    public class NavigationMode
     {
         public NavigationOptions options;
 
@@ -26,23 +25,23 @@ namespace VRtist
         protected enum ControllerVisibility { SHOW_NORMAL, HIDE, SHOW_GRIP };
 
         [System.Flags]
-        public enum UsedControls 
+        public enum UsedControls
         {
-            NONE                 = (1 << 0),
+            NONE = (1 << 0),
 
-            LEFT_JOYSTICK        = (1 << 1),
-            LEFT_JOYSTICK_CLICK  = (1 << 2),
-            LEFT_TRIGGER         = (1 << 3),
-            LEFT_GRIP            = (1 << 4),
-            LEFT_PRIMARY         = (1 << 5), 
-            LEFT_SECONDARY       = (1 << 6),
+            LEFT_JOYSTICK = (1 << 1),
+            LEFT_JOYSTICK_CLICK = (1 << 2),
+            LEFT_TRIGGER = (1 << 3),
+            LEFT_GRIP = (1 << 4),
+            LEFT_PRIMARY = (1 << 5),
+            LEFT_SECONDARY = (1 << 6),
 
-            RIGHT_JOYSTICK       = (1 << 7),
+            RIGHT_JOYSTICK = (1 << 7),
             RIGHT_JOYSTICK_CLICK = (1 << 8),
-            RIGHT_TRIGGER        = (1 << 9),
-            RIGHT_GRIP           = (1 << 10),
-            RIGHT_PRIMARY        = (1 << 11),
-            RIGHT_SECONDARY      = (1 << 12)
+            RIGHT_TRIGGER = (1 << 9),
+            RIGHT_GRIP = (1 << 10),
+            RIGHT_PRIMARY = (1 << 11),
+            RIGHT_SECONDARY = (1 << 12)
         }
 
         public static bool HasFlag(UsedControls a, UsedControls b)
@@ -55,7 +54,7 @@ namespace VRtist
         //
 
         // Pass only rig and world and Find("") the other nodes?
-        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform) 
+        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
             rig = rigTransform;
             world = worldTransform;
@@ -76,7 +75,7 @@ namespace VRtist
         //
         protected void UpdateCameraClipPlanes()
         {
-            if (useScaleFactor)
+            if(useScaleFactor)
             {
                 Camera.main.nearClipPlane = nearPlaneFactor * world.localScale.x; // 0.1f
                 Camera.main.farClipPlane = farPlaneFactor * world.localScale.x; // 5000.0f

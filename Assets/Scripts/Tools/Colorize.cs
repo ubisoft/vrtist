@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
@@ -102,7 +101,8 @@ namespace VRtist
                 VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton, () =>
                 {
                     selectionHasChanged = false;
-                }, () => {
+                }, () =>
+                {
                     if(!selectionHasChanged && ColorOp.UpdateSelection == colorOp)
                     {
                         CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.selection.Values.ToList());

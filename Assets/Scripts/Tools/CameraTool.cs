@@ -1,11 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
 {
+    public class MontageModeInfo
+    {
+        public bool montage;
+    }
+
     public class CameraTool : SelectorBase
     {
         // Start is called before the first frame update
@@ -52,17 +56,19 @@ namespace VRtist
         public UIDynamicList cameraList;
         private GameObject cameraItemPrefab;
 
+        public bool montage = false;
+
         public float Focal
         {
             get { return focal; }
-            set 
-            { 
+            set
+            {
                 focal = value;
-                
-                foreach (GameObject gobject in SelectedCameraObjects())
+
+                foreach(GameObject gobject in SelectedCameraObjects())
                 {
                     CameraController cameraControler = gobject.GetComponent<CameraController>();
-                    if (null == cameraControler)
+                    if(null == cameraControler)
                         continue;
                     cameraControler.focal = value;
                 }
@@ -76,7 +82,7 @@ namespace VRtist
             InitUIPanel();
 
             OnSelectionChanged(null, null);
-            foreach (Camera camera in SelectedCameras())
+            foreach(Camera camera in SelectedCameras())
                 ComputeFocal(camera);
         }
 
@@ -90,7 +96,7 @@ namespace VRtist
         {
             base.Awake();
 
-            if (!panel)
+            if(!panel)
             {
                 Debug.LogWarning("You forgot to give the Camera Panel to the Camera Tool.");
             }
@@ -104,7 +110,7 @@ namespace VRtist
                 showCameraFrustumCheckbox = panel.Find("ShowFrustum")?.gameObject.GetComponent<UICheckbox>();
             }
 
-            if (!dopesheetHandle)
+            if(!dopesheetHandle)
             {
                 Debug.LogWarning("You forgot to give the Dopesheet to the Camera Tool.");
             }
@@ -114,7 +120,7 @@ namespace VRtist
                 dopesheetHandle.transform.localScale = Vector3.zero; // si tous les tools ont une ref sur la dopesheet, qui la cache au demarrage? ToolsUIManager?
             }
 
-            if (!cameraPreviewHandle)
+            if(!cameraPreviewHandle)
             {
                 Debug.LogWarning("You forgot to give the CameraPreview to the Camera Tool.");
             }
@@ -123,11 +129,11 @@ namespace VRtist
                 cameraPreviewWindow = cameraPreviewHandle.GetComponentInChildren<CameraPreviewWindow>();
                 cameraPreviewHandle.transform.localScale = Vector3.zero;
             }
-            
+
             cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
             Init();
-            
+
             ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
 
             // Create tooltips
@@ -155,12 +161,12 @@ namespace VRtist
 
         protected void InitUIPanel()
         {
-            if (showCameraFeedbackCheckbox != null)
+            if(showCameraFeedbackCheckbox != null)
             {
                 showCameraFeedbackCheckbox.Checked = showCameraFeedback;
             }
 
-            if (feedbackPositionningCheckbox != null)
+            if(feedbackPositionningCheckbox != null)
             {
                 feedbackPositionningCheckbox.Checked = feedbackPositioning;
                 feedbackPositionningCheckbox.Disabled = !showCameraFeedback;
@@ -175,7 +181,7 @@ namespace VRtist
         public void OnCameraAdded(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();
-            if (null == cameraController)
+            if(null == cameraController)
                 return;
             GameObject cameraItemObject = Instantiate(cameraItemPrefab);
             CameraItem cameraItem = cameraItemObject.GetComponentInChildren<CameraItem>();
@@ -186,7 +192,7 @@ namespace VRtist
         public void OnCameraRemoved(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();
-            if (null == cameraController)
+            if(null == cameraController)
                 return;
             foreach(var item in cameraList.GetItems())
             {
@@ -202,7 +208,7 @@ namespace VRtist
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
         {
             GameObject currentCamera = Selection.activeCamera;
-            if (null != currentCamera)
+            if(null != currentCamera)
             {
                 float far = Camera.main.farClipPlane * 0.7f;
                 backgroundFeedback.position = position + direction.normalized * far;
@@ -232,7 +238,7 @@ namespace VRtist
             backgroundFeedback.gameObject.SetActive(value);
 
             UICheckbox feedbackPositionningCB = feedbackPositionningCheckbox.GetComponent<UICheckbox>();
-            if (feedbackPositionningCB != null)
+            if(feedbackPositionningCB != null)
             {
                 feedbackPositionningCB.Disabled = !value;
             }
@@ -248,7 +254,7 @@ namespace VRtist
             OnCheckShowDopesheet(false);
 
             UICheckbox showDopesheet = showDopesheetCheckbox.GetComponent<UICheckbox>();
-            if (showDopesheet != null)
+            if(showDopesheet != null)
             {
                 showDopesheet.Checked = false;
             }
@@ -257,11 +263,11 @@ namespace VRtist
         public void OnCheckShowDopesheet(bool value)
         {
             showDopesheet = value;
-            if (dopesheet != null && dopesheetHandle != null)
+            if(dopesheet != null && dopesheetHandle != null)
             {
-                if (value)
+                if(value)
                 {
-                    if (firstTimeShowDopesheet)
+                    if(firstTimeShowDopesheet)
                     {
                         Vector3 offset = new Vector3(0.25f, 0.0f, 0.0f);
                         dopesheetHandle.transform.position = paletteHandle.TransformPoint(offset);
@@ -282,7 +288,7 @@ namespace VRtist
             OnCheckShowCameraPreview(false);
 
             UICheckbox cb = showCameraPreviewCheckbox.GetComponent<UICheckbox>();
-            if (cb != null)
+            if(cb != null)
             {
                 cb.Checked = false;
             }
@@ -291,11 +297,11 @@ namespace VRtist
         public void OnCheckShowCameraPreview(bool value)
         {
             showCameraPreview = value;
-            if (cameraPreviewWindow != null && cameraPreviewHandle != null)
+            if(cameraPreviewWindow != null && cameraPreviewHandle != null)
             {
-                if (value)
+                if(value)
                 {
-                    if (firstTimeShowCameraPreview)
+                    if(firstTimeShowCameraPreview)
                     {
                         Vector3 offset = new Vector3(0.5f, 0.5f, 0.0f);
                         cameraPreviewHandle.transform.position = paletteHandle.TransformPoint(offset);
@@ -314,10 +320,10 @@ namespace VRtist
         private List<Camera> SelectedCameras()
         {
             List<Camera> selectedCameras = new List<Camera>();
-            foreach (var selectedItem in Selection.GetObjects())
+            foreach(var selectedItem in Selection.GetObjects())
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
-                if (!cam)
+                if(!cam)
                     continue;
                 selectedCameras.Add(cam);
             }
@@ -328,15 +334,15 @@ namespace VRtist
         {
             List<GameObject> selectedCameras = new List<GameObject>();
 
-            foreach (var selectedItem in Selection.GetObjects())
+            foreach(var selectedItem in Selection.GetObjects())
             {
-                Camera cam = selectedItem.GetComponentInChildren<Camera>();               
-                if (!cam)
+                Camera cam = selectedItem.GetComponentInChildren<Camera>();
+                if(!cam)
                     continue;
                 if(selectedItem != Selection.activeCamera)
                     selectedCameras.Add(selectedItem);
             }
-            if (null != Selection.activeCamera)
+            if(null != Selection.activeCamera)
                 selectedCameras.Add(Selection.activeCamera);
             return selectedCameras;
         }
@@ -345,11 +351,11 @@ namespace VRtist
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
             {
-                if (UIObject)
+                if(UIObject)
                 {
                     Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
                     GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
-                    if (newCamera)
+                    if(newCamera)
                     {
                         CommandGroup undoGroup = new CommandGroup();
                         new CommandAddGameObject(newCamera).Submit();
@@ -380,23 +386,23 @@ namespace VRtist
         protected override void DoUpdate()
         {
             // Update feedback position and scale
-            if (showCameraFeedback)
+            if(showCameraFeedback)
             {
                 bool trigger = false;
-                if (feedbackPositioning
+                if(feedbackPositioning
                     && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
                 {
                     cameraPreviewDirection = transform.forward;
                     trigger = true;
                 }
                 UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
-                if (trigger)
+                if(trigger)
                 {
                     // Cam feedback scale
                     Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                    if (joystickAxis.y > deadZone)
+                    if(joystickAxis.y > deadZone)
                         cameraFeedbackScale *= cameraFeedbackScaleFactor;
-                    if (joystickAxis.y < -deadZone)
+                    if(joystickAxis.y < -deadZone)
                         cameraFeedbackScale /= cameraFeedbackScaleFactor;
                 }
             }
@@ -404,7 +410,7 @@ namespace VRtist
             // called to update focal slider value
             UpdateUI();
 
-            if (!showCameraFeedback || !feedbackPositioning)
+            if(!showCameraFeedback || !feedbackPositioning)
             {
                 base.DoUpdate();
             }
@@ -414,7 +420,7 @@ namespace VRtist
         {
             ActivateMouthpiece(selectorBrush, show);
 
-            if (rightController != null)
+            if(rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
             }
@@ -446,7 +452,7 @@ namespace VRtist
         private void OnChangeParameter(object sender, ToolParameterChangedArgs args)
         {
             // update selection parameters from UI
-            if (args.toolName != "Camera")
+            if(args.toolName != "Camera")
                 return;
             Focal = args.value;
             foreach(Camera cam in SelectedCameras())
@@ -456,11 +462,11 @@ namespace VRtist
         protected override void UpdateUI()
         {
             // updates the panel from selection
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach(KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
                 CameraController cameraController = gobject.GetComponent<CameraController>();
-                if (null == cameraController)
+                if(null == cameraController)
                     continue;
 
                 //if (cameraPreviewWindow != null)
@@ -468,7 +474,7 @@ namespace VRtist
 
                 // Update the Camera Panel
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
-                if (sliderComp != null)
+                if(sliderComp != null)
                 {
                     sliderComp.Value = cameraController.focal;
                     focalSlider.gameObject.SetActive(true);
@@ -480,7 +486,7 @@ namespace VRtist
 
             // if no selection
 
-            if (dopesheet != null)
+            if(dopesheet != null)
                 dopesheet.Clear();
 
             //if (cameraPreviewWindow != null)
@@ -495,12 +501,12 @@ namespace VRtist
 
             ClearListeners();
 
-            foreach (GameObject gobject in Selection.GetObjects())
+            foreach(GameObject gobject in Selection.GetObjects())
             {
                 CameraController cameraController = gobject.GetComponent<CameraController>();
-                if (null == cameraController)
+                if(null == cameraController)
                     continue;
-                
+
                 AddListener(cameraController);
             }
 
@@ -530,7 +536,7 @@ namespace VRtist
             // TODO: 
             // - find the next keyframe, using the current one provided, and cameraController keyframes.
             // - call the dopesheet to tell it the new current keyframe
-            if (dopesheet != null)
+            if(dopesheet != null)
             {
                 int f = the_next_keyframe++;
                 dopesheet.CurrentFrame = f;
@@ -544,7 +550,7 @@ namespace VRtist
             // - find the previous keyframe, using the current one provided, and cameraController keyframes.
             // - call the dopesheet to tell it the new current keyframe
 
-            if (dopesheet != null)
+            if(dopesheet != null)
             {
                 int f = the_previous_keyframe--;
                 dopesheet.CurrentFrame = f;
@@ -568,6 +574,12 @@ namespace VRtist
             Selection.AddToSelection(cameraItem.cameraObject);
             new CommandAddToSelection(cameraItem.cameraObject).Submit();
             command.Submit();
+        }
+
+        public void OnSetMontage(bool montage)
+        {
+            this.montage = montage;
+            NetworkClient.GetInstance().SendEvent<MontageModeInfo>(MessageType.MontageMode, new MontageModeInfo { montage = montage });
         }
     }
 }
