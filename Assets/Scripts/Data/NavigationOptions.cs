@@ -12,8 +12,8 @@ namespace VRtist
         public float flightDamping = 5f;
 
         [Header("Fps Navigation")]
-        public float fpsSpeed = 5f;
-        public float fpsRotationSpeed = 5f;
+        [Range(0.01f, 10.0f)] public float fpsSpeed = 5f; // TODO: sliders should be in %, but the Options value should be the real one. No added factor (0.03 -> 0.15) in NavigationMode_FPS.
+        public float fpsRotationSpeed = 5f; // TODO: sliders should be in %, but the Options value should be the real one. No added factor (0.3 -> 1.5) in NavigationMode_FPS.
         public float fpsDamping = 0f;
         public float fpsGravity = 9.8f;
 

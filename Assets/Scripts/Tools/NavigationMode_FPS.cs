@@ -9,8 +9,8 @@ namespace VRtist
     [CreateAssetMenu(menuName = "VRtist/NavigationModes/Fps")]
     public class NavigationMode_FPS : NavigationMode
     {
-        private float fpsSpeed = 0.03f;
-        private float fpsRotationSpeed = 0.3f;
+        private float fpsSpeedFactor = 0.03f;
+        private float fpsRotationSpeedFactor = 0.3f;
 
         private List<Vector4> prevJoysticksStates = new List<Vector4>();
         private List<float> deltaTimes = new List<float>();
@@ -91,13 +91,13 @@ namespace VRtist
         // Update is called once per frame
         public override void Update()
         {
-            float speed = fpsSpeed * options.fpsSpeed;
+            float speed = fpsSpeedFactor * options.fpsSpeed;
             Vector4 joystickValue = GetJoysticksValue();
 
             Vector2 rightJoyValue = new Vector2(joystickValue.z, joystickValue.w);
             if (rightJoyValue != Vector2.zero)
             {
-                float rSpeed = fpsRotationSpeed * options.fpsRotationSpeed;
+                float rSpeed = fpsRotationSpeedFactor * options.fpsRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
                 // move up
                 Vector3 up = Vector3.up;
