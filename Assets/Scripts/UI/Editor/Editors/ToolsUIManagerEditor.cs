@@ -56,6 +56,10 @@ namespace VRtist
                 {
                     uiManager.DEBUG_RemoveLastItemFromList();
                 }
+                if (GUILayout.Button("MoveUp", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    uiManager.DEBUG_MoveUp();
+                }
                 if (GUILayout.Button("Reset DynList state", GUILayout.Width(200), GUILayout.Height(30)))
                 {
                     uiManager.DEBUG_ResetList();

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace VRtist
@@ -376,6 +375,15 @@ namespace VRtist
                 UIDynamicListItem t = debugList.DEBUG_GetLastItemTransform();
                 if (t != null)
                     debugList.RemoveItem(t);
+            }
+        }
+
+        public void DEBUG_MoveUp()
+        {
+            if (debugList != null)
+            {
+                debugList.DEBUG_SetSecondItemAsLastClicked();
+                debugList.OnCurrentItemUp();
             }
         }
 

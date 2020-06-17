@@ -42,6 +42,8 @@ namespace VRtist
 
         private bool needRebuild = false;
 
+        private int lastClickedIndex = -1;
+
         private void OnValidate()
         {
             const float min_width = 0.01f;
@@ -125,6 +127,11 @@ namespace VRtist
             return items.Count > 0 ? items[items.Count - 1] : null;
         }
 
+        public void DEBUG_SetSecondItemAsLastClicked()
+        {
+            lastClickedIndex = 1;
+        }
+
         public void DEBUG_Reset() { Clear(); }
 
         public void Clear()
@@ -169,6 +176,13 @@ namespace VRtist
 
         public void FireItem(Transform t)
         {
+            // last clicked
+            for (int i = 0; i <items.Count; ++i)
+            {
+                if (items[i].Content == t)
+                    lastClickedIndex = i;
+            }
+
             GameObjectArgs args = new GameObjectArgs { gobject = t.gameObject };
             EventHandler<GameObjectArgs> handler = ItemClickedEvent;
             if(null != handler)
@@ -203,12 +217,30 @@ namespace VRtist
 
         public void OnCurrentItemUp()
         {
-
+            if (   items.Count > 1
+                && lastClickedIndex > 0
+                && lastClickedIndex < items.Count)
+            {
+                // swap with previous item.
+                var tmp = items[lastClickedIndex - 1];
+                items[lastClickedIndex - 1] = items[lastClickedIndex];
+                items[lastClickedIndex] = tmp;
+                needRebuild = true;
+            }
         }
 
         public void OnCurrentItemDown()
         {
-
+            if (   items.Count > 1
+                && lastClickedIndex >= 0
+                && lastClickedIndex < items.Count - 1)
+            {
+                // swap with next item.
+                var tmp = items[lastClickedIndex + 1];
+                items[lastClickedIndex + 1] = items[lastClickedIndex];
+                items[lastClickedIndex] = tmp;
+                needRebuild = true;
+            }
         }
 
         // reposition every item depending on the itemWidth/Height, width/height, margin, and current page.
