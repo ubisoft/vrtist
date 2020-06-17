@@ -201,6 +201,16 @@ namespace VRtist
             needRebuild = true;
         }
 
+        public void OnCurrentItemUp()
+        {
+
+        }
+
+        public void OnCurrentItemDown()
+        {
+
+        }
+
         // reposition every item depending on the itemWidth/Height, width/height, margin, and current page.
         private void UpdateItemPositions()
         {
