@@ -15,12 +15,6 @@ namespace VRtist
 
         public void Start()
         {
-            //cameraButton = transform.Find("CameraButton").gameObject.GetComponent<UIButton>();
-            //shotNameCheckbox = transform.Find("ShotNameCheckbox").gameObject.GetComponent<UICheckbox>();
-            //startFrameLabel = transform.Find("StartFrameLabel").gameObject.GetComponent<UILabel>();
-            //frameRangeLabel = transform.Find("FrameRangeLabel").gameObject.GetComponent<UILabel>();
-            //endFrameLabel = transform.Find("EndFrameLabel").gameObject.GetComponent<UILabel>();
-
             Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
@@ -31,28 +25,54 @@ namespace VRtist
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-
-        }
-
-        public void FixMaterials()
-        {
-            cameraButton?.ResetMaterial();
-            shotNameCheckbox?.ResetMaterial();
-            startFrameLabel?.ResetMaterial();
-            frameRangeLabel?.ResetMaterial();
-            endFrameLabel?.ResetMaterial();
+            // select line depending on camera selected ???
         }
 
         public void SetShotObject(GameObject shotObject)
         {
             this.shotObject = shotObject;
-            // set name
-            // set start, end, range
+            // SetShotName(shotObject.name);
+            // SetStartFrame(shotObject.startFrame);
+            // SetFrameRange(shotObject.frameRange);
+            // SetEndFrame(shotObject.endFrame);
+            //
             // set colors
             // ...
         }
 
-        public static GameObject GenerateShotItem()
+        public void SetShotName(string shotName)
+        {
+            if (shotNameCheckbox != null)
+            {
+                shotNameCheckbox.Text = shotName;
+            }
+        }
+
+        public void SetStartFrame(int startFrame)
+        {
+            if (startFrameLabel != null)
+            {
+                startFrameLabel.Text = startFrame.ToString();
+            }
+        }
+
+        public void SetFrameRange(int frameRange)
+        {
+            if (frameRangeLabel != null)
+            {
+                frameRangeLabel.Text = frameRange.ToString();
+            }
+        }
+
+        public void SetEndFrame(int endFrame)
+        {
+            if (endFrameLabel != null)
+            {
+                endFrameLabel.Text = endFrame.ToString();
+            }
+        }
+
+        public static ShotItem GenerateShotItem()
         {
             GameObject root = new GameObject("shotItem");
             ShotItem shotItem = root.AddComponent<ShotItem>();
@@ -159,7 +179,7 @@ namespace VRtist
             shotItem.frameRangeLabel = frameRangeLabel;
             shotItem.endFrameLabel = endFrameLabel;
 
-            return root;
+            return shotItem;
         }
     }
 }

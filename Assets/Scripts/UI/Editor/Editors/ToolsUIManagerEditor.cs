@@ -47,9 +47,13 @@ namespace VRtist
                 }
                 if (GUILayout.Button("Add Element To List", GUILayout.Width(200), GUILayout.Height(30)))
                 {
-                    //GameObject shotItem = Resources.Load("Prefabs/UI/ShotItem") as GameObject;
-                    GameObject shotItem = ShotItem.GenerateShotItem();
-                    //GameObject obj = GameObject.Instantiate(shotItem);
+                    ShotItem shotItem = ShotItem.GenerateShotItem();
+                    shotItem.SetShotName($"sn_{Random.Range(1,1000)}");
+                    int start = Random.Range(1, 100);
+                    int end = start + Random.Range(10, 30);
+                    shotItem.SetStartFrame(start);
+                    shotItem.SetEndFrame(end);
+                    shotItem.SetFrameRange((end-start)+1);
                     uiManager.DEBUG_AddItemToList(shotItem.transform);
                 }
                 if (GUILayout.Button("Remove Last Element From List", GUILayout.Width(200), GUILayout.Height(30)))
