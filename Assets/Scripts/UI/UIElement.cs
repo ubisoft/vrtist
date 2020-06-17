@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -104,6 +101,15 @@ namespace VRtist
             //Material material = GetComponent<MeshRenderer>().material; // THIS triggers the warning in editor.
             Material material = GetComponent<MeshRenderer>().sharedMaterial;
             material.SetColor("_BaseColor", color);
+        }
+
+        public virtual void SetLightLayer(uint layerIndex)
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                meshRenderer.renderingLayerMask = layerIndex; // "LightLayer 1"
+            }
         }
 
         public virtual void RebuildMesh() { }

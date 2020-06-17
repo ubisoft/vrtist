@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
 using UnityEngine.UI;
 
 namespace VRtist
@@ -238,7 +236,7 @@ namespace VRtist
             }
         }
 
-        public static void CreateUILabel(
+        public static UILabel CreateUILabel(
             string labelName,
             Transform parent,
             Vector3 relativeLocation,
@@ -368,6 +366,8 @@ namespace VRtist
 
                 uiLabel.TextColor = fgcolor;
             }
+
+            return uiLabel;
         }
     }
 }

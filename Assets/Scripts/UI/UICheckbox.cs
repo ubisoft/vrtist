@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
 using UnityEngine.UI;
 
 namespace VRtist
@@ -288,7 +286,7 @@ namespace VRtist
         }
 
 
-        public static void CreateUICheckbox(
+        public static UICheckbox CreateUICheckbox(
             string checkboxName,
             Transform parent,
             Vector3 relativeLocation,
@@ -444,6 +442,8 @@ namespace VRtist
                 float textPosLeft = uncheckedIcon != null ? minSide : 0.0f;
                 trt.localPosition = new Vector3(textPosLeft, -uiCheckbox.height / 2.0f, -0.002f);
             }
+
+            return uiCheckbox;
         }
     }
 }

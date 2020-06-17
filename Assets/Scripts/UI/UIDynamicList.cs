@@ -1,13 +1,7 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEditor;
-using System;
-using System.Runtime.InteropServices;
-using UnityEngine.Assertions;
-using UnityEngine.Events;
-using System.Data.Common;
 
 namespace VRtist
 {
@@ -24,6 +18,9 @@ namespace VRtist
         [CentimeterFloat] public float itemWidth = 0.1f;
         [CentimeterFloat] public float itemHeight = 0.1f;
         [CentimeterFloat] public float itemDepth = 0.1f;
+
+        public bool autoResizeContent = true;
+        public bool autoCenterContent = true;
 
         public UILabel pageCountLabel = null;
 
@@ -116,6 +113,8 @@ namespace VRtist
             item.transform.localPosition = Vector3.zero;
             item.transform.localRotation = Quaternion.identity;
             item.transform.localScale = Vector3.one;
+            item.autoResizeContent = autoResizeContent;
+            item.autoCenterContent = autoCenterContent;
             items.Add(item);
             
             needRebuild = true;
@@ -242,10 +241,20 @@ namespace VRtist
                         int idxInCurrentPage = i % nbItemsPerPage;
                         int row = idxInCurrentPage / maxNbItemCols;
                         int col = idxInCurrentPage % maxNbItemCols;
-                        item.transform.localPosition = new Vector3(
-                            col == 0 ? margin + itemWidth2 : margin + itemWidth2 + col * (itemWidth + itemHMargin),
-                            row == 0 ? -margin - itemHeight2 : -margin - itemHeight2 - row * (itemHeight + itemVMargin),
-                            0.0f);
+                        if (autoCenterContent) // TODO: always place pivot top-left, and let UIDynamicItem auto-center its content.
+                        {
+                            item.transform.localPosition = new Vector3(
+                                col == 0 ? margin + itemWidth2 : margin + itemWidth2 + col * (itemWidth + itemHMargin),
+                                row == 0 ? -margin - itemHeight2 : -margin - itemHeight2 - row * (itemHeight + itemVMargin),
+                                0.0f);
+                        }
+                        else
+                        {
+                            item.transform.localPosition = new Vector3(
+                                col == 0 ? margin : margin + col * (itemWidth + itemHMargin),
+                                row == 0 ? -margin : -margin - row * (itemHeight + itemVMargin),
+                                0.0f);
+                        }
                         item.transform.localRotation = Quaternion.identity;
                         item.Width = itemWidth;
                         item.Height = itemHeight;

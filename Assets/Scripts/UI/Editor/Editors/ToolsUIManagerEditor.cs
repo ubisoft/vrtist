@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEditor;
 
 namespace VRtist
 {
@@ -49,13 +47,10 @@ namespace VRtist
                 }
                 if (GUILayout.Button("Add Element To List", GUILayout.Width(200), GUILayout.Height(30)))
                 {
-                    List<GameObject> list = new List<GameObject>();
-                    list.Add(Resources.Load("Prefabs/UI/DEBUG/DynListQuad") as GameObject);
-                    list.Add(Resources.Load("Prefabs/UI/DEBUG/DynListSphere") as GameObject);
-                    list.Add(Resources.Load("Prefabs/UI/DEBUG/DynListCapsule") as GameObject);
-                    GameObject obj = GameObject.Instantiate(list[Random.Range(0, list.Count)]);
-                    obj.GetComponentInChildren<MeshRenderer>().material.SetColor("_UnlitColor", Random.ColorHSV());
-                    uiManager.DEBUG_AddItemToList(obj.transform);
+                    //GameObject shotItem = Resources.Load("Prefabs/UI/ShotItem") as GameObject;
+                    GameObject shotItem = ShotItem.GenerateShotItem();
+                    //GameObject obj = GameObject.Instantiate(shotItem);
+                    uiManager.DEBUG_AddItemToList(shotItem.transform);
                 }
                 if (GUILayout.Button("Remove Last Element From List", GUILayout.Width(200), GUILayout.Height(30)))
                 {

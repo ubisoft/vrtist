@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
 using UnityEngine.UI;
 
 namespace VRtist
@@ -20,6 +18,9 @@ namespace VRtist
         [CentimeterFloat] public float iconMargin = 0.0f;
         public enum IconMarginBehavior { UseButtonMargin, UseIconMargin };
         public IconMarginBehavior iconMarginBehavior = IconMarginBehavior.UseButtonMargin;
+
+        // TODO: add an enum or bool to configure ICON and/or TEXT, instead of testing for null.
+
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
         public Color checkedColor = new Color(0.8f, 0.8f, 0.8f);
         public Sprite checkedSprite = null;
@@ -144,6 +145,19 @@ namespace VRtist
                         float textPosLeft = noImage ? margin : minSide;
                         rt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
                     }
+                }
+            }
+        }
+
+        public void ActivateText(bool doActivate)
+        {
+            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            if (canvas != null)
+            {
+                Text text = canvas.gameObject.GetComponentInChildren<Text>(true);
+                if (text != null)
+                {
+                    text.gameObject.SetActive(doActivate);
                 }
             }
         }
@@ -309,7 +323,7 @@ namespace VRtist
             SetColor(Disabled ? disabledColor : (isChecked ? checkedColor : baseColor));
         }
 
-        public static void CreateUIButton(
+        public static UIButton CreateUIButton(
             string buttonName,
             Transform parent,
             Vector3 relativeLocation,
@@ -472,6 +486,8 @@ namespace VRtist
                 float textPosLeft = icon != null ? minSide : margin;
                 trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
             }
+
+            return uiButton;
         }
     }
 }
