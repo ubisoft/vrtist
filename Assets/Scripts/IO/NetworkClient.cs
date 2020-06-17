@@ -72,6 +72,7 @@ namespace VRtist
         ClearAnimations,
         CurrentCamera,
         MontageMode,
+        ShotManager,
 
         Optimized_Commands = 200,
         Transform,
@@ -2421,6 +2422,34 @@ namespace VRtist
                 if(null != controller) { Selection.SetActiveCamera(controller); }
             }
         }
+
+        public static void BuildMontageMode(byte[] data)
+        {
+
+        }
+
+        public static void BuildShotManager(byte[] data)
+        {
+            ShotManager.Instance.Clear();
+
+            int index = 0;
+            int shotCount = GetInt(data, ref index);
+            for(int i = 0 ; i < shotCount; ++i)
+            {
+                string shotName = GetString(data, ref index);
+                string cameraName = GetString(data, ref index);
+                int start = GetInt(data, ref index);
+                int end = GetInt(data, ref index);
+                bool enabled = GetBool(data, ref index);
+
+                GameObject camera = null;
+                if (cameraName.Length > 0 && SyncData.nodes.ContainsKey(cameraName))
+                    camera = SyncData.nodes[cameraName].instances[0].Item1;
+
+                Shot shot = new Shot { name = shotName, camera = camera, start = start, end = end, enabled = enabled };
+                ShotManager.Instance.AddShot(shot);
+            }
+        }
     }
 
     public class NetworkClient : MonoBehaviour
@@ -2922,6 +2951,9 @@ namespace VRtist
                                 break;
                             case MessageType.CurrentCamera:
                                 NetGeometry.BuildCurrentCamera(command.data);
+                                break;
+                            case MessageType.ShotManager:
+                                NetGeometry.BuildShotManager(command.data);
                                 break;
                         }
                     }
