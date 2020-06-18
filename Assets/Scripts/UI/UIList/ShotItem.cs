@@ -109,7 +109,7 @@ namespace VRtist
             cameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
             cameraButton.uncheckedSprite = null;
             cameraButton.ActivateText(false); // icon-only
-            cameraButton.SetLightLayer(4);
+            cameraButton.SetLightLayer(5);
 
             cx += 0.03f;
 
@@ -131,7 +131,7 @@ namespace VRtist
                     );
 
             shotEnabledCheckbox.ActivateText(false);
-            shotEnabledCheckbox.SetLightLayer(4);
+            shotEnabledCheckbox.SetLightLayer(5);
 
             cx += 0.03f;
 
@@ -151,7 +151,7 @@ namespace VRtist
                     UIUtils.LoadIcon("icon-camera"));
 
             shotNameButton.ActivateIcon(false); // text-only
-            shotNameButton.SetLightLayer(4);
+            shotNameButton.SetLightLayer(5);
 
             cx += 0.17f;
 
@@ -169,7 +169,7 @@ namespace VRtist
                 "1"
                 );
 
-            startFrameLabel.SetLightLayer(4);
+            startFrameLabel.SetLightLayer(5);
 
             cx += 0.06f;
 
@@ -187,7 +187,7 @@ namespace VRtist
                 "51"
                 );
 
-            frameRangeLabel.SetLightLayer(4);
+            frameRangeLabel.SetLightLayer(5);
 
             cx += 0.06f;
 
@@ -205,7 +205,7 @@ namespace VRtist
                 "50"
                 );
 
-            endFrameLabel.SetLightLayer(4);
+            endFrameLabel.SetLightLayer(5);
 
             // Link widgets to the item script.
             shotItem.cameraButton = cameraButton;

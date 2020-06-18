@@ -71,8 +71,8 @@ namespace VRtist
         CameraAttributes,
         ClearAnimations,
         CurrentCamera,
-        MontageMode,
-        ShotManager,
+        ShotManagerMontageMode,
+        ShotManagerContent,
         ShotManagerCurrentShot,
 
         Optimized_Commands = 200,
@@ -1639,7 +1639,7 @@ namespace VRtist
 
         public static NetCommand BuildSendMontageMode(bool montage)
         {
-            NetCommand command = new NetCommand(BoolToBytes(montage), MessageType.MontageMode);
+            NetCommand command = new NetCommand(BoolToBytes(montage), MessageType.ShotManagerMontageMode);
             return command;
         }
 
@@ -2437,6 +2437,12 @@ namespace VRtist
             ShotManager.Instance.CurrentShot = shotIndex;
         }
 
+        public static void BuildShotManagerMontageMode(byte[] data)
+        {
+            int index = 0;
+            bool montageMode = GetBool(data, ref index);
+            ShotManager.Instance.MontageMode = montageMode;
+        }
         public static void BuildShotManager(byte[] data)
         {
             ShotManager.Instance.Clear();
@@ -2963,7 +2969,10 @@ namespace VRtist
                             case MessageType.CurrentCamera:
                                 NetGeometry.BuildCurrentCamera(command.data);
                                 break;
-                            case MessageType.ShotManager:
+                            case MessageType.ShotManagerMontageMode:
+                                NetGeometry.BuildShotManagerMontageMode(command.data);
+                                break;
+                            case MessageType.ShotManagerContent:
                                 NetGeometry.BuildShotManager(command.data);
                                 break;
                             case MessageType.ShotManagerCurrentShot:
@@ -3042,7 +3051,7 @@ namespace VRtist
                     SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
                     SendClearAnimations(data as ClearAnimationInfo); break;
-                case MessageType.MontageMode:
+                case MessageType.ShotManagerMontageMode:
                     SendMontageMode(data as MontageModeInfo); break;
             }
         }

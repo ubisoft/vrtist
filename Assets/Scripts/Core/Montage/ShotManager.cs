@@ -31,6 +31,18 @@ namespace VRtist
             ShotsChangedEvent.Invoke();
         }
 
+        private bool montageMode = false;
+        public UnityEvent MontageModeChangedEvent = new UnityEvent();
+        public bool MontageMode
+        {
+            get { return montageMode; }
+            set
+            {
+                montageMode = value;
+                MontageModeChangedEvent.Invoke();
+            }
+        }
+
         private int currentShot = -1;
         public UnityEvent CurrentShotChangedEvent = new UnityEvent();
         public int CurrentShot

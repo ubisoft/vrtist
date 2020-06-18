@@ -24,6 +24,7 @@ namespace VRtist
         [SerializeField] private UILabel firstFrameLabel = null;
         [SerializeField] private UILabel lastFrameLabel = null;
         [SerializeField] private UILabel currentFrameLabel = null;
+        UICheckbox montage = null;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public IntChangedEvent onAddKeyframeEvent = new IntChangedEvent();
@@ -67,6 +68,9 @@ namespace VRtist
                 currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
 
                 keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
+
+                montage = mainPanel.Find("Montage").GetComponent<UICheckbox>();
+                ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
             }
         }
 
@@ -130,6 +134,11 @@ namespace VRtist
             {
                 mainPanel.gameObject.SetActive(doShow);
             }
+        }
+
+        private void OnMontageModeChanged()
+        {
+            montage.Checked = ShotManager.Instance.MontageMode;
         }
 
         protected virtual void OnParametersChanged(GameObject gObject)
