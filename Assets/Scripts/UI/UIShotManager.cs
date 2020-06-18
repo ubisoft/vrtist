@@ -7,6 +7,7 @@ namespace VRtist
     public class UIShotManager : MonoBehaviour
     {
         public UIDynamicList shotList;
+        public UILabel activeShotCountLabel;
         void Start()
         {
             ShotManager.Instance.ShotsChangedEvent.AddListener(OnShotManagerChanged);
@@ -26,11 +27,16 @@ namespace VRtist
         {
             shotList.Clear();
             ShotManager sm = ShotManager.Instance;
+            int activeShotCount = 0;
             foreach(Shot shot in sm.shots)
             {
                 ShotItem shotItem = ShotItem.GenerateShotItem(shot);
                 shotList.AddItem(shotItem.transform);
+
+                if (shot.enabled)
+                    activeShotCount++;
             }
+            activeShotCountLabel.Text = activeShotCount.ToString() + "/" + sm.shots.Count.ToString();
         }
     }
 }
