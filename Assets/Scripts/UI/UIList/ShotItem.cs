@@ -4,19 +4,20 @@ namespace VRtist
 {
     public class ShotItem : MonoBehaviour
     {
-        public GameObject shotObject;
+        public Shot shot = null;
         public UIDynamicListItem item;
 
         public UIButton cameraButton = null;
-        public UICheckbox shotNameCheckbox = null;
+        public UICheckbox shotEnabledCheckbox = null;
+        public UIButton shotNameButton = null;
         public UILabel startFrameLabel = null;
         public UILabel frameRangeLabel = null;
         public UILabel endFrameLabel = null;
 
         public void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;
-        }
+            Selection.OnSelectionChanged += OnSelectionChanged;            
+        }        
 
         public void OnDestroy()
         {
@@ -28,23 +29,31 @@ namespace VRtist
             // select line depending on camera selected ???
         }
 
-        public void SetShotObject(GameObject shotObject)
+        public void SetShot(Shot shot)
         {
-            this.shotObject = shotObject;
-            // SetShotName(shotObject.name);
-            // SetStartFrame(shotObject.startFrame);
-            // SetFrameRange(shotObject.frameRange);
-            // SetEndFrame(shotObject.endFrame);
-            //
-            // set colors
-            // ...
+            this.shot = shot;
+            SetShotEnabled(shot.enabled);
+            SetShotName(shot.name);
+            SetStartFrame(shot.start);
+            SetFrameRange(shot.end - shot.start + 1);
+            SetEndFrame(shot.end);
+        }
+
+        public void SetShotEnabled(bool value)
+        {
+            if (shotEnabledCheckbox != null)
+            {
+                shotEnabledCheckbox.Checked = value;
+                shot.enabled = value;
+            }
         }
 
         public void SetShotName(string shotName)
         {
-            if (shotNameCheckbox != null)
+            if (shotNameButton != null)
             {
-                shotNameCheckbox.Text = shotName;
+                shotNameButton.Text = shotName;
+                shot.name = shotName;
             }
         }
 
@@ -53,10 +62,11 @@ namespace VRtist
             if (startFrameLabel != null)
             {
                 startFrameLabel.Text = startFrame.ToString();
+                shot.start = startFrame;
             }
         }
 
-        public void SetFrameRange(int frameRange)
+        private void SetFrameRange(int frameRange)
         {
             if (frameRangeLabel != null)
             {
@@ -69,10 +79,11 @@ namespace VRtist
             if (endFrameLabel != null)
             {
                 endFrameLabel.Text = endFrame.ToString();
+                shot.end = endFrame;
             }
         }
 
-        public static ShotItem GenerateShotItem()
+        public static ShotItem GenerateShotItem(Shot shot)
         {
             GameObject root = new GameObject("shotItem");
             ShotItem shotItem = root.AddComponent<ShotItem>();
@@ -94,18 +105,21 @@ namespace VRtist
                     "tmp", 
                     UIUtils.LoadIcon("icon-camera"));
 
+            cameraButton.isCheckable = true;
+            cameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
+            cameraButton.uncheckedSprite = null;
             cameraButton.ActivateText(false); // icon-only
             cameraButton.SetLightLayer(4);
 
             cx += 0.03f;
 
             // Add UICheckbox
-            UICheckbox shotNameCheckbox =
+            UICheckbox shotEnabledCheckbox =
                 UICheckbox.CreateUICheckbox(
-                    "ShotName",
+                    "ShotEnabledCheckbox",
                     root.transform,
                     new Vector3(cx, 0, 0),
-                    0.20f,
+                    0.03f,
                     0.03f,
                     0.005f,
                     0.001f,
@@ -116,9 +130,30 @@ namespace VRtist
                     UIUtils.LoadIcon("checkbox_unchecked")
                     );
 
-            shotNameCheckbox.SetLightLayer(4);
+            shotEnabledCheckbox.ActivateText(false);
+            shotEnabledCheckbox.SetLightLayer(4);
 
-            cx += 0.20f;
+            cx += 0.03f;
+
+            // Add Shot Name UIButton
+            UIButton shotNameButton =
+                UIButton.CreateUIButton(
+                    "ShotNameButton",
+                    root.transform,
+                    new Vector3(cx, 0, 0),
+                    0.17f, // width
+                    0.03f, // height
+                    0.005f, // margin
+                    0.001f, // thickness
+                    UIUtils.LoadMaterial("UIPanel"),
+                    UIElement.default_background_color,
+                    "tmp",
+                    UIUtils.LoadIcon("icon-camera"));
+
+            shotNameButton.ActivateIcon(false); // text-only
+            shotNameButton.SetLightLayer(4);
+
+            cx += 0.17f;
 
             // Add UILabel
             UILabel startFrameLabel = UILabel.CreateUILabel(
@@ -174,10 +209,13 @@ namespace VRtist
 
             // Link widgets to the item script.
             shotItem.cameraButton = cameraButton;
-            shotItem.shotNameCheckbox = shotNameCheckbox;
+            shotItem.shotEnabledCheckbox = shotEnabledCheckbox;
+            shotItem.shotNameButton = shotNameButton;
             shotItem.startFrameLabel = startFrameLabel;
             shotItem.frameRangeLabel = frameRangeLabel;
             shotItem.endFrameLabel = endFrameLabel;
+
+            shotItem.SetShot(shot);
 
             return shotItem;
         }

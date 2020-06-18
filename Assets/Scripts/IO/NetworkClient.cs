@@ -73,6 +73,7 @@ namespace VRtist
         CurrentCamera,
         MontageMode,
         ShotManager,
+        ShotManagerCurrentShot,
 
         Optimized_Commands = 200,
         Transform,
@@ -2429,6 +2430,13 @@ namespace VRtist
 
         }
 
+        public static void BuildShotManagerCurrentShot(byte[] data)
+        {
+            int index = 0;
+            int shotIndex = GetInt(data, ref index);
+            ShotManager.Instance.CurrentShot = shotIndex;
+        }
+
         public static void BuildShotManager(byte[] data)
         {
             ShotManager.Instance.Clear();
@@ -2450,6 +2458,8 @@ namespace VRtist
                 Shot shot = new Shot { name = shotName, camera = camera, start = start, end = end, enabled = enabled };
                 ShotManager.Instance.AddShot(shot);
             }
+
+            ShotManager.Instance.FireChanged();
         }
     }
 
@@ -2955,6 +2965,9 @@ namespace VRtist
                                 break;
                             case MessageType.ShotManager:
                                 NetGeometry.BuildShotManager(command.data);
+                                break;
+                            case MessageType.ShotManagerCurrentShot:
+                                NetGeometry.BuildShotManagerCurrentShot(command.data);
                                 break;
                         }
                     }

@@ -44,8 +44,8 @@ namespace VRtist
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public FloatChangedEvent onSlideEvent = new FloatChangedEvent();
         public IntChangedEvent onSlideEventInt = new IntChangedEvent();
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         [SerializeField] private UISliderRail rail = null;
         [SerializeField] private UISliderKnob knob = null;
@@ -603,7 +603,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
@@ -629,7 +629,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = cur_slider_value.ToString("#0.00");
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;

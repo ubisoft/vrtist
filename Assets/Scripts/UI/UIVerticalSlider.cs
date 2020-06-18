@@ -45,8 +45,8 @@ namespace VRtist
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public FloatChangedEvent onSlideEvent = new FloatChangedEvent();
         public IntChangedEvent onSlideEventInt = new IntChangedEvent();
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         [SerializeField] private UIVerticalSliderRail rail = null;
         [SerializeField] private UIVerticalSliderKnob knob = null;

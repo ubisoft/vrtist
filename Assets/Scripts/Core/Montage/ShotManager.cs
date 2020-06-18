@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -25,7 +26,26 @@ namespace VRtist
             shots.Clear();
         }
 
+        public void FireChanged()
+        {
+            ShotsChangedEvent.Invoke();
+        }
+
+        private int currentShot = -1;
+        public UnityEvent CurrentShotChangedEvent = new UnityEvent();
+        public int CurrentShot
+        {
+            get { return currentShot;  }
+            set
+            {
+                currentShot = value;
+                CurrentShotChangedEvent.Invoke();
+            }
+        }
+        
+
         public List<Shot> shots = new List<Shot>();
+        public UnityEvent ShotsChangedEvent = new UnityEvent();
         private static ShotManager instance = null;
     }
 

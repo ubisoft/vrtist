@@ -25,9 +25,9 @@ namespace VRtist
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
-        public UnityEvent onHoverEvent = null;
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public UnityEvent onHoverEvent = new UnityEvent();
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         private bool isChecked = false;
         public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }
@@ -285,6 +285,18 @@ namespace VRtist
             SetColor(Disabled ? disabledColor : baseColor);
         }
 
+        public void ActivateText(bool doActivate)
+        {
+            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            if (canvas != null)
+            {
+                Text text = canvas.gameObject.GetComponentInChildren<Text>(true);
+                if (text != null)
+                {
+                    text.gameObject.SetActive(doActivate);
+                }
+            }
+        }
 
         public static UICheckbox CreateUICheckbox(
             string checkboxName,
@@ -424,7 +436,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;

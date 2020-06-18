@@ -31,11 +31,11 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
         public bool isCheckable = false;
         public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
-        public UnityEvent onHoverEvent = null;
+        public UnityEvent onHoverEvent = new UnityEvent();
 
         private bool needRebuild = false;
 
@@ -158,6 +158,19 @@ namespace VRtist
                 if (text != null)
                 {
                     text.gameObject.SetActive(doActivate);
+                }
+            }
+        }
+
+        public void ActivateIcon(bool doActivate)
+        {
+            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            if (canvas != null)
+            {
+                Image image = canvas.gameObject.GetComponentInChildren<Image>(true);
+                if (image != null)
+                {
+                    image.gameObject.SetActive(doActivate);
                 }
             }
         }
@@ -468,7 +481,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;

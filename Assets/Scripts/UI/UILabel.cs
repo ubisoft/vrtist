@@ -21,9 +21,9 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public UnityEvent onHoverEvent = null;
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public UnityEvent onHoverEvent = new UnityEvent();
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         static public float labelThickness = 0.001f; // TODO: change mesh to have only one face, no depth
 
@@ -346,7 +346,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
