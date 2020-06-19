@@ -326,6 +326,9 @@ namespace VRtist
                 return;
             CollectionNode collectionNode = collectionNodes[collectionName];
 
+            if (!nodes.ContainsKey(objectName))
+                GetOrCreatePrefabPath(objectName);
+
             Node objectNode = nodes[objectName];
             collectionNode.AddObject(objectNode);
 
@@ -527,7 +530,32 @@ namespace VRtist
                 return null;
             Node objectNode = nodes[objectName];
 
-            foreach(Tuple<GameObject, string> item in objectNode.instances)
+            ////////////////////////////////////////////////////////////////
+            // WARNING : this should not be tolerated !!!!
+            // Check if parent of this Object has been instantiated
+            // If not, add parent to document (instantiate)
+            ////////////////////////////////////////////////////////////////
+            Node parentNode = objectNode.parent;
+            if(null != parentNode)
+            {
+                bool found = false;
+                foreach (Tuple<GameObject, string> item in parentNode.instances)
+                {
+                    if (item.Item2 == collectionInstanceName)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    transform = AddObjectToDocument(transform, parentNode.prefab.name, collectionInstanceName).transform;
+                    Debug.LogWarning("Adding object to Document but parent object has not been instantiated : " + objectName);
+                }
+            }
+            ////////////////////////////////////////////////////////////////
+
+            foreach (Tuple<GameObject, string> item in objectNode.instances)
             {
                 if(item.Item2 == collectionInstanceName)
                     return null; // already instantiated
