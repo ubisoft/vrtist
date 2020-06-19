@@ -23,7 +23,8 @@ namespace VRtist
 
         public void SetLightEnable(bool enable)
         {
-            lightObject.gameObject.SetActive(enable);
+            if(lightObject)
+                lightObject.gameObject.SetActive(enable);
         }
 
         public override void CopyParameters(ParametersController otherController)
@@ -47,7 +48,7 @@ namespace VRtist
 
         public void Init()
         {
-            Light l = transform.GetComponentInChildren<Light>();
+            Light l = transform.GetComponentInChildren<Light>(true);
             lightType = l.type;
             lightObject = l;
             switch (lightType)

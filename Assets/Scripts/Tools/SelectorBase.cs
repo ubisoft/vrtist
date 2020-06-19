@@ -294,14 +294,23 @@ namespace VRtist
                 new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
         }
 
+        protected void SendCameraFocal(CameraController cameraController)
+        {
+            CameraInfo cameraInfo = new CameraInfo();
+            cameraInfo.transform = cameraController.gameObject.transform;
+            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+        }
+
         protected void ManageCamerasFocalsUndo()
         {
             foreach (GameObject obj in initFocals.Keys)
             {
                 float oldValue = initFocals[obj];
-                if (oldValue != obj.GetComponent<CameraController>().focal)
+                CameraController cameraController = obj.GetComponent<CameraController>();
+                if (oldValue != cameraController.focal)
                 {
                     new CommandSetValue<float>(obj, "Camera Focal", "/CameraController/focal", oldValue).Submit();
+                    SendCameraFocal(cameraController);
                 }
             }
 
@@ -610,6 +619,7 @@ namespace VRtist
                             currentFocal = 300f;
 
                         cameraController.focal = currentFocal;
+                        SendCameraFocal(cameraController);
                     }
                 }
                 else

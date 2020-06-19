@@ -47,6 +47,7 @@ namespace VRtist
                 }
                 if (GUILayout.Button("Add Element To List", GUILayout.Width(200), GUILayout.Height(30)))
                 {
+                    /*
                     ShotItem shotItem = ShotItem.GenerateShotItem();
                     shotItem.SetShotName($"sn_{Random.Range(1,1000)}");
                     int start = Random.Range(1, 100);
@@ -55,6 +56,7 @@ namespace VRtist
                     shotItem.SetEndFrame(end);
                     shotItem.SetFrameRange((end-start)+1);
                     uiManager.DEBUG_AddItemToList(shotItem.transform);
+                    */
                 }
                 if (GUILayout.Button("Remove Last Element From List", GUILayout.Width(200), GUILayout.Height(30)))
                 {

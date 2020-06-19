@@ -69,10 +69,13 @@ namespace VRtist
         QueryObjectData,
         _BlenderDataUpdate,
         CameraAttributes,
+        _BlenderDataRemove,
+        _BlenderDataRename,
         ClearAnimations,
         CurrentCamera,
-        MontageMode,
-        ShotManager,
+        ShotManagerMontageMode,
+        ShotManagerContent,
+        ShotManagerCurrentShot,
 
         Optimized_Commands = 200,
         Transform,
@@ -1178,13 +1181,14 @@ namespace VRtist
             byte[] bpath = StringToBytes(path);
             byte[] bname = StringToBytes(cameraInfo.transform.name);
 
+            CameraController cameraController = cameraInfo.transform.GetComponent<CameraController>();
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int) cam.gateFit;
 
             byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(cam.focalLength), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(cam.nearClipPlane), 0, paramsBuffer, 1 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(cam.farClipPlane), 0, paramsBuffer, 2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(cameraController.focal), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(cameraController.near), 0, paramsBuffer, 1 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(cameraController.far), 0, paramsBuffer, 2 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(1.8f), 0, paramsBuffer, 3 * sizeof(float), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(sensorFit), 0, paramsBuffer, 4 * sizeof(float), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.x), 0, paramsBuffer, 4 * sizeof(float) + sizeof(int), sizeof(float));
@@ -1637,7 +1641,7 @@ namespace VRtist
 
         public static NetCommand BuildSendMontageMode(bool montage)
         {
-            NetCommand command = new NetCommand(BoolToBytes(montage), MessageType.MontageMode);
+            NetCommand command = new NetCommand(BoolToBytes(montage), MessageType.ShotManagerMontageMode);
             return command;
         }
 
@@ -2428,6 +2432,19 @@ namespace VRtist
 
         }
 
+        public static void BuildShotManagerCurrentShot(byte[] data)
+        {
+            int index = 0;
+            int shotIndex = GetInt(data, ref index);
+            ShotManager.Instance.CurrentShot = shotIndex;
+        }
+
+        public static void BuildShotManagerMontageMode(byte[] data)
+        {
+            int index = 0;
+            bool montageMode = GetBool(data, ref index);
+            ShotManager.Instance.MontageMode = montageMode;
+        }
         public static void BuildShotManager(byte[] data)
         {
             ShotManager.Instance.Clear();
@@ -2449,6 +2466,8 @@ namespace VRtist
                 Shot shot = new Shot { name = shotName, camera = camera, start = start, end = end, enabled = enabled };
                 ShotManager.Instance.AddShot(shot);
             }
+
+            ShotManager.Instance.FireChanged();
         }
     }
 
@@ -2952,8 +2971,14 @@ namespace VRtist
                             case MessageType.CurrentCamera:
                                 NetGeometry.BuildCurrentCamera(command.data);
                                 break;
-                            case MessageType.ShotManager:
+                            case MessageType.ShotManagerMontageMode:
+                                NetGeometry.BuildShotManagerMontageMode(command.data);
+                                break;
+                            case MessageType.ShotManagerContent:
                                 NetGeometry.BuildShotManager(command.data);
+                                break;
+                            case MessageType.ShotManagerCurrentShot:
+                                NetGeometry.BuildShotManagerCurrentShot(command.data);
                                 break;
                         }
                     }
@@ -3028,7 +3053,7 @@ namespace VRtist
                     SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
                     SendClearAnimations(data as ClearAnimationInfo); break;
-                case MessageType.MontageMode:
+                case MessageType.ShotManagerMontageMode:
                     SendMontageMode(data as MontageModeInfo); break;
             }
         }
