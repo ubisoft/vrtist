@@ -361,7 +361,7 @@ namespace VRtist
 
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * separationPositionPct;
-            float endX = margin + widthWithoutMargins * separationPositionPct;
+            float endX = width - margin;
 
             float snapXDistance = 0.002f;
             // TODO: snap X if X if a bit left of startX or a bit right of endX.
