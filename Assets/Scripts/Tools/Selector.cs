@@ -64,7 +64,7 @@ namespace VRtist
         private Vector3 initControllerPositionRelativeToHead;
         private Matrix4x4 inverseHeadMatrix;
 
-        void Start() 
+        void Start()
         {
             Init();
             ActivateMouthpiece(selectorBrush, true);
@@ -82,14 +82,14 @@ namespace VRtist
             InitUIPanel();
             UpdateGrid();
             Selection.OnSelectionChanged += UpdateGridFromSelection;
-            if (null != planesContainer) { planesContainer.SetActive(false); }
+            if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
             Selection.OnSelectionChanged -= UpdateGridFromSelection;
-            if (null != grid) { grid.gameObject.SetActive(false); }
+            if(null != grid) { grid.gameObject.SetActive(false); }
             if(null != planesContainer) { planesContainer.SetActive(false); }
         }
 
@@ -98,16 +98,16 @@ namespace VRtist
             List<GameObject> objects = Selection.GetObjects();
             int numSelected = objects.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
-            if (grid != null)
+            if(grid != null)
             {
                 grid.gameObject.SetActive(showGrid);
-                if (showGrid)
+                if(showGrid)
                 {
                     grid.SetStepSize(snapPrecision);
 
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
-                    
-                    foreach (GameObject gobj in objects)
+
+                    foreach(GameObject gobj in objects)
                     {
                         // Snap VFX position in (world object) local space.
                         Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
@@ -128,7 +128,11 @@ namespace VRtist
         {
             snapToGrid = value;
             UpdateGrid();
-            if (null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
+            if(null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
+            if(!value)  // reset all constraints
+            {
+                OnMoveOnAll();
+            }
         }
 
         public void OnChangeSnapGridSize(float value)
@@ -171,6 +175,10 @@ namespace VRtist
         {
             snapRotation = value;
             InitUIPanel();
+            if(!value)  // reset all constraints
+            {
+                OnTurnAroundAll();
+            }
         }
 
         public void OnChangeSnapAngle(float value)
@@ -248,7 +256,8 @@ namespace VRtist
             if(null != moveOnZCheckbox) { moveOnZCheckbox.Checked = moveOnZ; }
 
             if(null != snapRotationCheckbox) { snapRotationCheckbox.Checked = snapRotation; }
-            if(null != snapAngleSlider) {
+            if(null != snapAngleSlider)
+            {
                 snapAngleSlider.Value = snapAngle;
                 snapAngleSlider.Disabled = !snapRotation;
             }
@@ -258,14 +267,14 @@ namespace VRtist
         }
 
         protected override void OnStartGrip()
-        {            
+        {
             base.OnStartGrip();
 
             // Get head position
             Vector3 HeadPosition;
             Quaternion headRotation;
             VRInput.GetControllerTransform(VRInput.head, out HeadPosition, out headRotation);
-            inverseHeadMatrix =  Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
+            inverseHeadMatrix = Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
 
             initControllerPositionRelativeToHead = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
         }
@@ -290,7 +299,7 @@ namespace VRtist
 
                     float snapThreshold = (snapGap * snapPrecision) / absWorldScale;
 
-                    if (!moveOnX) { column.x = transform.localPosition.x; }
+                    if(!moveOnX) { column.x = transform.localPosition.x; }
                     else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapThreshold)
                     {
                         column.x = roundedPosition.x;
@@ -316,7 +325,7 @@ namespace VRtist
             {
                 Vector4 column = new Vector4(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z, 1f);
                 transformed.SetColumn(3, column);
-            
+
                 // compute rotation angle from start controller position to current controller position
                 // in X axis (left/right) local to initial head direction
                 Vector3 controllerPosition = rightControllerPosition;
@@ -679,7 +688,7 @@ namespace VRtist
             ActivateMouthpiece(selectorBrush, show);
             UpdateGrid();
 
-            if (rightController != null)
+            if(rightController != null)
             {
                 rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
             }
