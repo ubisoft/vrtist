@@ -69,6 +69,8 @@ namespace VRtist
         QueryObjectData,
         _BlenderDataUpdate,
         CameraAttributes,
+        _BlenderDataRemove,
+        _BlenderDataRename,
         ClearAnimations,
         CurrentCamera,
         ShotManagerMontageMode,
