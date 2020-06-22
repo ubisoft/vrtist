@@ -421,7 +421,7 @@ namespace VRtist
             }
         }
 
-        public static void CreateUISpinner(
+        public static UISpinner CreateUISpinner(
             string spinnerName,
             Transform parent,
             Vector3 relativeLocation,
@@ -474,9 +474,11 @@ namespace VRtist
             uiSpinner.minFloatValue = min_spinner_value_float;
             uiSpinner.maxFloatValue = max_spinner_value_float;
             uiSpinner.currentFloatValue = cur_spinner_value_float;
+            uiSpinner.valueRateFloat = spinner_value_rate_float;
             uiSpinner.minIntValue = min_spinner_value_int;
             uiSpinner.maxIntValue = max_spinner_value_int;
             uiSpinner.currentIntValue = cur_spinner_value_int;
+            uiSpinner.valueRateInt = spinner_value_rate_int;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -596,6 +598,8 @@ namespace VRtist
                     : 0.5f * uiSpinner.width; // or middle
                 trt.localPosition = new Vector3(textPos, -uiSpinner.height / 2.0f, -0.002f);
             }
+
+            return uiSpinner;
         }
     }
 }
