@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -21,6 +19,10 @@ namespace VRtist
         private Transform arrowCursor = null;
         private Transform grabberCursor = null;
         private IDisposable UIEnabled = null;
+
+        private bool lockedOnAWidget = false;
+        private bool isOutOfWidget = true;
+        private bool isOutOfVolume = true;
 
         void Start()
         {
@@ -61,7 +63,7 @@ namespace VRtist
             if (!UIElement.UIEnabled.Value)
                 return;
 
-            if (isOnAWidget)
+            if (isOnAWidget || lockedOnAWidget)
             {
                 Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
                 Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
@@ -112,7 +114,7 @@ namespace VRtist
         }
 
         private void OnTriggerEnter(Collider other)
-        {            
+        {
             if (other.GetComponent<UIVolumeTag>() != null)
             {
                 ReleaseUIEnabledGuard();
@@ -126,6 +128,8 @@ namespace VRtist
                 //tools.SetActive(false);
                 ToolsUIManager.Instance.ShowTools(false);
                 SetCursorShape(0); // arrow
+
+                isOutOfVolume = false;
             }
             else if (other.gameObject.tag == "UICollider")
             {
@@ -137,26 +141,64 @@ namespace VRtist
                     VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
                     audioClick.Play();
                 }
+
+                isOutOfWidget = false;
             }
         }
 
         private void OnTriggerExit(Collider other)
-        {            
+        {
             if (other.GetComponent<UIVolumeTag>() != null)
             {
-                ResetCursor();
+                if (!lockedOnAWidget)
+                {
+                    ResetCursor();
+                }
+                isOutOfVolume = true;
             }
             else if (other.gameObject.tag == "UICollider")
             {
-                isOnAWidget = false;
-                widgetTransform = null;
-                widgetHit = null;
-                MeshFilter meshFilter = GetComponentInChildren<MeshFilter>(true);
-                if(null != meshFilter)
+                if (!lockedOnAWidget)
                 {
-                    meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
+                    ReleaseWidget();
                 }
-                SetCursorShape(0);
+                isOutOfWidget = true;
+            }
+        }
+
+        private void ReleaseWidget()
+        {
+            isOnAWidget = false;
+            widgetTransform = null;
+            widgetHit = null;
+            MeshFilter meshFilter = GetComponentInChildren<MeshFilter>(true);
+            if (null != meshFilter)
+            {
+                meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
+            }
+            SetCursorShape(0);
+        }
+
+        public void LockOnWidget(bool value)
+        {
+            if (value == lockedOnAWidget)
+                return;
+
+            if (value)
+            {
+                lockedOnAWidget = true;
+            }
+            else
+            {
+                lockedOnAWidget = false;
+                if (isOutOfWidget)
+                {
+                    ReleaseWidget();
+                }
+                if (isOutOfVolume)
+                {
+                    ResetCursor();
+                }
             }
         }
 

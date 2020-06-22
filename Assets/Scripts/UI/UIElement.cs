@@ -74,6 +74,11 @@ namespace VRtist
             }
         }
 
+        public virtual void OnDisable()
+        {
+            GlobalState.Instance.cursor.LockOnWidget(false);
+        }
+
         public void UpdateChildren()
         {
             // Recompute localPosition for each children, using their relative position.

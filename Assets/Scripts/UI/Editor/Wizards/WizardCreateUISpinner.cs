@@ -6,11 +6,11 @@ namespace VRtist
     public class WizardCreateUISpinner : ScriptableWizard
     {
         private static readonly string default_spinner_name = "Spinner";
-        private static readonly float default_width = 0.3f;
+        private static readonly float default_width = 0.13f;
         private static readonly float default_height = 0.03f;
         private static readonly float default_margin = 0.005f;
         private static readonly float default_thickness = 0.001f;
-        private static readonly float default_spinner_separation = 0.3f;
+        private static readonly float default_spinner_separation = 0.65f;
         private static readonly UISpinner.TextAndValueVisibilityType default_visibility_type = UISpinner.TextAndValueVisibilityType.ShowTextAndValue;
         private static readonly UISpinner.SpinnerValueType default_value_type = UISpinner.SpinnerValueType.Float;
         private static readonly float default_min_value_float = 0.0f;
