@@ -56,27 +56,15 @@ namespace VRtist
             else
             {
                 transform.localPosition = relativeLocation;
-
-                // TODO: find a way to change the width/height/position of a top-level widget
-                // that has rotations.
-
-                //Vector3 worldPosition = transform.TransformPoint(relativeLocation);
-                //if (transform.parent)
-                //{
-                //    Vector3 parentRelativeLocation = transform.parent.InverseTransformPoint(worldPosition);
-                //    transform.localPosition = parentRelativeLocation;
-                //}
-                //else
-                //{
-                //    // not in the good frame.
-                //    transform.position = worldPosition;
-                //}
             }
         }
 
         public virtual void OnDisable()
         {
-            GlobalState.Instance.cursor.LockOnWidget(false);
+            if (GlobalState.Instance)
+            {
+                GlobalState.Instance.cursor.LockOnWidget(false);
+            }
         }
 
         public void UpdateChildren()
