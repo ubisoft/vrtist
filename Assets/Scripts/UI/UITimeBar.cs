@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
-using UnityEngine.UI;
-using System;
 
 namespace VRtist
 {
