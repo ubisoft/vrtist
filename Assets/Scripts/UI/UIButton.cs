@@ -142,7 +142,7 @@ namespace VRtist
                     if (rt != null)
                     {
                         rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
-                        bool noImage = (image == null) || !image.IsActive();
+                        bool noImage = (image == null) || !image.gameObject.activeSelf;
                         float textPosLeft = noImage ? margin : minSide;
                         rt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
                     }

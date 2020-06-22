@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
 
 namespace VRtist
 {
@@ -20,11 +18,23 @@ namespace VRtist
         public UIColorPickerSaturation saturation = null;
         public UIColorPickerHue hue = null;
         public UIColorPickerPreview preview = null;
+        public UICheckbox hdrCheckbox = null;
+        public UIButton minusOneButton = null;
+        public UIButton resetHdrButton = null;
+        public UIButton plusOneButton = null;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public ColorChangedEvent onColorChangedEvent = new ColorChangedEvent();
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
+
+        private bool isHdr = false;
+        private float hdrIntensity = 1.0f;
+        public bool IsHdr
+        {
+            get { return isHdr; }
+            set { isHdr = value; hdrIntensity = 1.0f; UpdateIsHdr(value); } // reset intensity???
+        }
 
         private Color currentColor;
         public Color CurrentColor
@@ -62,9 +72,48 @@ namespace VRtist
 
             Color baseColor = Color.HSVToRGB(h, 1f, 1f);
             saturation.SetBaseColor(baseColor);
+
+            // try to infer original value from hdr value
+            while (v > 1.0f)
+            {
+                v /= 2.0f;
+            }
+
             saturation.SetSaturation(new Vector2(s, v));
 
-            preview.SetColor(color);
+            preview.SetColor(Color.HSVToRGB(h, s, v));
+        }
+
+        public void OnMinusOneHdr()
+        {
+            if (IsHdr)
+            {
+                hdrIntensity /= 2.0f;
+                OnColorChanged();
+            }
+        }
+
+        public void OnResetHdr()
+        {
+            if (IsHdr)
+            {
+                hdrIntensity = 1.0f;
+                OnColorChanged();
+            }
+        }
+
+        public void OnPlusOneHdr()
+        {
+            if (IsHdr)
+            {
+                hdrIntensity *= 2.0f;
+                OnColorChanged();
+            }
+        }
+
+        private void UpdateIsHdr(bool value)
+        {
+            hdrCheckbox.Checked = value;
         }
 
         public void OnClick(Collider otherCollider)
@@ -95,6 +144,11 @@ namespace VRtist
 
             preview.SetColor(currentColor.gamma); // back to sRGB
 
+            if (IsHdr)
+            {
+                currentColor *= hdrIntensity;
+            }
+
             onColorChangedEvent.Invoke(currentColor);
         }
 
@@ -123,6 +177,9 @@ namespace VRtist
 
             preview.RebuildMesh(previewWidth, previewHeight, previewThickness);
             preview.transform.localPosition = Anchor + previewPosition;
+
+            // TODO: also move the HDR buttons
+            // ...
         }
 
         private void OnValidate()
