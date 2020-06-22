@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
@@ -44,6 +41,9 @@ namespace VRtist
         // Right-Handed
         public static bool rightHanded = true;
 
+        // Cursor
+        public PaletteCursor cursor = null;
+
         // Color
         private static Color currentColor = Color.blue;
         public static Color CurrentColor {
@@ -76,7 +76,7 @@ namespace VRtist
 
         // Singleton
         private static GlobalState instance = null;
-        private static GlobalState Instance
+        public static GlobalState Instance
         {
             get
             {
