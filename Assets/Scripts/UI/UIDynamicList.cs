@@ -225,6 +225,7 @@ namespace VRtist
                 var tmp = items[lastClickedIndex - 1];
                 items[lastClickedIndex - 1] = items[lastClickedIndex];
                 items[lastClickedIndex] = tmp;
+                lastClickedIndex = lastClickedIndex - 1;
                 needRebuild = true;
             }
         }
@@ -239,6 +240,7 @@ namespace VRtist
                 var tmp = items[lastClickedIndex + 1];
                 items[lastClickedIndex + 1] = items[lastClickedIndex];
                 items[lastClickedIndex] = tmp;
+                lastClickedIndex = lastClickedIndex + 1;
                 needRebuild = true;
             }
         }
