@@ -9,6 +9,12 @@ namespace VRtist
         public GameObject gobject;
     }
 
+    public class IndexedGameObjectArgs : EventArgs
+    {
+        public GameObject gobject;
+        public int index;
+    }
+
     [Serializable]
     public class GameObjectChangedEvent : UnityEvent<GameObject>
     {

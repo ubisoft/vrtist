@@ -23,14 +23,19 @@ namespace VRtist
 
         private BoxCollider boxCollider = null;
 
+        public void SetSelected(bool value)
+        {
+            Content.gameObject.GetComponent<ListItemContent>().SetSelected(value);
+        }
+
         public void AdaptContent()
         {
             // TODO: handle resize/center content
             // bool autoResizeContent, bool autoCenterContent
 
-            if (content != null)
+            if(content != null)
             {
-                if (autoResizeContent)
+                if(autoResizeContent)
                 {
                     Vector3 childExtents = content.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents; // TODO: what is many meshFilters?
                     float w = (width / 2.0f) / childExtents.x;
@@ -74,18 +79,18 @@ namespace VRtist
             float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
             intensity *= intensity; // ease-in
             VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-            
+
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             cursorShapeTransform.position = worldProjectedWidgetPosition;
         }
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            if (!UIEnabled.Value) return;
+            if(!UIEnabled.Value) return;
 
-            if (Disabled) { return; }
+            if(Disabled) { return; }
 
-            if (otherCollider.gameObject.name == "Cursor")
+            if(otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
 
@@ -95,11 +100,11 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
-            if (!UIEnabled.Value) return;
+            if(!UIEnabled.Value) return;
 
-            if (Disabled) { return; }
+            if(Disabled) { return; }
 
-            if (otherCollider.gameObject.name == "Cursor")
+            if(otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
             }
@@ -107,11 +112,11 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
-            if (!UIEnabled.Value) return;
+            if(!UIEnabled.Value) return;
 
-            if (Disabled) { return; }
+            if(Disabled) { return; }
 
-            if (otherCollider.gameObject.name == "Cursor")
+            if(otherCollider.gameObject.name == "Cursor")
             {
 
             }

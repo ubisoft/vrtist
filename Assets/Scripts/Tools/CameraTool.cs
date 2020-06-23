@@ -562,7 +562,7 @@ namespace VRtist
             showCameraFrustum = value;
         }
 
-        public void OnSelectCameraItem(object sender, GameObjectArgs args)
+        public void OnSelectCameraItem(object sender, IndexedGameObjectArgs args)
         {
             GameObject item = args.gobject;
             CameraItem cameraItem = item.GetComponent<CameraItem>();

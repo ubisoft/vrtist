@@ -76,6 +76,7 @@ namespace VRtist
         ShotManagerMontageMode,
         ShotManagerContent,
         ShotManagerCurrentShot,
+        ShotManagerAction,
 
         Optimized_Commands = 200,
         Transform,
@@ -1645,6 +1646,56 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildShotManagerAction(ShotManagerActionInfo info)
+        {
+            NetCommand command = null;
+            List<byte[]> buffers;
+            byte[] shotName;
+            byte[] start;
+            byte[] end;
+            byte[] camera;
+            byte[] color;
+
+            byte[] action = IntToBytes((int) info.action);
+            byte[] shotIndex = IntToBytes(info.shotIndex);
+
+            switch(info.action)
+            {
+                case ShotManagerAction.AddShot:
+                    shotName = StringToBytes(info.shotName);
+                    start = IntToBytes(info.shotStart);
+                    end = IntToBytes(info.shotEnd);
+                    camera = StringToBytes(info.cameraName);
+                    color = ColorToBytes(info.shotColor);
+                    buffers = new List<byte[]> { action, shotIndex, shotName, start, end, camera, color };
+                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    break;
+                case ShotManagerAction.DeleteShot:
+                    buffers = new List<byte[]> { action, shotIndex };
+                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    break;
+                case ShotManagerAction.DuplicateShot:
+                    shotName = StringToBytes(info.shotName);
+                    buffers = new List<byte[]> { action, shotIndex, shotName };
+                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    break;
+                case ShotManagerAction.MoveShot:
+                    byte[] offset = IntToBytes(info.moveOffset);
+                    buffers = new List<byte[]> { action, shotIndex, offset };
+                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    break;
+                case ShotManagerAction.UpdateShot:
+                    start = IntToBytes(info.shotStart);
+                    end = IntToBytes(info.shotEnd);
+                    camera = StringToBytes(info.cameraName);
+                    color = ColorToBytes(info.shotColor);
+                    buffers = new List<byte[]> { action, shotIndex, start, end, camera, color };
+                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    break;
+            }
+            return command;
+        }
+
         public static MeshFilter GetOrCreateMeshFilter(GameObject obj)
         {
             MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
@@ -2451,7 +2502,7 @@ namespace VRtist
 
             int index = 0;
             int shotCount = GetInt(data, ref index);
-            for(int i = 0 ; i < shotCount; ++i)
+            for(int i = 0; i < shotCount; ++i)
             {
                 string shotName = GetString(data, ref index);
                 string cameraName = GetString(data, ref index);
@@ -2460,7 +2511,7 @@ namespace VRtist
                 bool enabled = GetBool(data, ref index);
 
                 GameObject camera = null;
-                if (cameraName.Length > 0 && SyncData.nodes.ContainsKey(cameraName))
+                if(cameraName.Length > 0 && SyncData.nodes.ContainsKey(cameraName))
                     camera = SyncData.nodes[cameraName].instances[0].Item1;
 
                 Shot shot = new Shot { name = shotName, camera = camera, start = start, end = end, enabled = enabled };
@@ -2811,6 +2862,12 @@ namespace VRtist
         public void SendMontageMode(MontageModeInfo data)
         {
             NetCommand command = NetGeometry.BuildSendMontageMode(data.montage);
+            AddCommand(command);
+        }
+
+        public void SendShotManagerAction(ShotManagerActionInfo info)
+        {
+            NetCommand command = NetGeometry.BuildShotManagerAction(info);
             AddCommand(command);
         }
 

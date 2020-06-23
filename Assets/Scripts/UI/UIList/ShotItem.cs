@@ -2,7 +2,7 @@
 
 namespace VRtist
 {
-    public class ShotItem : MonoBehaviour
+    public class ShotItem : ListItemContent
     {
         public Shot shot = null;
         public UIDynamicListItem item;
@@ -14,10 +14,15 @@ namespace VRtist
         public UILabel frameRangeLabel = null;
         public UILabel endFrameLabel = null;
 
+        public override void SetSelected(bool value)
+        {
+            shotNameButton.BaseColor = value ? UIElement.default_pushed_color : UIElement.default_background_color;
+        }
+
         public void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;            
-        }        
+            Selection.OnSelectionChanged += OnSelectionChanged;
+        }
 
         public void OnDestroy()
         {
@@ -41,7 +46,7 @@ namespace VRtist
 
         public void SetShotEnabled(bool value)
         {
-            if (shotEnabledCheckbox != null)
+            if(shotEnabledCheckbox != null)
             {
                 shotEnabledCheckbox.Checked = value;
                 shot.enabled = value;
@@ -50,7 +55,7 @@ namespace VRtist
 
         public void SetShotName(string shotName)
         {
-            if (shotNameButton != null)
+            if(shotNameButton != null)
             {
                 shotNameButton.Text = shotName;
                 shot.name = shotName;
@@ -59,7 +64,7 @@ namespace VRtist
 
         public void SetStartFrame(int startFrame)
         {
-            if (startFrameLabel != null)
+            if(startFrameLabel != null)
             {
                 startFrameLabel.Text = startFrame.ToString();
                 shot.start = startFrame;
@@ -68,7 +73,7 @@ namespace VRtist
 
         private void SetFrameRange(int frameRange)
         {
-            if (frameRangeLabel != null)
+            if(frameRangeLabel != null)
             {
                 frameRangeLabel.Text = frameRange.ToString();
             }
@@ -76,7 +81,7 @@ namespace VRtist
 
         public void SetEndFrame(int endFrame)
         {
-            if (endFrameLabel != null)
+            if(endFrameLabel != null)
             {
                 endFrameLabel.Text = endFrame.ToString();
                 shot.end = endFrame;
@@ -91,18 +96,18 @@ namespace VRtist
             float cx = 0.0f;
 
             // Add UIButton
-            UIButton cameraButton = 
+            UIButton cameraButton =
                 UIButton.CreateUIButton(
-                    "CameraButton", 
+                    "CameraButton",
                     root.transform,
-                    Vector3.zero, 
+                    Vector3.zero,
                     0.03f, // width
                     0.03f, // height
                     0.005f, // margin
                     0.001f, // thickness
-                    UIUtils.LoadMaterial("UIPanel"), 
-                    UIElement.default_background_color, 
-                    "tmp", 
+                    UIUtils.LoadMaterial("UIPanel"),
+                    UIElement.default_background_color,
+                    "tmp",
                     UIUtils.LoadIcon("icon-camera"));
 
             cameraButton.isCheckable = true;
@@ -126,7 +131,7 @@ namespace VRtist
                     UIUtils.LoadMaterial("UIPanel"),
                     UIElement.default_background_color,
                     "shot name",
-                    UIUtils.LoadIcon("checkbox_checked"), 
+                    UIUtils.LoadIcon("checkbox_checked"),
                     UIUtils.LoadIcon("checkbox_unchecked")
                     );
 
