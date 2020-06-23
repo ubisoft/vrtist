@@ -10,9 +10,9 @@ namespace VRtist
         public UIButton cameraButton = null;
         public UICheckbox shotEnabledCheckbox = null;
         public UIButton shotNameButton = null;
-        public UILabel startFrameLabel = null;
+        public UISpinner startFrameSpinner = null;
         public UILabel frameRangeLabel = null;
-        public UILabel endFrameLabel = null;
+        public UISpinner endFrameSpinner = null;
 
         public override void SetSelected(bool value)
         {
@@ -64,9 +64,9 @@ namespace VRtist
 
         public void SetStartFrame(int startFrame)
         {
-            if(startFrameLabel != null)
+            if(startFrameSpinner != null)
             {
-                startFrameLabel.Text = startFrame.ToString();
+                startFrameSpinner.IntValue = startFrame;
                 shot.start = startFrame;
             }
         }
@@ -81,9 +81,9 @@ namespace VRtist
 
         public void SetEndFrame(int endFrame)
         {
-            if(endFrameLabel != null)
+            if(endFrameSpinner != null)
             {
-                endFrameLabel.Text = endFrame.ToString();
+                endFrameSpinner.IntValue = endFrame;
                 shot.end = endFrame;
             }
         }
@@ -160,25 +160,30 @@ namespace VRtist
 
             cx += 0.17f;
 
-            // Add UILabel
-            UILabel startFrameLabel = UILabel.CreateUILabel(
-                "FirstFrame",
+            // START: Add UISpinner
+            UISpinner startFrameSpinner = UISpinner.CreateUISpinner(
+                "StartFrame",
                 root.transform,
                 new Vector3(cx, 0, 0),
                 0.06f,
                 0.03f,
                 0.005f,
+                0.001f,
+                0.65f,
+                UISpinner.TextAndValueVisibilityType.ShowValueOnly,
+                UISpinner.SpinnerValueType.Int,
+                0.0f, 1.0f, 0.5f, 0.1f,
+                0, 10000, shot.start, 30,
                 UIUtils.LoadMaterial("UIElementTransparent"),
                 UIElement.default_background_color,
-                UIElement.default_color,
-                "1"
+                "Start"
                 );
 
-            startFrameLabel.SetLightLayer(5);
+            startFrameSpinner.SetLightLayer(5);
 
             cx += 0.06f;
 
-            // Add UILabel
+            // RANGE: Add UILabel
             UILabel frameRangeLabel = UILabel.CreateUILabel(
                 "FrameRange",
                 root.transform,
@@ -196,29 +201,34 @@ namespace VRtist
 
             cx += 0.06f;
 
-            // Add UILabel
-            UILabel endFrameLabel = UILabel.CreateUILabel(
-                "FirstFrame",
+            // END: Add UISpinner
+            UISpinner endFrameSpinner = UISpinner.CreateUISpinner(
+                "EndFrame",
                 root.transform,
                 new Vector3(cx, 0, 0),
                 0.06f,
                 0.03f,
                 0.005f,
+                0.001f,
+                0.65f,
+                UISpinner.TextAndValueVisibilityType.ShowValueOnly,
+                UISpinner.SpinnerValueType.Int,
+                0.0f, 1.0f, 0.5f, 0.1f,
+                0, 10000, shot.end, 30,
                 UIUtils.LoadMaterial("UIElementTransparent"),
                 UIElement.default_background_color,
-                UIElement.default_color,
-                "50"
+                "End"
                 );
 
-            endFrameLabel.SetLightLayer(5);
+            endFrameSpinner.SetLightLayer(5);
 
             // Link widgets to the item script.
             shotItem.cameraButton = cameraButton;
             shotItem.shotEnabledCheckbox = shotEnabledCheckbox;
             shotItem.shotNameButton = shotNameButton;
-            shotItem.startFrameLabel = startFrameLabel;
+            shotItem.startFrameSpinner = startFrameSpinner;
             shotItem.frameRangeLabel = frameRangeLabel;
-            shotItem.endFrameLabel = endFrameLabel;
+            shotItem.endFrameSpinner = endFrameSpinner;
 
             shotItem.SetShot(shot);
 

@@ -47,6 +47,10 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
+        private Vector3 localProjectedWidgetInitialPosition = Vector3.zero;
+        private float initialFloatValue = 0.0f;
+        private int initialIntValue = 0;
+
         private bool needRebuild = false;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
@@ -359,57 +363,65 @@ namespace VRtist
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
             Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
 
-            float widthWithoutMargins = width - 2.0f * margin;
-            float startX = margin + widthWithoutMargins * separationPositionPct;
-            float endX = width - margin;
+            // SNAP Y to middle
+            localProjectedWidgetPosition.y = -height / 2.0f;
 
-            float snapXDistance = 0.002f;
-            // TODO: snap X if X if a bit left of startX or a bit right of endX.
-
-            if (localProjectedWidgetPosition.x > startX - snapXDistance && localProjectedWidgetPosition.x < endX + snapXDistance)
-            {
-                // SNAP X left
-                if (localProjectedWidgetPosition.x < startX)
-                    localProjectedWidgetPosition.x = startX;
-
-                // SNAP X right
-                if(localProjectedWidgetPosition.x > endX)
-                    localProjectedWidgetPosition.x = endX;
-
-                // SNAP Y to middle
-                localProjectedWidgetPosition.y = -height / 2.0f;
-
-                float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-
-                // Actually move the spinner ONLY if RIGHT_TRIGGER is pressed.
-                bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
-                if (triggerState)
-                {
-                    if (spinnerValueType == SpinnerValueType.Float)
-                    {
-                        FloatValue = minFloatValue + pct * (maxFloatValue - minFloatValue);
-                        onSpinEvent.Invoke(currentFloatValue);
-                        
-                    }
-                    else // SpinnerValueType.Int
-                    {
-                        IntValue = (int)(minIntValue + pct * (float)(maxIntValue - minIntValue));
-                        onSpinEventInt.Invoke(currentIntValue);
-                    }
+            bool justPushedTriggered = false;
+            bool justReleasedTriggered = false;
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton,
+                () => {
+                    justPushedTriggered = true;
+                },
+                () => {
+                    justReleasedTriggered = true;
                 }
+            );
 
-                // Haptic intensity as we go deeper into the widget.
-                float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                intensity *= intensity; // ease-in
-
-                VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+            if (justPushedTriggered)
+            {
+                GlobalState.Instance.cursor.LockOnWidget(true);
+                localProjectedWidgetInitialPosition = localProjectedWidgetPosition;
+                initialFloatValue = FloatValue;
+                initialIntValue = IntValue;
             }
 
+            float distanceAlongAxis = localProjectedWidgetPosition.x - localProjectedWidgetInitialPosition.x;
+            float floatChange = valueRateFloat * distanceAlongAxis;
+            float intChange = valueRateInt * distanceAlongAxis;
+
+            // Actually move the spinner ONLY if RIGHT_TRIGGER is pressed.
+            bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
+            if (triggerState)
+            {
+                if (spinnerValueType == SpinnerValueType.Float)
+                {
+                    FloatValue = initialFloatValue + floatChange;
+                    onSpinEvent.Invoke(currentFloatValue);
+                }
+                else // SpinnerValueType.Int
+                {
+                    IntValue = initialIntValue + Mathf.FloorToInt(intChange);
+                    onSpinEventInt.Invoke(currentIntValue);
+                }
+            }
+
+            // Haptic intensity as we go deeper into the widget.
+            float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+            intensity *= intensity; // ease-in
+
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+
+            // Actually MOVE the cursor.
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             cursorShapeTransform.position = worldProjectedWidgetPosition;
+
+            if (justReleasedTriggered)
+            {
+                GlobalState.Instance.cursor.LockOnWidget(false);
+            }
         }
 
-        public static void CreateUISpinner(
+        public static UISpinner CreateUISpinner(
             string spinnerName,
             Transform parent,
             Vector3 relativeLocation,
@@ -462,9 +474,11 @@ namespace VRtist
             uiSpinner.minFloatValue = min_spinner_value_float;
             uiSpinner.maxFloatValue = max_spinner_value_float;
             uiSpinner.currentFloatValue = cur_spinner_value_float;
+            uiSpinner.valueRateFloat = spinner_value_rate_float;
             uiSpinner.minIntValue = min_spinner_value_int;
             uiSpinner.maxIntValue = max_spinner_value_int;
             uiSpinner.currentIntValue = cur_spinner_value_int;
+            uiSpinner.valueRateInt = spinner_value_rate_int;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -584,6 +598,8 @@ namespace VRtist
                     : 0.5f * uiSpinner.width; // or middle
                 trt.localPosition = new Vector3(textPos, -uiSpinner.height / 2.0f, -0.002f);
             }
+
+            return uiSpinner;
         }
     }
 }
