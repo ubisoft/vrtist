@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -13,6 +14,13 @@ namespace VRtist
         public UISpinner startFrameSpinner = null;
         public UILabel frameRangeLabel = null;
         public UISpinner endFrameSpinner = null;
+
+        public void AddListeners(UnityAction<string> nameAction, UnityAction<int> startAction, UnityAction<int> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction)
+        {
+            // TODO only on release
+            startFrameSpinner.onSpinEventInt.AddListener(startAction);
+            endFrameSpinner.onSpinEventInt.AddListener(endAction);
+        }
 
         public override void SetSelected(bool value)
         {

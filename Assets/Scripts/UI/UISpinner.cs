@@ -44,8 +44,8 @@ namespace VRtist
         [SpaceHeader("Callbacks", 6, 0.3f, 0.3f, 0.3f)]
         public FloatChangedEvent onSpinEvent = new FloatChangedEvent();
         public IntChangedEvent onSpinEventInt = new IntChangedEvent();
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         private Vector3 localProjectedWidgetInitialPosition = Vector3.zero;
         private float initialFloatValue = 0.0f;
@@ -542,7 +542,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont"); // TODO: get modifs from other widgets
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
@@ -570,7 +570,7 @@ namespace VRtist
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
-                //t.font = (Font)Resources.Load("MyLocalFont");
+                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = (value_type == SpinnerValueType.Float) ? cur_spinner_value_float.ToString("#0.00") : cur_spinner_value_int.ToString();
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
