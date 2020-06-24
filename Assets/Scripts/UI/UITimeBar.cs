@@ -220,6 +220,9 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionEnter())
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 // HIDE cursor
@@ -230,6 +233,9 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionExit())
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 // SHOW cursor
@@ -240,6 +246,9 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionStay())
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 // NOTE: The correct "currentValue" is already computed in the HandleCursorBehavior callback.

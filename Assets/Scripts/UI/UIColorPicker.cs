@@ -235,32 +235,6 @@ namespace VRtist
 #endif
         }
 
-        //private void OnTriggerEnter(Collider otherCollider)
-        //{
-        //    // TODO: pass the Cursor to the button, test the object instead of a hardcoded name.
-        //    if (otherCollider.gameObject.name == "Cursor")
-        //    {
-        //        onClickEvent.Invoke();
-        //        VRInput.SendHaptic(VRInput.rightController, 0.03f);
-        //    }
-        //}
-
-        //private void OnTriggerExit(Collider otherCollider)
-        //{
-        //    if (otherCollider.gameObject.name == "Cursor")
-        //    {
-        //        onReleaseEvent.Invoke();
-        //    }
-        //}
-
-        //private void OnTriggerStay(Collider otherCollider)
-        //{
-        //    if (otherCollider.gameObject.name == "Cursor")
-        //    {
-        //        onHoverEvent.Invoke();
-        //    }
-        //}
-
         public static void CreateUIColorPicker(
             string objectName,
             Transform parent,

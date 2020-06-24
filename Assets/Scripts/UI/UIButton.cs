@@ -285,9 +285,8 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            if (!UIEnabled.Value) return;
-
-            if (Disabled) return;
+            if (NeedToIgnoreCollisionEnter())
+                return;
 
             float currentTime = Time.unscaledTime;
             if ((currentTime - prevTime) > 0.4f && otherCollider.gameObject.name == "Cursor")
@@ -299,9 +298,8 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
-            if (!UIEnabled.Value) return;
-
-            if (Disabled) return;
+            if (NeedToIgnoreCollisionExit())
+                return;
 
             if (otherCollider.gameObject.name == "Cursor")
             {
@@ -317,9 +315,8 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
-            if (!UIEnabled.Value) return;
-
-            if (Disabled) return;
+            if (NeedToIgnoreCollisionStay())
+                return;
 
             if (otherCollider.gameObject.name == "Cursor")
             {

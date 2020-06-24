@@ -1,9 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEditor;
-using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -156,6 +153,9 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionEnter())
+                return;
+
             // TODO: pass the Cursor to the object3d, test the object instead of a hardcoded name.
             if (otherCollider.gameObject.name == "Cursor")
             {
@@ -169,6 +169,9 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionExit())
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 // RE-instantiate an object from the prefab, the other one being in the user's hands.

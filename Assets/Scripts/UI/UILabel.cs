@@ -212,6 +212,9 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionEnter())
+                return;
+
             // TODO: pass the Cursor to the label, test the object instead of a hardcoded name.
             if (otherCollider.gameObject.name == "Cursor")
             {
@@ -222,6 +225,9 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionExit())
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
@@ -230,6 +236,9 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
+            if (NeedToIgnoreCollisionStay())
+                return;
+
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onHoverEvent.Invoke();

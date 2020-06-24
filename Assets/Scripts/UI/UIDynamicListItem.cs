@@ -86,11 +86,10 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider otherCollider)
         {
-            if(!UIEnabled.Value) return;
+            if (NeedToIgnoreCollisionEnter())
+                return;
 
-            if(Disabled) { return; }
-
-            if(otherCollider.gameObject.name == "Cursor")
+            if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
 
@@ -100,11 +99,10 @@ namespace VRtist
 
         private void OnTriggerExit(Collider otherCollider)
         {
-            if(!UIEnabled.Value) return;
+            if (NeedToIgnoreCollisionExit())
+                return;
 
-            if(Disabled) { return; }
-
-            if(otherCollider.gameObject.name == "Cursor")
+            if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
             }
@@ -112,11 +110,10 @@ namespace VRtist
 
         private void OnTriggerStay(Collider otherCollider)
         {
-            if(!UIEnabled.Value) return;
+            if (NeedToIgnoreCollisionStay())
+                return;
 
-            if(Disabled) { return; }
-
-            if(otherCollider.gameObject.name == "Cursor")
+            if (otherCollider.gameObject.name == "Cursor")
             {
 
             }

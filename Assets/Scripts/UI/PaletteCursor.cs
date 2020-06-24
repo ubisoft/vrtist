@@ -115,6 +115,9 @@ namespace VRtist
 
         private void OnTriggerEnter(Collider other)
         {
+            if (lockedOnAWidget)
+                return;
+
             if (other.GetComponent<UIVolumeTag>() != null)
             {
                 ReleaseUIEnabledGuard();
@@ -177,6 +180,16 @@ namespace VRtist
                 meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
             }
             SetCursorShape(0);
+        }
+
+        public bool IsLockedOnWidget()
+        {
+            return lockedOnAWidget;
+        }
+
+        public bool IsLockedOnThisWidget(Transform other)
+        {
+            return widgetTransform == other;
         }
 
         public void LockOnWidget(bool value)
