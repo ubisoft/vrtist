@@ -197,6 +197,10 @@ namespace VRtist
             if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
                 nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
 
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
+
             needRebuild = true;
         }
 
@@ -250,7 +254,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIPanel");
+                Material material = UIUtils.LoadMaterial("UIElementTransparent");
                 Material materialInstance = Instantiate(material);
 
                 meshRenderer.sharedMaterial = materialInstance;

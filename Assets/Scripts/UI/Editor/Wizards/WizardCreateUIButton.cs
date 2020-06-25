@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEditor;
 
 namespace VRtist
 {
@@ -14,7 +12,7 @@ namespace VRtist
         private static readonly float default_thickness = 0.001f;
         private static readonly Material default_material = null; // use LoadDefault...
         private static readonly Color default_color = UIElement.default_background_color;
-        private static readonly string default_text = "Button";
+        private static readonly string default_text = "New Button";
         private static readonly Sprite default_icon = null; // use LoadDefault...
 
         public UIPanel parentPanel = null;
@@ -28,12 +26,6 @@ namespace VRtist
         public string caption = default_text;
         public Sprite icon = default_icon;
 
-        [MenuItem("VRtist/Create UI Button")]
-        static void CreateWizard()
-        {
-            ScriptableWizard.DisplayWizard<WizardCreateUIButton>("Create UI Button", "Create");
-        }
-
         [MenuItem("GameObject/VRtist/UIButton", false, 49)]
         public static void OnCreateFromHierarchy()
         {
@@ -45,28 +37,8 @@ namespace VRtist
             }
 
             UIButton.CreateUIButton(default_button_name, parent, 
-                Vector3.zero, default_width, default_height, default_margin, default_thickness, 
+                new Vector3(0,0,-default_thickness), default_width, default_height, default_margin, default_thickness, 
                 UIUtils.LoadMaterial("UIPanel"), default_color, default_text, UIUtils.LoadIcon("paint"));
-        }
-
-        private void OnWizardUpdate()
-        {
-            helpString = "Create a new UIButton";
-
-            if (uiMaterial == null)
-            {
-                uiMaterial = UIUtils.LoadMaterial("UIPanel");
-            }
-
-            if(icon == null)
-            {
-                icon = UIUtils.LoadIcon("paint");
-            }
-        }
-
-        private void OnWizardCreate()
-        {
-            UIButton.CreateUIButton(buttonName, parentPanel ? parentPanel.transform : null, Vector3.zero, width, height, margin, thickness, uiMaterial, color, caption, icon);
         }
     }
 }

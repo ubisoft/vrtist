@@ -115,7 +115,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIPanel");
+                Material material = UIUtils.LoadMaterial("UIElementTransparent");
                 Material materialInstance = Instantiate(material);
                 
                 meshRenderer.sharedMaterial = materialInstance;
