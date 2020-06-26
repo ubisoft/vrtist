@@ -42,7 +42,7 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
-            shotNameButton.BaseColor = value ? UIElement.default_pushed_color : UIElement.default_background_color;
+            shotNameButton.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
         }
 
         public void Start()
@@ -183,6 +183,7 @@ namespace VRtist
 
             shotNameButton.ActivateIcon(false); // text-only
             shotNameButton.SetLightLayer(5);
+            shotNameButton.pushedColor = UIElement.default_pushed_color;
 
             cx += 0.17f;
 
