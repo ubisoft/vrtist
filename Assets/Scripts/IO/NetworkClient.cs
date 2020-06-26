@@ -1655,6 +1655,7 @@ namespace VRtist
             byte[] end;
             byte[] camera;
             byte[] color;
+            byte[] enabled;
 
             byte[] action = IntToBytes((int) info.action);
             byte[] shotIndex = IntToBytes(info.shotIndex);
@@ -1689,7 +1690,8 @@ namespace VRtist
                     end = IntToBytes(info.shotEnd);
                     camera = StringToBytes(info.cameraName);
                     color = ColorToBytes(info.shotColor);
-                    buffers = new List<byte[]> { action, shotIndex, start, end, camera, color };
+                    enabled = IntToBytes(info.shotEnabled);
+                    buffers = new List<byte[]> { action, shotIndex, start, end, camera, color, enabled };
                     command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
                     break;
             }

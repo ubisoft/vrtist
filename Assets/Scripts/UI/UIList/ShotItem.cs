@@ -15,7 +15,7 @@ namespace VRtist
         public UILabel frameRangeLabel = null;
         public UISpinner endFrameSpinner = null;
 
-        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction)
+        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction)
         {
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
             endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
@@ -25,6 +25,8 @@ namespace VRtist
 
             startFrameSpinner.onReleaseTriggerEvent.AddListener(startAction);
             endFrameSpinner.onReleaseTriggerEvent.AddListener(endAction);
+
+            shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
         }
 
         private void InitSpinnerMinMax()

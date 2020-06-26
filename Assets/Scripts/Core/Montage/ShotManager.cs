@@ -26,6 +26,7 @@ namespace VRtist
         public string cameraName = "";
         public Color shotColor = Color.black;
         public int moveOffset = 0;
+        public int shotEnabled = -1;
     }
 
 
@@ -112,6 +113,12 @@ namespace VRtist
         {
             Shot shot = shots[currentShotIndex];
             shot.color = color;
+        }
+
+        public void SetCurrentShotEnabled(bool value)
+        {
+            Shot shot = shots[currentShotIndex];
+            shot.enabled = value;
         }
 
         public void UpdateShot(int index, Shot shot)
