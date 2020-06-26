@@ -46,6 +46,12 @@ namespace VRtist
             shots.Add(shot);
         }
 
+        public void DuplicateShot(int index)
+        {
+            Shot shot = shots[index].Copy();
+            shots.Insert(index + 1, shot);
+        }
+
         public void InsertShot(int index, Shot shot)
         {
             shots.Insert(index, shot);
@@ -201,11 +207,16 @@ namespace VRtist
     public class Shot
     {
         public string name;
-        public GameObject camera; // TODO, manage game object destroy
-        public int start;
-        public int end;
-        public bool enabled;
-        public Color color;
+        public GameObject camera = null; // TODO, manage game object destroy
+        public int start = -1;
+        public int end = -1;
+        public bool enabled = true;
+        public Color color = Color.black;
+
+        public Shot Copy()
+        {
+            return new Shot { name = name, camera = camera, start = start, end = end, enabled = enabled, color = color };
+        }
     }
 
 }

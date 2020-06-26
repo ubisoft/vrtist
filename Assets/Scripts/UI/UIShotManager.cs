@@ -89,7 +89,7 @@ namespace VRtist
                 shotEnd = end,
                 shotColor = Color.blue  // TODO: find a unique color
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Add the shot to ShotManager singleton
             shotIndex++;
@@ -115,7 +115,7 @@ namespace VRtist
                 action = ShotManagerAction.DeleteShot,
                 shotIndex = shotIndex
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Rebuild UI
             OnShotManagerChanged();
@@ -136,7 +136,7 @@ namespace VRtist
                 shotIndex = shotIndex,
                 moveOffset = offset
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Rebuild UI
             OnShotManagerChanged();
@@ -159,7 +159,7 @@ namespace VRtist
                 shotIndex = sm.CurrentShot,
                 shotStart = intValue,
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotEnd(float value)
@@ -179,7 +179,7 @@ namespace VRtist
                 shotIndex = sm.CurrentShot,
                 shotEnd = intValue,
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotCameraName(string value)
@@ -194,7 +194,7 @@ namespace VRtist
                 shotIndex = sm.CurrentShot,
                 cameraName = value
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotName(string value)
@@ -209,7 +209,7 @@ namespace VRtist
                 shotIndex = sm.CurrentShot,
                 shotName = value
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotColor(Color value)
@@ -224,7 +224,7 @@ namespace VRtist
                 shotIndex = sm.CurrentShot,
                 shotColor = value
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
         }
 
@@ -240,7 +240,7 @@ namespace VRtist
                 shotIndex = sm.CurrentShot,
                 shotEnabled = value ? 1 : 0
             };
-            NetworkClient.GetInstance().SendShotManagerAction(info);
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
         }
     }
