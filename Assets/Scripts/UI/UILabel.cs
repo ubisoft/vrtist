@@ -12,9 +12,32 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UILabel : UIElement
     {
-        [SpaceHeader("Label Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        public static readonly string default_label_name = "New Label";
+        public static readonly float default_width = 0.15f;
+        public static readonly float default_height = 0.05f;
+        public static readonly float default_margin = 0.005f;
+        public static readonly float default_thickness = 0.001f;
+        public static readonly Color default_label_background_color = UIElement.default_background_color;
+        public static readonly Color default_label_foreground_color = UIElement.default_foreground_color;
+        public static readonly string default_text = "Label";
+        public static readonly string default_material_name = "UIElementTransparent";
+        public static readonly LabelContent default_content = LabelContent.TextOnly;
+        public static readonly string default_icon_name = "paint";
+
+        public enum IconMarginBehavior { UseWidgetMargin, UseIconMargin };
+        public enum LabelContent { TextOnly, ImageOnly, TextAndImage };
+        public enum ImagePosition { Left, Right };
+
+        [SpaceHeader("Label Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = 0.005f;
-        public Color textColor = UIElement.default_color; // TODO: put in UIElement (foreground color and background color)
+        [CentimeterFloat] public float thickness = 0.001f;
+        public LabelContent content = LabelContent.TextOnly;
+        public ImagePosition imagePosition = ImagePosition.Left;
+        public IconMarginBehavior iconMarginBehavior = IconMarginBehavior.UseWidgetMargin;
+        [CentimeterFloat] public float iconMargin = 0.0f;
+        public Sprite image = null;
+        [TextArea] public string textContent = "";
+        public Color textColor = UILabel.default_label_foreground_color;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -25,23 +48,15 @@ namespace VRtist
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
-        static public float labelThickness = 0.001f; // TODO: change mesh to have only one face, no depth
-
         private bool needRebuild = false;
 
-        // TODO: expose a text field to avoid having to go 2 levels deep into the Text object
-
         public string Text { get { return GetText(); } set { SetText(value); } }
-        public Color TextColor { get { return textColor; } set { textColor = value; UpdateTextColor(); } } // TODO: move into UIElement
-
-        void Start()
-        {
-        }
+        public Color TextColor { get { return textColor; } set { textColor = value; UpdateTextColor(); } }
 
         public override void RebuildMesh()
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, labelThickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
+            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
             theNewMesh.name = "UILabel_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
@@ -108,6 +123,13 @@ namespace VRtist
                 Text text = canvas.gameObject.GetComponentInChildren<Text>();
                 if(text != null)
                 {
+                    // tmp: pour eviter que tous les labels se retrouvent vides de text.
+                    if (textContent.Length == 0 && text.text.Length > 0)
+                        textContent = text.text;
+                    //------------------
+
+
+                    text.text = textContent;
                     text.color = textColor;
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
@@ -147,20 +169,18 @@ namespace VRtist
             if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
                 nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
 
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
+
             needRebuild = true;
         }
 
         private void Update()
         {
 #if UNITY_EDITOR
-            // NOTE: rebuild when touching a property in the inspector.
-            // Boolean needRebuild is set in OnValidate();
-            // The rebuild method called when using the gizmos is: Width and Height
-            // properties in UIElement.
-            // This comment is probably already obsolete.
             if (needRebuild)
             {
-                // NOTE: I do all these things because properties can't be called from the inspector.
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
@@ -203,6 +223,8 @@ namespace VRtist
 
         private void SetText(string textValue)
         {
+            textContent = textValue;
+
             Text text = GetComponentInChildren<Text>();
             if (text != null)
             {
@@ -215,11 +237,9 @@ namespace VRtist
             if (NeedToIgnoreCollisionEnter())
                 return;
 
-            // TODO: pass the Cursor to the label, test the object instead of a hardcoded name.
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
-                //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
         }
 
@@ -245,17 +265,39 @@ namespace VRtist
             }
         }
 
-        public static UILabel CreateUILabel(
-            string labelName,
+        public static UILabel Create(Transform parent)
+        {
+            return UILabel.CreateEx(
+                parent, 
+                default_label_name,
+                new Vector3(0, 0, -default_thickness), 
+                default_width, 
+                default_height, 
+                default_margin, 
+                default_thickness,
+                UIUtils.LoadMaterial(default_material_name), 
+                default_label_background_color, 
+                default_label_foreground_color, 
+                default_content,
+                default_text,
+                UIUtils.LoadIcon(default_icon_name)
+            );
+        }
+
+        public static UILabel CreateEx(
             Transform parent,
+            string labelName,
             Vector3 relativeLocation,
             float width,
             float height,
             float margin,
+            float thickness,
             Material material,
             Color bgcolor,
             Color fgcolor,
-            string caption)
+            LabelContent labelContent,
+            string caption,
+            Sprite icon)
         {
             GameObject go = new GameObject(labelName);
             go.tag = "UICollider";
@@ -280,12 +322,17 @@ namespace VRtist
             uiLabel.width = width;
             uiLabel.height = height;
             uiLabel.margin = margin;
+            uiLabel.thickness = thickness;
+            uiLabel.content = labelContent;
+            uiLabel.image = icon;
+            uiLabel.textContent = caption;
+            // text color and bg color are set below
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, labelThickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
                 uiLabel.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -310,14 +357,6 @@ namespace VRtist
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
             if (meshRenderer != null && material != null)
             {
-                // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
-                //       to make the error disappear;
-
-                // Get an instance of the same material
-                // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
-                //meshRenderer.sharedMaterial = uiMaterial;
-                //Material material = meshRenderer.material; // instance of the sharedMaterial
-
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;

@@ -103,24 +103,23 @@ namespace VRtist
 
             float cx = 0.0f;
 
-            // Add UIButton
-            UIButton cameraButton =
-                UIButton.CreateUIButton(
-                    "CameraButton",
-                    root.transform,
-                    Vector3.zero,
-                    0.03f, // width
-                    0.03f, // height
-                    0.005f, // margin
-                    0.001f, // thickness
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    "tmp",
-                    UIUtils.LoadIcon("icon-camera"));
+            //
+            // CAMERA NAME
+            //
+            UIButton cameraButton = UIButton.Create(new UIButton.CreateButtonParams
+            {
+                parent = root.transform,
+                buttonName = "CameraButton",
+                relativeLocation = new Vector3(0, 0, -UIButton.default_thickness),
+                width = 0.03f,
+                height = 0.03f,
+                icon = UIUtils.LoadIcon("icon-camera"),
+                buttonContent = UIButton.ButtonContent.TextOnly
+            });
 
             cameraButton.isCheckable = true;
             cameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
-            cameraButton.uncheckedSprite = null;
+            cameraButton.baseSprite = null;
             cameraButton.ActivateText(false); // icon-only
             cameraButton.SetLightLayer(5);
 
@@ -143,48 +142,46 @@ namespace VRtist
                     UIUtils.LoadIcon("checkbox_unchecked")
                     );
 
-            shotEnabledCheckbox.ActivateText(false);
+            //shotEnabledCheckbox.ActivateText(false);
             shotEnabledCheckbox.SetLightLayer(5);
 
             cx += 0.03f;
 
             // Add Shot Name UIButton
-            UIButton shotNameButton =
-                UIButton.CreateUIButton(
-                    "ShotNameButton",
-                    root.transform,
-                    new Vector3(cx, 0, 0),
-                    0.17f, // width
-                    0.03f, // height
-                    0.005f, // margin
-                    0.001f, // thickness
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    "tmp",
-                    UIUtils.LoadIcon("icon-camera"));
+            UIButton shotNameButton = UIButton.Create(new UIButton.CreateButtonParams
+            {
+                parent = root.transform,
+                buttonName = "ShotNameButton",
+                relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
+                width = 0.17f,
+                height = 0.03f,
+                icon = UIUtils.LoadIcon("icon-camera"),
+                buttonContent = UIButton.ButtonContent.TextOnly
+            });
 
-            shotNameButton.ActivateIcon(false); // text-only
+            //shotNameButton.ActivateIcon(false); // text-only
             shotNameButton.SetLightLayer(5);
 
             cx += 0.17f;
 
             // START: Add UISpinner
-            UISpinner startFrameSpinner = UISpinner.CreateUISpinner(
-                "StartFrame",
-                root.transform,
-                new Vector3(cx, 0, 0),
-                0.06f,
-                0.03f,
-                0.005f,
-                0.001f,
-                0.65f,
-                UISpinner.TextAndValueVisibilityType.ShowValueOnly,
-                UISpinner.SpinnerValueType.Int,
-                0.0f, 1.0f, 0.5f, 0.1f,
-                0, 10000, shot.start, 30,
-                UIUtils.LoadMaterial("UIElementTransparent"),
-                UIElement.default_background_color,
-                "Start"
+            UISpinner startFrameSpinner = 
+                UISpinner.CreateUISpinner(
+                    "StartFrame",
+                    root.transform,
+                    new Vector3(cx, 0, 0),
+                    0.06f,
+                    0.03f,
+                    0.005f,
+                    0.001f,
+                    0.65f,
+                    UISpinner.TextAndValueVisibilityType.ShowValueOnly,
+                    UISpinner.SpinnerValueType.Int,
+                    0.0f, 1.0f, 0.5f, 0.1f,
+                    0, 10000, shot.start, 30,
+                    UIUtils.LoadMaterial("UIElementTransparent"),
+                    UIElement.default_background_color,
+                    "Start"
                 );
 
             startFrameSpinner.SetLightLayer(5);
@@ -192,17 +189,21 @@ namespace VRtist
             cx += 0.06f;
 
             // RANGE: Add UILabel
-            UILabel frameRangeLabel = UILabel.CreateUILabel(
-                "FrameRange",
-                root.transform,
-                new Vector3(cx, 0, 0),
-                0.06f,
-                0.03f,
-                0.005f,
-                UIUtils.LoadMaterial("UIElementTransparent"),
-                UIElement.default_background_color,
-                UIElement.default_color,
-                "51"
+            UILabel frameRangeLabel = 
+                UILabel.CreateEx(
+                    root.transform,
+                    "FrameRange",
+                    new Vector3(cx, 0, -UILabel.default_thickness),
+                    0.06f,
+                    0.03f,
+                    UILabel.default_margin,
+                    UILabel.default_thickness,
+                    UIUtils.LoadMaterial("UIElementTransparent"),
+                    UIElement.default_background_color,
+                    UIElement.default_foreground_color,
+                    UILabel.LabelContent.TextOnly,
+                    "51",
+                    UIUtils.LoadIcon("icon-camera")
                 );
 
             frameRangeLabel.SetLightLayer(5);
@@ -210,22 +211,23 @@ namespace VRtist
             cx += 0.06f;
 
             // END: Add UISpinner
-            UISpinner endFrameSpinner = UISpinner.CreateUISpinner(
-                "EndFrame",
-                root.transform,
-                new Vector3(cx, 0, 0),
-                0.06f,
-                0.03f,
-                0.005f,
-                0.001f,
-                0.65f,
-                UISpinner.TextAndValueVisibilityType.ShowValueOnly,
-                UISpinner.SpinnerValueType.Int,
-                0.0f, 1.0f, 0.5f, 0.1f,
-                0, 10000, shot.end, 30,
-                UIUtils.LoadMaterial("UIElementTransparent"),
-                UIElement.default_background_color,
-                "End"
+            UISpinner endFrameSpinner = 
+                UISpinner.CreateUISpinner(
+                    "EndFrame",
+                    root.transform,
+                    new Vector3(cx, 0, 0),
+                    0.06f,
+                    0.03f,
+                    0.005f,
+                    0.001f,
+                    0.65f,
+                    UISpinner.TextAndValueVisibilityType.ShowValueOnly,
+                    UISpinner.SpinnerValueType.Int,
+                    0.0f, 1.0f, 0.5f, 0.1f,
+                    0, 10000, shot.end, 30,
+                    UIUtils.LoadMaterial("UIElementTransparent"),
+                    UIElement.default_background_color,
+                    "End"
                 );
 
             endFrameSpinner.SetLightLayer(5);

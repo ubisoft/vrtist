@@ -12,19 +12,33 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UIButton : UIElement
     {
-        [SpaceHeader("Button Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        // TODO: put in a scriptable object
+        public static readonly string default_button_name = "New Button";
+        public static readonly float default_width = 0.15f;
+        public static readonly float default_height = 0.05f;
+        public static readonly float default_margin = 0.005f;
+        public static readonly float default_thickness = 0.001f;
+        public static readonly string default_material_name = "UIBase";
+        public static readonly Color default_color = UIElement.default_background_color;
+        public static readonly string default_text = "Button";
+        public static readonly string default_icon_name = "paint";
+        public static readonly ButtonContent default_content = ButtonContent.TextAndImage;
+        public static readonly IconMarginBehavior default_icon_margin_behavior = IconMarginBehavior.UseButtonMargin;
+        public static readonly float default_icon_margin = 0.0f;
+
+        [SpaceHeader("Button Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = 0.005f;
         [CentimeterFloat] public float thickness = 0.001f;
-        [CentimeterFloat] public float iconMargin = 0.0f;
         public enum IconMarginBehavior { UseButtonMargin, UseIconMargin };
         public IconMarginBehavior iconMarginBehavior = IconMarginBehavior.UseButtonMargin;
-
-        // TODO: add an enum or bool to configure ICON and/or TEXT, instead of testing for null.
+        [CentimeterFloat] public float iconMargin = 0.0f;
+        public enum ButtonContent { TextOnly, ImageOnly, TextAndImage };
+        public ButtonContent content = ButtonContent.TextAndImage;
 
         public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
         public Color checkedColor = new Color(0.8f, 0.8f, 0.8f);
+        public Sprite baseSprite = null;
         public Sprite checkedSprite = null;
-        public Sprite uncheckedSprite = null;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -99,7 +113,7 @@ namespace VRtist
             Image img = gameObject.GetComponentInChildren<Image>();
             if (img != null && gameObject.activeSelf && isCheckable)
             {
-                img.sprite = isChecked ? checkedSprite : uncheckedSprite;
+                img.sprite = isChecked ? checkedSprite : baseSprite;
                 img.enabled = (null != img.sprite);
             }
         }
@@ -254,7 +268,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIElementTransparent");
+                Material material = UIUtils.LoadMaterial("UIBase");
                 Material materialInstance = Instantiate(material);
 
                 meshRenderer.sharedMaterial = materialInstance;
@@ -338,27 +352,39 @@ namespace VRtist
             SetColor(Disabled ? disabledColor : (isChecked ? checkedColor : baseColor));
         }
 
-        public static UIButton CreateUIButton(
-            string buttonName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float margin,
-            float thickness,
-            Material material,
-            Color color,
-            string caption,
-            Sprite icon)
+
+
+
+
+
+        public class CreateButtonParams
         {
-            GameObject go = new GameObject(buttonName);
+            public Transform parent = null;
+            public string buttonName = UIButton.default_button_name;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UIButton.default_thickness);
+            public float width = UIButton.default_width;
+            public float height = UIButton.default_height;
+            public float margin = UIButton.default_margin;
+            public float thickness = UIButton.default_thickness;
+            public Material material = UIUtils.LoadMaterial(UIButton.default_material_name);
+            public Color color = UIButton.default_color;
+            public ButtonContent buttonContent = UIButton.default_content;
+            public IconMarginBehavior iconMarginBehavior = UIButton.default_icon_margin_behavior;
+            public float iconMargin = UIButton.default_icon_margin;
+            public string caption = UIButton.default_text;
+            public Sprite icon = UIUtils.LoadIcon(UIButton.default_icon_name);
+        }
+
+        public static UIButton Create(CreateButtonParams input)
+        {
+            GameObject go = new GameObject(input.buttonName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -366,23 +392,24 @@ namespace VRtist
             }
 
             UIButton uiButton = go.AddComponent<UIButton>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiButton.relativeLocation = relativeLocation;
-            uiButton.transform.parent = parent;
-            uiButton.transform.localPosition = parentAnchor + relativeLocation;
+            uiButton.relativeLocation = input.relativeLocation;
+            uiButton.transform.parent = input.parent;
+            uiButton.transform.localPosition = parentAnchor + input.relativeLocation;
             uiButton.transform.localRotation = Quaternion.identity;
             uiButton.transform.localScale = Vector3.one;
-            uiButton.width = width;
-            uiButton.height = height;
-            uiButton.margin = margin;
-            uiButton.thickness = thickness;
-            uiButton.iconMarginBehavior = IconMarginBehavior.UseButtonMargin; // TODO: pass from Wizard?
-            uiButton.iconMargin = 0.0f; // TODO: pass from Wizard?
+            uiButton.width = input.width;
+            uiButton.height = input.height;
+            uiButton.margin = input.margin;
+            uiButton.thickness = input.thickness;
+            uiButton.content = input.buttonContent;
+            uiButton.iconMarginBehavior = input.iconMarginBehavior;
+            uiButton.iconMargin = input.iconMargin;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
                 uiButton.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -405,23 +432,15 @@ namespace VRtist
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && input.material != null)
             {
-                // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
-                //       to make the error disappear;
-
-                // Get an instance of the same material
-                // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
-                //meshRenderer.sharedMaterial = uiMaterial;
-                //Material material = meshRenderer.material; // instance of the sharedMaterial
-
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(material);
+                meshRenderer.sharedMaterial = Instantiate(input.material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiButton.BaseColor = color;
+                uiButton.BaseColor = input.color;
             }
 
             // Add a Canvas
@@ -444,18 +463,16 @@ namespace VRtist
             cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
             cs.referencePixelsPerUnit = 100; // default?
 
-            //canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
-
             float minSide = Mathf.Min(uiButton.width, uiButton.height);
 
             // Add an Image under the Canvas
-            if (icon != null)
+            if (input.icon != null)
             {
                 GameObject image = new GameObject("Image");
                 image.transform.parent = canvas.transform;
 
                 Image img = image.AddComponent<Image>();
-                img.sprite = icon;
+                img.sprite = input.icon;
 
                 RectTransform trt = image.GetComponent<RectTransform>();
                 trt.localScale = Vector3.one;
@@ -466,8 +483,8 @@ namespace VRtist
                 // TODO: non square icons ratio...
                 if (uiButton.iconMarginBehavior == IconMarginBehavior.UseButtonMargin)
                 {
-                    trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                    trt.localPosition = new Vector3(margin, -margin, -0.001f);
+                    trt.sizeDelta = new Vector2(minSide - 2.0f * input.margin, minSide - 2.0f * input.margin);
+                    trt.localPosition = new Vector3(input.margin, -input.margin, -0.001f);
                 }
                 else // IconMarginBehavior.UseIconMargin for the moment
                 {
@@ -477,14 +494,14 @@ namespace VRtist
             }
 
             // Add a Text under the Canvas
-            if (caption.Length > 0)
+            if (input.caption.Length > 0)
             {
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = caption;
+                t.text = input.caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleLeft;
@@ -498,7 +515,7 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
-                float textPosLeft = icon != null ? minSide : margin;
+                float textPosLeft = input.icon != null ? minSide : input.margin;
                 trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
             }
 

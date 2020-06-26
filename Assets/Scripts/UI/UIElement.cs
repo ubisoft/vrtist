@@ -5,7 +5,7 @@ namespace VRtist
     public class UIElement : MonoBehaviour
     {
         // "stylesheet"
-        public static readonly Color default_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
+        public static readonly Color default_foreground_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
         public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
         public static readonly Color default_pushed_color = new Color(0.0f, 0.65f, 1.0f, 1.0f); // light vivid blue
         public static readonly Color default_checked_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // light vivid blue
