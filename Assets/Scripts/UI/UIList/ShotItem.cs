@@ -15,11 +15,29 @@ namespace VRtist
         public UILabel frameRangeLabel = null;
         public UISpinner endFrameSpinner = null;
 
-        public void AddListeners(UnityAction<string> nameAction, UnityAction<int> startAction, UnityAction<int> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction)
+        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction)
         {
-            // TODO only on release
-            startFrameSpinner.onSpinEventInt.AddListener(startAction);
-            endFrameSpinner.onSpinEventInt.AddListener(endAction);
+            startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
+            endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
+
+            startFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
+            endFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
+
+            startFrameSpinner.onReleaseTriggerEvent.AddListener(startAction);
+            endFrameSpinner.onReleaseTriggerEvent.AddListener(endAction);
+        }
+
+        private void InitSpinnerMinMax()
+        {
+            startFrameSpinner.maxFloatValue = endFrameSpinner.FloatValue;
+            startFrameSpinner.maxIntValue = endFrameSpinner.IntValue;
+            endFrameSpinner.minFloatValue = startFrameSpinner.FloatValue;
+            endFrameSpinner.minIntValue = startFrameSpinner.IntValue;
+        }
+
+        private void UpdateShotRange(int value)
+        {
+            frameRangeLabel.Text = (endFrameSpinner.IntValue - startFrameSpinner.IntValue + 1).ToString();
         }
 
         public override void SetSelected(bool value)

@@ -14,6 +14,11 @@ namespace VRtist
             shotList.ItemClickedEvent += OnListItemClicked;
         }
 
+        public ShotItem GetShotItem(int index)
+        {
+            return shotList.GetItems()[index].GetComponent<ShotItem>();
+        }
+
         // Update UI: set current shot
         void OnCurrentShotChanged()
         {
@@ -137,32 +142,42 @@ namespace VRtist
             OnShotManagerChanged();
         }
 
-        public void OnUpdateShotStart(int value)
+        public void OnUpdateShotStart(float value)
         {
             ShotManager sm = ShotManager.Instance;
 
-            sm.SetCurrentShotStart(value);
+            int intValue = Mathf.FloorToInt(value);
+            int endValue = sm.shots[sm.CurrentShot].end;
+            if (intValue > endValue)
+                intValue = endValue;
+
+            sm.SetCurrentShotStart(intValue);
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotStart = value,
+                shotStart = intValue,
             };
             NetworkClient.GetInstance().SendShotManagerAction(info);
         }
 
-        public void OnUpdateShotEnd(int value)
+        public void OnUpdateShotEnd(float value)
         {
             ShotManager sm = ShotManager.Instance;
 
-            sm.SetCurrentShotEnd(value);
+            int intValue = Mathf.FloorToInt(value);
+            int startValue = sm.shots[sm.CurrentShot].start;
+            if (intValue < startValue)
+                intValue = startValue;
+
+            sm.SetCurrentShotEnd(intValue);
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotEnd = value,
+                shotEnd = intValue,
             };
             NetworkClient.GetInstance().SendShotManagerAction(info);
         }
