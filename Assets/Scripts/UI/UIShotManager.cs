@@ -40,7 +40,7 @@ namespace VRtist
             foreach (Shot shot in sm.shots)
             {
                 ShotItem shotItem = ShotItem.GenerateShotItem(shot);
-                shotItem.AddListeners(OnUpdateShotName, OnUpdateShotStart, OnUpdateShotEnd, OnUpdateShotCameraName, OnUpdateShotColor, OnUpdateShotEnabled);
+                shotItem.AddListeners(OnUpdateShotName, OnUpdateShotStart, OnUpdateShotEnd, OnUpdateShotCameraName, OnUpdateShotColor, OnUpdateShotEnabled, OnSetCamera);
                 shotList.AddItem(shotItem.transform);
 
                 if (shot.enabled)
@@ -239,6 +239,20 @@ namespace VRtist
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
                 shotEnabled = value ? 1 : 0
+            };
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+        }
+
+        public void OnSetCamera()
+        {
+            ShotManager sm = ShotManager.Instance;
+            Shot currentShot = sm.shots[sm.CurrentShot];
+            currentShot.camera = Selection.activeCamera;
+            ShotManagerActionInfo info = new ShotManagerActionInfo
+            {
+                action = ShotManagerAction.UpdateShot,
+                shotIndex = sm.CurrentShot,
+                cameraName = currentShot.camera == null ? "" : currentShot.camera.name
             };
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
