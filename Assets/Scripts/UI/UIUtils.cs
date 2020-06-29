@@ -1500,56 +1500,29 @@ namespace VRtist
         #endregion
 
         #region Resource Loading
+        static private Dictionary<string, Material> uiMaterials = new Dictionary<string, Material>();
+        static private Dictionary<string, Sprite> uiSprites = new Dictionary<string, Sprite>();
+        static private Dictionary<string, GameObject> uiPrefabs = new Dictionary<string, GameObject>();
 
         public static Material LoadMaterial(string materialName)
         {
-#if UNITY_EDITOR
-            string[] pathList = AssetDatabase.FindAssets(materialName, new[] { "Assets/Resources/Materials/UI" });
-            if (pathList.Length > 0)
-            {
-                foreach (string path in pathList)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Material));
-                    if (obj is Material)
-                        return obj as Material;
-                }
-            }
-#endif
-            return null;
+            if (!uiMaterials.ContainsKey(materialName))
+                uiMaterials[materialName] = Resources.Load<Material>("Materials/UI/" + materialName);
+            return uiMaterials[materialName];
         }
 
         public static Sprite LoadIcon(string iconName)
         {
-#if UNITY_EDITOR
-            string[] pathList = AssetDatabase.FindAssets(iconName, new[] { "Assets/Resources/Textures/UI" });
-            if (pathList.Length > 0)
-            {
-                foreach (string path in pathList)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(Sprite));
-                    if (obj is Sprite)
-                        return obj as Sprite;
-                }
-            }
-#endif
-            return null;
+            if (!uiSprites.ContainsKey(iconName))
+                uiSprites[iconName] = Resources.Load<Sprite>("Textures/UI/" + iconName);
+            return uiSprites[iconName];
         }
 
         public static GameObject LoadPrefab(string prefabName)
         {
-#if UNITY_EDITOR
-            string[] pathList = AssetDatabase.FindAssets(prefabName, new[] { "Assets/Resources/Prefabs/UI" });
-            if (pathList.Length > 0)
-            {
-                foreach (string path in pathList)
-                {
-                    var obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(path), typeof(GameObject));
-                    if (obj is GameObject)
-                        return obj as GameObject;
-                }
-            }
-#endif
-            return null;
+            if (!uiPrefabs.ContainsKey(prefabName))
+                uiPrefabs[prefabName] = Resources.Load<GameObject>("Prefabs/UI/" + prefabName);
+            return uiPrefabs[prefabName];
         }
 
         #endregion

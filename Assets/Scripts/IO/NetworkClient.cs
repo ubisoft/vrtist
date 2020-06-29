@@ -155,7 +155,7 @@ namespace VRtist
         public static byte[] StringsToBytes(string[] values, bool storeSize = true)
         {
             int size = sizeof(int);
-            for(int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
                 byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(values[i]);
                 size += sizeof(int) + utf8.Length;
@@ -164,12 +164,12 @@ namespace VRtist
 
             byte[] bytes = new byte[size];
             int index = 0;
-            if(storeSize)
+            if (storeSize)
             {
                 Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
                 index += sizeof(int);
             }
-            for(int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Length; i++)
             {
                 string value = values[i];
                 byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(value);
@@ -194,7 +194,7 @@ namespace VRtist
             byte[] bytes = new byte[sizeof(int) * vectors.Length + sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length / 3), 0, bytes, 0, sizeof(int));
             int index = sizeof(int);
-            for(int i = 0; i < vectors.Length; i++)
+            for (int i = 0; i < vectors.Length; i++)
             {
                 Buffer.BlockCopy(BitConverter.GetBytes(vectors[i]), 0, bytes, index, sizeof(int));
                 index += sizeof(int);
@@ -207,7 +207,7 @@ namespace VRtist
             byte[] bytes = new byte[3 * sizeof(float) * vectors.Length + sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
             int index = sizeof(int);
-            for(int i = 0; i < vectors.Length; i++)
+            for (int i = 0; i < vectors.Length; i++)
             {
                 Vector3 vector = vectors[i];
                 Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, index + 0, sizeof(float));
@@ -291,7 +291,7 @@ namespace VRtist
             byte[] bytes = new byte[2 * sizeof(float) * vectors.Length + sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
             int index = sizeof(int);
-            for(int i = 0; i < vectors.Length; i++)
+            for (int i = 0; i < vectors.Length; i++)
             {
                 Vector2 vector = vectors[i];
                 Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, index + 0, sizeof(float));
@@ -395,13 +395,13 @@ namespace VRtist
         public static byte[] ConcatenateBuffers(List<byte[]> buffers)
         {
             int totalLength = 0;
-            foreach(byte[] buffer in buffers)
+            foreach (byte[] buffer in buffers)
             {
                 totalLength += buffer.Length;
             }
             byte[] resultBuffer = new byte[totalLength];
             int index = 0;
-            foreach(byte[] buffer in buffers)
+            foreach (byte[] buffer in buffers)
             {
                 int size = buffer.Length;
                 Buffer.BlockCopy(buffer, 0, resultBuffer, index, size);
@@ -435,7 +435,7 @@ namespace VRtist
         {
             int bufferIndex = 0;
             Transform srcPath = FindPath(prefab, data, ref bufferIndex);
-            if(srcPath == null)
+            if (srcPath == null)
                 return;
 
             string name = GetString(data, ref bufferIndex);
@@ -453,7 +453,7 @@ namespace VRtist
         {
             int bufferIndex = 0;
             Transform objectPath = FindPath(root, data, ref bufferIndex);
-            if(null == objectPath)
+            if (null == objectPath)
                 return;
             objectPath.parent.parent = Utils.GetTrash().transform;
 
@@ -466,7 +466,7 @@ namespace VRtist
             string objectName = GetString(data, ref bufferIndex);
             Transform parent = FindPath(root, data, ref bufferIndex);
             Transform trf = Utils.GetTrash().transform.Find(objectName + "_parent");
-            if(null != trf)
+            if (null != trf)
             {
                 trf.parent = parent;
 
@@ -558,7 +558,7 @@ namespace VRtist
         {
             int bufferIndex = 0;
             string sceneName = GetString(data, ref bufferIndex);
-            if(sceneName != SyncData.currentSceneName)
+            if (sceneName != SyncData.currentSceneName)
                 return;
             string objectName = GetString(data, ref bufferIndex);
             SyncData.AddObjectToDocument(root, objectName, "/");
@@ -582,7 +582,7 @@ namespace VRtist
         public static Material DefaultMaterial()
         {
             string name = "defaultMaterial";
-            if(materials.ContainsKey(name))
+            if (materials.ContainsKey(name))
                 return materials[name];
 
 #if UNITY_EDITOR
@@ -625,7 +625,7 @@ namespace VRtist
         {
             // TODO: need to flip? Repere bottom left, Y-up
             int ret = OIIOAPI.oiio_open_image(filePath);
-            if(ret == 0)
+            if (ret == 0)
             {
                 Debug.LogWarning("Could not open image " + filePath + " with OIIO.");
                 return null;
@@ -636,7 +636,7 @@ namespace VRtist
             int nchannels = -1;
             OIIOAPI.BASETYPE format = OIIOAPI.BASETYPE.NONE;
             ret = OIIOAPI.oiio_get_image_info(ref width, ref height, ref nchannels, ref format);
-            if(ret == 0)
+            if (ret == 0)
             {
                 Debug.LogWarning("Could not get info about image " + filePath + " with OIIO");
                 return null;
@@ -644,13 +644,13 @@ namespace VRtist
 
             TexConv conv = new TexConv();
             bool canConvert = Format2Format(format, nchannels, ref conv);
-            if(!canConvert)
+            if (!canConvert)
             {
                 Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
                 return CreateSmallImage();
             }
             // TMP
-            else if(conv.options.HasFlag(TextureConversionOptions.SHORT_TO_FLOAT) || conv.options.HasFlag(TextureConversionOptions.SHORT_TO_INT))
+            else if (conv.options.HasFlag(TextureConversionOptions.SHORT_TO_FLOAT) || conv.options.HasFlag(TextureConversionOptions.SHORT_TO_INT))
             {
                 Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
                 return CreateSmallImage();
@@ -661,7 +661,7 @@ namespace VRtist
             var pixels = image.GetRawTextureData();
             GCHandle handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
             ret = OIIOAPI.oiio_fill_image_data(handle.AddrOfPinnedObject(), conv.options.HasFlag(TextureConversionOptions.RGB_TO_RGBA) ? 1 : 0);
-            if(ret == 1)
+            if (ret == 1)
             {
                 image.LoadRawTextureData(pixels);
                 image.Apply();
@@ -696,11 +696,11 @@ namespace VRtist
             result.format = TextureFormat.RGBA32;
             result.options = TextureConversionOptions.NO_CONV;
 
-            switch(format)
+            switch (format)
             {
                 case OIIOAPI.BASETYPE.UCHAR:
                 case OIIOAPI.BASETYPE.CHAR:
-                    switch(nchannels)
+                    switch (nchannels)
                     {
                         case 1: result.format = TextureFormat.R8; break;
                         case 2: result.format = TextureFormat.RG16; break;
@@ -711,7 +711,7 @@ namespace VRtist
                     break;
 
                 case OIIOAPI.BASETYPE.USHORT:
-                    switch(nchannels)
+                    switch (nchannels)
                     {
                         case 1: result.format = TextureFormat.R16; break;
                         case 2: result.format = TextureFormat.RGFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT; break;
@@ -723,7 +723,7 @@ namespace VRtist
                     break;
 
                 case OIIOAPI.BASETYPE.HALF:
-                    switch(nchannels)
+                    switch (nchannels)
                     {
                         case 1: result.format = TextureFormat.RHalf; break;
                         case 2: result.format = TextureFormat.RGHalf; break;
@@ -734,7 +734,7 @@ namespace VRtist
                     break;
 
                 case OIIOAPI.BASETYPE.FLOAT:
-                    switch(nchannels)
+                    switch (nchannels)
                     {
                         case 1: result.format = TextureFormat.RFloat; break;
                         case 2: result.format = TextureFormat.RGFloat; break;
@@ -758,14 +758,14 @@ namespace VRtist
             string sFormat = System.Text.Encoding.UTF8.GetString(format);
             TextureFormat textureFormat;
 
-            if(sFormat != "DXT1")
+            if (sFormat != "DXT1")
                 textureFormat = TextureFormat.DXT1;
-            else if(sFormat != "DXT5")
+            else if (sFormat != "DXT5")
                 textureFormat = TextureFormat.DXT5;
             else return null;
 
             byte ddsSizeCheck = ddsBytes[4];
-            if(ddsSizeCheck != 124)
+            if (ddsSizeCheck != 124)
                 throw new Exception("Invalid DDS DXTn texture. Unable to read");  //this header byte should be 124 for DDS image files
 
             int height = ddsBytes[13] * 256 + ddsBytes[12];
@@ -786,7 +786,7 @@ namespace VRtist
         {
             Texture2D tex = new Texture2D(2, 2, TextureFormat.ARGB32, true, isLinear);
             bool res = tex.LoadImage(data);
-            if(!res)
+            if (!res)
                 return null;
 
             return tex;
@@ -794,13 +794,13 @@ namespace VRtist
 
         public static Texture2D GetTexture(string filePath, bool isLinear)
         {
-            if(textureData.ContainsKey(filePath))
+            if (textureData.ContainsKey(filePath))
             {
                 byte[] data = textureData[filePath];
                 textureData.Remove(filePath);
                 return LoadTexture(filePath, data, isLinear);
             }
-            if(textures.ContainsKey(filePath))
+            if (textures.ContainsKey(filePath))
             {
                 return textures[filePath];
             }
@@ -813,10 +813,10 @@ namespace VRtist
             string withoutExtension = Path.GetFileNameWithoutExtension(filePath);
             string ddsFile = directory + "/" + withoutExtension + ".dds";
 
-            if(File.Exists(ddsFile))
+            if (File.Exists(ddsFile))
             {
                 Texture2D t = LoadTextureDXT(ddsFile, isLinear);
-                if(null != t)
+                if (null != t)
                 {
                     textures[filePath] = t;
                     texturesFlipY.Add(filePath);
@@ -824,12 +824,12 @@ namespace VRtist
                 }
             }
 
-            if(File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 //byte[] bytes = System.IO.File.ReadAllBytes(filePath);
                 //Texture2D t = LoadTextureFromBuffer(bytes, isLinear);
                 Texture2D t = LoadTextureOIIO(filePath, isLinear);
-                if(null != t)
+                if (null != t)
                 {
                     textures[filePath] = t;
                     texturesFlipY.Add(filePath);
@@ -838,7 +838,7 @@ namespace VRtist
             }
 
             Texture2D texture = LoadTextureFromBuffer(data, isLinear);
-            if(null != texture)
+            if (null != texture)
                 textures[filePath] = texture;
             /*
             try
@@ -866,7 +866,7 @@ namespace VRtist
             string opacityTexturePath = GetString(data, ref currentIndex);
 
             Material material;
-            if(materials.ContainsKey(name))
+            if (materials.ContainsKey(name))
                 material = materials[name];
             else
             {
@@ -889,14 +889,14 @@ namespace VRtist
             // OPACITY
             //
             material.SetFloat("_Opacity", opacity);
-            if(opacityTexturePath.Length > 0)
+            if (opacityTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(opacityTexturePath, true);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseOpacityMap", 1f);
                     material.SetTexture("_OpacityMap", tex);
-                    if(texturesFlipY.Contains(opacityTexturePath))
+                    if (texturesFlipY.Contains(opacityTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
@@ -907,14 +907,14 @@ namespace VRtist
             Color baseColor = GetColor(data, ref currentIndex);
             material.SetColor("_BaseColor", baseColor);
             string baseColorTexturePath = GetString(data, ref currentIndex);
-            if(baseColorTexturePath.Length > 0)
+            if (baseColorTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(baseColorTexturePath, false);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseColorMap", 1f);
                     material.SetTexture("_ColorMap", tex);
-                    if(texturesFlipY.Contains(baseColorTexturePath))
+                    if (texturesFlipY.Contains(baseColorTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
 
@@ -926,14 +926,14 @@ namespace VRtist
             float metallic = GetFloat(data, ref currentIndex);
             material.SetFloat("_Metallic", metallic);
             string metallicTexturePath = GetString(data, ref currentIndex);
-            if(metallicTexturePath.Length > 0)
+            if (metallicTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(metallicTexturePath, true);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseMetallicMap", 1f);
                     material.SetTexture("_MetallicMap", tex);
-                    if(texturesFlipY.Contains(metallicTexturePath))
+                    if (texturesFlipY.Contains(metallicTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
@@ -944,14 +944,14 @@ namespace VRtist
             float roughness = GetFloat(data, ref currentIndex);
             material.SetFloat("_Roughness", roughness);
             string roughnessTexturePath = GetString(data, ref currentIndex);
-            if(roughnessTexturePath.Length > 0)
+            if (roughnessTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(roughnessTexturePath, true);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseRoughnessMap", 1f);
                     material.SetTexture("_RoughnessMap", tex);
-                    if(texturesFlipY.Contains(roughnessTexturePath))
+                    if (texturesFlipY.Contains(roughnessTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
@@ -960,14 +960,14 @@ namespace VRtist
             // NORMAL
             //
             string normalTexturePath = GetString(data, ref currentIndex);
-            if(normalTexturePath.Length > 0)
+            if (normalTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(normalTexturePath, true);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseNormalMap", 1f);
                     material.SetTexture("_NormalMap", tex);
-                    if(texturesFlipY.Contains(normalTexturePath))
+                    if (texturesFlipY.Contains(normalTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
@@ -978,14 +978,14 @@ namespace VRtist
             Color emissionColor = GetColor(data, ref currentIndex);
             material.SetColor("_EmissiveColor", baseColor);
             string emissionColorTexturePath = GetString(data, ref currentIndex);
-            if(emissionColorTexturePath.Length > 0)
+            if (emissionColorTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(emissionColorTexturePath, true);
-                if(tex != null)
+                if (tex != null)
                 {
                     material.SetFloat("_UseEmissiveMap", 1f);
                     material.SetTexture("_EmissiveMap", tex);
-                    if(texturesFlipY.Contains(emissionColorTexturePath))
+                    if (texturesFlipY.Contains(emissionColorTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
@@ -1003,18 +1003,18 @@ namespace VRtist
             Material material = materials[materialName];
             Node prefabNode = SyncData.nodes[objectName];
             MeshRenderer[] renderers = prefabNode.prefab.GetComponentsInChildren<MeshRenderer>();
-            if(renderers.Length > 0)
+            if (renderers.Length > 0)
             {
-                foreach(MeshRenderer renderer in renderers)
+                foreach (MeshRenderer renderer in renderers)
                 {
                     renderer.material = material;
                 }
-                foreach(Tuple<GameObject, string> item in prefabNode.instances)
+                foreach (Tuple<GameObject, string> item in prefabNode.instances)
                 {
                     MeshRenderer[] rends = item.Item1.GetComponentsInChildren<MeshRenderer>();
-                    if(rends.Length > 0)
+                    if (rends.Length > 0)
                     {
-                        foreach(MeshRenderer rend in rends)
+                        foreach (MeshRenderer rend in rends)
                         {
                             rend.material = material;
                         }
@@ -1026,16 +1026,16 @@ namespace VRtist
         public static Transform FindPath(Transform root, byte[] data, ref int bufferIndex)
         {
             string path = NetGeometry.GetString(data, ref bufferIndex);
-            if(path == "")
+            if (path == "")
                 return root;
 
             char[] separator = { '/' };
             string[] splitted = path.Split(separator);
             Transform parent = root;
-            foreach(string subPath in splitted)
+            foreach (string subPath in splitted)
             {
                 Transform transform = SyncData.FindChild(parent, subPath);
-                if(transform == null)
+                if (transform == null)
                 {
                     return null;
                 }
@@ -1046,7 +1046,7 @@ namespace VRtist
 
         public static string GetString(byte[] data, ref int bufferIndex)
         {
-            int strLength = (int) BitConverter.ToUInt32(data, bufferIndex);
+            int strLength = (int)BitConverter.ToUInt32(data, bufferIndex);
             string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
             bufferIndex = bufferIndex + strLength + 4;
             return str;
@@ -1054,11 +1054,11 @@ namespace VRtist
 
         public static string GetPathName(Transform root, Transform transform)
         {
-            if(root == transform)
+            if (root == transform)
                 return "";
 
             string result = transform.name;
-            while(transform.parent && transform.parent.parent && transform.parent.parent != root)
+            while (transform.parent && transform.parent.parent && transform.parent.parent != root)
             {
                 transform = transform.parent.parent; // skip blender pseudo-parent
                 result = transform.name + "/" + result;
@@ -1117,11 +1117,11 @@ namespace VRtist
         {
             bool tempVisible = true;
             string parentName = "";
-            if(SyncData.nodes.ContainsKey(transform.name))
+            if (SyncData.nodes.ContainsKey(transform.name))
             {
                 Node node = SyncData.nodes[transform.name];
                 tempVisible = node.tempVisible;
-                if(null != node.parent)
+                if (null != node.parent)
                     parentName = node.parent.prefab.name + "/";
             }
             byte[] name = StringToBytes(parentName + transform.name);
@@ -1142,7 +1142,7 @@ namespace VRtist
         {
             byte[] name = StringToBytes(material.name);
             float op = 1f;
-            if(material.HasProperty("_Opacity"))
+            if (material.HasProperty("_Opacity"))
                 op = material.GetFloat("_Opacity");
             byte[] opacity = FloatToBytes(op);
             byte[] opacityMapTexture = StringToBytes("");
@@ -1174,7 +1174,7 @@ namespace VRtist
         {
             Transform current = cameraInfo.transform;
             string path = current.name;
-            while(current.parent && current.parent != root)
+            while (current.parent && current.parent != root)
             {
                 current = current.parent;
                 path = current.name + "/" + path;
@@ -1184,7 +1184,7 @@ namespace VRtist
 
             CameraController cameraController = cameraInfo.transform.GetComponent<CameraController>();
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
-            int sensorFit = (int) cam.gateFit;
+            int sensorFit = (int)cam.gateFit;
 
             byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(cameraController.focal), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
@@ -1204,7 +1204,7 @@ namespace VRtist
         {
             Transform current = lightInfo.transform;
             string path = current.name;
-            while(current.parent && current.parent != root)
+            while (current.parent && current.parent != root)
             {
                 current = current.parent;
                 path = current.name + "/" + path;
@@ -1225,7 +1225,7 @@ namespace VRtist
             LightController lightController = lightInfo.transform.GetComponentInChildren<LightController>();
             float intensity = lightController.intensity;
 
-            switch(light.type)
+            switch (light.type)
             {
                 case LightType.Point:
                     power = intensity * 10f;
@@ -1241,7 +1241,7 @@ namespace VRtist
             }
 
             byte[] paramsBuffer = new byte[2 * sizeof(int) + 7 * sizeof(float)];
-            Buffer.BlockCopy(BitConverter.GetBytes((int) light.type), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes((int)light.type), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(shadow), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
@@ -1316,7 +1316,7 @@ namespace VRtist
             Buffer.BlockCopy(BitConverter.GetBytes(mesh.subMeshCount), 0, materialIndices, 0, sizeof(int));
             int offset = sizeof(int);
 
-            for(int i = 0; i < mesh.subMeshCount; i++)
+            for (int i = 0; i < mesh.subMeshCount; i++)
             {
                 SubMeshDescriptor subMesh = mesh.GetSubMesh(i);
                 int start = subMesh.indexStart / 3;
@@ -1330,7 +1330,7 @@ namespace VRtist
             Material[] materials = meshInfos.meshRenderer.sharedMaterials;
             string[] materialNames = new string[materials.Length];
             int index = 0;
-            foreach(Material material in materials)
+            foreach (Material material in materials)
             {
                 materialNames[index++] = material.name;
             }
@@ -1347,7 +1347,7 @@ namespace VRtist
             int materialCount = materials.Length;
             byte[] materialLinksBuffer = new byte[sizeof(int) * materialCount];
             index = 0;
-            for(int i = 0; i < materialCount; i++)
+            for (int i = 0; i < materialCount; i++)
             {
                 Buffer.BlockCopy(BitConverter.GetBytes(1), 0, materialLinksBuffer, index, sizeof(int));
                 index += sizeof(int);
@@ -1420,10 +1420,10 @@ namespace VRtist
             int keyChannelIndex = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
 
-            if(keyChannelIndex != -1)
+            if (keyChannelIndex != -1)
                 animationChannel += $"[{keyChannelIndex}]";
 
-            int keyCount = (int) BitConverter.ToUInt32(data, currentIndex);
+            int keyCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
             int[] intBuffer = new int[keyCount];
@@ -1436,19 +1436,19 @@ namespace VRtist
             //Buffer.BlockCopy(data, currentIndex, keys, 0, (int)keyCount * 2 * sizeof(float));
 
             List<AnimationKey> keys = new List<AnimationKey>();
-            for(int i = 0; i < keyCount; i++)
+            for (int i = 0; i < keyCount; i++)
             {
                 keys.Add(new AnimationKey(intBuffer[i], floatBuffer[i]));
             }
 
             Node node = SyncData.nodes[objectName];
             ParametersController parameterController = node.prefab.GetComponent<ParametersController>();
-            if(!parameterController)
+            if (!parameterController)
                 return;
             parameterController.AddAnimationChannel(animationChannel, keys);
 
             // Apply to instances
-            foreach(Tuple<GameObject, string> t in node.instances)
+            foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
                 ParametersController controller = gobj.GetComponent<ParametersController>();
@@ -1471,7 +1471,7 @@ namespace VRtist
             //float focus_distance = GetFloat(data, ref currentIndex);
 
             // Apply to instances
-            foreach(Tuple<GameObject, string> t in node.instances)
+            foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
                 CameraController controller = gobj.GetComponent<CameraController>();
@@ -1486,14 +1486,14 @@ namespace VRtist
             string path = GetString(data, ref currentIndex);
 
             Transform transform = root;
-            if(transform == null)
+            if (transform == null)
                 return;
 
             string name = GetString(data, ref currentIndex);
 
             GameObject camGameObject = null;
             Transform camTransform = SyncData.FindChild(transform, name);
-            if(camTransform == null)
+            if (camTransform == null)
             {
                 camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, name, isPrefab: true);
                 Node node = SyncData.CreateNode(name);
@@ -1513,8 +1513,8 @@ namespace VRtist
             float aperture = BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
             currentIndex += 4 * sizeof(float);
 
-            Camera.GateFitMode gateFit = (Camera.GateFitMode) BitConverter.ToInt32(data, currentIndex);
-            if(gateFit == Camera.GateFitMode.None)
+            Camera.GateFitMode gateFit = (Camera.GateFitMode)BitConverter.ToInt32(data, currentIndex);
+            if (gateFit == Camera.GateFitMode.None)
                 gateFit = Camera.GateFitMode.Horizontal;
             currentIndex += sizeof(Int32);
 
@@ -1526,7 +1526,7 @@ namespace VRtist
             Camera cam = camGameObject.GetComponentInChildren<Camera>(true);
 
             // TMP fix for a weird case.
-            if(cam == null)
+            if (cam == null)
                 return;
 
             CameraController cameraController = camGameObject.GetComponent<CameraController>();
@@ -1545,19 +1545,19 @@ namespace VRtist
             int currentIndex = 0;
             string path = GetString(data, ref currentIndex);
             Transform transform = root;/*BuildPath(root, data, 0, false, out currentIndex);*/
-            if(transform == null)
+            if (transform == null)
                 return;
 
             string name = GetString(data, ref currentIndex);
 
-            LightType lightType = (LightType) BitConverter.ToInt32(data, currentIndex);
+            LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject = null;
             Transform lightTransform = SyncData.FindChild(transform, name);
-            if(lightTransform == null)
+            if (lightTransform == null)
             {
-                switch(lightType)
+                switch (lightType)
                 {
                     case LightType.Directional:
                         lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform, name);
@@ -1600,10 +1600,10 @@ namespace VRtist
 
             // Set data to all instances
             LightController lightController = lightGameObject.GetComponent<LightController>();
-            if(!lightController)
+            if (!lightController)
                 return;
             lightController.color = lightColor;
-            switch(lightType)
+            switch (lightType)
             {
                 case LightType.Point:
                     lightController.intensity = power / 10f;
@@ -1615,7 +1615,7 @@ namespace VRtist
                     lightController.intensity = power * 0.4f / 3f;
                     break;
             }
-            if(lightType == LightType.Spot)
+            if (lightType == LightType.Spot)
             {
                 lightController.range = 1000f;
                 lightController.outerAngle = spotSize * 180f / 3.14f;
@@ -1623,7 +1623,7 @@ namespace VRtist
             }
             lightController.castShadows = shadow != 0 ? true : false;
 
-            foreach(Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
+            foreach (Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
             {
                 GameObject gobj = t.Item1;
                 LightController lightContr = gobj.GetComponent<LightController>();
@@ -1646,7 +1646,7 @@ namespace VRtist
             return command;
         }
 
-        public static NetCommand BuildShotManagerAction(ShotManagerActionInfo info)
+        public static NetCommand BuildSendShotManagerAction(ShotManagerActionInfo info)
         {
             NetCommand command = null;
             List<byte[]> buffers;
@@ -1655,11 +1655,12 @@ namespace VRtist
             byte[] end;
             byte[] camera;
             byte[] color;
+            byte[] enabled;
 
-            byte[] action = IntToBytes((int) info.action);
+            byte[] action = IntToBytes((int)info.action);
             byte[] shotIndex = IntToBytes(info.shotIndex);
 
-            switch(info.action)
+            switch (info.action)
             {
                 case ShotManagerAction.AddShot:
                     shotName = StringToBytes(info.shotName);
@@ -1689,7 +1690,8 @@ namespace VRtist
                     end = IntToBytes(info.shotEnd);
                     camera = StringToBytes(info.cameraName);
                     color = ColorToBytes(info.shotColor);
-                    buffers = new List<byte[]> { action, shotIndex, start, end, camera, color };
+                    enabled = IntToBytes(info.shotEnabled);
+                    buffers = new List<byte[]> { action, shotIndex, start, end, camera, color, enabled };
                     command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
                     break;
             }
@@ -1699,7 +1701,7 @@ namespace VRtist
         public static MeshFilter GetOrCreateMeshFilter(GameObject obj)
         {
             MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
-            if(meshFilter == null)
+            if (meshFilter == null)
                 meshFilter = obj.AddComponent<MeshFilter>();
             return meshFilter;
         }
@@ -1707,14 +1709,14 @@ namespace VRtist
         public static MeshRenderer GetOrCreateMeshRenderer(GameObject obj)
         {
             MeshRenderer meshRenderer = obj.GetComponent<MeshRenderer>();
-            if(meshRenderer == null)
+            if (meshRenderer == null)
                 meshRenderer = obj.AddComponent<MeshRenderer>();
             return meshRenderer;
         }
         public static MeshCollider GetOrCreateMeshCollider(GameObject obj)
         {
             MeshCollider meshCollider = obj.GetComponent<MeshCollider>();
-            if(meshCollider == null)
+            if (meshCollider == null)
             {
                 meshCollider = obj.AddComponent<MeshCollider>();
                 //meshCollider.convex = true;
@@ -1739,9 +1741,9 @@ namespace VRtist
                 meshRenderer.sharedMaterials = meshesMaterials[meshName].ToArray();
                 GetOrCreateMeshCollider(obj);
 
-                if(SyncData.nodes.ContainsKey(obj.name))
+                if (SyncData.nodes.ContainsKey(obj.name))
                 {
-                    foreach(Tuple<GameObject, string> t in SyncData.nodes[obj.name].instances)
+                    foreach (Tuple<GameObject, string> t in SyncData.nodes[obj.name].instances)
                     {
                         GameObject instance = t.Item1;
                         MeshFilter instanceMeshFilter = GetOrCreateMeshFilter(instance);
@@ -1758,7 +1760,7 @@ namespace VRtist
             }
 
             MeshCollider collider = gobject.GetComponent<MeshCollider>();
-            if(null != collider)
+            if (null != collider)
             {
                 collider.sharedMesh = null;
                 collider.sharedMesh = mesh;
@@ -1773,22 +1775,22 @@ namespace VRtist
             Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = GetString(data, ref currentIndex);
 
-            int baseMeshDataSize = (int) BitConverter.ToUInt32(data, currentIndex);
+            int baseMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4 + baseMeshDataSize;
 
-            int bakedMeshDataSize = (int) BitConverter.ToUInt32(data, currentIndex);
+            int bakedMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
-            if(bakedMeshDataSize == 0)
+            if (bakedMeshDataSize == 0)
                 return null;
 
-            int verticesCount = (int) BitConverter.ToUInt32(data, currentIndex);
+            int verticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int size = verticesCount * sizeof(float) * 3;
             Vector3[] vertices = new Vector3[verticesCount];
             float[] float3Values = new float[verticesCount * 3];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             int idx = 0;
-            for(int i = 0; i < verticesCount; i++)
+            for (int i = 0; i < verticesCount; i++)
             {
                 vertices[i].x = float3Values[idx++];
                 vertices[i].y = float3Values[idx++];
@@ -1796,13 +1798,13 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int normalsCount = (int) BitConverter.ToUInt32(data, currentIndex);
+            int normalsCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             size = normalsCount * sizeof(float) * 3;
             Vector3[] normals = new Vector3[normalsCount];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             idx = 0;
-            for(int i = 0; i < verticesCount; i++)
+            for (int i = 0; i < verticesCount; i++)
             {
                 normals[i].x = float3Values[idx++];
                 normals[i].y = float3Values[idx++];
@@ -1813,25 +1815,25 @@ namespace VRtist
             UInt32 UVsCount = BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
-            size = (int) UVsCount * sizeof(float) * 2;
+            size = (int)UVsCount * sizeof(float) * 2;
             Vector2[] uvs = new Vector2[UVsCount];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             idx = 0;
-            for(int i = 0; i < UVsCount; i++)
+            for (int i = 0; i < UVsCount; i++)
             {
                 uvs[i].x = float3Values[idx++];
                 uvs[i].y = float3Values[idx++];
             }
             currentIndex += size;
 
-            int materialIndicesCount = (int) BitConverter.ToUInt32(data, currentIndex);
+            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int[] materialIndices = new int[materialIndicesCount * 2];
             size = materialIndicesCount * 2 * sizeof(int);
             Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
             currentIndex += size;
 
-            int indicesCount = (int) BitConverter.ToUInt32(data, currentIndex) * 3;
+            int indicesCount = (int)BitConverter.ToUInt32(data, currentIndex) * 3;
             currentIndex += 4;
             int[] indices = new int[indicesCount];
             size = indicesCount * sizeof(int);
@@ -1839,23 +1841,23 @@ namespace VRtist
             currentIndex += size;
 
 
-            int materialCount = (int) BitConverter.ToUInt32(data, currentIndex);
+            int materialCount = (int)BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             List<Material> meshMaterials = new List<Material>();
-            if(materialCount == 0)
+            if (materialCount == 0)
             {
                 meshMaterials.Add(DefaultMaterial());
                 materialCount = 1;
             }
             else
             {
-                for(int i = 0; i < materialCount; i++)
+                for (int i = 0; i < materialCount; i++)
                 {
-                    int materialNameSize = (int) BitConverter.ToUInt32(data, currentIndex);
+                    int materialNameSize = (int)BitConverter.ToUInt32(data, currentIndex);
                     string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
                     currentIndex += materialNameSize + 4;
 
-                    if(materials.ContainsKey(materialName))
+                    if (materials.ContainsKey(materialName))
                     {
                         meshMaterials.Add(materials[materialName]);
                     }
@@ -1873,7 +1875,7 @@ namespace VRtist
             mesh.uv = uvs;
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
-            if(materialCount == 1) // only one submesh
+            if (materialCount == 1) // only one submesh
                 mesh.triangles = indices;
             else
             {
@@ -1884,17 +1886,17 @@ namespace VRtist
                 int[][] subIndices = new int[materialCount][];
                 int[] trianglesPerMaterialCount = new int[materialCount];
                 int[] subIndicesIndices = new int[materialCount];
-                for(int i = 0; i < materialCount; i++)
+                for (int i = 0; i < materialCount; i++)
                 {
                     trianglesPerMaterialCount[i] = 0;
                     subIndicesIndices[i] = 0;
                 }
 
                 // count
-                for(int i = 0; i < materialIndicesCount; i++)
+                for (int i = 0; i < materialIndicesCount; i++)
                 {
                     int triangleCount = remainingTringles;
-                    if(i < (materialIndicesCount - 1))
+                    if (i < (materialIndicesCount - 1))
                     {
                         triangleCount = materialIndices[(i + 1) * 2] - materialIndices[i * 2];
                         remainingTringles -= triangleCount;
@@ -1904,18 +1906,18 @@ namespace VRtist
                 }
 
                 //allocate
-                for(int i = 0; i < materialCount; i++)
+                for (int i = 0; i < materialCount; i++)
                 {
                     subIndices[i] = new int[trianglesPerMaterialCount[i] * 3];
                 }
 
                 // fill
                 remainingTringles = indicesCount / 3;
-                for(int i = 0; i < materialIndicesCount; i++)
+                for (int i = 0; i < materialIndicesCount; i++)
                 {
                     // allocate triangles
                     int triangleCount = remainingTringles;
-                    if(i < (materialIndicesCount - 1))
+                    if (i < (materialIndicesCount - 1))
                     {
                         triangleCount = materialIndices[(i + 1) * 2] - materialIndices[i * 2];
                         remainingTringles -= triangleCount;
@@ -1928,7 +1930,7 @@ namespace VRtist
                 }
 
                 // set
-                for(int i = 0; i < materialCount; i++)
+                for (int i = 0; i < materialCount; i++)
                 {
                     mesh.SetTriangles(subIndices[i], i);
                 }
@@ -1970,7 +1972,7 @@ namespace VRtist
         private static void CreateStroke(float[] points, int numPoints, int lineWidth, Vector3 offset, ref GPStroke subMesh)
         {
             FreeDraw freeDraw = new FreeDraw();
-            for(int i = 0; i < numPoints; i++)
+            for (int i = 0; i < numPoints; i++)
             {
                 Vector3 position = new Vector3(points[i * 5 + 0] + offset.x, points[i * 5 + 1] + offset.y, points[i * 5 + 2] + offset.z);
                 float ratio = lineWidth * 0.0006f * points[i * 5 + 3];  // pressure
@@ -1983,7 +1985,7 @@ namespace VRtist
         private static void CreateFill(float[] points, int numPoints, Vector3 offset, ref GPStroke subMesh)
         {
             Vector3[] p3D = new Vector3[numPoints];
-            for(int i = 0; i < numPoints; i++)
+            for (int i = 0; i < numPoints; i++)
             {
                 p3D[i].x = points[i * 5 + 0];
                 p3D[i].y = points[i * 5 + 1];
@@ -1994,7 +1996,7 @@ namespace VRtist
             Vector3 y = Vector3.up;
             Vector3 z = Vector3.forward;
             Matrix4x4 mat = Matrix4x4.identity;
-            if(numPoints >= 3)
+            if (numPoints >= 3)
             {
                 Vector3 p0 = p3D[0];
                 Vector3 p1 = p3D[numPoints / 3];
@@ -2002,7 +2004,7 @@ namespace VRtist
 
                 x = (p1 - p0).normalized;
                 y = (p2 - p1).normalized;
-                if(x != y)
+                if (x != y)
                 {
                     z = Vector3.Cross(x, y).normalized;
                     x = Vector3.Cross(y, z).normalized;
@@ -2013,14 +2015,14 @@ namespace VRtist
             Matrix4x4 invMat = mat.inverse;
 
             Vector3[] p3D2 = new Vector3[numPoints];
-            for(int i = 0; i < numPoints; i++)
+            for (int i = 0; i < numPoints; i++)
             {
                 p3D2[i] = invMat.MultiplyPoint(p3D[i]);
             }
 
 
             Vector2[] p = new Vector2[numPoints];
-            for(int i = 0; i < numPoints; i++)
+            for (int i = 0; i < numPoints; i++)
             {
                 p[i].x = p3D2[i].x;
                 p[i].y = p3D2[i].y;
@@ -2032,7 +2034,7 @@ namespace VRtist
             Triangulator.Triangulator.Triangulate(p, Triangulator.WindingOrder.CounterClockwise, out outputVertices, out indices);
 
             Vector3[] positions = new Vector3[outputVertices.Length];
-            for(int i = 0; i < outputVertices.Length; i++)
+            for (int i = 0; i < outputVertices.Length; i++)
             {
                 positions[i] = mat.MultiplyPoint(new Vector3(outputVertices[i].x, outputVertices[i].y)) + offset;
             }
@@ -2103,10 +2105,10 @@ namespace VRtist
         public static Material BuildMaterial(Material baseMaterial, string materialName, Color color)
         {
             Material material = null;
-            if(materials.ContainsKey(materialName))
+            if (materials.ContainsKey(materialName))
             {
                 material = materials[materialName];
-                if(material.shader.name != "HDRP/Unlit")
+                if (material.shader.name != "HDRP/Unlit")
                 {
                     material = GameObject.Instantiate(greasePencilMaterial);
                     material.name = materialName;
@@ -2139,7 +2141,7 @@ namespace VRtist
             string fillStyle = GetString(data, ref currentIndex);
             Color fillColor = GetColor(data, ref currentIndex);
 
-            if(null == greasePencilMaterial)
+            if (null == greasePencilMaterial)
             {
                 greasePencilMaterial = Resources.Load<Material>("Materials/GreasePencilMat");
             }
@@ -2150,24 +2152,24 @@ namespace VRtist
             Material fillMaterial = BuildMaterial(greasePencilMaterial, materialFiillName, fillColor);
 
             // stroke enable
-            if(strokeEnabled)
+            if (strokeEnabled)
             {
                 materialStrokesEnabled.Add(materialStrokeName);
             }
             else
             {
-                if(materialStrokesEnabled.Contains(materialStrokeName))
+                if (materialStrokesEnabled.Contains(materialStrokeName))
                     materialStrokesEnabled.Remove(materialStrokeName);
             }
 
             // fill
-            if(fillEnabled)
+            if (fillEnabled)
             {
                 materialsFillEnabled.Add(materialFiillName);
             }
             else
             {
-                if(materialsFillEnabled.Contains(materialFiillName))
+                if (materialsFillEnabled.Contains(materialFiillName))
                     materialsFillEnabled.Remove(materialFiillName);
             }
         }
@@ -2186,7 +2188,7 @@ namespace VRtist
             float layerOffset = 0.001f * layerIndex;
             float strokeOffset = 0.0001f * strokeIndex;
 
-            if((materialIndex < materialNames.Length) && IsStrokeEnabled(materialNames[materialIndex]))
+            if ((materialIndex < materialNames.Length) && IsStrokeEnabled(materialNames[materialIndex]))
             {
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
@@ -2195,7 +2197,7 @@ namespace VRtist
                 frame.strokes.Add(subMesh);
             }
 
-            if((materialIndex < materialNames.Length) && IsFillEnabled(materialNames[materialIndex]))
+            if ((materialIndex < materialNames.Length) && IsFillEnabled(materialNames[materialIndex]))
             {
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
@@ -2208,13 +2210,13 @@ namespace VRtist
         public static void BuildFrame(byte[] data, ref int currentIndex, string[] materialNames, int layerIndex, ref GPLayer layer, int frameIndex)
         {
             int frameNumber = GetInt(data, ref currentIndex);
-            if(frameIndex == 0)
+            if (frameIndex == 0)
                 frameNumber = 0;
             GPFrame frame = new GPFrame(frameNumber);
             layer.frames.Add(frame);
 
             int strokeCount = GetInt(data, ref currentIndex);
-            for(int strokeIndex = 0; strokeIndex < strokeCount; strokeIndex++)
+            for (int strokeIndex = 0; strokeIndex < strokeCount; strokeIndex++)
             {
                 BuildStroke(data, ref currentIndex, materialNames, layerIndex, strokeIndex, ref frame);
             }
@@ -2230,7 +2232,7 @@ namespace VRtist
             layers.Add(layer);
 
             int frameCount = GetInt(data, ref currentIndex);
-            for(int frameIndex = 0; frameIndex < frameCount; frameIndex++)
+            for (int frameIndex = 0; frameIndex < frameCount; frameIndex++)
             {
                 BuildFrame(data, ref currentIndex, materialNames, layerIndex, ref layer, frameIndex);
             }
@@ -2240,7 +2242,7 @@ namespace VRtist
         {
             // Build mesh from sub-meshes
             int vertexCount = 0;
-            foreach(var meshMaterial in strokes)
+            foreach (var meshMaterial in strokes)
             {
                 vertexCount += meshMaterial.vertices.Length;
             }
@@ -2248,7 +2250,7 @@ namespace VRtist
             Vector3[] vertices = new Vector3[vertexCount];
             int currentVertexIndex = 0;
 
-            foreach(var subMesh in strokes)
+            foreach (var subMesh in strokes)
             {
                 Array.Copy(subMesh.vertices, 0, vertices, currentVertexIndex, subMesh.vertices.Length);
                 currentVertexIndex += subMesh.vertices.Length;
@@ -2265,11 +2267,11 @@ namespace VRtist
             Tuple<Mesh, List<Material>> result = new Tuple<Mesh, List<Material>>(mesh, mats);
 
             int currentIndexIndex = 0;
-            foreach(var subMesh in strokes)
+            foreach (var subMesh in strokes)
             {
                 int verticesCount = subMesh.vertices.Length;
                 int[] triangles = new int[subMesh.triangles.Length];
-                for(int i = 0; i < subMesh.triangles.Length; i++)
+                for (int i = 0; i < subMesh.triangles.Length; i++)
                 {
                     triangles[i] = subMesh.triangles[i] + currentIndexIndex;
                 }
@@ -2285,9 +2287,9 @@ namespace VRtist
         static SortedSet<int> GetFrames(List<GPLayer> layers)
         {
             SortedSet<int> frames = new SortedSet<int>();
-            foreach(GPLayer layer in layers)
+            foreach (GPLayer layer in layers)
             {
-                foreach(GPFrame frame in layer.frames)
+                foreach (GPFrame frame in layer.frames)
                     frames.Add(frame.frame);
             }
 
@@ -2297,14 +2299,14 @@ namespace VRtist
         static List<GPFrame> GetGPFrames(List<GPLayer> layers, int f)
         {
             List<GPFrame> frames = new List<GPFrame>();
-            foreach(GPLayer layer in layers)
+            foreach (GPLayer layer in layers)
             {
-                if(!layer.visible)
+                if (!layer.visible)
                     continue;
-                for(int i = layer.frames.Count - 1; i >= 0; --i)
+                for (int i = layer.frames.Count - 1; i >= 0; --i)
                 {
                     GPFrame gpframe = layer.frames[i];
-                    if(gpframe.frame <= f)
+                    if (gpframe.frame <= f)
                     {
                         frames.Add(gpframe);
                         break;
@@ -2317,9 +2319,9 @@ namespace VRtist
         static List<GPStroke> GetStrokes(List<GPFrame> frames)
         {
             List<GPStroke> strokes = new List<GPStroke>();
-            foreach(GPFrame frame in frames)
+            foreach (GPFrame frame in frames)
             {
-                foreach(GPStroke stroke in frame.strokes)
+                foreach (GPStroke stroke in frame.strokes)
                     strokes.Add(stroke);
             }
             return strokes;
@@ -2332,7 +2334,7 @@ namespace VRtist
 
             int materialCount = GetInt(data, ref currentIndex);
             string[] materialNames = new string[materialCount];
-            for(int i = 0; i < materialCount; i++)
+            for (int i = 0; i < materialCount; i++)
             {
                 materialNames[i] = GetString(data, ref currentIndex);
             }
@@ -2341,7 +2343,7 @@ namespace VRtist
             List<GPLayer> layers = new List<GPLayer>();
 
             int layerCount = GetInt(data, ref currentIndex);
-            for(int layerIndex = 0; layerIndex < layerCount; layerIndex++)
+            for (int layerIndex = 0; layerIndex < layerCount; layerIndex++)
             {
                 BuildLayer(data, ref currentIndex, materialNames, layerIndex, ref layers);
             }
@@ -2351,9 +2353,9 @@ namespace VRtist
             GreasePencilData gpdata = new GreasePencilData();
             greasePencils[name] = gpdata;
 
-            if(frames.Count == 0)
+            if (frames.Count == 0)
                 return;
-            foreach(int frame in frames)
+            foreach (int frame in frames)
             {
                 List<GPFrame> gpframes = GetGPFrames(layers, frame);
                 List<GPStroke> strokes = GetStrokes(gpframes);
@@ -2372,18 +2374,18 @@ namespace VRtist
 
             GameObject gobject = transform.gameObject;
             GreasePencilBuilder greasePencilBuilder = gobject.GetComponent<GreasePencilBuilder>();
-            if(null == greasePencilBuilder)
+            if (null == greasePencilBuilder)
                 greasePencilBuilder = gobject.AddComponent<GreasePencilBuilder>();
 
             GreasePencil greasePencil = gobject.GetComponent<GreasePencil>();
-            if(null == greasePencil)
+            if (null == greasePencil)
                 greasePencil = gobject.AddComponent<GreasePencil>();
 
             GreasePencilData gpdata = greasePencils[greasePencilName];
             greasePencil.data = gpdata;
 
             Node prefab = SyncData.nodes[transform.name];
-            foreach(var item in prefab.instances)
+            foreach (var item in prefab.instances)
             {
                 GreasePencil greasePencilInstance = item.Item1.GetComponent<GreasePencil>();
                 greasePencilInstance.data = gpdata;
@@ -2465,7 +2467,7 @@ namespace VRtist
         {
             int index = 0;
             string cameraName = GetString(data, ref index);
-            if(cameraName.Length == 0)
+            if (cameraName.Length == 0)
             {
                 Selection.SetActiveCamera(null);
             }
@@ -2474,7 +2476,7 @@ namespace VRtist
                 Node prefabNode = SyncData.nodes[cameraName];
                 // We only have one instance of any camera in the scene
                 CameraController controller = prefabNode.instances[0].Item1.GetComponent<CameraController>();
-                if(null != controller) { Selection.SetActiveCamera(controller); }
+                if (null != controller) { Selection.SetActiveCamera(controller); }
             }
         }
 
@@ -2502,7 +2504,7 @@ namespace VRtist
 
             int index = 0;
             int shotCount = GetInt(data, ref index);
-            for(int i = 0; i < shotCount; ++i)
+            for (int i = 0; i < shotCount; ++i)
             {
                 string shotName = GetString(data, ref index);
                 string cameraName = GetString(data, ref index);
@@ -2511,7 +2513,7 @@ namespace VRtist
                 bool enabled = GetBool(data, ref index);
 
                 GameObject camera = null;
-                if(cameraName.Length > 0 && SyncData.nodes.ContainsKey(cameraName))
+                if (cameraName.Length > 0 && SyncData.nodes.ContainsKey(cameraName))
                     camera = SyncData.nodes[cameraName].instances[0].Item1;
 
                 Shot shot = new Shot { name = shotName, camera = camera, start = start, end = end, enabled = enabled };
@@ -2519,6 +2521,82 @@ namespace VRtist
             }
 
             ShotManager.Instance.FireChanged();
+        }
+
+        public static void BuildShotManagerAction(byte[] data)
+        {
+            int index = 0;
+            ShotManagerAction action = (ShotManagerAction)GetInt(data, ref index);
+            int shotIndex = GetInt(data, ref index);
+
+            switch (action)
+            {
+                case ShotManagerAction.AddShot:
+                    {
+                        string shotName = GetString(data, ref index);
+                        int start = GetInt(data, ref index);
+                        int end = GetInt(data, ref index);
+                        string cameraName = GetString(data, ref index);
+                        Color color = GetColor(data, ref index);
+                        GameObject cam = null;
+                        if (cameraName.Length > 0)
+                            cam = SyncData.nodes[cameraName].instances[0].Item1;
+                        Shot shot = new Shot { name = shotName, camera = cam, color = color, start = start, end = end };
+                        ShotManager.Instance.InsertShot(shotIndex + 1, shot);
+                        ShotManager.Instance.FireChanged();
+                    }
+                    break;
+                case ShotManagerAction.DeleteShot:
+                    ShotManager.Instance.RemoveShot(shotIndex);
+                    ShotManager.Instance.FireChanged();
+                    break;
+                case ShotManagerAction.DuplicateShot:
+                    {
+                        string shotName = GetString(data, ref index);
+                        ShotManager.Instance.DuplicateShot(shotIndex);
+                        ShotManager.Instance.FireChanged();
+                    }
+                    break;
+                case ShotManagerAction.MoveShot:
+                    {
+                        int offset = GetInt(data, ref index);
+                        ShotManager.Instance.MoveCurrentShot(offset);
+                        ShotManager.Instance.FireChanged();
+                    }
+                    break;
+                case ShotManagerAction.UpdateShot:
+                    {
+                        int start = GetInt(data, ref index);
+                        int end = GetInt(data, ref index);
+                        string cameraName = GetString(data, ref index);
+                        Color color = GetColor(data, ref index);
+                        int enabled = GetInt(data, ref index);
+
+                        Shot shot = ShotManager.Instance.shots[shotIndex];
+                        if (start != -1)
+                            shot.start = start;
+                        if (end != -1)
+                            shot.end = end;
+                        if (cameraName.Length > 0)
+                        {
+                            GameObject cam = SyncData.nodes[cameraName].instances[0].Item1;
+                            shot.camera = cam;
+                        }
+                        if (color.r != -1)
+                        {
+                            shot.color = color;
+                        }
+                        if (enabled != -1)
+                        {
+                            shot.enabled = enabled == 1 ? true : false;
+                        }
+
+                        ShotManager.Instance.UpdateShot(shotIndex, shot);
+                        ShotManager.Instance.FireChanged();
+                    }
+                    break;
+            }
+
         }
     }
 
@@ -2867,7 +2945,7 @@ namespace VRtist
 
         public void SendShotManagerAction(ShotManagerActionInfo info)
         {
-            NetCommand command = NetGeometry.BuildShotManagerAction(info);
+            NetCommand command = NetGeometry.BuildSendShotManagerAction(info);
             AddCommand(command);
         }
 
@@ -3037,6 +3115,9 @@ namespace VRtist
                             case MessageType.ShotManagerCurrentShot:
                                 NetGeometry.BuildShotManagerCurrentShot(command.data);
                                 break;
+                            case MessageType.ShotManagerAction:
+                                NetGeometry.BuildShotManagerAction(command.data);
+                                break;
                         }
                     }
                     catch(Exception e)
@@ -3112,6 +3193,8 @@ namespace VRtist
                     SendClearAnimations(data as ClearAnimationInfo); break;
                 case MessageType.ShotManagerMontageMode:
                     SendMontageMode(data as MontageModeInfo); break;
+                case MessageType.ShotManagerAction:
+                    SendShotManagerAction(data as ShotManagerActionInfo); break;
             }
         }
     }

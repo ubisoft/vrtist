@@ -44,14 +44,17 @@ namespace VRtist
         [SpaceHeader("Callbacks", 6, 0.3f, 0.3f, 0.3f)]
         public FloatChangedEvent onSpinEvent = new FloatChangedEvent();
         public IntChangedEvent onSpinEventInt = new IntChangedEvent();
-        public UnityEvent onClickEvent = new UnityEvent();
-        public UnityEvent onReleaseEvent = new UnityEvent();
+        public UnityEvent onEnterEvent = new UnityEvent();
+        public UnityEvent onExitEvent = new UnityEvent();
+        public UnityEvent onPressTriggerEvent = new UnityEvent();
+        public FloatChangedEvent onReleaseTriggerEvent = new FloatChangedEvent();
 
         private Vector3 localProjectedWidgetInitialPosition = Vector3.zero;
         private float initialFloatValue = 0.0f;
         private int initialIntValue = 0;
 
         private bool needRebuild = false;
+        private bool cursorExitedWidget = true;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
         public float FloatValue { get { return GetFloatValue(); } set { SetFloatValue(value); UpdateValueText(); } }
@@ -65,9 +68,8 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
-                onSpinEvent.AddListener(OnSpin);
-                onClickEvent.AddListener(OnClickSpinner);
-                onReleaseEvent.AddListener(OnReleaseSpinner);
+                onEnterEvent.AddListener(OnEnterSpinner);
+                onExitEvent.AddListener(OnExitSpinner);
             }
         }
 
@@ -317,38 +319,40 @@ namespace VRtist
         private void OnTriggerEnter(Collider otherCollider)
         {
             if (NeedToIgnoreCollisionEnter())
+            {
                 return;
+            }
 
             if (otherCollider.gameObject.name == "Cursor")
             {
-                onClickEvent.Invoke();
+                cursorExitedWidget = false;
+                onEnterEvent.Invoke();
             }
         }
 
         private void OnTriggerExit(Collider otherCollider)
-        {
+        {            
             if (NeedToIgnoreCollisionExit())
+            {          
+                if(otherCollider.gameObject.name == "Cursor")
+                    cursorExitedWidget = true;
                 return;
+            }
 
             if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
+            {                
+                onExitEvent.Invoke();
             }
         }
 
-        public void OnClickSpinner()
+        public void OnEnterSpinner()
         {
             SetColor(Disabled ? disabledColor : pushedColor);
         }
 
-        public void OnReleaseSpinner()
+        public void OnExitSpinner()
         {
             SetColor(Disabled ? disabledColor : baseColor);
-        }
-
-        public void OnSpin(float f)
-        {
-            //Value = f; // Value already set in HandleCursorBehavior
         }
 
         public override bool HandlesCursorBehavior() { return true; }
@@ -373,6 +377,8 @@ namespace VRtist
 
             if (justPushedTriggered)
             {
+                onPressTriggerEvent.Invoke();
+
                 GlobalState.Instance.cursor.LockOnWidget(true);
                 localProjectedWidgetInitialPosition = localProjectedWidgetPosition;
                 initialFloatValue = FloatValue;
@@ -389,12 +395,12 @@ namespace VRtist
             {
                 if (spinnerValueType == SpinnerValueType.Float)
                 {
-                    FloatValue = initialFloatValue + floatChange;
+                    FloatValue = Mathf.Clamp(initialFloatValue + floatChange, minFloatValue, maxFloatValue);
                     onSpinEvent.Invoke(currentFloatValue);
                 }
                 else // SpinnerValueType.Int
                 {
-                    IntValue = initialIntValue + Mathf.FloorToInt(intChange);
+                    IntValue = Mathf.Clamp(initialIntValue + Mathf.FloorToInt(intChange), minIntValue, maxIntValue);
                     onSpinEventInt.Invoke(currentIntValue);
                 }
             }
@@ -412,6 +418,9 @@ namespace VRtist
             if (justReleasedTriggered)
             {
                 GlobalState.Instance.cursor.LockOnWidget(false);
+                onReleaseTriggerEvent.Invoke(spinnerValueType == SpinnerValueType.Float ? FloatValue : (float)IntValue);                
+                if (cursorExitedWidget)
+                    onExitEvent.Invoke();
             }
         }
 

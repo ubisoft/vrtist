@@ -8,7 +8,7 @@ namespace VRtist
         public static readonly Color default_foreground_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
         public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
         public static readonly Color default_pushed_color = new Color(0.0f, 0.65f, 1.0f, 1.0f); // light vivid blue
-        public static readonly Color default_checked_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // light vivid blue
+        public static readonly Color default_checked_color = new Color(0.0f, 0.85f, 1.0f, 1.0f); // light vivid blue
         public static readonly Color default_hover_color = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow
         //public static readonly Color default_disabled_color = new Color(0.20f, 0.23f, 0.25f); // dark grey blue
         //public static readonly Color default_disabled_color = new Color(0.4708f, 0.7317f, 0.8679f); // light grey blue

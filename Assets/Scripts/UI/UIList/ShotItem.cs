@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -11,20 +12,44 @@ namespace VRtist
         public UIButton cameraButton = null;
         public UICheckbox shotEnabledCheckbox = null;
         public UIButton shotNameButton = null;
+        public UIButton cameraNameButton = null;
         public UISpinner startFrameSpinner = null;
         public UILabel frameRangeLabel = null;
         public UISpinner endFrameSpinner = null;
+        public UIButton setCameraButton = null;
 
-        public void AddListeners(UnityAction<string> nameAction, UnityAction<int> startAction, UnityAction<int> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction)
+        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
         {
-            // TODO only on release
-            startFrameSpinner.onSpinEventInt.AddListener(startAction);
-            endFrameSpinner.onSpinEventInt.AddListener(endAction);
+            startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
+            endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
+
+            startFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
+            endFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
+
+            startFrameSpinner.onReleaseTriggerEvent.AddListener(startAction);
+            endFrameSpinner.onReleaseTriggerEvent.AddListener(endAction);
+
+            shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
+
+            setCameraButton.onClickEvent.AddListener(setCameraAction);
+        }
+
+        private void InitSpinnerMinMax()
+        {
+            startFrameSpinner.maxFloatValue = endFrameSpinner.FloatValue;
+            startFrameSpinner.maxIntValue = endFrameSpinner.IntValue;
+            endFrameSpinner.minFloatValue = startFrameSpinner.FloatValue;
+            endFrameSpinner.minIntValue = startFrameSpinner.IntValue;
+        }
+
+        private void UpdateShotRange(int value)
+        {
+            frameRangeLabel.Text = (endFrameSpinner.IntValue - startFrameSpinner.IntValue + 1).ToString();
         }
 
         public override void SetSelected(bool value)
         {
-            shotNameButton.BaseColor = value ? UIElement.default_pushed_color : UIElement.default_background_color;
+            shotNameButton.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
         }
 
         public void Start()
@@ -47,6 +72,7 @@ namespace VRtist
             this.shot = shot;
             SetShotEnabled(shot.enabled);
             SetShotName(shot.name);
+            SetShotCamera(shot.camera);
             SetStartFrame(shot.start);
             SetFrameRange(shot.end - shot.start + 1);
             SetEndFrame(shot.end);
@@ -67,6 +93,18 @@ namespace VRtist
             {
                 shotNameButton.Text = shotName;
                 shot.name = shotName;
+            }
+        }
+
+        public void SetShotCamera(GameObject cam)
+        {
+            if (cameraNameButton != null)
+            {
+                if (cam)
+                    cameraNameButton.Text = cam.name;
+                else
+                    cameraNameButton.Text = "";
+                shot.camera = cam;
             }
         }
 
@@ -154,13 +192,43 @@ namespace VRtist
                 buttonName = "ShotNameButton",
                 relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
                 width = 0.17f,
-                height = 0.03f,
-                icon = UIUtils.LoadIcon("icon-camera"),
+                height = 0.020f,
+                margin = 0.001f,
                 buttonContent = UIButton.ButtonContent.TextOnly
             });
 
             //shotNameButton.ActivateIcon(false); // text-only
             shotNameButton.SetLightLayer(5);
+            shotNameButton.pushedColor = UIElement.default_pushed_color;
+            shotNameButton.GetComponentInChildren<Text>().fontSize = 22;
+
+            // Add Camera Name UIButton
+            UIButton cameraNameButton =
+                UIButton.CreateUIButton(
+                    "CameraNameButton",
+                    root.transform,
+                    new Vector3(cx, -0.020f, 0),
+                    0.17f, // width
+                    0.010f, // height
+                    0.001f, // margin
+                    0.001f, // thickness
+                    UIUtils.LoadMaterial("UIPanel"),
+                    UIElement.default_background_color,
+                    "tmp",
+                    UIUtils.LoadIcon("icon-camera"));
+
+            cameraNameButton.ActivateIcon(false); // text-only
+            cameraNameButton.SetLightLayer(5);
+            cameraNameButton.pushedColor = UIElement.default_pushed_color;
+            Text text = cameraNameButton.GetComponentInChildren<Text>();
+            text.alignment = TextAnchor.LowerRight;
+            text.fontStyle = FontStyle.Normal;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.alignByGeometry = true;
+
+
+            cameraNameButton.GetComponentInChildren<Text>().fontSize = 10;
 
             cx += 0.17f;
 
@@ -232,13 +300,36 @@ namespace VRtist
 
             endFrameSpinner.SetLightLayer(5);
 
+            cx += 0.06f;
+            // Add Shot Name UIButton
+            UIButton setCameraButton =
+                UIButton.CreateUIButton(
+                    "SetCameraButton",
+                    root.transform,
+                    new Vector3(cx, 0, 0),
+                    0.03f, // width
+                    0.03f, // height
+                    0.005f, // margin
+                    0.001f, // thickness
+                    UIUtils.LoadMaterial("UIPanel"),
+                    UIElement.default_background_color,
+                    "tmp",
+                    UIUtils.LoadIcon("icon-camera"));
+
+            setCameraButton.ActivateIcon(true); // text-only
+            setCameraButton.ActivateText(false);
+            setCameraButton.SetLightLayer(5);
+
+
             // Link widgets to the item script.
             shotItem.cameraButton = cameraButton;
             shotItem.shotEnabledCheckbox = shotEnabledCheckbox;
             shotItem.shotNameButton = shotNameButton;
+            shotItem.cameraNameButton = cameraNameButton;
             shotItem.startFrameSpinner = startFrameSpinner;
             shotItem.frameRangeLabel = frameRangeLabel;
             shotItem.endFrameSpinner = endFrameSpinner;
+            shotItem.setCameraButton = setCameraButton;
 
             shotItem.SetShot(shot);
 

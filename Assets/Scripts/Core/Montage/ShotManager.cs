@@ -26,6 +26,7 @@ namespace VRtist
         public string cameraName = "";
         public Color shotColor = Color.black;
         public int moveOffset = 0;
+        public int shotEnabled = -1;
     }
 
 
@@ -43,6 +44,12 @@ namespace VRtist
         public void AddShot(Shot shot)
         {
             shots.Add(shot);
+        }
+
+        public void DuplicateShot(int index)
+        {
+            Shot shot = shots[index].Copy();
+            shots.Insert(index + 1, shot);
         }
 
         public void InsertShot(int index, Shot shot)
@@ -112,6 +119,12 @@ namespace VRtist
         {
             Shot shot = shots[currentShotIndex];
             shot.color = color;
+        }
+
+        public void SetCurrentShotEnabled(bool value)
+        {
+            Shot shot = shots[currentShotIndex];
+            shot.enabled = value;
         }
 
         public void UpdateShot(int index, Shot shot)
@@ -194,11 +207,16 @@ namespace VRtist
     public class Shot
     {
         public string name;
-        public GameObject camera; // TODO, manage game object destroy
-        public int start;
-        public int end;
-        public bool enabled;
-        public Color color;
+        public GameObject camera = null; // TODO, manage game object destroy
+        public int start = -1;
+        public int end = -1;
+        public bool enabled = true;
+        public Color color = Color.black;
+
+        public Shot Copy()
+        {
+            return new Shot { name = name, camera = camera, start = start, end = end, enabled = enabled, color = color };
+        }
     }
 
 }

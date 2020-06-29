@@ -185,7 +185,7 @@ namespace VRtist
             for(int i = 0; i < items.Count; ++i)
             {
                 if(items[i].Content == t)
-                    currentIndex = i;
+                    CurrentIndex = i;
             }
 
             IndexedGameObjectArgs args = new IndexedGameObjectArgs { gobject = t.gameObject, index = currentIndex };
