@@ -12,7 +12,12 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UILabel : UIElement
     {
-        public static readonly string default_label_name = "New Label";
+        public enum IconMarginBehavior { UseWidgetMargin, UseIconMargin };
+        public enum LabelContent { TextOnly, ImageOnly, TextAndImage };
+        public enum ImagePosition { Left, Right };
+
+        // TODO: put in a scriptable object
+        public static readonly string default_widget_name = "New Label";
         public static readonly float default_width = 0.15f;
         public static readonly float default_height = 0.05f;
         public static readonly float default_margin = 0.005f;
@@ -23,18 +28,18 @@ namespace VRtist
         public static readonly string default_material_name = "UIElementTransparent";
         public static readonly LabelContent default_content = LabelContent.TextOnly;
         public static readonly string default_icon_name = "paint";
-
-        public enum IconMarginBehavior { UseWidgetMargin, UseIconMargin };
-        public enum LabelContent { TextOnly, ImageOnly, TextAndImage };
-        public enum ImagePosition { Left, Right };
+        public static readonly ImagePosition default_image_position = ImagePosition.Left;
+        public static readonly IconMarginBehavior default_icon_margin_behavior = IconMarginBehavior.UseWidgetMargin;
+        public static readonly float default_icon_margin = 0.0f;
 
         [SpaceHeader("Label Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float margin = 0.005f;
-        [CentimeterFloat] public float thickness = 0.001f;
-        public LabelContent content = LabelContent.TextOnly;
-        public ImagePosition imagePosition = ImagePosition.Left;
-        public IconMarginBehavior iconMarginBehavior = IconMarginBehavior.UseWidgetMargin;
-        [CentimeterFloat] public float iconMargin = 0.0f;
+        [CentimeterFloat] public float margin = default_margin;
+        [CentimeterFloat] public float thickness = default_thickness;
+        public LabelContent content = default_content;
+        public ImagePosition imagePosition = default_image_position;
+        public IconMarginBehavior iconMarginBehavior = default_icon_margin_behavior;
+        [CentimeterFloat] public float iconMargin = default_icon_margin;
+
         public Sprite image = null;
         [TextArea] public string textContent = "";
         public Color textColor = UILabel.default_label_foreground_color;
@@ -265,48 +270,42 @@ namespace VRtist
             }
         }
 
-        public static UILabel Create(Transform parent)
+
+
+
+
+
+
+        public class CreateLabelParams
         {
-            return UILabel.CreateEx(
-                parent, 
-                default_label_name,
-                new Vector3(0, 0, -default_thickness), 
-                default_width, 
-                default_height, 
-                default_margin, 
-                default_thickness,
-                UIUtils.LoadMaterial(default_material_name), 
-                default_label_background_color, 
-                default_label_foreground_color, 
-                default_content,
-                default_text,
-                UIUtils.LoadIcon(default_icon_name)
-            );
+            public Transform parent = null;
+            public string widgetName = UILabel.default_widget_name;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UILabel.default_thickness);
+            public float width = UILabel.default_width;
+            public float height = UILabel.default_height;
+            public float margin = UILabel.default_margin;
+            public float thickness = UILabel.default_thickness;
+            public Material material = UIUtils.LoadMaterial(UILabel.default_material_name);
+            public Color bgcolor = UILabel.default_label_background_color;
+            public Color fgcolor = UILabel.default_label_foreground_color;
+            public LabelContent labelContent = UILabel.default_content;
+            public ImagePosition imagePosition = UILabel.default_image_position;
+            public IconMarginBehavior iconMarginBehavior = UILabel.default_icon_margin_behavior;
+            public float iconMargin = UILabel.default_icon_margin;
+            public string caption = UILabel.default_text;
+            public Sprite icon = UIUtils.LoadIcon(UILabel.default_icon_name);
         }
 
-        public static UILabel CreateEx(
-            Transform parent,
-            string labelName,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float margin,
-            float thickness,
-            Material material,
-            Color bgcolor,
-            Color fgcolor,
-            LabelContent labelContent,
-            string caption,
-            Sprite icon)
+        public static UILabel Create(CreateLabelParams input)
         {
-            GameObject go = new GameObject(labelName);
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -314,25 +313,29 @@ namespace VRtist
             }
 
             UILabel uiLabel = go.AddComponent<UILabel>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiLabel.relativeLocation = relativeLocation;
-            uiLabel.transform.parent = parent;
-            uiLabel.transform.localPosition = parentAnchor + relativeLocation;
+            uiLabel.relativeLocation = input.relativeLocation;
+            uiLabel.transform.parent = input.parent;
+            uiLabel.transform.localPosition = parentAnchor + input.relativeLocation;
             uiLabel.transform.localRotation = Quaternion.identity;
             uiLabel.transform.localScale = Vector3.one;
-            uiLabel.width = width;
-            uiLabel.height = height;
-            uiLabel.margin = margin;
-            uiLabel.thickness = thickness;
-            uiLabel.content = labelContent;
-            uiLabel.image = icon;
-            uiLabel.textContent = caption;
+            uiLabel.width = input.width;
+            uiLabel.height = input.height;
+            uiLabel.margin = input.margin;
+            uiLabel.thickness = input.thickness;
+            uiLabel.content = input.labelContent;
+            uiLabel.image = input.icon;
+            uiLabel.textContent = input.caption;
+            uiLabel.content = input.labelContent;
+            uiLabel.imagePosition = input.imagePosition;
+            uiLabel.iconMarginBehavior = input.iconMarginBehavior;
+            uiLabel.iconMargin = input.iconMargin;
             // text color and bg color are set below
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
                 uiLabel.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -355,15 +358,15 @@ namespace VRtist
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && input.material != null)
             {
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(material);
+                meshRenderer.sharedMaterial = Instantiate(input.material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiLabel.BaseColor = bgcolor;
+                uiLabel.BaseColor = input.bgcolor;
             }
 
             // Add a Canvas
@@ -388,31 +391,31 @@ namespace VRtist
             cs.referencePixelsPerUnit = 100; // default?
 
             // Add a Text under the Canvas
-            if (caption.Length > 0)
+            if (input.caption.Length > 0)
             {
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = caption;
+                t.text = input.caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.UpperLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Wrap;
                 t.verticalOverflow = VerticalWrapMode.Truncate;
-                t.color = fgcolor;
+                t.color = input.fgcolor;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
-                trt.sizeDelta = new Vector2((uiLabel.width - 2.0f * margin ) * 100.0f, (uiLabel.height - 2.0f * margin ) * 100.0f);
+                trt.sizeDelta = new Vector2((uiLabel.width - 2.0f * input.margin ) * 100.0f, (uiLabel.height - 2.0f * input.margin ) * 100.0f);
                 trt.localRotation = Quaternion.identity;
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.localPosition = new Vector3(margin, -margin, -0.002f); // centered, on-top
+                trt.localPosition = new Vector3(input.margin, -input.margin, -0.002f); // centered, on-top
 
-                uiLabel.TextColor = fgcolor;
+                uiLabel.TextColor = input.fgcolor;
             }
 
             return uiLabel;

@@ -15,7 +15,10 @@ namespace VRtist
                 parent = T;
             }
 
-            UILabel.Create(parent);
+            UILabel.Create(new UILabel.CreateLabelParams 
+            { 
+                parent = parent
+            });
         }
     }
 }
