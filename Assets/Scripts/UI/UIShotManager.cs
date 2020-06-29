@@ -89,6 +89,7 @@ namespace VRtist
                 shotEnd = end,
                 shotColor = Color.blue  // TODO: find a unique color
             };
+            new CommandShotManager(info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Add the shot to ShotManager singleton
@@ -107,14 +108,24 @@ namespace VRtist
 
             // Delete the current shot
             int shotIndex = sm.CurrentShot;
-            sm.RemoveShot(shotIndex);
+            Shot shot = sm.shots[shotIndex];
 
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.DeleteShot,
+                shotName = shot.name,
+                cameraName = shot.camera ? shot.camera.name : "",
+                shotStart = shot.start,
+                shotEnd = shot.end,
+                shotColor = shot.color,
+                shotEnabled = shot.enabled ? 1 : 0,
                 shotIndex = shotIndex
             };
+
+            new CommandShotManager(info).Submit();
+
+            sm.RemoveShot(shotIndex);
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Rebuild UI
@@ -127,6 +138,10 @@ namespace VRtist
             ShotManager sm = ShotManager.Instance;
 
             int shotIndex = sm.CurrentShot;
+            if (offset < 0 && shotIndex <= 0)
+                return;
+            if (offset > 0 && shotIndex >= (sm.shots.Count - 1))
+                return;
             sm.MoveCurrentShot(offset);
 
             // Send network message
@@ -136,6 +151,7 @@ namespace VRtist
                 shotIndex = shotIndex,
                 moveOffset = offset
             };
+            new CommandShotManager(info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Rebuild UI
@@ -147,18 +163,23 @@ namespace VRtist
             ShotManager sm = ShotManager.Instance;
 
             int intValue = Mathf.FloorToInt(value);
-            int endValue = sm.shots[sm.CurrentShot].end;
+            Shot shot = sm.shots[sm.CurrentShot];
+            int endValue = shot.end;
             if (intValue > endValue)
                 intValue = endValue;
 
-            sm.SetCurrentShotStart(intValue);
             // Send network message
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotStart = intValue,
+                shotStart = shot.start
             };
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.shotStart = intValue;
+            sm.SetCurrentShotStart(intValue);
+
+            new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
@@ -167,63 +188,87 @@ namespace VRtist
             ShotManager sm = ShotManager.Instance;
 
             int intValue = Mathf.FloorToInt(value);
-            int startValue = sm.shots[sm.CurrentShot].start;
+            Shot shot = sm.shots[sm.CurrentShot];
+            int startValue = shot.start;
             if (intValue < startValue)
                 intValue = startValue;
-
-            sm.SetCurrentShotEnd(intValue);
+            
             // Send network message
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotEnd = intValue,
+                shotEnd = shot.end,
             };
+
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.shotEnd = intValue;
+            sm.SetCurrentShotEnd(intValue);
+
+            new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotCameraName(string value)
         {
             ShotManager sm = ShotManager.Instance;
+            Shot shot = sm.shots[sm.CurrentShot];
 
-            sm.SetCurrentShotCamera(value);
             // Send network message
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                cameraName = value
+                cameraName = shot.camera.name
             };
+
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.cameraName = value;            
+            sm.SetCurrentShotCamera(value);
+
+            new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotName(string value)
         {
             ShotManager sm = ShotManager.Instance;
+            Shot shot = sm.shots[sm.CurrentShot];
 
-            sm.SetCurrentShotName(value);
             // Send network message
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotName = value
+                shotName = shot.name
             };
+
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.shotName = value;
+            sm.SetCurrentShotName(value);
+
+            new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnUpdateShotColor(Color value)
         {
             ShotManager sm = ShotManager.Instance;
+            Shot shot = sm.shots[sm.CurrentShot];
 
-            sm.SetCurrentShotColor(value);
             // Send network message
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotColor = value
+                shotColor = shot.color
             };
+
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.shotColor = value;
+            sm.SetCurrentShotColor(value);
+
+            new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
         }
@@ -231,15 +276,21 @@ namespace VRtist
         public void OnUpdateShotEnabled(bool value)
         {
             ShotManager sm = ShotManager.Instance;
+            Shot shot = sm.shots[sm.CurrentShot];
 
-            sm.SetCurrentShotEnabled(value);
             // Send network message
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
-                shotEnabled = value ? 1 : 0
+                shotEnabled = shot.enabled ? 1 : 0
             };
+
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.shotEnabled = value ? 1 : 0;
+            sm.SetCurrentShotEnabled(value);
+
+            new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
@@ -247,15 +298,20 @@ namespace VRtist
         {
             ShotManager sm = ShotManager.Instance;
             Shot currentShot = sm.shots[sm.CurrentShot];
-            currentShot.camera = Selection.activeCamera;
-            ShotManagerActionInfo info = new ShotManagerActionInfo
+
+            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = sm.CurrentShot,
                 cameraName = currentShot.camera == null ? "" : currentShot.camera.name
             };
-            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
+            ShotManagerActionInfo info = oldInfo.Copy();
+            info.cameraName = Selection.activeCamera == null ? "" : Selection.activeCamera.name;
+            currentShot.camera = Selection.activeCamera;
+
+            new CommandShotManager(oldInfo, info).Submit();
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
     }
 }

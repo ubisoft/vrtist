@@ -27,6 +27,22 @@ namespace VRtist
         public Color shotColor = Color.black;
         public int moveOffset = 0;
         public int shotEnabled = -1;
+
+        public ShotManagerActionInfo Copy()
+        {
+            return new ShotManagerActionInfo()
+            {
+                action = action,
+                shotIndex = shotIndex,
+                shotName = shotName,
+                shotStart = shotStart,
+                shotEnd = shotEnd,
+                cameraName = cameraName,
+                shotColor = shotColor,
+                moveOffset = moveOffset,
+                shotEnabled = shotEnabled
+            };
+        }
     }
 
 
