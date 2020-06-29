@@ -147,7 +147,7 @@ namespace VRtist
             UIButton cameraButton = UIButton.Create(new UIButton.CreateButtonParams
             {
                 parent = root.transform,
-                buttonName = "CameraButton",
+                widgetName = "CameraButton",
                 relativeLocation = new Vector3(0, 0, -UIButton.default_thickness),
                 width = 0.03f,
                 height = 0.03f,
@@ -189,7 +189,7 @@ namespace VRtist
             UIButton shotNameButton = UIButton.Create(new UIButton.CreateButtonParams
             {
                 parent = root.transform,
-                buttonName = "ShotNameButton",
+                widgetName = "ShotNameButton",
                 relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
                 width = 0.17f,
                 height = 0.020f,
@@ -197,38 +197,32 @@ namespace VRtist
                 buttonContent = UIButton.ButtonContent.TextOnly
             });
 
-            //shotNameButton.ActivateIcon(false); // text-only
             shotNameButton.SetLightLayer(5);
             shotNameButton.pushedColor = UIElement.default_pushed_color;
             shotNameButton.GetComponentInChildren<Text>().fontSize = 22;
 
             // Add Camera Name UIButton
-            UIButton cameraNameButton =
-                UIButton.CreateUIButton(
-                    "CameraNameButton",
-                    root.transform,
-                    new Vector3(cx, -0.020f, 0),
-                    0.17f, // width
-                    0.010f, // height
-                    0.001f, // margin
-                    0.001f, // thickness
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    "tmp",
-                    UIUtils.LoadIcon("icon-camera"));
+            UIButton cameraNameButton = UIButton.Create(new UIButton.CreateButtonParams
+            {
+                parent = root.transform,
+                widgetName = "CameraNameButton",
+                relativeLocation = new Vector3(0, -0.020f, -UIButton.default_thickness),
+                width = 0.17f,
+                height = 0.01f,
+                margin = 0.001f,
+                icon = UIUtils.LoadIcon("icon-camera"),
+                buttonContent = UIButton.ButtonContent.TextOnly
+            });
 
-            cameraNameButton.ActivateIcon(false); // text-only
             cameraNameButton.SetLightLayer(5);
             cameraNameButton.pushedColor = UIElement.default_pushed_color;
             Text text = cameraNameButton.GetComponentInChildren<Text>();
             text.alignment = TextAnchor.LowerRight;
             text.fontStyle = FontStyle.Normal;
+            text.fontSize = 10;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.alignByGeometry = true;
-
-
-            cameraNameButton.GetComponentInChildren<Text>().fontSize = 10;
 
             cx += 0.17f;
 
@@ -257,22 +251,14 @@ namespace VRtist
             cx += 0.06f;
 
             // RANGE: Add UILabel
-            UILabel frameRangeLabel = 
-                UILabel.CreateEx(
-                    root.transform,
-                    "FrameRange",
-                    new Vector3(cx, 0, -UILabel.default_thickness),
-                    0.06f,
-                    0.03f,
-                    UILabel.default_margin,
-                    UILabel.default_thickness,
-                    UIUtils.LoadMaterial("UIElementTransparent"),
-                    UIElement.default_background_color,
-                    UIElement.default_foreground_color,
-                    UILabel.LabelContent.TextOnly,
-                    "51",
-                    UIUtils.LoadIcon("icon-camera")
-                );
+            UILabel frameRangeLabel = UILabel.Create(new UILabel.CreateLabelParams 
+            { 
+                parent = root.transform,
+                widgetName = "FrameRange",
+                relativeLocation = new Vector3(cx, 0, -UILabel.default_thickness),
+                width = 0.06f,
+                height = 0.03f
+            });
 
             frameRangeLabel.SetLightLayer(5);
 
@@ -301,23 +287,18 @@ namespace VRtist
             endFrameSpinner.SetLightLayer(5);
 
             cx += 0.06f;
-            // Add Shot Name UIButton
-            UIButton setCameraButton =
-                UIButton.CreateUIButton(
-                    "SetCameraButton",
-                    root.transform,
-                    new Vector3(cx, 0, 0),
-                    0.03f, // width
-                    0.03f, // height
-                    0.005f, // margin
-                    0.001f, // thickness
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    "tmp",
-                    UIUtils.LoadIcon("icon-camera"));
 
-            setCameraButton.ActivateIcon(true); // text-only
-            setCameraButton.ActivateText(false);
+            UIButton setCameraButton = UIButton.Create(new UIButton.CreateButtonParams
+            {
+                parent = root.transform,
+                widgetName = "SetCameraButton",
+                relativeLocation = new Vector3(0, 0, -UIButton.default_thickness),
+                width = 0.03f,
+                height = 0.03f,
+                icon = UIUtils.LoadIcon("icon-camera"),
+                buttonContent = UIButton.ButtonContent.ImageOnly
+            });
+
             setCameraButton.SetLightLayer(5);
 
 

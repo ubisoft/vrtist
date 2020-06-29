@@ -39,7 +39,7 @@ namespace VRtist
         public ImagePosition imagePosition = default_image_position;
         public IconMarginBehavior iconMarginBehavior = default_icon_margin_behavior;
         [CentimeterFloat] public float iconMargin = default_icon_margin;
-
+        public Material source_material = null;
         public Sprite image = null;
         [TextArea] public string textContent = "";
         public Color textColor = UILabel.default_label_foreground_color;
@@ -101,8 +101,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIElementTransparent");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(source_material);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -329,6 +328,7 @@ namespace VRtist
             uiLabel.imagePosition = input.imagePosition;
             uiLabel.iconMarginBehavior = input.iconMarginBehavior;
             uiLabel.iconMargin = input.iconMargin;
+            uiLabel.source_material = input.material;
             // text color and bg color are set below
 
             // Setup the Meshfilter

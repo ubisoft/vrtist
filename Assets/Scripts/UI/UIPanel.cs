@@ -25,6 +25,7 @@ namespace VRtist
         [CentimeterFloat] public float radius = default_radius;
         [CentimeterFloat] public float thickness = default_thickness;
         public BackgroundGeometryStyle backgroundGeometryStyle = default_bg_geom_style;
+        public Material source_material = null;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int circleSubdiv = 8;
@@ -130,8 +131,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIElementTransparent");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(source_material);
                 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -191,6 +191,7 @@ namespace VRtist
             uiPanel.radius = input.radius;
             uiPanel.thickness = input.thickness;
             uiPanel.backgroundGeometryStyle = input.backgroundGeometryStyle;
+            uiPanel.source_material = input.material;
 
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
