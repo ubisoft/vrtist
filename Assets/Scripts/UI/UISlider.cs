@@ -14,28 +14,52 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UISlider : UIElement
     {
-        [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float margin = 0.005f;
-        [CentimeterFloat] public float thickness = 0.001f;
-        public float sliderPositionBegin = 0.3f;
-        public float sliderPositionEnd = 0.8f;
-        public Color pushedColor = new Color(0f, 0.6549f, 1f);
+        private static readonly string default_widget_name = "New Slider";
+        private static readonly float default_width = 0.3f;
+        private static readonly float default_height = 0.03f;
+        private static readonly float default_margin = 0.005f;
+        private static readonly float default_thickness = 0.001f;
+        private static readonly float default_slider_begin = 0.3f;
+        private static readonly float default_slider_end = 0.8f;
+        private static readonly float default_rail_margin = 0.004f;
+        private static readonly float default_rail_thickness = 0.001f;
+        private static readonly float default_knob_radius = 0.01f;
+        private static readonly float default_knob_depth = 0.005f;
+        private static readonly float default_min_value = 0.0f;
+        private static readonly float default_max_value = 1.0f;
+        private static readonly float default_current_value = 0.5f;
+        private static readonly string default_material_name = "UIBase";
+        private static readonly string default_rail_material_name = "UISliderRail";
+        private static readonly string default_knob_material_name = "UISliderKnob";
+        private static readonly Color default_color = UIElement.default_background_color;
+        private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
+        private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
+        private static readonly string default_text = "Slider";
 
+        [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        [CentimeterFloat] public float margin = default_margin;
+        [CentimeterFloat] public float thickness = default_thickness;
+        public float sliderPositionBegin = default_slider_begin;
+        public float sliderPositionEnd = default_slider_end;
+        public Color pushedColor = UIElement.default_pushed_color;
+        public Material sourceMaterial = null;
+        public Material sourceRailMaterial = null;
+        public Material sourceKnobMaterial = null;
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Slider SubComponents Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float railMargin = 0.004f;
-        [CentimeterFloat] public float railThickness = 0.001f;
+        [CentimeterFloat] public float railMargin = default_rail_margin;
+        [CentimeterFloat] public float railThickness = default_rail_thickness;
 
-        [CentimeterFloat] public float knobRadius = 0.01f;
-        [CentimeterFloat] public float knobDepth = 0.005f;
+        [CentimeterFloat] public float knobRadius = default_knob_radius;
+        [CentimeterFloat] public float knobDepth = default_knob_depth;
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
-        public float minValue = 0.0f;
-        public float maxValue = 1.0f;
-        public float currentValue = 0.5f;
+        public float minValue = default_min_value;
+        public float maxValue = default_max_value;
+        public float currentValue = default_current_value;
 
         // TODO: precision, step?
 
@@ -153,8 +177,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIPanel");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(sourceMaterial);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -174,8 +197,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UISliderRail");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(sourceRailMaterial);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -195,8 +217,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UISliderKnob");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(sourceKnobMaterial);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -232,6 +253,10 @@ namespace VRtist
                 currentValue = minValue;
             if (currentValue > maxValue)
                 currentValue = maxValue;
+
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
 
             needRebuild = true;
         }
@@ -453,39 +478,47 @@ namespace VRtist
             cursorShapeTransform.position = worldProjectedWidgetPosition;
         }
 
-        public static void CreateUISlider(
-            string sliderName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float margin,
-            float thickness,
-            float slider_begin,
-            float slider_end,
-            float rail_margin,
-            float rail_thickness,
-            float knob_radius,
-            float knob_depth,
-            float min_slider_value,
-            float max_slider_value,
-            float cur_slider_value,
-            Material background_material,
-            Material rail_material,
-            Material knob_material,
-            Color background_color,
-            Color rail_color,
-            Color knob_color,
-            string caption)
+        public class CreateArgs
         {
-            GameObject go = new GameObject(sliderName);
+            public Transform parent = null;
+            public string widgetName = UISlider.default_widget_name;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UISlider.default_thickness);
+            public float width = UISlider.default_width;
+            public float height = UISlider.default_height;
+            public float margin = UISlider.default_margin;
+            public float thickness = UISlider.default_thickness;
+
+            public float sliderBegin = default_slider_begin;
+            public float sliderEnd = default_slider_end;
+            public float railMargin = default_rail_margin;
+            public float railThickness = default_rail_thickness;
+            public float knobRadius = default_knob_radius;
+            public float knobDepth = default_knob_depth;
+            public float minValue = default_min_value;
+            public float maxValue = default_max_value;
+            public float currentValue = default_current_value;
+
+            public Material material = UIUtils.LoadMaterial(UISlider.default_material_name);
+            public Material railMaterial = UIUtils.LoadMaterial(UISlider.default_rail_material_name);
+            public Material knobMaterial = UIUtils.LoadMaterial(UISlider.default_knob_material_name);
+
+            public Color color = UISlider.default_color;
+            public Color railColor = UISlider.default_rail_color;
+            public Color knobColor = UISlider.default_knob_color;
+
+            public string caption = UISlider.default_text;
+        }
+
+        public static void Create(CreateArgs input)
+        {
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -493,30 +526,33 @@ namespace VRtist
             }
 
             UISlider uiSlider = go.AddComponent<UISlider>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiSlider.relativeLocation = relativeLocation;
-            uiSlider.transform.parent = parent;
-            uiSlider.transform.localPosition = parentAnchor + relativeLocation;
+            uiSlider.relativeLocation = input.relativeLocation;
+            uiSlider.transform.parent = input.parent;
+            uiSlider.transform.localPosition = parentAnchor + input.relativeLocation;
             uiSlider.transform.localRotation = Quaternion.identity;
             uiSlider.transform.localScale = Vector3.one;
-            uiSlider.width = width;
-            uiSlider.height = height;
-            uiSlider.margin = margin;
-            uiSlider.thickness = thickness;
-            uiSlider.sliderPositionBegin = slider_begin;
-            uiSlider.sliderPositionEnd = slider_end;
-            uiSlider.railMargin = rail_margin;
-            uiSlider.railThickness = rail_thickness;
-            uiSlider.knobRadius = knob_radius;
-            uiSlider.knobDepth = knob_depth;
-            uiSlider.minValue = min_slider_value;
-            uiSlider.maxValue = max_slider_value;
-            uiSlider.currentValue = cur_slider_value;
-
+            uiSlider.width = input.width;
+            uiSlider.height = input.height;
+            uiSlider.margin = input.margin;
+            uiSlider.thickness = input.thickness;
+            uiSlider.sliderPositionBegin = input.sliderBegin;
+            uiSlider.sliderPositionEnd = input.sliderEnd;
+            uiSlider.railMargin = input.railMargin;
+            uiSlider.railThickness = input.railThickness;
+            uiSlider.knobRadius = input.knobRadius;
+            uiSlider.knobDepth = input.knobDepth;
+            uiSlider.minValue = input.minValue;
+            uiSlider.maxValue = input.maxValue;
+            uiSlider.currentValue = input.currentValue;
+            uiSlider.sourceMaterial = input.material;
+            uiSlider.sourceRailMaterial = input.railMaterial;
+            uiSlider.sourceKnobMaterial = input.knobMaterial;
+            
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
                 uiSlider.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -539,11 +575,11 @@ namespace VRtist
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && background_material != null)
+            if (meshRenderer != null && input.material != null)
             {
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(background_material);
-                uiSlider.BaseColor = background_color;
+                meshRenderer.sharedMaterial = Instantiate(input.material);
+                uiSlider.BaseColor = input.color;
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
@@ -553,13 +589,13 @@ namespace VRtist
             // RAIL
             //
 
-            float railWidth = (width - 2 * margin) * (slider_end - slider_begin);
+            float railWidth = (input.width - 2 * input.margin) * (input.sliderEnd - input.sliderBegin);
             float railHeight = 3 * uiSlider.railMargin; // TODO: see if we can tie this to another variable, like height.
             float railThickness = uiSlider.railThickness;
             float railMargin = uiSlider.railMargin;
-            Vector3 railPosition = new Vector3(margin + (width - 2 * margin) * slider_begin, -height / 2, -railThickness); // put z = 0 back
+            Vector3 railPosition = new Vector3(input.margin + (input.width - 2 * input.margin) * input.sliderBegin, -input.height / 2, -railThickness); // put z = 0 back
 
-            uiSlider.rail = UISliderRail.CreateUISliderRail("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, rail_material, rail_color);
+            uiSlider.rail = UISliderRail.CreateUISliderRail("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, input.railMaterial, input.railColor);
 
 
             // KNOB
@@ -567,7 +603,7 @@ namespace VRtist
             float newKnobRadius = uiSlider.knobRadius;
             float newKnobDepth = uiSlider.knobDepth;
 
-            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, newKnobRadius, newKnobDepth, knob_material, knob_color);
+            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, newKnobRadius, newKnobDepth, input.knobMaterial, input.knobColor);
 
             //
             // CANVAS (to hold the 2 texts)
@@ -593,14 +629,14 @@ namespace VRtist
             cs.referencePixelsPerUnit = 100; // default?
 
             // Add a Text under the Canvas
-            if (caption.Length > 0)
+            if (input.caption.Length > 0)
             {
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = caption;
+                t.text = input.caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleLeft;
@@ -626,7 +662,7 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = cur_slider_value.ToString("#0.00");
+                t.text = input.currentValue.ToString("#0.00");
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleRight;
