@@ -12,10 +12,26 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UICheckbox : UIElement
     {
+        public enum CheckboxContent { CheckboxAndText, CheckboxOnly };
+
+        public static readonly string default_widget_name = "New Checkbox";
+        public static readonly float default_width = 0.3f;
+        public static readonly float default_height = 0.05f;
+        public static readonly float default_margin = 0.005f;
+        public static readonly float default_thickness = 0.001f;
+        public static readonly string default_material_name = "UIBase";
+        public static readonly Color default_color = UIElement.default_background_color;
+        public static readonly CheckboxContent default_content = CheckboxContent.CheckboxAndText;
+        public static readonly string default_text = "Checkbox";
+        public static readonly string default_checked_icon_name = "checkbox_checked";
+        public static readonly string default_unchecked_icon_name = "checkbox_unchecked";
+
         [SpaceHeader("Checkbox Shape Parameters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float margin = 0.005f;
-        [CentimeterFloat] public float thickness = 0.001f;
-        public Color pushedColor = new Color(0.5f, 0.5f, 0.5f);
+        [CentimeterFloat] public float margin = default_margin;
+        [CentimeterFloat] public float thickness = default_thickness;
+        public Material source_material = null;
+        public Color pushedColor = UIElement.default_pushed_color;
+        public CheckboxContent content = default_content;
         public Sprite checkedSprite = null;
         public Sprite uncheckedSprite = null;
 
@@ -139,8 +155,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIPanel");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(source_material);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -172,6 +187,10 @@ namespace VRtist
                 nbSubdivCornerFixed = min_nbSubdivCornerFixed;
             if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
                 nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
+
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
 
             needRebuild = true;
         }
@@ -295,28 +314,35 @@ namespace VRtist
             }
         }
 
-        public static UICheckbox CreateUICheckbox(
-            string checkboxName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float margin,
-            float thickness,
-            Material material,
-            Color color,
-            string caption,
-            Sprite checkedIcon,
-            Sprite uncheckedIcon)
+
+        public class CreateParams
         {
-            GameObject go = new GameObject(checkboxName);
+            public Transform parent = null;
+            public string widgetName = UICheckbox.default_widget_name;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UICheckbox.default_thickness);
+            public float width = UICheckbox.default_width;
+            public float height = UICheckbox.default_height;
+            public float margin = UICheckbox.default_margin;
+            public float thickness = UICheckbox.default_thickness;
+            public Material material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
+            public Color color = UICheckbox.default_color;
+            public string caption = UICheckbox.default_text;
+            public CheckboxContent content = default_content;
+            public Sprite checkedIcon = UIUtils.LoadIcon(UICheckbox.default_checked_icon_name);
+            public Sprite uncheckedIcon = UIUtils.LoadIcon(UICheckbox.default_unchecked_icon_name);
+        }
+
+
+        public static UICheckbox Create(CreateParams input)
+        {
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -324,23 +350,25 @@ namespace VRtist
             }
 
             UICheckbox uiCheckbox = go.AddComponent<UICheckbox>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiCheckbox.relativeLocation = relativeLocation;
-            uiCheckbox.transform.parent = parent;
-            uiCheckbox.transform.localPosition = parentAnchor + relativeLocation;
+            uiCheckbox.relativeLocation = input.relativeLocation;
+            uiCheckbox.transform.parent = input.parent;
+            uiCheckbox.transform.localPosition = parentAnchor + input.relativeLocation;
             uiCheckbox.transform.localRotation = Quaternion.identity;
             uiCheckbox.transform.localScale = Vector3.one;
-            uiCheckbox.width = width;
-            uiCheckbox.height = height;
-            uiCheckbox.margin = margin;
-            uiCheckbox.thickness = thickness;
-            uiCheckbox.checkedSprite = checkedIcon;
-            uiCheckbox.uncheckedSprite = uncheckedIcon;
+            uiCheckbox.width = input.width;
+            uiCheckbox.height = input.height;
+            uiCheckbox.margin = input.margin;
+            uiCheckbox.thickness = input.thickness;
+            uiCheckbox.content = input.content;
+            uiCheckbox.checkedSprite = input.checkedIcon;
+            uiCheckbox.uncheckedSprite = input.uncheckedIcon;
+            uiCheckbox.source_material = input.material;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
                 uiCheckbox.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -363,23 +391,15 @@ namespace VRtist
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && uiCheckbox.source_material != null)
             {
-                // TODO: see if we need to Instantiate(uiMaterial), or modify the instance created when calling meshRenderer.material
-                //       to make the error disappear;
-
-                // Get an instance of the same material
-                // NOTE: sends an warning about leaking instances, because meshRenderer.material create instances while we are in EditorMode.
-                //meshRenderer.sharedMaterial = uiMaterial;
-                //Material material = meshRenderer.material; // instance of the sharedMaterial
-
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(material);
+                meshRenderer.sharedMaterial = Instantiate(uiCheckbox.source_material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiCheckbox.BaseColor = color;
+                uiCheckbox.BaseColor = input.color;
             }
 
             // Add a Canvas
@@ -402,18 +422,16 @@ namespace VRtist
             cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
             cs.referencePixelsPerUnit = 100; // default?
 
-            //canvas.AddComponent<GraphicRaycaster>(); // not sure it is mandatory, try without.
-
             float minSide = Mathf.Min(uiCheckbox.width, uiCheckbox.height);
 
             // Add an Image under the Canvas
-            if (uncheckedIcon != null && checkedIcon != null)
+            if (input.uncheckedIcon != null && input.checkedIcon != null)
             {
                 GameObject image = new GameObject("Image");
                 image.transform.parent = canvas.transform;
 
                 Image img = image.AddComponent<Image>();
-                img.sprite = uncheckedIcon;
+                img.sprite = input.uncheckedIcon;
 
                 RectTransform trt = image.GetComponent<RectTransform>();
                 trt.localScale = Vector3.one;
@@ -422,19 +440,19 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 // TODO: non square icons ratio...
-                trt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                trt.localPosition = new Vector3(margin, -margin, -0.001f);
+                trt.sizeDelta = new Vector2(minSide - 2.0f * input.margin, minSide - 2.0f * input.margin);
+                trt.localPosition = new Vector3(input.margin, -input.margin, -0.001f);
             }
 
             // Add a Text under the Canvas
-            if (caption.Length > 0)
+            if (input.content == CheckboxContent.CheckboxAndText)
             {
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = caption;
+                t.text = input.caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleLeft;
@@ -448,8 +466,7 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.sizeDelta = new Vector2(uiCheckbox.width, uiCheckbox.height);
-                float textPosLeft = uncheckedIcon != null ? minSide : 0.0f;
-                trt.localPosition = new Vector3(textPosLeft, -uiCheckbox.height / 2.0f, -0.002f);
+                trt.localPosition = new Vector3(minSide, -uiCheckbox.height / 2.0f, -0.002f);
             }
 
             return uiCheckbox;

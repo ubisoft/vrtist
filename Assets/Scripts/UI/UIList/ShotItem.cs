@@ -142,7 +142,7 @@ namespace VRtist
             float cx = 0.0f;
 
             //
-            // CAMERA NAME
+            // ACTIVE CAMERA Button
             //
             UIButton cameraButton = UIButton.Create(new UIButton.CreateButtonParams
             {
@@ -163,29 +163,26 @@ namespace VRtist
 
             cx += 0.03f;
 
-            // Add UICheckbox
-            UICheckbox shotEnabledCheckbox =
-                UICheckbox.CreateUICheckbox(
-                    "ShotEnabledCheckbox",
-                    root.transform,
-                    new Vector3(cx, 0, 0),
-                    0.03f,
-                    0.03f,
-                    0.005f,
-                    0.001f,
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    "shot name",
-                    UIUtils.LoadIcon("checkbox_checked"),
-                    UIUtils.LoadIcon("checkbox_unchecked")
-                    );
+            //
+            // ENABLE Checkbox
+            //
+            UICheckbox shotEnabledCheckbox = UICheckbox.Create(new UICheckbox.CreateParams
+            {
+                parent = root.transform,
+                widgetName = "ShotEnabledCheckbox",
+                relativeLocation = new Vector3(cx, 0, -UICheckbox.default_thickness),
+                width = 0.03f,
+                height = 0.03f,
+                content = UICheckbox.CheckboxContent.CheckboxOnly
+            });
 
-            //shotEnabledCheckbox.ActivateText(false);
             shotEnabledCheckbox.SetLightLayer(5);
 
             cx += 0.03f;
 
-            // Add Shot Name UIButton
+            //
+            // SHOT NAME Button
+            //
             UIButton shotNameButton = UIButton.Create(new UIButton.CreateButtonParams
             {
                 parent = root.transform,
@@ -201,12 +198,14 @@ namespace VRtist
             shotNameButton.pushedColor = UIElement.default_pushed_color;
             shotNameButton.GetComponentInChildren<Text>().fontSize = 22;
 
-            // Add Camera Name UIButton
+            //
+            // CAMERA NAME Button
+            //
             UIButton cameraNameButton = UIButton.Create(new UIButton.CreateButtonParams
             {
                 parent = root.transform,
                 widgetName = "CameraNameButton",
-                relativeLocation = new Vector3(0, -0.020f, -UIButton.default_thickness),
+                relativeLocation = new Vector3(cx, -0.020f, -UIButton.default_thickness),
                 width = 0.17f,
                 height = 0.01f,
                 margin = 0.001f,
