@@ -8,12 +8,23 @@ namespace VRtist
      RequireComponent(typeof(MeshRenderer))]
     public class UIPanel : UIElement
     {
-        [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
-        [CentimeterFloat] public float margin = 0.02f;
-        [CentimeterFloat] public float radius = 0.01f;
-        [CentimeterFloat] public float thickness = 0.001f;
         public enum BackgroundGeometryStyle { Tube, Flat };
-        public BackgroundGeometryStyle backgroundGeometryStyle = BackgroundGeometryStyle.Tube;
+
+        private static readonly string default_widget_name = "New Panel";
+        private static readonly float default_width = 0.4f;
+        private static readonly float default_height = 0.6f;
+        private static readonly float default_margin = 0.02f;
+        private static readonly float default_radius = 0.01f;
+        private static readonly float default_thickness = 0.001f;
+        private static readonly UIPanel.BackgroundGeometryStyle default_bg_geom_style = UIPanel.BackgroundGeometryStyle.Flat;
+        public static readonly string default_material_name = "UIPanel";
+        public static readonly Color default_color = UIElement.default_background_color;
+
+        [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
+        [CentimeterFloat] public float margin = default_margin;
+        [CentimeterFloat] public float radius = default_radius;
+        [CentimeterFloat] public float thickness = default_thickness;
+        public BackgroundGeometryStyle backgroundGeometryStyle = default_bg_geom_style;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int circleSubdiv = 8;
@@ -53,6 +64,10 @@ namespace VRtist
                 nbSubdivCornerFixed = min_nbSubdivCornerFixed;
             if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
                 nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
+
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
 
             needRebuild = true;
 
@@ -128,26 +143,36 @@ namespace VRtist
             }
         }
 
-        public static void Create(
-            string panelName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float margin,
-            float radius,
-            float thickness,
-            BackgroundGeometryStyle backgroundGeometryStyle,
-            Material material,
-            Color color)
+
+
+
+
+
+        public class CreatePanelParams
         {
-            GameObject go = new GameObject(panelName);
+            public Transform parent = null;
+            public string widgetName = UIPanel.default_widget_name;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UIPanel.default_thickness);
+            public float width = UIPanel.default_width;
+            public float height = UIPanel.default_height;
+            public float margin = UIPanel.default_margin;
+            public float thickness = UIPanel.default_thickness;
+            public float radius = UIPanel.default_radius;
+            public UIPanel.BackgroundGeometryStyle backgroundGeometryStyle = UIPanel.default_bg_geom_style;
+            public Material material = UIUtils.LoadMaterial(UIPanel.default_material_name);
+            public Color color = UIPanel.default_color;
+        }
+
+
+        public static void Create(CreatePanelParams input)
+        {
+            GameObject go = new GameObject(input.widgetName);
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -155,37 +180,37 @@ namespace VRtist
             }
 
             UIPanel uiPanel = go.AddComponent<UIPanel>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiPanel.relativeLocation = relativeLocation;
-            uiPanel.transform.parent = parent;
-            uiPanel.transform.localPosition = parentAnchor + relativeLocation;
+            uiPanel.relativeLocation = input.relativeLocation;
+            uiPanel.transform.parent = input.parent;
+            uiPanel.transform.localPosition = parentAnchor + input.relativeLocation;
             uiPanel.transform.localRotation = Quaternion.identity;
             uiPanel.transform.localScale = Vector3.one;
-            uiPanel.width = width;
-            uiPanel.height = height;
-            uiPanel.margin = margin;
-            uiPanel.radius = radius;
-            uiPanel.thickness = thickness;
-            uiPanel.backgroundGeometryStyle = backgroundGeometryStyle;
+            uiPanel.width = input.width;
+            uiPanel.height = input.height;
+            uiPanel.margin = input.margin;
+            uiPanel.radius = input.radius;
+            uiPanel.thickness = input.thickness;
+            uiPanel.backgroundGeometryStyle = input.backgroundGeometryStyle;
 
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = (uiPanel.backgroundGeometryStyle == BackgroundGeometryStyle.Tube)
-                ? UIUtils.BuildRoundedRectTube(width, height, margin, radius)
-                : UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                ? UIUtils.BuildRoundedRectTube(input.width, input.height, input.margin, input.radius)
+                : UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
                 uiPanel.Anchor = Vector3.zero; // TODO: thickness goes +Z and Anchor stays zero? or thickness goes -Z and Anchor follows the surface?
             }
 
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && input.material != null)
             {
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(material);
+                meshRenderer.sharedMaterial = Instantiate(input.material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                sharedMaterial.SetColor("_BaseColor", color);
+                uiPanel.BaseColor = input.color;
             }
         }
     }
