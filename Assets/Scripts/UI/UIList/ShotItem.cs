@@ -18,7 +18,7 @@ namespace VRtist
         public UISpinner endFrameSpinner = null;
         public UIButton setCameraButton = null;
 
-        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
+        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
         {
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
             endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
@@ -241,7 +241,7 @@ namespace VRtist
                 "StartFrame",
                 root.transform,
                 new Vector3(cx, 0, 0),
-                0.06f,
+                0.055f,
                 0.03f,
                 0.005f,
                 0.001f,
@@ -257,14 +257,14 @@ namespace VRtist
 
             startFrameSpinner.SetLightLayer(5);
 
-            cx += 0.06f;
+            cx += 0.055f;
 
             // RANGE: Add UILabel
             UILabel frameRangeLabel = UILabel.CreateUILabel(
                 "FrameRange",
                 root.transform,
                 new Vector3(cx, 0, 0),
-                0.06f,
+                0.04f,
                 0.03f,
                 0.005f,
                 UIUtils.LoadMaterial("UIElementTransparent"),
@@ -274,15 +274,16 @@ namespace VRtist
                 );
 
             frameRangeLabel.SetLightLayer(5);
-
-            cx += 0.06f;
+            Text frameRangeText = frameRangeLabel.GetComponentInChildren<Text>();
+            frameRangeText.alignment = TextAnchor.MiddleCenter;
+            cx += 0.04f;
 
             // END: Add UISpinner
             UISpinner endFrameSpinner = UISpinner.CreateUISpinner(
                 "EndFrame",
                 root.transform,
                 new Vector3(cx, 0, 0),
-                0.06f,
+                0.055f,
                 0.03f,
                 0.005f,
                 0.001f,
@@ -298,7 +299,7 @@ namespace VRtist
 
             endFrameSpinner.SetLightLayer(5);
 
-            cx += 0.06f;
+            cx += 0.055f;
             // Add Shot Name UIButton
             UIButton setCameraButton =
                 UIButton.CreateUIButton(

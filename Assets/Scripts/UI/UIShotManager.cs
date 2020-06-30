@@ -16,7 +16,7 @@ namespace VRtist
 
         public ShotItem GetShotItem(int index)
         {
-            return shotList.GetItems()[index].GetComponent<ShotItem>();
+            return shotList.GetItems()[index].Content.GetComponent<ShotItem>();
         }
 
         // Update UI: set current shot
@@ -40,7 +40,7 @@ namespace VRtist
             foreach (Shot shot in sm.shots)
             {
                 ShotItem shotItem = ShotItem.GenerateShotItem(shot);
-                shotItem.AddListeners(OnUpdateShotName, OnUpdateShotStart, OnUpdateShotEnd, OnUpdateShotCameraName, OnUpdateShotColor, OnUpdateShotEnabled, OnSetCamera);
+                shotItem.AddListeners(OnUpdateShotName, OnUpdateShotStart, OnUpdateShotEnd, OnUpdateShotColor, OnUpdateShotEnabled, OnSetCamera);
                 shotList.AddItem(shotItem.transform);
 
                 if (shot.enabled)
@@ -68,7 +68,7 @@ namespace VRtist
             {
                 Shot selectedShot = sm.shots[sm.CurrentShot];
                 start = selectedShot.end + 1;
-                camera = selectedShot.camera;
+                camera = Selection.activeCamera != null ? Selection.activeCamera : selectedShot.camera;
             }
             int end = start + 50;  // arbitrary duration
 
@@ -87,6 +87,7 @@ namespace VRtist
                 shotName = shot.name,
                 shotStart = start,
                 shotEnd = end,
+                shotEnabled = 1,
                 shotColor = Color.blue  // TODO: find a unique color
             };
             new CommandShotManager(info).Submit();
@@ -131,6 +132,45 @@ namespace VRtist
             // Rebuild UI
             OnShotManagerChanged();
         }
+
+        // Duplicate Shot
+        public void OnDuplicateShot()
+        {
+            ShotManager sm = ShotManager.Instance;
+
+            // Take the current shot to find the start frame of the new shot
+            // Keep same camera as the current shot if anyone
+            if (sm.CurrentShot == -1)
+                return;
+
+            Shot shot = sm.shots[sm.CurrentShot].Copy();
+            shot.name = sm.GetUniqueShotName();
+            int shotIndex = sm.CurrentShot;
+
+            // Send network message
+            ShotManagerActionInfo info = new ShotManagerActionInfo
+            {
+                action = ShotManagerAction.AddShot,
+                cameraName = null != shot.camera ? shot.camera.name : "",
+                shotIndex = shotIndex,
+                shotName = shot.name,
+                shotStart = shot.start,
+                shotEnd = shot.end,
+                shotEnabled = shot.enabled ? 1 : 0,
+                shotColor = Color.blue  // TODO: find a unique color
+            };
+            new CommandShotManager(info).Submit();
+            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+
+            // Add the shot to ShotManager singleton
+            shotIndex++;
+            sm.InsertShot(shotIndex, shot);
+            sm.SetCurrentShot(shotIndex);
+
+            // Rebuild UI
+            OnShotManagerChanged();
+        }
+
 
         // Update data: move shot
         public void OnMoveShot(int offset)
@@ -209,27 +249,6 @@ namespace VRtist
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
-        public void OnUpdateShotCameraName(string value)
-        {
-            ShotManager sm = ShotManager.Instance;
-            Shot shot = sm.shots[sm.CurrentShot];
-
-            // Send network message
-            ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
-            {
-                action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
-                cameraName = shot.camera.name
-            };
-
-            ShotManagerActionInfo info = oldInfo.Copy();
-            info.cameraName = value;            
-            sm.SetCurrentShotCamera(value);
-
-            new CommandShotManager(oldInfo, info).Submit();
-            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
-        }
-
         public void OnUpdateShotName(string value)
         {
             ShotManager sm = ShotManager.Instance;
@@ -249,6 +268,7 @@ namespace VRtist
 
             new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            OnShotManagerChanged();
         }
 
         public void OnUpdateShotColor(Color value)
@@ -293,7 +313,6 @@ namespace VRtist
             new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
-
         public void OnSetCamera()
         {
             ShotManager sm = ShotManager.Instance;
@@ -312,6 +331,10 @@ namespace VRtist
 
             new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+
+            // Update Camera UI Button
+            ShotItem uiItem = GetShotItem(sm.CurrentShot);
+            uiItem.cameraNameButton.Text = info.cameraName;
         }
     }
 }
