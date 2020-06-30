@@ -488,15 +488,15 @@ namespace VRtist
             public float margin = UISlider.default_margin;
             public float thickness = UISlider.default_thickness;
 
-            public float sliderBegin = default_slider_begin;
-            public float sliderEnd = default_slider_end;
-            public float railMargin = default_rail_margin;
-            public float railThickness = default_rail_thickness;
-            public float knobRadius = default_knob_radius;
-            public float knobDepth = default_knob_depth;
-            public float minValue = default_min_value;
-            public float maxValue = default_max_value;
-            public float currentValue = default_current_value;
+            public float sliderBegin = UISlider.default_slider_begin;
+            public float sliderEnd = UISlider.default_slider_end;
+            public float railMargin = UISlider.default_rail_margin;
+            public float railThickness = UISlider.default_rail_thickness;
+            public float knobRadius = UISlider.default_knob_radius;
+            public float knobDepth = UISlider.default_knob_depth;
+            public float minValue = UISlider.default_min_value;
+            public float maxValue = UISlider.default_max_value;
+            public float currentValue = UISlider.default_current_value;
 
             public Material material = UIUtils.LoadMaterial(UISlider.default_material_name);
             public Material railMaterial = UIUtils.LoadMaterial(UISlider.default_rail_material_name);
