@@ -7,6 +7,7 @@ namespace VRtist
         // "stylesheet"
         public static readonly Color default_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
         public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
+        public static readonly Color default_focus_color = new Color(1.0f, 0.07f, 0.00f, 1.0f); // default red for ShotManager
         public static readonly Color default_pushed_color = new Color(0.0f, 0.65f, 1.0f, 1.0f); // light vivid blue
         public static readonly Color default_checked_color = new Color(0.0f, 0.85f, 1.0f, 1.0f); // light vivid blue
         public static readonly Color default_hover_color = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow

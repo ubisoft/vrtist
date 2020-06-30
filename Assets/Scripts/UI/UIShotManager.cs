@@ -14,6 +14,30 @@ namespace VRtist
             shotList.ItemClickedEvent += OnListItemClicked;
         }
 
+        void Update()
+        {
+            ShotManager sm = ShotManager.Instance;
+            int currentFrame = GlobalState.currentFrame;
+
+            Color defaultColor = UIElement.default_background_color;
+            Color focusColor = UIElement.default_focus_color;
+
+            for (int i  = 0; i < sm.shots.Count; ++i)
+            {
+                ShotItem item = GetShotItem(i);
+                Shot shot = sm.shots[i];
+
+                Color startColor = currentFrame == shot.start ? focusColor : defaultColor;
+                item.startFrameSpinner.BaseColor = startColor;
+
+                Color endColor = currentFrame == shot.end ? focusColor : defaultColor;
+                item.endFrameSpinner.BaseColor = endColor;
+
+                Color rangeColor = (currentFrame > shot.start && currentFrame < shot.end) ? focusColor : defaultColor;
+                item.frameRangeLabel.BaseColor = rangeColor;
+            }
+        }
+
         public ShotItem GetShotItem(int index)
         {
             return shotList.GetItems()[index].Content.GetComponent<ShotItem>();
