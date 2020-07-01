@@ -66,6 +66,9 @@ namespace VRtist
                 ShotItem shotItem = ShotItem.GenerateShotItem(shot);
                 shotItem.AddListeners(OnUpdateShotName, OnUpdateShotStart, OnUpdateShotEnd, OnUpdateShotColor, OnUpdateShotEnabled, OnSetCamera);
                 shotList.AddItem(shotItem.transform);
+                // Items are hidden (non active) while they are not added into a list
+                // So activate the item here
+                shotItem.gameObject.SetActive(true);
 
                 if (shot.enabled)
                     activeShotCount++;

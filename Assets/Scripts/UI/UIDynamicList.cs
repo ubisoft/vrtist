@@ -145,7 +145,7 @@ namespace VRtist
             for (int i = items.Count - 1; i >= 0; --i)
             {
                 UIDynamicListItem item = items[i];
-                items.RemoveAt(i);
+                //items.RemoveAt(i);
                 GameObject.Destroy(item.gameObject);
             }
             items.Clear(); // ceinture et bretelle.

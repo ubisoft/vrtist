@@ -72,7 +72,7 @@ namespace VRtist
             setCameraButton.BaseColor = shotNameLabel.BaseColor;
             frameRangeLabel.BaseColor = shotNameLabel.BaseColor;
 
-            if(null != shot.camera)
+            if (null != shot.camera)
             {
                 Selection.SetActiveCamera(shot.camera.GetComponent<CameraController>());
             }
@@ -115,7 +115,7 @@ namespace VRtist
 
         public void SetShotEnabled(bool value)
         {
-            if(shotEnabledCheckbox != null)
+            if (shotEnabledCheckbox != null)
             {
                 shotEnabledCheckbox.Checked = value;
                 shot.enabled = value;
@@ -124,7 +124,7 @@ namespace VRtist
 
         public void SetShotName(string shotName)
         {
-            if(shotNameLabel != null)
+            if (shotNameLabel != null)
             {
                 shotNameLabel.Text = shotName;
                 shot.name = shotName;
@@ -133,9 +133,9 @@ namespace VRtist
 
         public void SetShotCamera(GameObject cam)
         {
-            if(cameraNameLabel != null)
+            if (cameraNameLabel != null)
             {
-                if(cam)
+                if (cam)
                     cameraNameLabel.Text = cam.name;
                 else
                     cameraNameLabel.Text = "";
@@ -145,7 +145,7 @@ namespace VRtist
 
         public void SetStartFrame(int startFrame)
         {
-            if(startFrameSpinner != null)
+            if (startFrameSpinner != null)
             {
                 startFrameSpinner.IntValue = startFrame;
                 shot.start = startFrame;
@@ -154,7 +154,7 @@ namespace VRtist
 
         private void SetFrameRange(int frameRange)
         {
-            if(frameRangeLabel != null)
+            if (frameRangeLabel != null)
             {
                 frameRangeLabel.Text = frameRange.ToString();
             }
@@ -162,7 +162,7 @@ namespace VRtist
 
         public void SetEndFrame(int endFrame)
         {
-            if(endFrameSpinner != null)
+            if (endFrameSpinner != null)
             {
                 endFrameSpinner.IntValue = endFrame;
                 shot.end = endFrame;
@@ -174,6 +174,10 @@ namespace VRtist
             GameObject root = new GameObject("shotItem");
             ShotItem shotItem = root.AddComponent<ShotItem>();
             root.layer = LayerMask.NameToLayer("UI");
+
+            // Set the item non active in order to hide it while it is not added into
+            // a list. We will activate it after it is added
+            root.SetActive(false);
 
             float cx = 0.0f;
 
