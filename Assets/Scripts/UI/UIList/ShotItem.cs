@@ -63,17 +63,15 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
-            //shotNameButton.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
-            shotNameButton.SetColor(value ? shotNameButton.checkedColor : shotNameButton.BaseColor);
-            // TODOMERGE SetColor partout
-            shotNameLabel.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
-            cameraNameLabel.BaseColor = shotNameLabel.BaseColor;
-            cameraButton.BaseColor = shotNameLabel.BaseColor;
-            shotEnabledCheckbox.BaseColor = shotNameLabel.BaseColor;
-            startFrameSpinner.BaseColor = shotNameLabel.BaseColor;
-            endFrameSpinner.BaseColor = shotNameLabel.BaseColor;
-            setCameraButton.BaseColor = shotNameLabel.BaseColor;
-            frameRangeLabel.BaseColor = shotNameLabel.BaseColor;
+            Color selectedColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
+            shotNameLabel.SetColor(selectedColor);
+            cameraNameLabel.SetColor(selectedColor);
+            cameraButton.SetColor(selectedColor);
+            shotEnabledCheckbox.SetColor(selectedColor);
+            startFrameSpinner.SetColor(selectedColor);
+            endFrameSpinner.SetColor(selectedColor);
+            setCameraButton.SetColor(selectedColor);
+            frameRangeLabel.SetColor(selectedColor);
 
             if(null != shot.camera)
             {
@@ -220,42 +218,18 @@ namespace VRtist
             cx += 0.03f;
 
             //
-            // SHOT NAME Button
+            // SHOT NAME Label
             //
-            UIButton shotNameButton = UIButton.Create(new UIButton.CreateButtonParams
+            UILabel shotNameLabel = UILabel.Create(new UILabel.CreateLabelParams
             {
                 parent = root.transform,
-                widgetName = "ShotNameButton",
+                widgetName = "ShotNameLabel",
                 relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
                 width = 0.17f,
                 height = 0.020f,
                 margin = 0.001f,
-                buttonContent = UIButton.ButtonContent.TextOnly
+                
             });
-                //);
-
-            Text text = shotNameLabel.GetComponentInChildren<Text>();
-            text.fontStyle = FontStyle.Normal;
-            text.fontSize = 8;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.alignByGeometry = true;
-            
-            // TODOMERGE utiliser le label plutot que le Button et l'adapter.
-                        // Add Shot Name UILabel
-            UILabel shotNameLabel =
-                UILabel.CreateUILabel(
-                    "ShotNameLabel",
-                    root.transform,
-                    new Vector3(cx, 0, 0),
-                    0.17f, // width
-                    0.020f, // height
-                    0.001f, // margin
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    UIElement.default_color,
-                    "tmp"
-                );
 
             shotNameLabel.SetLightLayer(5);
             Text text = shotNameLabel.GetComponentInChildren<Text>();
@@ -266,49 +240,20 @@ namespace VRtist
             text.alignByGeometry = true;
 
             //
-            // CAMERA NAME Button
+            // CAMERA NAME Label
             //
-            UIButton cameraNameButton = UIButton.Create(new UIButton.CreateButtonParams
+            UILabel cameraNameLabel = UILabel.Create(new UILabel.CreateLabelParams
             {
                 parent = root.transform,
-                widgetName = "CameraNameButton",
+                widgetName = "CameraNameLabel",
                 relativeLocation = new Vector3(cx, -0.020f, -UIButton.default_thickness),
                 width = 0.17f,
                 height = 0.01f,
                 margin = 0.001f,
-                icon = UIUtils.LoadIcon("icon-camera"),
-                buttonContent = UIButton.ButtonContent.TextOnly
+                fgcolor = UIOptions.Instance.attenuatedTextColor
             });
-                );
-
-            cameraNameLabel.TextColor = new Color(0.7f, 0.7f, 0.7f);
-            text = cameraNameLabel.GetComponentInChildren<Text>();
-            text.alignment = TextAnchor.LowerRight;
-            text.fontStyle = FontStyle.Normal;
-            text.fontSize = 10;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.alignByGeometry = true;
-
-            // TODOMERGE utiliser le label plutot que le bouton et adapter.
-            
-                        // Add Camera Name UILabel
-            UILabel cameraNameLabel =
-                UILabel.CreateUILabel(
-                    "CameraNameLabel",
-                    root.transform,
-                    new Vector3(cx, -0.020f, 0),
-                    0.17f, // width
-                    0.010f, // height
-                    0.001f, // margin
-                    UIUtils.LoadMaterial("UIPanel"),
-                    UIElement.default_background_color,
-                    UIElement.default_color,
-                    "tmp"
-                );
 
             cameraNameLabel.SetLightLayer(5);
-            cameraNameLabel.TextColor = new Color(0.7f, 0.7f, 0.7f);
             text = cameraNameLabel.GetComponentInChildren<Text>();
             text.alignment = TextAnchor.LowerRight;
             text.fontStyle = FontStyle.Normal;
@@ -316,7 +261,6 @@ namespace VRtist
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.alignByGeometry = true;
-            
             
             cx += 0.17f;
 

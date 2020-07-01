@@ -14,6 +14,7 @@ namespace VRtist
         public ColorVariable sliderRailColor;// = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
         public ColorVariable sliderKnobColor;// = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
         public HDRColorVariable sceneHoverColor;// = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow
+        public ColorVariable attenuatedTextColor;// = new Color(.7,.7,.7);
 
         private static UIOptions instance = null;
         public static UIOptions Instance

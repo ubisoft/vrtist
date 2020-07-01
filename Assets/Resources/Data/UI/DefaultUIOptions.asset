@@ -20,3 +20,5 @@ MonoBehaviour:
   sliderRailColor: {fileID: 11400000, guid: c1ecfcfa1afd47b4f871bc9cd495234f, type: 2}
   sliderKnobColor: {fileID: 11400000, guid: b897b0dabe9f1d549b49d932e562425d, type: 2}
   sceneHoverColor: {fileID: 11400000, guid: fb2bdb474b7f9ae48a8794903ad26f42, type: 2}
+  attenuatedTextColor: {fileID: 11400000, guid: 2baacafe48374a1439ab36f23b52a1ec,
+    type: 2}

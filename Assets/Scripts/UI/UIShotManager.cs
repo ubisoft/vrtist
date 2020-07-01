@@ -28,13 +28,13 @@ namespace VRtist
                 Color defaultColor = item.shotNameLabel.BaseColor;
 
                 Color startColor = currentFrame == shot.start ? focusColor : defaultColor;
-                item.startFrameSpinner.BaseColor = startColor;
+                item.startFrameSpinner.SetColor(startColor);
 
                 Color endColor = currentFrame == shot.end ? focusColor : defaultColor;
-                item.endFrameSpinner.BaseColor = endColor;
+                item.endFrameSpinner.SetColor(endColor);
 
                 Color rangeColor = (currentFrame > shot.start && currentFrame < shot.end) ? focusColor : defaultColor;
-                item.frameRangeLabel.BaseColor = rangeColor;
+                item.frameRangeLabel.SetColor(rangeColor);
             }
         }
 
