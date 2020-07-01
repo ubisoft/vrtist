@@ -71,11 +71,6 @@ namespace VRtist
             endFrameSpinner.BaseColor = shotNameLabel.BaseColor;
             setCameraButton.BaseColor = shotNameLabel.BaseColor;
             frameRangeLabel.BaseColor = shotNameLabel.BaseColor;
-
-            if (null != shot.camera)
-            {
-                Selection.SetActiveCamera(shot.camera.GetComponent<CameraController>());
-            }
         }
 
         public void Start()
