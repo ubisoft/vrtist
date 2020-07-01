@@ -52,11 +52,34 @@ namespace VRtist
         {
             get
             {
-                if(null == instance)
+                if (null == instance)
                     instance = new ShotManager();
                 return instance;
             }
         }
+
+        private int currentShotIndex = -1;
+        public UnityEvent CurrentShotChangedEvent = new UnityEvent();
+        public int CurrentShot
+        {
+            get { return currentShotIndex; }
+            set
+            {
+                currentShotIndex = value;
+                CurrentShotChangedEvent.Invoke();
+            }
+        }
+
+        public List<Shot> shots = new List<Shot>();
+        public UnityEvent ShotsChangedEvent = new UnityEvent();
+        private static ShotManager instance = null;
+
+        // Update current shot without invoking any event
+        public void SetCurrentShot(int index)
+        {
+            currentShotIndex = index;
+        }
+
         public void AddShot(Shot shot)
         {
             shots.Add(shot);
@@ -76,14 +99,21 @@ namespace VRtist
         public void RemoveShot(Shot shot)
         {
             shots.Remove(shot);
+            if (currentShotIndex >= shots.Count)
+            {
+                currentShotIndex = -1;
+            }
         }
+
         public void RemoveShot(int index)
         {
             try
             {
                 shots.RemoveAt(index);
+                currentShotIndex = index - 1;
+                if (currentShotIndex < 0 && shots.Count > 0) { currentShotIndex = 0; }
             }
-            catch(ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException)
             {
                 Debug.LogWarning($"Failed to remove shot at index {index}.");
             }
@@ -122,7 +152,7 @@ namespace VRtist
         {
             Shot shot = shots[currentShotIndex];
             GameObject cam = null;
-            if(SyncData.nodes.ContainsKey(value))
+            if (SyncData.nodes.ContainsKey(value))
             {
                 Node node = SyncData.nodes[value];
                 if (node.instances.Count > 0)
@@ -149,7 +179,7 @@ namespace VRtist
             {
                 shots[index] = shot;
             }
-            catch(ArgumentOutOfRangeException)
+            catch (ArgumentOutOfRangeException)
             {
                 Debug.LogWarning($"Failed to update shot at index {index}.");
             }
@@ -181,14 +211,14 @@ namespace VRtist
         public string GetUniqueShotName()
         {
             int maxNumber = 0;
-            foreach(Shot shot in shots)
+            foreach (Shot shot in shots)
             {
                 MatchCollection matches = shotNameRegex.Matches(shot.name);
-                if(matches.Count != 1) { continue; }
+                if (matches.Count != 1) { continue; }
 
                 GroupCollection groups = matches[0].Groups;
                 int number = Int32.Parse(groups["number"].Value);
-                if(number > maxNumber)
+                if (number > maxNumber)
                 {
                     maxNumber = number;
                 }
@@ -196,28 +226,6 @@ namespace VRtist
 
             return $"Sh{maxNumber + 10:D4}";
         }
-
-        private int currentShotIndex = -1;
-        public UnityEvent CurrentShotChangedEvent = new UnityEvent();
-        public int CurrentShot
-        {
-            get { return currentShotIndex; }
-            set
-            {
-                currentShotIndex = value;
-                CurrentShotChangedEvent.Invoke();
-            }
-        }
-
-        // Update current shot without invoking any event
-        public void SetCurrentShot(int index)
-        {
-            currentShotIndex = index;
-        }
-
-        public List<Shot> shots = new List<Shot>();
-        public UnityEvent ShotsChangedEvent = new UnityEvent();
-        private static ShotManager instance = null;
     }
 
     public class Shot

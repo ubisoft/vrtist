@@ -11,20 +11,34 @@ namespace VRtist
 
         public UIButton cameraButton = null;
         public UICheckbox shotEnabledCheckbox = null;
-        public UIButton shotNameButton = null;
-        public UIButton cameraNameButton = null;
+        public UILabel shotNameLabel = null;
+        public UILabel cameraNameLabel = null;
         public UISpinner startFrameSpinner = null;
         public UILabel frameRangeLabel = null;
         public UISpinner endFrameSpinner = null;
         public UIButton setCameraButton = null;
 
-        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<string> cameraAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
+        private UnityAction<string> nameAction;
+        private UnityAction<float> startAction;
+        private UnityAction<float> endAction;
+        private UnityAction<Color> colorAction;
+        private UnityAction<bool> enabledAction;
+        private UnityAction setCameraAction;
+
+        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
         {
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
             endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
 
             startFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
             endFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
+
+            this.nameAction = nameAction;
+            this.startAction = startAction;
+            this.endAction = endAction;
+            this.colorAction = colorAction;
+            this.enabledAction = enabledAction;
+            this.setCameraAction = setCameraAction;
 
             startFrameSpinner.onReleaseTriggerEvent.AddListener(startAction);
             endFrameSpinner.onReleaseTriggerEvent.AddListener(endAction);
@@ -51,6 +65,20 @@ namespace VRtist
         {
             //shotNameButton.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
             shotNameButton.SetColor(value ? shotNameButton.checkedColor : shotNameButton.BaseColor);
+            // TODOMERGE SetColor partout
+            shotNameLabel.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
+            cameraNameLabel.BaseColor = shotNameLabel.BaseColor;
+            cameraButton.BaseColor = shotNameLabel.BaseColor;
+            shotEnabledCheckbox.BaseColor = shotNameLabel.BaseColor;
+            startFrameSpinner.BaseColor = shotNameLabel.BaseColor;
+            endFrameSpinner.BaseColor = shotNameLabel.BaseColor;
+            setCameraButton.BaseColor = shotNameLabel.BaseColor;
+            frameRangeLabel.BaseColor = shotNameLabel.BaseColor;
+
+            if(null != shot.camera)
+            {
+                Selection.SetActiveCamera(shot.camera.GetComponent<CameraController>());
+            }
         }
 
         public void Start()
@@ -61,6 +89,15 @@ namespace VRtist
         public void OnDestroy()
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
+
+            startFrameSpinner.onSpinEventInt.RemoveListener(UpdateShotRange);
+            endFrameSpinner.onSpinEventInt.RemoveListener(UpdateShotRange);
+            startFrameSpinner.onPressTriggerEvent.RemoveListener(InitSpinnerMinMax);
+            endFrameSpinner.onPressTriggerEvent.RemoveListener(InitSpinnerMinMax);
+            startFrameSpinner.onReleaseTriggerEvent.RemoveListener(startAction);
+            endFrameSpinner.onReleaseTriggerEvent.RemoveListener(endAction);
+            shotEnabledCheckbox.onCheckEvent.RemoveListener(enabledAction);
+            setCameraButton.onClickEvent.RemoveListener(setCameraAction);
         }
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -90,21 +127,21 @@ namespace VRtist
 
         public void SetShotName(string shotName)
         {
-            if(shotNameButton != null)
+            if(shotNameLabel != null)
             {
-                shotNameButton.Text = shotName;
+                shotNameLabel.Text = shotName;
                 shot.name = shotName;
             }
         }
 
         public void SetShotCamera(GameObject cam)
         {
-            if (cameraNameButton != null)
+            if(cameraNameLabel != null)
             {
-                if (cam)
-                    cameraNameButton.Text = cam.name;
+                if(cam)
+                    cameraNameLabel.Text = cam.name;
                 else
-                    cameraNameButton.Text = "";
+                    cameraNameLabel.Text = "";
                 shot.camera = cam;
             }
         }
@@ -139,6 +176,7 @@ namespace VRtist
         {
             GameObject root = new GameObject("shotItem");
             ShotItem shotItem = root.AddComponent<ShotItem>();
+            root.layer = LayerMask.NameToLayer("UI");
 
             float cx = 0.0f;
 
@@ -194,10 +232,38 @@ namespace VRtist
                 margin = 0.001f,
                 buttonContent = UIButton.ButtonContent.TextOnly
             });
+                //);
 
-            shotNameButton.SetLightLayer(5);
-            shotNameButton.pushedColor = UIElement.default_pushed_color;
-            shotNameButton.GetComponentInChildren<Text>().fontSize = 22;
+            Text text = shotNameLabel.GetComponentInChildren<Text>();
+            text.fontStyle = FontStyle.Normal;
+            text.fontSize = 8;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.alignByGeometry = true;
+            
+            // TODOMERGE utiliser le label plutot que le Button et l'adapter.
+                        // Add Shot Name UILabel
+            UILabel shotNameLabel =
+                UILabel.CreateUILabel(
+                    "ShotNameLabel",
+                    root.transform,
+                    new Vector3(cx, 0, 0),
+                    0.17f, // width
+                    0.020f, // height
+                    0.001f, // margin
+                    UIUtils.LoadMaterial("UIPanel"),
+                    UIElement.default_background_color,
+                    UIElement.default_color,
+                    "tmp"
+                );
+
+            shotNameLabel.SetLightLayer(5);
+            Text text = shotNameLabel.GetComponentInChildren<Text>();
+            text.fontStyle = FontStyle.Normal;
+            text.fontSize = 8;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.alignByGeometry = true;
 
             //
             // CAMERA NAME Button
@@ -213,10 +279,10 @@ namespace VRtist
                 icon = UIUtils.LoadIcon("icon-camera"),
                 buttonContent = UIButton.ButtonContent.TextOnly
             });
+                );
 
-            cameraNameButton.SetLightLayer(5);
-            cameraNameButton.pushedColor = UIElement.default_pushed_color;
-            Text text = cameraNameButton.GetComponentInChildren<Text>();
+            cameraNameLabel.TextColor = new Color(0.7f, 0.7f, 0.7f);
+            text = cameraNameLabel.GetComponentInChildren<Text>();
             text.alignment = TextAnchor.LowerRight;
             text.fontStyle = FontStyle.Normal;
             text.fontSize = 10;
@@ -224,6 +290,34 @@ namespace VRtist
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.alignByGeometry = true;
 
+            // TODOMERGE utiliser le label plutot que le bouton et adapter.
+            
+                        // Add Camera Name UILabel
+            UILabel cameraNameLabel =
+                UILabel.CreateUILabel(
+                    "CameraNameLabel",
+                    root.transform,
+                    new Vector3(cx, -0.020f, 0),
+                    0.17f, // width
+                    0.010f, // height
+                    0.001f, // margin
+                    UIUtils.LoadMaterial("UIPanel"),
+                    UIElement.default_background_color,
+                    UIElement.default_color,
+                    "tmp"
+                );
+
+            cameraNameLabel.SetLightLayer(5);
+            cameraNameLabel.TextColor = new Color(0.7f, 0.7f, 0.7f);
+            text = cameraNameLabel.GetComponentInChildren<Text>();
+            text.alignment = TextAnchor.LowerRight;
+            text.fontStyle = FontStyle.Normal;
+            text.fontSize = 8;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.alignByGeometry = true;
+            
+            
             cx += 0.17f;
 
             // START: Add UISpinner
@@ -232,7 +326,7 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "StartFrame",
                 relativeLocation = new Vector3(cx, 0, 0),
-                width = 0.06f,
+                width = 0.055f,
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
@@ -242,7 +336,7 @@ namespace VRtist
 
             startFrameSpinner.SetLightLayer(5);
 
-            cx += 0.06f;
+            cx += 0.055f;
 
             // RANGE: Add UILabel
             UILabel frameRangeLabel = UILabel.Create(new UILabel.CreateLabelParams 
@@ -250,13 +344,14 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "FrameRange",
                 relativeLocation = new Vector3(cx, 0, -UILabel.default_thickness),
-                width = 0.06f,
+                width = 0.04f,
                 height = 0.03f
             });
 
             frameRangeLabel.SetLightLayer(5);
-
-            cx += 0.06f;
+            Text frameRangeText = frameRangeLabel.GetComponentInChildren<Text>();
+            frameRangeText.alignment = TextAnchor.MiddleCenter;
+            cx += 0.04f;
 
             // END: Add UISpinner
             UISpinner endFrameSpinner = UISpinner.Create(new UISpinner.CreateArgs
@@ -264,7 +359,7 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "EndFrame",
                 relativeLocation = new Vector3(cx, 0, 0),
-                width = 0.06f,
+                width = 0.055f,
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
@@ -276,7 +371,7 @@ namespace VRtist
 
             endFrameSpinner.SetLightLayer(5);
 
-            cx += 0.06f;
+            cx += 0.055f;
 
             UIButton setCameraButton = UIButton.Create(new UIButton.CreateButtonParams
             {
@@ -295,8 +390,8 @@ namespace VRtist
             // Link widgets to the item script.
             shotItem.cameraButton = cameraButton;
             shotItem.shotEnabledCheckbox = shotEnabledCheckbox;
-            shotItem.shotNameButton = shotNameButton;
-            shotItem.cameraNameButton = cameraNameButton;
+            shotItem.shotNameLabel = shotNameLabel;
+            shotItem.cameraNameLabel = cameraNameLabel;
             shotItem.startFrameSpinner = startFrameSpinner;
             shotItem.frameRangeLabel = frameRangeLabel;
             shotItem.endFrameSpinner = endFrameSpinner;

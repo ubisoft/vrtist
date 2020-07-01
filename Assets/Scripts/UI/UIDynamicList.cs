@@ -56,15 +56,15 @@ namespace VRtist
             const float min_item_width = 0.01f;
             const float min_item_height = 0.01f;
 
-            if(width < min_width)
+            if (width < min_width)
                 width = min_width;
-            if(height < min_height)
+            if (height < min_height)
                 height = min_height;
-            if(margin > width / 2.0f || margin > height / 2.0f)
+            if (margin > width / 2.0f || margin > height / 2.0f)
                 margin = Mathf.Min(width / 2.0f, height / 2.0f);
-            if(itemWidth < min_item_width)
+            if (itemWidth < min_item_width)
                 itemWidth = min_item_width;
-            if(itemHeight < min_item_height)
+            if (itemHeight < min_item_height)
                 itemHeight = min_item_height;
 
             // NOTE: relou, on peut plus rien toucher, tout le monde se censure.
@@ -79,7 +79,7 @@ namespace VRtist
 
         private void Update()
         {
-            if(needRebuild)
+            if (needRebuild)
             {
                 UpdateLocalPosition();
                 UpdateAnchor();
@@ -104,22 +104,23 @@ namespace VRtist
         public void AddItem(Transform t)
         {
             // full page, add one page
-            if(nbItemsInLastPage == nbItemsPerPage)
+            if (nbItemsInLastPage == nbItemsPerPage)
                 pagesCount++;
             currentPage = pagesCount == 0 ? 0 : pagesCount - 1;
 
-            GameObject gObj = new GameObject(t.gameObject.name);
+            GameObject gObj = new GameObject("List Item");// t.gameObject.name);
             UIDynamicListItem item = gObj.AddComponent<UIDynamicListItem>();
-            item.tag = "UICollider";
+            gObj.tag = "UICollider";
+            gObj.layer = LayerMask.NameToLayer("UI");
             item.list = this;
             item.Width = itemWidth;
             item.Height = itemHeight;
             item.Depth = itemDepth;
             item.Content = t;
-            item.transform.parent = transform;
-            item.transform.localPosition = Vector3.zero;
-            item.transform.localRotation = Quaternion.identity;
-            item.transform.localScale = Vector3.one;
+            gObj.transform.parent = transform;
+            gObj.transform.localPosition = Vector3.zero;
+            gObj.transform.localRotation = Quaternion.identity;
+            gObj.transform.localScale = Vector3.one;
             item.autoResizeContent = autoResizeContent;
             item.autoCenterContent = autoCenterContent;
             items.Add(item);
@@ -141,7 +142,7 @@ namespace VRtist
 
         public void Clear()
         {
-            for(int i = items.Count - 1; i >= 0; --i)
+            for (int i = items.Count - 1; i >= 0; --i)
             {
                 UIDynamicListItem item = items[i];
                 items.RemoveAt(i);
@@ -159,17 +160,17 @@ namespace VRtist
 
         public void RemoveItem(UIDynamicListItem item)
         {
-            for(int i = 0; i < items.Count; ++i)
+            for (int i = 0; i < items.Count; ++i)
             {
-                if(items[i] == item)
+                if (items[i] == item)
                 {
                     items.RemoveAt(i);
                     GameObject.Destroy(item.gameObject);
 
-                    if(nbItemsInLastPage == 1)
+                    if (nbItemsInLastPage == 1)
                     {
                         pagesCount--;
-                        if(currentPage == pagesCount)
+                        if (currentPage == pagesCount)
                             currentPage = pagesCount - 1;
                     }
 
@@ -182,15 +183,15 @@ namespace VRtist
         public void FireItem(Transform t)
         {
             // last clicked
-            for(int i = 0; i < items.Count; ++i)
+            for (int i = 0; i < items.Count; ++i)
             {
-                if(items[i].Content == t)
+                if (items[i].Content == t)
                     CurrentIndex = i;
             }
 
             IndexedGameObjectArgs args = new IndexedGameObjectArgs { gobject = t.gameObject, index = currentIndex };
             EventHandler<IndexedGameObjectArgs> handler = ItemClickedEvent;
-            if(null != handler)
+            if (null != handler)
             {
                 handler(null, args);
             }
@@ -222,7 +223,7 @@ namespace VRtist
 
         public void OnCurrentItemUp()
         {
-            if(items.Count > 1
+            if (items.Count > 1
                 && currentIndex > 0
                 && currentIndex < items.Count)
             {
@@ -237,7 +238,7 @@ namespace VRtist
 
         public void OnCurrentItemDown()
         {
-            if(items.Count > 1
+            if (items.Count > 1
                 && currentIndex >= 0
                 && currentIndex < items.Count - 1)
             {
@@ -255,7 +256,7 @@ namespace VRtist
             // TODO: add a geometry to highlight the current cell
             // For now we let the ListItemContent to highlight itself
             int index = 0;
-            foreach(UIDynamicListItem item in items)
+            foreach (UIDynamicListItem item in items)
             {
                 item.SetSelected(index == currentIndex);
                 ++index;
@@ -271,10 +272,10 @@ namespace VRtist
             innerTotalHeight = height - 2 * margin;
             innerTotalWidth = width - 2 * margin;
             maxNbItemCols = Mathf.FloorToInt(innerTotalWidth / itemWidth);
-            if(maxNbItemCols * itemWidth + (maxNbItemCols - 1) * margin > innerTotalWidth) // add margins and check if it fits
+            if (maxNbItemCols * itemWidth + (maxNbItemCols - 1) * margin > innerTotalWidth) // add margins and check if it fits
                 maxNbItemCols--;
             maxNbItemRows = Mathf.FloorToInt(innerTotalHeight / itemHeight);
-            if(maxNbItemRows * itemHeight + (maxNbItemRows - 1) * margin > innerTotalHeight) // add margins and check if it fits
+            if (maxNbItemRows * itemHeight + (maxNbItemRows - 1) * margin > innerTotalHeight) // add margins and check if it fits
                 maxNbItemRows--;
             itemVMargin = maxNbItemRows > 1 ? ((innerTotalHeight - ((float) maxNbItemRows * itemHeight)) / (maxNbItemRows - 1)) : 0.0f;
             itemHMargin = maxNbItemCols > 1 ? ((innerTotalWidth - ((float) maxNbItemCols * itemWidth)) / (maxNbItemCols - 1)) : 0.0f;
@@ -290,19 +291,19 @@ namespace VRtist
             //
             // Update items visibility, position, scale and collider.
             //
-            for(int i = 0; i < items.Count; ++i)
+            for (int i = 0; i < items.Count; ++i)
             {
                 UIDynamicListItem item = items[i];
-                if(nbItemsPerPage > 0)
+                if (nbItemsPerPage > 0)
                 {
                     bool isInCurrentPage = ((i / nbItemsPerPage) == currentPage);
                     item.gameObject.SetActive(isInCurrentPage);
-                    if(isInCurrentPage)
+                    if (isInCurrentPage)
                     {
                         int idxInCurrentPage = i % nbItemsPerPage;
                         int row = idxInCurrentPage / maxNbItemCols;
                         int col = idxInCurrentPage % maxNbItemCols;
-                        if(autoCenterContent) // TODO: always place pivot top-left, and let UIDynamicItem auto-center its content.
+                        if (autoCenterContent) // TODO: always place pivot top-left, and let UIDynamicItem auto-center its content.
                         {
                             item.transform.localPosition = new Vector3(
                                 col == 0 ? margin + itemWidth2 : margin + itemWidth2 + col * (itemWidth + itemHMargin),
@@ -332,13 +333,13 @@ namespace VRtist
 
         private void UpdatePageCountLabel()
         {
-            if(pageCountLabel != null)
+            if (pageCountLabel != null)
             {
                 Canvas canvas = pageCountLabel.GetComponentInChildren<Canvas>();
-                if(canvas != null)
+                if (canvas != null)
                 {
                     Text text = canvas.gameObject.GetComponentInChildren<Text>();
-                    if(text != null)
+                    if (text != null)
                     {
                         text.text = pagesCount == 0 ? "0/0" : $"{currentPage + 1}/{pagesCount}";
                     }
@@ -365,10 +366,10 @@ namespace VRtist
 #if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
 #endif
-            for(int col = 0; col < maxNbItemCols; ++col)
+            for (int col = 0; col < maxNbItemCols; ++col)
             {
                 // TODO: compute row invariant values.
-                for(int row = 0; row < maxNbItemRows; ++row)
+                for (int row = 0; row < maxNbItemRows; ++row)
                 {
                     Vector3 tl = transform.TransformPoint(new Vector3(margin + col * (itemHMargin + itemWidth), -margin - row * (itemVMargin + itemHeight), 0));
                     Vector3 tr = transform.TransformPoint(new Vector3(margin + col * (itemHMargin + itemWidth) + itemWidth, -margin - row * (itemVMargin + itemHeight), 0));
@@ -401,10 +402,10 @@ namespace VRtist
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if(parent)
+            if (parent)
             {
                 UIElement elem = parent.gameObject.GetComponent<UIElement>();
-                if(elem)
+                if (elem)
                 {
                     parentAnchor = elem.Anchor;
                 }

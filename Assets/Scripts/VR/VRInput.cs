@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
 #if UNITY_2017_2_OR_NEWER
-using InputTracking = UnityEngine.XR.InputTracking;
-using Node = UnityEngine.XR.XRNode;
 #else
 using InputTracking = UnityEngine.VR.InputTracking;
 using Node = UnityEngine.VR.VRNode;
@@ -19,14 +15,14 @@ namespace VRtist
 
     class ControllerValues
     {
-        public bool     primary2DAxisClickState;
-        public bool     triggerButtonPressed;
-        public float    triggerValue;
-        public float    gripValue;
-        public bool     gripButtonPressed;
-        public bool     primaryButtonState;
-        public bool     secondaryButtonState;
-        public Vector2  primary2DAxis;
+        public bool primary2DAxisClickState;
+        public bool triggerButtonPressed;
+        public float triggerValue;
+        public float gripValue;
+        public bool gripButtonPressed;
+        public bool primaryButtonState;
+        public bool secondaryButtonState;
+        public Vector2 primary2DAxis;
     }
 
     class VRInput
@@ -62,7 +58,7 @@ namespace VRtist
         public static void BackupControllerValues()
         {
             prevControllerValues.Clear();
-            foreach(KeyValuePair<InputDevice, ControllerValues> controllerValues in currentControllerValues)
+            foreach (KeyValuePair<InputDevice, ControllerValues> controllerValues in currentControllerValues)
             {
                 ControllerValues values = new ControllerValues();
                 values.primary2DAxisClickState = controllerValues.Value.primary2DAxisClickState;
@@ -80,7 +76,7 @@ namespace VRtist
 
         // get values from controllers and store them
         public static void FillCurrentControllerValues()
-        { 
+        {
             List<InputDevice> devices = new List<InputDevice>() { leftController, rightController };
             foreach (InputDevice device in devices)
             {
@@ -117,7 +113,7 @@ namespace VRtist
                 UpdateControllerValue(device, CommonUsages.grip, fValue);
                 {
                     float prevValue = GetPrevValue(device, CommonUsages.grip);
-                    bool prevButton = GetPrevValue(device, CommonUsages.gripButton );
+                    bool prevButton = GetPrevValue(device, CommonUsages.gripButton);
                     if (!prevButton && (fValue - prevValue) > 0 && fValue > deadZoneIn)
                         UpdateControllerValue(device, CommonUsages.gripButton, true);
                     else if (prevButton && ((prevValue - fValue) > deadZoneDeltaOut || fValue <= deadZoneIn))
@@ -163,6 +159,8 @@ namespace VRtist
 
         static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<Vector2> usage, Vector2 value)
         {
+            if (!currentControllerValues.ContainsKey(controller)) { return; }
+
             ControllerValues controllerValue = currentControllerValues[controller];
             if (usage == CommonUsages.primary2DAxis)
             {
@@ -172,6 +170,8 @@ namespace VRtist
 
         static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<float> usage, float value)
         {
+            if (!currentControllerValues.ContainsKey(controller)) { return; }
+
             ControllerValues controllerValue = currentControllerValues[controller];
             if (usage == CommonUsages.trigger)
             {
@@ -185,6 +185,8 @@ namespace VRtist
 
         static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<float> usage, bool value)
         {
+            if (!currentControllerValues.ContainsKey(controller)) { return; }
+
             ControllerValues controllerValue = currentControllerValues[controller];
             if (usage == CommonUsages.trigger)
             {
@@ -198,6 +200,8 @@ namespace VRtist
 
         static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<bool> usage, bool value)
         {
+            if (!currentControllerValues.ContainsKey(controller)) { return; }
+
             ControllerValues controllerValue = currentControllerValues[controller];
             if (usage == CommonUsages.primary2DAxisClick)
             {
@@ -255,6 +259,8 @@ namespace VRtist
         static Vector2 _GetValue(Dictionary<InputDevice, ControllerValues> controllerValues, InputDevice controller, InputFeatureUsage<Vector2> usage)
         {
             InputDevice c = GetLeftOrRightHandedController(controller);
+            if (!controllerValues.ContainsKey(c)) { return Vector2.zero; }
+
             ControllerValues controllerValue = controllerValues[c];
             if (usage == CommonUsages.primary2DAxis)
             {
@@ -285,6 +291,8 @@ namespace VRtist
         static float _GetValue(Dictionary<InputDevice, ControllerValues> controllerValues, InputDevice controller, InputFeatureUsage<float> usage)
         {
             InputDevice c = GetLeftOrRightHandedController(controller);
+            if (!controllerValues.ContainsKey(c)) { return 0f; }
+
             ControllerValues controllerValue = controllerValues[c];
             if (usage == CommonUsages.trigger)
             {
@@ -300,6 +308,8 @@ namespace VRtist
         static bool _GetValue(Dictionary<InputDevice, ControllerValues> controllerValues, InputDevice controller, InputFeatureUsage<bool> usage)
         {
             InputDevice c = GetLeftOrRightHandedController(controller);
+            if (!controllerValues.ContainsKey(c)) { return false; }
+
             ControllerValues controllerValue = controllerValues[c];
             if (usage == CommonUsages.primary2DAxisClick)
             {

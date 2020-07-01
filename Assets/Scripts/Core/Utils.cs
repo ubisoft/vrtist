@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.SceneManagement;
@@ -23,8 +24,8 @@ namespace VRtist
 
         public static GameObject GetTrash()
         {
-            if (trash == null)
-            {                
+            if(trash == null)
+            {
                 trash = new GameObject("__Trash__");
                 trash.SetActive(false);
             }
@@ -34,7 +35,7 @@ namespace VRtist
         public static bool IsInTrash(GameObject obj)
         {
             GameObject trash = GetTrash();
-            if (obj.transform.parent.parent.gameObject == trash)
+            if(obj.transform.parent.parent.gameObject == trash)
                 return true;
             return false;
         }
@@ -43,9 +44,9 @@ namespace VRtist
         {
             Scene scene = SceneManager.GetActiveScene();
             GameObject[] roots = scene.GetRootGameObjects();
-            for (int i = 0; i < roots.Length; i++)
+            for(int i = 0; i < roots.Length; i++)
             {
-                if (roots[i].name == "World")
+                if(roots[i].name == "World")
                 {
                     return roots[i];
                 }
@@ -56,14 +57,14 @@ namespace VRtist
         public static GameObject FindGameObject(string name)
         {
             GameObject world = Utils.FindWorld();
-            if (!world)
+            if(!world)
                 return null;
 
             int childrenCount = world.transform.childCount;
-            for (int i = 0; i < childrenCount; i++)
+            for(int i = 0; i < childrenCount; i++)
             {
                 GameObject child = world.transform.GetChild(i).gameObject;
-                if (child.name == name)
+                if(child.name == name)
                     return child;
             }
 
@@ -74,7 +75,7 @@ namespace VRtist
         public static GameObject GetRoot(GameObject gobject)
         {
             ParametersController parametersController = gobject.GetComponentInParent<ParametersController>();
-            if (!parametersController)
+            if(!parametersController)
                 return null;
             return parametersController.gameObject;
         }
@@ -82,13 +83,13 @@ namespace VRtist
         public static string BuildTransformPath(GameObject gobject)
         {
             string res = "";
-            while (gobject.GetComponent<ParametersController>() == null)
+            while(gobject.GetComponent<ParametersController>() == null)
             {
                 res = "/" + gobject.name + res;
                 gobject = gobject.transform.parent.gameObject;
             }
 
-            if (res.Length > 0)
+            if(res.Length > 0)
                 res = res.Substring(1, res.Length - 1);
 
             return res;
@@ -96,11 +97,26 @@ namespace VRtist
 
         public static string CreateUniqueName(GameObject gObject, string baseName)
         {
-            if (baseName.Length > 48)
+            if(baseName.Length > 48)
                 baseName = baseName.Substring(0, 48);
             string name = baseName + "." + String.Format("{0:X}", (hostname + timestamp.ToString()).GetHashCode()) + "." + gameObjectNameId.ToString();
             gameObjectNameId++;
             return name;
+        }
+
+        private static Regex readableNameRegex = new Regex(@"(?<basename>.+?)\.(?<hash>.+?)\.(?<number>\d+)", RegexOptions.Compiled);
+        public static string GetReadableName(string name)
+        {
+            string readableName = name;
+            MatchCollection matches = readableNameRegex.Matches(name);
+            if(matches.Count == 1)
+            {
+                GroupCollection groups = matches[0].Groups;
+                string baseName = groups["basename"].ToString();
+                int number = Int32.Parse(groups["number"].Value);
+                readableName = $"{baseName}.{number}";
+            }
+            return readableName;
         }
 
         public static void TriggerPrefabInstantiated(GameObject prefab, GameObject instance)
@@ -109,7 +125,7 @@ namespace VRtist
             args.prefab = prefab;
             args.instance = instance;
             EventHandler<PrefabInstantiatedArgs> handler = OnPrefabInstantiated;
-            if (handler != null)
+            if(handler != null)
             {
                 handler(null, args);
             }
@@ -120,7 +136,7 @@ namespace VRtist
             GameObject intermediateParent = new GameObject();
             intermediateParent.transform.parent = parent;
             Transform srcParent = gObject.transform.parent;
-            if (null != srcParent)
+            if(null != srcParent)
             {
                 intermediateParent.transform.localPosition = gObject.transform.parent.localPosition;
                 intermediateParent.transform.localRotation = gObject.transform.parent.localRotation;
@@ -129,18 +145,18 @@ namespace VRtist
 
             GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
-            if (builder)
+            if(builder)
             {
                 res = builder.CreateInstance(gObject, intermediateParent.transform, isPrefab);
             }
             else
             {
                 // duplicate object or subobject
-                res = GameObject.Instantiate(gObject, intermediateParent.transform);                
+                res = GameObject.Instantiate(gObject, intermediateParent.transform);
             }
 
             string appliedName;
-            if (null == name)
+            if(null == name)
             {
                 string baseName = gObject.name.Split('.')[0];
                 appliedName = CreateUniqueName(res, baseName);
@@ -196,26 +212,31 @@ namespace VRtist
         }
 
 
-        public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite) {
+        public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite)
+        {
             RenderTexture renderTexture = new RenderTexture(width, height, depth, format);
             renderTexture.enableRandomWrite = randomWrite;
             renderTexture.Create();
             return renderTexture;
         }
-        public static RenderTexture CreateRenderTexture(RenderTexture source) {
+        public static RenderTexture CreateRenderTexture(RenderTexture source)
+        {
             return CreateRenderTexture(source.width, source.height, 0, source.format, true);
         }
 
-        public static void TryDispose(System.IDisposable obj) {
+        public static void TryDispose(System.IDisposable obj)
+        {
             if(null == obj) { return; }
             obj.Dispose();
         }
-        public static void TryDestroy(UnityEngine.Object obj) {
+        public static void TryDestroy(UnityEngine.Object obj)
+        {
             if(null == obj) { return; }
             UnityEngine.Object.Destroy(obj);
         }
 
-        public static void SwapBuffers(ref ComputeBuffer buf1, ref ComputeBuffer buf2) {
+        public static void SwapBuffers(ref ComputeBuffer buf1, ref ComputeBuffer buf2)
+        {
             var temp = buf1;
             buf1 = buf2;
             buf2 = temp;
