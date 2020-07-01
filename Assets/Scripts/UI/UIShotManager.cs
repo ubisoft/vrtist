@@ -131,6 +131,8 @@ namespace VRtist
         {
             ShotManager sm = ShotManager.Instance;
 
+            if (sm.CurrentShot == -1) { return; }
+
             // Delete the current shot
             int shotIndex = sm.CurrentShot;
             Shot shot = sm.shots[shotIndex];
