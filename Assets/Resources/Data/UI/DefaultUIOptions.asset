@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70e5e426308c185499b7f997449352a2, type: 3}
+  m_Name: DefaultUIOptions
+  m_EditorClassIdentifier: 
+  foregroundColor: {fileID: 11400000, guid: 248ae27c6e9d8fb449ef771f79d4f0ff, type: 2}
+  backgroundColor: {fileID: 11400000, guid: 1caffd6a45a42c7429760029136ea991, type: 2}
+  pushedColor: {fileID: 11400000, guid: 1ca53ebd2f122be499608b2f797282f3, type: 2}
+  checkedColor: {fileID: 11400000, guid: 788814b922331a44b8ddd6d60ee25f87, type: 2}
+  disabledColor: {fileID: 11400000, guid: 0880c628685cc884eb9a2b652f5bad4c, type: 2}
+  sliderRailColor: {fileID: 11400000, guid: c1ecfcfa1afd47b4f871bc9cd495234f, type: 2}
+  sliderKnobColor: {fileID: 11400000, guid: b897b0dabe9f1d549b49d932e562425d, type: 2}
+  sceneHoverColor: {fileID: 11400000, guid: fb2bdb474b7f9ae48a8794903ad26f42, type: 2}
