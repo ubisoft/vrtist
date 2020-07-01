@@ -25,8 +25,8 @@ namespace VRtist
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
-        public Color baseColor = UIElement.default_background_color;
-        public Color disabledColor = UIElement.default_disabled_color;
+        public ColorReference baseColor;// = UIOptions.Instance.backgroundColor; // not allowed to be called
+        public ColorReference disabledColor;// = UIOptions.Instance.disabledColor; // TODO: set it in every CreateArgs
 
         private bool isDisabled = false;
 
@@ -40,8 +40,8 @@ namespace VRtist
         public Vector3 RelativeLocation { get { return relativeLocation; } set { relativeLocation = value; UpdateLocalPosition(); } }
         public float Width { get { return width; } set { width = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public float Height { get { return height; } set { height = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
-        public Color BaseColor { get { return baseColor; } set { baseColor = value; SetColor(value); } }
-        public Color DisabledColor { get { return disabledColor; } set { disabledColor = value; SetColor(value); } }
+        public Color BaseColor { get { return baseColor.Value; } }
+        public Color DisabledColor { get { return disabledColor.Value; } }
         public bool Disabled { get { return isDisabled; } set { isDisabled = value; SetColor(value?DisabledColor:BaseColor); } }
 
         protected float prevTime = -1f;
@@ -83,17 +83,18 @@ namespace VRtist
 
         public virtual void UpdateAnchor()
         {
-            //anchor = new Vector3(-width / 2.0f, height / 2.0f, 0.0f);
             anchor = Vector3.zero;
         }
 
         public virtual void SetColor(Color color)
         {
-            // NOTE: est-ce qu'on a vraiment besoin d'acceder a material, sachant que le sharedMaterial est deja
-            // une instance manuelle, et qu'il ne share rien, c'est son unique instance???
-            //Material material = GetComponent<MeshRenderer>().material; // THIS triggers the warning in editor.
             Material material = GetComponent<MeshRenderer>().sharedMaterial;
             material.SetColor("_BaseColor", color);
+        }
+
+        public virtual Color GetColor()
+        {
+            return GetComponent<MeshRenderer>().sharedMaterial.GetColor("_BaseColor");
         }
 
         public virtual void SetLightLayer(uint layerIndex)

@@ -49,7 +49,8 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
-            shotNameButton.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
+            //shotNameButton.BaseColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
+            shotNameButton.SetColor(value ? shotNameButton.checkedColor : shotNameButton.BaseColor);
         }
 
         public void Start()
@@ -226,24 +227,18 @@ namespace VRtist
             cx += 0.17f;
 
             // START: Add UISpinner
-            UISpinner startFrameSpinner = 
-                UISpinner.CreateUISpinner(
-                    "StartFrame",
-                    root.transform,
-                    new Vector3(cx, 0, 0),
-                    0.06f,
-                    0.03f,
-                    0.005f,
-                    0.001f,
-                    0.65f,
-                    UISpinner.TextAndValueVisibilityType.ShowValueOnly,
-                    UISpinner.SpinnerValueType.Int,
-                    0.0f, 1.0f, 0.5f, 0.1f,
-                    0, 10000, shot.start, 30,
-                    UIUtils.LoadMaterial("UIElementTransparent"),
-                    UIElement.default_background_color,
-                    "Start"
-                );
+            UISpinner startFrameSpinner = UISpinner.Create( new UISpinner.CreateArgs
+            {
+                parent = root.transform,
+                widgetName = "StartFrame",
+                relativeLocation = new Vector3(cx, 0, 0),
+                width = 0.06f,
+                height = 0.03f,
+                visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
+                value_type = UISpinner.SpinnerValueType.Int,
+                min_spinner_value_int = 0, max_spinner_value_int = 10000, 
+                cur_spinner_value_int = shot.start, spinner_value_rate_int = 30
+            });
 
             startFrameSpinner.SetLightLayer(5);
 
@@ -264,24 +259,20 @@ namespace VRtist
             cx += 0.06f;
 
             // END: Add UISpinner
-            UISpinner endFrameSpinner = 
-                UISpinner.CreateUISpinner(
-                    "EndFrame",
-                    root.transform,
-                    new Vector3(cx, 0, 0),
-                    0.06f,
-                    0.03f,
-                    0.005f,
-                    0.001f,
-                    0.65f,
-                    UISpinner.TextAndValueVisibilityType.ShowValueOnly,
-                    UISpinner.SpinnerValueType.Int,
-                    0.0f, 1.0f, 0.5f, 0.1f,
-                    0, 10000, shot.end, 30,
-                    UIUtils.LoadMaterial("UIElementTransparent"),
-                    UIElement.default_background_color,
-                    "End"
-                );
+            UISpinner endFrameSpinner = UISpinner.Create(new UISpinner.CreateArgs
+            {
+                parent = root.transform,
+                widgetName = "EndFrame",
+                relativeLocation = new Vector3(cx, 0, 0),
+                width = 0.06f,
+                height = 0.03f,
+                visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
+                value_type = UISpinner.SpinnerValueType.Int,
+                min_spinner_value_int = 0,
+                max_spinner_value_int = 10000,
+                cur_spinner_value_int = shot.end,
+                spinner_value_rate_int = 30
+            });
 
             endFrameSpinner.SetLightLayer(5);
 

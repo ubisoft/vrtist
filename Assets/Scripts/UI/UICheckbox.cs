@@ -209,7 +209,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? disabledColor : baseColor);
+                SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 needRebuild = false;
             }
         }
@@ -291,14 +291,14 @@ namespace VRtist
 
         public void OnPushCheckbox()
         {
-            SetColor(Disabled ? disabledColor : pushedColor);
+            SetColor(Disabled ? disabledColor.Value : pushedColor);
             Checked = !Checked;
             onCheckEvent.Invoke(Checked);
         }
 
         public void OnReleaseCheckbox()
         {
-            SetColor(Disabled ? disabledColor : baseColor);
+            SetColor(Disabled ? disabledColor.Value : baseColor.Value);
         }
 
         public void ActivateText(bool doActivate)
@@ -325,7 +325,7 @@ namespace VRtist
             public float margin = UICheckbox.default_margin;
             public float thickness = UICheckbox.default_thickness;
             public Material material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
-            public Color color = UICheckbox.default_color;
+            public ColorVariable color = UIOptions.Instance.backgroundColor; //UICheckbox.default_color;
             public string caption = UICheckbox.default_text;
             public CheckboxContent content = default_content;
             public Sprite checkedIcon = UIUtils.LoadIcon(UICheckbox.default_checked_icon_name);
@@ -363,6 +363,8 @@ namespace VRtist
             uiCheckbox.checkedSprite = input.checkedIcon;
             uiCheckbox.uncheckedSprite = input.uncheckedIcon;
             uiCheckbox.source_material = input.material;
+            uiCheckbox.baseColor.useConstant = false;
+            uiCheckbox.baseColor.reference = input.color;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -399,7 +401,7 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiCheckbox.BaseColor = input.color;
+                uiCheckbox.SetColor(input.color.value);
             }
 
             // Add a Canvas

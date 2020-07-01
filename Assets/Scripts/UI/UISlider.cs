@@ -279,7 +279,7 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(Disabled ? disabledColor : baseColor);
+                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 }
                 catch(Exception e)
                 {
@@ -416,12 +416,12 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(Disabled ? disabledColor : pushedColor);
+            SetColor(Disabled ? disabledColor.Value : pushedColor);
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(Disabled ? disabledColor : baseColor);
+            SetColor(Disabled ? disabledColor.Value : baseColor.Value);
         }
 
         public void OnSlide(float f)
@@ -502,9 +502,12 @@ namespace VRtist
             public Material railMaterial = UIUtils.LoadMaterial(UISlider.default_rail_material_name);
             public Material knobMaterial = UIUtils.LoadMaterial(UISlider.default_knob_material_name);
 
-            public Color color = UISlider.default_color;
+            public ColorVariable color = UIOptions.Instance.backgroundColor;// UISlider.default_color;
             public Color railColor = UISlider.default_rail_color;
             public Color knobColor = UISlider.default_knob_color;
+            // TODO
+            //public ColorVariable railColor = UISlider.default_rail_color;
+            //public ColorVariable knobColor = UISlider.default_knob_color;
 
             public string caption = UISlider.default_text;
         }
@@ -547,7 +550,9 @@ namespace VRtist
             uiSlider.sourceMaterial = input.material;
             uiSlider.sourceRailMaterial = input.railMaterial;
             uiSlider.sourceKnobMaterial = input.knobMaterial;
-            
+            uiSlider.baseColor.useConstant = false;
+            uiSlider.baseColor.reference = input.color;
+
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
@@ -579,10 +584,11 @@ namespace VRtist
             {
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(input.material);
-                uiSlider.BaseColor = input.color;
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                
+                uiSlider.SetColor(input.color.value);
             }
 
             //

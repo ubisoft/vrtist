@@ -148,7 +148,7 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(Disabled ? disabledColor : baseColor);
+                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 }
                 catch (Exception e)
                 {
@@ -461,12 +461,12 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(Disabled ? disabledColor : pushedColor);
+            SetColor(Disabled ? disabledColor.Value : pushedColor);
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(Disabled ? disabledColor : baseColor);
+            SetColor(Disabled ? disabledColor.Value : baseColor.Value);
         }
 
         public void OnSlide(float f)
@@ -546,9 +546,9 @@ namespace VRtist
             public Material railMaterial = UIUtils.LoadMaterial(UIVerticalSlider.default_rail_material_name);
             public Material knobMaterial = UIUtils.LoadMaterial(UIVerticalSlider.default_knob_material_name);
 
-            public Color color = UIVerticalSlider.default_color;
-            public Color railColor = UIVerticalSlider.default_rail_color;
-            public Color knobColor = UIVerticalSlider.default_knob_color;
+            public ColorVariable color = UIOptions.Instance.backgroundColor;// UIVerticalSlider.default_color;
+            public ColorVariable railColor = UIOptions.Instance.sliderRailColor;// UIVerticalSlider.default_rail_color;
+            public ColorVariable knobColor = UIOptions.Instance.sliderKnobColor;// UIVerticalSlider.default_knob_color;
 
             public string caption = UIVerticalSlider.default_text;
 
@@ -627,10 +627,12 @@ namespace VRtist
             {
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(input.material);
-                uiSlider.BaseColor = input.color;
-
+                
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                uiSlider.baseColor.useConstant = false;
+                uiSlider.baseColor.reference = input.color;
             }
 
             //
@@ -643,7 +645,20 @@ namespace VRtist
             float railMargin = uiSlider.railMargin;
             Vector3 railPosition = new Vector3(input.width / 2.0f - railMargin, -input.height + input.margin + (input.height - 2 * input.margin) * uiSlider.sliderPositionEnd, -railThickness);
 
-            uiSlider.rail = UIVerticalSliderRail.Create("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, input.railMaterial, input.railColor);
+            uiSlider.rail = UIVerticalSliderRail.Create(
+                new UIVerticalSliderRail.CreateArgs
+                {
+                    parent = go.transform,
+                    widgetName = "Rail",
+                    relativeLocation = railPosition,
+                    width = railWidth,
+                    height = railHeight,
+                    thickness = railThickness,
+                    margin = railMargin,
+                    material = input.railMaterial,
+                    c = input.railColor
+                }
+            );
 
             //
             // KNOB
@@ -660,7 +675,18 @@ namespace VRtist
 
             Vector3 knobPosition = new Vector3((input.width / 2.0f) - uiSlider.knobRadius, posY + uiSlider.knobRadius, -uiSlider.knobDepth);
 
-            uiSlider.knob = UIVerticalSliderKnob.Create("Knob", go.transform, knobPosition, newKnobRadius, newKnobDepth, input.knobMaterial, input.knobColor);
+            uiSlider.knob = UIVerticalSliderKnob.Create(
+                new UIVerticalSliderKnob.CreateArgs
+                { 
+                    widgetName = "Knob", 
+                    parent = go.transform, 
+                    relativeLocation = knobPosition, 
+                    radius = newKnobRadius, 
+                    depth = newKnobDepth,
+                    material = input.knobMaterial,
+                    c = input.knobColor
+                }
+            );
 
             //
             // CANVAS (to hold the image)

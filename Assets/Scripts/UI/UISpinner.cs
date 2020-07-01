@@ -17,6 +17,26 @@ namespace VRtist
         public enum TextAndValueVisibilityType { ShowTextAndValue, ShowValueOnly };
         public enum SpinnerValueType { Float, Int };
 
+        private static readonly string default_widget_name = "Spinner";
+        private static readonly float default_width = 0.13f;
+        private static readonly float default_height = 0.03f;
+        private static readonly float default_margin = 0.005f;
+        private static readonly float default_thickness = 0.001f;
+        private static readonly float default_spinner_separation = 0.65f;
+        private static readonly UISpinner.TextAndValueVisibilityType default_visibility_type = UISpinner.TextAndValueVisibilityType.ShowTextAndValue;
+        private static readonly UISpinner.SpinnerValueType default_value_type = UISpinner.SpinnerValueType.Float;
+        private static readonly float default_min_value_float = 0.0f;
+        private static readonly float default_max_value_float = 1.0f;
+        private static readonly float default_current_value_float = 0.5f;
+        private static readonly float default_value_rate_float = 0.01f;
+        private static readonly int default_min_value_int = 0;
+        private static readonly int default_max_value_int = 10;
+        private static readonly int default_current_value_int = 5;
+        private static readonly float default_value_rate_int = 0.1f;
+        private static readonly string default_background_material_name = "UIBase";
+        private static readonly Color default_color = UIElement.default_background_color;
+        private static readonly string default_text = "Spinner";
+
         [SpaceHeader("Spinner Base Shape Parmeters", 6, 0.3f, 0.3f, 0.3f)]
         [CentimeterFloat] public float margin = 0.005f;
         [CentimeterFloat] public float thickness = 0.001f;
@@ -205,7 +225,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateValueText();
-                    SetColor(Disabled ? disabledColor : baseColor);
+                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 }
                 catch(Exception e)
                 {
@@ -347,12 +367,12 @@ namespace VRtist
 
         public void OnEnterSpinner()
         {
-            SetColor(Disabled ? disabledColor : pushedColor);
+            SetColor(Disabled ? disabledColor.Value : pushedColor);
         }
 
         public void OnExitSpinner()
         {
-            SetColor(Disabled ? disabledColor : baseColor);
+            SetColor(Disabled ? disabledColor.Value : baseColor.Value);
         }
 
         public override bool HandlesCursorBehavior() { return true; }
@@ -424,37 +444,45 @@ namespace VRtist
             }
         }
 
-        public static UISpinner CreateUISpinner(
-            string spinnerName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float margin,
-            float thickness,
-            float spinner_separation_pct,
-            TextAndValueVisibilityType visibility_type,
-            SpinnerValueType value_type,
-            float min_spinner_value_float,
-            float max_spinner_value_float,
-            float cur_spinner_value_float,
-            float spinner_value_rate_float,
-            int min_spinner_value_int,
-            int max_spinner_value_int,
-            int cur_spinner_value_int,
-            float spinner_value_rate_int,
-            Material background_material,
-            Color background_color,
-            string caption)
+        //
+        // CREATE
+        //
+
+        public class CreateArgs
         {
-            GameObject go = new GameObject(spinnerName);
+            public Transform parent = null;
+            public string widgetName = UISpinner.default_widget_name;
+            public Vector3 relativeLocation;
+            public float width;
+            public float height;
+            public float margin = UISpinner.default_margin;
+            public float thickness = UISpinner.default_thickness;
+            public float spinner_separation_pct = UISpinner.default_spinner_separation;
+            public TextAndValueVisibilityType visibility_type = UISpinner.default_visibility_type;
+            public SpinnerValueType value_type = UISpinner.default_value_type;
+            public float min_spinner_value_float = UISpinner.default_min_value_float;
+            public float max_spinner_value_float = UISpinner.default_max_value_float;
+            public float cur_spinner_value_float = UISpinner.default_current_value_float;
+            public float spinner_value_rate_float = UISpinner.default_value_rate_float;
+            public int min_spinner_value_int = UISpinner.default_min_value_int;
+            public int max_spinner_value_int = UISpinner.default_max_value_int;
+            public int cur_spinner_value_int = UISpinner.default_current_value_int;
+            public float spinner_value_rate_int = UISpinner.default_value_rate_int;
+            public Material background_material = UIUtils.LoadMaterial(UISpinner.default_background_material_name);
+            public ColorVariable background_color = UIOptions.Instance.backgroundColor;
+            public string caption = UISpinner.default_text;
+        }
+
+        public static UISpinner Create(CreateArgs input)
+        {
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -462,32 +490,34 @@ namespace VRtist
             }
 
             UISpinner uiSpinner = go.AddComponent<UISpinner>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiSpinner.relativeLocation = relativeLocation;
-            uiSpinner.transform.parent = parent;
-            uiSpinner.transform.localPosition = parentAnchor + relativeLocation;
+            uiSpinner.relativeLocation = input.relativeLocation;
+            uiSpinner.transform.parent = input.parent;
+            uiSpinner.transform.localPosition = parentAnchor + input.relativeLocation;
             uiSpinner.transform.localRotation = Quaternion.identity;
             uiSpinner.transform.localScale = Vector3.one;
-            uiSpinner.width = width;
-            uiSpinner.height = height;
-            uiSpinner.margin = margin;
-            uiSpinner.thickness = thickness;
-            uiSpinner.separationPositionPct = spinner_separation_pct;
-            uiSpinner.textAndValueVisibilityType = visibility_type;
-            uiSpinner.spinnerValueType = value_type;
-            uiSpinner.minFloatValue = min_spinner_value_float;
-            uiSpinner.maxFloatValue = max_spinner_value_float;
-            uiSpinner.currentFloatValue = cur_spinner_value_float;
-            uiSpinner.valueRateFloat = spinner_value_rate_float;
-            uiSpinner.minIntValue = min_spinner_value_int;
-            uiSpinner.maxIntValue = max_spinner_value_int;
-            uiSpinner.currentIntValue = cur_spinner_value_int;
-            uiSpinner.valueRateInt = spinner_value_rate_int;
+            uiSpinner.width = input.width;
+            uiSpinner.height = input.height;
+            uiSpinner.margin = input.margin;
+            uiSpinner.thickness = input.thickness;
+            uiSpinner.separationPositionPct = input.spinner_separation_pct;
+            uiSpinner.textAndValueVisibilityType = input.visibility_type;
+            uiSpinner.spinnerValueType = input.value_type;
+            uiSpinner.minFloatValue = input.min_spinner_value_float;
+            uiSpinner.maxFloatValue = input.max_spinner_value_float;
+            uiSpinner.currentFloatValue = input.cur_spinner_value_float;
+            uiSpinner.valueRateFloat = input.spinner_value_rate_float;
+            uiSpinner.minIntValue = input.min_spinner_value_int;
+            uiSpinner.maxIntValue = input.max_spinner_value_int;
+            uiSpinner.currentIntValue = input.cur_spinner_value_int;
+            uiSpinner.valueRateInt = input.spinner_value_rate_int;
+            uiSpinner.baseColor.useConstant = false;
+            uiSpinner.baseColor.reference = input.background_color;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
                 uiSpinner.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -510,14 +540,15 @@ namespace VRtist
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && background_material != null)
+            if (meshRenderer != null && input.background_material != null)
             {
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(background_material);
-                uiSpinner.BaseColor = background_color;
+                meshRenderer.sharedMaterial = Instantiate(input.background_material);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                
+                uiSpinner.SetColor(input.background_color.value);
             }
 
             //
@@ -543,7 +574,7 @@ namespace VRtist
             cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
             cs.referencePixelsPerUnit = 100; // default?
 
-            bool hasText = (visibility_type == TextAndValueVisibilityType.ShowTextAndValue);
+            bool hasText = (input.visibility_type == TextAndValueVisibilityType.ShowTextAndValue);
 
             // Add a Text under the Canvas
             {
@@ -552,7 +583,7 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = caption;
+                t.text = input.caption;
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = TextAnchor.MiddleLeft;
@@ -580,7 +611,9 @@ namespace VRtist
 
                 Text t = text.AddComponent<Text>();
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = (value_type == SpinnerValueType.Float) ? cur_spinner_value_float.ToString("#0.00") : cur_spinner_value_int.ToString();
+                t.text = (input.value_type == SpinnerValueType.Float) 
+                    ? input.cur_spinner_value_float.ToString("#0.00") 
+                    : input.cur_spinner_value_int.ToString();
                 t.fontSize = 32;
                 t.fontStyle = FontStyle.Bold;
                 t.alignment = hasText ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter;

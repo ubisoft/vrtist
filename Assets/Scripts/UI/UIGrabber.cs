@@ -91,7 +91,7 @@ namespace VRtist
 
         public void OnRelease3DObject()
         {
-            SetColor(baseColor);
+            SetColor(baseColor.Value);
 
             transform.localPosition += new Vector3(0f, 0f, +0.02f); // recule, dnas le repere de la page (local +Z)
             transform.localScale = Vector3.one;

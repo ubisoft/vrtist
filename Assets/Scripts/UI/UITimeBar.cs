@@ -12,6 +12,17 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UITimeBar : UIElement
     {
+        private static readonly string default_widget_name = "TimeBar";
+        private static readonly float default_width = 0.3f;
+        private static readonly float default_height = 0.03f;
+        private static readonly float default_thickness = 0.001f;
+        private static readonly int default_min_value = 0;
+        private static readonly int default_max_value = 250;
+        private static readonly int default_current_value = 0;
+        private static readonly string default_background_material_name = "UIBase";
+        private static readonly Color default_color = UIElement.default_background_color;
+        private static readonly string default_text = "TimeBar";
+
         [SpaceHeader("TimeBar Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float thickness = 0.001f;
         public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);
@@ -121,7 +132,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateTimeBarPosition();
-                    SetColor(baseColor);
+                    SetColor(baseColor.Value);
                 }
                 catch(Exception e)
                 {
@@ -264,7 +275,7 @@ namespace VRtist
 
         public void OnReleaseTimeBar()
         {
-            SetColor(baseColor);
+            SetColor(baseColor.Value);
         }
 
         public void OnSlide(int f)
@@ -316,28 +327,36 @@ namespace VRtist
             cursorShapeTransform.position = worldProjectedWidgetPosition;
         }
 
-        public static void Create(
-            string sliderName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float thickness,
-            int min_slider_value,
-            int max_slider_value,
-            int cur_slider_value,
-            Material background_material,
-            Color background_color,
-            string caption)
+        //
+        // CREATE
+        //
+
+        public class CreateArgs
         {
-            GameObject go = new GameObject(sliderName);
+            public Transform parent = null;
+            public string widgetName = UITimeBar.default_widget_name;
+            public Vector3 relativeLocation;
+            public float width;
+            public float height;
+            public float thickness = UITimeBar.default_thickness;
+            public int min_slider_value = UITimeBar.default_min_value;
+            public int max_slider_value = UITimeBar.default_max_value;
+            public int cur_slider_value = UITimeBar.default_current_value;
+            public Material background_material = UIUtils.LoadMaterial(UITimeBar.default_background_material_name);
+            public ColorVariable background_color = UIOptions.Instance.backgroundColor;
+            public string caption = UITimeBar.default_text;
+        }
+
+        public static void Create(CreateArgs input)
+        {
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -345,24 +364,26 @@ namespace VRtist
             }
 
             UITimeBar uiTimeBar = go.AddComponent<UITimeBar>(); // NOTE: also creates the MeshFilter, MeshRenderer and Collider components
-            uiTimeBar.relativeLocation = relativeLocation;
-            uiTimeBar.transform.parent = parent;
-            uiTimeBar.transform.localPosition = parentAnchor + relativeLocation;
+            uiTimeBar.relativeLocation = input.relativeLocation;
+            uiTimeBar.transform.parent = input.parent;
+            uiTimeBar.transform.localPosition = parentAnchor + input.relativeLocation;
             uiTimeBar.transform.localRotation = Quaternion.identity;
             uiTimeBar.transform.localScale = Vector3.one;
-            uiTimeBar.width = width;
-            uiTimeBar.height = height;
-            uiTimeBar.thickness = thickness;
-            uiTimeBar.minValue = min_slider_value;
-            uiTimeBar.maxValue = max_slider_value;
-            uiTimeBar.currentValue = cur_slider_value;
+            uiTimeBar.width = input.width;
+            uiTimeBar.height = input.height;
+            uiTimeBar.thickness = input.thickness;
+            uiTimeBar.minValue = input.min_slider_value;
+            uiTimeBar.maxValue = input.max_slider_value;
+            uiTimeBar.currentValue = input.cur_slider_value;
+            uiTimeBar.baseColor.useConstant = false;
+            uiTimeBar.baseColor.reference = input.background_color;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
                 // TODO: new mesh, with time ticks texture
-                meshFilter.sharedMesh = UIUtils.BuildBoxEx(width, height, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildBoxEx(input.width, input.height, input.thickness);
                 uiTimeBar.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
@@ -385,14 +406,15 @@ namespace VRtist
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && background_material != null)
+            if (meshRenderer != null && input.background_material != null)
             {
                 // Clone the material.
-                meshRenderer.sharedMaterial = Instantiate(background_material);
-                uiTimeBar.BaseColor = background_color;
+                meshRenderer.sharedMaterial = Instantiate(input.background_material);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 4; // "LightLayer 3"
+
+                uiTimeBar.SetColor(input.background_color.value);
             }
 
             // KNOB

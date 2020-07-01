@@ -83,7 +83,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? disabledColor : baseColor);
+                SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 needRebuild = false;
             }
         }
@@ -160,7 +160,7 @@ namespace VRtist
             public float radius = UIPanel.default_radius;
             public UIPanel.BackgroundGeometryStyle backgroundGeometryStyle = UIPanel.default_bg_geom_style;
             public Material material = UIUtils.LoadMaterial(UIPanel.default_material_name);
-            public Color color = UIPanel.default_color;
+            public ColorVariable color = UIOptions.Instance.backgroundColor; //UIPanel.default_color;
         }
 
 
@@ -192,6 +192,8 @@ namespace VRtist
             uiPanel.thickness = input.thickness;
             uiPanel.backgroundGeometryStyle = input.backgroundGeometryStyle;
             uiPanel.source_material = input.material;
+            uiPanel.baseColor.useConstant = false;
+            uiPanel.baseColor.reference = input.color;
 
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
@@ -211,7 +213,7 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiPanel.BaseColor = input.color;
+                uiPanel.SetColor(input.color.value);
             }
         }
     }

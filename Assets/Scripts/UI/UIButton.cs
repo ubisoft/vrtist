@@ -61,7 +61,7 @@ namespace VRtist
         public bool Checked
         {
             get { return isChecked; }
-            set { isChecked = value; SetColor(Disabled ? disabledColor : (value ? checkedColor : baseColor)); UpdateCheckIcon(); }
+            set { isChecked = value; SetColor(Disabled ? DisabledColor : (value ? checkedColor : BaseColor)); UpdateCheckIcon(); }
         }
 
         void Start()
@@ -234,7 +234,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? disabledColor : baseColor);
+                SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 needRebuild = false;
             }
 #endif
@@ -264,10 +264,10 @@ namespace VRtist
             if (meshRenderer != null)
             {
                 Color prevColor = BaseColor;
-                if (meshRenderer.sharedMaterial != null)
-                {
-                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
-                }
+                //if (meshRenderer.sharedMaterial != null)
+                //{
+                //    prevColor = GetColor();
+                //}
 
                 Material materialInstance = Instantiate(source_material);
 
@@ -344,18 +344,17 @@ namespace VRtist
 
         public void OnPushButton()
         {
-            SetColor(Disabled ? disabledColor : pushedColor);
+            SetColor(Disabled ? DisabledColor : pushedColor);
         }
 
         public void OnReleaseButton()
         {
-            SetColor(Disabled ? disabledColor : (isChecked ? checkedColor : baseColor));
+            SetColor(Disabled ? disabledColor.Value : (isChecked ? checkedColor : BaseColor));
         }
 
-
-
-
-
+        //
+        // CREATE
+        //
 
         public class CreateButtonParams
         {
@@ -367,7 +366,7 @@ namespace VRtist
             public float margin = UIButton.default_margin;
             public float thickness = UIButton.default_thickness;
             public Material material = UIUtils.LoadMaterial(UIButton.default_material_name);
-            public Color color = UIButton.default_color;
+            public ColorVariable color = UIOptions.Instance.backgroundColor;
             public ButtonContent buttonContent = UIButton.default_content;
             public IconMarginBehavior iconMarginBehavior = UIButton.default_icon_margin_behavior;
             public float iconMargin = UIButton.default_icon_margin;
@@ -405,7 +404,9 @@ namespace VRtist
             uiButton.iconMarginBehavior = input.iconMarginBehavior;
             uiButton.iconMargin = input.iconMargin;
             uiButton.source_material = input.material;
-            
+            uiButton.baseColor.useConstant = false;
+            uiButton.baseColor.reference = input.color;
+
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
@@ -441,7 +442,7 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiButton.BaseColor = input.color;
+                uiButton.SetColor(input.color.value);
             }
 
             // Add a Canvas

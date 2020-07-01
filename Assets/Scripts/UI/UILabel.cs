@@ -42,7 +42,7 @@ namespace VRtist
         public Material source_material = null;
         public Sprite image = null;
         [TextArea] public string textContent = "";
-        public Color textColor = UILabel.default_label_foreground_color;
+        public ColorReference textColor;// = UILabel.default_label_foreground_color;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -56,7 +56,7 @@ namespace VRtist
         private bool needRebuild = false;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
-        public Color TextColor { get { return textColor; } set { textColor = value; UpdateTextColor(); } }
+        public Color TextColor { get { return textColor.Value; } /*set { textColor = value; UpdateTextColor(); }*/ }
 
         public override void RebuildMesh()
         {
@@ -134,7 +134,7 @@ namespace VRtist
 
 
                     text.text = textContent;
-                    text.color = textColor;
+                    text.color = TextColor;
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
                     {
@@ -150,7 +150,7 @@ namespace VRtist
             Text text = GetComponentInChildren<Text>();
             if (text != null)
             {
-                text.color = textColor;
+                text.color = TextColor;
                 // TODO: test to see if we need to go and change the _BaseColor of the material of the text object.
             }
         }
@@ -190,7 +190,7 @@ namespace VRtist
                 UpdateAnchor();
                 UpdateChildren();
                 if(!EditorApplication.isPlaying)
-                    SetColor(Disabled ? disabledColor : baseColor);
+                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
                 needRebuild = false;
             }
 #endif
@@ -285,8 +285,8 @@ namespace VRtist
             public float margin = UILabel.default_margin;
             public float thickness = UILabel.default_thickness;
             public Material material = UIUtils.LoadMaterial(UILabel.default_material_name);
-            public Color bgcolor = UILabel.default_label_background_color;
-            public Color fgcolor = UILabel.default_label_foreground_color;
+            public ColorVariable bgcolor = UIOptions.Instance.backgroundColor;// UILabel.default_label_background_color;
+            public ColorVariable fgcolor = UIOptions.Instance.foregroundColor;// UILabel.default_label_foreground_color;
             public LabelContent labelContent = UILabel.default_content;
             public ImagePosition imagePosition = UILabel.default_image_position;
             public IconMarginBehavior iconMarginBehavior = UILabel.default_icon_margin_behavior;
@@ -329,8 +329,11 @@ namespace VRtist
             uiLabel.iconMarginBehavior = input.iconMarginBehavior;
             uiLabel.iconMargin = input.iconMargin;
             uiLabel.source_material = input.material;
-            // text color and bg color are set below
-
+            uiLabel.baseColor.useConstant = false;
+            uiLabel.baseColor.reference = input.bgcolor;
+            uiLabel.textColor.useConstant = false;
+            uiLabel.textColor.reference = input.fgcolor;
+            
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
@@ -366,7 +369,7 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiLabel.BaseColor = input.bgcolor;
+                uiLabel.SetColor(input.bgcolor.value);
             }
 
             // Add a Canvas
@@ -404,7 +407,7 @@ namespace VRtist
                 t.alignment = TextAnchor.UpperLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Wrap;
                 t.verticalOverflow = VerticalWrapMode.Truncate;
-                t.color = input.fgcolor;
+                t.color = input.fgcolor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
@@ -415,7 +418,7 @@ namespace VRtist
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.localPosition = new Vector3(input.margin, -input.margin, -0.002f); // centered, on-top
 
-                uiLabel.TextColor = input.fgcolor;
+                //uiLabel.SetColor = input.fgcolor;
             }
 
             return uiLabel;
