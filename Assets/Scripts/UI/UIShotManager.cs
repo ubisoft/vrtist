@@ -19,13 +19,13 @@ namespace VRtist
             ShotManager sm = ShotManager.Instance;
             int currentFrame = GlobalState.currentFrame;
 
-            Color defaultColor = UIElement.default_background_color;
             Color focusColor = UIElement.default_focus_color;
 
-            for (int i  = 0; i < sm.shots.Count; ++i)
+            for (int i = 0; i < sm.shots.Count; ++i)
             {
                 ShotItem item = GetShotItem(i);
                 Shot shot = sm.shots[i];
+                Color defaultColor = item.shotNameLabel.BaseColor;
 
                 Color startColor = currentFrame == shot.start ? focusColor : defaultColor;
                 item.startFrameSpinner.BaseColor = startColor;
@@ -256,7 +256,7 @@ namespace VRtist
             int startValue = shot.start;
             if (intValue < startValue)
                 intValue = startValue;
-            
+
             // Send network message
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
@@ -337,6 +337,7 @@ namespace VRtist
             new CommandShotManager(oldInfo, info).Submit();
             NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
+
         public void OnSetCamera()
         {
             ShotManager sm = ShotManager.Instance;
@@ -358,7 +359,7 @@ namespace VRtist
 
             // Update Camera UI Button
             ShotItem uiItem = GetShotItem(sm.CurrentShot);
-            uiItem.cameraNameButton.Text = info.cameraName;
+            uiItem.cameraNameLabel.Text = info.cameraName;
         }
     }
 }

@@ -11,7 +11,7 @@ VR scene exploration and set dressing.
 
   - VRTIST_HOST = localhost
   - VRTIST_ROOM = Local
-  - VRTIST_EXE = d:/vrtist
+  - VRTIST_EXE = d:/vrtist/VRtist.exe
 
   These environment variables are used by Mixer to launch VRtist from Blender.
 
@@ -25,7 +25,7 @@ Download Blender 2.83 from blender.org (either install version or portable versi
 
 VRtist uses Mixer to get the content of a Blender scene and to synchronize it with Unity.
 
-Mixer is a standard Blender addon. Install it like any other addon. 
+Mixer is a standard Blender addon. Install it like any other addon.
 
 - Go to Edit > Preferences > Add-ons
 - Click the install... button and search "mixer.zip"

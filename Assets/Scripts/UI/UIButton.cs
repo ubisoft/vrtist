@@ -136,7 +136,7 @@ namespace VRtist
 
                 // TEXT
                 Text text = canvas.gameObject.GetComponentInChildren<Text>();
-                if(text != null)
+                if (text != null)
                 {
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
@@ -349,6 +349,7 @@ namespace VRtist
         {
             GameObject go = new GameObject(buttonName);
             go.tag = "UICollider";
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
