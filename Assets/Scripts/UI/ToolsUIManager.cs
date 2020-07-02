@@ -37,8 +37,6 @@ namespace VRtist
 
     public class ToolsUIManager : MonoBehaviour
     {
-        public UIDynamicList debugList = null;
-
         [Header("Palette Settings")]
         [SerializeField] private Transform handContainer;
         [SerializeField] private Transform vehicleContainer;
@@ -357,41 +355,6 @@ namespace VRtist
                     window.localScale = s;
                     yield return new WaitForEndOfFrame();
                 }
-            }
-        }
-
-        public void DEBUG_AddItemToList(Transform t)
-        {
-            if (debugList != null)
-            {
-                debugList.AddItem(t);
-            }
-        }
-
-        public void DEBUG_RemoveLastItemFromList()
-        {
-            if (debugList != null)
-            {
-                UIDynamicListItem t = debugList.DEBUG_GetLastItemTransform();
-                if (t != null)
-                    debugList.RemoveItem(t);
-            }
-        }
-
-        public void DEBUG_MoveUp()
-        {
-            if (debugList != null)
-            {
-                debugList.DEBUG_SetSecondItemAsLastClicked();
-                debugList.OnCurrentItemUp();
-            }
-        }
-
-        public void DEBUG_ResetList()
-        {
-            if (debugList != null)
-            {
-                debugList.DEBUG_Reset();
             }
         }
     }
