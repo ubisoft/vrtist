@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -52,8 +51,6 @@ namespace VRtist
         public UnityEvent onHoverEvent = new UnityEvent();
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
-
-        private bool needRebuild = false;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
         public Color TextColor { get { return textColor.Value; } /*set { textColor = value; UpdateTextColor(); }*/ }
@@ -177,21 +174,20 @@ namespace VRtist
             if (-thickness != relativeLocation.z)
                 relativeLocation.z = -thickness;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
 #if UNITY_EDITOR
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                if(!EditorApplication.isPlaying)
-                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
-                needRebuild = false;
+                SetColor(Disabled ? DisabledColor : BaseColor);
+                NeedsRebuild = false;
             }
 #endif
         }

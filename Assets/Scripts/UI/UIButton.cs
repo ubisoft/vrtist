@@ -52,8 +52,6 @@ namespace VRtist
         public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
         public UnityEvent onHoverEvent = new UnityEvent();
 
-        private bool needRebuild = false;
-
         public string Text { get { return GetText(); } set { SetText(value); } }
 
         private bool isChecked = false;
@@ -216,26 +214,21 @@ namespace VRtist
             if (-thickness != relativeLocation.z)
                 relativeLocation.z = -thickness;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
 #if UNITY_EDITOR
-            // NOTE: rebuild when touching a property in the inspector.
-            // Boolean needRebuild is set in OnValidate();
-            // The rebuild method called when using the gizmos is: Width and Height
-            // properties in UIElement.
-            // This comment is probably already obsolete.
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 // NOTE: I do all these things because properties can't be called from the inspector.
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? disabledColor.Value : baseColor.Value);
-                needRebuild = false;
+                SetColor(Disabled ? DisabledColor : BaseColor);
+                NeedsRebuild = false;
             }
 #endif
         }
@@ -349,7 +342,7 @@ namespace VRtist
 
         public void OnReleaseButton()
         {
-            SetColor(Disabled ? disabledColor.Value : (isChecked ? checkedColor : BaseColor));
+            SetColor(Disabled ? DisabledColor : (isChecked ? checkedColor : BaseColor));
         }
 
         //

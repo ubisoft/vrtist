@@ -40,8 +40,6 @@ namespace VRtist
         [SerializeField] private int pagesCount = 0;
         [SerializeField] private int currentPage = 0;
 
-        private bool needRebuild = false;
-
         private int currentIndex = -1;
         public int CurrentIndex
         {
@@ -74,12 +72,12 @@ namespace VRtist
             //if (height - 2 * margin < itemHeight)
             //    margin = (height - itemHeight) / 2.0f;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 UpdateLocalPosition();
                 UpdateAnchor();
@@ -88,7 +86,9 @@ namespace VRtist
                 UpdateItemPositions();
                 UpdatePageCountLabel();
 
-                needRebuild = false;
+                //SetColor(Disabled ? DisabledColor : BaseColor);
+
+                NeedsRebuild = false;
             }
         }
 
@@ -125,7 +125,7 @@ namespace VRtist
             item.autoCenterContent = autoCenterContent;
             items.Add(item);
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         public UIDynamicListItem DEBUG_GetLastItemTransform()
@@ -137,8 +137,6 @@ namespace VRtist
         {
             currentIndex = 1;
         }
-
-        public void DEBUG_Reset() { Clear(); }
 
         public void Clear()
         {
@@ -155,7 +153,7 @@ namespace VRtist
             pagesCount = 0;
             currentPage = 0;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         public void RemoveItem(UIDynamicListItem item)
@@ -174,7 +172,7 @@ namespace VRtist
                             currentPage = pagesCount - 1;
                     }
 
-                    needRebuild = true;
+                    NeedsRebuild = true;
                     return;
                 }
             }
@@ -200,25 +198,25 @@ namespace VRtist
         public void OnNextPage()
         {
             currentPage = (currentPage + 1) % pagesCount;
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         public void OnPreviousPage()
         {
             currentPage = (currentPage + pagesCount - 1) % pagesCount;
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         public void OnFirstPage()
         {
             currentPage = 0;
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         public void OnLastPage()
         {
             currentPage = pagesCount == 0 ? 0 : pagesCount - 1;
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         public void OnCurrentItemUp()
@@ -232,7 +230,7 @@ namespace VRtist
                 items[currentIndex - 1] = items[currentIndex];
                 items[currentIndex] = tmp;
                 currentIndex = currentIndex - 1;
-                needRebuild = true;
+                NeedsRebuild = true;
             }
         }
 
@@ -247,7 +245,7 @@ namespace VRtist
                 items[currentIndex + 1] = items[currentIndex];
                 items[currentIndex] = tmp;
                 currentIndex = currentIndex + 1;
-                needRebuild = true;
+                NeedsRebuild = true;
             }
         }
 

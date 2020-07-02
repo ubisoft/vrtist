@@ -73,7 +73,6 @@ namespace VRtist
         private float initialFloatValue = 0.0f;
         private int initialIntValue = 0;
 
-        private bool needRebuild = false;
         private bool cursorExitedWidget = true;
 
         public string Text { get { return GetText(); } set { SetText(value); } }
@@ -211,12 +210,12 @@ namespace VRtist
             if (currentIntValue > maxIntValue)
                 currentIntValue = maxIntValue;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 try
                 {
@@ -225,14 +224,14 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateValueText();
-                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
+                    SetColor(Disabled ? DisabledColor : BaseColor);
                 }
                 catch(Exception e)
                 {
                     Debug.Log("Exception: " + e);
                 }
 
-                needRebuild = false;
+                NeedsRebuild = false;
             }
         }
 
@@ -367,12 +366,12 @@ namespace VRtist
 
         public void OnEnterSpinner()
         {
-            SetColor(Disabled ? disabledColor.Value : pushedColor);
+            SetColor(Disabled ? DisabledColor : pushedColor);
         }
 
         public void OnExitSpinner()
         {
-            SetColor(Disabled ? disabledColor.Value : baseColor.Value);
+            SetColor(Disabled ? DisabledColor : BaseColor);
         }
 
         public override bool HandlesCursorBehavior() { return true; }

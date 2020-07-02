@@ -43,8 +43,6 @@ namespace VRtist
             set { SetPickedColor(value); }
         }
 
-        private bool needRebuild = false;
-
         private void OnEnable()
         {
             CurrentColor = CurrentColor;
@@ -201,19 +199,20 @@ namespace VRtist
             // TODO: Test max padding relative to global width.
             //       See UIButton or UIPanel for examples about margin vs width
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 // NOTE: I do all these things because properties can't be called from the inspector.
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                needRebuild = false;
+                //SetColor(Disabled ? DisabledColor : BaseColor);
+                NeedsRebuild = false;
             }
         }
 

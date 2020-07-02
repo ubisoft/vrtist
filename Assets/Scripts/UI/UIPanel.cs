@@ -33,8 +33,6 @@ namespace VRtist
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
 
-        private bool needRebuild = false;
-
         private void OnValidate()
         {
             const float min_width = 0.01f;
@@ -70,21 +68,21 @@ namespace VRtist
             if (-thickness != relativeLocation.z)
                 relativeLocation.z = -thickness;
 
-            needRebuild = true;
+            NeedsRebuild = true;
 
             // NOTE: RebuildMesh() cannot be called in OnValidate().
         }
 
         private void Update()
         {
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? disabledColor.Value : baseColor.Value);
-                needRebuild = false;
+                SetColor(Disabled ? DisabledColor : BaseColor);
+                NeedsRebuild = false;
             }
         }
 

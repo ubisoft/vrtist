@@ -22,8 +22,6 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
-        private bool needRebuild = false;
-
         public float Depth { get { return depth; } set { depth = value; RebuildMesh(); } }
         
         void Start()
@@ -98,18 +96,18 @@ namespace VRtist
             if (depth < min_depth)
                 depth = min_depth;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                needRebuild = false;
+                NeedsRebuild = false;
             }
         }
 

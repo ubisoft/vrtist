@@ -77,8 +77,6 @@ namespace VRtist
         [SerializeField] private UIVerticalSliderRail rail = null;
         [SerializeField] private UIVerticalSliderKnob knob = null;
 
-        private bool needRebuild = false;
-
         public float SliderPositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; RebuildMesh(); } }
         public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
         public string Text { get { return GetText(); } set { SetText(value); } }
@@ -127,17 +125,12 @@ namespace VRtist
             if (-thickness != relativeLocation.z)
                 relativeLocation.z = -thickness;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
-            // NOTE: rebuild when touching a property in the inspector.
-            // Boolean needRebuild is set in OnValidate();
-            // The rebuild method called when using the gizmos is: Width and Height
-            // properties in UIElement.
-            // This comment is probably already obsolete.
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 // NOTE: I do all these things because properties can't be called from the inspector.
                 try
@@ -148,14 +141,14 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(Disabled ? disabledColor.Value : baseColor.Value);
+                    SetColor(Disabled ? DisabledColor : BaseColor);
                 }
                 catch (Exception e)
                 {
                     Debug.Log("Exception: " + e);
                 }
 
-                needRebuild = false;
+                NeedsRebuild = false;
             }
         }
 
@@ -461,12 +454,12 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(Disabled ? disabledColor.Value : pushedColor);
+            SetColor(Disabled ? DisabledColor : pushedColor);
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(Disabled ? disabledColor.Value : baseColor.Value);
+            SetColor(Disabled ? DisabledColor : BaseColor);
         }
 
         public void OnSlide(float f)

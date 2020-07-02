@@ -26,12 +26,14 @@ namespace VRtist
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
-        public ColorReference baseColor;// = UIOptions.Instance.backgroundColor; // not allowed to be called
-        public ColorReference disabledColor;// = UIOptions.Instance.disabledColor; // TODO: set it in every CreateArgs
+        public ColorReference baseColor = new ColorReference(); // = UIOptions.Instance.backgroundColor; // not allowed to be called
+        public ColorReference disabledColor = new ColorReference(); // = UIOptions.Instance.disabledColor; // TODO: set it in every CreateArgs
 
         private bool isDisabled = false;
 
         private Vector3 anchor = Vector3.zero; // local position of anchor for children.
+
+        private bool needsRebuild = false;
 
         //
         // Properties
@@ -44,6 +46,7 @@ namespace VRtist
         public Color BaseColor { get { return baseColor.Value; } }
         public Color DisabledColor { get { return disabledColor.Value; } }
         public bool Disabled { get { return isDisabled; } set { isDisabled = value; SetColor(value ? DisabledColor : BaseColor); } }
+        public bool NeedsRebuild { get { return needsRebuild; } set { needsRebuild = value; } }
 
         protected float prevTime = -1f;
 
@@ -96,6 +99,11 @@ namespace VRtist
         public virtual Color GetColor()
         {
             return GetComponent<MeshRenderer>().sharedMaterial.GetColor("_BaseColor");
+        }
+
+        public virtual void RefreshColor()
+        {
+            SetColor(BaseColor);
         }
 
         public virtual void SetLightLayer(uint layerIndex)

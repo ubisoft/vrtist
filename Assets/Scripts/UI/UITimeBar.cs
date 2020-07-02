@@ -39,8 +39,6 @@ namespace VRtist
 
         [SerializeField] private Transform knob = null;
 
-        private bool needRebuild = false;
-
         public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); } }
         public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); } }
         public int Value { get { return GetValue(); } set { SetValue(value); UpdateTimeBarPosition(); } }
@@ -112,17 +110,12 @@ namespace VRtist
             if (currentValue > maxValue)
                 currentValue = maxValue;
 
-            needRebuild = true;
+            NeedsRebuild = true;
         }
 
         private void Update()
         {
-            // NOTE: rebuild when touching a property in the inspector.
-            // Boolean needRebuild is set in OnValidate();
-            // The rebuild method called when using the gizmos is: Width and Height
-            // properties in UIElement.
-            // This comment is probably already obsolete.
-            if (needRebuild)
+            if (NeedsRebuild)
             {
                 // NOTE: I do all these things because properties can't be called from the inspector.
                 try
@@ -132,14 +125,14 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateTimeBarPosition();
-                    SetColor(baseColor.Value);
+                    SetColor(Disabled ? DisabledColor : BaseColor);
                 }
                 catch(Exception e)
                 {
                     Debug.Log("Exception: " + e);
                 }
 
-                needRebuild = false;
+                NeedsRebuild = false;
             }
         }
 
@@ -275,7 +268,7 @@ namespace VRtist
 
         public void OnReleaseTimeBar()
         {
-            SetColor(baseColor.Value);
+            SetColor(BaseColor);
         }
 
         public void OnSlide(int f)
