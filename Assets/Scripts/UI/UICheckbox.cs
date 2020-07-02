@@ -310,6 +310,7 @@ namespace VRtist
             Sprite uncheckedIcon)
         {
             GameObject go = new GameObject(checkboxName);
+            go.layer = LayerMask.NameToLayer("UI");
             go.tag = "UICollider";
 
             // Find the anchor of the parent if it is a UIElement

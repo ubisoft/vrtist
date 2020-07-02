@@ -45,7 +45,22 @@ namespace VRtist
 
             shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
 
-            setCameraButton.onClickEvent.AddListener(setCameraAction);
+            setCameraButton.onCheckEvent.AddListener(TogglePickCamera);            
+        }
+
+        private void TogglePickCamera(bool value)
+        {
+            if(value)
+                Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+            else
+                Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+        }
+
+        private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
+        {
+            Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+            setCameraButton.Checked = false;
+            setCameraAction();
         }
 
         private void InitSpinnerMinMax()
@@ -71,6 +86,14 @@ namespace VRtist
             endFrameSpinner.BaseColor = shotNameLabel.BaseColor;
             setCameraButton.BaseColor = shotNameLabel.BaseColor;
             frameRangeLabel.BaseColor = shotNameLabel.BaseColor;
+
+            if(value)
+            {
+                CameraController camController = null;
+                if (null != shot.camera)
+                    camController = shot.camera.GetComponent<CameraController>();
+                Selection.SetActiveCamera(camController);
+            }
         }
 
         public void Start()
@@ -352,6 +375,10 @@ namespace VRtist
 
             setCameraButton.ActivateIcon(true); // text-only
             setCameraButton.ActivateText(false);
+            setCameraButton.isCheckable = true;
+            setCameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
+            setCameraButton.checkedColor = UIElement.default_focus_color;
+            setCameraButton.uncheckedSprite = UIUtils.LoadIcon("icon-camera");
             setCameraButton.SetLightLayer(5);
 
 

@@ -452,6 +452,7 @@ namespace VRtist
             Color color)
         {
             GameObject go = new GameObject(panelName);
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;

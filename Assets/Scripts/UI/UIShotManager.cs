@@ -97,6 +97,10 @@ namespace VRtist
                 start = selectedShot.end + 1;
                 camera = Selection.activeCamera != null ? Selection.activeCamera : selectedShot.camera;
             }
+            else 
+            {
+                camera = Selection.activeCamera;
+            }
             int end = start + 50;  // arbitrary duration
 
             // Look at all the shots to find a name for the new shot
