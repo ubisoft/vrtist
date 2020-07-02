@@ -41,7 +41,7 @@ namespace VRtist
         public Material source_material = null;
         public Sprite image = null;
         [TextArea] public string textContent = "";
-        public ColorReference textColor;// = UILabel.default_label_foreground_color;
+        public ColorReference textColor = new ColorReference();
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -187,6 +187,7 @@ namespace VRtist
                 UpdateAnchor();
                 UpdateChildren();
                 SetColor(Disabled ? DisabledColor : BaseColor);
+                UpdateTextColor();
                 NeedsRebuild = false;
             }
 #endif

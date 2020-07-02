@@ -55,33 +55,69 @@ namespace VRtist
                     {
                         // pushedColor
                         // checkedColor
+
+                        if (button.transform.parent.gameObject.name == "CloseButton")
+                        {
+                            button.baseColor.useConstant = false;
+                            button.baseColor.constant = UIOptions.Instance.closeWindowButtonColor.value;
+                            button.baseColor.reference = UIOptions.Instance.closeWindowButtonColor;
+                        }
+
+                        if (button.transform.parent.gameObject.name == "PinButton")
+                        {
+                            button.baseColor.useConstant = false;
+                            button.baseColor.constant = UIOptions.Instance.pinWindowButtonColor.value;
+                            button.baseColor.reference = UIOptions.Instance.pinWindowButtonColor;
+                        }
                     }
 
-                    //UILabel label = element.GetComponent<UILabel>();
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+                        label.textColor.useConstant = false;
+                        label.textColor.constant = UIOptions.Instance.foregroundColor.value;
+                        label.textColor.reference = UIOptions.Instance.foregroundColor;
+                    }
+
                     UIElement panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
-                        panel.baseColor.useConstant = true;
-                        panel.baseColor.constant = Color.black;
+                        panel.baseColor.useConstant = false;
+                        panel.baseColor.constant = UIOptions.Instance.panelColor.value;
+                        panel.baseColor.reference = UIOptions.Instance.panelColor;
                     }
 
                     UIElement checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
-                        checkbox.baseColor.useConstant = true;
-                        checkbox.baseColor.constant = Color.green;
+                        //checkbox.baseColor.useConstant = true;
+                        //checkbox.baseColor.constant = Color.green;
                     }
 
                     UIElement slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
-                        slider.baseColor.useConstant = true;
-                        slider.baseColor.constant = Color.red;
+                        //slider.baseColor.useConstant = true;
+                        //slider.baseColor.constant = Color.red;
                     }
 
-                    //UIElement vslider = element.GetComponent<UIVerticalSlider>();
-                    //UIElement spinner = element.GetComponent<UISpinner>();
-                    //UIElement timebar = element.GetComponent<UITimeBar>();
+                    UIElement vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+
+                    }
+
+                    UIElement spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+
+                    }
+
+                    UIElement timebar = element.GetComponent<UITimeBar>();
+                    if (timebar)
+                    {
+
+                    }
 
                     element.NeedsRebuild = true;
                     //element.RefreshColor();

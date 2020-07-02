@@ -19,6 +19,11 @@ MonoBehaviour:
   disabledColor: {fileID: 11400000, guid: 0880c628685cc884eb9a2b652f5bad4c, type: 2}
   sliderRailColor: {fileID: 11400000, guid: c1ecfcfa1afd47b4f871bc9cd495234f, type: 2}
   sliderKnobColor: {fileID: 11400000, guid: b897b0dabe9f1d549b49d932e562425d, type: 2}
-  sceneHoverColor: {fileID: 11400000, guid: fb2bdb474b7f9ae48a8794903ad26f42, type: 2}
   attenuatedTextColor: {fileID: 11400000, guid: 2baacafe48374a1439ab36f23b52a1ec,
     type: 2}
+  panelColor: {fileID: 11400000, guid: 89feb8fcd257b194ea57e3963ffddb74, type: 2}
+  closeWindowButtonColor: {fileID: 11400000, guid: bf671c9dddf3c044a89e271459650614,
+    type: 2}
+  pinWindowButtonColor: {fileID: 11400000, guid: 834619946c6d5d344a1fd9cf348a2f16,
+    type: 2}
+  sceneHoverColor: {fileID: 11400000, guid: fb2bdb474b7f9ae48a8794903ad26f42, type: 2}
