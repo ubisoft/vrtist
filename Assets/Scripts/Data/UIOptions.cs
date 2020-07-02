@@ -21,19 +21,49 @@ namespace VRtist
         {
             get
             {
-                if (instance == null)
+                if (instance == null || instance.name != "DefaultUIOptions")
                 {
                     UIOptions[] options = Resources.FindObjectsOfTypeAll<UIOptions>();
                     if (options.Length > 0)
                     {
-                        instance = options[0];
+                        for (int i = 0; i < options.Length; ++i)
+                        {
+                            if (options[i].name == "DefaultUIOptions")
+                            {
+                                instance = options[i];
+                                break;
+                            }
+                        }
                     }
                 }
-                if (instance == null)
-                {
-                    instance = CreateInstance<UIOptions>(); // in memory
-                }
                 return instance;
+
+                // Je me suis retrouve avec 2 UIOptions, le premier etant celui cree en memoire, et pas mon asset!!
+                //UIOptions[] options = Resources.FindObjectsOfTypeAll<UIOptions>();
+                //if (options.Length > 0)
+                //{
+                //    for (int i = 0; i < options.Length; ++i)
+                //    {
+                //        instance = options[i];
+                //        if (options[i].name == "DefaultUIOptions")
+                //            return options[i];
+                //    }
+                //}
+                //return instance;
+
+                //if (instance == null)
+                //{
+                //    UIOptions[] options = Resources.FindObjectsOfTypeAll<UIOptions>();
+                //    if (options.Length > 0)
+                //    {
+                //        instance = options[0];
+                //    }
+                //}
+                //if (instance == null)
+                //{
+                //    instance = CreateInstance<UIOptions>(); // in memory
+                //}
+                //return instance;
             }
         }
 
@@ -50,22 +80,5 @@ namespace VRtist
             JsonUtility.FromJsonOverwrite(json, Instance);
             // + reloadui
         }
-
-
-
-        //private void OnEnable()
-        //{
-
-        //}
-
-        //private void OnDisable()
-        //{
-
-        //}
-
-        //private void OnDestroy()
-        //{
-
-        //}
     }
 }
