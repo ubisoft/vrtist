@@ -19,14 +19,14 @@ namespace VRtist
         {
             EditorGUI.BeginProperty(position, label, property);
             {
-                ScriptableObject propertySO = null;
-                ColorVariable propertyColorVariable = null;
+                //ScriptableObject propertySO = null;
+                UnityEngine.Object propertySO = null;
+                //ColorVariable propertyColorVariable = null;
 
                 // Is the field empty of filled with a ScriptableObject?
-                if (!property.hasMultipleDifferentValues && property.serializedObject.targetObject != null && property.serializedObject.targetObject is ScriptableObject)
+                if (!property.hasMultipleDifferentValues && property.serializedObject.targetObject != null)// && property.serializedObject.targetObject is ScriptableObject)
                 {
-                    propertySO = property.serializedObject.targetObject as ScriptableObject;
-                    propertyColorVariable = property.objectReferenceValue as ColorVariable;
+                    propertySO = property.serializedObject.targetObject;// as ScriptableObject;
                 }
 
                 var propertyRect = Rect.zero;
@@ -64,6 +64,7 @@ namespace VRtist
 
                 if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue != null)
                 {
+                    ColorVariable propertyColorVariable = property.objectReferenceValue as ColorVariable;
                     EditorGUI.BeginChangeCheck();
                     Color newColor = EditorGUI.ColorField(colorPickerRect, GUIContent.none, propertyColorVariable.value, true, true, false);
                     if (EditorGUI.EndChangeCheck())
