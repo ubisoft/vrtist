@@ -25,9 +25,9 @@ namespace VRtist
         {
             if (null == gObject) { return; }
             gObject.transform.parent.parent = parent;
-            gObject.transform.localPosition = position;
-            gObject.transform.localRotation = rotation;
-            gObject.transform.localScale = scale;
+            gObject.transform.parent.localPosition = position;
+            gObject.transform.parent.localRotation = rotation;
+            gObject.transform.parent.localScale = scale;
 
             Node node = SyncData.nodes[gObject.name];
             node.AddInstance(gObject);
@@ -45,9 +45,9 @@ namespace VRtist
         }
         public override void Submit()
         {
-            position = gObject.transform.localPosition;
-            rotation = gObject.transform.localRotation;
-            scale = gObject.transform.localScale;
+            position = gObject.transform.parent.localPosition;
+            rotation = gObject.transform.parent.localRotation;
+            scale = gObject.transform.parent.localScale;
             Redo();
             CommandManager.AddCommand(this);
         }
