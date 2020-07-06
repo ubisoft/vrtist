@@ -26,4 +26,5 @@ MonoBehaviour:
     type: 2}
   pinWindowButtonColor: {fileID: 11400000, guid: 834619946c6d5d344a1fd9cf348a2f16,
     type: 2}
+  focusColor: {fileID: 11400000, guid: b154bbca61ab8f44fb466a0c6deb45a2, type: 2}
   sceneHoverColor: {fileID: 11400000, guid: fb2bdb474b7f9ae48a8794903ad26f42, type: 2}

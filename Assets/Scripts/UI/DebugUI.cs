@@ -43,11 +43,11 @@ namespace VRtist
                     //element.baseColor.constant = Color.gray;
 
                     element.baseColor.useConstant = false;
-                    element.baseColor.constant = UIOptions.Instance.backgroundColor.value;
+                    element.baseColor.constant = UIOptions.BackgroundColor;
                     element.baseColor.reference = UIOptions.Instance.backgroundColor;
 
                     element.disabledColor.useConstant = false;
-                    element.disabledColor.constant = UIOptions.Instance.disabledColor.value;
+                    element.disabledColor.constant = UIOptions.DisabledColor;
                     element.disabledColor.reference = UIOptions.Instance.disabledColor;
 
                     UIButton button = element.GetComponent<UIButton>();
@@ -59,14 +59,14 @@ namespace VRtist
                         if (button.transform.parent.gameObject.name == "CloseButton")
                         {
                             button.baseColor.useConstant = false;
-                            button.baseColor.constant = UIOptions.Instance.closeWindowButtonColor.value;
+                            button.baseColor.constant = UIOptions.CloseWindowButtonColor;
                             button.baseColor.reference = UIOptions.Instance.closeWindowButtonColor;
                         }
 
                         if (button.transform.parent.gameObject.name == "PinButton")
                         {
                             button.baseColor.useConstant = false;
-                            button.baseColor.constant = UIOptions.Instance.pinWindowButtonColor.value;
+                            button.baseColor.constant = UIOptions.PinWindowButtonColor;
                             button.baseColor.reference = UIOptions.Instance.pinWindowButtonColor;
                         }
                     }
@@ -75,7 +75,7 @@ namespace VRtist
                     if (label != null)
                     {
                         label.textColor.useConstant = false;
-                        label.textColor.constant = UIOptions.Instance.foregroundColor.value;
+                        label.textColor.constant = UIOptions.ForegroundColor;
                         label.textColor.reference = UIOptions.Instance.foregroundColor;
                     }
 
@@ -83,40 +83,33 @@ namespace VRtist
                     if (panel != null)
                     {
                         panel.baseColor.useConstant = false;
-                        panel.baseColor.constant = UIOptions.Instance.panelColor.value;
+                        panel.baseColor.constant = UIOptions.PanelColor;
                         panel.baseColor.reference = UIOptions.Instance.panelColor;
                     }
 
                     UIElement checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
-                        //checkbox.baseColor.useConstant = true;
-                        //checkbox.baseColor.constant = Color.green;
                     }
 
                     UIElement slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
-                        //slider.baseColor.useConstant = true;
-                        //slider.baseColor.constant = Color.red;
                     }
 
                     UIElement vslider = element.GetComponent<UIVerticalSlider>();
                     if (vslider != null)
                     {
-
                     }
 
                     UIElement spinner = element.GetComponent<UISpinner>();
                     if (spinner)
                     {
-
                     }
 
                     UIElement timebar = element.GetComponent<UITimeBar>();
                     if (timebar)
                     {
-
                     }
 
                     element.NeedsRebuild = true;

@@ -17,9 +17,25 @@ namespace VRtist
         public ColorVariable panelColor;
         public ColorVariable closeWindowButtonColor;
         public ColorVariable pinWindowButtonColor;
-
+        public ColorVariable focusColor;
         [Space(30)]
         public HDRColorVariable sceneHoverColor;// = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow
+
+        // ReadOnly Properties
+
+        public static Color ForegroundColor { get { return Instance.foregroundColor.value; } }
+        public static Color BackgroundColor { get { return Instance.backgroundColor.value; } }
+        public static Color PushedColor { get { return Instance.pushedColor.value; } }
+        public static Color CheckedColor { get { return Instance.checkedColor.value; } }
+        public static Color DisabledColor { get { return Instance.disabledColor.value; } }
+        public static Color SliderRailColor { get { return Instance.sliderRailColor.value; } }
+        public static Color SliderKnobColor { get { return Instance.sliderKnobColor.value; } }
+        public static Color AttenuatedTextColor { get { return Instance.attenuatedTextColor.value; } }
+        public static Color PanelColor { get { return Instance.panelColor.value; } }
+        public static Color CloseWindowButtonColor { get { return Instance.closeWindowButtonColor.value; } }
+        public static Color PinWindowButtonColor { get { return Instance.pinWindowButtonColor.value; } }
+        public static Color SceneHoverColor { get { return Instance.sceneHoverColor.value; } }
+        public static Color FocusColor { get { return Instance.focusColor.value; } }
 
         private static UIOptions instance = null;
         public static UIOptions Instance
@@ -28,18 +44,20 @@ namespace VRtist
             {
                 if (instance == null || instance.name != "DefaultUIOptions")
                 {
-                    UIOptions[] options = Resources.FindObjectsOfTypeAll<UIOptions>();
-                    if (options.Length > 0)
-                    {
-                        for (int i = 0; i < options.Length; ++i)
-                        {
-                            if (options[i].name == "DefaultUIOptions")
-                            {
-                                instance = options[i];
-                                break;
-                            }
-                        }
-                    }
+                    instance = Resources.Load<UIOptions>("Data/UI/DefaultUIOptions");
+                    // NOTE: le FindObjectsOfTypeAll retourne une liste vide parfois!!!
+                    //UIOptions[] options = Resources.FindObjectsOfTypeAll<UIOptions>();
+                    //if (options.Length > 0)
+                    //{
+                    //    for (int i = 0; i < options.Length; ++i)
+                    //    {
+                    //        if (options[i].name == "DefaultUIOptions")
+                    //        {
+                    //            instance = options[i];
+                    //            break;
+                    //        }
+                    //    }
+                    //}
                 }
                 return instance;
 

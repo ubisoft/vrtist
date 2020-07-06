@@ -23,6 +23,10 @@ namespace VRtist
                 {
                     constant = value;
                 }
+                else
+                {
+                    reference.value = value;
+                }
             }
         }
     }
