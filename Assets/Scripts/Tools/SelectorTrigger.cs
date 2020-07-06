@@ -141,6 +141,7 @@ namespace VRtist
 
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
             {
+                CommandGroup group = new CommandGroup();
                 RemoveCollidedObject(hoveredObject);
                 selector.RemoveSiblingsFromSelection(hoveredObject, false);
 
@@ -150,6 +151,7 @@ namespace VRtist
 
                 VRInput.SendHapticImpulse(VRInput.rightController,0, 1, 0.2f);
                 new CommandRemoveGameObject(hoveredObject).Submit();
+                group.Submit();
             }
         }
     }

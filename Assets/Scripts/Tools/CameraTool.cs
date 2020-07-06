@@ -34,7 +34,7 @@ namespace VRtist
         private UICheckbox feedbackPositionningCheckbox = null;
         private bool feedbackPositioning = false;
         private float cameraFeedbackScale = 1f;
-        private float cameraFeedbackScaleFactor = 1.1f;
+        private float cameraFeedbackScaleFactor = 1.05f;
 
         private bool showDopesheet = false;
         private bool firstTimeShowDopesheet = true;
@@ -208,16 +208,21 @@ namespace VRtist
         protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
         {
             GameObject currentCamera = Selection.activeCamera;
-            if(null != currentCamera)
+            float far = 1000f * 0.7f; // 70% of far clip plane
+            float fov = 36.3f;
+            float aspect = 16f / 9f;
+            if (null != currentCamera)
             {
-                float far = Camera.main.farClipPlane * 0.7f;
-                backgroundFeedback.position = position + direction.normalized * far;
-                backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
-                float scale = far * Mathf.Tan(Mathf.Deg2Rad * Camera.main.fieldOfView * 0.5f) * 0.5f * cameraFeedbackScale;
+                far = Camera.main.farClipPlane * 0.7f;
+                fov = Camera.main.fieldOfView;
 
                 Camera cam = currentCamera.GetComponentInChildren<Camera>();
-                backgroundFeedback.localScale = new Vector3(scale * cam.aspect, scale, scale);
+                aspect = cam.aspect;
             }
+            float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * cameraFeedbackScale;
+            backgroundFeedback.position = position + direction.normalized * far;
+            backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
+            backgroundFeedback.localScale = new Vector3(scale * aspect, scale, scale);
         }
 
         public override void OnUIObjectEnter(int gohash)
@@ -236,6 +241,10 @@ namespace VRtist
             showCameraFeedback = value;
 
             backgroundFeedback.gameObject.SetActive(value);
+            if(value)
+            {
+                UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
+            }
 
             UICheckbox feedbackPositionningCB = feedbackPositionningCheckbox.GetComponent<UICheckbox>();
             if(feedbackPositionningCB != null)
