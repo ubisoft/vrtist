@@ -23,11 +23,11 @@ namespace VRtist
         {
             if(Selection.IsSelected(cameraObject))
             {
-                SetColor(UIElement.default_pushed_color);
+                SetColor(UIOptions.PushedColor);
             }
             else
             {
-                SetColor(UIElement.default_background_color);
+                SetColor(UIOptions.BackgroundColor);
             }
         }
 
@@ -35,17 +35,17 @@ namespace VRtist
         {
             if(args.activeCamera == cameraObject)
             {
-                SetColor(UIElement.default_hover_color);
+                SetColor(UIOptions.SceneHoverColor);
             }
             else
             {
                 if(Selection.IsSelected(cameraObject))
                 {
-                    SetColor(UIElement.default_pushed_color);
+                    SetColor(UIOptions.PushedColor);
                 }
                 else
                 {
-                    SetColor(UIElement.default_background_color);
+                    SetColor(UIOptions.BackgroundColor);
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace VRtist
         {
             this.cameraObject = cameraObject;
             Camera cam = cameraObject.GetComponentInChildren<Camera>(true);
-            SetColor(UIElement.default_background_color);
+            SetColor(UIOptions.BackgroundColor);
             gameObject.GetComponentInChildren<MeshRenderer>(true).materials[1].SetTexture("_UnlitColorMap", cam.targetTexture);
         }
     }

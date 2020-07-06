@@ -5,17 +5,15 @@ namespace VRtist
     public class UIElement : MonoBehaviour
     {
         // "stylesheet"
-        public static readonly Color default_foreground_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
-        public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
-        public static readonly Color default_focus_color = new Color(0.3f, 1f, 0.3f, 1.0f); // default green for ShotManager
+        //public static readonly Color default_foreground_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
+        //public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
+        //public static readonly Color default_focus_color = new Color(0.3f, 1f, 0.3f, 1.0f); // default green for ShotManager
         public static readonly Color default_pushed_color = new Color(0.0f, 0.65f, 1.0f, 1.0f); // light vivid blue
-        public static readonly Color default_checked_color = new Color(0.0f, 0.85f, 1.0f, 1.0f); // light vivid blue
-        public static readonly Color default_hover_color = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow
-        //public static readonly Color default_disabled_color = new Color(0.20f, 0.23f, 0.25f); // dark grey blue
-        //public static readonly Color default_disabled_color = new Color(0.4708f, 0.7317f, 0.8679f); // light grey blue
-        public static readonly Color default_disabled_color = new Color(0.5873f, 0.6170f, 0.6320f); // middle grey blue
-        public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
-        public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
+        //public static readonly Color default_checked_color = new Color(0.0f, 0.85f, 1.0f, 1.0f); // light vivid blue
+        //public static readonly Color default_hover_color = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow
+        //public static readonly Color default_disabled_color = new Color(0.5873f, 0.6170f, 0.6320f); // middle grey blue
+        //public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
+        //public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
 
         public static readonly float collider_min_depth_shallow = 0.03f;
         public static readonly float collider_min_depth_deep = 0.1f;

@@ -31,9 +31,9 @@ namespace VRtist
         private static readonly string default_material_name = "UIBase";
         private static readonly string default_rail_material_name = "UISliderRail";
         private static readonly string default_knob_material_name = "UISliderKnob";
-        private static readonly Color default_color = UIElement.default_background_color;
-        private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
-        private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
+        //private static readonly Color default_color = UIElement.default_background_color;
+        //private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
+        //private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
         private static readonly string default_text = "Slider";
 
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
@@ -496,8 +496,8 @@ namespace VRtist
             public Material knobMaterial = UIUtils.LoadMaterial(UISlider.default_knob_material_name);
 
             public ColorVariable color = UIOptions.Instance.backgroundColor;// UISlider.default_color;
-            public Color railColor = UISlider.default_rail_color;
-            public Color knobColor = UISlider.default_knob_color;
+            public Color railColor = UIOptions.SliderRailColor; // UISlider.default_rail_color;
+            public Color knobColor = UIOptions.SliderKnobColor; // UISlider.default_knob_color;
             // TODO
             //public ColorVariable railColor = UISlider.default_rail_color;
             //public ColorVariable knobColor = UISlider.default_knob_color;

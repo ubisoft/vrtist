@@ -34,7 +34,7 @@ namespace VRtist
         private static readonly int default_current_value_int = 5;
         private static readonly float default_value_rate_int = 0.1f;
         private static readonly string default_background_material_name = "UIBase";
-        private static readonly Color default_color = UIElement.default_background_color;
+        //private static readonly Color default_color = UIElement.default_background_color;
         private static readonly string default_text = "Spinner";
 
         [SpaceHeader("Spinner Base Shape Parmeters", 6, 0.3f, 0.3f, 0.3f)]

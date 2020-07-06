@@ -19,7 +19,7 @@ namespace VRtist
             ShotManager sm = ShotManager.Instance;
             int currentFrame = GlobalState.currentFrame;
 
-            Color focusColor = UIElement.default_focus_color;
+            Color focusColor = UIOptions.FocusColor;
 
             for (int i = 0; i < sm.shots.Count; ++i)
             {

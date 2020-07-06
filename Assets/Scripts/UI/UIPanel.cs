@@ -18,7 +18,7 @@ namespace VRtist
         private static readonly float default_thickness = 0.001f;
         private static readonly UIPanel.BackgroundGeometryStyle default_bg_geom_style = UIPanel.BackgroundGeometryStyle.Flat;
         public static readonly string default_material_name = "UIPanel";
-        public static readonly Color default_color = UIElement.default_background_color;
+        //public static readonly Color default_color = UIElement.default_background_color;
 
         [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = default_margin;

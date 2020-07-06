@@ -20,7 +20,7 @@ namespace VRtist
         public static readonly float default_margin = 0.005f;
         public static readonly float default_thickness = 0.001f;
         public static readonly string default_material_name = "UIBase";
-        public static readonly Color default_color = UIElement.default_background_color;
+        //public static readonly Color default_color = UIElement.default_background_color;
         public static readonly CheckboxContent default_content = CheckboxContent.CheckboxAndText;
         public static readonly string default_text = "Checkbox";
         public static readonly string default_checked_icon_name = "checkbox_checked";

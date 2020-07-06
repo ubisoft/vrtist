@@ -33,9 +33,9 @@ namespace VRtist
         private static readonly string default_material_name = "UIBase";
         private static readonly string default_rail_material_name = "UISliderRail";
         private static readonly string default_knob_material_name = "UISliderKnob";
-        private static readonly Color default_color = UIElement.default_background_color;
-        private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
-        private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
+        //private static readonly Color default_color = UIElement.default_background_color;
+        //private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
+        //private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
         private static readonly string default_text = "Slider";
         private static readonly string default_icon_name = "paint";
         private static readonly SliderTextValueAlign default_text_value_align = SliderTextValueAlign.Left;

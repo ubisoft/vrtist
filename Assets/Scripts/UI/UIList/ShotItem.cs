@@ -63,7 +63,7 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
-            Color selectedColor = value ? UIElement.default_checked_color : UIElement.default_background_color;
+            Color selectedColor = value ? UIOptions.CheckedColor : UIOptions.BackgroundColor;
             shotNameLabel.SetColor(selectedColor);
             cameraNameLabel.SetColor(selectedColor);
             cameraButton.SetColor(selectedColor);

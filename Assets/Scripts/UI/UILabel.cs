@@ -21,8 +21,8 @@ namespace VRtist
         public static readonly float default_height = 0.05f;
         public static readonly float default_margin = 0.005f;
         public static readonly float default_thickness = 0.001f;
-        public static readonly Color default_label_background_color = UIElement.default_background_color;
-        public static readonly Color default_label_foreground_color = UIElement.default_foreground_color;
+        //public static readonly Color default_label_background_color = UIElement.default_background_color;
+        //public static readonly Color default_label_foreground_color = UIElement.default_foreground_color;
         public static readonly string default_text = "Label";
         public static readonly string default_material_name = "UIElementTransparent";
         public static readonly LabelContent default_content = LabelContent.TextOnly;

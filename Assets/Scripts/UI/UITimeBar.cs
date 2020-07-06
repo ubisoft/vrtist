@@ -20,7 +20,7 @@ namespace VRtist
         private static readonly int default_max_value = 250;
         private static readonly int default_current_value = 0;
         private static readonly string default_background_material_name = "UIBase";
-        private static readonly Color default_color = UIElement.default_background_color;
+        //private static readonly Color default_color = UIElement.default_background_color;
         private static readonly string default_text = "TimeBar";
 
         [SpaceHeader("TimeBar Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
