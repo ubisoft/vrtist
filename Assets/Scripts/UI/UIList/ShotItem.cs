@@ -352,8 +352,8 @@ namespace VRtist
 
             setCameraButton.isCheckable = true;
             setCameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
-            setCameraButton.checkedColor = UIElement.default_focus_color;
-            setCameraButton.uncheckedSprite = UIUtils.LoadIcon("icon-camera");
+            setCameraButton.checkedColor = UIOptions.FocusColor;
+            setCameraButton.baseSprite = UIUtils.LoadIcon("icon-camera");
             
             setCameraButton.SetLightLayer(5);
 
