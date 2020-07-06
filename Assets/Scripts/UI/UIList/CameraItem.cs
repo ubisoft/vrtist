@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace VRtist
 {
@@ -21,7 +22,7 @@ namespace VRtist
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            if(Selection.IsSelected(cameraObject))
+            if (Selection.IsSelected(cameraObject))
             {
                 SetColor(UIOptions.PushedColor);
             }
@@ -33,13 +34,13 @@ namespace VRtist
 
         private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
         {
-            if(args.activeCamera == cameraObject)
+            if (args.activeCamera == cameraObject)
             {
                 SetColor(UIOptions.SceneHoverColor);
             }
             else
             {
-                if(Selection.IsSelected(cameraObject))
+                if (Selection.IsSelected(cameraObject))
                 {
                     SetColor(UIOptions.PushedColor);
                 }
@@ -61,6 +62,8 @@ namespace VRtist
             Camera cam = cameraObject.GetComponentInChildren<Camera>(true);
             SetColor(UIOptions.BackgroundColor);
             gameObject.GetComponentInChildren<MeshRenderer>(true).materials[1].SetTexture("_UnlitColorMap", cam.targetTexture);
+            TextMeshProUGUI text = transform.Find("Canvas/Panel/Text").gameObject.GetComponent<TextMeshProUGUI>();
+            text.text = cameraObject.name;
         }
     }
 }

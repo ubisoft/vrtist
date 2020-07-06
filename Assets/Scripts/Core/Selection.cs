@@ -204,6 +204,18 @@ namespace VRtist
             return true;
         }
 
+        public static CameraController GetSelectedCamera()
+        {
+            foreach(GameObject selectedItem in selection.Values)
+            {
+                CameraController controller = selectedItem.GetComponent<CameraController>();
+                if (null != controller)
+                    return controller;
+            }
+
+            return null;
+        }
+
         public static bool RemoveFromHover(GameObject gObject)
         {
             string layerName = "Default";
@@ -222,6 +234,14 @@ namespace VRtist
             if(gObject)
             {
                 SetRecursiveLayer(gObject, layerName);
+            }
+
+            CameraController controller = gObject.GetComponent<CameraController>();
+            if (null != controller) 
+            {
+                controller = GetSelectedCamera();
+                if( null != controller )
+                    SetActiveCamera(controller); 
             }
 
             return true;

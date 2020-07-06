@@ -165,6 +165,7 @@ namespace VRtist
         public static void Create(CreatePanelParams input)
         {
             GameObject go = new GameObject(input.widgetName);
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
