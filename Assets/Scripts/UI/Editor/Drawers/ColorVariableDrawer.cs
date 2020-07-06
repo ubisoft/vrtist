@@ -17,11 +17,14 @@ namespace VRtist
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            DrawColorVariable(position, property, label, false);
+        }
+
+        public static void DrawColorVariable(Rect position, SerializedProperty property, GUIContent label, bool isEmbedded)
+        {
             EditorGUI.BeginProperty(position, label, property);
             {
-                //ScriptableObject propertySO = null;
                 UnityEngine.Object propertySO = null;
-                //ColorVariable propertyColorVariable = null;
 
                 // Is the field empty of filled with a ScriptableObject?
                 if (!property.hasMultipleDifferentValues && property.serializedObject.targetObject != null)// && property.serializedObject.targetObject is ScriptableObject)
@@ -29,15 +32,15 @@ namespace VRtist
                     propertySO = property.serializedObject.targetObject;// as ScriptableObject;
                 }
 
-                var propertyRect = Rect.zero;
                 var guiContent = new GUIContent(property.displayName);
-                EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), guiContent);
+                if (!isEmbedded)
+                {
+                    position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), guiContent);
+                }
 
-                var indentedPosition = EditorGUI.IndentedRect(position);
-                var indentOffset = indentedPosition.x - position.x;
-                propertyRect = new Rect(position.x + (EditorGUIUtility.labelWidth - indentOffset), position.y, position.width - (EditorGUIUtility.labelWidth - indentOffset), EditorGUIUtility.singleLineHeight);
+                Rect propertyRect = position;
 
-                // if the field is empty, reserve some space for the "create" button.
+                // If the field is empty, reserve some space for the "create" button.
                 if (propertySO != null || property.objectReferenceValue == null)
                 {
                     propertyRect.width -= buttonWidth;
@@ -48,8 +51,13 @@ namespace VRtist
                     propertyRect.width -= colorPickerWidth;
                 }
 
+                if (isEmbedded)
+                {
+                    propertyRect.width -= 20;
+                }
+
                 // The field representing the SO
-                Type type = fieldInfo.FieldType;
+                Type type = typeof(ColorVariable);
                 property.objectReferenceValue = EditorGUI.ObjectField(propertyRect, GUIContent.none, property.objectReferenceValue, type, false);
                 if (GUI.changed)
                 {
@@ -58,9 +66,17 @@ namespace VRtist
 
                 // The rect for the "create" button
                 var buttonRect = new Rect(position.x + position.width - buttonWidth, position.y, buttonWidth, EditorGUIUtility.singleLineHeight);
+                if (isEmbedded)
+                {
+                    buttonRect.position = new Vector2(buttonRect.position.x - 20, buttonRect.position.y);
+                }
 
                 // The rect for the color picker
                 var colorPickerRect = new Rect(position.x + position.width - colorPickerWidth, position.y, colorPickerWidth, EditorGUIUtility.singleLineHeight);
+                if (isEmbedded)
+                {
+                    colorPickerRect.position = new Vector2(colorPickerRect.position.x - 20, colorPickerRect.position.y);
+                }
 
                 if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue != null)
                 {
@@ -74,7 +90,7 @@ namespace VRtist
                 }
                 else
                 {
-                    if (GUI.Button(buttonRect, "Create"))
+                    if (GUI.Button(buttonRect, "New"))
                     {
                         string selectedAssetPath = "Assets/Resources/Data/UI/Colors";
                         if (property.serializedObject.targetObject is MonoBehaviour)
