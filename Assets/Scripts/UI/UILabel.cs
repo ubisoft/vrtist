@@ -282,8 +282,8 @@ namespace VRtist
             public float margin = UILabel.default_margin;
             public float thickness = UILabel.default_thickness;
             public Material material = UIUtils.LoadMaterial(UILabel.default_material_name);
-            public ColorVariable bgcolor = UIOptions.Instance.backgroundColor;// UILabel.default_label_background_color;
-            public ColorVariable fgcolor = UIOptions.Instance.foregroundColor;// UILabel.default_label_foreground_color;
+            public ColorVar bgcolor = UIOptions.BackgroundColorVar;
+            public ColorVar fgcolor = UIOptions.ForegroundColorVar;
             public LabelContent labelContent = UILabel.default_content;
             public ImagePosition imagePosition = UILabel.default_image_position;
             public IconMarginBehavior iconMarginBehavior = UILabel.default_icon_margin_behavior;

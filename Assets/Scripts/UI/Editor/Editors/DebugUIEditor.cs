@@ -50,9 +50,19 @@ namespace VRtist
 
                 GUILayout.Label(new GUIContent("Debug UIOptions"), textStyle, GUILayout.Height(30));
 
-                if (GUILayout.Button("Reset All Colors", GUILayout.Width(200), GUILayout.Height(30)))
+                if (GUILayout.Button("Refresh", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.UIOPTIONS_Refresh();
+                }
+
+                if (GUILayout.Button("Relink Widgets <-> Colors", GUILayout.Width(200), GUILayout.Height(30)))
                 {
                     debug.UIOPTIONS_ResetAllColors();
+                }
+
+                if (GUILayout.Button("Random Change Colors", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.UIOPTIONS_RandomChangeColors();
                 }
             }
             GUILayout.EndVertical();

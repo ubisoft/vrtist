@@ -49,16 +49,7 @@ namespace VRtist
                 else
                 {
                     SerializedProperty referenceProperty = property.FindPropertyRelative("reference");
-
-                    ColorVariableDrawer.DrawColorVariable(position, referenceProperty, GUIContent.none, true);
-
-
-                    ////ScriptableObject referenceSO = referenceProperty.objectReferenceValue as ScriptableObject;
-                    //EditorGUI.PropertyField(position, referenceProperty);
-                    //if (GUI.changed)
-                    //{
-                    //    //referenceSO.ApplyModifiedProperties();
-                    //}
+                    ColorVarDrawer.DrawColorVar(position, referenceProperty, GUIContent.none, true);
                 }
             }
             EditorGUI.EndProperty();

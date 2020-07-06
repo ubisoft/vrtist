@@ -30,6 +30,21 @@ namespace VRtist
         //
         // UIOptions
         //
+        public void UIOPTIONS_Refresh()
+        {
+            // refresh all items
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+                    element.NeedsRebuild = true;
+                    //element.RefreshColor();
+                }
+            }
+        }
+
         public void UIOPTIONS_ResetAllColors()
         {
             for(int w = 0; w < windows.Length; ++w)
@@ -116,6 +131,13 @@ namespace VRtist
                     //element.RefreshColor();
                 }
             }
+        }
+
+        public void UIOPTIONS_RandomChangeColors()
+        {
+            UIOptions.BackgroundColorVar.value = Random.ColorHSV();
+
+            UIOPTIONS_Refresh();
         }
     }
 }

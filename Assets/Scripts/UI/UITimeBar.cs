@@ -336,7 +336,7 @@ namespace VRtist
             public int max_slider_value = UITimeBar.default_max_value;
             public int cur_slider_value = UITimeBar.default_current_value;
             public Material background_material = UIUtils.LoadMaterial(UITimeBar.default_background_material_name);
-            public ColorVariable background_color = UIOptions.Instance.backgroundColor;
+            public ColorVar background_color = UIOptions.BackgroundColorVar;
             public string caption = UITimeBar.default_text;
         }
 

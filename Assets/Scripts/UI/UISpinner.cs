@@ -468,7 +468,7 @@ namespace VRtist
             public int cur_spinner_value_int = UISpinner.default_current_value_int;
             public float spinner_value_rate_int = UISpinner.default_value_rate_int;
             public Material background_material = UIUtils.LoadMaterial(UISpinner.default_background_material_name);
-            public ColorVariable background_color = UIOptions.Instance.backgroundColor;
+            public ColorVar background_color = UIOptions.BackgroundColorVar;
             public string caption = UISpinner.default_text;
         }
 

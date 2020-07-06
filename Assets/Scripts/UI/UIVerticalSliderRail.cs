@@ -58,7 +58,7 @@ namespace VRtist
             public float thickness;
             public float margin;
             public Material material;
-            public ColorVariable c = UIOptions.Instance.sliderRailColor;
+            public ColorVar c = UIOptions.SliderRailColorVar;
         }
 
         public static UIVerticalSliderRail Create(CreateArgs input)

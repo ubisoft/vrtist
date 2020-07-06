@@ -158,7 +158,7 @@ namespace VRtist
             public float radius = UIPanel.default_radius;
             public UIPanel.BackgroundGeometryStyle backgroundGeometryStyle = UIPanel.default_bg_geom_style;
             public Material material = UIUtils.LoadMaterial(UIPanel.default_material_name);
-            public ColorVariable color = UIOptions.Instance.backgroundColor; //UIPanel.default_color;
+            public ColorVar color = UIOptions.BackgroundColorVar;
         }
 
 

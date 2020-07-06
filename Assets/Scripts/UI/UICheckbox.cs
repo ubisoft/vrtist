@@ -318,7 +318,7 @@ namespace VRtist
             public float margin = UICheckbox.default_margin;
             public float thickness = UICheckbox.default_thickness;
             public Material material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
-            public ColorVariable color = UIOptions.Instance.backgroundColor; //UICheckbox.default_color;
+            public ColorVar color = UIOptions.BackgroundColorVar;
             public string caption = UICheckbox.default_text;
             public CheckboxContent content = default_content;
             public Sprite checkedIcon = UIUtils.LoadIcon(UICheckbox.default_checked_icon_name);

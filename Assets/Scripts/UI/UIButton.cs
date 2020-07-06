@@ -22,7 +22,6 @@ namespace VRtist
         public static readonly float default_margin = 0.005f;
         public static readonly float default_thickness = 0.001f;
         public static readonly string default_material_name = "UIBase";
-        //public static readonly Color default_color = UIElement.default_background_color;
         public static readonly string default_text = "Button";
         public static readonly string default_icon_name = "paint";
         public static readonly ButtonContent default_content = ButtonContent.TextAndImage;
@@ -359,7 +358,7 @@ namespace VRtist
             public float margin = UIButton.default_margin;
             public float thickness = UIButton.default_thickness;
             public Material material = UIUtils.LoadMaterial(UIButton.default_material_name);
-            public ColorVariable color = UIOptions.Instance.backgroundColor;
+            public ColorVar color = UIOptions.BackgroundColorVar;
             public ButtonContent buttonContent = UIButton.default_content;
             public IconMarginBehavior iconMarginBehavior = UIButton.default_icon_margin_behavior;
             public float iconMargin = UIButton.default_icon_margin;

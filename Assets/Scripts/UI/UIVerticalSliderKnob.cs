@@ -40,7 +40,7 @@ namespace VRtist
             public float radius;
             public float depth;
             public Material material;
-            public ColorVariable c = UIOptions.Instance.sliderKnobColor;
+            public ColorVar c = UIOptions.SliderKnobColorVar;
         }
 
         public static UIVerticalSliderKnob Create(CreateArgs input)

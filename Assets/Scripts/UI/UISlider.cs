@@ -495,7 +495,7 @@ namespace VRtist
             public Material railMaterial = UIUtils.LoadMaterial(UISlider.default_rail_material_name);
             public Material knobMaterial = UIUtils.LoadMaterial(UISlider.default_knob_material_name);
 
-            public ColorVariable color = UIOptions.Instance.backgroundColor;// UISlider.default_color;
+            public ColorVar color = UIOptions.BackgroundColorVar;
             public Color railColor = UIOptions.SliderRailColor; // UISlider.default_rail_color;
             public Color knobColor = UIOptions.SliderKnobColor; // UISlider.default_knob_color;
             // TODO
