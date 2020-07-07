@@ -394,6 +394,7 @@ namespace VRtist
             uiButton.margin = input.margin;
             uiButton.thickness = input.thickness;
             uiButton.content = input.buttonContent;
+            uiButton.baseSprite = input.icon;
             uiButton.iconMarginBehavior = input.iconMarginBehavior;
             uiButton.iconMargin = input.iconMargin;
             uiButton.source_material = input.material;

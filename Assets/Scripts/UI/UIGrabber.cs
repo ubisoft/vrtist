@@ -3,6 +3,8 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
+    [ExecuteInEditMode]
+    [SelectionBase]
     public class UIGrabber : UIElement
     {
         //public Deformer deformer = null;
@@ -25,7 +27,11 @@ namespace VRtist
             }
             else
             {
-                ToolsUIManager.Instance.RegisterUI3DObject(prefab);
+                // TODO: remove? est-ce qu'on utilise encore des UnityEvent<hash>
+                if (ToolsUIManager.Instance != null)
+                {
+                    ToolsUIManager.Instance.RegisterUI3DObject(prefab);
+                }
             }
 
             onClickEvent.AddListener(OnPush3DObject);
@@ -33,9 +39,31 @@ namespace VRtist
             onHoverEvent.AddListener(OnStayOn3DObject);
         }
 
+        private void OnValidate()
+        {
+            NeedsRebuild = true;
+        }
+
+        private void Update()
+        {
+#if UNITY_EDITOR
+            if (NeedsRebuild)
+            {
+                //RebuildMesh();
+                UpdateLocalPosition();
+                //UpdateAnchor();
+                //UpdateChildren();
+                //SetColor(Disabled ? DisabledColor : BaseColor);
+                NeedsRebuild = false;
+            }
+#endif
+        }
+
         public override void UpdateLocalPosition()
         {
-            // just to avoid grabbing the UIElement shit, for the moment.
+            base.UpdateLocalPosition();
+        //    // Override pour le moment, tant que j'ai pas rempli les relativeLocations.
+        //    // Sinon tout va se retrouver dans un coin.
         }
 
         private void OnTriggerEnter(Collider otherCollider)

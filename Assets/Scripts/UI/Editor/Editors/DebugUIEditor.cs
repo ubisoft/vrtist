@@ -42,11 +42,11 @@ namespace VRtist
                     debug.SHOTLIST_ClearList();
                 }
 
-                GUILayout.Space(50);
-
                 //
                 // UI OPTIONS
                 //
+
+                GUILayout.Space(40);
 
                 GUILayout.Label(new GUIContent("Debug UIOptions"), textStyle, GUILayout.Height(30));
 
@@ -64,6 +64,33 @@ namespace VRtist
                 {
                     debug.UIOPTIONS_RandomChangeColors();
                 }
+
+                //
+                // Asset Bank
+                //
+
+                GUILayout.Space(40);
+
+                GUILayout.Label(new GUIContent("Asset Bank"), textStyle, GUILayout.Height(30));
+
+                if (GUILayout.Button("Reorder", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.AssetBank_Reorder();
+                }
+
+                //
+                // Checkable icons.
+                //
+
+                GUILayout.Space(40);
+
+                GUILayout.Label(new GUIContent("Checkable Buttons"), textStyle, GUILayout.Height(30));
+
+                if (GUILayout.Button("SetBaseSprite", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.Checkable_SetBaseSprite();
+                }
+
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();

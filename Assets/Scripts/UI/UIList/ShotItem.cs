@@ -78,6 +78,9 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
+            // TODO: handle a Selected state for widgets, so that they can set their own selected color.
+            //       or else they will just "SetColor(Disabled ? DisabledColor : BaseColor);" in their
+            //       Update and bypass the following SetColor.
             Color selectedColor = value ? UIOptions.CheckedColor : UIOptions.BackgroundColor;
             shotNameLabel.SetColor(selectedColor);
             cameraNameLabel.SetColor(selectedColor);
