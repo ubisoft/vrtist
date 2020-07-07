@@ -12,7 +12,7 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UITimeBar : UIElement
     {
-        private static readonly string default_widget_name = "TimeBar";
+        private static readonly string default_widget_name = " New TimeBar";
         private static readonly float default_width = 0.3f;
         private static readonly float default_height = 0.03f;
         private static readonly float default_thickness = 0.001f;
@@ -109,6 +109,10 @@ namespace VRtist
                 currentValue = minValue;
             if (currentValue > maxValue)
                 currentValue = maxValue;
+
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
 
             NeedsRebuild = true;
         }
@@ -328,9 +332,9 @@ namespace VRtist
         {
             public Transform parent = null;
             public string widgetName = UITimeBar.default_widget_name;
-            public Vector3 relativeLocation;
-            public float width;
-            public float height;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UITimeBar.default_thickness);
+            public float width = UITimeBar.default_width;
+            public float height = UITimeBar.default_height;
             public float thickness = UITimeBar.default_thickness;
             public int min_slider_value = UITimeBar.default_min_value;
             public int max_slider_value = UITimeBar.default_max_value;
