@@ -17,25 +17,24 @@ namespace VRtist
         public enum TextAndValueVisibilityType { ShowTextAndValue, ShowValueOnly };
         public enum SpinnerValueType { Float, Int };
 
-        private static readonly string default_widget_name = "Spinner";
-        private static readonly float default_width = 0.13f;
-        private static readonly float default_height = 0.03f;
-        private static readonly float default_margin = 0.005f;
-        private static readonly float default_thickness = 0.001f;
-        private static readonly float default_spinner_separation = 0.65f;
-        private static readonly UISpinner.TextAndValueVisibilityType default_visibility_type = UISpinner.TextAndValueVisibilityType.ShowTextAndValue;
-        private static readonly UISpinner.SpinnerValueType default_value_type = UISpinner.SpinnerValueType.Float;
-        private static readonly float default_min_value_float = 0.0f;
-        private static readonly float default_max_value_float = 1.0f;
-        private static readonly float default_current_value_float = 0.5f;
-        private static readonly float default_value_rate_float = 0.01f;
-        private static readonly int default_min_value_int = 0;
-        private static readonly int default_max_value_int = 10;
-        private static readonly int default_current_value_int = 5;
-        private static readonly float default_value_rate_int = 0.1f;
-        private static readonly string default_background_material_name = "UIBase";
-        //private static readonly Color default_color = UIElement.default_background_color;
-        private static readonly string default_text = "Spinner";
+        public static readonly string default_widget_name = "Spinner";
+        public static readonly float default_width = 0.13f;
+        public static readonly float default_height = 0.03f;
+        public static readonly float default_margin = 0.005f;
+        public static readonly float default_thickness = 0.001f;
+        public static readonly float default_spinner_separation = 0.65f;
+        public static readonly UISpinner.TextAndValueVisibilityType default_visibility_type = UISpinner.TextAndValueVisibilityType.ShowTextAndValue;
+        public static readonly UISpinner.SpinnerValueType default_value_type = UISpinner.SpinnerValueType.Float;
+        public static readonly float default_min_value_float = 0.0f;
+        public static readonly float default_max_value_float = 1.0f;
+        public static readonly float default_current_value_float = 0.5f;
+        public static readonly float default_value_rate_float = 0.01f;
+        public static readonly int default_min_value_int = 0;
+        public static readonly int default_max_value_int = 10;
+        public static readonly int default_current_value_int = 5;
+        public static readonly float default_value_rate_int = 0.1f;
+        public static readonly string default_background_material_name = "UIBase";
+        public static readonly string default_text = "Spinner";
 
         [SpaceHeader("Spinner Base Shape Parmeters", 6, 0.3f, 0.3f, 0.3f)]
         [CentimeterFloat] public float margin = 0.005f;
@@ -209,6 +208,10 @@ namespace VRtist
                 currentIntValue = minIntValue;
             if (currentIntValue > maxIntValue)
                 currentIntValue = maxIntValue;
+
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
 
             NeedsRebuild = true;
         }
@@ -451,9 +454,9 @@ namespace VRtist
         {
             public Transform parent = null;
             public string widgetName = UISpinner.default_widget_name;
-            public Vector3 relativeLocation;
-            public float width;
-            public float height;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UISpinner.default_thickness);
+            public float width = UISpinner.default_width;
+            public float height = UISpinner.default_height;
             public float margin = UISpinner.default_margin;
             public float thickness = UISpinner.default_thickness;
             public float spinner_separation_pct = UISpinner.default_spinner_separation;

@@ -291,7 +291,7 @@ namespace VRtist
             {
                 parent = root.transform,
                 widgetName = "StartFrame",
-                relativeLocation = new Vector3(cx, 0, 0),
+                relativeLocation = new Vector3(cx, 0, -UISpinner.default_thickness),
                 width = 0.055f,
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
@@ -324,7 +324,7 @@ namespace VRtist
             {
                 parent = root.transform,
                 widgetName = "EndFrame",
-                relativeLocation = new Vector3(cx, 0, 0),
+                relativeLocation = new Vector3(cx, 0, -UISpinner.default_thickness),
                 width = 0.055f,
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
@@ -343,7 +343,7 @@ namespace VRtist
             {
                 parent = root.transform,
                 widgetName = "SetCameraButton",
-                relativeLocation = new Vector3(0, 0, -UIButton.default_thickness),
+                relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
                 width = 0.03f,
                 height = 0.03f,
                 icon = UIUtils.LoadIcon("icon-camera"),
