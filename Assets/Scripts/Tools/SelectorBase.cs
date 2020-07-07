@@ -775,7 +775,6 @@ namespace VRtist
             if (source.GetComponent<UIHandle>())
                 return null;
 
-            Transform parent = source.transform.parent;
             GameObject clone = SyncData.Duplicate(source);
             new CommandDuplicateGameObject(clone, source).Submit();
 
@@ -802,11 +801,14 @@ namespace VRtist
 
         public void DuplicateSelection()
         {
+            CommandGroup group = new CommandGroup();
             ManageMoveObjectsUndo();
 
             List<GameObject> objectsToBeDuplicated = Selection.GetObjects();
             foreach (GameObject obj in objectsToBeDuplicated)
                 DuplicateObject(obj);
+
+            group.Submit();
         }
 
         public void OnSelectMode()

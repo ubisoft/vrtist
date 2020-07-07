@@ -111,6 +111,7 @@ namespace VRtist
                 redoStack.Clear();
             }
 
+            /*
             int count = undoStack.Count;
             while (count > 0 && count > maxUndo)
             {
@@ -118,7 +119,7 @@ namespace VRtist
                 undoStack.RemoveAt(0);
                 firstCommand.Serialize(SceneSerializer.CurrentSerializer);
                 count--;
-            }
+            }*/
         }
 
         public static void BeginGroup(CommandGroup command)

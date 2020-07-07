@@ -181,9 +181,13 @@ namespace VRtist
 
         public static GameObject CreatePaint(Transform parent, Color color)
         {
+            GameObject intermediateParent = new GameObject();
+            intermediateParent.transform.parent = parent;
+
             GameObject paint = new GameObject();
-            paint.transform.parent = parent;
+            paint.transform.parent = intermediateParent.transform;
             paint.name = CreateUniqueName(paint, "Paint");
+            intermediateParent.name = paint.name + "_parent";
 
             paint.transform.localPosition = Vector3.zero;
             paint.transform.localRotation = Quaternion.identity;
