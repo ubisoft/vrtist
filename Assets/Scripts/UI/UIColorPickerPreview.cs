@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -69,6 +67,7 @@ namespace VRtist
         {
             GameObject go = new GameObject(objectName);
             go.tag = "UICollider";
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;

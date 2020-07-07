@@ -8,6 +8,19 @@ namespace VRtist
     [SelectionBase]
     public class UIColorPicker : UIElement
     {
+        private static readonly string default_widget_name = "New ColorPicker";
+        private static readonly float default_width = 0.3f;
+        private static readonly float default_height = 0.3f;
+        private static readonly float default_thickness = UIElement.default_element_thickness;
+        private static readonly float default_padding = 0.01f;
+        private static readonly float default_hueToSaturationRatio = 0.12f;
+        private static readonly float default_hueToPreviewRatio = 0.88f;
+        private static readonly string default_saturation_material_name = "Saturation";
+        private static readonly string default_hue_material_name = "Hue";
+        private static readonly string default_preview_material_name = "Preview";
+        private static readonly string default_saturation_cursor_name = "Cursor_Saturation";
+        private static readonly string default_hue_cursor_name = "Cursor_Hue";
+
         [SpaceHeader("Picker Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float thickness = 0.001f;
         [CentimeterFloat] public float padding = 0.01f;
@@ -195,9 +208,13 @@ namespace VRtist
                 thickness = min_thickness;
             if (padding < min_padding)
                 padding = min_padding;
-            
+
             // TODO: Test max padding relative to global width.
             //       See UIButton or UIPanel for examples about margin vs width
+
+            // Realign button to parent anchor if we change the thickness.
+            if (-thickness != relativeLocation.z)
+                relativeLocation.z = -thickness;
 
             NeedsRebuild = true;
         }
@@ -234,29 +251,40 @@ namespace VRtist
 #endif
         }
 
-        public static void CreateUIColorPicker(
-            string objectName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float thickness,
-            float padding,
-            float hueToSaturationRatio,
-            float hueToPreviewRatio,
-            Material saturationMaterial,
-            Material hueMaterial,
-            Material previewMaterial,
-            GameObject saturationCursorPrefab,
-            GameObject hueCursorPrefab)
+
+
+
+
+
+        public class CreateArgs
         {
-            GameObject go = new GameObject(objectName);
+            public Transform parent = null;
+            public string widgetName = UIColorPicker.default_widget_name;
+            public Vector3 relativeLocation = new Vector3(0, 0, -UIColorPicker.default_thickness);
+            public float width = UIColorPicker.default_width;
+            public float height = UIColorPicker.default_height;
+            public float thickness = UIColorPicker.default_thickness;
+            public float padding = UIColorPicker.default_padding;
+            public float hueToSaturationRatio = UIColorPicker.default_hueToSaturationRatio;
+            public float hueToPreviewRatio = UIColorPicker.default_hueToPreviewRatio;
+            public Material saturationMaterial = UIUtils.LoadMaterial(UIColorPicker.default_saturation_material_name);
+            public Material hueMaterial = UIUtils.LoadMaterial(UIColorPicker.default_hue_material_name);
+            public Material previewMaterial = UIUtils.LoadMaterial(UIColorPicker.default_preview_material_name);
+            public GameObject saturationCursorPrefab = UIUtils.LoadPrefab(UIColorPicker.default_saturation_cursor_name);
+            public GameObject hueCursorPrefab = UIUtils.LoadPrefab(UIColorPicker.default_hue_cursor_name);
+        }
+
+        public static void Create( CreateArgs input)
+        {
+            GameObject go = new GameObject(input.widgetName);
+            //go.tag = "UICollider"; le colorpicker en lui meme n'a pas de geometrie a collider, seulement ses enfants.
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -264,15 +292,15 @@ namespace VRtist
             }
 
             UIColorPicker uiColorPicker = go.AddComponent<UIColorPicker>();
-            uiColorPicker.relativeLocation = relativeLocation;
-            uiColorPicker.transform.parent = parent;
-            uiColorPicker.transform.localPosition = parentAnchor + relativeLocation;
+            uiColorPicker.relativeLocation = input.relativeLocation;
+            uiColorPicker.transform.parent = input.parent;
+            uiColorPicker.transform.localPosition = parentAnchor + input.relativeLocation;
             uiColorPicker.transform.localRotation = Quaternion.identity;
             uiColorPicker.transform.localScale = Vector3.one;
-            uiColorPicker.width = width;
-            uiColorPicker.height = height;
-            uiColorPicker.thickness = thickness;
-            uiColorPicker.padding = padding;
+            uiColorPicker.width = input.width;
+            uiColorPicker.height = input.height;
+            uiColorPicker.thickness = input.thickness;
+            uiColorPicker.padding = input.padding;
 
             //
             // Sub Components
@@ -280,41 +308,41 @@ namespace VRtist
 
             //      Saturation
 
-            Vector3 saturationPosition = new Vector3(0.0f, hueToSaturationRatio * -(height - padding) - padding, 0.0f);
-            float saturationWidth = width;
-            float saturationHeight = (1.0f - hueToSaturationRatio) * (height - padding);
-            float saturationThickness = thickness;
+            Vector3 saturationPosition = new Vector3(0.0f, input.hueToSaturationRatio * -(input.height - input.padding) - input.padding, 0.0f);
+            float saturationWidth = input.width;
+            float saturationHeight = (1.0f - input.hueToSaturationRatio) * (input.height - input.padding);
+            float saturationThickness = input.thickness;
 
             uiColorPicker.saturation = UIColorPickerSaturation.CreateUIColorPickerSaturation(
                 "Saturation", go.transform, 
                 saturationPosition, saturationWidth, saturationHeight, saturationThickness,
-                saturationMaterial, saturationCursorPrefab);
+                input.saturationMaterial, input.saturationCursorPrefab);
             uiColorPicker.saturation.colorPicker = uiColorPicker;
 
             //      Hue
 
             Vector3 huePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            float hueWidth = hueToPreviewRatio * (width - padding);
-            float hueHeight = hueToSaturationRatio * (height - padding);
-            float hueThickness = thickness;
+            float hueWidth = input.hueToPreviewRatio * (input.width - input.padding);
+            float hueHeight = input.hueToSaturationRatio * (input.height - input.padding);
+            float hueThickness = input.thickness;
 
             uiColorPicker.hue = UIColorPickerHue.CreateUIColorPickerHue(
                 "Hue", go.transform,
                 huePosition, hueWidth, hueHeight, hueThickness,
-                hueMaterial, hueCursorPrefab);
+                input.hueMaterial, input.hueCursorPrefab);
             uiColorPicker.hue.colorPicker = uiColorPicker;
 
             //      Preview
 
-            Vector3 previewPosition = new Vector3(hueToPreviewRatio * (width - padding) + padding, 0.0f, 0.0f);
-            float previewWidth = (1.0f - hueToPreviewRatio) * (width - padding);
-            float previewHeight = hueToSaturationRatio * (height - padding);
-            float previewThickness = thickness;
+            Vector3 previewPosition = new Vector3(input.hueToPreviewRatio * (input.width - input.padding) + input.padding, 0.0f, 0.0f);
+            float previewWidth = (1.0f - input.hueToPreviewRatio) * (input.width - input.padding);
+            float previewHeight = input.hueToSaturationRatio * (input.height - input.padding);
+            float previewThickness = input.thickness;
 
             uiColorPicker.preview = UIColorPickerPreview.CreateUIColorPickerPreview(
                 "Preview", go.transform,
                 previewPosition, previewWidth, previewHeight, previewThickness,
-                previewMaterial);
+                input.previewMaterial);
         }
     }
 }
