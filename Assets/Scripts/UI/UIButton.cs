@@ -127,36 +127,55 @@ namespace VRtist
                 float minSide = Mathf.Min(width, height);
 
                 // IMAGE
-                Image image = canvas.GetComponentInChildren<Image>();
+                Image image = canvas.GetComponentInChildren<Image>(true);
                 if (image != null)
                 {
-                    RectTransform rt = image.gameObject.GetComponent<RectTransform>();
-                    if (rt)
+                    if (content != ButtonContent.TextOnly)
                     {
-                        if (iconMarginBehavior == IconMarginBehavior.UseButtonMargin)
+                        image.gameObject.SetActive(true);
+
+                        RectTransform rt = image.gameObject.GetComponent<RectTransform>();
+                        if (rt)
                         {
-                            rt.sizeDelta = new Vector2(minSide - 2.0f * margin, minSide - 2.0f * margin);
-                            rt.localPosition = new Vector3(margin, -margin, -0.001f);
+                            float m = iconMarginBehavior == IconMarginBehavior.UseButtonMargin ? margin : iconMargin;
+                            float offsetx = content == ButtonContent.TextAndImage ? 0.0f : (width - minSide) / 2.0f;
+                            float offsety = content == ButtonContent.TextAndImage ? 0.0f : (height - minSide) / 2.0f;
+                            rt.sizeDelta = new Vector2(minSide - 2.0f * m, minSide - 2.0f * m);
+                            rt.localPosition = new Vector3(m + offsetx, -m-offsety, -0.001f);
                         }
-                        else // IconMarginBehavior.UseIconMargin for the moment
-                        {
-                            rt.sizeDelta = new Vector2(minSide - 2.0f * iconMargin, minSide - 2.0f * iconMargin);
-                            rt.localPosition = new Vector3(iconMargin, -iconMargin, -0.001f);
-                        }
+                    }
+                    else
+                    {
+                        image.gameObject.SetActive(false);
                     }
                 }
 
                 // TEXT
-                Text text = canvas.gameObject.GetComponentInChildren<Text>();
+                Text text = canvas.gameObject.GetComponentInChildren<Text>(true);
                 if (text != null)
                 {
-                    RectTransform rt = text.gameObject.GetComponent<RectTransform>();
-                    if (rt != null)
+                    if (content != ButtonContent.ImageOnly)
                     {
-                        rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
-                        bool noImage = (image == null) || !image.gameObject.activeSelf;
-                        float textPosLeft = noImage ? margin : minSide;
-                        rt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
+                        text.gameObject.SetActive(true);
+
+                        RectTransform rt = text.gameObject.GetComponent<RectTransform>();
+                        if (rt != null)
+                        {
+                            rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
+
+                            if (content == ButtonContent.TextAndImage)
+                            {
+                                rt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
+                            }
+                            else // TextOnly
+                            {
+                                rt.localPosition = new Vector3(margin, 0.0f, -0.002f);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        text.gameObject.SetActive(false);
                     }
                 }
             }
