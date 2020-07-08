@@ -34,11 +34,13 @@ namespace VRtist
         public IconMarginBehavior iconMarginBehavior = default_icon_margin_behavior;
         [CentimeterFloat] public float iconMargin = default_icon_margin;
         public ButtonContent content = default_content;
-        public Material source_material = null;
+        public Sprite baseSprite = null;
+        public Sprite checkedSprite = null; 
         public Color pushedColor = UIElement.default_pushed_color;
         public Color checkedColor = UIElement.default_pushed_color;
-        public Sprite baseSprite = null;
-        public Sprite checkedSprite = null;
+        public ColorReference textColor = new ColorReference();
+        [TextArea] public string textContent = "";
+        public Material source_material = null;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -52,6 +54,7 @@ namespace VRtist
         public UnityEvent onHoverEvent = new UnityEvent();
 
         public string Text { get { return GetText(); } set { SetText(value); } }
+        public Color TextColor { get { return textColor.Value; } }
 
         private bool isChecked = false;
 
@@ -157,6 +160,14 @@ namespace VRtist
                     if (content != ButtonContent.ImageOnly)
                     {
                         text.gameObject.SetActive(true);
+
+                        // tmp: pour eviter que tous les labels se retrouvent vides de text.
+                        if (textContent.Length == 0 && text.text.Length > 0)
+                            textContent = text.text;
+                        //------------------
+
+                        text.text = textContent;
+                        text.color = TextColor;
 
                         RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                         if (rt != null)
@@ -377,7 +388,8 @@ namespace VRtist
             public float margin = UIButton.default_margin;
             public float thickness = UIButton.default_thickness;
             public Material material = UIUtils.LoadMaterial(UIButton.default_material_name);
-            public ColorVar color = UIOptions.BackgroundColorVar;
+            public ColorVar bgcolor = UIOptions.BackgroundColorVar;
+            public ColorVar fgcolor = UIOptions.ForegroundColorVar;
             public ButtonContent buttonContent = UIButton.default_content;
             public IconMarginBehavior iconMarginBehavior = UIButton.default_icon_margin_behavior;
             public float iconMargin = UIButton.default_icon_margin;
@@ -418,7 +430,9 @@ namespace VRtist
             uiButton.iconMargin = input.iconMargin;
             uiButton.source_material = input.material;
             uiButton.baseColor.useConstant = false;
-            uiButton.baseColor.reference = input.color;
+            uiButton.baseColor.reference = input.bgcolor;
+            uiButton.textColor.useConstant = false;
+            uiButton.textColor.reference = input.fgcolor;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -455,10 +469,12 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
-                uiButton.SetColor(input.color.value);
+                uiButton.SetColor(input.bgcolor.value);
             }
 
-            // Add a Canvas
+            //
+            // CANVAS
+            //
             GameObject canvas = new GameObject("Canvas");
             canvas.transform.parent = uiButton.transform;
 
@@ -480,59 +496,62 @@ namespace VRtist
 
             float minSide = Mathf.Min(uiButton.width, uiButton.height);
 
-            // Add an Image under the Canvas
-            if (input.buttonContent != ButtonContent.TextOnly)
+            //
+            // IMAGE
+            //
+            GameObject image = new GameObject("Image");
+            image.transform.parent = canvas.transform;
+
+            Image img = image.AddComponent<Image>();
+            img.sprite = input.icon;
+
+            RectTransform irt = image.GetComponent<RectTransform>();
+            irt.localScale = Vector3.one;
+            irt.localRotation = Quaternion.identity;
+            irt.anchorMin = new Vector2(0, 1);
+            irt.anchorMax = new Vector2(0, 1);
+            irt.pivot = new Vector2(0, 1); // top left
+            // TODO: non square icons ratio...
+            if (uiButton.iconMarginBehavior == IconMarginBehavior.UseButtonMargin)
             {
-                GameObject image = new GameObject("Image");
-                image.transform.parent = canvas.transform;
-
-                Image img = image.AddComponent<Image>();
-                img.sprite = input.icon;
-
-                RectTransform trt = image.GetComponent<RectTransform>();
-                trt.localScale = Vector3.one;
-                trt.localRotation = Quaternion.identity;
-                trt.anchorMin = new Vector2(0, 1);
-                trt.anchorMax = new Vector2(0, 1);
-                trt.pivot = new Vector2(0, 1); // top left
-                // TODO: non square icons ratio...
-                if (uiButton.iconMarginBehavior == IconMarginBehavior.UseButtonMargin)
-                {
-                    trt.sizeDelta = new Vector2(minSide - 2.0f * input.margin, minSide - 2.0f * input.margin);
-                    trt.localPosition = new Vector3(input.margin, -input.margin, -0.001f);
-                }
-                else // IconMarginBehavior.UseIconMargin for the moment
-                {
-                    trt.sizeDelta = new Vector2(minSide - 2.0f * uiButton.iconMargin, minSide - 2.0f * uiButton.iconMargin);
-                    trt.localPosition = new Vector3(uiButton.iconMargin, -uiButton.iconMargin, -0.001f);
-                }
+                irt.sizeDelta = new Vector2(minSide - 2.0f * input.margin, minSide - 2.0f * input.margin);
+                irt.localPosition = new Vector3(input.margin, -input.margin, -0.001f);
+            }
+            else // IconMarginBehavior.UseIconMargin for the moment
+            {
+                irt.sizeDelta = new Vector2(minSide - 2.0f * uiButton.iconMargin, minSide - 2.0f * uiButton.iconMargin);
+                irt.localPosition = new Vector3(uiButton.iconMargin, -uiButton.iconMargin, -0.001f);
             }
 
-            // Add a Text under the Canvas
-            if (input.buttonContent != ButtonContent.ImageOnly)
-            {
-                GameObject text = new GameObject("Text");
-                text.transform.parent = canvas.transform;
+            image.SetActive(input.buttonContent != ButtonContent.TextOnly);
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = input.caption;
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Bold;
-                t.alignment = TextAnchor.MiddleLeft;
-                t.horizontalOverflow = HorizontalWrapMode.Wrap;
-                t.verticalOverflow = VerticalWrapMode.Truncate;
+            //
+            // TEXT
+            //
+            GameObject text = new GameObject("Text");
+            text.transform.parent = canvas.transform;
 
-                RectTransform trt = t.GetComponent<RectTransform>();
-                trt.localScale = 0.01f * Vector3.one;
-                trt.localRotation = Quaternion.identity;
-                trt.anchorMin = new Vector2(0, 1);
-                trt.anchorMax = new Vector2(0, 1);
-                trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
-                float textPosLeft = input.buttonContent == ButtonContent.TextAndImage ? minSide : input.margin;
-                trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
-            }
+            Text t = text.AddComponent<Text>();
+            t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            t.text = input.caption;
+            t.fontSize = 32;
+            t.fontStyle = FontStyle.Bold;
+            t.alignment = TextAnchor.MiddleLeft;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow = VerticalWrapMode.Truncate;
+            t.color = input.fgcolor.value;
+
+            RectTransform trt = t.GetComponent<RectTransform>();
+            trt.localScale = 0.01f * Vector3.one;
+            trt.localRotation = Quaternion.identity;
+            trt.anchorMin = new Vector2(0, 1);
+            trt.anchorMax = new Vector2(0, 1);
+            trt.pivot = new Vector2(0, 1); // top left
+            trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
+            float textPosLeft = input.buttonContent == ButtonContent.TextAndImage ? minSide : input.margin;
+            trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
+
+            text.SetActive(input.buttonContent != ButtonContent.ImageOnly);
 
             return uiButton;
         }

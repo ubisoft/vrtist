@@ -70,6 +70,11 @@ namespace VRtist
                     {
                         // pushedColor
                         // checkedColor
+                        
+                        // Text Color
+                        button.textColor.useConstant = false;
+                        button.textColor.constant = UIOptions.ForegroundColor;
+                        button.textColor.reference = UIOptions.ForegroundColorVar;
 
                         if (button.transform.parent.gameObject.name == "CloseButton")
                         {
@@ -207,5 +212,8 @@ namespace VRtist
                 }
             }
         }
+
+        // TODO: script to copy all Text from the Text component to the TextArea of UIButtons
+        // --> done in Update of buttons.
     }
 }
