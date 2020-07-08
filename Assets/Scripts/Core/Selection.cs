@@ -13,14 +13,15 @@ namespace VRtist
     {
         public GameObject activeCamera = null;
     }
+
     public class Selection
     {
-        //public static Color SelectedColor = new Color(57f / 255f, 124f / 255f, 212f / 255f);
         public static Color SelectedColor = new Color(0f / 255f, 167f / 255f, 255f / 255f);
         public static Color UnselectedColor = Color.white;
 
         public static Dictionary<int, GameObject> selection = new Dictionary<int, GameObject>();
         public static event EventHandler<SelectionChangedArgs> OnSelectionChanged;
+        public static event EventHandler<GameObjectArgs> OnGrippedObjectChanged;
 
         public static Material selectionMaterial;
 
@@ -35,27 +36,25 @@ namespace VRtist
         {
             SelectionChangedArgs args = new SelectionChangedArgs();
             fillSelection(ref args.selectionBefore);
-            EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if(handler != null)
-            {
-                handler(null, args);
-            }
+            OnSelectionChanged?.Invoke(null, args);
+        }
+
+        public static void TriggerGrippedObjectChanged()
+        {
+            GameObjectArgs args = new GameObjectArgs { gobject = grippedObject };
+            OnGrippedObjectChanged?.Invoke(null, args);
         }
 
         public static void TriggerCurrentCameraChanged()
         {
             ActiveCameraChangedArgs args = new ActiveCameraChangedArgs();
             args.activeCamera = activeCamera;
-            EventHandler<ActiveCameraChangedArgs> handler = OnActiveCameraChanged;
-            if(handler != null)
-            {
-                handler(null, args);
-            }
+            OnActiveCameraChanged?.Invoke(null, args);
         }
 
         public static void fillSelection(ref Dictionary<int, GameObject> s)
         {
-            foreach(KeyValuePair<int, GameObject> data in selection)
+            foreach (KeyValuePair<int, GameObject> data in selection)
                 s[data.Key] = data.Value;
         }
 
@@ -67,7 +66,7 @@ namespace VRtist
         private static void SetRecursiveLayer(GameObject gObject, string layerName)
         {
             gObject.layer = LayerMask.NameToLayer(layerName); // TODO: init in one of the singletons
-            for(int i = 0; i < gObject.transform.childCount; i++)
+            for (int i = 0; i < gObject.transform.childCount; i++)
             {
                 SetRecursiveLayer(gObject.transform.GetChild(i).gameObject, layerName);
             }
@@ -76,9 +75,9 @@ namespace VRtist
         public static void SetActiveCamera(CameraController controller)
         {
             // Set no active camera
-            if(null == controller)
+            if (null == controller)
             {
-                if(null != activeCamera)
+                if (null != activeCamera)
                 {
                     activeCamera.GetComponent<CameraController>().cameraObject.gameObject.SetActive(false);
                     activeCamera = null;
@@ -89,11 +88,11 @@ namespace VRtist
 
             // Set active camera
             GameObject obj = controller.gameObject;
-            if(activeCamera == obj)
+            if (activeCamera == obj)
                 return;
 
             Camera cam = controller.cameraObject;
-            if(null != activeCamera)
+            if (null != activeCamera)
             {
                 activeCamera.GetComponent<CameraController>().cameraObject.gameObject.SetActive(false);
             }
@@ -106,7 +105,7 @@ namespace VRtist
         static void SetCameraEnabled(GameObject obj, bool value)
         {
             Camera cam = obj.GetComponentInChildren<Camera>(true);
-            if(cam)
+            if (cam)
             {
                 cam.gameObject.SetActive(value);
             }
@@ -114,26 +113,26 @@ namespace VRtist
 
         static void UpdateCurrentObjectOutline()
         {
-            if(outlinedObject)
+            if (outlinedObject)
             {
                 RemoveFromHover(outlinedObject);
                 outlinedObject = null;
             }
 
-            if(grippedObject)
+            if (grippedObject)
             {
                 outlinedObject = grippedObject;
             }
             else
             {
-                if(hoveredObject)
+                if (hoveredObject)
                 {
                     outlinedObject = hoveredObject;
                     VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.1f, 0.1f);
                 }
             }
 
-            if(outlinedObject)
+            if (outlinedObject)
                 AddToHover(outlinedObject);
         }
 
@@ -157,19 +156,19 @@ namespace VRtist
         {
             grippedObject = obj;
             UpdateCurrentObjectOutline();
-            //TriggerSelectionChanged();
+            TriggerGrippedObjectChanged();
         }
 
         public static List<GameObject> GetObjects()
         {
             List<GameObject> gameObjects = new List<GameObject>();
-            if(grippedObject && !IsSelected(grippedObject))
+            if (grippedObject && !IsSelected(grippedObject))
             {
                 gameObjects.Add(grippedObject);
             }
             else
             {
-                foreach(GameObject obj in selection.Values)
+                foreach (GameObject obj in selection.Values)
                     gameObjects.Add(obj);
             }
             return gameObjects;
@@ -181,11 +180,11 @@ namespace VRtist
             bool handleSelected = false;
             List<GameObject> objects = GetObjects();
 
-            if(objects.Count == 1)
+            if (objects.Count == 1)
             {
-                foreach(GameObject obj in objects)
+                foreach (GameObject obj in objects)
                 {
-                    if(obj.GetComponent<UIHandle>())
+                    if (obj.GetComponent<UIHandle>())
                         handleSelected = true;
                 }
             }
@@ -194,11 +193,11 @@ namespace VRtist
 
         public static bool AddToHover(GameObject gObject)
         {
-            if(gObject)
+            if (gObject)
             {
                 SetRecursiveLayer(gObject, "Hover");
                 CameraController controller = gObject.GetComponent<CameraController>();
-                if(null != controller) { SetActiveCamera(controller); }
+                if (null != controller) { SetActiveCamera(controller); }
             }
 
             return true;
@@ -206,7 +205,7 @@ namespace VRtist
 
         public static CameraController GetSelectedCamera()
         {
-            foreach(GameObject selectedItem in selection.Values)
+            foreach (GameObject selectedItem in selection.Values)
             {
                 CameraController controller = selectedItem.GetComponent<CameraController>();
                 if (null != controller)
@@ -220,28 +219,28 @@ namespace VRtist
         {
             string layerName = "Default";
 
-            if(selection.ContainsKey(gObject.GetInstanceID()))
+            if (selection.ContainsKey(gObject.GetInstanceID()))
             {
                 layerName = "Selection";
             }
-            else if(gObject.GetComponent<LightController>()
+            else if (gObject.GetComponent<LightController>()
                     || gObject.GetComponent<CameraController>()
                     || gObject.GetComponent<UIHandle>())
             {
                 layerName = "UI";
             }
 
-            if(gObject)
+            if (gObject)
             {
                 SetRecursiveLayer(gObject, layerName);
             }
 
             CameraController controller = gObject.GetComponent<CameraController>();
-            if (null != controller) 
+            if (null != controller)
             {
                 controller = GetSelectedCamera();
-                if( null != controller )
-                    SetActiveCamera(controller); 
+                if (null != controller)
+                    SetActiveCamera(controller);
             }
 
             return true;
@@ -249,10 +248,10 @@ namespace VRtist
 
         public static bool AddToSelection(GameObject gObject)
         {
-            if(selection.ContainsKey(gObject.GetInstanceID()))
+            if (selection.ContainsKey(gObject.GetInstanceID()))
                 return false;
 
-            if(gObject.GetComponent<UIHandle>())
+            if (gObject.GetComponent<UIHandle>())
                 return false;
 
             SelectionChangedArgs args = new SelectionChangedArgs();
@@ -261,12 +260,12 @@ namespace VRtist
             selection.Add(gObject.GetInstanceID(), gObject);
 
             CameraController controller = gObject.GetComponent<CameraController>();
-            if(null != controller) { SetActiveCamera(controller); }
+            if (null != controller) { SetActiveCamera(controller); }
 
             SetRecursiveLayer(gObject, "Selection");
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if(handler != null)
+            if (handler != null)
             {
                 handler(null, args);
             }
@@ -276,7 +275,7 @@ namespace VRtist
 
         public static bool RemoveFromSelection(GameObject gObject)
         {
-            if(!selection.ContainsKey(gObject.GetInstanceID()))
+            if (!selection.ContainsKey(gObject.GetInstanceID()))
                 return false;
 
             SelectionChangedArgs args = new SelectionChangedArgs();
@@ -286,7 +285,7 @@ namespace VRtist
 
 
             string layerName = "Default";
-            if(gObject.GetComponent<LightController>()
+            if (gObject.GetComponent<LightController>()
              || gObject.GetComponent<CameraController>()
              || gObject.GetComponent<UIHandle>())
             {
@@ -296,7 +295,7 @@ namespace VRtist
             SetRecursiveLayer(gObject, layerName);
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if(handler != null)
+            if (handler != null)
             {
                 handler(null, args);
             }
@@ -306,10 +305,10 @@ namespace VRtist
 
         public static void ClearSelection()
         {
-            foreach(KeyValuePair<int, GameObject> data in selection)
+            foreach (KeyValuePair<int, GameObject> data in selection)
             {
                 string layerName = "Default";
-                if(data.Value.GetComponent<LightController>()
+                if (data.Value.GetComponent<LightController>()
                  || data.Value.GetComponent<CameraController>()
                  || data.Value.GetComponent<UIHandle>())
                 {
@@ -325,7 +324,7 @@ namespace VRtist
             selection.Clear();
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if(handler != null)
+            if (handler != null)
             {
                 handler(null, args);
             }
