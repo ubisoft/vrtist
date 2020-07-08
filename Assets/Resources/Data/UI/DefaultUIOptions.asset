@@ -13,26 +13,41 @@ MonoBehaviour:
   m_Name: DefaultUIOptions
   m_EditorClassIdentifier: 
   foregroundColor:
-    value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+    isHdr: 0
+    value: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   backgroundColor:
-    value: {r: 0.1742, g: 0.5336, b: 0.723, a: 1}
+    isHdr: 0
+    value: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   pushedColor:
+    isHdr: 0
     value: {r: 0, g: 0.65, b: 1, a: 1}
   checkedColor:
+    isHdr: 0
     value: {r: 0, g: 0.85, b: 1, a: 1}
   disabledColor:
+    isHdr: 0
     value: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
   sliderRailColor:
+    isHdr: 0
     value: {r: 0.1, g: 0.1, b: 0.1, a: 1}
   sliderKnobColor:
+    isHdr: 0
     value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   attenuatedTextColor:
+    isHdr: 0
     value: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   panelColor:
+    isHdr: 0
     value: {r: 0, g: 0, b: 0, a: 1}
   closeWindowButtonColor:
+    isHdr: 0
     value: {r: 0.8584906, g: 0.29156283, b: 0.7239765, a: 1}
   pinWindowButtonColor:
+    isHdr: 0
     value: {r: 0.9528302, g: 0.66916627, b: 0, a: 1}
   focusColor:
+    isHdr: 0
     value: {r: 0, g: 0.9339623, b: 0.08159776, a: 1}
+  sceneHoverColor:
+    isHdr: 1
+    value: {r: 2, g: 0.8, b: 0, a: 1}
