@@ -161,7 +161,7 @@ namespace VRtist
                     Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                     if (val != Vector2.zero)
                     {
-                        float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        float scaleFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
                         if (val.y > deadZone) { selectorRadius *= scaleFactor; }
                         if (val.y < -deadZone) { selectorRadius /= scaleFactor; }
                         selectorRadius = Mathf.Clamp(selectorRadius, 0.001f, 0.5f);
@@ -344,7 +344,7 @@ namespace VRtist
             }
             if (controllers.Count > 0)
             {
-                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.displayGizmos);
+                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
             }
 
             if (!Selection.IsHandleSelected())
@@ -476,7 +476,7 @@ namespace VRtist
 
             // remove too old values
             ControllerDamping elem = damping[0];
-            float dampingDuration = GlobalState.cameraDamping / 100f * 0.5f;
+            float dampingDuration = GlobalState.Settings.cameraDamping / 100f * 0.5f;
             while (curretnTime - elem.time > dampingDuration)
             {
                 damping.RemoveAt(0);
@@ -566,7 +566,7 @@ namespace VRtist
                     if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                     {
                         Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                        float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        float scaleFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
                         if (joystickAxis.y > deadZone)
                             scale *= scaleFactor;
                         if (joystickAxis.y < -deadZone)
@@ -597,7 +597,7 @@ namespace VRtist
                         }
 
                         float currentFocal = cameraController.focal;
-                        float focalFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        float focalFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
 
                         if (joystickAxis.x > deadZone)
                             currentFocal *= focalFactor;

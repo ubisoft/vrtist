@@ -29,18 +29,15 @@ namespace VRtist
         private GameObject UIObject = null;
         private Transform focalSlider = null;
 
-        private bool showCameraFeedback = false;
         private UICheckbox showCameraFeedbackCheckbox = null;
         private UICheckbox feedbackPositionningCheckbox = null;
         private bool feedbackPositioning = false;
         private float cameraFeedbackScale = 1f;
         private float cameraFeedbackScaleFactor = 1.05f;
 
-        private bool showDopesheet = false;
         private bool firstTimeShowDopesheet = true;
         private UICheckbox showDopesheetCheckbox = null;
 
-        private bool showCameraPreview = false;
         private bool firstTimeShowCameraPreview = true;
         private UICheckbox showCameraPreviewCheckbox = null;
         private CameraPreviewWindow cameraPreviewWindow;
@@ -150,10 +147,6 @@ namespace VRtist
         protected override void Init()
         {
             base.Init();
-
-            //showCameraFeedback = true;
-            //feedbackPositioning = true;
-            showCameraFeedback = false;
             focalSlider.gameObject.SetActive(false);
 
             InitUIPanel();
@@ -163,13 +156,13 @@ namespace VRtist
         {
             if(showCameraFeedbackCheckbox != null)
             {
-                showCameraFeedbackCheckbox.Checked = showCameraFeedback;
+                showCameraFeedbackCheckbox.Checked = GlobalState.Settings.cameraFeedbackVisible;
             }
 
             if(feedbackPositionningCheckbox != null)
             {
                 feedbackPositionningCheckbox.Checked = feedbackPositioning;
-                feedbackPositionningCheckbox.Disabled = !showCameraFeedback;
+                feedbackPositionningCheckbox.Disabled = !GlobalState.Settings.cameraFeedbackVisible;
             }
 
             if(null != showCameraFrustumCheckbox)
@@ -238,7 +231,7 @@ namespace VRtist
 
         public void OnCheckShowCameraFeedback(bool value)
         {
-            showCameraFeedback = value;
+            GlobalState.Settings.cameraFeedbackVisible = value;
 
             backgroundFeedback.gameObject.SetActive(value);
             if(value)
@@ -271,7 +264,7 @@ namespace VRtist
 
         public void OnCheckShowDopesheet(bool value)
         {
-            showDopesheet = value;
+            GlobalState.Settings.dopeSheetVisible = value;
             if(dopesheet != null && dopesheetHandle != null)
             {
                 if(value)
@@ -305,7 +298,7 @@ namespace VRtist
 
         public void OnCheckShowCameraPreview(bool value)
         {
-            showCameraPreview = value;
+            GlobalState.Settings.cameraPreviewVisible = value;
             if(cameraPreviewWindow != null && cameraPreviewHandle != null)
             {
                 if(value)
@@ -395,7 +388,7 @@ namespace VRtist
         protected override void DoUpdate()
         {
             // Update feedback position and scale
-            if(showCameraFeedback)
+            if(GlobalState.Settings.cameraFeedbackVisible)
             {
                 bool trigger = false;
                 if(feedbackPositioning
@@ -419,7 +412,7 @@ namespace VRtist
             // called to update focal slider value
             UpdateUI();
 
-            if(!showCameraFeedback || !feedbackPositioning)
+            if(!GlobalState.Settings.cameraFeedbackVisible || !feedbackPositioning)
             {
                 base.DoUpdate();
             }

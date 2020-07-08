@@ -102,7 +102,7 @@ namespace VRtist
             lightObject.range = scale * range;
             lightObject.shadowNearPlane = scale * near;
             lightObject.color = color;
-            LightShadows shadows = GlobalState.castShadows && castShadows ? LightShadows.Soft : LightShadows.None;
+            LightShadows shadows = GlobalState.Settings.castShadows && castShadows ? LightShadows.Soft : LightShadows.None;
             if (shadows != lightObject.shadows)
                 lightObject.shadows = shadows;
             if (lightObject.type == LightType.Spot)

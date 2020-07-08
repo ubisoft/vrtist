@@ -5,17 +5,17 @@ namespace VRtist
 {
     public class GlobalState : MonoBehaviour
     {
+        public Settings settings;
+
         [Header("Parameters")]
         public GameObject leftController = null;
         public GameObject colorPanel = null;
-        [Range(1.0f, 100.0f)]
-        public float scaleSpeed = 50f;
-        public static float ScaleSpeed { get { return Instance.scaleSpeed; } }
+
+        public static Settings Settings { get { return Instance.settings; } }
 
         // FPS
-        public static bool showFps = false;
         public static int fps { get; private set; }
-        public static int fpsFrameRange = 60;
+        private static int fpsFrameRange = 60;
         private static int[] fpsBuffer = null;
         private static int fpsBufferIndex = 0;
         private GameObject displayTooltip = null;
@@ -27,19 +27,10 @@ namespace VRtist
         public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
         public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
 
-        // Lights
-        public static bool castShadows = false;
-
         // Animation
         public static int startFrame = 1;
         public static int endFrame = 250;
         public static int currentFrame = 1;
-
-        // Gizmos
-        public static bool displayGizmos = true;
-        
-        // Right-Handed
-        public static bool rightHanded = true;
 
         // Cursor
         public PaletteCursor cursor = null;
@@ -59,8 +50,6 @@ namespace VRtist
         public static ColorChangedEvent colorReleasedEvent;  // on release change
         public static UnityEvent colorClickedEvent;          // on click
 
-        // Camera damping
-        public static float cameraDamping = 50f;
 
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
@@ -109,7 +98,7 @@ namespace VRtist
         }
 
         private void UpdateFps() {
-            if(!showFps) { return; }
+            if(!settings.displayFPS) { return; }
 
             // Initialize
             if(null == fpsBuffer || fpsBuffer.Length != fpsFrameRange) {
@@ -138,7 +127,7 @@ namespace VRtist
             if(null != displayTooltip)
             {
                 string infoText = worldScale < 1f ? $"Scale down: {1f / worldScale:F2}" : $"Scale up: {worldScale:F2}";
-                if(showFps)
+                if(settings.displayFPS)
                 {
                     UpdateFps();
                     infoText += $"\n{fps} fps";
@@ -154,7 +143,7 @@ namespace VRtist
 
         public static void SetDisplayGizmos(bool value)
         {
-            displayGizmos = value;
+            Settings.displayGizmos = value;
             ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
             ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
         }
@@ -182,7 +171,7 @@ namespace VRtist
 
         public void OnLightsCastShadows(bool value)
         {
-            castShadows = value;
+            settings.castShadows = value;
         }
 
         public void OnChangeColor(Color color)
@@ -197,7 +186,7 @@ namespace VRtist
 
         public void OnCameraDamping(float value)
         {
-            cameraDamping = value;
+            settings.cameraDamping = value;
         }
     }
 }

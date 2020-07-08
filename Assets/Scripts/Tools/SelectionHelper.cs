@@ -77,11 +77,11 @@ namespace VRtist
                         selectionLinks.Add(gobj, Instantiate(selectionLinkPrefab, transform));
                     }
                     GameObject selectionLink = selectionLinks[gobj];
-                    selectionLink.SetActive(true);
                     LineRenderer lineRenderer = selectionLink.GetComponent<LineRenderer>();
                     lineRenderer.positionCount = 2;
                     lineRenderer.SetPosition(0, transform.position);
                     lineRenderer.SetPosition(1, gobj.transform.position);
+                    selectionLink.SetActive(true);
                 }
             }
 
