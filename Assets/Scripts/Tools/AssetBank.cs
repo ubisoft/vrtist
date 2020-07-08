@@ -103,11 +103,14 @@ namespace VRtist
                         SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)) * Matrix4x4.Rotate(quarterRotation));
                     }
 
+                    CommandGroup group = new CommandGroup();
                     new CommandAddGameObject(newObject).Submit();
 
                     ClearSelection();
                     AddToSelection(newObject);
+                    new CommandAddToSelection(newObject).Submit();
                     Selection.SetHoveredObject(newObject);
+                    group.Submit();
                 }
                 OnStartGrip();
             }, OnEndGrip);
