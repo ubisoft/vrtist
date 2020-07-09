@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Assertions;
 
 namespace VRtist
 {
@@ -14,7 +14,7 @@ namespace VRtist
             if (gObject.name == name)
                 return gObject;
 
-            for(int i = 0; i < gObject.transform.childCount; i++)
+            for (int i = 0; i < gObject.transform.childCount; i++)
             {
                 GameObject child = gObject.transform.GetChild(i).gameObject;
                 GameObject tooltip = FindTooltip(child, name);
@@ -34,14 +34,11 @@ namespace VRtist
         /// <returns></returns>
         public static GameObject CreateTooltip(GameObject controller, Anchors anchor, string text)
         {
-            if(controller.name != "right_controller" && controller.name != "left_controller")
-            {
-                throw new System.Exception("Expected a prefab controller");
-            }
+            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
 
-            if(tooltipPrefab == null)
+            if (tooltipPrefab == null)
             {
-                tooltipPrefab = (GameObject) Resources.Load("Prefabs/UI/Tooltip");
+                tooltipPrefab = Resources.Load<GameObject>("Prefabs/UI/Tooltip");
             }
 
             string tooltipName = anchor.ToString();
@@ -117,8 +114,9 @@ namespace VRtist
                 tooltip.transform.localScale = Vector3.one;
 
                 // Invert positions for left controller
-                bool rightHanded = GlobalState.Settings.rightHanded;
-                if ((rightHanded && controller.name == "left_controller") || (!rightHanded && controller.name == "right_controller"))
+                //bool rightHanded = GlobalState.Settings.rightHanded;
+                //if ((rightHanded && controller.name == "left_controller") || (!rightHanded && controller.name == "right_controller"))
+                if (controller.name == "left_controller")
                 {
                     linePosition.x *= -1f;
                     framePosition.x *= -1f;
@@ -126,10 +124,13 @@ namespace VRtist
 
                 // Set the line renderer positions
                 LineRenderer line = tooltip.GetComponent<LineRenderer>();
-                if(hasLine) {
+                if (hasLine)
+                {
                     line.SetPosition(0, Vector3.zero);
                     line.SetPosition(1, linePosition);
-                } else {
+                }
+                else
+                {
                     line.enabled = false;
                 }
 
@@ -148,10 +149,7 @@ namespace VRtist
 
         public static void HideAllTooltips(GameObject controller)
         {
-            if (controller.name != "right_controller" && controller.name != "left_controller")
-            {
-                throw new System.Exception("Expected a prefab controller");
-            }
+            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
 
             // foreach anchor in Anchors???
             SetTooltipVisibility(controller, Anchors.Grip, false);
@@ -165,14 +163,11 @@ namespace VRtist
 
         public static void SetTooltipVisibility(GameObject controller, Anchors anchor, bool visible)
         {
-            if(controller.name != "right_controller" && controller.name != "left_controller")
-            {
-                throw new System.Exception("Expected a prefab controller");
-            }
+            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
 
             string tooltipName = anchor.ToString();
             GameObject tooltip = FindTooltip(controller, tooltipName);
-            if(null != tooltip)
+            if (null != tooltip)
             {
                 SetTooltipVisibility(tooltip, visible);
             }
@@ -185,14 +180,11 @@ namespace VRtist
 
         public static void SetTooltipText(GameObject controller, Anchors anchor, string text)
         {
-            if(controller.name != "right_controller" && controller.name != "left_controller")
-            {
-                throw new System.Exception("Expected a prefab controller");
-            }
+            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
 
             string tooltipName = anchor.ToString();
             GameObject tooltip = FindTooltip(controller, tooltipName);
-            if(null != tooltip)
+            if (null != tooltip)
             {
                 SetTooltipText(tooltip, text);
             }

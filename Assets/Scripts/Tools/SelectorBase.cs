@@ -749,7 +749,7 @@ namespace VRtist
             if (haptic && objectsRemovedFromSelection.Count > 0)
             {
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
-            }            
+            }
         }
 
         public void ClearSelection()
