@@ -14,27 +14,27 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UISlider : UIElement
     {
-        private static readonly string default_widget_name = "New Slider";
-        private static readonly float default_width = 0.3f;
-        private static readonly float default_height = 0.03f;
-        private static readonly float default_margin = 0.005f;
-        private static readonly float default_thickness = 0.001f;
-        private static readonly float default_slider_begin = 0.3f;
-        private static readonly float default_slider_end = 0.8f;
-        private static readonly float default_rail_margin = 0.004f;
-        private static readonly float default_rail_thickness = 0.001f;
-        private static readonly float default_knob_radius = 0.01f;
-        private static readonly float default_knob_depth = 0.005f;
-        private static readonly float default_min_value = 0.0f;
-        private static readonly float default_max_value = 1.0f;
-        private static readonly float default_current_value = 0.5f;
-        private static readonly string default_material_name = "UIBase";
-        private static readonly string default_rail_material_name = "UISliderRail";
-        private static readonly string default_knob_material_name = "UISliderKnob";
+        public static readonly string default_widget_name = "New Slider";
+        public static readonly float default_width = 0.3f;
+        public static readonly float default_height = 0.03f;
+        public static readonly float default_margin = 0.005f;
+        public static readonly float default_thickness = 0.001f;
+        public static readonly float default_slider_begin = 0.3f;
+        public static readonly float default_slider_end = 0.8f;
+        public static readonly float default_rail_margin = 0.004f;
+        public static readonly float default_rail_thickness = 0.001f;
+        public static readonly float default_knob_radius = 0.01f;
+        public static readonly float default_knob_depth = 0.005f;
+        public static readonly float default_min_value = 0.0f;
+        public static readonly float default_max_value = 1.0f;
+        public static readonly float default_current_value = 0.5f;
+        public static readonly string default_material_name = "UIBase";
+        public static readonly string default_rail_material_name = "UISliderRail";
+        public static readonly string default_knob_material_name = "UISliderKnob";
         //private static readonly Color default_color = UIElement.default_background_color;
         //private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
         //private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
-        private static readonly string default_text = "Slider";
+        public static readonly string default_text = "Slider";
 
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = default_margin;
