@@ -19,7 +19,7 @@ namespace VRtist
         // key: invisible selected game object, value: selectionLink game object
         private Dictionary<GameObject, GameObject> selectionLinks = new Dictionary<GameObject, GameObject>();
         private GameObject selectionLinkPrefab;
-        private Collider collider;
+        private Collider controllerCollider;
 
         void Start()
         {
@@ -34,7 +34,7 @@ namespace VRtist
 
             selectionLinkPrefab = Resources.Load<GameObject>("Prefabs/UI/SelectionLink");
 
-            collider = GetComponent<Collider>();
+            controllerCollider = GetComponent<Collider>();
 
             Selection.OnSelectionChanged += OnSelectionChanged;
             Selection.OnGrippedObjectChanged += OnGrippedObjectChanged;
@@ -62,7 +62,7 @@ namespace VRtist
             frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
             // Check that the controller is inside the view frustum
-            if (!GeometryUtility.TestPlanesAABB(frustumPlanes, collider.bounds))
+            if (!GeometryUtility.TestPlanesAABB(frustumPlanes, controllerCollider.bounds))
             {
                 return;
             }
