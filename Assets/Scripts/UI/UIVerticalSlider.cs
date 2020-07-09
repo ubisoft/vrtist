@@ -16,29 +16,29 @@ namespace VRtist
     {
         public enum SliderTextValueAlign { Left, Right };
 
-        private static readonly string default_widget_name = "New VerticalSlider";
-        private static readonly float default_width = 0.025f;
-        private static readonly float default_height = 0.15f;
-        private static readonly float default_margin = 0.002f;
-        private static readonly float default_thickness = 0.001f;
-        private static readonly float default_slider_begin = 0.0f;
-        private static readonly float default_slider_end = 0.85f;
-        private static readonly float default_rail_margin = 0.002f;
-        private static readonly float default_rail_thickness = 0.0005f;
-        private static readonly float default_knob_radius = 0.0065f;
-        private static readonly float default_knob_depth = 0.0025f;
-        private static readonly float default_min_value = 0.0f;
-        private static readonly float default_max_value = 1.0f;
-        private static readonly float default_current_value = 0.5f;
-        private static readonly string default_material_name = "UIBase";
-        private static readonly string default_rail_material_name = "UISliderRail";
-        private static readonly string default_knob_material_name = "UISliderKnob";
+        public static readonly string default_widget_name = "New VerticalSlider";
+        public static readonly float default_width = 0.025f;
+        public static readonly float default_height = 0.15f;
+        public static readonly float default_margin = 0.002f;
+        public static readonly float default_thickness = 0.001f;
+        public static readonly float default_slider_begin = 0.0f;
+        public static readonly float default_slider_end = 0.85f;
+        public static readonly float default_rail_margin = 0.002f;
+        public static readonly float default_rail_thickness = 0.0005f;
+        public static readonly float default_knob_radius = 0.0065f;
+        public static readonly float default_knob_depth = 0.0025f;
+        public static readonly float default_min_value = 0.0f;
+        public static readonly float default_max_value = 1.0f;
+        public static readonly float default_current_value = 0.5f;
+        public static readonly string default_material_name = "UIBase";
+        public static readonly string default_rail_material_name = "UISliderRail";
+        public static readonly string default_knob_material_name = "UISliderKnob";
         //private static readonly Color default_color = UIElement.default_background_color;
         //private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
         //private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
-        private static readonly string default_text = "Slider";
-        private static readonly string default_icon_name = "paint";
-        private static readonly SliderTextValueAlign default_text_value_align = SliderTextValueAlign.Left;
+        public static readonly string default_text = "Slider";
+        public static readonly string default_icon_name = "paint";
+        public static readonly SliderTextValueAlign default_text_value_align = SliderTextValueAlign.Left;
 
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = default_margin;

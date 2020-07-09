@@ -17,6 +17,7 @@ namespace VRtist
         public ColorVar panelColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar closeWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar pinWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
+        public ColorVar exitButtonColor = new ColorVar { value = new Color(.7f, .1f, .1f) };
         public ColorVar focusColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         [Space(30)]
         public ColorVar sceneHoverColor = new ColorVar() { isHdr = true, value = new Color(2.0f, 0.8f, 0.0f, 1.0f) }; // hdr yellow
@@ -34,6 +35,7 @@ namespace VRtist
         public static Color PanelColor { get { return Instance.panelColor.value; } }
         public static Color CloseWindowButtonColor { get { return Instance.closeWindowButtonColor.value; } }
         public static Color PinWindowButtonColor { get { return Instance.pinWindowButtonColor.value; } }
+        public static Color ExitButtonColor { get { return Instance.exitButtonColor.value; } }
         public static Color FocusColor { get { return Instance.focusColor.value; } }
         public static Color SceneHoverColor { get { return Instance.sceneHoverColor.value; } }
 
@@ -48,6 +50,7 @@ namespace VRtist
         public static ColorVar PanelColorVar { get { return Instance.panelColor; } }
         public static ColorVar CloseWindowButtonColorVar { get { return Instance.closeWindowButtonColor; } }
         public static ColorVar PinWindowButtonColorVar { get { return Instance.pinWindowButtonColor; } }
+        public static ColorVar ExitButtonColorVar { get { return Instance.exitButtonColor; } }
         public static ColorVar FocusColorVar { get { return Instance.focusColor; } }
         public static ColorVar SceneHoverColorVar { get { return Instance.sceneHoverColor; } }
 

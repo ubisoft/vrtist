@@ -43,7 +43,8 @@ namespace VRtist
         public TextAndValueVisibilityType textAndValueVisibilityType = TextAndValueVisibilityType.ShowTextAndValue;
         public SpinnerValueType spinnerValueType = SpinnerValueType.Float;
         public Color pushedColor = new Color(0f, 0.6549f, 1f);
-        
+        public Material sourceMaterial = null;
+
         [SpaceHeader("Subdivision Parameters", 6, 0.3f, 0.3f, 0.3f)]
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
@@ -167,8 +168,7 @@ namespace VRtist
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material material = UIUtils.LoadMaterial("UIPanel");
-                Material materialInstance = Instantiate(material);
+                Material materialInstance = Instantiate(sourceMaterial);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -515,6 +515,7 @@ namespace VRtist
             uiSpinner.valueRateInt = input.spinner_value_rate_int;
             uiSpinner.baseColor.useConstant = false;
             uiSpinner.baseColor.reference = input.background_color;
+            uiSpinner.sourceMaterial = input.background_material;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();

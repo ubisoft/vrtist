@@ -46,7 +46,7 @@ namespace VRtist
                 // UI OPTIONS
                 //
 
-                GUILayout.Space(40);
+                GUILayout.Space(20);
 
                 GUILayout.Label(new GUIContent("Debug UIOptions"), textStyle, GUILayout.Height(30));
 
@@ -69,7 +69,7 @@ namespace VRtist
                 // Asset Bank
                 //
 
-                GUILayout.Space(40);
+                GUILayout.Space(20);
 
                 GUILayout.Label(new GUIContent("Asset Bank"), textStyle, GUILayout.Height(30));
 
@@ -82,7 +82,7 @@ namespace VRtist
                 // Checkable icons.
                 //
 
-                GUILayout.Space(40);
+                GUILayout.Space(20);
 
                 GUILayout.Label(new GUIContent("Checkable Buttons"), textStyle, GUILayout.Height(30));
 
@@ -91,6 +91,17 @@ namespace VRtist
                     debug.Checkable_SetBaseSprite();
                 }
 
+                //
+                //
+                //
+                GUILayout.Space(20);
+
+                GUILayout.Label(new GUIContent("Materials"), textStyle, GUILayout.Height(30));
+
+                if (GUILayout.Button("Relink/Fix Widgets Materials", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.MATERIALS_RelinkAndFix();
+                }
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();

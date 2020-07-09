@@ -70,6 +70,11 @@ namespace VRtist
                     {
                         // pushedColor
                         // checkedColor
+                        
+                        // Text Color
+                        button.textColor.useConstant = false;
+                        button.textColor.constant = UIOptions.ForegroundColor;
+                        button.textColor.reference = UIOptions.ForegroundColorVar;
 
                         if (button.transform.parent.gameObject.name == "CloseButton")
                         {
@@ -83,6 +88,13 @@ namespace VRtist
                             button.baseColor.useConstant = false;
                             button.baseColor.constant = UIOptions.PinWindowButtonColor;
                             button.baseColor.reference = UIOptions.PinWindowButtonColorVar;
+                        }
+
+                        if (button.gameObject.name == "ExitButton")
+                        {
+                            button.baseColor.useConstant = false;
+                            button.baseColor.constant = UIOptions.ExitButtonColor;
+                            button.baseColor.reference = UIOptions.ExitButtonColorVar;
                         }
                     }
 
@@ -207,5 +219,96 @@ namespace VRtist
                 }
             }
         }
+
+
+        public void MATERIALS_RelinkAndFix()
+        {
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null)
+                    {
+                        button.source_material = UIUtils.LoadMaterial(UIButton.default_material_name);
+                    }
+
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+                        label.source_material = UIUtils.LoadMaterial(UILabel.default_material_name);
+                    }
+
+                    UIPanel panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+                        panel.source_material = UIUtils.LoadMaterial(UIPanel.default_material_name);
+                    }
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+                        checkbox.source_material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
+                    }
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+                        slider.sourceMaterial = UIUtils.LoadMaterial(UISlider.default_material_name);
+                        slider.sourceKnobMaterial = UIUtils.LoadMaterial(UISlider.default_rail_material_name);
+                        slider.sourceRailMaterial = UIUtils.LoadMaterial(UISlider.default_knob_material_name);
+                    }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+                        vslider.sourceMaterial = UIUtils.LoadMaterial(UIVerticalSlider.default_material_name);
+                        vslider.sourceKnobMaterial = UIUtils.LoadMaterial(UIVerticalSlider.default_rail_material_name);
+                        vslider.sourceRailMaterial = UIUtils.LoadMaterial(UIVerticalSlider.default_knob_material_name);
+                    }
+
+                    UISpinner spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+                        spinner.sourceMaterial = UIUtils.LoadMaterial(UISpinner.default_background_material_name);
+                    }
+
+                    // These UIElements do not have source_material yet
+
+
+                    //UITimeBar timebar = element.GetComponent<UITimeBar>();
+                    //if (timebar)
+                    //{
+                    //    timebar.source_material = UIUtils.LoadMaterial(UIPanel.default_material_name);
+                    //}
+
+                    //UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
+                    //if (colorpickerhue)
+                    //{
+                    //    colorpickerhue.source_material = UIUtils.LoadMaterial(UIPanel.default_material_name);
+                    //}
+
+                    //UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
+                    //if (colorpickersat)
+                    //{
+                    //    colorpickersat.source_material = UIUtils.LoadMaterial(UIPanel.default_material_name);
+                    //}
+
+                    //UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
+                    //if (colorpickerprev)
+                    //{
+                    //    colorpickerprev.source_material = UIUtils.LoadMaterial(UIPanel.default_material_name);
+                    //}
+
+                    element.ResetMaterial();
+                }
+            }
+        }
+
+        // TODO: script to copy all Text from the Text component to the TextArea of UIButtons
+        // --> done in Update of buttons.
     }
 }

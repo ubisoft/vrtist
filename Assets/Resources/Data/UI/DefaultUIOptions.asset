@@ -45,6 +45,9 @@ MonoBehaviour:
   pinWindowButtonColor:
     isHdr: 0
     value: {r: 0.9528302, g: 0.66916627, b: 0, a: 1}
+  exitButtonColor:
+    isHdr: 0
+    value: {r: 1, g: 0.084905684, b: 0.084905684, a: 1}
   focusColor:
     isHdr: 0
     value: {r: 0, g: 0.9339623, b: 0.08159776, a: 1}
