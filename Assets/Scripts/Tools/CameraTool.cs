@@ -360,8 +360,8 @@ namespace VRtist
                     if(newCamera)
                     {
                         CommandGroup undoGroup = new CommandGroup();
-                        new CommandAddGameObject(newCamera).Submit();
                         ClearSelection();
+                        new CommandAddGameObject(newCamera).Submit();
                         AddToSelection(newCamera);
                         undoGroup.Submit();
                         Selection.SetHoveredObject(newCamera);
@@ -571,10 +571,8 @@ namespace VRtist
 
             // Select camera in scene
             CommandGroup command = new CommandGroup();
-            Selection.ClearSelection();
-            new CommandRemoveFromSelection(Selection.GetObjects()).Submit();
-            Selection.AddToSelection(cameraItem.cameraObject);
-            new CommandAddToSelection(cameraItem.cameraObject).Submit();
+            ClearSelection();
+            AddToSelection(cameraItem.cameraObject);
             command.Submit();
         }
 

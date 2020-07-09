@@ -856,7 +856,13 @@ namespace VRtist
 
         public static GameObject Duplicate(GameObject srcInstance, string name = null)
         {
-            Node srcNode = nodes[srcInstance.name];
+            string srcname = srcInstance.name;
+            if (!nodes.ContainsKey(srcname))
+            {
+                Debug.LogError("Duplicate Error : nodes does not contain " + srcname);
+                return null;
+            }
+            Node srcNode = nodes[srcname];
             GameObject srcPrefab = srcNode.prefab;
 
             GameObject prefabClone = Utils.CreateInstance(srcPrefab, srcPrefab.transform.parent.parent, name);

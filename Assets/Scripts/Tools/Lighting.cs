@@ -96,8 +96,8 @@ namespace VRtist
                 GameObject instance = SyncData.InstantiateUnityPrefab(light, matrix);
 
                 CommandGroup undoGroup = new CommandGroup();
-                new CommandAddGameObject(instance).Submit();                
                 ClearSelection();
+                new CommandAddGameObject(instance).Submit();
                 AddToSelection(instance);
                 undoGroup.Submit();
                 Selection.SetHoveredObject(instance);

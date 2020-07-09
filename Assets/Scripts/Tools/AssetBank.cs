@@ -104,11 +104,9 @@ namespace VRtist
                     }
 
                     CommandGroup group = new CommandGroup();
-                    new CommandAddGameObject(newObject).Submit();
-
                     ClearSelection();
+                    new CommandAddGameObject(newObject).Submit();
                     AddToSelection(newObject);
-                    new CommandAddToSelection(newObject).Submit();
                     Selection.SetHoveredObject(newObject);
                     group.Submit();
                 }

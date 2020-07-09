@@ -690,11 +690,15 @@ namespace VRtist
             if (gObject.GetComponent<UIHandle>()) // if we select a UI handle, deselect all other objects first.
             {
                 ClearSelection();
-                return Selection.AddToSelection(gObject);
+                bool res = Selection.AddToSelection(gObject);
+                new CommandAddToSelection(gObject).Submit();
+                return res;
             }
             else if (!Selection.IsHandleSelected()) // Dont select things if we have a window selected.
             {
-                return Selection.AddToSelection(gObject);
+                bool res = Selection.AddToSelection(gObject);
+                new CommandAddToSelection(gObject).Submit();
+                return res;
             }
 
             return false;
@@ -716,12 +720,11 @@ namespace VRtist
             {
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
             }
-
-            new CommandAddToSelection(objectsAddedToSelection).Submit();
         }
 
         public bool RemoveFromSelection(GameObject gObject)
         {
+            new CommandRemoveFromSelection(gObject).Submit();
             return Selection.RemoveFromSelection(gObject);
         }
 
@@ -744,9 +747,7 @@ namespace VRtist
             if (haptic && objectsRemovedFromSelection.Count > 0)
             {
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
-            }
-
-            new CommandRemoveFromSelection(objectsRemovedFromSelection).Submit();
+            }            
         }
 
         public void ClearSelection()
@@ -767,6 +768,8 @@ namespace VRtist
                 return null;
 
             GameObject clone = SyncData.Duplicate(source);
+            if (null == clone)
+                return null;
             new CommandDuplicateGameObject(clone, source).Submit();
 
             // Add a selectionVFX instance on the duplicated objects
