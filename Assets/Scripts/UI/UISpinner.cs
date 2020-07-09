@@ -42,7 +42,6 @@ namespace VRtist
         [Percentage] public float separationPositionPct = 0.3f;
         public TextAndValueVisibilityType textAndValueVisibilityType = TextAndValueVisibilityType.ShowTextAndValue;
         public SpinnerValueType spinnerValueType = SpinnerValueType.Float;
-        public Color pushedColor = new Color(0f, 0.6549f, 1f);
         public Material sourceMaterial = null;
 
         [SpaceHeader("Subdivision Parameters", 6, 0.3f, 0.3f, 0.3f)]
@@ -227,7 +226,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateValueText();
-                    SetColor(Disabled ? DisabledColor : BaseColor);
+                    ResetColor();
                 }
                 catch(Exception e)
                 {
@@ -369,12 +368,14 @@ namespace VRtist
 
         public void OnEnterSpinner()
         {
-            SetColor(Disabled ? DisabledColor : pushedColor);
+            Pushed = true;
+            ResetColor();
         }
 
         public void OnExitSpinner()
         {
-            SetColor(Disabled ? DisabledColor : BaseColor);
+            Pushed = false;
+            ResetColor();
         }
 
         public override bool HandlesCursorBehavior() { return true; }

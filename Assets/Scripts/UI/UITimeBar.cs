@@ -25,8 +25,7 @@ namespace VRtist
 
         [SpaceHeader("TimeBar Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float thickness = 0.001f;
-        public Color pushedColor = new Color(0.3f, 0.3f, 0.3f);
-
+        
         [SpaceHeader("TimeBar Values", 6, 0.8f, 0.8f, 0.8f)]
         public int minValue = 0;
         public int maxValue = 250;
@@ -129,7 +128,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateTimeBarPosition();
-                    SetColor(Disabled ? DisabledColor : BaseColor);
+                    ResetColor();
                 }
                 catch(Exception e)
                 {
@@ -267,12 +266,14 @@ namespace VRtist
 
         public void OnClickTimeBar()
         {
-            SetColor(pushedColor);
+            Pushed = true;
+            ResetColor();
         }
 
         public void OnReleaseTimeBar()
         {
-            SetColor(BaseColor);
+            Pushed = false;
+            ResetColor();
         }
 
         public void OnSlide(int f)

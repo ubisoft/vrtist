@@ -6,11 +6,15 @@ namespace VRtist
     [CreateAssetMenu(menuName = "VRtist/UIOptions")]
     public class UIOptions : ScriptableObject
     {
+        [SpaceHeader("Common Colors", 6, 0.3f, 0.3f, 0.3f)]
         public ColorVar foregroundColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
         public ColorVar backgroundColor = new ColorVar { value = new Color(0.1742f, 0.5336f, 0.723f, 1.0f) };
         public ColorVar pushedColor = new ColorVar { value = new Color(0.0f, 0.65f, 1.0f, 1.0f) };
         public ColorVar checkedColor = new ColorVar { value = new Color(0.0f, 0.85f, 1.0f, 1.0f) };
         public ColorVar disabledColor = new ColorVar { value = new Color(0.5873f, 0.6170f, 0.6320f) };
+        public ColorVar selectedColor = new ColorVar { value = new Color(0.0f, 0.65f, 1.0f, 1.0f) };
+
+        [SpaceHeader("Specific Colors", 6, 0.3f, 0.3f, 0.3f)]
         public ColorVar sliderRailColor = new ColorVar { value = new Color(0.1f, 0.1f, 0.1f, 1.0f) };
         public ColorVar sliderKnobColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
         public ColorVar attenuatedTextColor = new ColorVar { value = new Color(.7f,.7f,.7f) };
@@ -19,6 +23,8 @@ namespace VRtist
         public ColorVar pinWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar exitButtonColor = new ColorVar { value = new Color(.7f, .1f, .1f) };
         public ColorVar focusColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
+        public ColorVar grabberBaseColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
+        public ColorVar grabberHoverColor = new ColorVar { value = new Color(0.1742f, 0.5336f, 0.723f, 1.0f) };
         [Space(30)]
         public ColorVar sceneHoverColor = new ColorVar() { isHdr = true, value = new Color(2.0f, 0.8f, 0.0f, 1.0f) }; // hdr yellow
 
@@ -29,6 +35,7 @@ namespace VRtist
         public static Color PushedColor { get { return Instance.pushedColor.value; } }
         public static Color CheckedColor { get { return Instance.checkedColor.value; } }
         public static Color DisabledColor { get { return Instance.disabledColor.value; } }
+        public static Color SelectedColor { get { return Instance.selectedColor.value; } }
         public static Color SliderRailColor { get { return Instance.sliderRailColor.value; } }
         public static Color SliderKnobColor { get { return Instance.sliderKnobColor.value; } }
         public static Color AttenuatedTextColor { get { return Instance.attenuatedTextColor.value; } }
@@ -37,6 +44,8 @@ namespace VRtist
         public static Color PinWindowButtonColor { get { return Instance.pinWindowButtonColor.value; } }
         public static Color ExitButtonColor { get { return Instance.exitButtonColor.value; } }
         public static Color FocusColor { get { return Instance.focusColor.value; } }
+        public static Color GrabberBaseColor { get { return Instance.grabberBaseColor.value; } }
+        public static Color GrabberHoverColor { get { return Instance.grabberHoverColor.value; } }
         public static Color SceneHoverColor { get { return Instance.sceneHoverColor.value; } }
 
         public static ColorVar ForegroundColorVar { get { return Instance.foregroundColor; } }
@@ -44,6 +53,7 @@ namespace VRtist
         public static ColorVar PushedColorVar { get { return Instance.pushedColor; } }
         public static ColorVar CheckedColorVar { get { return Instance.checkedColor; } }
         public static ColorVar DisabledColorVar { get { return Instance.disabledColor; } }
+        public static ColorVar SelectedColorVar { get { return Instance.selectedColor; } }
         public static ColorVar SliderRailColorVar { get { return Instance.sliderRailColor; } }
         public static ColorVar SliderKnobColorVar { get { return Instance.sliderKnobColor; } }
         public static ColorVar AttenuatedTextColorVar { get { return Instance.attenuatedTextColor; } }
@@ -52,6 +62,8 @@ namespace VRtist
         public static ColorVar PinWindowButtonColorVar { get { return Instance.pinWindowButtonColor; } }
         public static ColorVar ExitButtonColorVar { get { return Instance.exitButtonColor; } }
         public static ColorVar FocusColorVar { get { return Instance.focusColor; } }
+        public static ColorVar GrabberBaseColorVar { get { return Instance.grabberBaseColor; } }
+        public static ColorVar GrabberHoverColorVar { get { return Instance.grabberHoverColor; } }
         public static ColorVar SceneHoverColorVar { get { return Instance.sceneHoverColor; } }
 
         private static UIOptions instance = null;
@@ -61,10 +73,6 @@ namespace VRtist
             {
                 if (instance == null || instance.name != "DefaultUIOptions")
                 {
-                    // NOTES:
-                    // Code de reference: UIOptions[] options = Resources.FindObjectsOfTypeAll<UIOptions>();
-                    // -> Il arrive souvent que options soit vide, alors que l'asset existe!!
-
                     instance = Resources.Load<UIOptions>("Data/UI/DefaultUIOptions");
                 }
                 return instance;

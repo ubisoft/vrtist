@@ -26,10 +26,14 @@ namespace VRtist
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
-        public ColorReference baseColor = new ColorReference(); // = UIOptions.Instance.backgroundColor; // not allowed to be called
-        public ColorReference disabledColor = new ColorReference(); // = UIOptions.Instance.disabledColor; // TODO: set it in every CreateArgs
+        public ColorReference baseColor = new ColorReference();
+        public ColorReference disabledColor = new ColorReference();
+        public ColorReference pushedColor = new ColorReference();
+        public ColorReference selectedColor = new ColorReference();
 
         private bool isDisabled = false;
+        private bool isSelected = false;
+        private bool isPushed = false;
 
         private Vector3 anchor = Vector3.zero; // local position of anchor for children.
 
@@ -45,7 +49,11 @@ namespace VRtist
         public float Height { get { return height; } set { height = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public Color BaseColor { get { return baseColor.Value; } }
         public Color DisabledColor { get { return disabledColor.Value; } }
-        public bool Disabled { get { return isDisabled; } set { isDisabled = value; SetColor(value ? DisabledColor : BaseColor); } }
+        public Color PushedColor { get { return disabledColor.Value; } }
+        public Color SelectedColor { get { return disabledColor.Value; } }
+        public bool Disabled { get { return isDisabled; } set { isDisabled = value; ResetColor(); } }
+        public bool Selected { get { return isSelected; } set { isSelected = value; ResetColor(); } }
+        public bool Pushed { get { return isPushed; } set { isPushed = value; ResetColor(); } }
         public bool NeedsRebuild { get { return needsRebuild; } set { needsRebuild = value; } }
 
         protected float prevTime = -1f;
@@ -90,6 +98,14 @@ namespace VRtist
             anchor = Vector3.zero;
         }
 
+        public virtual void ResetColor()
+        {
+            SetColor(isDisabled ? DisabledColor
+                  : (isPushed ? PushedColor
+                  : (isSelected ? SelectedColor 
+                  : BaseColor)));
+        }
+
         public virtual void SetColor(Color color)
         {
             Material material = GetComponent<MeshRenderer>().sharedMaterial;
@@ -99,11 +115,6 @@ namespace VRtist
         public virtual Color GetColor()
         {
             return GetComponent<MeshRenderer>().sharedMaterial.GetColor("_BaseColor");
-        }
-
-        public virtual void RefreshColor()
-        {
-            SetColor(BaseColor);
         }
 
         public virtual void SetLightLayer(uint layerIndex)

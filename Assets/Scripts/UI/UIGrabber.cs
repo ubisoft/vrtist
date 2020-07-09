@@ -7,11 +7,8 @@ namespace VRtist
     [SelectionBase]
     public class UIGrabber : UIElement
     {
-        //public Deformer deformer = null;
         public GameObject prefab = null;
-        public Color hoverColor = new Color(0f, 167f / 255f, 1f);
-        //public Color baseColor = new Color(186f / 255f, 186f / 255f, 186 / 255f);
-
+        
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = null;
         public GameObjectHashChangedEvent onExitUI3DObject = null;
@@ -53,17 +50,10 @@ namespace VRtist
                 UpdateLocalPosition();
                 //UpdateAnchor();
                 //UpdateChildren();
-                //SetColor(Disabled ? DisabledColor : BaseColor);
+                ResetColor();
                 NeedsRebuild = false;
             }
 #endif
-        }
-
-        public override void UpdateLocalPosition()
-        {
-            base.UpdateLocalPosition();
-        //    // Override pour le moment, tant que j'ai pas rempli les relativeLocations.
-        //    // Sinon tout va se retrouver dans un coin.
         }
 
         private void OnTriggerEnter(Collider otherCollider)
@@ -111,7 +101,8 @@ namespace VRtist
 
         public void OnPush3DObject()
         {
-            SetColor(hoverColor);
+            Pushed = true;
+            ResetColor();
 
             transform.localPosition += new Vector3(0f, 0f, -0.02f); // avance vers nous, dnas le repere de la page (local -Z)
             transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
@@ -119,7 +110,8 @@ namespace VRtist
 
         public void OnRelease3DObject()
         {
-            SetColor(BaseColor);
+            Pushed = false;
+            ResetColor();
 
             transform.localPosition += new Vector3(0f, 0f, +0.02f); // recule, dnas le repere de la page (local +Z)
             transform.localScale = Vector3.one;
@@ -136,7 +128,7 @@ namespace VRtist
             MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
             foreach (MeshRenderer meshRenderer in meshRenderers)
             {
-                Material[] materials = meshRenderer.materials;
+                Material[] materials = meshRenderer.sharedMaterials; // .materials
                 foreach (Material material in materials)
                 {
                     material.SetColor("_BaseColor", color);

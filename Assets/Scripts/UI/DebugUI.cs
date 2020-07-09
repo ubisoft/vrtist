@@ -43,7 +43,7 @@ namespace VRtist
                 {
                     UIElement element = uiElements[e];
                     element.NeedsRebuild = true;
-                    //element.RefreshColor();
+                    //element.ResetColor();
                 }
             }
         }
@@ -65,12 +65,22 @@ namespace VRtist
                     element.disabledColor.constant = UIOptions.DisabledColor;
                     element.disabledColor.reference = UIOptions.DisabledColorVar;
 
+                    element.pushedColor.useConstant = false;
+                    element.pushedColor.constant = UIOptions.PushedColor;
+                    element.pushedColor.reference = UIOptions.PushedColorVar;
+
+                    element.selectedColor.useConstant = false;
+                    element.selectedColor.constant = UIOptions.SelectedColor;
+                    element.selectedColor.reference = UIOptions.SelectedColorVar;
+
                     UIButton button = element.GetComponent<UIButton>();
                     if (button != null)
                     {
-                        // pushedColor
-                        // checkedColor
-                        
+                        // CheckedColor
+                        button.checkedColor.useConstant = false;
+                        button.checkedColor.constant = UIOptions.CheckedColor;
+                        button.checkedColor.reference = UIOptions.CheckedColorVar;
+
                         // Text Color
                         button.textColor.useConstant = false;
                         button.textColor.constant = UIOptions.ForegroundColor;
@@ -101,6 +111,7 @@ namespace VRtist
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
+                        // Label TextColor
                         label.textColor.useConstant = false;
                         label.textColor.constant = UIOptions.ForegroundColor;
                         label.textColor.reference = UIOptions.ForegroundColorVar;
@@ -109,38 +120,63 @@ namespace VRtist
                     UIElement panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
+                        // Specific base color for Panels
                         panel.baseColor.useConstant = false;
                         panel.baseColor.constant = UIOptions.PanelColor;
                         panel.baseColor.reference = UIOptions.PanelColorVar;
                     }
 
-                    UIElement checkbox = element.GetComponent<UICheckbox>();
+                    UIGrabber grabber = element.GetComponent<UIGrabber>();
+                    if (grabber)
+                    {
+                        grabber.baseColor.useConstant = false;
+                        grabber.baseColor.constant = UIOptions.GrabberBaseColor;
+                        grabber.baseColor.reference = UIOptions.GrabberBaseColorVar;
+
+                        grabber.pushedColor.useConstant = false;
+                        grabber.pushedColor.constant = UIOptions.GrabberHoverColor;
+                        grabber.pushedColor.reference = UIOptions.GrabberHoverColorVar;
+
+                        SerializedObject so = new SerializedObject(grabber);
+                        so.FindProperty("baseColor").FindPropertyRelative("useConstant").boolValue = true;
+                        so.FindProperty("baseColor").FindPropertyRelative("constant").colorValue = UIOptions.GrabberBaseColor;
+                        //so.FindProperty("baseColor").FindPropertyRelative("reference").objectReferenceValue = UIOptions.GrabberBaseColorVar;
+
+                        so.FindProperty("pushedColor").FindPropertyRelative("useConstant").boolValue = true;
+                        so.FindProperty("pushedColor").FindPropertyRelative("constant").colorValue = UIOptions.GrabberHoverColor;
+                        //so.FindProperty("pushedColor").FindPropertyRelative("reference").objectReferenceValue = UIOptions.GrabberHoverColorVar;
+                        so.ApplyModifiedProperties();
+                    }
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
                     }
 
-                    UIElement slider = element.GetComponent<UISlider>();
+                    UISlider slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
+                        // TODO: knob and rail
                     }
 
-                    UIElement vslider = element.GetComponent<UIVerticalSlider>();
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
                     if (vslider != null)
                     {
+                        // TODO: knob and rail
                     }
 
-                    UIElement spinner = element.GetComponent<UISpinner>();
+                    UISpinner spinner = element.GetComponent<UISpinner>();
                     if (spinner)
                     {
                     }
 
-                    UIElement timebar = element.GetComponent<UITimeBar>();
+                    UITimeBar timebar = element.GetComponent<UITimeBar>();
                     if (timebar)
                     {
                     }
 
                     element.NeedsRebuild = true;
-                    //element.RefreshColor();
+                    //element.ResetColor();
                 }
             }
         }

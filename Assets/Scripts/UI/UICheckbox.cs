@@ -30,7 +30,7 @@ namespace VRtist
         [CentimeterFloat] public float margin = default_margin;
         [CentimeterFloat] public float thickness = default_thickness;
         public Material source_material = null;
-        public Color pushedColor = UIElement.default_pushed_color;
+        // TODO: CheckedColor ???
         public CheckboxContent content = default_content;
         public Sprite checkedSprite = null;
         public Sprite uncheckedSprite = null;
@@ -202,7 +202,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? DisabledColor : BaseColor);
+                ResetColor();
                 NeedsRebuild = false;
             }
         }
@@ -284,14 +284,17 @@ namespace VRtist
 
         public void OnPushCheckbox()
         {
-            SetColor(Disabled ? DisabledColor : pushedColor);
+            Pushed = true;
+            ResetColor();
+
             Checked = !Checked;
             onCheckEvent.Invoke(Checked);
         }
 
         public void OnReleaseCheckbox()
         {
-            SetColor(Disabled ? DisabledColor : BaseColor);
+            Pushed = false;
+            ResetColor();
         }
 
         public void ActivateText(bool doActivate)

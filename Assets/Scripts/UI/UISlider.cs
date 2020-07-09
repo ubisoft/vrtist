@@ -41,7 +41,6 @@ namespace VRtist
         [CentimeterFloat] public float thickness = default_thickness;
         public float sliderPositionBegin = default_slider_begin;
         public float sliderPositionEnd = default_slider_end;
-        public Color pushedColor = UIElement.default_pushed_color;
         public Material sourceMaterial = null;
         public Material sourceRailMaterial = null;
         public Material sourceKnobMaterial = null;
@@ -272,7 +271,7 @@ namespace VRtist
                     UpdateChildren();
                     UpdateValueText();
                     UpdateSliderPosition();
-                    SetColor(Disabled ? DisabledColor : BaseColor);
+                    ResetColor();
                 }
                 catch(Exception e)
                 {
@@ -409,12 +408,14 @@ namespace VRtist
 
         public void OnClickSlider()
         {
-            SetColor(Disabled ? DisabledColor : pushedColor);
+            Pushed = true;
+            ResetColor();
         }
 
         public void OnReleaseSlider()
         {
-            SetColor(Disabled ? DisabledColor : BaseColor);
+            Pushed = false;
+            ResetColor();
         }
 
         public void OnSlide(float f)

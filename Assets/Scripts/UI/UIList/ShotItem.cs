@@ -78,18 +78,14 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
-            // TODO: handle a Selected state for widgets, so that they can set their own selected color.
-            //       or else they will just "SetColor(Disabled ? DisabledColor : BaseColor);" in their
-            //       Update and bypass the following SetColor.
-            Color selectedColor = value ? UIOptions.CheckedColor : UIOptions.BackgroundColor;
-            shotNameLabel.SetColor(selectedColor);
-            cameraNameLabel.SetColor(selectedColor);
-            cameraButton.SetColor(selectedColor);
-            shotEnabledCheckbox.SetColor(selectedColor);
-            startFrameSpinner.SetColor(selectedColor);
-            endFrameSpinner.SetColor(selectedColor);
-            setCameraButton.SetColor(selectedColor);
-            frameRangeLabel.SetColor(selectedColor);
+            shotNameLabel.Selected = value;
+            cameraNameLabel.Selected = value;
+            cameraButton.Selected = value;
+            shotEnabledCheckbox.Selected = value;
+            startFrameSpinner.Selected = value;
+            endFrameSpinner.Selected = value;
+            setCameraButton.Selected = value;
+            frameRangeLabel.Selected = value;
 
             if(value)
             {
@@ -355,7 +351,9 @@ namespace VRtist
 
             setCameraButton.isCheckable = true;
             setCameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
-            setCameraButton.checkedColor = UIOptions.FocusColor;
+            setCameraButton.checkedColor.useConstant = false;
+            setCameraButton.checkedColor.constant = UIOptions.FocusColor;
+            setCameraButton.checkedColor.reference = UIOptions.FocusColorVar;
             setCameraButton.baseSprite = UIUtils.LoadIcon("icon-camera");
             
             setCameraButton.SetLightLayer(5);

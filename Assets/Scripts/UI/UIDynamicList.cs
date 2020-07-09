@@ -86,7 +86,7 @@ namespace VRtist
                 UpdateItemPositions();
                 UpdatePageCountLabel();
 
-                //SetColor(Disabled ? DisabledColor : BaseColor);
+                //ResetColor();
 
                 NeedsRebuild = false;
             }

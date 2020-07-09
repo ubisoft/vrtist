@@ -36,8 +36,7 @@ namespace VRtist
         public ButtonContent content = default_content;
         public Sprite baseSprite = null;
         public Sprite checkedSprite = null; 
-        public Color pushedColor = UIElement.default_pushed_color;
-        public Color checkedColor = UIElement.default_pushed_color;
+        public ColorReference checkedColor = new ColorReference();
         public ColorReference textColor = new ColorReference();
         [TextArea] public string textContent = "";
         public Material source_material = null;
@@ -55,13 +54,13 @@ namespace VRtist
 
         public string Text { get { return GetText(); } set { SetText(value); } }
         public Color TextColor { get { return textColor.Value; } }
+        public Color CheckedColor { get { return checkedColor.Value; } }
 
         private bool isChecked = false;
-
         public bool Checked
         {
             get { return isChecked; }
-            set { isChecked = value; SetColor(Disabled ? DisabledColor : (value ? checkedColor : BaseColor)); UpdateCheckIcon(); }
+            set { isChecked = value; ResetColor(); UpdateCheckIcon(); }
         }
 
         void Start()
@@ -75,6 +74,15 @@ namespace VRtist
                 onClickEvent.AddListener(OnPushButton);
                 onReleaseEvent.AddListener(OnReleaseButton);
             }
+        }
+
+        public override void ResetColor()
+        {
+            SetColor(Disabled ? DisabledColor
+                  : (Pushed ? PushedColor
+                  : (Selected ? SelectedColor
+                  : (Checked ? CheckedColor 
+                  :  BaseColor))));
         }
 
         public override void RebuildMesh()
@@ -256,7 +264,7 @@ namespace VRtist
                 UpdateLocalPosition();
                 UpdateAnchor();
                 UpdateChildren();
-                SetColor(Disabled ? DisabledColor : BaseColor);
+                ResetColor();
                 NeedsRebuild = false;
             }
 #endif
@@ -366,12 +374,14 @@ namespace VRtist
 
         public void OnPushButton()
         {
-            SetColor(Disabled ? DisabledColor : pushedColor);
+            Pushed = true;
+            ResetColor();
         }
 
         public void OnReleaseButton()
         {
-            SetColor(Disabled ? DisabledColor : (isChecked ? checkedColor : BaseColor));
+            Pushed = false;
+            ResetColor();
         }
 
         //
