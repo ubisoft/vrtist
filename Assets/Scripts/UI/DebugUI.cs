@@ -158,6 +158,7 @@ namespace VRtist
 
         public void AssetBank_Reorder()
         {
+#if UNITY_EDITOR
             float startx = 0.05f;
             float starty = -0.08f;
             float startz = -0.025f;
@@ -186,6 +187,7 @@ namespace VRtist
                     }
                 }
             }
+#endif
         }
 
         //
@@ -194,6 +196,7 @@ namespace VRtist
 
         public void Checkable_SetBaseSprite()
         {
+#if UNITY_EDITOR
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -218,6 +221,7 @@ namespace VRtist
                     }
                 }
             }
+#endif
         }
 
 

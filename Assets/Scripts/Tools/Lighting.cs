@@ -111,6 +111,7 @@ namespace VRtist
                 if (UIObject)
                 {
                     CreateLight(UIObject.name);
+                    UIObject = null;
                 }
                 OnStartGrip();
             }, OnEndGrip);
