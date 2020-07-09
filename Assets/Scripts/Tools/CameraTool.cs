@@ -365,6 +365,7 @@ namespace VRtist
                         AddToSelection(newCamera);
                         undoGroup.Submit();
                         Selection.SetHoveredObject(newCamera);
+                        UIObject = null;
                     }
                 }
                 OnStartGrip();

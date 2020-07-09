@@ -271,8 +271,10 @@ namespace VRtist
             List<Quaternion> endRotations = new List<Quaternion>();
             List<Vector3> endScales = new List<Vector3>();
 
-            foreach (GameObject obj in initPositions.Keys)
+            foreach (GameObject obj in Selection.GetObjects())
             {
+                if (!initPositions.ContainsKey(obj))
+                    continue;
                 if (initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
                     continue;
                 objects.Add(obj.name);
@@ -747,7 +749,7 @@ namespace VRtist
             if (haptic && objectsRemovedFromSelection.Count > 0)
             {
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
-            }            
+            }
         }
 
         public void ClearSelection()

@@ -19,6 +19,7 @@ namespace VRtist
         private Transform arrowCursor = null;
         private Transform grabberCursor = null;
         private IDisposable UIEnabled = null;
+        private bool paletteEnabled = true;
 
         private bool lockedOnAWidget = false;
         private bool isOutOfWidget = true;
@@ -113,6 +114,31 @@ namespace VRtist
             HideAllCursors();
         }
 
+        private void OnTriggerStay(Collider other)
+        {
+            if (lockedOnAWidget)
+                return;
+
+            if (other.GetComponent<UIVolumeTag>() != null)
+            {
+                isOutOfVolume = false;
+
+                if (CommandManager.IsUndoGroupOpened())
+                {
+                    if (null == UIEnabled)
+                    {
+                        UIEnabled = UIElement.UIEnabled.SetValue(false);
+                        if (null != widgetHit)
+                        {
+                            UIGrabber grabber = widgetHit.GetComponent<UIGrabber>();
+                            grabber.OnRelease3DObject();
+                        }                        
+                    }                    
+                    return;
+                }
+            }
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             if (lockedOnAWidget)
@@ -120,10 +146,12 @@ namespace VRtist
 
             if (other.GetComponent<UIVolumeTag>() != null)
             {
-                ReleaseUIEnabledGuard();
+                isOutOfVolume = false;
+
                 if (CommandManager.IsUndoGroupOpened())
                 {
-                    UIEnabled = UIElement.UIEnabled.SetValue(false);
+                    if(null == UIEnabled)
+                        UIEnabled = UIElement.UIEnabled.SetValue(false);
                     return;
                 }
 
@@ -131,8 +159,6 @@ namespace VRtist
                 //tools.SetActive(false);
                 ToolsUIManager.Instance.ShowTools(false);
                 SetCursorShape(0); // arrow
-
-                isOutOfVolume = false;
             }
             else if (other.gameObject.tag == "UICollider")
             {

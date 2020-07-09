@@ -1,9 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -43,7 +39,7 @@ namespace VRtist
             forcePaletteOpen = panel.Find("ForcePaletteOpened").GetComponent<UICheckbox>();
             versionLabel = panel.Find("Version").GetComponent<UILabel>();
 
-            Apply();
+            Apply(onStart: true);
 
             if (null != versionLabel)
             {
@@ -51,7 +47,7 @@ namespace VRtist
             }
         }
 
-        private void Apply()
+        private void Apply(bool onStart = false)
         {
             OnDisplayGizmos(GlobalState.Settings.displayGizmos);
 
@@ -70,7 +66,8 @@ namespace VRtist
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
 
             rightHanded.Checked = GlobalState.Settings.rightHanded;
-            OnRightHanded(GlobalState.Settings.rightHanded);
+            if (!onStart || !GlobalState.Settings.rightHanded)
+                OnRightHanded(GlobalState.Settings.rightHanded);
 
             forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
         }
@@ -81,15 +78,18 @@ namespace VRtist
             Apply();
         }
 
-        public void OnDisplayFPS(bool show) {
+        public void OnDisplayFPS(bool show)
+        {
             GlobalState.Settings.displayFPS = show;
         }
 
-        public void OnDisplayGizmos(bool show) {
+        public void OnDisplayGizmos(bool show)
+        {
             GlobalState.SetDisplayGizmos(show);
         }
 
-        public void OnDisplayWorldGrid(bool show) {
+        public void OnDisplayWorldGrid(bool show)
+        {
             worldGrid.SetActive(show);
             GlobalState.Settings.displayWorldGrid = show;
         }
@@ -118,7 +118,7 @@ namespace VRtist
             }
         }
 
-        public void OnRightHanded(bool value) 
+        public void OnRightHanded(bool value)
         {
             GlobalState.Settings.rightHanded = value;
             GameObject leftController = Resources.Load("Prefabs/left_controller") as GameObject;

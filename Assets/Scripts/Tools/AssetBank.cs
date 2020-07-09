@@ -109,6 +109,7 @@ namespace VRtist
                     AddToSelection(newObject);
                     Selection.SetHoveredObject(newObject);
                     group.Submit();
+                    UIObject = null;
                 }
                 OnStartGrip();
             }, OnEndGrip);
