@@ -93,9 +93,7 @@ namespace VRtist
 
         private static Dictionary<string, string> tabTool = new Dictionary<string, string>();
 
-        private bool isPalettePinned = false;
         private bool isPaletteOpened = false;
-        private bool forcePaletteOpened = false;
         private bool showTools = true;
 
         private string currentToolName;
@@ -122,9 +120,10 @@ namespace VRtist
             OnToolChangedEvent += ToolsManager.OnChangeTool;
             OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
-            isPalettePinned = false;
             isPaletteOpened = false;
-            forcePaletteOpened = false;
+            if (GlobalState.Settings.forcePaletteOpen)
+                PopUpPalette(true);
+
 
             palettePinButton.Disabled = false;
             paletteCloseButton.Disabled =  true;
@@ -190,7 +189,7 @@ namespace VRtist
 
         public void OnForcePaletteOpened(bool forceOpen)
         {
-            forcePaletteOpened = forceOpen;
+            GlobalState.Settings.forcePaletteOpen = forceOpen;
         }
 
         public void RegisterUI3DObject(GameObject go)
@@ -247,7 +246,7 @@ namespace VRtist
         public void OnPaletteClose()
         {
             // security
-            if (!isPalettePinned)
+            if (!GlobalState.Settings.pinnedPalette)
                 Debug.LogError("Palette is not pinned, we shouldnt be able to unpin it.");
 
             // Re-parent to Hand
@@ -259,13 +258,13 @@ namespace VRtist
             palettePinButton.Disabled = false;
             paletteCloseButton.Disabled = true;
 
-            isPalettePinned = false;
+            GlobalState.Settings.pinnedPalette = false;
         }
 
         public void OnPalettePin()
         {
             // security
-            if (isPalettePinned)
+            if (GlobalState.Settings.pinnedPalette)
                 Debug.LogError("Palette is already pinned, we shouldnt be able to pin it again.");
 
             // get current offset to apply it later when closing the palette
@@ -277,7 +276,7 @@ namespace VRtist
             palettePinButton.Disabled = true;
             paletteCloseButton.Disabled = false;
 
-            isPalettePinned = true;
+            GlobalState.Settings.pinnedPalette = true;
         }
 
         public void TogglePanel(string activePanelName)
@@ -319,11 +318,11 @@ namespace VRtist
 
         public void PopUpPalette(bool value)
         {
-            if (!isPalettePinned) // if pinned, ignore popup commands.
+            if (!GlobalState.Settings.pinnedPalette) // if pinned, ignore popup commands.
             {
                 if (value != isPaletteOpened)
                 {
-                    if (!isPaletteOpened || !forcePaletteOpened)
+                    if (!isPaletteOpened || !GlobalState.Settings.forcePaletteOpen)
                     {
                         isPaletteOpened = value;
 

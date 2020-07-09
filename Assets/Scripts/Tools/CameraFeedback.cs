@@ -19,6 +19,11 @@ namespace VRtist
             SetActiveCamera(args.activeCamera);
         }
 
+        private void OnApplicationQuit()
+        {
+            GlobalState.Settings.SetWindowPosition(transform.parent);
+        }
+
         private void SetActiveCamera(GameObject activeCamera)
         {
             if(null != activeCamera)

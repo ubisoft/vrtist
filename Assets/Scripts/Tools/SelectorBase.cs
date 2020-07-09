@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -26,7 +25,6 @@ namespace VRtist
         protected Dictionary<GameObject, float> initFocals = new Dictionary<GameObject, float>();
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
-
         protected Matrix4x4 initTransformation;
 
         public enum SelectorModes { Select = 0, Eraser }
@@ -47,7 +45,6 @@ namespace VRtist
         protected GameObject triggerTooltip;
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
-        protected GameObject displayTooltip;
 
         public GameObject selectionVFXPrefab = null;
         protected Dopesheet dopesheet;
@@ -104,7 +101,7 @@ namespace VRtist
             }
         }
 
-    public virtual void OnSelectorTriggerEnter(Collider other)
+        public virtual void OnSelectorTriggerEnter(Collider other)
         {
             Tooltips.SetTooltipVisibility(triggerTooltip, true);
             Tooltips.SetTooltipVisibility(gripTooltip, true);
@@ -130,7 +127,7 @@ namespace VRtist
 
             Selection.selectionMaterial = selectionMaterial;
 
-            if(null == selectionVFXPrefab)
+            if (null == selectionVFXPrefab)
             {
                 selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
             }
@@ -138,7 +135,7 @@ namespace VRtist
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
 
-            
+
         }
 
         protected void CreateTooltips()
@@ -149,33 +146,31 @@ namespace VRtist
             triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
             gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
             joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
-            displayTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Info, "0\nselected");
             Tooltips.SetTooltipVisibility(triggerTooltip, false);
             Tooltips.SetTooltipVisibility(gripTooltip, false);
             Tooltips.SetTooltipVisibility(joystickTooltip, false);
-            Tooltips.SetTooltipVisibility(displayTooltip, false);
         }
 
         protected override void DoUpdate()
         {
-            if(VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
+            if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
-                if(navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+                if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                 {
                     // Change selector size
                     Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                    if(val != Vector2.zero)
+                    if (val != Vector2.zero)
                     {
-                        float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
-                        if(val.y > deadZone) { selectorRadius *= scaleFactor; }
-                        if(val.y < -deadZone) { selectorRadius /= scaleFactor; }
+                        float scaleFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
+                        if (val.y > deadZone) { selectorRadius *= scaleFactor; }
+                        if (val.y < -deadZone) { selectorRadius /= scaleFactor; }
                         selectorRadius = Mathf.Clamp(selectorRadius, 0.001f, 0.5f);
                         selectorBrush.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
                     }
                 }
             }
 
-            switch(mode)
+            switch (mode)
             {
                 case SelectorModes.Select: UpdateSelect(); break;
                 case SelectorModes.Eraser: UpdateEraser(); break;
@@ -230,7 +225,7 @@ namespace VRtist
                 initScales[obj] = obj.transform.localScale;
 
                 CameraController cameraController = obj.GetComponent<CameraController>();
-                if(null != cameraController)
+                if (null != cameraController)
                     initFocals[obj] = cameraController.focal;
             }
             scale = 1f;
@@ -238,9 +233,9 @@ namespace VRtist
 
         public void OnGripWorld(bool value)
         {
-            if(value)
+            if (value)
             {
-                if(!gripPrevented && gripped) // no need to interrupt if the grip was prevented
+                if (!gripPrevented && gripped) // no need to interrupt if the grip was prevented
                 {
                     OnEndGrip(); // prematurely end the grip action
                     gripInterrupted = true; // set bool to return immediately in the "real" OnEndGrip called when ungripping the controller.
@@ -250,7 +245,7 @@ namespace VRtist
 
         protected virtual void OnStartGrip()
         {
-            if(GlobalState.IsGrippingWorld)
+            if (GlobalState.IsGrippingWorld)
             {
                 gripPrevented = true;
                 return;
@@ -278,7 +273,7 @@ namespace VRtist
 
             foreach (GameObject obj in initPositions.Keys)
             {
-                if(initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
+                if (initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
                     continue;
                 objects.Add(obj.name);
                 beginPositions.Add(initPositions[obj]);
@@ -290,7 +285,7 @@ namespace VRtist
                 endScales.Add(obj.transform.localScale);
             }
 
-            if(objects.Count > 0)
+            if (objects.Count > 0)
                 new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
         }
 
@@ -325,34 +320,34 @@ namespace VRtist
                 return;
             }
 
-            if(gripInterrupted)
+            if (gripInterrupted)
             {
                 gripInterrupted = false;
                 return;
             }
 
             List<ParametersController> controllers = new List<ParametersController>();
-            foreach(var obj in Selection.GetObjects())
+            foreach (var obj in Selection.GetObjects())
             {
                 LightController lightController = obj.GetComponentInChildren<LightController>();
-                if(null != lightController)
+                if (null != lightController)
                 {
                     controllers.Add(lightController);
                     continue;
                 }
                 CameraController cameraController = obj.GetComponentInChildren<CameraController>();
-                if(null != cameraController)
+                if (null != cameraController)
                 {
                     controllers.Add(cameraController);
                     continue;
                 }
             }
-            if(controllers.Count > 0)
+            if (controllers.Count > 0)
             {
-                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.displayGizmos);
+                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
             }
 
-            if(!Selection.IsHandleSelected())
+            if (!Selection.IsHandleSelected())
             {
                 ManageMoveObjectsUndo();
                 ManageCamerasFocalsUndo();
@@ -379,7 +374,7 @@ namespace VRtist
 
         private ParametersController GetFirstAnimation()
         {
-            foreach(GameObject gObject in Selection.selection.Values)
+            foreach (GameObject gObject in Selection.selection.Values)
             {
                 ParametersController controller = gObject.GetComponent<ParametersController>();
                 if (null == controller)
@@ -396,34 +391,29 @@ namespace VRtist
 
             int numSelected = Selection.selection.Count;
             Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
-            Tooltips.SetTooltipVisibility(displayTooltip, numSelected > 0);
-            if (numSelected > 0)
-            {
-                Tooltips.SetTooltipText(displayTooltip, $"{numSelected}\nselected");
-            }
             ParametersController controller = GetFirstController();
             dopesheet.UpdateFromController(controller);
 
             // Update locked checkbox if anyone
-            if(null != lockedCheckbox)
+            if (null != lockedCheckbox)
             {
                 int numLocked = 0;
                 int numUnlocked = 0;
-                foreach(GameObject gobject in Selection.GetObjects())
+                foreach (GameObject gobject in Selection.GetObjects())
                 {
                     ParametersController parameters = gobject.GetComponent<ParametersController>();
-                    if(null != parameters)
+                    if (null != parameters)
                     {
-                        if(parameters.locked) { ++numLocked; }
+                        if (parameters.locked) { ++numLocked; }
                         else { ++numUnlocked; }
                     }
                 }
                 lockedCheckbox.Disabled = false;
-                if(numLocked > 0 && numUnlocked == 0)
+                if (numLocked > 0 && numUnlocked == 0)
                 {
                     lockedCheckbox.Checked = true;
                 }
-                else if(numUnlocked > 0 && numLocked == 0)
+                else if (numUnlocked > 0 && numLocked == 0)
                 {
                     lockedCheckbox.Checked = false;
                 }
@@ -457,7 +447,7 @@ namespace VRtist
             if (objecs.Count != 1)
                 return false;
 
-            foreach(GameObject gObject in objecs)
+            foreach (GameObject gObject in objecs)
             {
                 if (null == gObject.GetComponent<CameraController>())
                     return false;
@@ -471,7 +461,7 @@ namespace VRtist
             Quaternion rotation;
             VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
 
-            if(!HasDamping())
+            if (!HasDamping())
             {
                 damping.Clear();
                 rightControllerPosition = position;
@@ -486,7 +476,7 @@ namespace VRtist
 
             // remove too old values
             ControllerDamping elem = damping[0];
-            float dampingDuration = GlobalState.cameraDamping / 100f * 0.5f;
+            float dampingDuration = GlobalState.Settings.cameraDamping / 100f * 0.5f;
             while (curretnTime - elem.time > dampingDuration)
             {
                 damping.RemoveAt(0);
@@ -496,9 +486,9 @@ namespace VRtist
             Vector3 positionSum = Vector3.zero;
             Quaternion rotationSum = Quaternion.identity;
             rotationSum.w = 0f;
-            float count = (float)damping.Count;
+            float count = (float) damping.Count;
             float factor = 1f / count;
-            foreach(ControllerDamping dampingElem in damping)
+            foreach (ControllerDamping dampingElem in damping)
             {
                 positionSum += factor * dampingElem.position;
                 rotationSum.x += factor * dampingElem.rotation.x;
@@ -537,8 +527,9 @@ namespace VRtist
             // Duplicate
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
                 () => { },
-                () => {
-                    if(!Selection.IsHandleSelected())
+                () =>
+                {
+                    if (!Selection.IsHandleSelected())
                     {
                         List<GameObject> objects = Selection.GetObjects();
 
@@ -558,35 +549,35 @@ namespace VRtist
 
             SetControllerVisible(!gripped || Selection.GetObjects().Count == 0);
 
-            if(gripped)
+            if (gripped)
             {
                 Vector3 p = rightControllerPosition;
                 Quaternion r = rightControllerRotation;
 
-                if(!outOfDeadZone && Vector3.Distance(p, initControllerPosition) > deadZoneDistance)
+                if (!outOfDeadZone && Vector3.Distance(p, initControllerPosition) > deadZoneDistance)
                     outOfDeadZone = true;
 
-                if(!outOfDeadZone)
+                if (!outOfDeadZone)
                     return;
 
                 // Joystick zoom only for non-handle objects
-                if(!Selection.IsHandleSelected())
+                if (!Selection.IsHandleSelected())
                 {
-                    if(navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
+                    if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                     {
                         Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
-                        float scaleFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        float scaleFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
                         if (joystickAxis.y > deadZone)
                             scale *= scaleFactor;
-                        if(joystickAxis.y < -deadZone)
+                        if (joystickAxis.y < -deadZone)
                             scale /= scaleFactor;
                     }
                 }
 
                 // compute rightMouthpiece local to world matrix with controller position/rotation
                 Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
-                    Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation,  new Vector3(scale, scale, scale));
-                    
+                    Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, new Vector3(scale, scale, scale));
+
                 TransformSelection(controllerMatrix);
             }
 
@@ -600,13 +591,13 @@ namespace VRtist
                     CameraController cameraController = GetSingleSelectedCamera();
                     if (null != cameraController)
                     {
-                        if(null == cameraFocalCommand && null == undoGroup)
+                        if (null == cameraFocalCommand && null == undoGroup)
                         {
                             cameraFocalCommand = new CommandSetValue<float>(cameraController.gameObject, "Camera Focal", "/CameraController/focal");
                         }
 
                         float currentFocal = cameraController.focal;
-                        float focalFactor = 1f + GlobalState.ScaleSpeed / 1000.0f;
+                        float focalFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
 
                         if (joystickAxis.x > deadZone)
                             currentFocal *= focalFactor;
@@ -634,24 +625,24 @@ namespace VRtist
         {
             transformation = transformation * initTransformation;
 
-            foreach(GameObject obj in Selection.GetObjects())
+            foreach (GameObject obj in Selection.GetObjects())
             {
                 // Some objects may be locked, so check that
                 ParametersController parameters = obj.GetComponent<ParametersController>();
-                if(null != parameters && parameters.locked) { continue; }
+                if (null != parameters && parameters.locked) { continue; }
 
                 var meshParentTransform = obj.transform.parent;
                 Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
-                if(meshParentTransform)
+                if (meshParentTransform)
                     meshParentMatrixInverse = meshParentTransform.worldToLocalMatrix;
                 else
                     meshParentMatrixInverse = Matrix4x4.identity;
                 Matrix4x4 transformed = meshParentMatrixInverse * transformation * initParentMatrix[obj] * Matrix4x4.TRS(initPositions[obj], initRotations[obj], initScales[obj]);
 
-                if(obj.transform.localToWorldMatrix != transformed)
+                if (obj.transform.localToWorldMatrix != transformed)
                 {
                     // UI objects
-                    if(obj.GetComponent<UIHandle>())
+                    if (obj.GetComponent<UIHandle>())
                     {
                         obj.transform.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
                         obj.transform.localRotation = Quaternion.LookRotation(transformed.GetColumn(2), transformed.GetColumn(1));
@@ -681,9 +672,9 @@ namespace VRtist
         {
             List<GameObject> objects = new List<GameObject>();
             Transform parent = gObject.transform.parent;
-            if(parent.name.StartsWith("Group__"))
+            if (parent.name.StartsWith("Group__"))
             {
-                for(int i = 0; i < parent.childCount; i++)
+                for (int i = 0; i < parent.childCount; i++)
                     objects.Add(parent.GetChild(i).gameObject);
             }
             else
@@ -713,15 +704,15 @@ namespace VRtist
         {
             List<GameObject> objects = GetGroupSiblings(gObject);
             List<GameObject> objectsAddedToSelection = new List<GameObject>();
-            foreach(GameObject gobj in objects)
+            foreach (GameObject gobj in objects)
             {
-                if(Selection.IsSelected(gobj))
+                if (Selection.IsSelected(gobj))
                     continue;
-                if(AddToSelection(gobj))
+                if (AddToSelection(gobj))
                     objectsAddedToSelection.Add(gobj);
             }
 
-            if(haptic && objectsAddedToSelection.Count > 0)
+            if (haptic && objectsAddedToSelection.Count > 0)
             {
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
             }
@@ -739,18 +730,18 @@ namespace VRtist
             List<GameObject> objects = GetGroupSiblings(gObject);
 
             List<GameObject> objectsRemovedFromSelection = new List<GameObject>();
-            foreach(GameObject gobj in objects)
+            foreach (GameObject gobj in objects)
             {
-                if(!Selection.IsSelected(gobj))
+                if (!Selection.IsSelected(gobj))
                     continue;
 
-                if(RemoveFromSelection(gobj))
+                if (RemoveFromSelection(gobj))
                 {
                     objectsRemovedFromSelection.Add(gobj);
                 }
             }
 
-            if(haptic && objectsRemovedFromSelection.Count > 0)
+            if (haptic && objectsRemovedFromSelection.Count > 0)
             {
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
             }
@@ -761,7 +752,7 @@ namespace VRtist
         public void ClearSelection()
         {
             List<GameObject> objects = new List<GameObject>();
-            foreach(KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 objects.Add(data.Value);
             }
@@ -779,7 +770,7 @@ namespace VRtist
             new CommandDuplicateGameObject(clone, source).Submit();
 
             // Add a selectionVFX instance on the duplicated objects
-            if(withVFX)
+            if (withVFX)
             {
                 GameObject vfxInstance = Instantiate(selectionVFXPrefab);
                 vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(clone);
@@ -827,31 +818,31 @@ namespace VRtist
 
         public Color GetModeColor()
         {
-            if(mode == SelectorModes.Select) { return selectionColor; }
+            if (mode == SelectorModes.Select) { return selectionColor; }
             return eraseColor;
         }
 
         void updateButtonsColor()
         {
-            if(!panel)
+            if (!panel)
                 return;
 
             // NOTE: currently the SelectorPanel has 4 children of type UIButton
             //       which have on Canvas children, with in turn has one Image and one Text children.
             // TODO: do a proper Radio Button Group
-            for(int i = 0; i < panel.childCount; i++)
+            for (int i = 0; i < panel.childCount; i++)
             {
                 GameObject child = panel.GetChild(i).gameObject;
                 UIButton button = child.GetComponent<UIButton>();
-                if(button != null)
+                if (button != null)
                 {
                     button.Checked = false;
 
-                    if(child.name == "Select" && mode == SelectorModes.Select)
+                    if (child.name == "Select" && mode == SelectorModes.Select)
                     {
                         button.Checked = true;
                     }
-                    if(child.name == "Eraser" && mode == SelectorModes.Eraser)
+                    if (child.name == "Eraser" && mode == SelectorModes.Eraser)
                     {
                         button.Checked = true;
                     }
@@ -863,7 +854,7 @@ namespace VRtist
         {
             // TODO
             return;
-            if(Selection.selection.Count <= 1)
+            if (Selection.selection.Count <= 1)
                 return;
 
             GameObject container = new GameObject("Group__" + groupId.ToString());
@@ -872,13 +863,13 @@ namespace VRtist
             SortedSet<Transform> groups = new SortedSet<Transform>();
 
             bool groupHasParent = false;
-            foreach(KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
                 Transform parent = gobject.transform.parent;
-                if(parent && parent.name.StartsWith("Group__"))
+                if (parent && parent.name.StartsWith("Group__"))
                 {
-                    if(!groupHasParent)
+                    if (!groupHasParent)
                     {
                         container.transform.parent = parent.parent;
                         container.transform.localPosition = Vector3.zero;
@@ -893,7 +884,7 @@ namespace VRtist
                 }
                 else
                 {
-                    if(!groupHasParent)
+                    if (!groupHasParent)
                     {
                         container.transform.parent = data.Value.transform.parent;
                         groupHasParent = true;
@@ -902,9 +893,9 @@ namespace VRtist
                 }
             }
 
-            foreach(Transform group in groups)
+            foreach (Transform group in groups)
             {
-                if(group.childCount == 0)
+                if (group.childCount == 0)
                     Destroy(group.gameObject);
             }
         }
@@ -914,19 +905,19 @@ namespace VRtist
             // TODO
             return;
             SortedSet<Transform> groups = new SortedSet<Transform>();
-            foreach(KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
                 GameObject gobject = data.Value;
                 Transform parent = gobject.transform.parent;
-                if(parent && parent.name.StartsWith("Group__"))
+                if (parent && parent.name.StartsWith("Group__"))
                 {
                     groups.Add(gobject.transform.parent);
                 }
             }
 
-            foreach(Transform group in groups)
+            foreach (Transform group in groups)
             {
-                for(int i = group.childCount - 1; i >= 0; i--)
+                for (int i = group.childCount - 1; i >= 0; i--)
                 {
                     group.GetChild(i).parent = group.parent;
                 }
@@ -936,10 +927,10 @@ namespace VRtist
 
         public void OnSetLocked(bool locked)
         {
-            foreach(GameObject gobject in Selection.GetObjects())
+            foreach (GameObject gobject in Selection.GetObjects())
             {
                 ParametersController parameters = gobject.GetComponent<ParametersController>();
-                if(null != parameters)
+                if (null != parameters)
                 {
                     parameters.locked = locked;
                 }

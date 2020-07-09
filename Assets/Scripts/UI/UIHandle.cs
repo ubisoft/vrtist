@@ -7,6 +7,11 @@ namespace VRtist
 {
     public class UIHandle : MonoBehaviour
     {
+        private void OnApplicationQuit()
+        {
+            GlobalState.Settings.SetWindowPosition(transform);
+        }
+
 
     }
 }

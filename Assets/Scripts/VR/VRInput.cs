@@ -227,7 +227,7 @@ namespace VRtist
 
         private static InputDevice GetLeftOrRightHandedController(InputDevice controller)
         {
-            if (GlobalState.rightHanded || !remapLeftRightHandedDevices)
+            if (GlobalState.Settings.rightHanded || !remapLeftRightHandedDevices)
                 return controller;
             return invertedController[controller];
         }
