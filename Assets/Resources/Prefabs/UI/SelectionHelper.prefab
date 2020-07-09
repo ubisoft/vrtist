@@ -337,6 +337,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1086664930399780405}
   - component: {fileID: 1086664930399780410}
+  - component: {fileID: -4501584510487900317}
   m_Layer: 5
   m_Name: SelectionHelper
   m_TagString: Untagged
@@ -371,6 +372,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ecc4490a02c0c14eadb768c29763482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!135 &-4501584510487900317
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1086664930399780404}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.01
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1086664931455452290
 GameObject:
   m_ObjectHideFlags: 0
