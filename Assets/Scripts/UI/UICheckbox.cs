@@ -322,6 +322,8 @@ namespace VRtist
             public float thickness = UICheckbox.default_thickness;
             public Material material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
             public ColorVar color = UIOptions.BackgroundColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public string caption = UICheckbox.default_text;
             public CheckboxContent content = default_content;
             public Sprite checkedIcon = UIUtils.LoadIcon(UICheckbox.default_checked_icon_name);
@@ -362,6 +364,10 @@ namespace VRtist
             uiCheckbox.source_material = input.material;
             uiCheckbox.baseColor.useConstant = false;
             uiCheckbox.baseColor.reference = input.color;
+            uiCheckbox.pushedColor.useConstant = false;
+            uiCheckbox.pushedColor.reference = input.pushedColor;
+            uiCheckbox.selectedColor.useConstant = false;
+            uiCheckbox.selectedColor.reference = input.selectedColor;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();

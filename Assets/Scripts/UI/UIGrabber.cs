@@ -128,7 +128,7 @@ namespace VRtist
             MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
             foreach (MeshRenderer meshRenderer in meshRenderers)
             {
-                Material[] materials = meshRenderer.sharedMaterials; // .materials
+                Material[] materials = meshRenderer.materials;
                 foreach (Material material in materials)
                 {
                     material.SetColor("_BaseColor", color);

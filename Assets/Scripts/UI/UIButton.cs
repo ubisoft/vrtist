@@ -80,8 +80,8 @@ namespace VRtist
         {
             SetColor(Disabled ? DisabledColor
                   : (Pushed ? PushedColor
-                  : (Selected ? SelectedColor
                   : (Checked ? CheckedColor 
+                  : (Selected ? SelectedColor
                   :  BaseColor))));
         }
 
@@ -400,6 +400,9 @@ namespace VRtist
             public Material material = UIUtils.LoadMaterial(UIButton.default_material_name);
             public ColorVar bgcolor = UIOptions.BackgroundColorVar;
             public ColorVar fgcolor = UIOptions.ForegroundColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar selectedColor = UIOptions.SelectedColorVar;
+            public ColorVar checkedColor = UIOptions.CheckedColorVar;
             public ButtonContent buttonContent = UIButton.default_content;
             public IconMarginBehavior iconMarginBehavior = UIButton.default_icon_margin_behavior;
             public float iconMargin = UIButton.default_icon_margin;
@@ -443,6 +446,12 @@ namespace VRtist
             uiButton.baseColor.reference = input.bgcolor;
             uiButton.textColor.useConstant = false;
             uiButton.textColor.reference = input.fgcolor;
+            uiButton.pushedColor.useConstant = false;
+            uiButton.pushedColor.reference = input.pushedColor;
+            uiButton.selectedColor.useConstant = false;
+            uiButton.selectedColor.reference = input.selectedColor;
+            uiButton.checkedColor.useConstant = false;
+            uiButton.checkedColor.reference = input.checkedColor;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();

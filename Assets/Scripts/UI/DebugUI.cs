@@ -50,7 +50,8 @@ namespace VRtist
 
         public void UIOPTIONS_ResetAllColors()
         {
-            for(int w = 0; w < windows.Length; ++w)
+#if UNITY_EDITOR
+            for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
                 for (int e = 0; e < uiElements.Length; ++e)
@@ -179,6 +180,7 @@ namespace VRtist
                     //element.ResetColor();
                 }
             }
+#endif
         }
 
         public void UIOPTIONS_RandomChangeColors()

@@ -473,6 +473,8 @@ namespace VRtist
             public float spinner_value_rate_int = UISpinner.default_value_rate_int;
             public Material background_material = UIUtils.LoadMaterial(UISpinner.default_background_material_name);
             public ColorVar background_color = UIOptions.BackgroundColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public string caption = UISpinner.default_text;
         }
 
@@ -516,6 +518,10 @@ namespace VRtist
             uiSpinner.valueRateInt = input.spinner_value_rate_int;
             uiSpinner.baseColor.useConstant = false;
             uiSpinner.baseColor.reference = input.background_color;
+            uiSpinner.pushedColor.useConstant = false;
+            uiSpinner.pushedColor.reference = input.pushedColor;
+            uiSpinner.selectedColor.useConstant = false;
+            uiSpinner.selectedColor.reference = input.selectedColor;
             uiSpinner.sourceMaterial = input.background_material;
 
             // Setup the Meshfilter

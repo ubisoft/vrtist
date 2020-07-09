@@ -284,6 +284,8 @@ namespace VRtist
             public Material material = UIUtils.LoadMaterial(UILabel.default_material_name);
             public ColorVar bgcolor = UIOptions.BackgroundColorVar;
             public ColorVar fgcolor = UIOptions.ForegroundColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public LabelContent labelContent = UILabel.default_content;
             public ImagePosition imagePosition = UILabel.default_image_position;
             public IconMarginBehavior iconMarginBehavior = UILabel.default_icon_margin_behavior;
@@ -331,7 +333,11 @@ namespace VRtist
             uiLabel.baseColor.reference = input.bgcolor;
             uiLabel.textColor.useConstant = false;
             uiLabel.textColor.reference = input.fgcolor;
-            
+            uiLabel.pushedColor.useConstant = false;
+            uiLabel.pushedColor.reference = input.pushedColor;
+            uiLabel.selectedColor.useConstant = false;
+            uiLabel.selectedColor.reference = input.selectedColor;
+
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)

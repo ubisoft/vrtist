@@ -210,13 +210,12 @@ namespace VRtist
                 width = 0.03f,
                 height = 0.03f,
                 icon = UIUtils.LoadIcon("icon-camera"),
-                buttonContent = UIButton.ButtonContent.TextOnly
+                buttonContent = UIButton.ButtonContent.ImageOnly
             });
 
             cameraButton.isCheckable = true;
             cameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
             cameraButton.baseSprite = null;
-            cameraButton.ActivateText(false); // icon-only
             cameraButton.SetLightLayer(5);
 
             cx += 0.03f;
@@ -299,6 +298,11 @@ namespace VRtist
                 cur_spinner_value_int = shot.start, spinner_value_rate_int = 30
             });
 
+            startFrameSpinner.baseColor.useConstant = true;
+            startFrameSpinner.baseColor.constant = UIOptions.BackgroundColor;
+            startFrameSpinner.selectedColor.useConstant = true;
+            startFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
+
             startFrameSpinner.SetLightLayer(5);
 
             cx += 0.055f;
@@ -312,6 +316,11 @@ namespace VRtist
                 width = 0.04f,
                 height = 0.03f
             });
+
+            frameRangeLabel.baseColor.useConstant = true;
+            frameRangeLabel.baseColor.constant = UIOptions.BackgroundColor;
+            frameRangeLabel.selectedColor.useConstant = true;
+            frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
 
             frameRangeLabel.SetLightLayer(5);
             Text frameRangeText = frameRangeLabel.GetComponentInChildren<Text>();
@@ -334,6 +343,10 @@ namespace VRtist
                 spinner_value_rate_int = 30
             });
 
+            endFrameSpinner.baseColor.useConstant = true;
+            endFrameSpinner.baseColor.constant = UIOptions.BackgroundColor;
+            endFrameSpinner.selectedColor.useConstant = true;
+            endFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
             endFrameSpinner.SetLightLayer(5);
 
             cx += 0.055f;

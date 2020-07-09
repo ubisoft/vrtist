@@ -25,16 +25,41 @@ namespace VRtist
             {
                 ShotItem item = GetShotItem(i);
                 Shot shot = sm.shots[i];
-                Color defaultColor = item.shotNameLabel.BaseColor;
+                Color defaultColor = UIOptions.BackgroundColor;
+                Color defaultSelectedColor = UIOptions.SelectedColor;
 
-                Color startColor = currentFrame == shot.start ? focusColor : defaultColor;
-                item.startFrameSpinner.SetColor(startColor);
+                if (currentFrame == shot.start)
+                {
+                    item.startFrameSpinner.baseColor.constant = focusColor;
+                    item.startFrameSpinner.selectedColor.constant = focusColor;
+                }
+                else
+                {
+                    item.startFrameSpinner.baseColor.constant = defaultColor;
+                    item.startFrameSpinner.selectedColor.constant = defaultSelectedColor;
+                }
 
-                Color endColor = currentFrame == shot.end ? focusColor : defaultColor;
-                item.endFrameSpinner.SetColor(endColor);
+                if (currentFrame == shot.end)
+                {
+                    item.endFrameSpinner.baseColor.constant = focusColor;
+                    item.endFrameSpinner.selectedColor.constant = focusColor;
+                }
+                else 
+                {
+                    item.endFrameSpinner.baseColor.constant = defaultColor;
+                    item.endFrameSpinner.selectedColor.constant = defaultSelectedColor;
+                }
 
-                Color rangeColor = (currentFrame > shot.start && currentFrame < shot.end) ? focusColor : defaultColor;
-                item.frameRangeLabel.SetColor(rangeColor);
+                if (currentFrame > shot.start && currentFrame < shot.end)
+                {
+                    item.frameRangeLabel.baseColor.constant = focusColor;
+                    item.frameRangeLabel.selectedColor.constant = focusColor;
+                }
+                else
+                {
+                    item.frameRangeLabel.baseColor.constant = defaultColor;
+                    item.frameRangeLabel.selectedColor.constant = defaultSelectedColor;
+                }
             }
         }
 

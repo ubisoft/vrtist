@@ -49,8 +49,8 @@ namespace VRtist
         public float Height { get { return height; } set { height = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public Color BaseColor { get { return baseColor.Value; } }
         public Color DisabledColor { get { return disabledColor.Value; } }
-        public Color PushedColor { get { return disabledColor.Value; } }
-        public Color SelectedColor { get { return disabledColor.Value; } }
+        public Color PushedColor { get { return pushedColor.Value; } }
+        public Color SelectedColor { get { return selectedColor.Value; } }
         public bool Disabled { get { return isDisabled; } set { isDisabled = value; ResetColor(); } }
         public bool Selected { get { return isSelected; } set { isSelected = value; ResetColor(); } }
         public bool Pushed { get { return isPushed; } set { isPushed = value; ResetColor(); } }
