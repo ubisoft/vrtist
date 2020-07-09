@@ -89,6 +89,13 @@ namespace VRtist
                             button.baseColor.constant = UIOptions.PinWindowButtonColor;
                             button.baseColor.reference = UIOptions.PinWindowButtonColorVar;
                         }
+
+                        if (button.gameObject.name == "ExitButton")
+                        {
+                            button.baseColor.useConstant = false;
+                            button.baseColor.constant = UIOptions.ExitButtonColor;
+                            button.baseColor.reference = UIOptions.ExitButtonColorVar;
+                        }
                     }
 
                     UILabel label = element.GetComponent<UILabel>();
