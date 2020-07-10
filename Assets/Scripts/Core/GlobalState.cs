@@ -80,6 +80,7 @@ namespace VRtist
         void Awake()
         {
             instance = Instance;
+            settings.Load();
 
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);
@@ -89,6 +90,11 @@ namespace VRtist
             colorReleasedEvent = new ColorChangedEvent();
             instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
             colorClickedEvent = colorPicker.onClickEvent;
+        }
+
+        private void OnDestroy()
+        {
+            settings.Save();
         }
 
         private void Start() {

@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace VRtist
@@ -8,6 +10,7 @@ namespace VRtist
     [CreateAssetMenu(menuName = "VRtist/Settings")]
     public class Settings : ScriptableObject
     {
+        public int version = 1;
         public bool displayGizmos = true;
         public bool displayWorldGrid = true;
         public bool displayFPS = false;
@@ -79,6 +82,37 @@ namespace VRtist
             {
                 cameraFeedbackPosition = window.localPosition;
                 cameraFeedbackRotation = window.localRotation;
+            }
+        }
+
+        private string GetJsonFilename()
+        {
+            string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string filename = appdata + @"\VRtist.json";
+            return filename;
+        }
+
+        public void Load()
+        {
+            LoadJson(GetJsonFilename());
+        }
+
+        public void Save()
+        {
+            SaveToJson(GetJsonFilename());
+        }
+        public void SaveToJson(string filename)
+        {
+            string json = JsonUtility.ToJson(this, true);
+            File.WriteAllText(filename, json);
+        }
+
+        public void LoadJson(string filename)
+        {
+            if (File.Exists(filename))
+            {
+                string json = File.ReadAllText(filename);
+                JsonUtility.FromJsonOverwrite(json, this);
             }
         }
     }
