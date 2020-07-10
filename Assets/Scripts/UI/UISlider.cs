@@ -152,6 +152,12 @@ namespace VRtist
                 Transform textTransform = canvas.transform.Find("Text");
                 Transform textValueTransform = canvas.transform.Find("TextValue");
 
+                Text text = textTransform.GetComponent<Text>();
+                Text textValue = textValueTransform.GetComponent<Text>();
+
+                text.color = TextColor;
+                textValue.color = TextColor;
+
                 RectTransform rectText = textTransform.GetComponent<RectTransform>();
                 RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
 
@@ -497,6 +503,9 @@ namespace VRtist
             public Material knobMaterial = UIUtils.LoadMaterial(UISlider.default_knob_material_name);
 
             public ColorVar color = UIOptions.BackgroundColorVar;
+            public ColorVar textColor = UIOptions.ForegroundColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public Color railColor = UIOptions.SliderRailColor; // UISlider.default_rail_color;
             public Color knobColor = UIOptions.SliderKnobColor; // UISlider.default_knob_color;
             // TODO
@@ -547,6 +556,12 @@ namespace VRtist
             uiSlider.sourceKnobMaterial = input.knobMaterial;
             uiSlider.baseColor.useConstant = false;
             uiSlider.baseColor.reference = input.color;
+            uiSlider.textColor.useConstant = false;
+            uiSlider.textColor.reference = input.textColor;
+            uiSlider.pushedColor.useConstant = false;
+            uiSlider.pushedColor.reference = input.pushedColor;
+            uiSlider.selectedColor.useConstant = false;
+            uiSlider.selectedColor.reference = input.selectedColor;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -643,6 +658,7 @@ namespace VRtist
                 t.alignment = TextAnchor.MiddleLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
@@ -669,6 +685,7 @@ namespace VRtist
                 t.alignment = TextAnchor.MiddleRight;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;

@@ -37,7 +37,6 @@ namespace VRtist
         public Sprite baseSprite = null;
         public Sprite checkedSprite = null; 
         public ColorReference checkedColor = new ColorReference();
-        public ColorReference textColor = new ColorReference();
         [TextArea] public string textContent = "";
         public Material source_material = null;
 
@@ -53,7 +52,6 @@ namespace VRtist
         public UnityEvent onHoverEvent = new UnityEvent();
 
         public string Text { get { return GetText(); } set { SetText(value); } }
-        public Color TextColor { get { return textColor.Value; } }
         public Color CheckedColor { get { return checkedColor.Value; } }
 
         private bool isChecked = false;
@@ -141,6 +139,7 @@ namespace VRtist
                 Image image = canvas.GetComponentInChildren<Image>(true);
                 if (image != null)
                 {
+                    image.color = TextColor;
                     if (content != ButtonContent.TextOnly)
                     {
                         image.gameObject.SetActive(true);
@@ -523,6 +522,7 @@ namespace VRtist
 
             Image img = image.AddComponent<Image>();
             img.sprite = input.icon;
+            img.color = input.fgcolor.value;
 
             RectTransform irt = image.GetComponent<RectTransform>();
             irt.localScale = Vector3.one;

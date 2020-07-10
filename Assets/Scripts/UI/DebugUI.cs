@@ -6,29 +6,9 @@ namespace VRtist
 {
     public class DebugUI : MonoBehaviour
     {
-        public UIDynamicList shotList = null;
-
         public UIHandle[] windows = null;
 
         public GameObject[] assetBankPages = null;
-        //
-        // Shot List
-        //
-        public void SHOTLIST_AddItemToList(Transform t)
-        {
-            if (shotList != null)
-            {
-                shotList.AddItem(t);
-            }
-        }
-
-        public void SHOTLIST_ClearList()
-        {
-            if (shotList != null)
-            {
-                shotList.Clear();
-            }
-        }
 
         //
         // UIOptions
@@ -61,6 +41,10 @@ namespace VRtist
                     element.baseColor.useConstant = false;
                     element.baseColor.constant = UIOptions.BackgroundColor;
                     element.baseColor.reference = UIOptions.BackgroundColorVar;
+
+                    element.textColor.useConstant = false;
+                    element.textColor.constant = UIOptions.ForegroundColor;
+                    element.textColor.reference = UIOptions.ForegroundColorVar;
 
                     element.disabledColor.useConstant = false;
                     element.disabledColor.constant = UIOptions.DisabledColor;

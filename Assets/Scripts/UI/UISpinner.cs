@@ -136,6 +136,8 @@ namespace VRtist
                 float textPosLeft = margin;
 
                 Transform textTransform = canvas.transform.Find("Text");
+                Text text = textTransform.GetComponent<Text>();
+                text.color = TextColor;
                 RectTransform rectText = textTransform.GetComponent<RectTransform>();
                 rectText.sizeDelta = new Vector2((width - 2 * margin) * separationPositionPct, height);
                 rectText.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
@@ -144,6 +146,7 @@ namespace VRtist
 
                 Transform textValueTransform = canvas.transform.Find("TextValue");
                 Text textValue = textValueTransform.GetComponent<Text>();
+                textValue.color = TextColor;
                 textValue.alignment = hasText ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter;
                 RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
                 rectTextValue.sizeDelta = hasText ?
@@ -473,6 +476,7 @@ namespace VRtist
             public float spinner_value_rate_int = UISpinner.default_value_rate_int;
             public Material background_material = UIUtils.LoadMaterial(UISpinner.default_background_material_name);
             public ColorVar background_color = UIOptions.BackgroundColorVar;
+            public ColorVar textColor = UIOptions.ForegroundColorVar;
             public ColorVar pushedColor = UIOptions.PushedColorVar;
             public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public string caption = UISpinner.default_text;
@@ -518,6 +522,8 @@ namespace VRtist
             uiSpinner.valueRateInt = input.spinner_value_rate_int;
             uiSpinner.baseColor.useConstant = false;
             uiSpinner.baseColor.reference = input.background_color;
+            uiSpinner.textColor.useConstant = false;
+            uiSpinner.textColor.reference = input.textColor;
             uiSpinner.pushedColor.useConstant = false;
             uiSpinner.pushedColor.reference = input.pushedColor;
             uiSpinner.selectedColor.useConstant = false;
@@ -600,6 +606,7 @@ namespace VRtist
                 t.alignment = TextAnchor.MiddleLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
@@ -630,6 +637,7 @@ namespace VRtist
                 t.alignment = hasText ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;

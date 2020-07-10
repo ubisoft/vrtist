@@ -253,6 +253,7 @@ namespace VRtist
                 Image image = canvas.GetComponentInChildren<Image>();
                 if (image != null)
                 {
+                    image.color = TextColor;
                     RectTransform rt = image.gameObject.GetComponent<RectTransform>();
                     if (rt)
                     {
@@ -266,6 +267,7 @@ namespace VRtist
                 Text text = textValueTransform.GetComponent<Text>();
                 RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
                 //rectTextValue.sizeDelta = new Vector2((width - 2 * margin) * (1 - sliderPositionEnd), height); // changing canvas size does not change the floating text dimensions.
+                text.color = TextColor;
                 if (textValueAlign == SliderTextValueAlign.Left)
                 {
                     text.alignment = TextAnchor.MiddleRight;
@@ -541,6 +543,9 @@ namespace VRtist
             public Material knobMaterial = UIUtils.LoadMaterial(UIVerticalSlider.default_knob_material_name);
 
             public ColorVar color = UIOptions.BackgroundColorVar;
+            public ColorVar textColor = UIOptions.ForegroundColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public ColorVar railColor = UIOptions.SliderRailColorVar;
             public ColorVar knobColor = UIOptions.SliderKnobColorVar;
 
@@ -590,6 +595,14 @@ namespace VRtist
             uiSlider.sourceRailMaterial = input.railMaterial;
             uiSlider.sourceKnobMaterial = input.knobMaterial;
             uiSlider.textValueAlign = input.textValueAlign;
+            uiSlider.baseColor.useConstant = false;
+            uiSlider.baseColor.reference = input.color;
+            uiSlider.textColor.useConstant = false;
+            uiSlider.textColor.reference = input.textColor;
+            uiSlider.pushedColor.useConstant = false;
+            uiSlider.pushedColor.reference = input.pushedColor;
+            uiSlider.selectedColor.useConstant = false;
+            uiSlider.selectedColor.reference = input.selectedColor;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -625,9 +638,6 @@ namespace VRtist
                 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
-
-                uiSlider.baseColor.useConstant = false;
-                uiSlider.baseColor.reference = input.color;
             }
 
             //
@@ -716,6 +726,7 @@ namespace VRtist
 
                 Image img = image.AddComponent<Image>();
                 img.sprite = input.icon;
+                img.color = input.textColor.value;
 
                 RectTransform trt = image.GetComponent<RectTransform>();
                 trt.localScale = Vector3.one;
@@ -740,6 +751,7 @@ namespace VRtist
                 t.alignment = TextAnchor.MiddleRight;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;

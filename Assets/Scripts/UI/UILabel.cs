@@ -41,7 +41,6 @@ namespace VRtist
         public Material source_material = null;
         public Sprite image = null;
         [TextArea] public string textContent = "";
-        public ColorReference textColor = new ColorReference();
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -53,7 +52,6 @@ namespace VRtist
         public UnityEvent onReleaseEvent = new UnityEvent();
 
         public string Text { get { return GetText(); } set { SetText(value); } }
-        public Color TextColor { get { return textColor.Value; } /*set { textColor = value; UpdateTextColor(); }*/ }
 
         public override void RebuildMesh()
         {

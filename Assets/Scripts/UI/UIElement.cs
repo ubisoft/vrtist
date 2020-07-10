@@ -4,17 +4,6 @@ namespace VRtist
 {
     public class UIElement : MonoBehaviour
     {
-        // "stylesheet"
-        //public static readonly Color default_foreground_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // white but not full white
-        //public static readonly Color default_background_color = new Color(0.1742f, 0.5336f, 0.723f, 1.0f); // default blue (44 136 184)
-        //public static readonly Color default_focus_color = new Color(0.3f, 1f, 0.3f, 1.0f); // default green for ShotManager
-        public static readonly Color default_pushed_color = new Color(0.0f, 0.65f, 1.0f, 1.0f); // light vivid blue
-        //public static readonly Color default_checked_color = new Color(0.0f, 0.85f, 1.0f, 1.0f); // light vivid blue
-        //public static readonly Color default_hover_color = new Color(2.0f, 0.8f, 0.0f, 1.0f); // hdr yellow
-        //public static readonly Color default_disabled_color = new Color(0.5873f, 0.6170f, 0.6320f); // middle grey blue
-        //public static readonly Color default_slider_rail_color = new Color(0.1f, 0.1f, 0.1f, 1.0f); // darker grey.
-        //public static readonly Color default_slider_knob_color = new Color(0.9f, 0.9f, 0.9f, 1.0f); // lighter grey.
-
         public static readonly float default_element_thickness = 0.001f;
 
         public static readonly float collider_min_depth_shallow = 0.03f;
@@ -22,11 +11,13 @@ namespace VRtist
 
         public static OrderedGuard<bool> UIEnabled = new OrderedGuard<bool>(true);
 
-        [SpaceHeader("Base Parameters", 6, 0.8f, 0.8f, 0.8f)]
+        [SpaceHeader("Base Parameters", 6, 0.3f, 0.3f, 0.3f)]
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
+        
         public ColorReference baseColor = new ColorReference();
+        public ColorReference textColor = new ColorReference();
         public ColorReference disabledColor = new ColorReference();
         public ColorReference pushedColor = new ColorReference();
         public ColorReference selectedColor = new ColorReference();
@@ -48,6 +39,7 @@ namespace VRtist
         public float Width { get { return width; } set { width = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public float Height { get { return height; } set { height = value; RebuildMesh(); UpdateAnchor(); UpdateChildren(); } }
         public Color BaseColor { get { return baseColor.Value; } }
+        public Color TextColor { get { return textColor.Value; } }
         public Color DisabledColor { get { return disabledColor.Value; } }
         public Color PushedColor { get { return pushedColor.Value; } }
         public Color SelectedColor { get { return selectedColor.Value; } }

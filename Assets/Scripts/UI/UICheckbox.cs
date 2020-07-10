@@ -110,6 +110,7 @@ namespace VRtist
                 Image image = canvas.GetComponentInChildren<Image>();
                 if (image != null)
                 {
+                    image.color = TextColor;
                     RectTransform rt = image.gameObject.GetComponent<RectTransform>();
                     if (rt)
                     {
@@ -122,6 +123,7 @@ namespace VRtist
                 Text text = canvas.gameObject.GetComponentInChildren<Text>();
                 if (text != null)
                 {
+                    text.color = TextColor;
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
                     {
@@ -322,6 +324,7 @@ namespace VRtist
             public float thickness = UICheckbox.default_thickness;
             public Material material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
             public ColorVar color = UIOptions.BackgroundColorVar;
+            public ColorVar textColor = UIOptions.ForegroundColorVar;
             public ColorVar pushedColor = UIOptions.PushedColorVar;
             public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public string caption = UICheckbox.default_text;
@@ -364,6 +367,8 @@ namespace VRtist
             uiCheckbox.source_material = input.material;
             uiCheckbox.baseColor.useConstant = false;
             uiCheckbox.baseColor.reference = input.color;
+            uiCheckbox.textColor.useConstant = false;
+            uiCheckbox.textColor.reference = input.textColor;
             uiCheckbox.pushedColor.useConstant = false;
             uiCheckbox.pushedColor.reference = input.pushedColor;
             uiCheckbox.selectedColor.useConstant = false;
@@ -437,6 +442,7 @@ namespace VRtist
 
                 Image img = image.AddComponent<Image>();
                 img.sprite = input.uncheckedIcon;
+                img.color = input.textColor.value;
 
                 RectTransform trt = image.GetComponent<RectTransform>();
                 trt.localScale = Vector3.one;
@@ -463,6 +469,7 @@ namespace VRtist
                 t.alignment = TextAnchor.MiddleLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
