@@ -439,9 +439,11 @@ namespace VRtist
                 return;
 
             string name = GetString(data, ref bufferIndex);
-            Vector3 position = GetVector3(data, ref bufferIndex);
-            Quaternion rotation = GetQuaternion(data, ref bufferIndex);
-            Vector3 scale = GetVector3(data, ref bufferIndex);
+
+            Matrix4x4 mat = GetMatrix(data, ref bufferIndex);
+            Vector3 position, scale;
+            Quaternion rotation;
+            Maths.DecomposeMatrix(mat, out position, out rotation, out scale);
 
             GameObject newGameObject = SyncData.Duplicate(srcPath.gameObject, name);
             newGameObject.transform.localPosition = position;
@@ -2685,10 +2687,11 @@ namespace VRtist
             string room = "Local";
             string hostname = "localhost";
             int port = 12800;
-
-            //hostname = "lgy-wks-054880";
-            //room = "thomas.capelle";
-
+            
+            /*
+            hostname = "10.22.3.161";
+            room = "Room_VRtist_Incubator";            
+            */
             for(int i = 0; i < args.Length; i++)
             {
                 if(args[i] == "--room")
