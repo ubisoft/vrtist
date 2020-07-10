@@ -639,7 +639,7 @@ namespace VRtist
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = input.caption;
                 t.fontSize = 32;
-                t.fontStyle = FontStyle.Bold;
+                t.fontStyle = FontStyle.Normal;
                 t.alignment = TextAnchor.MiddleLeft;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;
@@ -665,7 +665,7 @@ namespace VRtist
                 t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = input.currentValue.ToString("#0.00");
                 t.fontSize = 32;
-                t.fontStyle = FontStyle.Bold;
+                t.fontStyle = FontStyle.Normal;
                 t.alignment = TextAnchor.MiddleRight;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;

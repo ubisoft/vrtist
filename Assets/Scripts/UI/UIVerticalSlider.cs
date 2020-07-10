@@ -736,7 +736,7 @@ namespace VRtist
                 Text t = text.AddComponent<Text>();
                 t.text = input.currentValue.ToString("#0.00");
                 t.fontSize = 32;
-                t.fontStyle = FontStyle.Bold;
+                t.fontStyle = FontStyle.Normal;
                 t.alignment = TextAnchor.MiddleRight;
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
                 t.verticalOverflow = VerticalWrapMode.Overflow;

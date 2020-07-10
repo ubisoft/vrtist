@@ -350,6 +350,233 @@ namespace VRtist
             }
         }
 
+        //
+        //
+        //
+
+        public void FONT_BoldToNormal()
+        {
+#if UNITY_EDITOR
+            int index = 0; // "0: Normal 1: Bold 2: Italic"
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null)
+                    {
+                        Text t = button.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
+                    }
+
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+                        Text t = label.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
+                    }
+
+                    UIPanel panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+
+                    }
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+                        Text t = checkbox.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
+                    }
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+                        Text[] texts = slider.gameObject.GetComponentsInChildren<Text>();
+                        foreach(Text t in texts)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
+                    }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+                        Text t = vslider.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
+                    }
+
+                    UISpinner spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+                        Text[] texts = spinner.gameObject.GetComponentsInChildren<Text>();
+                        foreach (Text t in texts)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
+                    }
+
+
+                    UITimeBar timebar = element.GetComponent<UITimeBar>();
+                    if (timebar)
+                    {
+
+                    }
+
+                    UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
+                    if (colorpickerhue)
+                    {
+
+                    }
+
+                    UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
+                    if (colorpickersat)
+                    {
+
+                    }
+
+                    UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
+                    if (colorpickerprev)
+                    {
+
+                    }
+
+                    element.NeedsRebuild = true;
+                }
+            }
+#endif
+        }
+
+
+        /*
+        SerializedObject so = new SerializedObject(__object__);
+        SerializedProperty sp = so.GetIterator();
+        do
+        {
+            Debug.Log($"n: {sp.name} dn: {sp.displayName} p: {sp.propertyPath}");
+        } while (sp.Next(true));
+        */
+
+        //
+        // TEMPLATE
+        //
+
+        public void TEMPLATE()
+        {
+#if UNITY_EDITOR
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null)
+                    {
+                        
+                    }
+
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+                        
+                    }
+
+                    UIPanel panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+                        
+                    }
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+                        
+                    }
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+                        
+                    }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+                        
+                    }
+
+                    UISpinner spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+                        
+                    }
+
+
+                    UITimeBar timebar = element.GetComponent<UITimeBar>();
+                    if (timebar)
+                    {
+                        
+                    }
+
+                    UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
+                    if (colorpickerhue)
+                    {
+                        
+                    }
+
+                    UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
+                    if (colorpickersat)
+                    {
+                        
+                    }
+
+                    UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
+                    if (colorpickerprev)
+                    {
+                        
+                    }
+
+                    element.NeedsRebuild = true;
+                }
+            }
+#endif
+        }
+
         // TODO: script to copy all Text from the Text component to the TextArea of UIButtons
         // --> done in Update of buttons.
     }

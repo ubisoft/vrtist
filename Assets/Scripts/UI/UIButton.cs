@@ -554,7 +554,7 @@ namespace VRtist
             t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             t.text = input.caption;
             t.fontSize = 32;
-            t.fontStyle = FontStyle.Bold;
+            t.fontStyle = FontStyle.Normal;
             t.alignment = TextAnchor.MiddleLeft;
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Truncate;

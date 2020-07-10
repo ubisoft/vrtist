@@ -27,20 +27,20 @@ namespace VRtist
                 // SHOT LIST
                 //
 
-                GUILayout.Label(new GUIContent("Debug ShotList"), textStyle, GUILayout.Height(30));
+                //GUILayout.Label(new GUIContent("Debug ShotList"), textStyle, GUILayout.Height(30));
 
-                if (GUILayout.Button("Add Element To List", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    int start = Random.Range(1, 100);
-                    int end = start + Random.Range(10, 30);
-                    Shot shot = new Shot { camera = null, enabled = true, start = start, end = end, name = $"sn_{Random.Range(1, 1000)}" };
-                    ShotItem shotItem = ShotItem.GenerateShotItem(shot);
-                    debug.SHOTLIST_AddItemToList(shotItem.transform);
-                }
-                if (GUILayout.Button("Reset DynList state", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.SHOTLIST_ClearList();
-                }
+                //if (GUILayout.Button("Add Element To List", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    int start = Random.Range(1, 100);
+                //    int end = start + Random.Range(10, 30);
+                //    Shot shot = new Shot { camera = null, enabled = true, start = start, end = end, name = $"sn_{Random.Range(1, 1000)}" };
+                //    ShotItem shotItem = ShotItem.GenerateShotItem(shot);
+                //    debug.SHOTLIST_AddItemToList(shotItem.transform);
+                //}
+                //if (GUILayout.Button("Reset DynList state", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.SHOTLIST_ClearList();
+                //}
 
                 //
                 // UI OPTIONS
@@ -60,36 +60,36 @@ namespace VRtist
                     debug.UIOPTIONS_ResetAllColors();
                 }
 
-                if (GUILayout.Button("Random Change Colors", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.UIOPTIONS_RandomChangeColors();
-                }
+                //if (GUILayout.Button("Random Change Colors", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.UIOPTIONS_RandomChangeColors();
+                //}
 
                 //
                 // Asset Bank
                 //
 
-                GUILayout.Space(20);
+                //GUILayout.Space(20);
 
-                GUILayout.Label(new GUIContent("Asset Bank"), textStyle, GUILayout.Height(30));
+                //GUILayout.Label(new GUIContent("Asset Bank"), textStyle, GUILayout.Height(30));
 
-                if (GUILayout.Button("Reorder", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.AssetBank_Reorder();
-                }
+                //if (GUILayout.Button("Reorder", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.AssetBank_Reorder();
+                //}
 
                 //
                 // Checkable icons.
                 //
 
-                GUILayout.Space(20);
+                //GUILayout.Space(20);
 
-                GUILayout.Label(new GUIContent("Checkable Buttons"), textStyle, GUILayout.Height(30));
+                //GUILayout.Label(new GUIContent("Checkable Buttons"), textStyle, GUILayout.Height(30));
 
-                if (GUILayout.Button("SetBaseSprite", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.Checkable_SetBaseSprite();
-                }
+                //if (GUILayout.Button("SetBaseSprite", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.Checkable_SetBaseSprite();
+                //}
 
                 //
                 //
@@ -102,6 +102,17 @@ namespace VRtist
                 {
                     debug.MATERIALS_RelinkAndFix();
                 }
+
+
+                GUILayout.Space(20);
+
+                GUILayout.Label(new GUIContent("Fonts"), textStyle, GUILayout.Height(30));
+
+                if (GUILayout.Button("Convert font style Bold -> Normal", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.FONT_BoldToNormal();
+                }
+
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();
