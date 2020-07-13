@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -30,10 +31,10 @@ namespace VRtist
         [CentimeterFloat] public float margin = default_margin;
         [CentimeterFloat] public float thickness = default_thickness;
         public Material source_material = null;
-        // TODO: CheckedColor ???
         public CheckboxContent content = default_content;
         public Sprite checkedSprite = null;
         public Sprite uncheckedSprite = null;
+        [TextArea] public string textContent = "";
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -48,7 +49,7 @@ namespace VRtist
         private bool isChecked = false;
         public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }
 
-        public string Text { get { return GetText(); } set { SetText(value); } }
+        public string Text { get { return textContent; } set { SetText(value); } }
 
         void Start()
         {
@@ -120,16 +121,16 @@ namespace VRtist
                 }
 
                 // TEXT
-                Text text = canvas.gameObject.GetComponentInChildren<Text>();
+                TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>();
                 if (text != null)
                 {
+                    text.text = Text;
                     text.color = TextColor;
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
                     {
-                        rt.sizeDelta = new Vector2(width, height);
-                        float textPosLeft = image != null ? minSide : 0.0f;
-                        rt.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
+                        rt.sizeDelta = new Vector2((width - minSide - margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                        rt.localPosition = new Vector3(minSide, -margin, -0.002f);
                     }
                 }
             }
@@ -227,19 +228,10 @@ namespace VRtist
 #endif
         }
 
-        private string GetText()
-        {
-            Text text = GetComponentInChildren<Text>();
-            if (text != null)
-            {
-                return text.text;
-            }
-
-            return null;
-        }
-
         private void SetText(string textValue)
         {
+            textContent = textValue;
+
             Text text = GetComponentInChildren<Text>();
             if (text != null)
             {
@@ -364,6 +356,7 @@ namespace VRtist
             uiCheckbox.content = input.content;
             uiCheckbox.checkedSprite = input.checkedIcon;
             uiCheckbox.uncheckedSprite = input.uncheckedIcon;
+            uiCheckbox.textContent = input.caption;
             uiCheckbox.source_material = input.material;
             uiCheckbox.baseColor.useConstant = false;
             uiCheckbox.baseColor.reference = input.color;
@@ -461,14 +454,12 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = input.caption;
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = TextAnchor.MiddleLeft;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = TextAlignmentOptions.MidlineLeft;
                 t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
@@ -477,8 +468,9 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2(uiCheckbox.width, uiCheckbox.height);
-                trt.localPosition = new Vector3(minSide, -uiCheckbox.height / 2.0f, -0.002f);
+
+                trt.sizeDelta = new Vector2((input.width - minSide - input.margin) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
+                trt.localPosition = new Vector3(minSide, -input.margin, -0.002f);
             }
 
             return uiCheckbox;

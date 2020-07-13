@@ -52,7 +52,7 @@ namespace VRtist
         public BoolChangedEvent onCheckEvent = new BoolChangedEvent();
         public UnityEvent onHoverEvent = new UnityEvent();
 
-        public string Text { get { return GetText(); } set { SetText(value); } }
+        public string Text { get { return textContent; } set { SetText(value); } }
         public Color CheckedColor { get { return checkedColor.Value; } }
 
         private bool isChecked = false;
@@ -169,12 +169,7 @@ namespace VRtist
                     {
                         text.gameObject.SetActive(true);
 
-                        // tmp: pour eviter que tous les labels se retrouvent vides de text.
-                        if (textContent.Length == 0 && text.text.Length > 0)
-                            textContent = text.text;
-                        //------------------
-
-                        text.text = textContent;
+                        text.text = Text;
                         text.color = TextColor;
 
                         RectTransform rt = text.gameObject.GetComponent<RectTransform>();
@@ -182,13 +177,13 @@ namespace VRtist
                         {
                             if (content == ButtonContent.TextAndImage)
                             {
-                                rt.sizeDelta = new Vector2((width - minSide - margin) * 100.0f, height * 100.0f);
-                                rt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
+                                rt.sizeDelta = new Vector2((width - minSide - margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                                rt.localPosition = new Vector3(minSide, -margin, -0.002f);
                             }
                             else // TextOnly
                             {
-                                rt.sizeDelta = new Vector2((width - 2.0f * margin) * 100.0f, height * 100.0f);
-                                rt.localPosition = new Vector3(margin, 0.0f, -0.002f);
+                                rt.sizeDelta = new Vector2((width - 2.0f * margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                                rt.localPosition = new Vector3(margin, -margin, -0.002f);
                             }
                         }
                     }
@@ -311,19 +306,10 @@ namespace VRtist
             }
         }
 
-        private string GetText()
-        {
-            Text text = GetComponentInChildren<Text>();
-            if (text != null)
-            {
-                return text.text;
-            }
-
-            return null;
-        }
-
         private void SetText(string textValue)
         {
+            textContent = textValue;
+
             Text text = GetComponentInChildren<Text>();
             if (text != null)
             {
@@ -553,7 +539,6 @@ namespace VRtist
             text.transform.parent = canvas.transform;
 
             TextMeshPro t = text.AddComponent<TextMeshPro>();
-            //t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             t.text = input.caption;
             t.enableAutoSizing = true;
             t.fontSizeMin = 1;
@@ -568,15 +553,17 @@ namespace VRtist
             trt.anchorMax = new Vector2(0, 1);
             trt.pivot = new Vector2(0, 1); // top left
             
+            // TODO: option for V Margin.
+
             if (input.buttonContent == ButtonContent.TextAndImage)
             {
-                trt.sizeDelta = new Vector2((input.width - minSide - input.margin) * 100.0f, input.height * 100.0f);
+                trt.sizeDelta = new Vector2((input.width - minSide - input.margin) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
                 trt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
             }
             else // TextOnly
             {
-                trt.sizeDelta = new Vector2((input.width - 2.0f * input.margin) * 100.0f, input.height * 100.0f);
-                trt.localPosition = new Vector3(input.margin, 0.0f, -0.002f);
+                trt.sizeDelta = new Vector2((input.width - 2.0f * input.margin) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
+                trt.localPosition = new Vector3(input.margin, -input.margin, -0.002f);
             }
 
             text.SetActive(input.buttonContent != ButtonContent.ImageOnly);

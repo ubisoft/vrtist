@@ -52,7 +52,7 @@ namespace VRtist
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
-        public string Text { get { return GetText(); } set { SetText(value); } }
+        public string Text { get { return textContent; } set { SetText(value); } }
 
         public override void RebuildMesh()
         {
@@ -123,13 +123,7 @@ namespace VRtist
                 TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>(true);
                 if (text != null)
                 {
-                    // tmp: pour eviter que tous les labels se retrouvent vides de text.
-                    if (textContent.Length == 0 && text.text.Length > 0)
-                        textContent = text.text;
-                    //------------------
-
-
-                    text.text = textContent;
+                    text.text = Text;
                     text.color = TextColor;
                     RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                     if (rt != null)
@@ -208,17 +202,6 @@ namespace VRtist
 #if UNITY_EDITOR
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
 #endif
-        }
-
-        private string GetText()
-        {
-            Text text = GetComponentInChildren<Text>();
-            if (text != null)
-            {
-                return text.text;
-            }
-
-            return null;
         }
 
         private void SetText(string textValue)
@@ -402,18 +385,7 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                //Text t = text.AddComponent<Text>();
-                //t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                //t.text = input.caption;
-                //t.fontSize = 32;
-                //t.fontStyle = FontStyle.Normal;
-                //t.alignment = TextAnchor.UpperLeft;
-                //t.horizontalOverflow = HorizontalWrapMode.Wrap;
-                //t.verticalOverflow = VerticalWrapMode.Truncate;
-                //t.color = input.fgcolor.value;
-
                 TextMeshPro t = text.AddComponent<TextMeshPro>();
-                //t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = input.caption;
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;

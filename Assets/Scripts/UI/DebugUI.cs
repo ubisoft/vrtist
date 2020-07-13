@@ -480,7 +480,7 @@ namespace VRtist
                 {
                     UIElement element = uiElements[e];
 
-                    // BUTTON
+                    #region button
                     UIButton button = element.GetComponent<UIButton>();
                     if (button != null)
                     {
@@ -500,19 +500,20 @@ namespace VRtist
                             t.fontSizeMin = 1;
                             t.fontSizeMax = 500;
                             t.fontStyle = FontStyles.Normal;
-                            t.alignment = TextAlignmentOptions.MidlineLeft;
+                            t.alignment = TextAlignmentOptions.Left;
                             t.color = button.TextColor;
                         }
 
                         textObjectTransform.gameObject.SetActive(button.content != UIButton.ButtonContent.ImageOnly);
                     }
+                    #endregion
 
-                    // LABEL
+                    #region label
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
                         Text oldText = label.gameObject.GetComponentInChildren<Text>(true);
-                        TMPro.TextAlignmentOptions align = TextAlignmentOptions.MidlineLeft;
+                        TMPro.TextAlignmentOptions align = TextAlignmentOptions.Left;
                         if (oldText != null)
                         {
                             if (oldText.alignment == TextAnchor.MiddleCenter)
@@ -541,18 +542,36 @@ namespace VRtist
                             t.color = label.TextColor;
                         }
                     }
+                    #endregion
 
-                    //UIPanel panel = element.GetComponent<UIPanel>();
-                    //if (panel != null)
-                    //{
-
-                    //}
-
+                    #region checkbox
                     UICheckbox checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
+                        Transform textObjectTransform = checkbox.transform.Find("Canvas/Text");
 
+                        Text oldText = textObjectTransform.gameObject.GetComponentInChildren<Text>(true);
+                        string oldTextContent = "";
+                        if (oldText != null)
+                        {
+                            oldTextContent = oldText.text;
+                            checkbox.textContent = oldTextContent; // fix empty textContent.
+                            DestroyImmediate(oldText);
+                        }
+
+                        if (textObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = checkbox.textContent;
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = TextAlignmentOptions.Left;
+                            t.color = checkbox.TextColor;
+                        }
                     }
+                    #endregion
 
                     UISlider slider = element.GetComponent<UISlider>();
                     if (slider != null)
@@ -572,6 +591,11 @@ namespace VRtist
 
                     }
 
+                    //UIPanel panel = element.GetComponent<UIPanel>();
+                    //if (panel != null)
+                    //{
+
+                    //}
 
                     //UITimeBar timebar = element.GetComponent<UITimeBar>();
                     //if (timebar)
