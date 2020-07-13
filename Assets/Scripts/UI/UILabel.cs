@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -119,8 +120,8 @@ namespace VRtist
                 canvasRT.sizeDelta = new Vector2(width, height);
 
                 // TEXT
-                Text text = canvas.gameObject.GetComponentInChildren<Text>();
-                if(text != null)
+                TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                if (text != null)
                 {
                     // tmp: pour eviter que tous les labels se retrouvent vides de text.
                     if (textContent.Length == 0 && text.text.Length > 0)
@@ -401,14 +402,23 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                //Text t = text.AddComponent<Text>();
+                //t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                //t.text = input.caption;
+                //t.fontSize = 32;
+                //t.fontStyle = FontStyle.Normal;
+                //t.alignment = TextAnchor.UpperLeft;
+                //t.horizontalOverflow = HorizontalWrapMode.Wrap;
+                //t.verticalOverflow = VerticalWrapMode.Truncate;
+                //t.color = input.fgcolor.value;
+
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
+                //t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
                 t.text = input.caption;
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = TextAnchor.UpperLeft;
-                t.horizontalOverflow = HorizontalWrapMode.Wrap;
-                t.verticalOverflow = VerticalWrapMode.Truncate;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = TextAlignmentOptions.MidlineLeft;
                 t.color = input.fgcolor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();

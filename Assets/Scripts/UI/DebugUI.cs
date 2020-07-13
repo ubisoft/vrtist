@@ -479,13 +479,13 @@ namespace VRtist
                 {
                     UIElement element = uiElements[e];
 
+                    // BUTTON
                     UIButton button = element.GetComponent<UIButton>();
                     if (button != null)
                     {
                         Text oldText = button.gameObject.GetComponentInChildren<Text>(true);
                         if (oldText != null)
                         {
-                            // copy old params ?
                             DestroyImmediate(oldText);
                         }
 
@@ -497,34 +497,48 @@ namespace VRtist
                             t.text = button.textContent;
                             t.enableAutoSizing = true;
                             t.fontSizeMin = 1;
-                            t.fontStyle = FontStyles.Normal; // copy from Text?
-                            t.alignment = TextAlignmentOptions.MidlineLeft; // copy from Text?
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = TextAlignmentOptions.MidlineLeft;
                             t.color = button.TextColor;
                         }
-
-                        //RectTransform rt = textObjectTransform.gameObject.GetComponent<RectTransform>();
-                        //if (rt != null)
-                        //{
-                        //    float minSide = Mathf.Min(button.width, button.height);
-                        //    if (button.content == UIButton.ButtonContent.TextAndImage)
-                        //    {
-                        //        rt.sizeDelta = new Vector2((button.width - minSide - button.margin) * 100.0f, button.height * 100.0f);
-                        //        rt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
-                        //    }
-                        //    else // TextOnly
-                        //    {
-                        //        rt.sizeDelta = new Vector2(button.width * 100.0f, button.height * 100.0f);
-                        //        rt.localPosition = new Vector3(button.margin, 0.0f, -0.002f);
-                        //    }
-                        //}
 
                         textObjectTransform.gameObject.SetActive(button.content != UIButton.ButtonContent.ImageOnly);
                     }
 
+                    // LABEL
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
+                        Text oldText = label.gameObject.GetComponentInChildren<Text>(true);
+                        TMPro.TextAlignmentOptions align = TextAlignmentOptions.MidlineLeft;
+                        if (oldText != null)
+                        {
+                            if (oldText.alignment == TextAnchor.MiddleCenter)
+                            {
+                                align = TextAlignmentOptions.Midline;
+                            }
+                            else if (oldText.alignment == TextAnchor.UpperLeft)
+                            {
+                                align = TextAlignmentOptions.TopLeft;
+                            }
+                            DestroyImmediate(oldText);
+                        }
 
+                        Transform textObjectTransform = label.transform.Find("Canvas/Text");
+
+                        if (textObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = label.textContent;
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.renderer.sortingOrder = 1;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = align;
+                            t.color = label.TextColor;
+                        }
                     }
 
                     //UIPanel panel = element.GetComponent<UIPanel>();
