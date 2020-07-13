@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -268,24 +269,7 @@ namespace VRtist
                 }
 
                 // FLOATING TEXT
-                Transform textValueTransform = canvas.transform.Find("TextValue");
-                Text text = textValueTransform.GetComponent<Text>();
-                RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
-                //rectTextValue.sizeDelta = new Vector2((width - 2 * margin) * (1 - sliderPositionEnd), height); // changing canvas size does not change the floating text dimensions.
-                text.color = TextColor;
-                if (textValueAlign == SliderTextValueAlign.Left)
-                {
-                    text.alignment = TextAnchor.MiddleRight;
-                    rectTextValue.pivot = new Vector2(1, 1); // top right
-                    rectTextValue.localPosition = new Vector3(-2.0f * margin, height / 2.0f, -0.002f);
-                }
-                else // Right (pour le moment)
-                {
-                    text.alignment = TextAnchor.MiddleLeft;
-                    rectTextValue.pivot = new Vector2(0, 1); // top left
-                    rectTextValue.localPosition = new Vector3(width + 2.0f * margin, height / 2.0f, -0.002f);
-                }
-                
+                UpdateTextPosition();
             }
         }
 
@@ -295,7 +279,7 @@ namespace VRtist
             if (canvas != null)
             {
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                Text txt = textValueTransform.gameObject.GetComponent<Text>();
+                TextMeshPro txt = textValueTransform.gameObject.GetComponent<TextMeshPro>();
                 if (txt != null)
                 {
                     txt.text = currentValue.ToString("#0.00");
@@ -317,24 +301,34 @@ namespace VRtist
             knob.transform.localPosition = knobPosition;
 
             // FLOATING TEXT
-            Canvas canvas = GetComponentInChildren<Canvas>();
-            if (canvas != null)
+            UpdateTextPosition();
+        }
+
+        private void UpdateTextPosition()
+        {
+            Vector3 knobPosition = knob.transform.localPosition;
+
+            // FLOATING TEXT
+            Transform textValueTransform = transform.Find("Canvas/TextValue");
+            if (textValueTransform != null)
             {
-                Transform textValueTransform = canvas.transform.Find("TextValue");
-                Text text = textValueTransform.GetComponent<Text>();
-                RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
-                //trt.sizeDelta = new Vector2(1, uiSlider.knobRadius * 2.0f); // TODO: add a variable for the floating text dimensions.
-                if (textValueAlign == SliderTextValueAlign.Left)
+                TextMeshPro text = textValueTransform.GetComponent<TextMeshPro>();
+                if (text != null)
                 {
-                    text.alignment = TextAnchor.MiddleRight;
-                    rectTextValue.pivot = new Vector2(1, 1); // top right
-                    rectTextValue.localPosition = new Vector3(-2.0f * margin, knobPosition.y - knobRadius, -0.002f);
-                }
-                else // Right (pour le moment)
-                {
-                    text.alignment = TextAnchor.MiddleLeft;
-                    rectTextValue.pivot = new Vector2(0, 1); // top left
-                    rectTextValue.localPosition = new Vector3(width + 2.0f * margin, knobPosition.y - knobRadius, -0.002f);
+                    RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
+                    rectTextValue.sizeDelta = new Vector2(5, knobRadius * 2.0f * 100.0f);
+                    if (textValueAlign == SliderTextValueAlign.Left)
+                    {
+                        text.alignment = TextAlignmentOptions.Right;
+                        rectTextValue.pivot = new Vector2(1, 1); // top right
+                        rectTextValue.localPosition = new Vector3(-2.0f * margin, knobPosition.y, -0.002f);
+                    }
+                    else // Right (pour le moment)
+                    {
+                        text.alignment = TextAlignmentOptions.Left;
+                        rectTextValue.pivot = new Vector2(0, 1); // top left
+                        rectTextValue.localPosition = new Vector3(width + 2.0f * margin, knobPosition.y, -0.002f);
+                    }
                 }
             }
         }
@@ -406,7 +400,7 @@ namespace VRtist
         {
             textContent = textValue;
 
-            Text text = GetComponentInChildren<Text>();
+            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
             if (text != null)
             {
                 text.text = textValue;
@@ -743,13 +737,13 @@ namespace VRtist
                 GameObject text = new GameObject("TextValue");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = input.currentValue.ToString("#0.00");
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = TextAnchor.MiddleRight;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontSizeMax = 500;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = TextAlignmentOptions.Right;
                 t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
@@ -758,10 +752,9 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(1, 1); // top right?
-                //trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * (1-uiSlider.sliderPositionEnd), uiSlider.height);
-                trt.sizeDelta = new Vector2(1, uiSlider.knobRadius * 2.0f);
+                trt.sizeDelta = new Vector2(5, uiSlider.knobRadius * 2.0f * 100.0f); // size = 5, enough to hold the 0.00 float.
                 float textPosRight = - 2.0f * uiSlider.margin; // TMP: au pif pour le moment
-                trt.localPosition = new Vector3(textPosRight, knobPosition.y - input.knobRadius, -0.002f);
+                trt.localPosition = new Vector3(textPosRight, knobPosition.y, -0.002f);
             }
         }
     }

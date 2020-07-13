@@ -633,7 +633,29 @@ namespace VRtist
                     UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
                     if (vslider != null)
                     {
+                        Transform textValueObjectTransform = vslider.transform.Find("Canvas/TextValue");
+                        Text oldTextValue = textValueObjectTransform.gameObject.GetComponentInChildren<Text>(true);
+                        TextAlignmentOptions align = TextAlignmentOptions.Right;
+                        if (oldTextValue != null)
+                        {
+                            if (oldTextValue.alignment == TextAnchor.MiddleLeft)
+                            {
+                                align = TextAlignmentOptions.Left;
+                            }
+                            DestroyImmediate(oldTextValue);
+                        }
 
+                        if (textValueObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textValueObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = vslider.currentValue.ToString("#0.00");
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = align;
+                            t.color = vslider.TextColor;
+                        }
                     }
 
                     UISpinner spinner = element.GetComponent<UISpinner>();
