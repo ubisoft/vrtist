@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -13,8 +10,8 @@ namespace VRtist
         public float radius;
         public float depth;
 
-        public Color _color;
-        public Color Color { get { return _color; } set { _color = value; ApplyColor(_color); } }
+        public ColorReference _color;
+        public Color Color { get { return _color.Value; } set { _color.Value = value; ResetColor(); } }
 
         public void RebuildMesh(float newKnobRadius, float newKnobDepth)
         {
@@ -28,28 +25,38 @@ namespace VRtist
             depth = newKnobDepth;
         }
 
-        private void ApplyColor(Color c)
+        public void ResetColor()
+        {
+            SetColor(Color);
+        }
+
+        private void SetColor(Color c)
         {
             GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", c);
         }
 
-        public static UISliderKnob CreateUISliderKnob(
-            string objectName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float head_radius,
-            float head_depth,
-            Material material,
-            Color c)
+        public class CreateArgs
         {
-            GameObject go = new GameObject(objectName);
+            public Transform parent;
+            public string widgetName;
+            public Vector3 relativeLocation;
+            public float radius;
+            public float depth;
+            public Material material;
+            public ColorVar c = UIOptions.SliderKnobColorVar;
+        }
+
+        public static UISliderKnob Create(CreateArgs input)
+        {
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -57,26 +64,28 @@ namespace VRtist
             }
 
             UISliderKnob uiSliderKnob = go.AddComponent<UISliderKnob>();
-            uiSliderKnob.transform.parent = parent;
-            uiSliderKnob.transform.localPosition = parentAnchor + relativeLocation;
+            uiSliderKnob.transform.parent = input.parent;
+            uiSliderKnob.transform.localPosition = parentAnchor + input.relativeLocation;
             uiSliderKnob.transform.localRotation = Quaternion.identity;
             uiSliderKnob.transform.localScale = Vector3.one;
-            uiSliderKnob.radius = head_radius;
-            uiSliderKnob.depth = head_depth;
+            uiSliderKnob.radius = input.radius;
+            uiSliderKnob.depth = input.depth;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(2.0f * head_radius, 2.0f * head_radius, head_radius, head_depth);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(2.0f * input.radius, 2.0f * input.radius, input.radius, input.depth);
             }
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && input.material != null)
             {
-                meshRenderer.sharedMaterial = Instantiate(material);
-                uiSliderKnob.Color = c;
+                meshRenderer.sharedMaterial = Instantiate(input.material);
+                uiSliderKnob._color.useConstant = false;
+                uiSliderKnob._color.reference = input.c;
+                meshRenderer.sharedMaterial.SetColor("_BaseColor", uiSliderKnob.Color);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"

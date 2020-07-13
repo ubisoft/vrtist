@@ -143,13 +143,25 @@ namespace VRtist
                     UISlider slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
-                        // TODO: knob and rail
+                        slider.rail._color.useConstant = false;
+                        slider.rail._color.constant = UIOptions.SliderRailColor;
+                        slider.rail._color.reference = UIOptions.SliderRailColorVar;
+
+                        slider.knob._color.useConstant = false;
+                        slider.knob._color.constant = UIOptions.SliderKnobColor;
+                        slider.knob._color.reference = UIOptions.SliderKnobColorVar;
                     }
 
                     UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
                     if (vslider != null)
                     {
-                        // TODO: knob and rail
+                        vslider.rail._color.useConstant = false;
+                        vslider.rail._color.constant = UIOptions.SliderRailColor;
+                        vslider.rail._color.reference = UIOptions.SliderRailColorVar;
+
+                        vslider.knob._color.useConstant = false;
+                        vslider.knob._color.constant = UIOptions.SliderKnobColor;
+                        vslider.knob._color.reference = UIOptions.SliderKnobColorVar;
                     }
 
                     UISpinner spinner = element.GetComponent<UISpinner>();

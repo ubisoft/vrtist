@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace VRtist
@@ -16,10 +14,8 @@ namespace VRtist
         public float thickness;
         public float margin;
 
-        // TODO: OnValidate() on width/heigt/etc... ??? Controlled by UISlider already.
-
-        public Color _color;
-        public Color Color { get { return _color; } set { _color = value; ApplyColor(_color); } }
+        public ColorReference _color;
+        public Color Color { get { return _color.Value; } set { _color.Value = value; ResetColor(); } }
 
         void Awake()
         {
@@ -29,12 +25,9 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
-                // Why did I copy these lines from the ColorPicker???
-
                 width = GetComponent<MeshFilter>().mesh.bounds.size.x;
                 height = GetComponent<MeshFilter>().mesh.bounds.size.y;
                 thickness = GetComponent<MeshFilter>().mesh.bounds.size.z;
-                //margin = GetComponent<MeshFilter>().mesh.bounds.size.z;
             }
         }
 
@@ -51,30 +44,40 @@ namespace VRtist
             margin = newMargin;
         }
 
-        private void ApplyColor(Color c)
+        public void ResetColor()
+        {
+            SetColor(Color);
+        }
+
+        private void SetColor(Color c)
         {
             GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", c);
         }
 
-        public static UISliderRail CreateUISliderRail(
-            string objectName,
-            Transform parent,
-            Vector3 relativeLocation,
-            float width,
-            float height,
-            float thickness,
-            float margin,
-            Material material,
-            Color c)
+        public class CreateArgs
         {
-            GameObject go = new GameObject(objectName);
+            public Transform parent;
+            public string widgetName;
+            public Vector3 relativeLocation;
+            public float width;
+            public float height;
+            public float thickness;
+            public float margin;
+            public Material material;
+            public ColorVar c = UIOptions.SliderRailColorVar;
+        }
+
+        public static UISliderRail Create(CreateArgs input)
+        {
+            GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
-            if (parent)
+            if (input.parent)
             {
-                UIElement elem = parent.gameObject.GetComponent<UIElement>();
+                UIElement elem = input.parent.gameObject.GetComponent<UIElement>();
                 if (elem)
                 {
                     parentAnchor = elem.Anchor;
@@ -82,31 +85,34 @@ namespace VRtist
             }
 
             UISliderRail uiSliderRail = go.AddComponent<UISliderRail>();
-            uiSliderRail.transform.parent = parent;
-            uiSliderRail.transform.localPosition = parentAnchor + relativeLocation;
+            uiSliderRail.transform.parent = input.parent;
+            uiSliderRail.transform.localPosition = parentAnchor + input.relativeLocation;
             uiSliderRail.transform.localRotation = Quaternion.identity;
             uiSliderRail.transform.localScale = Vector3.one;
-            uiSliderRail.width = width;
-            uiSliderRail.height = height;
-            uiSliderRail.thickness = thickness;
-            uiSliderRail.margin = margin;
+            uiSliderRail.width = input.width;
+            uiSliderRail.height = input.height;
+            uiSliderRail.thickness = input.thickness;
+            uiSliderRail.margin = input.margin;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
-                //BuildHollowCubeEx(width, height, margin, thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
             }
 
             // Setup the MeshRenderer
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();
-            if (meshRenderer != null && material != null)
+            if (meshRenderer != null && input.material != null)
             {
-                Material newMaterial = Instantiate(material);
+                Material newMaterial = Instantiate(input.material);
                 newMaterial.name = "UISliderRail_Material";
                 meshRenderer.sharedMaterial = newMaterial;
-                uiSliderRail.Color = c;
+
+                uiSliderRail._color.useConstant = false;
+                uiSliderRail._color.constant = input.c.value;
+                uiSliderRail._color.reference = input.c;
+                meshRenderer.sharedMaterial.SetColor("_BaseColor", uiSliderRail.Color);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"

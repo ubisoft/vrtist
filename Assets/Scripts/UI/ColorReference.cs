@@ -8,7 +8,6 @@ namespace VRtist
     {
         public bool useConstant = true;
         public Color constant = Color.grey;
-        //public ColorVariable reference;
         public ColorVar reference;
 
         public Color Value
@@ -26,7 +25,7 @@ namespace VRtist
                 }
                 else
                 {
-                    reference.value = value;
+                    reference.value = value; // NOTE: pas sur de vouloir ca par code.
                 }
             }
         }

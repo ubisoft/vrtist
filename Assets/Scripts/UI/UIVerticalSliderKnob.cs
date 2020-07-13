@@ -13,21 +13,26 @@ namespace VRtist
         public float depth;
 
         public ColorReference _color;
-        public Color Color { get { return _color.Value; } /*set { _color = value; ApplyColor(_color); }*/ }
+        public Color Color { get { return _color.Value; } set { _color.Value = value; ResetColor(); } }
 
         public void RebuildMesh(float newKnobRadius, float newKnobDepth)
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             // Make a cylinder using RoundedBox
             Mesh theNewMesh = UIUtils.BuildRoundedBox(2.0f * newKnobRadius, 2.0f * newKnobRadius, newKnobRadius, newKnobDepth);
-            theNewMesh.name = "UISliderKnob_GeneratedMesh";
+            theNewMesh.name = "UIVerticalSliderKnob_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
             radius = newKnobRadius;
             depth = newKnobDepth;
         }
 
-        private void ApplyColor(Color c)
+        public void ResetColor()
+        {
+            SetColor(Color);
+        }
+
+        private void SetColor(Color c)
         {
             GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", c);
         }
@@ -47,6 +52,7 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
+            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;

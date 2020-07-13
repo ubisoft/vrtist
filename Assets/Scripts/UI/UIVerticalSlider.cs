@@ -33,9 +33,6 @@ namespace VRtist
         public static readonly string default_material_name = "UIBase";
         public static readonly string default_rail_material_name = "UISliderRail";
         public static readonly string default_knob_material_name = "UISliderKnob";
-        //private static readonly Color default_color = UIElement.default_background_color;
-        //private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
-        //private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
         public static readonly string default_text = "Slider";
         public static readonly string default_icon_name = "paint";
         public static readonly SliderTextValueAlign default_text_value_align = SliderTextValueAlign.Left;
@@ -48,6 +45,7 @@ namespace VRtist
         public Material sourceMaterial = null;
         public Material sourceRailMaterial = null;
         public Material sourceKnobMaterial = null;
+        [TextArea] public string textContent = "";
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
@@ -73,12 +71,12 @@ namespace VRtist
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
-        [SerializeField] private UIVerticalSliderRail rail = null;
-        [SerializeField] private UIVerticalSliderKnob knob = null;
+        public UIVerticalSliderRail rail = null;
+        public UIVerticalSliderKnob knob = null;
 
         public float SliderPositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; RebuildMesh(); } }
         public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
-        public string Text { get { return GetText(); } set { SetText(value); } }
+        public string Text { get { return textContent; } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
         void Start()
@@ -149,6 +147,13 @@ namespace VRtist
 
                 NeedsRebuild = false;
             }
+        }
+
+        public override void ResetColor()
+        {
+            base.ResetColor(); // reset color of base mesh
+            rail.ResetColor();
+            knob.ResetColor();
         }
 
         private void OnDrawGizmosSelected()
@@ -397,19 +402,10 @@ namespace VRtist
             }
         }
 
-        private string GetText()
-        {
-            Text text = GetComponentInChildren<Text>();
-            if (text != null)
-            {
-                return text.text;
-            }
-
-            return null;
-        }
-
         private void SetText(string textValue)
         {
+            textContent = textValue;
+
             Text text = GetComponentInChildren<Text>();
             if (text != null)
             {
@@ -591,6 +587,7 @@ namespace VRtist
             uiSlider.minValue = input.minValue;
             uiSlider.maxValue = input.maxValue;
             uiSlider.currentValue = input.currentValue;
+            uiSlider.textContent = input.caption;
             uiSlider.sourceMaterial = input.material;
             uiSlider.sourceRailMaterial = input.railMaterial;
             uiSlider.sourceKnobMaterial = input.knobMaterial;
@@ -638,6 +635,8 @@ namespace VRtist
                 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                uiSlider.SetColor(input.color.value);
             }
 
             //

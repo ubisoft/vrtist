@@ -31,9 +31,6 @@ namespace VRtist
         public static readonly string default_material_name = "UIBase";
         public static readonly string default_rail_material_name = "UISliderRail";
         public static readonly string default_knob_material_name = "UISliderKnob";
-        //private static readonly Color default_color = UIElement.default_background_color;
-        //private static readonly Color default_rail_color = UIElement.default_slider_rail_color;
-        //private static readonly Color default_knob_color = UIElement.default_slider_knob_color;
         public static readonly string default_text = "Slider";
 
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
@@ -44,6 +41,8 @@ namespace VRtist
         public Material sourceMaterial = null;
         public Material sourceRailMaterial = null;
         public Material sourceKnobMaterial = null;
+        [TextArea] public string textContent = "";
+
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
         public int nbSubdivCornerFixed = 3;
         public int nbSubdivCornerPerUnit = 3;
@@ -68,12 +67,12 @@ namespace VRtist
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
-        [SerializeField] private UISliderRail rail = null;
-        [SerializeField] private UISliderKnob knob = null;
+        public UISliderRail rail = null;
+        public UISliderKnob knob = null;
 
         public float SliderPositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; RebuildMesh(); } }
         public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
-        public string Text { get { return GetText(); } set { SetText(value); } }
+        public string Text { get { return textContent; } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
         void Start()
@@ -288,6 +287,13 @@ namespace VRtist
             }
         }
 
+        public override void ResetColor()
+        {
+            base.ResetColor(); // reset color of base mesh
+            rail.ResetColor();
+            knob.ResetColor();
+        }
+
         private void OnDrawGizmosSelected()
         {
             float widthWithoutMargins = width - 2.0f * margin;
@@ -356,19 +362,11 @@ namespace VRtist
             knob.transform.localPosition = knobPosition;
         }
 
-        private string GetText()
-        {
-            Text text = GetComponentInChildren<Text>();
-            if (text != null)
-            {
-                return text.text;
-            }
-
-            return null;
-        }
 
         private void SetText(string textValue)
         {
+            textContent = textValue;
+
             Text text = GetComponentInChildren<Text>();
             if (text != null)
             {
@@ -506,11 +504,8 @@ namespace VRtist
             public ColorVar textColor = UIOptions.ForegroundColorVar;
             public ColorVar pushedColor = UIOptions.PushedColorVar;
             public ColorVar selectedColor = UIOptions.SelectedColorVar;
-            public Color railColor = UIOptions.SliderRailColor; // UISlider.default_rail_color;
-            public Color knobColor = UIOptions.SliderKnobColor; // UISlider.default_knob_color;
-            // TODO
-            //public ColorVariable railColor = UISlider.default_rail_color;
-            //public ColorVariable knobColor = UISlider.default_knob_color;
+            public ColorVar railColor = UIOptions.SliderRailColorVar; // UISlider.default_rail_color;
+            public ColorVar knobColor = UIOptions.SliderKnobColorVar; // UISlider.default_knob_color;
 
             public string caption = UISlider.default_text;
         }
@@ -551,6 +546,7 @@ namespace VRtist
             uiSlider.minValue = input.minValue;
             uiSlider.maxValue = input.maxValue;
             uiSlider.currentValue = input.currentValue;
+            uiSlider.textContent = input.caption;
             uiSlider.sourceMaterial = input.material;
             uiSlider.sourceRailMaterial = input.railMaterial;
             uiSlider.sourceKnobMaterial = input.knobMaterial;
@@ -611,15 +607,46 @@ namespace VRtist
             float railMargin = uiSlider.railMargin;
             Vector3 railPosition = new Vector3(input.margin + (input.width - 2 * input.margin) * input.sliderBegin, -input.height / 2, -railThickness); // put z = 0 back
 
-            uiSlider.rail = UISliderRail.CreateUISliderRail("Rail", go.transform, railPosition, railWidth, railHeight, railThickness, railMargin, input.railMaterial, input.railColor);
-
+            uiSlider.rail = UISliderRail.Create(
+                new UISliderRail.CreateArgs
+                {
+                    parent = go.transform,
+                    widgetName = "Rail",
+                    relativeLocation = railPosition,
+                    width = railWidth,
+                    height = railHeight,
+                    thickness = railThickness,
+                    margin = railMargin,
+                    material = input.railMaterial,
+                    c = input.railColor
+                }
+            );
 
             // KNOB
-            Vector3 knobPosition = new Vector3(0, 0, 0);
             float newKnobRadius = uiSlider.knobRadius;
             float newKnobDepth = uiSlider.knobDepth;
 
-            uiSlider.knob = UISliderKnob.CreateUISliderKnob("Knob", go.transform, knobPosition, newKnobRadius, newKnobDepth, input.knobMaterial, input.knobColor);
+            float pct = (uiSlider.currentValue - uiSlider.minValue) / (uiSlider.maxValue - uiSlider.minValue);
+  
+            float widthWithoutMargins = input.width - 2.0f * input.margin;
+            float startX = input.margin + widthWithoutMargins * uiSlider.sliderPositionBegin + railMargin;
+            float endX = input.margin + widthWithoutMargins * uiSlider.sliderPositionEnd - railMargin;
+            float posX = startX + pct * (endX - startX);
+
+            Vector3 knobPosition = new Vector3(posX - uiSlider.knobRadius, uiSlider.knobRadius - (uiSlider.height / 2.0f), -uiSlider.knobDepth);
+
+            uiSlider.knob = UISliderKnob.Create(
+                new UISliderKnob.CreateArgs
+                {
+                    widgetName = "Knob",
+                    parent = go.transform,
+                    relativeLocation = knobPosition,
+                    radius = newKnobRadius,
+                    depth = newKnobDepth,
+                    material = input.knobMaterial,
+                    c = input.knobColor
+                }
+            );
 
             //
             // CANVAS (to hold the 2 texts)
