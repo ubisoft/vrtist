@@ -588,7 +588,46 @@ namespace VRtist
                     UISlider slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
+                        Transform textObjectTransform = slider.transform.Find("Canvas/Text");
+                        Text oldText = textObjectTransform.gameObject.GetComponentInChildren<Text>(true);
+                        string oldTextContent = "";
+                        if (oldText != null)
+                        {
+                            oldTextContent = oldText.text;
+                            slider.textContent = oldTextContent; // fix empty textContent.
+                            DestroyImmediate(oldText);
+                        }
 
+                        if (textObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = slider.textContent;
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = TextAlignmentOptions.Left;
+                            t.color = slider.TextColor;
+                        }
+
+                        Transform textValueObjectTransform = slider.transform.Find("Canvas/TextValue");
+                        Text oldTextValue = textValueObjectTransform.gameObject.GetComponentInChildren<Text>(true);
+                        if (oldTextValue != null)
+                        {
+                            DestroyImmediate(oldTextValue);
+                        }
+
+                        if (textValueObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textValueObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = slider.currentValue.ToString("#0.00");
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = TextAlignmentOptions.Right;
+                            t.color = slider.TextColor;
+                        }
                     }
 
                     UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();

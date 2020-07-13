@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -149,22 +150,27 @@ namespace VRtist
                 float textPosLeft = margin;
 
                 Transform textTransform = canvas.transform.Find("Text");
+                TextMeshPro text = textTransform.GetComponent<TextMeshPro>();
+                if (text != null)
+                {
+                    text.text = textContent;
+                    text.color = TextColor;
+
+                    RectTransform rectText = textTransform.GetComponent<RectTransform>();
+                    rectText.sizeDelta = new Vector2((width - 2 * margin) * sliderPositionBegin * 100.0f, (height - 2.0f * margin) * 100.0f);
+                    rectText.localPosition = new Vector3(textPosLeft, -margin, -0.002f);
+                }
+
                 Transform textValueTransform = canvas.transform.Find("TextValue");
+                TextMeshPro textValue = textValueTransform.GetComponent<TextMeshPro>();
+                if (textValue != null)
+                {
+                    textValue.color = TextColor;
 
-                Text text = textTransform.GetComponent<Text>();
-                Text textValue = textValueTransform.GetComponent<Text>();
-
-                text.color = TextColor;
-                textValue.color = TextColor;
-
-                RectTransform rectText = textTransform.GetComponent<RectTransform>();
-                RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
-
-                rectText.sizeDelta = new Vector2((width - 2 * margin) * sliderPositionBegin, height);
-                rectText.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
-
-                rectTextValue.sizeDelta = new Vector2((width - 2 * margin) * (1 - sliderPositionEnd), height);
-                rectTextValue.localPosition = new Vector3(textPosRight, -height / 2.0f, -0.002f);
+                    RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
+                    rectTextValue.sizeDelta = new Vector2((width - 2 * margin) * (1 - sliderPositionEnd) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                    rectTextValue.localPosition = new Vector3(textPosRight, -margin, -0.002f);
+                }
             }
         }
 
@@ -677,14 +683,13 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = input.caption;
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = TextAnchor.MiddleLeft;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontSizeMax = 500;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = TextAlignmentOptions.Left;
                 t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
@@ -693,9 +698,9 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2((uiSlider.width-2*uiSlider.margin) * uiSlider.sliderPositionBegin, uiSlider.height);
+                trt.sizeDelta = new Vector2((uiSlider.width-2*uiSlider.margin) * uiSlider.sliderPositionBegin * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
                 float textPosLeft = uiSlider.margin;
-                trt.localPosition = new Vector3(textPosLeft, -uiSlider.height / 2.0f, -0.002f);
+                trt.localPosition = new Vector3(textPosLeft, -uiSlider.margin, -0.002f);
             }
 
             // Text VALUE
@@ -704,14 +709,13 @@ namespace VRtist
                 GameObject text = new GameObject("TextValue");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = input.currentValue.ToString("#0.00");
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = TextAnchor.MiddleRight;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontSizeMax = 500;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = TextAlignmentOptions.Right;
                 t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
@@ -720,9 +724,9 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(1, 1); // top right?
-                trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * (1-uiSlider.sliderPositionEnd), uiSlider.height);
+                trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * (1-uiSlider.sliderPositionEnd) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
                 float textPosRight = uiSlider.width - uiSlider.margin;
-                trt.localPosition = new Vector3(textPosRight, -uiSlider.height / 2.0f, -0.002f);
+                trt.localPosition = new Vector3(textPosRight, -uiSlider.margin, -0.002f);
             }
         }
     }

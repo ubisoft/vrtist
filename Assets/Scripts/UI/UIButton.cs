@@ -542,6 +542,7 @@ namespace VRtist
             t.text = input.caption;
             t.enableAutoSizing = true;
             t.fontSizeMin = 1;
+            t.fontSizeMax = 500;
             t.fontStyle = FontStyles.Normal;
             t.alignment = TextAlignmentOptions.MidlineLeft;
             t.color = input.fgcolor.value;

@@ -389,6 +389,7 @@ namespace VRtist
                 t.text = input.caption;
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;
+                t.fontSizeMax = 500;
                 t.fontStyle = FontStyles.Normal;
                 t.alignment = TextAlignmentOptions.MidlineLeft;
                 t.color = input.fgcolor.value;
@@ -401,8 +402,6 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.localPosition = new Vector3(input.margin, -input.margin, -0.002f); // centered, on-top
-
-                //uiLabel.SetColor = input.fgcolor;
             }
 
             return uiLabel;
