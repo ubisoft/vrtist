@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -483,13 +484,13 @@ namespace VRtist
                     UIButton button = element.GetComponent<UIButton>();
                     if (button != null)
                     {
-                        Text oldText = button.gameObject.GetComponentInChildren<Text>(true);
+                        Transform textObjectTransform = button.transform.Find("Canvas/Text");
+
+                        Text oldText = textObjectTransform.gameObject.GetComponentInChildren<Text>(true);
                         if (oldText != null)
                         {
                             DestroyImmediate(oldText);
                         }
-
-                        Transform textObjectTransform = button.transform.Find("Canvas/Text");
 
                         if (textObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
                         {
@@ -599,6 +600,7 @@ namespace VRtist
                     element.NeedsRebuild = true;
                 }
             }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
 #endif
         }
 
