@@ -373,7 +373,8 @@ namespace VRtist
         {
             textContent = textValue;
 
-            Text text = GetComponentInChildren<Text>();
+            Transform t = transform.Find("Canvas/Text");
+            TextMeshPro text = t.GetComponent<TextMeshPro>();
             if (text != null)
             {
                 text.text = textValue;

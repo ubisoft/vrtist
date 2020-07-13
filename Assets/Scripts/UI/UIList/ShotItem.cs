@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -252,12 +252,12 @@ namespace VRtist
             });
 
             shotNameLabel.SetLightLayer(5);
-            Text text = shotNameLabel.GetComponentInChildren<Text>();
-            text.fontStyle = FontStyle.Normal;
-            text.fontSize = 8;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.alignByGeometry = true;
+            TextMeshPro text = shotNameLabel.GetComponentInChildren<TextMeshPro>();
+            text.fontStyle = FontStyles.Normal;
+            //text.fontSize = 8;
+            //text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            //text.verticalOverflow = VerticalWrapMode.Overflow;
+            //text.alignByGeometry = true;
 
             //
             // CAMERA NAME Label
@@ -274,13 +274,13 @@ namespace VRtist
             });
 
             cameraNameLabel.SetLightLayer(5);
-            text = cameraNameLabel.GetComponentInChildren<Text>();
-            text.alignment = TextAnchor.LowerRight;
-            text.fontStyle = FontStyle.Normal;
-            text.fontSize = 8;
-            text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.alignByGeometry = true;
+            text = cameraNameLabel.GetComponentInChildren<TextMeshPro>();
+            text.alignment = TextAlignmentOptions.BottomRight;
+            text.fontStyle = FontStyles.Normal;
+            //text.fontSize = 8;
+            //text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            //text.verticalOverflow = VerticalWrapMode.Overflow;
+            //text.alignByGeometry = true;
             
             cx += 0.17f;
 
@@ -323,8 +323,8 @@ namespace VRtist
             frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
 
             frameRangeLabel.SetLightLayer(5);
-            Text frameRangeText = frameRangeLabel.GetComponentInChildren<Text>();
-            frameRangeText.alignment = TextAnchor.MiddleCenter;
+            TextMeshPro frameRangeText = frameRangeLabel.GetComponentInChildren<TextMeshPro>();
+            frameRangeText.alignment = TextAlignmentOptions.Center;
             cx += 0.04f;
 
             // END: Add UISpinner

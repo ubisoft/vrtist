@@ -232,7 +232,7 @@ namespace VRtist
         {
             textContent = textValue;
 
-            Text text = GetComponentInChildren<Text>();
+            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
             if (text != null)
             {
                 text.text = textValue;

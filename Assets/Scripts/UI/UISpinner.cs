@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -43,6 +44,7 @@ namespace VRtist
         public TextAndValueVisibilityType textAndValueVisibilityType = TextAndValueVisibilityType.ShowTextAndValue;
         public SpinnerValueType spinnerValueType = SpinnerValueType.Float;
         public Material sourceMaterial = null;
+        [TextArea] public string textContent = "";
 
         [SpaceHeader("Subdivision Parameters", 6, 0.3f, 0.3f, 0.3f)]
         public int nbSubdivCornerFixed = 3;
@@ -74,7 +76,7 @@ namespace VRtist
 
         private bool cursorExitedWidget = true;
 
-        public string Text { get { return GetText(); } set { SetText(value); } }
+        public string Text { get { return textContent; } set { SetText(value); } }
         public float FloatValue { get { return GetFloatValue(); } set { SetFloatValue(value); UpdateValueText(); } }
         public int IntValue { get { return GetIntValue(); } set { SetIntValue(value); UpdateValueText(); } }
 
@@ -136,26 +138,33 @@ namespace VRtist
                 float textPosLeft = margin;
 
                 Transform textTransform = canvas.transform.Find("Text");
-                Text text = textTransform.GetComponent<Text>();
-                text.color = TextColor;
-                RectTransform rectText = textTransform.GetComponent<RectTransform>();
-                rectText.sizeDelta = new Vector2((width - 2 * margin) * separationPositionPct, height);
-                rectText.localPosition = new Vector3(textPosLeft, -height / 2.0f, -0.002f);
-                textTransform.gameObject.SetActive(hasText); // hide if ValueOnly
+                TextMeshPro text = textTransform.GetComponent<TextMeshPro>();
+                if (text != null)
+                {
+                    text.text = Text;
+                    text.color = TextColor;
 
+                    RectTransform rectText = textTransform.GetComponent<RectTransform>();
+                    rectText.sizeDelta = new Vector2((width - 2 * margin) * separationPositionPct * 100.0f, (height - 2.0f * margin) * 100.0f);
+                    rectText.localPosition = new Vector3(textPosLeft, -margin, -0.002f);
+                    textTransform.gameObject.SetActive(hasText); // hide if ValueOnly
+                }
 
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                Text textValue = textValueTransform.GetComponent<Text>();
-                textValue.color = TextColor;
-                textValue.alignment = hasText ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter;
-                RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
-                rectTextValue.sizeDelta = hasText ?
-                      new Vector2((width - 2 * margin) * (1 - separationPositionPct), height)
-                    : new Vector2(width - 2 * margin, height);
-                float textPos = hasText ?
-                      width - margin // right
-                    : 0.5f * width; // or middle
-                rectTextValue.localPosition = new Vector3(textPos, -height / 2.0f, -0.002f);
+                TextMeshPro textValue = textValueTransform.GetComponent<TextMeshPro>();
+                if (textValue != null)
+                {
+                    textValue.color = TextColor;
+                    textValue.alignment = hasText ? TextAlignmentOptions.Right : TextAlignmentOptions.Center;
+                    RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
+                    rectTextValue.sizeDelta = hasText ?
+                          new Vector2((width - 2 * margin) * (1 - separationPositionPct) * 100.0f, (height - 2.0f * margin) * 100.0f)
+                        : new Vector2((width - 2 * margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                    float textPos = hasText ?
+                          width - margin // right
+                        : width - margin; // or middle
+                    rectTextValue.localPosition = new Vector3(textPos, -margin, -0.002f);
+                }
             }
         }
 
@@ -290,7 +299,7 @@ namespace VRtist
             if (canvas != null)
             {
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                Text txt = textValueTransform.gameObject.GetComponent<Text>();
+                TextMeshPro txt = textValueTransform.gameObject.GetComponent<TextMeshPro>();
                 if (txt != null)
                 {
                     txt.text = spinnerValueType == SpinnerValueType.Float 
@@ -300,20 +309,12 @@ namespace VRtist
             }
         }
 
-        private string GetText()
-        {
-            Text text = GetComponentInChildren<Text>();
-            if (text != null)
-            {
-                return text.text;
-            }
-
-            return null;
-        }
-
         private void SetText(string textValue)
         {
-            Text text = GetComponentInChildren<Text>();
+            textContent = textValue;
+
+            Transform t = transform.Find("Canvas/Text");
+            TextMeshPro text = t.GetComponent<TextMeshPro>();
             if (text != null)
             {
                 text.text = textValue;
@@ -520,6 +521,7 @@ namespace VRtist
             uiSpinner.maxIntValue = input.max_spinner_value_int;
             uiSpinner.currentIntValue = input.cur_spinner_value_int;
             uiSpinner.valueRateInt = input.spinner_value_rate_int;
+            uiSpinner.textContent = input.caption;
             uiSpinner.baseColor.useConstant = false;
             uiSpinner.baseColor.reference = input.background_color;
             uiSpinner.textColor.useConstant = false;
@@ -598,14 +600,13 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = input.caption;
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = TextAnchor.MiddleLeft;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontSizeMax = 500;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = TextAlignmentOptions.Left;
                 t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
@@ -614,9 +615,11 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2((uiSpinner.width-2*uiSpinner.margin) * uiSpinner.separationPositionPct, uiSpinner.height);
+                trt.sizeDelta = new Vector2(
+                    (uiSpinner.width-2*uiSpinner.margin) * uiSpinner.separationPositionPct * 100.0f, 
+                    (uiSpinner.height - 2 * uiSpinner.margin) * 100.0f);
                 float textPosLeft = uiSpinner.margin;
-                trt.localPosition = new Vector3(textPosLeft, -uiSpinner.height / 2.0f, -0.002f);
+                trt.localPosition = new Vector3(textPosLeft, -uiSpinner.margin, -0.002f);
 
                 // hide if ValueOnly
                 text.SetActive(hasText);
@@ -627,16 +630,15 @@ namespace VRtist
                 GameObject text = new GameObject("TextValue");
                 text.transform.parent = canvas.transform;
 
-                Text t = text.AddComponent<Text>();
-                t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                t.text = (input.value_type == SpinnerValueType.Float) 
-                    ? input.cur_spinner_value_float.ToString("#0.00") 
+                TextMeshPro t = text.AddComponent<TextMeshPro>();
+                t.text = (input.value_type == SpinnerValueType.Float)
+                    ? input.cur_spinner_value_float.ToString("#0.00")
                     : input.cur_spinner_value_int.ToString();
-                t.fontSize = 32;
-                t.fontStyle = FontStyle.Normal;
-                t.alignment = hasText ? TextAnchor.MiddleRight : TextAnchor.MiddleCenter;
-                t.horizontalOverflow = HorizontalWrapMode.Overflow;
-                t.verticalOverflow = VerticalWrapMode.Overflow;
+                t.enableAutoSizing = true;
+                t.fontSizeMin = 1;
+                t.fontSizeMax = 500;
+                t.fontStyle = FontStyles.Normal;
+                t.alignment = hasText ? TextAlignmentOptions.Right : TextAlignmentOptions.Center;
                 t.color = input.textColor.value;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
@@ -646,12 +648,16 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(1, 1); // top right?
                 trt.sizeDelta = hasText ? 
-                      new Vector2((uiSpinner.width - 2 * uiSpinner.margin) * (1-uiSpinner.separationPositionPct), uiSpinner.height)
-                    : new Vector2(uiSpinner.width - 2 * uiSpinner.margin, uiSpinner.height);
-                float textPos = hasText ? 
+                    new Vector2(
+                        (uiSpinner.width - 2 * uiSpinner.margin) * (1-uiSpinner.separationPositionPct) * 100.0f,
+                        (uiSpinner.height - 2 * uiSpinner.margin) * 100.0f)
+                    : new Vector2(
+                        (uiSpinner.width - 2 * uiSpinner.margin) * 100.0f,
+                        (uiSpinner.height - 2 * uiSpinner.margin) * 100.0f);
+                float textPos = hasText ?
                       uiSpinner.width - uiSpinner.margin // right
-                    : 0.5f * uiSpinner.width; // or middle
-                trt.localPosition = new Vector3(textPos, -uiSpinner.height / 2.0f, -0.002f);
+                    : uiSpinner.width - uiSpinner.margin ; // or middle
+                trt.localPosition = new Vector3(textPos, -uiSpinner.margin, -0.002f);
             }
 
             return uiSpinner;

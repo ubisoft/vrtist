@@ -208,7 +208,7 @@ namespace VRtist
         {
             textContent = textValue;
 
-            Text text = GetComponentInChildren<Text>();
+            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
             if (text != null)
             {
                 text.text = textValue;
@@ -390,6 +390,7 @@ namespace VRtist
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;
                 t.fontSizeMax = 500;
+                t.renderer.sortingOrder = 1;
                 t.fontStyle = FontStyles.Normal;
                 t.alignment = TextAlignmentOptions.MidlineLeft;
                 t.color = input.fgcolor.value;

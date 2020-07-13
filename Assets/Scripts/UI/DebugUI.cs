@@ -661,7 +661,53 @@ namespace VRtist
                     UISpinner spinner = element.GetComponent<UISpinner>();
                     if (spinner)
                     {
+                        bool hasText = (spinner.textAndValueVisibilityType == UISpinner.TextAndValueVisibilityType.ShowTextAndValue);
 
+                        Transform textObjectTransform = spinner.transform.Find("Canvas/Text");
+                        Text oldText = textObjectTransform.gameObject.GetComponentInChildren<Text>(true);
+                        string oldTextContent = "";
+                        if (oldText != null)
+                        {
+                            oldTextContent = oldText.text;
+                            spinner.textContent = oldTextContent; // fix empty textContent.
+                            DestroyImmediate(oldText);
+                        }
+
+                        if (textObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = spinner.textContent;
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = TextAlignmentOptions.Left;
+                            t.color = spinner.TextColor;
+
+                            // hide if ValueOnly
+                            textObjectTransform.gameObject.SetActive(hasText);
+                        }
+
+                        Transform textValueObjectTransform = spinner.transform.Find("Canvas/TextValue");
+                        Text oldTextValue = textValueObjectTransform.gameObject.GetComponentInChildren<Text>(true);
+                        if (oldTextValue != null)
+                        {
+                            DestroyImmediate(oldTextValue);
+                        }
+
+                        if (textValueObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textValueObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = (spinner.spinnerValueType == UISpinner.SpinnerValueType.Float)
+                                    ? spinner.currentFloatValue.ToString("#0.00")
+                                    : spinner.currentIntValue.ToString();
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontSizeMax = 500;
+                            t.fontStyle = FontStyles.Normal;
+                            t.alignment = hasText ? TextAlignmentOptions.Right : TextAlignmentOptions.Center;
+                            t.color = spinner.TextColor;
+                        }
                     }
 
                     //UIPanel panel = element.GetComponent<UIPanel>();
