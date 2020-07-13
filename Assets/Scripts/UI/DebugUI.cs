@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -463,6 +464,132 @@ namespace VRtist
             }
 #endif
         }
+
+        //
+        // Text Mesh Pro
+        //
+
+        public void Replace_Text_By_TextMeshPro()
+        {
+#if UNITY_EDITOR
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null)
+                    {
+                        Text oldText = button.gameObject.GetComponentInChildren<Text>(true);
+                        if (oldText != null)
+                        {
+                            // copy old params ?
+                            DestroyImmediate(oldText);
+                        }
+
+                        Transform textObjectTransform = button.transform.Find("Canvas/Text");
+
+                        if (textObjectTransform.gameObject.GetComponent<TextMeshPro>() == null)
+                        {
+                            TextMeshPro t = textObjectTransform.gameObject.AddComponent<TextMeshPro>();
+                            t.text = button.textContent;
+                            t.enableAutoSizing = true;
+                            t.fontSizeMin = 1;
+                            t.fontStyle = FontStyles.Normal; // copy from Text?
+                            t.alignment = TextAlignmentOptions.MidlineLeft; // copy from Text?
+                            t.color = button.TextColor;
+                        }
+
+                        //RectTransform rt = textObjectTransform.gameObject.GetComponent<RectTransform>();
+                        //if (rt != null)
+                        //{
+                        //    float minSide = Mathf.Min(button.width, button.height);
+                        //    if (button.content == UIButton.ButtonContent.TextAndImage)
+                        //    {
+                        //        rt.sizeDelta = new Vector2((button.width - minSide - button.margin) * 100.0f, button.height * 100.0f);
+                        //        rt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
+                        //    }
+                        //    else // TextOnly
+                        //    {
+                        //        rt.sizeDelta = new Vector2(button.width * 100.0f, button.height * 100.0f);
+                        //        rt.localPosition = new Vector3(button.margin, 0.0f, -0.002f);
+                        //    }
+                        //}
+
+                        textObjectTransform.gameObject.SetActive(button.content != UIButton.ButtonContent.ImageOnly);
+                    }
+
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+
+                    }
+
+                    //UIPanel panel = element.GetComponent<UIPanel>();
+                    //if (panel != null)
+                    //{
+
+                    //}
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+
+                    }
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+
+                    }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+
+                    }
+
+                    UISpinner spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+
+                    }
+
+
+                    //UITimeBar timebar = element.GetComponent<UITimeBar>();
+                    //if (timebar)
+                    //{
+
+                    //}
+
+                    //UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
+                    //if (colorpickerhue)
+                    //{
+
+                    //}
+
+                    //UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
+                    //if (colorpickersat)
+                    //{
+
+                    //}
+
+                    //UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
+                    //if (colorpickerprev)
+                    //{
+
+                    //}
+
+                    element.NeedsRebuild = true;
+                }
+            }
+#endif
+        }
+
+
+
 
 
         /*

@@ -80,14 +80,24 @@ namespace VRtist
                 }
 
 
+                //GUILayout.Space(20);
+
+                //GUILayout.Label(new GUIContent("Fonts"), textStyle, GUILayout.Height(30));
+
+                //if (GUILayout.Button("Bold -> Normal", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.FONT_BoldToNormal();
+                //}
+
                 GUILayout.Space(20);
 
-                GUILayout.Label(new GUIContent("Fonts"), textStyle, GUILayout.Height(30));
+                GUILayout.Label(new GUIContent("TextMeshPro"), textStyle, GUILayout.Height(30));
 
-                if (GUILayout.Button("Convert font style Bold -> Normal", GUILayout.Width(200), GUILayout.Height(30)))
+                if (GUILayout.Button("Replace Text <-> TexMeshPro", GUILayout.Width(200), GUILayout.Height(30)))
                 {
-                    debug.FONT_BoldToNormal();
+                    debug.Replace_Text_By_TextMeshPro();
                 }
+                
 
             }
             GUILayout.EndVertical();

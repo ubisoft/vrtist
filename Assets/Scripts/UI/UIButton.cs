@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -161,7 +162,7 @@ namespace VRtist
                 }
 
                 // TEXT
-                Text text = canvas.gameObject.GetComponentInChildren<Text>(true);
+                TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>(true);
                 if (text != null)
                 {
                     if (content != ButtonContent.ImageOnly)
@@ -179,14 +180,14 @@ namespace VRtist
                         RectTransform rt = text.gameObject.GetComponent<RectTransform>();
                         if (rt != null)
                         {
-                            rt.sizeDelta = new Vector2(width * 100.0f, height * 100.0f);
-
                             if (content == ButtonContent.TextAndImage)
                             {
+                                rt.sizeDelta = new Vector2((width - minSide - margin) * 100.0f, height * 100.0f);
                                 rt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
                             }
                             else // TextOnly
                             {
+                                rt.sizeDelta = new Vector2((width - 2.0f * margin) * 100.0f, height * 100.0f);
                                 rt.localPosition = new Vector3(margin, 0.0f, -0.002f);
                             }
                         }
@@ -437,6 +438,7 @@ namespace VRtist
             uiButton.margin = input.margin;
             uiButton.thickness = input.thickness;
             uiButton.content = input.buttonContent;
+            uiButton.textContent = input.caption;
             uiButton.baseSprite = input.icon;
             uiButton.iconMarginBehavior = input.iconMarginBehavior;
             uiButton.iconMargin = input.iconMargin;
@@ -550,14 +552,13 @@ namespace VRtist
             GameObject text = new GameObject("Text");
             text.transform.parent = canvas.transform;
 
-            Text t = text.AddComponent<Text>();
-            t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            TextMeshPro t = text.AddComponent<TextMeshPro>();
+            //t.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             t.text = input.caption;
-            t.fontSize = 32;
-            t.fontStyle = FontStyle.Normal;
-            t.alignment = TextAnchor.MiddleLeft;
-            t.horizontalOverflow = HorizontalWrapMode.Wrap;
-            t.verticalOverflow = VerticalWrapMode.Truncate;
+            t.enableAutoSizing = true;
+            t.fontSizeMin = 1;
+            t.fontStyle = FontStyles.Normal;
+            t.alignment = TextAlignmentOptions.MidlineLeft;
             t.color = input.fgcolor.value;
 
             RectTransform trt = t.GetComponent<RectTransform>();
@@ -566,9 +567,17 @@ namespace VRtist
             trt.anchorMin = new Vector2(0, 1);
             trt.anchorMax = new Vector2(0, 1);
             trt.pivot = new Vector2(0, 1); // top left
-            trt.sizeDelta = new Vector2(uiButton.width * 100.0f, uiButton.height * 100.0f);
-            float textPosLeft = input.buttonContent == ButtonContent.TextAndImage ? minSide : input.margin;
-            trt.localPosition = new Vector3(textPosLeft, 0.0f, -0.002f);
+            
+            if (input.buttonContent == ButtonContent.TextAndImage)
+            {
+                trt.sizeDelta = new Vector2((input.width - minSide - input.margin) * 100.0f, input.height * 100.0f);
+                trt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
+            }
+            else // TextOnly
+            {
+                trt.sizeDelta = new Vector2((input.width - 2.0f * input.margin) * 100.0f, input.height * 100.0f);
+                trt.localPosition = new Vector3(input.margin, 0.0f, -0.002f);
+            }
 
             text.SetActive(input.buttonContent != ButtonContent.ImageOnly);
 
