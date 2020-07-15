@@ -838,6 +838,20 @@ namespace VRtist
             //obj.SetActive(node.containerVisible & node.visible);
         }
 
+        public static void ApplyVisibilityToInstances(Transform transform)
+        {
+            if (!nodes.ContainsKey(transform.name))
+                return;
+
+            Node node = nodes[transform.name];
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject obj = t.Item1;
+                ApplyVisibility(obj);
+            }
+        }
+
+
         public static void ApplyTransformToInstances(Transform transform)
         {
             if(!nodes.ContainsKey(transform.name))
@@ -850,7 +864,7 @@ namespace VRtist
                 obj.transform.localPosition = transform.localPosition;
                 obj.transform.localRotation = transform.localRotation;
                 obj.transform.localScale = transform.localScale;
-                ApplyVisibility(obj);
+                //ApplyVisibility(obj);
             }
         }
 

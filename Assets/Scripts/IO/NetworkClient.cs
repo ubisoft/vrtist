@@ -59,7 +59,7 @@ namespace VRtist
         Scene,
         SceneRemoved,
         AddObjectToDocument,
-        _ObjectVisibility,
+        ObjectVisibility,
         _GroupBegin,
         _GroupEnd,
         _SceneRenamed,
@@ -1076,6 +1076,24 @@ namespace VRtist
             return SyncData.GetOrCreatePrefabPath(path);
         }
 
+        public static void BuildObjectVisibility(byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            bool visible = GetBool(data, ref currentIndex) ? false : true;
+            bool hideSelect = GetBool(data, ref currentIndex);
+            bool visibleInRender = GetBool(data, ref currentIndex) ? false : true;
+            bool tempVisible = GetBool(data, ref currentIndex) ? false : true;
+
+            if (SyncData.nodes.ContainsKey(objectName))
+            {
+                Node node = SyncData.nodes[objectName];
+                node.visible = visible;
+                node.tempVisible = tempVisible;
+                SyncData.ApplyVisibilityToInstances(node.prefab.transform);
+            }
+        }
+
         public static Transform BuildTransform(Transform prefab, byte[] data)
         {
             int currentIndex = 0;
@@ -1098,13 +1116,9 @@ namespace VRtist
             transform.localPosition = t;
             transform.localRotation = r;
             transform.localScale = s;
-
-            bool visible = GetBool(data, ref currentIndex);
-            bool tempVisible = GetBool(data, ref currentIndex);
-
-            SyncData.nodes[transform.name].visible = visible;
-            SyncData.nodes[transform.name].tempVisible = tempVisible;
+            
             SyncData.ApplyTransformToInstances(transform);
+            SyncData.ApplyVisibilityToInstances(transform);
 
             return transform;
         }
@@ -1115,6 +1129,28 @@ namespace VRtist
          *   COMMANDS
          * 
          * -------------------------------------------------------------------------------------------*/
+
+        public static NetCommand BuildObjectVisibilityCommand(Transform root, Transform transform)
+        {
+            bool tempVisible = true;
+            string parentName = "";
+            if (SyncData.nodes.ContainsKey(transform.name))
+            {
+                Node node = SyncData.nodes[transform.name];
+                tempVisible = node.tempVisible;
+                if (null != node.parent)
+                    parentName = node.parent.prefab.name + "/";
+            }
+            byte[] name = StringToBytes(parentName + transform.name);
+            byte[] hideBuffer = BoolToBytes(transform.gameObject.activeSelf ? false : true);
+            byte[] hideSelect = BoolToBytes(false);
+            byte[] hideInViewport = BoolToBytes(false);
+            byte[] hideGet = BoolToBytes(tempVisible ? false : true);
+
+            List<byte[]> buffers = new List<byte[]> { name, hideBuffer, hideSelect, hideInViewport, hideGet };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ObjectVisibility);
+            return command;
+        }
         public static NetCommand BuildTransformCommand(Transform root, Transform transform)
         {
             bool tempVisible = true;
@@ -1132,10 +1168,8 @@ namespace VRtist
             byte[] invertParentMatrixBuffer = MatrixToBytes(parentMatrix);
             byte[] basisMatrixBuffer = MatrixToBytes(basisMatrix);
             byte[] localMatrixBuffer = MatrixToBytes(parentMatrix * basisMatrix);
-            byte[] visibilityBuffer = BoolToBytes(transform.gameObject.activeSelf);
-            byte[] tempVisibilityBuffer = BoolToBytes(tempVisible);
 
-            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer, visibilityBuffer, tempVisibilityBuffer };
+            List<byte[]> buffers = new List<byte[]> { name, invertParentMatrixBuffer, basisMatrixBuffer, localMatrixBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Transform);
             return command;
         }
@@ -2804,6 +2838,12 @@ namespace VRtist
             }
         }
 
+        public void SendObjectVisibility(Transform transform)
+        {
+            NetCommand command = NetGeometry.BuildObjectVisibilityCommand(root, transform);
+            AddCommand(command);
+        }
+
         public void SendTransform(Transform transform)
         {
             NetCommand command = NetGeometry.BuildTransformCommand(root, transform);
@@ -3021,6 +3061,9 @@ namespace VRtist
                                 break;
                             case MessageType.Transform:
                                 NetGeometry.BuildTransform(prefab, command.data);
+                                break;
+                            case MessageType.ObjectVisibility:
+                                NetGeometry.BuildObjectVisibility(command.data);
                                 break;
                             case MessageType.Material:
                                 NetGeometry.BuildMaterial(command.data);
