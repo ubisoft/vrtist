@@ -540,9 +540,10 @@ namespace VRtist
 
             TextMeshPro t = text.AddComponent<TextMeshPro>();
             t.text = input.caption;
-            t.enableAutoSizing = true;
-            t.fontSizeMin = 1;
-            t.fontSizeMax = 500;
+            t.enableAutoSizing = false;
+            t.fontSize = 16;
+            t.fontSizeMin = 18;
+            t.fontSizeMax = 18;
             t.fontStyle = FontStyles.Normal;
             t.alignment = TextAlignmentOptions.MidlineLeft;
             t.color = input.fgcolor.value;

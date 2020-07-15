@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Specialized;
+using TMPro;
 
 namespace VRtist
 {
@@ -161,7 +162,7 @@ namespace VRtist
                 }
             }
 
-            UnityEngine.UI.Text trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<UnityEngine.UI.Text>();
+            TextMeshPro trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshPro>();
             trackLabel.text = gObject.name;
 
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");

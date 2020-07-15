@@ -456,7 +456,8 @@ namespace VRtist
 
                 TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = input.caption;
-                t.enableAutoSizing = true;
+                t.enableAutoSizing = false;
+                t.fontSize = 18;
                 t.fontSizeMin = 1;
                 t.fontSizeMin = 500;
                 t.fontStyle = FontStyles.Normal;
