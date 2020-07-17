@@ -858,7 +858,7 @@ namespace VRtist
         public void OnLinkAction()
         {
             // TODO
-            return;
+            /*
             if (Selection.selection.Count <= 1)
                 return;
 
@@ -903,12 +903,13 @@ namespace VRtist
                 if (group.childCount == 0)
                     Destroy(group.gameObject);
             }
+            */
         }
 
         public void OnUnlinkAction()
         {
             // TODO
-            return;
+            /*
             SortedSet<Transform> groups = new SortedSet<Transform>();
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
             {
@@ -928,6 +929,7 @@ namespace VRtist
                 }
                 Destroy(group.gameObject);
             }
+            */
         }
 
         public void OnSetLocked(bool locked)

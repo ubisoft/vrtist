@@ -11,6 +11,7 @@ namespace VRtist
         public Transform leftHandle;
         public Transform rightHandle;
         public Transform cursor;
+        public Transform backgroundFeedback = null;
 
         [Header("UI Widgets")]
         public Transform panel = null;
@@ -70,6 +71,11 @@ namespace VRtist
                 OnRightHanded(GlobalState.Settings.rightHanded);
 
             forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
+
+            backgroundFeedback.localPosition = GlobalState.Settings.cameraFeedbackPosition;
+            backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
+            backgroundFeedback.localScale = GlobalState.Settings.cameraFeedbackScale;
+            backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
         }
 
         public void OnReset()

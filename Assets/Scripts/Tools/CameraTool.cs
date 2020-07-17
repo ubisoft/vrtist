@@ -32,7 +32,6 @@ namespace VRtist
         private UICheckbox showCameraFeedbackCheckbox = null;
         private UICheckbox feedbackPositionningCheckbox = null;
         private bool feedbackPositioning = false;
-        private float cameraFeedbackScale = 1f;
         private float cameraFeedbackScaleFactor = 1.05f;
 
         private bool firstTimeShowDopesheet = true;
@@ -144,6 +143,11 @@ namespace VRtist
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }
 
+        void Start()
+        {
+            cameraPreviewDirection = backgroundFeedback.forward;
+        }
+
         protected override void Init()
         {
             base.Init();
@@ -212,10 +216,14 @@ namespace VRtist
                 Camera cam = currentCamera.GetComponentInChildren<Camera>();
                 aspect = cam.aspect;
             }
-            float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * cameraFeedbackScale;
+            float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
             backgroundFeedback.position = position + direction.normalized * far;
             backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
             backgroundFeedback.localScale = new Vector3(scale * aspect, scale, scale);
+
+            GlobalState.Settings.cameraFeedbackPosition = backgroundFeedback.position;
+            GlobalState.Settings.cameraFeedbackRotation = backgroundFeedback.rotation;
+            GlobalState.Settings.cameraFeedbackScale = backgroundFeedback.localScale;
         }
 
         public override void OnUIObjectEnter(int gohash)
@@ -398,16 +406,16 @@ namespace VRtist
                     cameraPreviewDirection = transform.forward;
                     trigger = true;
                 }
-                UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
                 if(trigger)
                 {
                     // Cam feedback scale
                     Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
                     if(joystickAxis.y > deadZone)
-                        cameraFeedbackScale *= cameraFeedbackScaleFactor;
+                        GlobalState.Settings.cameraFeedbackScaleValue *= cameraFeedbackScaleFactor;
                     if(joystickAxis.y < -deadZone)
-                        cameraFeedbackScale /= cameraFeedbackScaleFactor;
+                        GlobalState.Settings.cameraFeedbackScaleValue /= cameraFeedbackScaleFactor;
                 }
+                UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
             }
 
             // called to update focal slider value

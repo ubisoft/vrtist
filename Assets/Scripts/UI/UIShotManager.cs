@@ -14,6 +14,24 @@ namespace VRtist
             shotList.ItemClickedEvent += OnListItemClicked;
         }
 
+        void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
+        {
+            bool apply = false;
+            if(spinner.baseColor.constant != baseColor)
+            {
+                spinner.baseColor.constant = baseColor;
+                apply = true;
+            }
+            if (spinner.selectedColor.constant != selectedColor)
+            {
+                spinner.selectedColor.constant = selectedColor;
+                apply = true;
+            }
+            if(apply)
+            {
+                spinner.ResetColor();
+            }
+        }
         void Update()
         {
             ShotManager sm = ShotManager.Instance;
@@ -30,35 +48,29 @@ namespace VRtist
 
                 if (currentFrame == shot.start)
                 {
-                    item.startFrameSpinner.baseColor.constant = focusColor;
-                    item.startFrameSpinner.selectedColor.constant = focusColor;
+                    SetUIElementColors(item.startFrameSpinner, focusColor, focusColor);
                 }
                 else
                 {
-                    item.startFrameSpinner.baseColor.constant = defaultColor;
-                    item.startFrameSpinner.selectedColor.constant = defaultSelectedColor;
+                    SetUIElementColors(item.startFrameSpinner, defaultColor, defaultSelectedColor);
                 }
 
                 if (currentFrame == shot.end)
                 {
-                    item.endFrameSpinner.baseColor.constant = focusColor;
-                    item.endFrameSpinner.selectedColor.constant = focusColor;
+                    SetUIElementColors(item.endFrameSpinner, focusColor, focusColor);
                 }
                 else 
                 {
-                    item.endFrameSpinner.baseColor.constant = defaultColor;
-                    item.endFrameSpinner.selectedColor.constant = defaultSelectedColor;
+                    SetUIElementColors(item.endFrameSpinner, defaultColor, defaultSelectedColor);
                 }
 
                 if (currentFrame > shot.start && currentFrame < shot.end)
                 {
-                    item.frameRangeLabel.baseColor.constant = focusColor;
-                    item.frameRangeLabel.selectedColor.constant = focusColor;
+                    SetUIElementColors(item.frameRangeLabel, focusColor, focusColor);
                 }
                 else
                 {
-                    item.frameRangeLabel.baseColor.constant = defaultColor;
-                    item.frameRangeLabel.selectedColor.constant = defaultSelectedColor;
+                    SetUIElementColors(item.frameRangeLabel, defaultColor, defaultSelectedColor);
                 }
             }
         }

@@ -10,6 +10,7 @@ namespace VRtist
         [Header("Parameters")]
         public GameObject leftController = null;
         public GameObject colorPanel = null;
+        public GameObject cameraFeedback = null;
 
         public static Settings Settings { get { return Instance.settings; } }
 
@@ -98,8 +99,18 @@ namespace VRtist
         }
 
         private void Start() {
-            if(null != leftController) {
+            if(null != leftController) 
+            {
                 displayTooltip = Tooltips.CreateTooltip(leftController, Tooltips.Anchors.Info, "- fps");
+            }
+            if(null != cameraFeedback)
+            {
+                cameraFeedback.transform.localPosition = settings.cameraFeedbackPosition;
+                cameraFeedback.transform.localRotation = settings.cameraFeedbackRotation;
+                if (settings.cameraFeedbackScale.x == 0f || settings.cameraFeedbackScale.y == 0f || settings.cameraFeedbackScale.z == 0f)
+                    settings.cameraFeedbackScale = new Vector3(160f, 90f, 100f);
+                cameraFeedback.transform.localScale = settings.cameraFeedbackScale;
+                cameraFeedback.SetActive(settings.cameraFeedbackVisible);
             }
         }
 

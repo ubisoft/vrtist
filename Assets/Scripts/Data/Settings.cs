@@ -32,8 +32,11 @@ namespace VRtist
         public Quaternion cameraPreviewRotation;
         public bool cameraPreviewVisible = false;
 
-        public Vector3 cameraFeedbackPosition;
-        public Quaternion cameraFeedbackRotation;
+        public Vector3 cameraFeedbackPosition = Vector3.zero;
+        public Quaternion cameraFeedbackRotation = Quaternion.identity;
+        public Vector3 cameraFeedbackScale = new Vector3(160, 90, 100);
+        public float cameraFeedbackScaleValue = 1f;
+
         public bool cameraFeedbackVisible = false;
         public float cameraDamping = 50f;
 
@@ -59,6 +62,12 @@ namespace VRtist
             cameraDamping = 50f;
             castShadows = false;
             scaleSpeed = 50f;
+
+            cameraFeedbackPosition = Vector3.zero;
+            cameraFeedbackRotation = Quaternion.identity;
+            cameraFeedbackScale = Vector3.one;
+            cameraFeedbackScaleValue = 1f;
+            cameraFeedbackVisible = false;
         }
 
         public void SetWindowPosition(Transform window)
@@ -78,11 +87,14 @@ namespace VRtist
                 cameraPreviewPosition = window.localPosition;
                 cameraPreviewRotation = window.localRotation;
             }
+            /*
             if (window.name == "CameraFeedback")
             {
                 cameraFeedbackPosition = window.localPosition;
                 cameraFeedbackRotation = window.localRotation;
+                cameraFeedbackScale = window.localScale;
             }
+            */
         }
 
         private string GetJsonFilename()
