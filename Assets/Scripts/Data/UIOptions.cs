@@ -13,6 +13,7 @@ namespace VRtist
         public ColorVar checkedColor = new ColorVar { value = new Color(0.0f, 0.85f, 1.0f, 1.0f) };
         public ColorVar disabledColor = new ColorVar { value = new Color(0.5873f, 0.6170f, 0.6320f) };
         public ColorVar selectedColor = new ColorVar { value = new Color(0.0f, 0.65f, 1.0f, 1.0f) };
+        public ColorVar hoveredColor = new ColorVar { value = new Color(0.4f, 0.4f, 0.4f, 1.0f) };
 
         [SpaceHeader("Specific Colors", 6, 0.3f, 0.3f, 0.3f)]
         public ColorVar sliderRailColor = new ColorVar { value = new Color(0.1f, 0.1f, 0.1f, 1.0f) };
@@ -36,6 +37,7 @@ namespace VRtist
         public static Color CheckedColor { get { return Instance.checkedColor.value; } }
         public static Color DisabledColor { get { return Instance.disabledColor.value; } }
         public static Color SelectedColor { get { return Instance.selectedColor.value; } }
+        public static Color HoveredColor { get { return Instance.hoveredColor.value; } }
         public static Color SliderRailColor { get { return Instance.sliderRailColor.value; } }
         public static Color SliderKnobColor { get { return Instance.sliderKnobColor.value; } }
         public static Color AttenuatedTextColor { get { return Instance.attenuatedTextColor.value; } }
@@ -54,6 +56,7 @@ namespace VRtist
         public static ColorVar CheckedColorVar { get { return Instance.checkedColor; } }
         public static ColorVar DisabledColorVar { get { return Instance.disabledColor; } }
         public static ColorVar SelectedColorVar { get { return Instance.selectedColor; } }
+        public static ColorVar HoveredColorVar { get { return Instance.hoveredColor; } }
         public static ColorVar SliderRailColorVar { get { return Instance.sliderRailColor; } }
         public static ColorVar SliderKnobColorVar { get { return Instance.sliderKnobColor; } }
         public static ColorVar AttenuatedTextColorVar { get { return Instance.attenuatedTextColor; } }

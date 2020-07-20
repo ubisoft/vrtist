@@ -41,6 +41,11 @@ namespace VRtist
                     debug.UIOPTIONS_ResetAllColors();
                 }
 
+                if (GUILayout.Button("Link Widgets HOVERED Color", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.UIOPTIONS_HoveredColor();
+                }
+
                 //
                 // Asset Bank
                 //

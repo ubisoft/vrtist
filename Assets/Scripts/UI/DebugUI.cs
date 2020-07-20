@@ -183,6 +183,161 @@ namespace VRtist
 #endif
         }
 
+        public void UIOPTIONS_HoveredColor()
+        {
+#if UNITY_EDITOR
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    //element.baseColor.useConstant = false;
+                    //element.baseColor.constant = UIOptions.BackgroundColor;
+                    //element.baseColor.reference = UIOptions.BackgroundColorVar;
+
+                    //element.textColor.useConstant = false;
+                    //element.textColor.constant = UIOptions.ForegroundColor;
+                    //element.textColor.reference = UIOptions.ForegroundColorVar;
+
+                    //element.disabledColor.useConstant = false;
+                    //element.disabledColor.constant = UIOptions.DisabledColor;
+                    //element.disabledColor.reference = UIOptions.DisabledColorVar;
+
+                    //element.pushedColor.useConstant = false;
+                    //element.pushedColor.constant = UIOptions.PushedColor;
+                    //element.pushedColor.reference = UIOptions.PushedColorVar;
+
+                    //element.selectedColor.useConstant = false;
+                    //element.selectedColor.constant = UIOptions.SelectedColor;
+                    //element.selectedColor.reference = UIOptions.SelectedColorVar;
+
+                    element.hoveredColor.useConstant = false;
+                    element.hoveredColor.constant = UIOptions.HoveredColor;
+                    element.hoveredColor.reference = UIOptions.HoveredColorVar;
+
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null)
+                    {
+                        //// CheckedColor
+                        //button.checkedColor.useConstant = false;
+                        //button.checkedColor.constant = UIOptions.CheckedColor;
+                        //button.checkedColor.reference = UIOptions.CheckedColorVar;
+
+                        //// Text Color
+                        //button.textColor.useConstant = false;
+                        //button.textColor.constant = UIOptions.ForegroundColor;
+                        //button.textColor.reference = UIOptions.ForegroundColorVar;
+
+                        //if (button.transform.parent.gameObject.name == "CloseButton")
+                        //{
+                        //    button.baseColor.useConstant = false;
+                        //    button.baseColor.constant = UIOptions.CloseWindowButtonColor;
+                        //    button.baseColor.reference = UIOptions.CloseWindowButtonColorVar;
+                        //}
+
+                        //if (button.transform.parent.gameObject.name == "PinButton")
+                        //{
+                        //    button.baseColor.useConstant = false;
+                        //    button.baseColor.constant = UIOptions.PinWindowButtonColor;
+                        //    button.baseColor.reference = UIOptions.PinWindowButtonColorVar;
+                        //}
+
+                        //if (button.gameObject.name == "ExitButton")
+                        //{
+                        //    button.baseColor.useConstant = false;
+                        //    button.baseColor.constant = UIOptions.ExitButtonColor;
+                        //    button.baseColor.reference = UIOptions.ExitButtonColorVar;
+                        //}
+                    }
+
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+                        //// Label TextColor
+                        //label.textColor.useConstant = false;
+                        //label.textColor.constant = UIOptions.ForegroundColor;
+                        //label.textColor.reference = UIOptions.ForegroundColorVar;
+                    }
+
+                    UIElement panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+                        //// Specific base color for Panels
+                        //panel.baseColor.useConstant = false;
+                        //panel.baseColor.constant = UIOptions.PanelColor;
+                        //panel.baseColor.reference = UIOptions.PanelColorVar;
+                    }
+
+                    UIGrabber grabber = element.GetComponent<UIGrabber>();
+                    if (grabber)
+                    {
+                        //grabber.baseColor.useConstant = false;
+                        //grabber.baseColor.constant = UIOptions.GrabberBaseColor;
+                        //grabber.baseColor.reference = UIOptions.GrabberBaseColorVar;
+
+                        //grabber.pushedColor.useConstant = false;
+                        //grabber.pushedColor.constant = UIOptions.GrabberHoverColor;
+                        //grabber.pushedColor.reference = UIOptions.GrabberHoverColorVar;
+
+                        //SerializedObject so = new SerializedObject(grabber);
+                        //so.FindProperty("baseColor").FindPropertyRelative("useConstant").boolValue = true;
+                        //so.FindProperty("baseColor").FindPropertyRelative("constant").colorValue = UIOptions.GrabberBaseColor;
+                        ////so.FindProperty("baseColor").FindPropertyRelative("reference").objectReferenceValue = UIOptions.GrabberBaseColorVar;
+
+                        //so.FindProperty("pushedColor").FindPropertyRelative("useConstant").boolValue = true;
+                        //so.FindProperty("pushedColor").FindPropertyRelative("constant").colorValue = UIOptions.GrabberHoverColor;
+                        ////so.FindProperty("pushedColor").FindPropertyRelative("reference").objectReferenceValue = UIOptions.GrabberHoverColorVar;
+                        //so.ApplyModifiedProperties();
+                    }
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+                    }
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+                        //slider.rail._color.useConstant = false;
+                        //slider.rail._color.constant = UIOptions.SliderRailColor;
+                        //slider.rail._color.reference = UIOptions.SliderRailColorVar;
+
+                        //slider.knob._color.useConstant = false;
+                        //slider.knob._color.constant = UIOptions.SliderKnobColor;
+                        //slider.knob._color.reference = UIOptions.SliderKnobColorVar;
+                    }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+                        //vslider.rail._color.useConstant = false;
+                        //vslider.rail._color.constant = UIOptions.SliderRailColor;
+                        //vslider.rail._color.reference = UIOptions.SliderRailColorVar;
+
+                        //vslider.knob._color.useConstant = false;
+                        //vslider.knob._color.constant = UIOptions.SliderKnobColor;
+                        //vslider.knob._color.reference = UIOptions.SliderKnobColorVar;
+                    }
+
+                    UISpinner spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+                    }
+
+                    UITimeBar timebar = element.GetComponent<UITimeBar>();
+                    if (timebar)
+                    {
+                    }
+
+                    element.NeedsRebuild = true;
+                    //element.ResetColor();
+                }
+            }
+#endif
+        }
+
         public void UIOPTIONS_RandomChangeColors()
         {
             UIOptions.BackgroundColorVar.value = Random.ColorHSV();

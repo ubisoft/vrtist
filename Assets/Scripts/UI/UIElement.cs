@@ -21,10 +21,12 @@ namespace VRtist
         public ColorReference disabledColor = new ColorReference();
         public ColorReference pushedColor = new ColorReference();
         public ColorReference selectedColor = new ColorReference();
+        public ColorReference hoveredColor = new ColorReference();
 
         private bool isDisabled = false;
         private bool isSelected = false;
         private bool isPushed = false;
+        private bool isHovered = false;
 
         private Vector3 anchor = Vector3.zero; // local position of anchor for children.
 
@@ -43,9 +45,11 @@ namespace VRtist
         public Color DisabledColor { get { return disabledColor.Value; } }
         public Color PushedColor { get { return pushedColor.Value; } }
         public Color SelectedColor { get { return selectedColor.Value; } }
+        public Color HoveredColor { get { return hoveredColor.Value; } }
         public bool Disabled { get { return isDisabled; } set { isDisabled = value; ResetColor(); } }
         public bool Selected { get { return isSelected; } set { isSelected = value; ResetColor(); } }
         public bool Pushed { get { return isPushed; } set { isPushed = value; ResetColor(); } }
+        public bool Hovered { get { return isHovered; } set { isHovered = value; ResetColor(); } }
         public bool NeedsRebuild { get { return needsRebuild; } set { needsRebuild = value; } }
 
         protected float prevTime = -1f;
@@ -94,8 +98,9 @@ namespace VRtist
         {
             SetColor(isDisabled ? DisabledColor
                   : (isPushed ? PushedColor
-                  : (isSelected ? SelectedColor 
-                  : BaseColor)));
+                  : (isSelected ? SelectedColor
+                  : (isHovered ? HoveredColor
+                  : BaseColor))));
         }
 
         public virtual void SetColor(Color color)
@@ -153,5 +158,9 @@ namespace VRtist
         public virtual void ResetMaterial() { }
         public virtual bool HandlesCursorBehavior() { return false; }
         public virtual void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform) { }
+
+        public virtual void OnRayEnter() { }
+        public virtual void OnRayHover() { }
+        public virtual void OnRayExit() { }
     }
 }

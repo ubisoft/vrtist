@@ -5,7 +5,7 @@ namespace VRtist
 {
     public class PaletteCursor : MonoBehaviour
     {
-        public GameObject tools = null;
+        public UIRay ray = null;
 
         private Vector3 initialCursorLocalPosition = Vector3.zero;
         private bool isOnAWidget = false;
@@ -24,6 +24,8 @@ namespace VRtist
         private bool lockedOnAWidget = false;
         private bool isOutOfWidget = true;
         private bool isOutOfVolume = true;
+
+        UIElement prevWidget = null; // for RAY
 
         void Start()
         {
@@ -90,6 +92,153 @@ namespace VRtist
                     if (UIElement.UIEnabled.Value)
                         VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
                 }
+            }
+
+            HandleRaycast();
+        }
+
+        private void FixedUpdate()
+        {
+            //HandleRaycast();
+        }
+
+        private void HandleRaycast()
+        {
+            RaycastHit[] hits;
+            Vector3 worldStart = transform.TransformPoint(0.0104f, 0, 0.065f);
+            Vector3 worldEnd = transform.TransformPoint(0.0104f, 0, 1f);
+            Vector3 worldDirection = worldEnd - worldStart;
+            Ray r = new Ray(worldStart, worldDirection);
+            int layersMask = LayerMask.GetMask(new string[] { "UI" });
+            hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
+            if (hits.Length > 0)
+            {
+                bool volumeIsHit = false;
+                bool widgetIsHit = false;
+                bool handleIsHit = false;
+
+                float closestVolumeDistance = Mathf.Infinity;
+                float closestWidgetDistance = Mathf.Infinity;
+                float closestHandleDistance = Mathf.Infinity;
+
+                Vector3 volumeCollisionPoint = Vector3.zero;
+                Vector3 widgetCollisionPoint = Vector3.zero;
+                Vector3 handleCollisionPoint = Vector3.zero;
+
+                UIElement widget = null;
+                UIHandle handle = null;
+                UIVolumeTag volume = null;
+
+                // Find if a volume/handle/widget has been hit, and compute the closest hit distance/point.
+                for (int i = 0; i < hits.Length; ++i)
+                {
+                    Transform hit = hits[i].transform;
+
+                    UIVolumeTag volumeHit = hit.GetComponent<UIVolumeTag>();
+                    if (volumeHit != null)
+                    {
+                        volumeIsHit = true;
+                        if (volume != null || hits[i].distance < closestVolumeDistance)
+                        {
+                            volume = volumeHit;
+                            volumeCollisionPoint = hits[i].point; // world space
+                            closestVolumeDistance = hits[i].distance;
+                        }
+                    }
+
+                    UIHandle handleHit = hit.GetComponent<UIHandle>();
+                    if (handleHit != null)
+                    {
+                        handleIsHit = true;
+                        if (handle != null || hits[i].distance < closestHandleDistance)
+                        {
+                            handle = handleHit;
+                            handleCollisionPoint = hits[i].point; // world space
+                            closestHandleDistance = hits[i].distance;
+                        }
+                    }
+
+                    UIElement widgetHit = hit.GetComponent<UIElement>();
+                    if (widgetHit != null)
+                    {
+                        widgetIsHit = true;
+                        if (widget != null || hits[i].distance < closestWidgetDistance)
+                        {
+                            widget = widgetHit;
+                            widgetCollisionPoint = hits[i].point; // world space
+                            closestWidgetDistance = hits[i].distance;
+                        }
+                    }
+                }
+
+                if (handleIsHit)
+                {
+                    ray.gameObject.SetActive(true);
+                    ray.SetStartPosition(worldStart);
+                    ray.SetEndPosition(handleCollisionPoint);
+
+                    ray.SetHandleColor();
+
+                    ExitPreviousWidget();
+                }
+                else if (widgetIsHit)
+                {
+                    ray.gameObject.SetActive(true);
+                    ray.SetStartPosition(worldStart);
+                    ray.SetEndPosition(widgetCollisionPoint);
+
+                    if (widget.GetComponent<UIPanel>())
+                    {
+                        ray.SetPanelColor();
+                    }
+                    else
+                    {
+                        ray.SetWidgetColor();
+                        if (prevWidget != widget)
+                        {
+                            if (prevWidget != null)
+                            {
+                                prevWidget.OnRayExit();
+                            }
+
+                            widget.OnRayEnter();
+
+                            prevWidget = widget;
+                        }
+                        else
+                        {
+                            widget.OnRayHover();
+                        }
+                    }
+                }
+                else if (volumeIsHit)
+                {
+                    ray.gameObject.SetActive(true);
+                    ray.SetStartPosition(worldStart);
+                    ray.SetEndPosition(worldEnd); // volumeCollisionPoint
+                    ray.SetVolumeColor();
+
+                    ExitPreviousWidget();
+                }
+                else // does it happen??? -> layer UI but neither UIVolumeTag nor UIElement
+                {
+                    ray.gameObject.SetActive(false);
+                    ExitPreviousWidget();
+                }
+            }
+            else
+            {
+                ray.gameObject.SetActive(false);
+                ExitPreviousWidget();
+            }
+        }
+
+        private void ExitPreviousWidget()
+        {
+            if (prevWidget != null)
+            {
+                prevWidget.OnRayExit();
+                prevWidget = null;
             }
         }
 
