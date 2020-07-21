@@ -176,6 +176,30 @@ namespace VRtist
 
 
 
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            //Hovered = true;
+            //ResetColor();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+
+
+
+
         public class CreatePanelParams
         {
             public Transform parent = null;

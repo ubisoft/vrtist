@@ -81,7 +81,7 @@ namespace VRtist
                   : (Pushed ? PushedColor
                   : (Checked ? CheckedColor 
                   : (Selected ? SelectedColor
-                  : (Hovered? HoveredColor
+                  : (Hovered ? HoveredColor
                   :  BaseColor)))));
         }
 

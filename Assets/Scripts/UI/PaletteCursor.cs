@@ -40,6 +40,8 @@ namespace VRtist
 
             initialCursorLocalPosition = GetComponentInChildren<MeshFilter>(true).gameObject.transform.localPosition;
 
+            // TODO: "find" the ray
+
             arrowCursor = transform.Find("Arrow");
             grabberCursor = transform.Find("Grabber");
             SetCursorShape(0); // arrow
@@ -94,7 +96,10 @@ namespace VRtist
                 }
             }
 
-            HandleRaycast();
+            if (ray != null)
+            {
+                HandleRaycast();
+            }
         }
 
         private void FixedUpdate()
@@ -194,21 +199,23 @@ namespace VRtist
                     else
                     {
                         ray.SetWidgetColor();
-                        if (prevWidget != widget)
-                        {
-                            if (prevWidget != null)
-                            {
-                                prevWidget.OnRayExit();
-                            }
+                    }
 
-                            widget.OnRayEnter();
-
-                            prevWidget = widget;
-                        }
-                        else
+                    // signals
+                    if (prevWidget != widget)
+                    {
+                        if (prevWidget != null)
                         {
-                            widget.OnRayHover();
+                            prevWidget.OnRayExit();
                         }
+
+                        widget.OnRayEnter();
+
+                        prevWidget = widget;
+                    }
+                    else
+                    {
+                        widget.OnRayHover();
                     }
                 }
                 else if (volumeIsHit)
