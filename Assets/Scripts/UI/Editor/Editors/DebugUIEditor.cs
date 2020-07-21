@@ -46,6 +46,11 @@ namespace VRtist
                     debug.UIOPTIONS_HoveredColor();
                 }
 
+                if (GUILayout.Button("Add Collider to UIPanel", GUILayout.Width(200), GUILayout.Height(30)))
+                {
+                    debug.AddCollidersToUIPanels();
+                }
+
                 //
                 // Asset Bank
                 //
@@ -84,14 +89,14 @@ namespace VRtist
                     debug.MATERIALS_RelinkAndFix();
                 }
 
-                GUILayout.Space(20);
+                //GUILayout.Space(20);
 
-                GUILayout.Label(new GUIContent("TextMeshPro"), textStyle, GUILayout.Height(30));
+                //GUILayout.Label(new GUIContent("TextMeshPro"), textStyle, GUILayout.Height(30));
 
-                if (GUILayout.Button("Replace Text <-> TexMeshPro", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.Replace_Text_By_TextMeshPro();
-                }
+                //if (GUILayout.Button("Replace Text <-> TexMeshPro", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.Replace_Text_By_TextMeshPro();
+                //}
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();
