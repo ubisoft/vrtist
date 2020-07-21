@@ -1,8 +1,6 @@
 ﻿using TMPro;
-#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
-#endif
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -34,7 +32,6 @@ namespace VRtist
 
         public void UIOPTIONS_ResetAllColors()
         {
-#if UNITY_EDITOR
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -180,12 +177,10 @@ namespace VRtist
                     //element.ResetColor();
                 }
             }
-#endif
         }
 
         public void UIOPTIONS_HoveredColor()
         {
-#if UNITY_EDITOR
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -335,7 +330,6 @@ namespace VRtist
                     //element.ResetColor();
                 }
             }
-#endif
         }
 
         public void UIOPTIONS_RandomChangeColors()
@@ -351,7 +345,6 @@ namespace VRtist
 
         public void AssetBank_Reorder()
         {
-#if UNITY_EDITOR
             float startx = 0.05f;
             float starty = -0.08f;
             float startz = -0.025f;
@@ -380,7 +373,6 @@ namespace VRtist
                     }
                 }
             }
-#endif
         }
 
         //
@@ -389,7 +381,6 @@ namespace VRtist
 
         public void Checkable_SetBaseSprite()
         {
-#if UNITY_EDITOR
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -414,7 +405,6 @@ namespace VRtist
                     }
                 }
             }
-#endif
         }
 
 
@@ -511,7 +501,6 @@ namespace VRtist
 
         public void FONT_BoldToNormal()
         {
-#if UNITY_EDITOR
             int index = 0; // "0: Normal 1: Bold 2: Italic"
             for (int w = 0; w < windows.Length; ++w)
             {
@@ -632,7 +621,6 @@ namespace VRtist
                     element.NeedsRebuild = true;
                 }
             }
-#endif
         }
 
         //
@@ -641,7 +629,6 @@ namespace VRtist
 
         public void Replace_Text_By_TextMeshPro()
         {
-#if UNITY_EDITOR
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -901,7 +888,6 @@ namespace VRtist
                 }
             }
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-#endif
         }
 
 
@@ -923,7 +909,6 @@ namespace VRtist
 
         public void TEMPLATE()
         {
-#if UNITY_EDITOR
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -1001,7 +986,6 @@ namespace VRtist
                     element.NeedsRebuild = true;
                 }
             }
-#endif
         }
 
         // TODO: script to copy all Text from the Text component to the TextArea of UIButtons
