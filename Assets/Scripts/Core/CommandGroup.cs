@@ -8,9 +8,11 @@ namespace VRtist
     public class CommandGroup : ICommand
     {
         List<ICommand> commands = new List<ICommand>();
+        string groupName;
 
-        public CommandGroup()
+        public CommandGroup(string value)
         {
+            groupName = value;
             CommandManager.BeginGroup(this);
         }
 

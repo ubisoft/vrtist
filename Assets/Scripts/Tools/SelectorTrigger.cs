@@ -17,14 +17,14 @@ namespace VRtist
 
         private void OnDisable()
         {
-            collidedObjects.Clear();
-            Selection.SetHoveredObject(null);
-
-            if (null !=undoGroup)
+            if (null != undoGroup)
             {
                 undoGroup.Submit();
                 undoGroup = null;
             }
+
+            collidedObjects.Clear();
+            Selection.SetHoveredObject(null);
         }
 
         void Update()
@@ -32,17 +32,23 @@ namespace VRtist
             // Clear selection on trigger click on nothing
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () => {
                 selectionHasChanged = false;
-                undoGroup = new CommandGroup();
+                undoGroup = new CommandGroup("Clear Selection");
             },
             () => {
-                if (!selectionHasChanged && !VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
+                try
                 {
-                    selector.ClearSelection();
+                    if (!selectionHasChanged && !VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
+                    {
+                        selector.ClearSelection();
+                    }
                 }
-                if (null != undoGroup)
+                finally
                 {
-                    undoGroup.Submit();
-                    undoGroup = null;
+                    if (null != undoGroup)
+                    {
+                        undoGroup.Submit();
+                        undoGroup = null;
+                    }
                 }
             });
 
@@ -141,17 +147,23 @@ namespace VRtist
 
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
             {
-                CommandGroup group = new CommandGroup();
-                RemoveCollidedObject(hoveredObject);
-                selector.RemoveSiblingsFromSelection(hoveredObject, false);
+                CommandGroup group = new CommandGroup("Erase Selection");
+                try
+                {
+                    RemoveCollidedObject(hoveredObject);
+                    selector.RemoveSiblingsFromSelection(hoveredObject, false);
 
-                // Add a selectionVFX instance on the deleted object
-                GameObject vfxInstance = Instantiate(selector.selectionVFXPrefab);
-                vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(hoveredObject);
+                    // Add a selectionVFX instance on the deleted object
+                    GameObject vfxInstance = Instantiate(selector.selectionVFXPrefab);
+                    vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(hoveredObject);
 
-                VRInput.SendHapticImpulse(VRInput.rightController,0, 1, 0.2f);
-                new CommandRemoveGameObject(hoveredObject).Submit();
-                group.Submit();
+                    VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
+                    new CommandRemoveGameObject(hoveredObject).Submit();
+                }
+                finally
+                {
+                    group.Submit();
+                }
             }
         }
     }

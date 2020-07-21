@@ -245,6 +245,7 @@ namespace VRtist
 
         protected virtual void OnStartGrip()
         {
+            undoGroup = null;
             if (GlobalState.IsGrippingWorld)
             {
                 gripPrevented = true;
@@ -253,13 +254,64 @@ namespace VRtist
 
             Selection.SetGrippedObject(Selection.GetHoveredObject());
 
-            undoGroup = new CommandGroup();
+            undoGroup = new CommandGroup("Grip Selection");
 
             gripped = true;
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
         }
+
+        protected virtual void OnEndGrip()
+        {
+            gripped = false;
+            if (gripPrevented)
+            {
+                gripPrevented = false;
+                return;
+            }
+
+            if (gripInterrupted)
+            {
+                gripInterrupted = false;
+                return;
+            }
+
+            List<ParametersController> controllers = new List<ParametersController>();
+            foreach (var obj in Selection.GetObjects())
+            {
+                LightController lightController = obj.GetComponentInChildren<LightController>();
+                if (null != lightController)
+                {
+                    controllers.Add(lightController);
+                    continue;
+                }
+                CameraController cameraController = obj.GetComponentInChildren<CameraController>();
+                if (null != cameraController)
+                {
+                    controllers.Add(cameraController);
+                    continue;
+                }
+            }
+            if (controllers.Count > 0)
+            {
+                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
+            }
+
+            if (!Selection.IsHandleSelected())
+            {
+                ManageMoveObjectsUndo();
+                ManageCamerasFocalsUndo();
+            }
+
+            if (null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
+            Selection.SetGrippedObject(null);
+        }
+
 
         protected void ManageMoveObjectsUndo()
         {
@@ -313,55 +365,6 @@ namespace VRtist
 
         }
 
-        protected virtual void OnEndGrip()
-        {
-            gripped = false;
-            if (gripPrevented)
-            {
-                gripPrevented = false;
-                return;
-            }
-
-            if (gripInterrupted)
-            {
-                gripInterrupted = false;
-                return;
-            }
-
-            List<ParametersController> controllers = new List<ParametersController>();
-            foreach (var obj in Selection.GetObjects())
-            {
-                LightController lightController = obj.GetComponentInChildren<LightController>();
-                if (null != lightController)
-                {
-                    controllers.Add(lightController);
-                    continue;
-                }
-                CameraController cameraController = obj.GetComponentInChildren<CameraController>();
-                if (null != cameraController)
-                {
-                    controllers.Add(cameraController);
-                    continue;
-                }
-            }
-            if (controllers.Count > 0)
-            {
-                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
-            }
-
-            if (!Selection.IsHandleSelected())
-            {
-                ManageMoveObjectsUndo();
-                ManageCamerasFocalsUndo();
-            }
-
-            if (null != undoGroup)
-            {
-                undoGroup.Submit();
-                undoGroup = null;
-            }
-            Selection.SetGrippedObject(null);
-        }
 
         private ParametersController GetFirstController()
         {
@@ -797,14 +800,19 @@ namespace VRtist
 
         public void DuplicateSelection()
         {
-            CommandGroup group = new CommandGroup();
-            ManageMoveObjectsUndo();
+            CommandGroup group = new CommandGroup("Duplicate Selection");
+            try
+            {
+                ManageMoveObjectsUndo();
 
-            List<GameObject> objectsToBeDuplicated = Selection.GetObjects();
-            foreach (GameObject obj in objectsToBeDuplicated)
-                DuplicateObject(obj);
-
-            group.Submit();
+                List<GameObject> objectsToBeDuplicated = Selection.GetObjects();
+                foreach (GameObject obj in objectsToBeDuplicated)
+                    DuplicateObject(obj);
+            }
+            finally
+            {
+                group.Submit();
+            }
         }
 
         public void OnSelectMode()

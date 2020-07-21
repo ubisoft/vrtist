@@ -367,13 +367,19 @@ namespace VRtist
                     GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
                     if(newCamera)
                     {
-                        CommandGroup undoGroup = new CommandGroup();
-                        ClearSelection();
-                        new CommandAddGameObject(newCamera).Submit();
-                        AddToSelection(newCamera);
-                        undoGroup.Submit();
-                        Selection.SetHoveredObject(newCamera);
-                        UIObject = null;
+                        CommandGroup undoGroup = new CommandGroup("Instantiate Camera");
+                        try
+                        {
+                            ClearSelection();
+                            new CommandAddGameObject(newCamera).Submit();
+                            AddToSelection(newCamera);
+                            Selection.SetHoveredObject(newCamera);
+                        }
+                        finally
+                        {
+                            undoGroup.Submit();
+                            UIObject = null;
+                        }
                     }
                 }
                 OnStartGrip();
@@ -579,10 +585,16 @@ namespace VRtist
             CameraItem cameraItem = item.GetComponent<CameraItem>();
 
             // Select camera in scene
-            CommandGroup command = new CommandGroup();
-            ClearSelection();
-            AddToSelection(cameraItem.cameraObject);
-            command.Submit();
+            CommandGroup command = new CommandGroup("Select Camera");
+            try
+            {
+                ClearSelection();
+                AddToSelection(cameraItem.cameraObject);
+            }
+            finally
+            {
+                command.Submit();
+            }
         }
 
         public void OnSetMontage(bool montage)

@@ -103,13 +103,19 @@ namespace VRtist
                         SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)) * Matrix4x4.Rotate(quarterRotation));
                     }
 
-                    CommandGroup group = new CommandGroup();
-                    ClearSelection();
-                    new CommandAddGameObject(newObject).Submit();
-                    AddToSelection(newObject);
-                    Selection.SetHoveredObject(newObject);
-                    group.Submit();
-                    UIObject = null;
+                    CommandGroup group = new CommandGroup("Instantiate Bank Object");
+                    try
+                    {
+                        ClearSelection();
+                        new CommandAddGameObject(newObject).Submit();
+                        AddToSelection(newObject);
+                        Selection.SetHoveredObject(newObject);
+                    }
+                    finally
+                    {
+                        group.Submit();
+                        UIObject = null;
+                    }
                 }
                 OnStartGrip();
             }, OnEndGrip);

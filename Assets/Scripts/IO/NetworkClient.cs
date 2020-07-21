@@ -1699,13 +1699,16 @@ namespace VRtist
             switch (info.action)
             {
                 case ShotManagerAction.AddShot:
-                    shotName = StringToBytes(info.shotName);
-                    start = IntToBytes(info.shotStart);
-                    end = IntToBytes(info.shotEnd);
-                    camera = StringToBytes(info.cameraName);
-                    color = ColorToBytes(info.shotColor);
-                    buffers = new List<byte[]> { action, shotIndex, shotName, start, end, camera, color };
-                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    {
+                        byte[] nextShotIndex = IntToBytes(info.shotIndex + 1);
+                        shotName = StringToBytes(info.shotName);
+                        start = IntToBytes(info.shotStart);
+                        end = IntToBytes(info.shotEnd);
+                        camera = StringToBytes(info.cameraName);
+                        color = ColorToBytes(info.shotColor);
+                        buffers = new List<byte[]> { action, nextShotIndex, shotName, start, end, camera, color };
+                        command = new NetCommand(ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
+                    }
                     break;
                 case ShotManagerAction.DeleteShot:
                     buffers = new List<byte[]> { action, shotIndex };
