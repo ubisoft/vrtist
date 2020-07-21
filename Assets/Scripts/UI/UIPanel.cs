@@ -5,7 +5,8 @@ namespace VRtist
     [ExecuteInEditMode]
     [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
-     RequireComponent(typeof(MeshRenderer))]
+     RequireComponent(typeof(MeshRenderer)),
+     RequireComponent(typeof(BoxCollider))]
     public class UIPanel : UIElement
     {
         public enum BackgroundGeometryStyle { Tube, Flat };
@@ -18,7 +19,6 @@ namespace VRtist
         private static readonly float default_thickness = 0.001f;
         private static readonly UIPanel.BackgroundGeometryStyle default_bg_geom_style = UIPanel.BackgroundGeometryStyle.Flat;
         public static readonly string default_material_name = "UIPanel";
-        //public static readonly Color default_color = UIElement.default_background_color;
 
         [SpaceHeader("Panel Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = default_margin;
@@ -116,6 +116,21 @@ namespace VRtist
                     nbSubdivCornerFixed, nbSubdivCornerPerUnit);
             theNewMesh.name = "UIPanel_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
+
+            UpdateColliderDimensions();
+        }
+
+        private void UpdateColliderDimensions()
+        {
+            MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
+            BoxCollider coll = gameObject.GetComponent<BoxCollider>();
+            if (meshFilter != null && coll != null)
+            {
+                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                coll.center = initColliderCenter;
+                coll.size = initColliderSize;
+            }
         }
 
         public override void ResetMaterial()
@@ -143,6 +158,21 @@ namespace VRtist
 
 
 
+        private void OnTriggerEnter(Collider otherCollider)
+        {
+
+        }
+
+        private void OnTriggerExit(Collider otherCollider)
+        {
+
+        }
+
+        private void OnTriggerStay(Collider otherCollider)
+        {
+
+        }
+
 
 
 
@@ -165,6 +195,7 @@ namespace VRtist
         public static void Create(CreatePanelParams input)
         {
             GameObject go = new GameObject(input.widgetName);
+            go.tag = "UICollider";
             go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
@@ -197,10 +228,22 @@ namespace VRtist
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = (uiPanel.backgroundGeometryStyle == BackgroundGeometryStyle.Tube)
-                ? UIUtils.BuildRoundedRectTube(input.width, input.height, input.margin, input.radius)
-                : UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
+                meshFilter.sharedMesh = 
+                    (uiPanel.backgroundGeometryStyle == BackgroundGeometryStyle.Tube)
+                        ? UIUtils.BuildRoundedRectTube(input.width, input.height, input.margin, input.radius)
+                        : UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
+
                 uiPanel.Anchor = Vector3.zero; // TODO: thickness goes +Z and Anchor stays zero? or thickness goes -Z and Anchor follows the surface?
+
+                BoxCollider coll = go.GetComponent<BoxCollider>();
+                if (coll != null)
+                {
+                    Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                    Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                    coll.center = initColliderCenter;
+                    coll.size = initColliderSize;
+                    coll.isTrigger = true;
+                }
             }
 
             MeshRenderer meshRenderer = go.GetComponent<MeshRenderer>();

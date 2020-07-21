@@ -780,18 +780,21 @@ namespace VRtist
                     if (panel != null)
                     {
                         MeshFilter meshFilter = panel.gameObject.GetComponent<MeshFilter>();
-                        BoxCollider coll = panel.gameObject.GetComponent<BoxCollider>();
-                        if (coll == null) // get first in cas we already clicked on the button.
+                        if (meshFilter != null) // some panels have no geometry (containers only).
                         {
-                            coll = panel.gameObject.AddComponent<BoxCollider>();
-                        }
-                        if (coll != null)
-                        {
-                            Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                            Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                            coll.center = initColliderCenter;
-                            coll.size = initColliderSize;
-                            coll.isTrigger = true;
+                            BoxCollider coll = panel.gameObject.GetComponent<BoxCollider>();
+                            if (coll == null) // get first in cas we already clicked on the button.
+                            {
+                                coll = panel.gameObject.AddComponent<BoxCollider>();
+                            }
+                            if (coll != null && meshFilter.sharedMesh != null)
+                            {
+                                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                                coll.center = initColliderCenter;
+                                coll.size = initColliderSize;
+                                coll.isTrigger = true;
+                            }
                         }
                     }
 
