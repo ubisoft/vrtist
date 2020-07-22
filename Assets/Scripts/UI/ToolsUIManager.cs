@@ -137,12 +137,6 @@ namespace VRtist
             colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
         }
 
-        // Show/Hide palette
-        public void TogglePalette()
-        {
-            PopUpPalette(!isPaletteOpened);
-        }
-
         public void ChangeTab(string tabName)
         {
             var args = new TabChangedArgs { tabName = tabName, prevTabName = currentTabName };
@@ -318,24 +312,22 @@ namespace VRtist
 
         public void PopUpPalette(bool value)
         {
-            if (!GlobalState.Settings.pinnedPalette) // if pinned, ignore popup commands.
-            {
-                if (value != isPaletteOpened)
-                {
-                    if (!isPaletteOpened || !GlobalState.Settings.forcePaletteOpen)
-                    {
-                        isPaletteOpened = value;
+            if (GlobalState.Settings.pinnedPalette)
+                return;
+            if (GlobalState.Settings.forcePaletteOpen)
+                value = !value;
+            if (value == isPaletteOpened)
+                return;
 
-                        if (value)
-                        {
-                            OpenWindow(paletteRoot.transform, paletteScale);
-                        }
-                        else
-                        {
-                            CloseWindow(paletteRoot.transform, paletteScale);
-                        }
-                    }
-                }
+            isPaletteOpened = value;
+
+            if (value)
+            {
+                OpenWindow(paletteRoot.transform, paletteScale);
+            }
+            else
+            {
+                CloseWindow(paletteRoot.transform, paletteScale);
             }
         }
 
