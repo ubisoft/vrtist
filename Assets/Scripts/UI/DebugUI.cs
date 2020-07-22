@@ -15,9 +15,7 @@ namespace VRtist
         public GameObject[] assetBankPages = null;
 
 #if UNITY_EDITOR
-        //
-        // UIOptions
-        //
+        
         public void UIOPTIONS_Refresh()
         {
             // refresh all items
@@ -110,7 +108,7 @@ namespace VRtist
                         label.textColor.reference = UIOptions.ForegroundColorVar;
                     }
 
-                    UIElement panel = element.GetComponent<UIPanel>();
+                    UIPanel panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
                         // Specific base color for Panels
@@ -199,86 +197,24 @@ namespace VRtist
                     element.hoveredColor.constant = UIOptions.HoveredColor;
                     element.hoveredColor.reference = UIOptions.HoveredColorVar;
 
-                    element.NeedsRebuild = true;
+                    UIPanel panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+                        // Specific base color for Panels
+                        panel.hoveredColor.useConstant = false;
+                        panel.hoveredColor.constant = UIOptions.PanelHoverColor;
+                        panel.hoveredColor.reference = UIOptions.PanelHoverColorVar;
+                    }
+
+                        element.NeedsRebuild = true;
                     //element.ResetColor();
                 }
             }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
 
-        public void UIOPTIONS_RandomChangeColors()
-        {
-            UIOptions.BackgroundColorVar.value = Random.ColorHSV();
 
-            UIOPTIONS_Refresh();
-        }
 
-        //
-        // Asset Bank
-        //
-
-        public void AssetBank_Reorder()
-        {
-            float startx = 0.05f;
-            float starty = -0.08f;
-            float startz = -0.025f;
-
-            float offsetx = 0.075f;
-            float offsety = -0.07f;
-
-            for (int p = 0; p < assetBankPages.Length; ++p)
-            {
-                float currentx = startx;
-                float currenty = starty;
-
-                GameObject page = assetBankPages[p];
-                for (int i = 0; i < page.transform.childCount; ++i)
-                {
-                    Transform assetTransform = page.transform.GetChild(i);
-                    UIGrabber grabber = assetTransform.GetComponent<UIGrabber>();
-                    if (grabber != null)
-                    {
-                        currentx = startx + (float)(i % 4) * offsetx;
-                        currenty = starty + (float)(i / 4) * offsety;
-                        SerializedObject so = new SerializedObject(grabber);
-                        so.FindProperty("relativeLocation").vector3Value = new Vector3(currentx, currenty, startz);
-                        so.ApplyModifiedProperties();
-                        grabber.NeedsRebuild = true;
-                    }
-                }
-            }
-        }
-
-        //
-        //
-        //
-
-        public void Checkable_SetBaseSprite()
-        {
-            for (int w = 0; w < windows.Length; ++w)
-            {
-                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
-                for (int e = 0; e < uiElements.Length; ++e)
-                {
-                    UIElement element = uiElements[e];
-
-                    UIButton button = element.GetComponent<UIButton>();
-                    if (button != null && button.baseSprite == null)
-                    {
-                        Image img = button.GetComponentInChildren<Image>();
-                        if (img != null && img.sprite != null)
-                        {
-                            //button.baseSprite = img.sprite;
-
-                            SerializedObject so = new SerializedObject(button);
-                            so.FindProperty("baseSprite").objectReferenceValue = img.sprite;
-                            so.ApplyModifiedProperties();
-
-                            element.NeedsRebuild = true;
-                        }
-                    }
-                }
-            }
-        }
 
 
         public void MATERIALS_RelinkAndFix()
@@ -368,13 +304,65 @@ namespace VRtist
             }
         }
 
+
+
+
         //
-        //
+        // Add Colliders to UIPanel
         //
 
-        public void FONT_BoldToNormal()
+        public void AddCollidersToUIPanels()
         {
-            int index = 0; // "0: Normal 1: Bold 2: Italic"
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIPanel panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+                        MeshFilter meshFilter = panel.gameObject.GetComponent<MeshFilter>();
+                        if (meshFilter != null) // some panels have no geometry (containers only).
+                        {
+                            BoxCollider coll = panel.gameObject.GetComponent<BoxCollider>();
+                            if (coll == null) // get first in cas we already clicked on the button.
+                            {
+                                coll = panel.gameObject.AddComponent<BoxCollider>();
+                            }
+                            if (coll != null && meshFilter.sharedMesh != null)
+                            {
+                                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                                coll.center = initColliderCenter;
+                                coll.size = initColliderSize;
+                                coll.isTrigger = true;
+                            }
+                        }
+                    }
+
+                    element.NeedsRebuild = true;
+                }
+            }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
+
+        #region UTILS
+        static void PrintObjectProperties(Object o)
+        {
+            SerializedObject so = new SerializedObject(o);
+            SerializedProperty sp = so.GetIterator();
+            do
+            {
+                Debug.Log($"n: {sp.name} dn: {sp.displayName} p: {sp.propertyPath}");
+            } while (sp.Next(true));
+        }
+        #endregion
+
+        #region TEMPLATE
+        public void TEMPLATE()
+        {
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -385,116 +373,78 @@ namespace VRtist
                     UIButton button = element.GetComponent<UIButton>();
                     if (button != null)
                     {
-                        Text t = button.gameObject.GetComponentInChildren<Text>(true);
-                        if (t != null)
-                        {
-                            //t.fontStyle = FontStyle.Normal;
-                            SerializedObject so = new SerializedObject(t);
-                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
-                            so.ApplyModifiedProperties();
-                        }
+                        
                     }
 
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
-                        Text t = label.gameObject.GetComponentInChildren<Text>(true);
-                        if (t != null)
-                        {
-                            //t.fontStyle = FontStyle.Normal;
-                            SerializedObject so = new SerializedObject(t);
-                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
-                            so.ApplyModifiedProperties();
-                        }
+                        
                     }
 
                     UIPanel panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
-
+                        
                     }
 
                     UICheckbox checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
-                        Text t = checkbox.gameObject.GetComponentInChildren<Text>(true);
-                        if (t != null)
-                        {
-                            //t.fontStyle = FontStyle.Normal;
-                            SerializedObject so = new SerializedObject(t);
-                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
-                            so.ApplyModifiedProperties();
-                        }
+                        
                     }
 
                     UISlider slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
-                        Text[] texts = slider.gameObject.GetComponentsInChildren<Text>();
-                        foreach(Text t in texts)
-                        {
-                            //t.fontStyle = FontStyle.Normal;
-                            SerializedObject so = new SerializedObject(t);
-                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
-                            so.ApplyModifiedProperties();
-                        }
+                        
                     }
 
                     UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
                     if (vslider != null)
                     {
-                        Text t = vslider.gameObject.GetComponentInChildren<Text>(true);
-                        if (t != null)
-                        {
-                            //t.fontStyle = FontStyle.Normal;
-                            SerializedObject so = new SerializedObject(t);
-                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
-                            so.ApplyModifiedProperties();
-                        }
+                        
                     }
 
                     UISpinner spinner = element.GetComponent<UISpinner>();
                     if (spinner)
                     {
-                        Text[] texts = spinner.gameObject.GetComponentsInChildren<Text>();
-                        foreach (Text t in texts)
-                        {
-                            //t.fontStyle = FontStyle.Normal;
-                            SerializedObject so = new SerializedObject(t);
-                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
-                            so.ApplyModifiedProperties();
-                        }
+                        
                     }
 
 
                     UITimeBar timebar = element.GetComponent<UITimeBar>();
                     if (timebar)
                     {
-
+                        
                     }
 
                     UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
                     if (colorpickerhue)
                     {
-
+                        
                     }
 
                     UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
                     if (colorpickersat)
                     {
-
+                        
                     }
 
                     UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
                     if (colorpickerprev)
                     {
-
+                        
                     }
 
                     element.NeedsRebuild = true;
                 }
             }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
+        #endregion
+
+        #region DEPRECATED
 
         //
         // Text Mesh Pro
@@ -764,62 +714,12 @@ namespace VRtist
         }
 
         //
-        // Add Colliders to UIPanel
+        // FONT BOLD TO NORMAL
         //
 
-        public void AddCollidersToUIPanels()
+        public void FONT_BoldToNormal()
         {
-            for (int w = 0; w < windows.Length; ++w)
-            {
-                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
-                for (int e = 0; e < uiElements.Length; ++e)
-                {
-                    UIElement element = uiElements[e];
-
-                    UIPanel panel = element.GetComponent<UIPanel>();
-                    if (panel != null)
-                    {
-                        MeshFilter meshFilter = panel.gameObject.GetComponent<MeshFilter>();
-                        if (meshFilter != null) // some panels have no geometry (containers only).
-                        {
-                            BoxCollider coll = panel.gameObject.GetComponent<BoxCollider>();
-                            if (coll == null) // get first in cas we already clicked on the button.
-                            {
-                                coll = panel.gameObject.AddComponent<BoxCollider>();
-                            }
-                            if (coll != null && meshFilter.sharedMesh != null)
-                            {
-                                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                                coll.center = initColliderCenter;
-                                coll.size = initColliderSize;
-                                coll.isTrigger = true;
-                            }
-                        }
-                    }
-
-                    element.NeedsRebuild = true;
-                }
-            }
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-        }
-
-
-        /*
-        SerializedObject so = new SerializedObject(__object__);
-        SerializedProperty sp = so.GetIterator();
-        do
-        {
-            Debug.Log($"n: {sp.name} dn: {sp.displayName} p: {sp.propertyPath}");
-        } while (sp.Next(true));
-        */
-
-        //
-        // TEMPLATE
-        //
-
-        public void TEMPLATE()
-        {
+            int index = 0; // "0: Normal 1: Bold 2: Italic"
             for (int w = 0; w < windows.Length; ++w)
             {
                 UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
@@ -830,75 +730,195 @@ namespace VRtist
                     UIButton button = element.GetComponent<UIButton>();
                     if (button != null)
                     {
-                        
+                        Text t = button.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
                     }
 
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
-                        
+                        Text t = label.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
                     }
 
                     UIPanel panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
-                        
+
                     }
 
                     UICheckbox checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
-                        
+                        Text t = checkbox.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
                     }
 
                     UISlider slider = element.GetComponent<UISlider>();
                     if (slider != null)
                     {
-                        
+                        Text[] texts = slider.gameObject.GetComponentsInChildren<Text>();
+                        foreach (Text t in texts)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
                     }
 
                     UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
                     if (vslider != null)
                     {
-                        
+                        Text t = vslider.gameObject.GetComponentInChildren<Text>(true);
+                        if (t != null)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
                     }
 
                     UISpinner spinner = element.GetComponent<UISpinner>();
                     if (spinner)
                     {
-                        
+                        Text[] texts = spinner.gameObject.GetComponentsInChildren<Text>();
+                        foreach (Text t in texts)
+                        {
+                            //t.fontStyle = FontStyle.Normal;
+                            SerializedObject so = new SerializedObject(t);
+                            so.FindProperty("m_FontData.m_FontStyle").enumValueIndex = index; // "Normal"
+                            so.ApplyModifiedProperties();
+                        }
                     }
 
 
                     UITimeBar timebar = element.GetComponent<UITimeBar>();
                     if (timebar)
                     {
-                        
+
                     }
 
                     UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
                     if (colorpickerhue)
                     {
-                        
+
                     }
 
                     UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
                     if (colorpickersat)
                     {
-                        
+
                     }
 
                     UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
                     if (colorpickerprev)
                     {
-                        
+
                     }
 
                     element.NeedsRebuild = true;
                 }
             }
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
+
+        //
+        // Set Base Sprite
+        //
+
+        public void Checkable_SetBaseSprite()
+        {
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null && button.baseSprite == null)
+                    {
+                        Image img = button.GetComponentInChildren<Image>();
+                        if (img != null && img.sprite != null)
+                        {
+                            //button.baseSprite = img.sprite;
+
+                            SerializedObject so = new SerializedObject(button);
+                            so.FindProperty("baseSprite").objectReferenceValue = img.sprite;
+                            so.ApplyModifiedProperties();
+
+                            element.NeedsRebuild = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void UIOPTIONS_RandomChangeColors()
+        {
+            UIOptions.BackgroundColorVar.value = Random.ColorHSV();
+
+            UIOPTIONS_Refresh();
+        }
+
+        //
+        // Asset Bank Reorder
+        //
+
+        public void AssetBank_Reorder()
+        {
+            float startx = 0.05f;
+            float starty = -0.08f;
+            float startz = -0.025f;
+
+            float offsetx = 0.075f;
+            float offsety = -0.07f;
+
+            for (int p = 0; p < assetBankPages.Length; ++p)
+            {
+                float currentx = startx;
+                float currenty = starty;
+
+                GameObject page = assetBankPages[p];
+                for (int i = 0; i < page.transform.childCount; ++i)
+                {
+                    Transform assetTransform = page.transform.GetChild(i);
+                    UIGrabber grabber = assetTransform.GetComponent<UIGrabber>();
+                    if (grabber != null)
+                    {
+                        currentx = startx + (float)(i % 4) * offsetx;
+                        currenty = starty + (float)(i / 4) * offsety;
+                        SerializedObject so = new SerializedObject(grabber);
+                        so.FindProperty("relativeLocation").vector3Value = new Vector3(currentx, currenty, startz);
+                        so.ApplyModifiedProperties();
+                        grabber.NeedsRebuild = true;
+                    }
+                }
+            }
+        }
+
+
+        #endregion
+
 #endif
     }
 }

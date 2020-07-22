@@ -15,17 +15,20 @@ namespace VRtist
         public ColorVar selectedColor = new ColorVar { value = new Color(0.0f, 0.65f, 1.0f, 1.0f) };
         public ColorVar hoveredColor = new ColorVar { value = new Color(0.4f, 0.4f, 0.4f, 1.0f) };
 
-        [SpaceHeader("Specific Colors", 6, 0.3f, 0.3f, 0.3f)]
+        [SpaceHeader("Specific Class Colors", 6, 0.3f, 0.3f, 0.3f)]
         public ColorVar sliderRailColor = new ColorVar { value = new Color(0.1f, 0.1f, 0.1f, 1.0f) };
         public ColorVar sliderKnobColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
-        public ColorVar attenuatedTextColor = new ColorVar { value = new Color(.7f,.7f,.7f) };
         public ColorVar panelColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
+        public ColorVar panelHoverColor = new ColorVar { value = new Color(0.4f, 0.4f, 0.4f, 1.0f) };
+        public ColorVar grabberBaseColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
+        public ColorVar grabberHoverColor = new ColorVar { value = new Color(0.1742f, 0.5336f, 0.723f, 1.0f) };
+
+        [SpaceHeader("Specific Widget Colors", 6, 0.3f, 0.3f, 0.3f)]
+        public ColorVar attenuatedTextColor = new ColorVar { value = new Color(.7f,.7f,.7f) };
         public ColorVar closeWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar pinWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar exitButtonColor = new ColorVar { value = new Color(.7f, .1f, .1f) };
         public ColorVar focusColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
-        public ColorVar grabberBaseColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
-        public ColorVar grabberHoverColor = new ColorVar { value = new Color(0.1742f, 0.5336f, 0.723f, 1.0f) };
         [Space(30)]
         public ColorVar sceneHoverColor = new ColorVar() { isHdr = true, value = new Color(2.0f, 0.8f, 0.0f, 1.0f) }; // hdr yellow
 
@@ -42,6 +45,7 @@ namespace VRtist
         public static Color SliderKnobColor { get { return Instance.sliderKnobColor.value; } }
         public static Color AttenuatedTextColor { get { return Instance.attenuatedTextColor.value; } }
         public static Color PanelColor { get { return Instance.panelColor.value; } }
+        public static Color PanelHoverColor { get { return Instance.panelHoverColor.value; } }
         public static Color CloseWindowButtonColor { get { return Instance.closeWindowButtonColor.value; } }
         public static Color PinWindowButtonColor { get { return Instance.pinWindowButtonColor.value; } }
         public static Color ExitButtonColor { get { return Instance.exitButtonColor.value; } }
@@ -61,6 +65,7 @@ namespace VRtist
         public static ColorVar SliderKnobColorVar { get { return Instance.sliderKnobColor; } }
         public static ColorVar AttenuatedTextColorVar { get { return Instance.attenuatedTextColor; } }
         public static ColorVar PanelColorVar { get { return Instance.panelColor; } }
+        public static ColorVar PanelHoverColorVar { get { return Instance.panelHoverColor; } }
         public static ColorVar CloseWindowButtonColorVar { get { return Instance.closeWindowButtonColor; } }
         public static ColorVar PinWindowButtonColorVar { get { return Instance.pinWindowButtonColor; } }
         public static ColorVar ExitButtonColorVar { get { return Instance.exitButtonColor; } }
