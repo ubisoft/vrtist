@@ -4,19 +4,42 @@ namespace VRtist
 {
     public class UIRay : MonoBehaviour
     {
-        [ColorUsage(true, true)]
-        public Color volumeColor = new Color(0, 38, 64);
-        [ColorUsage(true, true)]
-        public Color widgetColor = new Color(64, 12, 0);
-        [ColorUsage(true, true)]
-        public Color panelColor = new Color(0, 64, 12);
-        [ColorUsage(true, true)]
-        public Color handleColor = new Color(12, 64, 0);
-        
+        [GradientUsage(true)]
+        public Gradient volumeColor = default;
+        [GradientUsage(true)]
+        public Gradient widgetColor = default;
+        [GradientUsage(true)]
+        public Gradient panelColor = default;
+        [GradientUsage(true)]
+        public Gradient handleColor = default;
+
+        //[ColorUsage(true, true)]
+        //public Color volumeColor = new Color(0, 38, 64);
+        //[ColorUsage(true, true)]
+        //public Color widgetColor = new Color(64, 12, 0);
+        //[ColorUsage(true, true)]
+        //public Color panelColor = new Color(0, 64, 12);
+        //[ColorUsage(true, true)]
+        //public Color handleColor = new Color(12, 64, 0);
+
         private LineRenderer line = null;
         private Transform endPoint = null;
         private Material rayMat = null;
         private Material endMat = null;
+        
+        //[Range(0,1)]
+        //public float pct_1 = 0.10f;
+
+        //[Range(0, 1)]
+        //public float pct_2 = 0.90f;
+
+        [Range(1, 100)]
+        public float startWidth = 100;
+
+        [Range(1, 100)]
+        public float endWidth = 1;
+
+        private float f = 10000f;
 
         private void Start()
         {
@@ -32,6 +55,8 @@ namespace VRtist
                 Debug.LogWarning("Cannot find the RayEnd object under the UIRay");
             }
 
+            endPoint.gameObject.SetActive(false);
+
             rayMat = line.material;
             endMat = endPoint.gameObject.GetComponent<MeshRenderer>().material;
         }
@@ -41,6 +66,16 @@ namespace VRtist
             if (line != null)
             {
                 line.SetPosition(0, start);
+                Vector3 end = line.GetPosition(10);
+
+                for (int i = 1; i < 10; ++i)
+                {
+                    float pct = ((float)i / 10.0f);
+                    line.SetPosition(i, start + (end - start) * pct);
+                }
+
+                line.startWidth = startWidth / f;
+                line.endWidth = endWidth / f;
             }
         }
 
@@ -48,21 +83,17 @@ namespace VRtist
         {
             if (line != null)
             {
-                line.SetPosition(1, end);
-            }
+                line.SetPosition(10, end);
+                Vector3 start = line.GetPosition(0);
 
-            if (endPoint != null)
-            {
-                endPoint.position = end;
-            }
-        }
+                for (int i = 1; i < 10; ++i)
+                {
+                    float pct = ((float)i / 10.0f);
+                    line.SetPosition(i, start + (end - start) * pct);
+                }
 
-        public void SetPositions(Vector3 begin, Vector3 end)
-        {
-            if (line != null)
-            {
-                line.SetPosition(0, begin);
-                line.SetPosition(1, end);
+                line.startWidth = startWidth / f;
+                line.endWidth = endWidth / f;
             }
 
             if (endPoint != null)
@@ -91,24 +122,21 @@ namespace VRtist
             SetColor(handleColor);
         }
 
-        public void SetColor(Color color)
+        public void SetColor(Gradient color)
         {
-            if (rayMat != null)
-            {
-                rayMat.SetColor("_EmissiveColor", color);
+            line.colorGradient = color;
 
-                // NOTE: only setting the color does not change the shader...
-                //rayMat.SetColor("_EmissiveColorLDR", color);
-                //rayMat.SetFloat("_EmissiveIntensity", 50.0f); // 50 nits, 6.0 HDR, 8.0 EV100
-            }
+            //rayMat.SetColor("_EmissiveColor", Color.black);
 
-            if (endMat != null)
-            {
-                endMat.SetColor("_EmissiveColor", color);
+            //if (rayMat != null)
+            //{
+            //    rayMat.SetColor("_EmissiveColor", color);
+            //}
 
-                //endMat.SetColor("_EmissiveColorLDR", color);
-                //endMat.SetFloat("_EmissiveIntensity", 50.0f);
-            }
+            //if (endMat != null)
+            //{
+            //    endMat.SetColor("_EmissiveColor", color);
+            //}
         }
     }
 }

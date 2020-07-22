@@ -111,10 +111,15 @@ namespace VRtist
                     UIPanel panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
-                        // Specific base color for Panels
+                        // Specific BASE color for Panels
                         panel.baseColor.useConstant = false;
                         panel.baseColor.constant = UIOptions.PanelColor;
                         panel.baseColor.reference = UIOptions.PanelColorVar;
+
+                        // Specific HOVER color for Panels
+                        panel.hoveredColor.useConstant = false;
+                        panel.hoveredColor.constant = UIOptions.PanelHoverColor;
+                        panel.hoveredColor.reference = UIOptions.PanelHoverColorVar;
                     }
 
                     UIGrabber grabber = element.GetComponent<UIGrabber>();

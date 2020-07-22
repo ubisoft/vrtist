@@ -12,22 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03fe118757d66444ebad0de7b99af05f, type: 3}
   m_Name: DefaultSettings
   m_EditorClassIdentifier: 
+  version: 1
   displayGizmos: 1
   displayWorldGrid: 1
   displayFPS: 0
-  masterVolume: 1
+  masterVolume: -20.902514
   ambientVolume: 1
-  UIVolume: 1
+  uiVolume: 0
   rightHanded: 1
   forcePaletteOpen: 0
-  paletteTransform: {fileID: 0}
+  palettePosition: {x: -0.02, y: 0.05, z: 0.05}
+  paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   pinnedPalette: 0
-  dopeSheetTransform: {fileID: 0}
-  dopeSheetVisible: 0
-  cameraPreviewTransform: {fileID: 0}
-  cameraPreviewVisible: 0
-  cameraFeedbackTransform: {fileID: 0}
-  cameraFeedbackVisible: 0
-  cameraDamping: 50
-  castShadows: 0
+  dopeSheetPosition: {x: -0.43166938, y: 1.6508534, z: 0.828811}
+  dopeSheetRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
+  dopeSheetVisible: 1
+  cameraPreviewPosition: {x: 0.0457, y: 1.674, z: 0.821}
+  cameraPreviewRotation: {x: 0.2588191, y: -0, z: -0, w: 0.9659258}
+  cameraPreviewVisible: 1
+  cameraFeedbackPosition: {x: 0.34512818, y: 1.2131829, z: 700.60376}
+  cameraFeedbackRotation: {x: 0, y: -0.00000021855695, z: 0, w: -1}
+  cameraFeedbackScale: {x: 715.7847, y: 402.6289, z: 402.6289}
+  cameraFeedbackScaleValue: 1
+  cameraFeedbackVisible: 1
+  cameraDamping: 60.771095
+  castShadows: 1
   scaleSpeed: 50
