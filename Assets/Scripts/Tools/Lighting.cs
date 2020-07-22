@@ -95,12 +95,18 @@ namespace VRtist
                 Matrix4x4 matrix = parentContainer.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(10f, 10f, 10f));
                 GameObject instance = SyncData.InstantiateUnityPrefab(light, matrix);
 
-                CommandGroup undoGroup = new CommandGroup();
-                ClearSelection();
-                new CommandAddGameObject(instance).Submit();
-                AddToSelection(instance);
-                undoGroup.Submit();
-                Selection.SetHoveredObject(instance);
+                CommandGroup undoGroup = new CommandGroup("Instantiate Light");
+                try
+                {
+                    ClearSelection();
+                    new CommandAddGameObject(instance).Submit();
+                    AddToSelection(instance);
+                    Selection.SetHoveredObject(instance);
+                }
+                finally
+                {
+                    undoGroup.Submit();
+                }
             }
         }
 

@@ -12,6 +12,7 @@ namespace VRtist
         [SerializeField] private Transform buttonsContainer = null;
         [SerializeField] private Transform navigationParametersContainer= null;
         [SerializeField] private Transform leftHandle = null;
+        [SerializeField] private Transform rightHandle = null;
         [SerializeField] private Transform pivot = null;
         [SerializeField] private Transform vrCamera = null;
         [Tooltip("Player can be xxx times bigger than the world")]
@@ -53,6 +54,7 @@ namespace VRtist
 
             if (vrCamera == null) { Debug.LogWarning("Cannot find 'VRCamera' game object"); }
             if (leftHandle == null) { Debug.LogWarning("Cannot find 'LeftHandle' game object"); }
+            if (rightHandle == null) { Debug.LogWarning("Cannot find 'RightHandle' game object"); }
             if (pivot == null) { Debug.LogWarning("Cannot find 'Pivot' game object"); }
 
             if (ray != null)
@@ -342,42 +344,42 @@ namespace VRtist
             // TODO: Scriptable NEW ou CreateInstance(SO), ou avoir une liste de SO dans PlayerController.
             options.currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Teleport()
         {
             options.currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
             options.currentNavigationMode = new NavigationMode_Orbit(ray, options.orbitRotationalSpeed, options.orbitScaleSpeed, options.orbitMoveSpeed, minPlayerScale, maxPlayerScale);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fps()
         {
             options.currentNavigationMode = new NavigationMode_FPS();
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Drone()
         {
             options.currentNavigationMode = new NavigationMode_Drone();
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fly()
         {
             options.currentNavigationMode = new NavigationMode_Fly(options.flySpeed, minPlayerScale, maxPlayerScale);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
         }
 
         private void UpdateRadioButtons(string activeButtonName)

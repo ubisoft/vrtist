@@ -97,6 +97,14 @@ namespace VRtist
             }
         }
 
+        private void InformModification(GameObject gobject)
+        {
+            MeshRenderer renderer = gobject.GetComponentInChildren<MeshRenderer>();
+            renderer.material.name = $"Mat_{gobject.name}";
+            CommandManager.SendEvent(MessageType.Material, renderer.material);
+            CommandManager.SendEvent(MessageType.AssignMaterial, new AssignMaterialInfo { objectName = gobject.name, materialName = renderer.material.name });
+        }
+
         public override void Redo()
         {
             foreach(GameObject gobject in oldValues.Keys)
@@ -106,6 +114,8 @@ namespace VRtist
                 Node node = SyncData.nodes[gobject.name];
                 SetMaterialValue(node.prefab, newValue);
                 SetMaterialValue(gobject, newValue);
+
+                InformModification(gobject);
             }
         }
 
@@ -113,22 +123,20 @@ namespace VRtist
         {
             foreach(KeyValuePair<GameObject, MaterialValue> item in oldValues)
             {
-                Node node = SyncData.nodes[item.Key.name];
+                GameObject gobject = item.Key;
+
+                Node node = SyncData.nodes[gobject.name];
                 SetMaterialValue(node.prefab, item.Value);
-                SetMaterialValue(item.Key, item.Value);
+                SetMaterialValue(gobject, item.Value);
+
+                InformModification(gobject);
             }
         }
 
         public override void Submit()
         {
+            Redo();
             CommandManager.AddCommand(this);
-            foreach(GameObject gobject in oldValues.Keys)
-            {
-                MeshRenderer renderer = gobject.GetComponentInChildren<MeshRenderer>();
-                renderer.material.name = $"Mat_{gobject.name}";
-                CommandManager.SendEvent(MessageType.Material, renderer.material);
-                CommandManager.SendEvent(MessageType.AssignMaterial, new AssignMaterialInfo { objectName = gobject.name, materialName = renderer.material.name });
-            }
         }
 
         public override void Serialize(SceneSerializer serializer)

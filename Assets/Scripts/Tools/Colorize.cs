@@ -157,7 +157,6 @@ namespace VRtist
         private void ColorizeObjects(List<GameObject> gobjects)
         {
             CommandMaterial command = new CommandMaterial(gobjects, GlobalState.CurrentColor, roughnessSlider.Value, metallicSlider.Value);
-            command.Redo();
             command.Submit();
             VRInput.SendHaptic(VRInput.rightController, 0.1f, 0.2f);
         }
