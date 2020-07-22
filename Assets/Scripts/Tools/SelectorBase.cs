@@ -252,14 +252,13 @@ namespace VRtist
                 return;
             }
 
-            Selection.SetGrippedObject(Selection.GetHoveredObject());
-
-            undoGroup = new CommandGroup("Grip Selection");
+            Selection.SetGrippedObject(Selection.GetHoveredObject());            
 
             gripped = true;
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
+            undoGroup = new CommandGroup("Grip Selection");
         }
 
         protected virtual void OnEndGrip()

@@ -107,6 +107,7 @@ namespace VRtist
         public void Load()
         {
             LoadJson(GetJsonFilename());
+            pinnedPalette = false;
         }
 
         public void Save()

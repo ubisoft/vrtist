@@ -9,6 +9,7 @@ namespace VRtist
         protected Transform rig = null;
         protected Transform world = null;
         protected Transform leftHandle = null;
+        protected Transform rightHandle = null;
         protected Transform pivot = null;
         protected Transform camera = null;
         protected Transform parameters = null;
@@ -54,11 +55,12 @@ namespace VRtist
         //
 
         // Pass only rig and world and Find("") the other nodes?
-        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
+        public virtual void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform rightHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
             rig = rigTransform;
             world = worldTransform;
             leftHandle = leftHandleTransform;
+            rightHandle = rightHandleTransform;
             pivot = pivotTransform;
             camera = cameraTransform;
             parameters = parametersTransform;
