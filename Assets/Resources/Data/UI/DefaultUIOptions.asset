@@ -41,10 +41,10 @@ MonoBehaviour:
     value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   panelColor:
     isHdr: 0
-    value: {r: 0, g: 0, b: 0, a: 1}
+    value: {r: 0.03773582, g: 0.03773582, b: 0.03773582, a: 0.90588236}
   panelHoverColor:
     isHdr: 0
-    value: {r: 0.078431375, g: 0.078431375, b: 0.078431375, a: 1}
+    value: {r: 0.078431375, g: 0.078431375, b: 0.078431375, a: 0.90588236}
   grabberBaseColor:
     isHdr: 0
     value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
