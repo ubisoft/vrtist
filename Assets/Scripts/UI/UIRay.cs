@@ -25,13 +25,6 @@ namespace VRtist
         private LineRenderer line = null;
         private Transform endPoint = null;
         private Material rayMat = null;
-        private Material endMat = null;
-        
-        //[Range(0,1)]
-        //public float pct_1 = 0.10f;
-
-        //[Range(0, 1)]
-        //public float pct_2 = 0.90f;
 
         [Range(1, 100)]
         public float startWidth = 100;
@@ -49,16 +42,7 @@ namespace VRtist
                 Debug.LogWarning("Cannot find the LineRenderer component in the UIRay");
             }
 
-            endPoint = transform.Find("RayEnd");
-            if (endPoint == null)
-            {
-                Debug.LogWarning("Cannot find the RayEnd object under the UIRay");
-            }
-
-            endPoint.gameObject.SetActive(false);
-
             rayMat = line.material;
-            endMat = endPoint.gameObject.GetComponent<MeshRenderer>().material;
         }
 
         public void SetStartPosition(Vector3 start)
@@ -95,11 +79,6 @@ namespace VRtist
                 line.startWidth = startWidth / f;
                 line.endWidth = endWidth / f;
             }
-
-            if (endPoint != null)
-            {
-                endPoint.position = end;
-            }
         }
 
         public void SetVolumeColor()
@@ -125,18 +104,6 @@ namespace VRtist
         public void SetColor(Gradient color)
         {
             line.colorGradient = color;
-
-            //rayMat.SetColor("_EmissiveColor", Color.black);
-
-            //if (rayMat != null)
-            //{
-            //    rayMat.SetColor("_EmissiveColor", color);
-            //}
-
-            //if (endMat != null)
-            //{
-            //    endMat.SetColor("_EmissiveColor", color);
-            //}
         }
     }
 }
