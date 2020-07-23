@@ -83,7 +83,13 @@ namespace VRtist
             Transform orbitPanel = parameters.Find("Orbit");
             orbitPanel.gameObject.SetActive(false);
 
-            if(ray != null)
+            if (target)
+            {
+                Selection.RemoveFromHover(target.gameObject);
+            }
+            target = null;
+
+            if (ray != null)
             {
                 ray.gameObject.SetActive(false);
             }
