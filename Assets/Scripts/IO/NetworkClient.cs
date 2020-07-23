@@ -2805,7 +2805,7 @@ namespace VRtist
 
             var size = BitConverter.ToInt64(header, 0);
             var commandId = BitConverter.ToInt32(header, 8);
-            Debug.Log("Received Command Id " + commandId);
+            //Debug.Log("Received Command Id " + commandId);
             var mtype = BitConverter.ToUInt16(header, 8 + 4);
 
             byte[] data = new byte[size];
