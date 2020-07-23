@@ -252,6 +252,8 @@ namespace VRtist
                 return;
             }
 
+            enableToggleTool = false; // NO secondary button tool switch while gripping.
+
             Selection.SetGrippedObject(Selection.GetHoveredObject());            
 
             gripped = true;
@@ -263,6 +265,8 @@ namespace VRtist
 
         protected virtual void OnEndGrip()
         {
+            enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
+
             gripped = false;
             if (gripPrevented)
             {
@@ -564,6 +568,26 @@ namespace VRtist
                 if (!outOfDeadZone)
                     return;
 
+                VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton,
+                    () => { },
+                    () =>
+                    {
+                        if (!Selection.IsHandleSelected())
+                        {
+                            List<GameObject> objects = Selection.GetObjects();
+
+                            if (objects.Count > 0)
+                            {
+                                EraseSelection();
+
+                                InitControllerMatrix();
+                                InitTransforms();
+                            }
+
+                        }
+                    }
+                );
+
                 // Joystick zoom only for non-handle objects
                 if (!Selection.IsHandleSelected())
                 {
@@ -807,6 +831,32 @@ namespace VRtist
                 List<GameObject> objectsToBeDuplicated = Selection.GetObjects();
                 foreach (GameObject obj in objectsToBeDuplicated)
                     DuplicateObject(obj);
+            }
+            finally
+            {
+                group.Submit();
+            }
+        }
+
+        public void EraseSelection()
+        {
+            List<GameObject> selectedObjects = Selection.GetObjects();
+
+            CommandGroup group = new CommandGroup("Erase Selection");
+            try
+            {
+                foreach (GameObject o in selectedObjects)
+                {
+                    //RemoveCollidedObject(o);
+                    RemoveSiblingsFromSelection(o, false);
+
+                    // Add a selectionVFX instance on the deleted object
+                    GameObject vfxInstance = Instantiate(selectionVFXPrefab);
+                    vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(o);
+
+                    VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
+                    new CommandRemoveGameObject(o).Submit();
+                }
             }
             finally
             {
