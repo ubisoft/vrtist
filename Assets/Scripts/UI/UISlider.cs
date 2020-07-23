@@ -346,7 +346,7 @@ namespace VRtist
             if (canvas != null)
             {
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                Text txt = textValueTransform.gameObject.GetComponent<Text>();
+                TextMeshPro txt = textValueTransform.gameObject.GetComponent<TextMeshPro>();
                 if (txt != null)
                 {
                     txt.text = currentValue.ToString("#0.00");

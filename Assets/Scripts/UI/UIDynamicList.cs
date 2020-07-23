@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -339,7 +339,7 @@ namespace VRtist
                 Canvas canvas = pageCountLabel.GetComponentInChildren<Canvas>();
                 if (canvas != null)
                 {
-                    Text text = canvas.gameObject.GetComponentInChildren<Text>();
+                    TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>();
                     if (text != null)
                     {
                         text.text = pagesCount == 0 ? "0/0" : $"{currentPage + 1}/{pagesCount}";

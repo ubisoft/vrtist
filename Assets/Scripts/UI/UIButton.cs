@@ -196,32 +196,6 @@ namespace VRtist
             }
         }
 
-        public void ActivateText(bool doActivate)
-        {
-            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
-            if (canvas != null)
-            {
-                Text text = canvas.gameObject.GetComponentInChildren<Text>(true);
-                if (text != null)
-                {
-                    text.gameObject.SetActive(doActivate);
-                }
-            }
-        }
-
-        public void ActivateIcon(bool doActivate)
-        {
-            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
-            if (canvas != null)
-            {
-                Image image = canvas.gameObject.GetComponentInChildren<Image>(true);
-                if (image != null)
-                {
-                    image.gameObject.SetActive(doActivate);
-                }
-            }
-        }
-
         private void OnValidate()
         {
             const float min_width = 0.01f;

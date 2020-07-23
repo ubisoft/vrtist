@@ -137,7 +137,7 @@ namespace VRtist
 
         public void UpdateTextColor()
         {
-            Text text = GetComponentInChildren<Text>();
+            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
             if (text != null)
             {
                 text.color = TextColor;
@@ -353,6 +353,7 @@ namespace VRtist
                 meshRenderer.sharedMaterial = Instantiate(input.material);
                 Material sharedMaterial = meshRenderer.sharedMaterial;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.rendererPriority = 1;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 uiLabel.SetColor(input.bgcolor.value);

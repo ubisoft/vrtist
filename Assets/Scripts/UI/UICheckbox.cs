@@ -291,20 +291,6 @@ namespace VRtist
             ResetColor();
         }
 
-        public void ActivateText(bool doActivate)
-        {
-            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
-            if (canvas != null)
-            {
-                Text text = canvas.gameObject.GetComponentInChildren<Text>(true);
-                if (text != null)
-                {
-                    text.gameObject.SetActive(doActivate);
-                }
-            }
-        }
-
-
         public class CreateParams
         {
             public Transform parent = null;

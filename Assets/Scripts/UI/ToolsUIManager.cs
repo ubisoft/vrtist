@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -289,7 +289,7 @@ namespace VRtist
             Transform textComponentTransform = window.Find("TitleBar/Canvas/Text");
             if (textComponentTransform != null)
             {
-                Text textComponent = textComponentTransform.GetComponent<Text>();
+                TextMeshPro textComponent = textComponentTransform.GetComponent<TextMeshPro>();
                 if (textComponent != null)
                 {
                     textComponent.text = text;
