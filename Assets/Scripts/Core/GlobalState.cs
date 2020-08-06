@@ -14,6 +14,11 @@ namespace VRtist
 
         public static Settings Settings { get { return Instance.settings; } }
 
+        [HideInInspector]
+        public static string clientId;
+        [HideInInspector]
+        public static string masterId;
+
         // FPS
         public static int fps { get; private set; }
         private static int fpsFrameRange = 60;

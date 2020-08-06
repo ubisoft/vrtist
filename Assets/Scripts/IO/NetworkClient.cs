@@ -28,6 +28,14 @@ namespace VRtist
         ConnectionLost,
         ListAllClients,
 
+        _SetClientCustomAttribute,
+        _SetRoomCustomAttribute,
+        _SetRoomKeepOpen,
+        ClientId,
+        _ClientUpdate,
+        _RoomUpdate,
+        _RoomDeleted,
+
         Command = 100,
         Delete,
         Camera,
@@ -85,7 +93,10 @@ namespace VRtist
         AssignMaterial,
         Frame,
         Play,
-        Pause
+        Pause,
+
+        End_Optimized_Commands = 999,
+        ClientIdWrapper = 1000
     }
 
     public class NetCommand
@@ -408,6 +419,12 @@ namespace VRtist
                 index += size;
             }
             return resultBuffer;
+        }
+
+        public static void BuildClientId(byte[] data)
+        {
+            string clientId = ConvertToString(data);
+            GlobalState.clientId = clientId;
         }
 
         public static void Rename(Transform root, byte[] data)
@@ -1044,6 +1061,11 @@ namespace VRtist
                 parent = transform;
             }
             return parent;
+        }
+
+        public static string ConvertToString(byte[] data)
+        {
+            return System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
         }
 
         public static string GetString(byte[] data, ref int bufferIndex)
@@ -2457,8 +2479,7 @@ namespace VRtist
         public static NetCommand BuildSendFrameCommand(int data)
         {
             byte[] buffer = NetGeometry.IntToBytes(data);
-            NetCommand cmd = new NetCommand(buffer, MessageType.Frame);
-            return cmd;
+            return new NetCommand(buffer, MessageType.Frame);   
         }
 
         public static NetCommand BuildSendSetKey(SetKeyInfo data)
@@ -2746,6 +2767,11 @@ namespace VRtist
                     Int32.TryParse(args[i + 1], out port);
                 }
 
+                if (args[i] == "--master")
+                {
+                    GlobalState.masterId = args[i + 1];
+                }
+
             }
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
@@ -2780,6 +2806,9 @@ namespace VRtist
 
             JoinRoom(room);
             connected = true;
+
+            NetCommand command = new NetCommand(new byte[0], MessageType.ClientId);
+            AddCommand(command);
 
             thread = new Thread(new ThreadStart(Run));
             thread.Start();
@@ -3018,7 +3047,8 @@ namespace VRtist
                 NetCommand command = ReadMessage();
                 if(command != null)
                 {
-                    if(command.messageType > MessageType.Command)
+                    if(command.messageType == MessageType.ClientId || 
+                        command.messageType > MessageType.Command)
                     {
                         lock(this)
                         {
@@ -3041,6 +3071,28 @@ namespace VRtist
             }
         }
 
+        public NetCommand ConvertFromClientId(NetCommand command)
+        {
+            int index = 0;
+            string masterId = NetGeometry.GetString(command.data, ref index);
+
+            // For debug purpose (unity in editor mode)
+            if (null == GlobalState.masterId)
+                GlobalState.masterId = masterId;
+
+            if (masterId != GlobalState.masterId)
+                return null;
+
+            int messageType = NetGeometry.GetInt(command.data, ref index);
+
+            int newSize = command.data.Length - index;
+            byte[] newBuffer = new byte[newSize];
+
+            Buffer.BlockCopy(command.data, index, newBuffer, 0, newSize);
+
+            return new NetCommand(newBuffer, (MessageType)messageType);
+        }
+
         public int i = 0;
 
         void Update()
@@ -3053,12 +3105,22 @@ namespace VRtist
                 if(receivedCommands.Count == 0)
                     return;
 
-                foreach(NetCommand command in receivedCommands)
+                foreach(NetCommand com in receivedCommands)
                 {
+                    NetCommand command = com;
+                    if(command.messageType == MessageType.ClientIdWrapper)
+                    {
+                        command = ConvertFromClientId(command);
+                        if (null == command)
+                            continue;
+                    }
                     try
                     {
                         switch(command.messageType)
                         {
+                            case MessageType.ClientId:
+                                NetGeometry.BuildClientId(command.data);
+                                break;
                             case MessageType.Mesh:
                                 NetGeometry.BuildMesh(command.data);
                                 break;
