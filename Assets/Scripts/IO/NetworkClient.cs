@@ -73,7 +73,7 @@ namespace VRtist
         _SceneRenamed,
         AddKeyframe,
         RemoveKeyframe,
-        QueryCurrentFrame,
+        _QueryCurrentFrame,
         QueryObjectData,
         _BlenderDataUpdate,
         CameraAttributes,
@@ -2469,6 +2469,16 @@ namespace VRtist
 
         }
 
+        public static void BuildPlay()
+        {
+            GlobalState.Instance.SetPlaying(true);
+        }
+
+        public static void BuildPause()
+        {
+            GlobalState.Instance.SetPlaying(false);
+        }
+
         public static void BuildFrame(byte[] data)
         {
             int index = 0;
@@ -2511,11 +2521,6 @@ namespace VRtist
         public static NetCommand BuildSendQueryObjectData(string name)
         {
             return new NetCommand(StringToBytes(name), MessageType.QueryObjectData);
-        }
-
-        public static NetCommand BuildSendQueryCurrentFrame()
-        {
-            return new NetCommand(new byte[0], MessageType.QueryCurrentFrame);
         }
 
         public static void BuildFrameStartEnd(byte[] data)
@@ -2970,13 +2975,6 @@ namespace VRtist
             NetCommand command = NetGeometry.BuildSendQueryObjectData(name);
             AddCommand(command);
         }
-        public void SendQueryCurrentFrame()
-        {
-            NetCommand command = NetGeometry.BuildSendQueryCurrentFrame();
-            AddCommand(command);
-        }
-        
-
         public void SendDuplicate(DuplicateInfos duplicate)
         {
             NetCommand command = NetGeometry.BuildDuplicateCommand(root, duplicate);
@@ -3221,6 +3219,12 @@ namespace VRtist
                             case MessageType.GreasePencilTimeOffset:
                                 NetGeometry.BuildGreasePencilTimeOffset(command.data);
                                 break;
+                            case MessageType.Play:
+                                NetGeometry.BuildPlay();
+                                break;
+                            case MessageType.Pause:
+                                NetGeometry.BuildPause();
+                                break;
                             case MessageType.Frame:
                                 NetGeometry.BuildFrame(command.data);
                                 break;
@@ -3309,8 +3313,6 @@ namespace VRtist
                     SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
                     SendRemoveKeyframe(data as SetKeyInfo); break;
-                case MessageType.QueryCurrentFrame:
-                    SendQueryCurrentFrame(); break;
                 case MessageType.QueryObjectData:
                     SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:

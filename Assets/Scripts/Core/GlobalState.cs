@@ -19,6 +19,13 @@ namespace VRtist
         [HideInInspector]
         public static string masterId;
 
+        // Play / Pause
+        public bool isPlaying = false;
+        public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
+        // Record
+        public bool isRecording = false;
+        public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
+
         // FPS
         public static int fps { get; private set; }
         private static int fpsFrameRange = 60;
@@ -117,6 +124,18 @@ namespace VRtist
                 cameraFeedback.transform.localScale = settings.cameraFeedbackScale;
                 cameraFeedback.SetActive(settings.cameraFeedbackVisible);
             }
+        }
+
+        public void SetPlaying(bool value)
+        {
+            isPlaying = value;
+            onPlayingEvent.Invoke(value);
+        }
+
+        public void SetRecording(bool value)
+        {
+            isRecording = value;
+            onRecordEvent.Invoke(value);
         }
 
         private void UpdateFps() {
