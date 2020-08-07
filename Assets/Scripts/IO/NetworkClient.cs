@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -22,7 +24,7 @@ namespace VRtist
         DeleteRoom,
         ClearRoom,
         ListRoomClients,
-        ListClients,
+        _ListClients, // deprecated
         SetClientName,
         SendError,
         ConnectionLost,
@@ -32,7 +34,7 @@ namespace VRtist
         _SetRoomCustomAttribute,
         _SetRoomKeepOpen,
         ClientId,
-        _ClientUpdate,
+        ClientUpdate,
         _RoomUpdate,
         _RoomDeleted,
 
@@ -2592,6 +2594,76 @@ namespace VRtist
             ShotManager.Instance.FireChanged();
         }
 
+        public static void BuildClientAttribute(byte[] data)
+        {
+            return;
+
+            int index = 0;
+            string jsonAttr = NetGeometry.GetString(data, ref index);
+            Regex regex = new Regex("{\"(?<user_id>.+?)\"");
+            if (regex.IsMatch(jsonAttr))
+            {
+                Match match = regex.Match(jsonAttr);
+                string userId = match.Groups["user_id"].Value;
+
+                if (userId == GlobalState.clientId)
+                    return;                
+
+                Regex roomRegex = new Regex("\"room\": (?<name>(?:\"(?:.+?)\")|(?:null))");
+                if (roomRegex.IsMatch(jsonAttr))
+                {
+                    Match roomMatch = roomRegex.Match(jsonAttr);
+                    string room = roomMatch.Groups["name"].Value;
+
+                    if(room == "null")
+                    {
+                        if (GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                            GlobalState.Instance.connectedUsers.Remove(userId);
+                        return;
+                    }
+
+                    if (room != GlobalState.room)
+                    {
+                        return;
+                    }
+
+                    if(!GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                    {
+                        ConnectedUser newUser = new ConnectedUser();
+                        newUser.id = userId;
+                        GlobalState.Instance.connectedUsers[userId] = newUser;
+                    }
+                }
+
+                if (!GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                {
+                    ConnectedUser newUser = new ConnectedUser();
+                    newUser.id = userId;
+                    GlobalState.Instance.connectedUsers[userId] = newUser;
+                }
+                ConnectedUser user = GlobalState.Instance.connectedUsers[userId];
+
+                Regex eyeRegex = new Regex("\"eye\": \\[(?<x>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<y>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<z>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?)]");
+                if (eyeRegex.IsMatch(jsonAttr))
+                {
+                    Match eyeMatch = eyeRegex.Match(jsonAttr);
+                    float eyeX = float.Parse(eyeMatch.Groups["x"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float eyeY = float.Parse(eyeMatch.Groups["y"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float eyeZ = float.Parse(eyeMatch.Groups["z"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    user.eye = new Vector3(eyeX, eyeY, eyeZ);
+                }
+                Regex targetRegex = new Regex("\"target\": \\[(?<x>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<y>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<z>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?)]");
+                if (targetRegex.IsMatch(jsonAttr))
+                {
+                    Match targetMatch = targetRegex.Match(jsonAttr);
+                    float targetX = float.Parse(targetMatch.Groups["x"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float targetY = float.Parse(targetMatch.Groups["y"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float targetZ = float.Parse(targetMatch.Groups["z"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    user.target = new Vector3(targetX, targetY, targetZ);
+                }
+            }
+        }
+
         public static void BuildShotManagerAction(byte[] data)
         {
             int index = 0;
@@ -2764,6 +2836,7 @@ namespace VRtist
                 if(args[i] == "--room")
                 {
                     room = args[i + 1];
+                    GlobalState.room = room;
                 }
 
                 if(args[i] == "--hostname")
@@ -2818,6 +2891,9 @@ namespace VRtist
 
             NetCommand command = new NetCommand(new byte[0], MessageType.ClientId);
             AddCommand(command);
+
+            NetCommand commandListClients = new NetCommand(new byte[0], MessageType.ListAllClients);
+            AddCommand(commandListClients);
 
             thread = new Thread(new ThreadStart(Run));
             thread.Start();
@@ -3058,7 +3134,9 @@ namespace VRtist
                 NetCommand command = ReadMessage();
                 if(command != null)
                 {
-                    if(command.messageType == MessageType.ClientId || 
+                    if(command.messageType == MessageType.ClientId ||
+                        command.messageType == MessageType.ClientUpdate ||
+                        command.messageType == MessageType.ListAllClients ||
                         command.messageType > MessageType.Command)
                     {
                         lock(this)
@@ -3245,6 +3323,16 @@ namespace VRtist
                                 break;
                             case MessageType.ShotManagerAction:
                                 NetGeometry.BuildShotManagerAction(command.data);
+                                break;
+
+                            case MessageType.ClientUpdate:
+                                NetGeometry.BuildClientAttribute(command.data);
+                                break;
+                            case MessageType.ListAllClients:
+                                {
+                                    int index = 0;
+                                    string json = NetGeometry.GetString(command.data, ref index);
+                                }
                                 break;
                         }
                     }

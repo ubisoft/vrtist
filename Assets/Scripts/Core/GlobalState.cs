@@ -1,8 +1,18 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
 {
+    public class ConnectedUser
+    {
+        public string id;
+        public string name;
+        public Vector3 eye;
+        public Vector3 target;
+        public Color color;
+    }
+
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;
@@ -18,6 +28,11 @@ namespace VRtist
         public static string clientId;
         [HideInInspector]
         public static string masterId;
+
+        public static string room = "Local";
+
+        // Connected users
+        public Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
 
         // Play / Pause
         public bool isPlaying = false;
