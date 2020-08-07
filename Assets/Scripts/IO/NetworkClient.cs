@@ -2935,8 +2935,22 @@ namespace VRtist
 
         public void SendPlay()
         {
-            byte[] buffer = new byte[0];
-            AddCommand(new NetCommand(buffer, MessageType.Play));
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Play);
+            byte[] dataBuffer = new byte[0];
+            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
+            byte[] buffer = NetGeometry.ConcatenateBuffers(buffers);
+            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
+        }
+
+        public void SendPause()
+        {
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Pause);
+            byte[] dataBuffer = new byte[0];
+            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
+            byte[] buffer = NetGeometry.ConcatenateBuffers(buffers);
+            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
         }
 
         public void SendAddKeyframe(SetKeyInfo data)
@@ -2961,12 +2975,7 @@ namespace VRtist
             NetCommand command = NetGeometry.BuildSendQueryCurrentFrame();
             AddCommand(command);
         }
-
-        public void SendPause()
-        {
-            byte[] buffer = new byte[0];
-            AddCommand(new NetCommand(buffer, MessageType.Pause));
-        }
+        
 
         public void SendDuplicate(DuplicateInfos duplicate)
         {
