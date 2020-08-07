@@ -2476,10 +2476,14 @@ namespace VRtist
             GlobalState.currentFrame = frame;
         }
 
-        public static NetCommand BuildSendFrameCommand(int data)
+        public static NetCommand BuildSendFrameCommand(int frame)
         {
-            byte[] buffer = NetGeometry.IntToBytes(data);
-            return new NetCommand(buffer, MessageType.Frame);   
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Frame);
+            byte[] frameBuffer = NetGeometry.IntToBytes(frame);
+            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, frameBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.ClientIdWrapper);   
         }
 
         public static NetCommand BuildSendSetKey(SetKeyInfo data)
