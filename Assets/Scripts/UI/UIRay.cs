@@ -23,8 +23,11 @@ namespace VRtist
         //public Color handleColor = new Color(12, 64, 0);
 
         private LineRenderer line = null;
-        private Transform endPoint = null;
         private Material rayMat = null;
+
+        public Transform volumeEndPoint = null;
+        public Transform handleEndPoint = null;
+        public Transform widgetEndPoint = null;
 
         [Range(1, 100)]
         public float startWidth = 100;
@@ -79,6 +82,14 @@ namespace VRtist
                 line.startWidth = startWidth / f;
                 line.endWidth = endWidth / f;
             }
+        }
+
+        // DEBUG
+        public void SetEndPoints(Vector3 volumeEnd, Vector3 handleEnd, Vector3 widgetEnd)
+        {
+            volumeEndPoint.position = volumeEnd;
+            handleEndPoint.position = handleEnd;
+            widgetEndPoint.position = widgetEnd;
         }
 
         public void SetVolumeColor()

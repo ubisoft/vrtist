@@ -62,6 +62,7 @@ namespace VRtist
 
         // Cursor
         public PaletteCursor cursor = null;
+        public bool useRayColliders = false; // DEBUG. Remove once the UI ray collision is good.
 
         // Color
         private static Color currentColor = Color.blue;

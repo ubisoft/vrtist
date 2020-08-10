@@ -143,7 +143,7 @@ namespace VRtist
                     if (volumeHit != null)
                     {
                         volumeIsHit = true;
-                        if (volume != null || hits[i].distance < closestVolumeDistance)
+                        if (hits[i].distance < closestVolumeDistance)
                         {
                             volume = volumeHit;
                             volumeCollisionPoint = hits[i].point; // world space
@@ -155,7 +155,7 @@ namespace VRtist
                     if (handleHit != null)
                     {
                         handleIsHit = true;
-                        if (handle != null || hits[i].distance < closestHandleDistance)
+                        if (hits[i].distance < closestHandleDistance)
                         {
                             handle = handleHit;
                             handleCollisionPoint = hits[i].point; // world space
@@ -167,7 +167,7 @@ namespace VRtist
                     if (widgetHit != null)
                     {
                         widgetIsHit = true;
-                        if (widget != null || hits[i].distance < closestWidgetDistance)
+                        if (hits[i].distance < closestWidgetDistance)
                         {
                             widget = widgetHit;
                             widgetCollisionPoint = hits[i].point; // world space
@@ -232,6 +232,13 @@ namespace VRtist
                     ray.gameObject.SetActive(false);
                     ExitPreviousWidget();
                 }
+
+                // DEBUG
+                ray.SetEndPoints(
+                    volumeIsHit ? volumeCollisionPoint : transform.position,
+                    handleIsHit ? handleCollisionPoint : transform.position,
+                    widgetIsHit ? widgetCollisionPoint : transform.position
+                );
             }
             else
             {
