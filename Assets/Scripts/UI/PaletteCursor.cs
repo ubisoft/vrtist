@@ -218,27 +218,20 @@ namespace VRtist
                         widget.OnRayHover();
                     }
                 }
-                else if (volumeIsHit)
-                {
-                    ray.gameObject.SetActive(true);
-                    ray.SetStartPosition(worldStart);
-                    ray.SetEndPosition(worldEnd); // volumeCollisionPoint
-                    ray.SetVolumeColor();
+                //else if (volumeIsHit)
+                //{
+                //    ray.gameObject.SetActive(true);
+                //    ray.SetStartPosition(worldStart);
+                //    ray.SetEndPosition(worldEnd); // volumeCollisionPoint
+                //    ray.SetVolumeColor();
 
-                    ExitPreviousWidget();
-                }
+                //    ExitPreviousWidget();
+                //}
                 else // does it happen??? -> layer UI but neither UIVolumeTag nor UIElement
                 {
                     ray.gameObject.SetActive(false);
                     ExitPreviousWidget();
                 }
-
-                // DEBUG
-                ray.SetEndPoints(
-                    volumeIsHit ? volumeCollisionPoint : transform.position,
-                    handleIsHit ? handleCollisionPoint : transform.position,
-                    widgetIsHit ? widgetCollisionPoint : transform.position
-                );
             }
             else
             {

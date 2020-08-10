@@ -25,9 +25,10 @@ namespace VRtist
         private LineRenderer line = null;
         private Material rayMat = null;
 
-        public Transform volumeEndPoint = null;
-        public Transform handleEndPoint = null;
-        public Transform widgetEndPoint = null;
+        public Transform endPoint = null;
+        
+        [Range(0, 1)]
+        public float endPointColorGrandientPct = 0.6f;
 
         [Range(1, 100)]
         public float startWidth = 100;
@@ -82,14 +83,11 @@ namespace VRtist
                 line.startWidth = startWidth / f;
                 line.endWidth = endWidth / f;
             }
-        }
 
-        // DEBUG
-        public void SetEndPoints(Vector3 volumeEnd, Vector3 handleEnd, Vector3 widgetEnd)
-        {
-            volumeEndPoint.position = volumeEnd;
-            handleEndPoint.position = handleEnd;
-            widgetEndPoint.position = widgetEnd;
+            if (endPoint != null)
+            {
+                endPoint.position = end;
+            }
         }
 
         public void SetVolumeColor()
@@ -115,6 +113,8 @@ namespace VRtist
         public void SetColor(Gradient color)
         {
             line.colorGradient = color;
+            Color endPointColor = color.Evaluate(endPointColorGrandientPct);
+            endPoint.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", endPointColor);
         }
     }
 }
