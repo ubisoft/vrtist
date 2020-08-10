@@ -23,18 +23,37 @@ namespace VRtist
     public class RemotePlayer : MonoBehaviour
     {
         public Dopesheet dopesheet = null;
-        private Dictionary<GameObject, AnimationSet> animationSets = new Dictionary<GameObject, AnimationSet>();
-        private int recordCurrentFrame = 0;
-        private bool isRecording = false;
+        private static Dictionary<GameObject, AnimationSet> animationSets = new Dictionary<GameObject, AnimationSet>();
+        private static int recordCurrentFrame = 0;
+
+        UIButton playButton = null;
+        UIButton recordButton = null;
+
+        public void Start()
+        {
+            playButton = transform.Find("PlayButton").GetComponent<UIButton>();
+            GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
+
+            recordButton = transform.Find("RecordButton").GetComponent<UIButton>();
+            GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+        }
+
+        private void OnPlayingChanged(bool value)
+        {
+            playButton.Checked = value;
+        }
 
         public void OnPlay()
         {
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
+            GlobalState.Instance.SetPlaying(true);
         }
 
         public void OnPause()
         {
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
+            GlobalState.Instance.SetPlaying(false);
+            OnStopRecord();
         }
 
         public void OnPlayOrPause(bool play)
@@ -91,12 +110,16 @@ namespace VRtist
             NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
+        private void OnRecordingChanged(bool value)
+        {
+            recordButton.Checked = value;
+        }
         public void HandleRecord()
         {
-            if (!isRecording)
+            if (!GlobalState.Instance.isRecording)
                 return;
             int frame = dopesheet.CurrentFrame;
-            if (frame > recordCurrentFrame)
+            if (frame != recordCurrentFrame)
             {
                 foreach(var item in animationSets)
                 {
@@ -125,7 +148,7 @@ namespace VRtist
 
         public void OnBeginRecord()
         {
-            if (isRecording)
+            if (GlobalState.Instance.isRecording)
                 return;
 
             foreach(GameObject item in Selection.selection.Values)
@@ -148,7 +171,9 @@ namespace VRtist
             }
 
             recordCurrentFrame = dopesheet.CurrentFrame - 1;
-            isRecording = true;
+            
+            GlobalState.Instance.SetRecording(true);
+
             OnPlay();
         }
 
@@ -163,10 +188,13 @@ namespace VRtist
 
         public void OnStopRecord()
         {
-            if (!isRecording)
+            if (!GlobalState.Instance.isRecording)
                 return;
 
-            OnPause();
+            if(GlobalState.Instance.isPlaying)
+                OnPause();
+
+            GlobalState.Instance.SetRecording(false);
 
             foreach (var item in animationSets)
             {
@@ -181,8 +209,7 @@ namespace VRtist
                 SendAnimationChannel(name, item.Value.lens);
                 NetworkClient.GetInstance().SendQueryObjectData(name);
             }
-            isRecording = false;
-            animationSets.Clear();
+            animationSets.Clear();            
         }
 
         public void OnRecordOrStop(bool record)

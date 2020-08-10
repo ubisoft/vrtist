@@ -1,8 +1,18 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
 {
+    public class ConnectedUser
+    {
+        public string id;
+        public string name;
+        public Vector3 eye;
+        public Vector3 target;
+        public Color color;
+    }
+
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;
@@ -13,6 +23,23 @@ namespace VRtist
         public GameObject cameraFeedback = null;
 
         public static Settings Settings { get { return Instance.settings; } }
+
+        [HideInInspector]
+        public static string clientId;
+        [HideInInspector]
+        public static string masterId;
+
+        public static string room = "Local";
+
+        // Connected users
+        public Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
+
+        // Play / Pause
+        public bool isPlaying = false;
+        public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
+        // Record
+        public bool isRecording = false;
+        public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
 
         // FPS
         public static int fps { get; private set; }
@@ -112,6 +139,18 @@ namespace VRtist
                 cameraFeedback.transform.localScale = settings.cameraFeedbackScale;
                 cameraFeedback.SetActive(settings.cameraFeedbackVisible);
             }
+        }
+
+        public void SetPlaying(bool value)
+        {
+            isPlaying = value;
+            onPlayingEvent.Invoke(value);
+        }
+
+        public void SetRecording(bool value)
+        {
+            isRecording = value;
+            onRecordEvent.Invoke(value);
         }
 
         private void UpdateFps() {

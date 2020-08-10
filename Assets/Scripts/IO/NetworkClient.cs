@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -22,11 +24,19 @@ namespace VRtist
         DeleteRoom,
         ClearRoom,
         ListRoomClients,
-        ListClients,
+        _ListClients, // deprecated
         SetClientName,
         SendError,
         ConnectionLost,
         ListAllClients,
+
+        _SetClientCustomAttribute,
+        _SetRoomCustomAttribute,
+        _SetRoomKeepOpen,
+        ClientId,
+        ClientUpdate,
+        _RoomUpdate,
+        _RoomDeleted,
 
         Command = 100,
         Delete,
@@ -65,7 +75,7 @@ namespace VRtist
         _SceneRenamed,
         AddKeyframe,
         RemoveKeyframe,
-        QueryCurrentFrame,
+        _QueryCurrentFrame,
         QueryObjectData,
         _BlenderDataUpdate,
         CameraAttributes,
@@ -85,7 +95,10 @@ namespace VRtist
         AssignMaterial,
         Frame,
         Play,
-        Pause
+        Pause,
+
+        End_Optimized_Commands = 999,
+        ClientIdWrapper = 1000
     }
 
     public class NetCommand
@@ -408,6 +421,12 @@ namespace VRtist
                 index += size;
             }
             return resultBuffer;
+        }
+
+        public static void BuildClientId(byte[] data)
+        {
+            string clientId = ConvertToString(data);
+            GlobalState.clientId = clientId;
         }
 
         public static void Rename(Transform root, byte[] data)
@@ -1044,6 +1063,11 @@ namespace VRtist
                 parent = transform;
             }
             return parent;
+        }
+
+        public static string ConvertToString(byte[] data)
+        {
+            return System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
         }
 
         public static string GetString(byte[] data, ref int bufferIndex)
@@ -2447,6 +2471,16 @@ namespace VRtist
 
         }
 
+        public static void BuildPlay()
+        {
+            GlobalState.Instance.SetPlaying(true);
+        }
+
+        public static void BuildPause()
+        {
+            GlobalState.Instance.SetPlaying(false);
+        }
+
         public static void BuildFrame(byte[] data)
         {
             int index = 0;
@@ -2454,11 +2488,14 @@ namespace VRtist
             GlobalState.currentFrame = frame;
         }
 
-        public static NetCommand BuildSendFrameCommand(int data)
+        public static NetCommand BuildSendFrameCommand(int frame)
         {
-            byte[] buffer = NetGeometry.IntToBytes(data);
-            NetCommand cmd = new NetCommand(buffer, MessageType.Frame);
-            return cmd;
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Frame);
+            byte[] frameBuffer = NetGeometry.IntToBytes(frame);
+            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, frameBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.ClientIdWrapper);   
         }
 
         public static NetCommand BuildSendSetKey(SetKeyInfo data)
@@ -2486,11 +2523,6 @@ namespace VRtist
         public static NetCommand BuildSendQueryObjectData(string name)
         {
             return new NetCommand(StringToBytes(name), MessageType.QueryObjectData);
-        }
-
-        public static NetCommand BuildSendQueryCurrentFrame()
-        {
-            return new NetCommand(new byte[0], MessageType.QueryCurrentFrame);
         }
 
         public static void BuildFrameStartEnd(byte[] data)
@@ -2560,6 +2592,76 @@ namespace VRtist
             }
 
             ShotManager.Instance.FireChanged();
+        }
+
+        public static void BuildClientAttribute(byte[] data)
+        {
+            return;
+
+            int index = 0;
+            string jsonAttr = NetGeometry.GetString(data, ref index);
+            Regex regex = new Regex("{\"(?<user_id>.+?)\"");
+            if (regex.IsMatch(jsonAttr))
+            {
+                Match match = regex.Match(jsonAttr);
+                string userId = match.Groups["user_id"].Value;
+
+                if (userId == GlobalState.clientId)
+                    return;                
+
+                Regex roomRegex = new Regex("\"room\": (?<name>(?:\"(?:.+?)\")|(?:null))");
+                if (roomRegex.IsMatch(jsonAttr))
+                {
+                    Match roomMatch = roomRegex.Match(jsonAttr);
+                    string room = roomMatch.Groups["name"].Value;
+
+                    if(room == "null")
+                    {
+                        if (GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                            GlobalState.Instance.connectedUsers.Remove(userId);
+                        return;
+                    }
+
+                    if (room != GlobalState.room)
+                    {
+                        return;
+                    }
+
+                    if(!GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                    {
+                        ConnectedUser newUser = new ConnectedUser();
+                        newUser.id = userId;
+                        GlobalState.Instance.connectedUsers[userId] = newUser;
+                    }
+                }
+
+                if (!GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                {
+                    ConnectedUser newUser = new ConnectedUser();
+                    newUser.id = userId;
+                    GlobalState.Instance.connectedUsers[userId] = newUser;
+                }
+                ConnectedUser user = GlobalState.Instance.connectedUsers[userId];
+
+                Regex eyeRegex = new Regex("\"eye\": \\[(?<x>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<y>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<z>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?)]");
+                if (eyeRegex.IsMatch(jsonAttr))
+                {
+                    Match eyeMatch = eyeRegex.Match(jsonAttr);
+                    float eyeX = float.Parse(eyeMatch.Groups["x"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float eyeY = float.Parse(eyeMatch.Groups["y"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float eyeZ = float.Parse(eyeMatch.Groups["z"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    user.eye = new Vector3(eyeX, eyeY, eyeZ);
+                }
+                Regex targetRegex = new Regex("\"target\": \\[(?<x>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<y>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<z>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?)]");
+                if (targetRegex.IsMatch(jsonAttr))
+                {
+                    Match targetMatch = targetRegex.Match(jsonAttr);
+                    float targetX = float.Parse(targetMatch.Groups["x"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float targetY = float.Parse(targetMatch.Groups["y"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    float targetZ = float.Parse(targetMatch.Groups["z"].Value, CultureInfo.InvariantCulture.NumberFormat);
+                    user.target = new Vector3(targetX, targetY, targetZ);
+                }
+            }
         }
 
         public static void BuildShotManagerAction(byte[] data)
@@ -2734,6 +2836,7 @@ namespace VRtist
                 if(args[i] == "--room")
                 {
                     room = args[i + 1];
+                    GlobalState.room = room;
                 }
 
                 if(args[i] == "--hostname")
@@ -2744,6 +2847,11 @@ namespace VRtist
                 if(args[i] == "--port")
                 {
                     Int32.TryParse(args[i + 1], out port);
+                }
+
+                if (args[i] == "--master")
+                {
+                    GlobalState.masterId = args[i + 1];
                 }
 
             }
@@ -2780,6 +2888,12 @@ namespace VRtist
 
             JoinRoom(room);
             connected = true;
+
+            NetCommand command = new NetCommand(new byte[0], MessageType.ClientId);
+            AddCommand(command);
+
+            NetCommand commandListClients = new NetCommand(new byte[0], MessageType.ListAllClients);
+            AddCommand(commandListClients);
 
             thread = new Thread(new ThreadStart(Run));
             thread.Start();
@@ -2902,8 +3016,22 @@ namespace VRtist
 
         public void SendPlay()
         {
-            byte[] buffer = new byte[0];
-            AddCommand(new NetCommand(buffer, MessageType.Play));
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Play);
+            byte[] dataBuffer = new byte[0];
+            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
+            byte[] buffer = NetGeometry.ConcatenateBuffers(buffers);
+            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
+        }
+
+        public void SendPause()
+        {
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Pause);
+            byte[] dataBuffer = new byte[0];
+            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
+            byte[] buffer = NetGeometry.ConcatenateBuffers(buffers);
+            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
         }
 
         public void SendAddKeyframe(SetKeyInfo data)
@@ -2923,18 +3051,6 @@ namespace VRtist
             NetCommand command = NetGeometry.BuildSendQueryObjectData(name);
             AddCommand(command);
         }
-        public void SendQueryCurrentFrame()
-        {
-            NetCommand command = NetGeometry.BuildSendQueryCurrentFrame();
-            AddCommand(command);
-        }
-
-        public void SendPause()
-        {
-            byte[] buffer = new byte[0];
-            AddCommand(new NetCommand(buffer, MessageType.Pause));
-        }
-
         public void SendDuplicate(DuplicateInfos duplicate)
         {
             NetCommand command = NetGeometry.BuildDuplicateCommand(root, duplicate);
@@ -3018,7 +3134,10 @@ namespace VRtist
                 NetCommand command = ReadMessage();
                 if(command != null)
                 {
-                    if(command.messageType > MessageType.Command)
+                    if(command.messageType == MessageType.ClientId ||
+                        command.messageType == MessageType.ClientUpdate ||
+                        command.messageType == MessageType.ListAllClients ||
+                        command.messageType > MessageType.Command)
                     {
                         lock(this)
                         {
@@ -3041,6 +3160,28 @@ namespace VRtist
             }
         }
 
+        public NetCommand ConvertFromClientId(NetCommand command)
+        {
+            int index = 0;
+            string masterId = NetGeometry.GetString(command.data, ref index);
+
+            // For debug purpose (unity in editor mode)
+            if (null == GlobalState.masterId)
+                GlobalState.masterId = masterId;
+
+            if (masterId != GlobalState.masterId)
+                return null;
+
+            int messageType = NetGeometry.GetInt(command.data, ref index);
+
+            int newSize = command.data.Length - index;
+            byte[] newBuffer = new byte[newSize];
+
+            Buffer.BlockCopy(command.data, index, newBuffer, 0, newSize);
+
+            return new NetCommand(newBuffer, (MessageType)messageType);
+        }
+
         public int i = 0;
 
         void Update()
@@ -3053,12 +3194,22 @@ namespace VRtist
                 if(receivedCommands.Count == 0)
                     return;
 
-                foreach(NetCommand command in receivedCommands)
+                foreach(NetCommand com in receivedCommands)
                 {
+                    NetCommand command = com;
+                    if(command.messageType == MessageType.ClientIdWrapper)
+                    {
+                        command = ConvertFromClientId(command);
+                        if (null == command)
+                            continue;
+                    }
                     try
                     {
                         switch(command.messageType)
                         {
+                            case MessageType.ClientId:
+                                NetGeometry.BuildClientId(command.data);
+                                break;
                             case MessageType.Mesh:
                                 NetGeometry.BuildMesh(command.data);
                                 break;
@@ -3146,6 +3297,12 @@ namespace VRtist
                             case MessageType.GreasePencilTimeOffset:
                                 NetGeometry.BuildGreasePencilTimeOffset(command.data);
                                 break;
+                            case MessageType.Play:
+                                NetGeometry.BuildPlay();
+                                break;
+                            case MessageType.Pause:
+                                NetGeometry.BuildPause();
+                                break;
                             case MessageType.Frame:
                                 NetGeometry.BuildFrame(command.data);
                                 break;
@@ -3166,6 +3323,16 @@ namespace VRtist
                                 break;
                             case MessageType.ShotManagerAction:
                                 NetGeometry.BuildShotManagerAction(command.data);
+                                break;
+
+                            case MessageType.ClientUpdate:
+                                NetGeometry.BuildClientAttribute(command.data);
+                                break;
+                            case MessageType.ListAllClients:
+                                {
+                                    int index = 0;
+                                    string json = NetGeometry.GetString(command.data, ref index);
+                                }
                                 break;
                         }
                     }
@@ -3234,8 +3401,6 @@ namespace VRtist
                     SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
                     SendRemoveKeyframe(data as SetKeyInfo); break;
-                case MessageType.QueryCurrentFrame:
-                    SendQueryCurrentFrame(); break;
                 case MessageType.QueryObjectData:
                     SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
