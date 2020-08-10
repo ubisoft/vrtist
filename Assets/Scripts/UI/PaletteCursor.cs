@@ -185,8 +185,7 @@ namespace VRtist
                 if (handleIsHit)
                 {
                     ray.gameObject.SetActive(true);
-                    ray.SetStartPosition(worldStart);
-                    ray.SetEndPosition(handleCollisionPoint);
+                    ray.SetParameters(worldStart, handleCollisionPoint, newWorldDirection);
 
                     ray.SetHandleColor();
 
@@ -195,8 +194,7 @@ namespace VRtist
                 else if (widgetIsHit)
                 {
                     ray.gameObject.SetActive(true);
-                    ray.SetStartPosition(worldStart);
-                    ray.SetEndPosition(widgetCollisionPoint);
+                    ray.SetParameters(worldStart, widgetCollisionPoint, newWorldDirection);
 
                     if (widget.GetComponent<UIPanel>())
                     {

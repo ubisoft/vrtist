@@ -90,6 +90,40 @@ namespace VRtist
             }
         }
 
+        public void SetParameters(Vector3 start, Vector3 end, Vector3 startTangent)
+        {
+            if (line != null)
+            {
+                Vector3 middlePoint = (start + end) / 2.0f;
+                Vector3 middleNormal = Vector3.Normalize(start - middlePoint);
+                Plane middlePlane = new Plane(middleNormal, middlePoint);
+                Ray ray = new Ray(start, startTangent);
+                float enter = 0.0f;
+                middlePlane.Raycast(ray, out enter);
+                Vector3 intersectionPoint = ray.GetPoint(enter);
+
+                Vector3 P0 = start;
+                //Vector3 P1 = intersectionPoint;
+                Vector3 P1 = start + 0.6f * (intersectionPoint - start);
+                Vector3 P2 = end;
+
+                for (int i = 0; i < 11; ++i)
+                {
+                    float t = ((float)i / 10.0f);
+                    Vector3 pos = P2 * t * t + P1 * 2 * t * (1.0f - t) + P0 * (1.0f - t) * (1.0f - t);
+                    line.SetPosition(i, pos);
+                }
+
+                line.startWidth = startWidth / f;
+                line.endWidth = endWidth / f;
+            }
+
+            if (endPoint != null)
+            {
+                endPoint.position = end;
+            }
+        }
+
         public void SetVolumeColor()
         {
             SetColor(volumeColor);
