@@ -6,6 +6,8 @@ namespace VRtist
     public class PaletteCursor : MonoBehaviour
     {
         public UIRay ray = null;
+        [Range(0,1)]
+        public float rayStiffness = 0.5f;
 
         private Vector3 initialCursorLocalPosition = Vector3.zero;
         private bool isOnAWidget = false;
@@ -26,6 +28,7 @@ namespace VRtist
         private bool isOutOfVolume = true;
 
         UIElement prevWidget = null; // for RAY
+        Vector3 prevWorldDirection = Vector3.zero;
 
         void Start()
         {
@@ -112,7 +115,10 @@ namespace VRtist
             RaycastHit[] hits;
             Vector3 worldStart = transform.TransformPoint(0.0104f, 0, 0.065f);
             Vector3 worldEnd = transform.TransformPoint(0.0104f, 0, 1f);
-            Vector3 worldDirection = worldEnd - worldStart;
+            Vector3 newWorldDirection = worldEnd - worldStart;
+            Vector3 worldDirection = prevWorldDirection != Vector3.zero ? Vector3.Lerp(prevWorldDirection, newWorldDirection, rayStiffness) : newWorldDirection;
+            prevWorldDirection = worldDirection;
+
             Ray r = new Ray(worldStart, worldDirection);
             int layersMask = LayerMask.GetMask(new string[] { "UI" });
             hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
