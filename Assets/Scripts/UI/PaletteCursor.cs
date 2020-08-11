@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -13,6 +14,9 @@ namespace VRtist
         private bool isOnAWidget = false;
         private Transform widgetTransform = null;
         private UIElement widgetHit = null;
+
+        private UIElement widgetClicked = null;
+
         private AudioSource audioClick = null;
 
         private int currentShapeId = 0;
@@ -140,7 +144,13 @@ namespace VRtist
                 UIHandle handle = null;
                 UIVolumeTag volume = null;
 
+                bool triggerJustClicked = false;
+                bool triggerJustReleased = false;
+
+                //
                 // Find if a volume/handle/widget has been hit, and compute the closest hit distance/point.
+                //
+
                 for (int i = 0; i < hits.Length; ++i)
                 {
                     Transform hit = hits[i].transform;
@@ -182,6 +192,22 @@ namespace VRtist
                     }
                 }
 
+                //
+                // Find out if the trigger button was pressed, in order to send the info the the widget hit.
+                //
+
+                VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton, () =>
+                {
+                    triggerJustClicked = true;
+                }, () =>
+                {
+                    triggerJustReleased = true;
+                });
+
+                //
+                // Send messages and states to the widget hit, with priorities.
+                //
+
                 if (handleIsHit)
                 {
                     ray.gameObject.SetActive(true);
@@ -205,34 +231,173 @@ namespace VRtist
                         ray.SetWidgetColor();
                     }
 
+                    //
+                    // BEHAVIOR
+                    // - if ray changes widget
+                    //   - if clicked 
+                    //     - on this widget (previous click and leave) => OnRayClick
+                    //     - NOT on this widget (click on a widget, leave, enter another) => NOTHING
+                    //   - if not clicked
+                    //     - if prevWidget exist => OnRayExit
+
+                    // - if ray stays on same widget
+                    //
+
+                    if (prevWidget != widget) // change widget
+                    {
+                        if (widgetClicked != null) // trigger is held pushed.
+                        {
+                            if (widgetClicked == widget) // on same widget
+                            {
+                                widgetClicked.OnRayEnterClicked(); // act as if we re-click on widget.
+                            }
+                            else // click has been pushed on another widget
+                            {
+                                widgetClicked.OnRayExitClicked();
+                                // dont do anything for the new widget, not even hover.
+                            }
+                        }
+                        else // no click, simple hover
+                        {
+                            if (prevWidget != null)
+                            {
+                                prevWidget.OnRayExit();
+                            }
+
+                            widget.OnRayEnter();
+                        }
+                    }
+                    else // still on same widget
+                    {
+                        if (widgetClicked != null) // trigger is held pushed.
+                        {
+                            if (widgetClicked == widget) // on same widget
+                            {
+                                widgetClicked.OnRayHoverClicked();
+                            }
+                            else // still hovering a widget which is not the one clicked.
+                            {
+                                widgetClicked.OnRayHover(); // simple hover without the click effect.
+                                // do nothing for the new widget.
+                            }
+                        }
+                        else
+                        {
+                            widget.OnRayHover();
+                        }
+                    }
+
+                    // "Just click" is independant of whether we stay or change hit widget.
+                    if (triggerJustClicked)
+                    {
+                        widget.OnRayClick();
+                        widgetClicked = widget;
+                    }
+
+                    // I prefer treating "Just released" outside of the rest.
+                    // BUT this leads to maybe 2 events sent for the same widget.
+                    if (triggerJustReleased)
+                    {
+                        // do not send Release to another widget than the one which received the click.
+                        if (widgetClicked != null)
+                        {
+                            if (widgetClicked == widget)
+                            {
+                                widget.OnRayRelease();
+                            }
+                            else
+                            {
+                                widgetClicked.OnRayExit(); // remove all effects on clicked widget.
+                                // ignore new widget.
+                            }
+                        }
+                        else
+                        {
+                            // should not happen
+                            Debug.LogError("Just Released received without having clicked before on any widget!!");
+                        }
+
+                        widgetClicked = null;
+                    }
+
+                    prevWidget = widget; // even if the same.
+
+                    // SIMPLE code with many missing cases.
+
+
                     // signals
-                    if (prevWidget != widget)
+                    //if (prevWidget != widget)
+                    //{
+                    //    if (prevWidget != null)
+                    //    {
+                    //        prevWidget.OnRayExit();
+                    //    }
+
+                    //    widget.OnRayEnter();
+
+                    //    prevWidget = widget;
+                    //}
+                    //else
+                    //{
+                    //    widget.OnRayHover();
+
+                    //    if (triggerJustClicked)
+                    //    {
+                    //        widget.OnRayClick();
+                    //        widgetClicked = widget;
+                    //    }
+
+                    //    if (triggerJustReleased)
+                    //    {
+                    //        // do not send Release to another widget than the one which received the click.
+                    //        if (widgetClicked != null && widgetClicked == widget)
+                    //        {
+                    //            widget.OnRayRelease();
+                    //        }
+
+                    //        widgetClicked = null;
+                    //        // TODO: what if we release on another widget, or get out of the volume and then release?
+                    //    }
+                    //}
+
+
+                }
+
+                else if (volumeIsHit)
+                {
+                    ray.gameObject.SetActive(true);
+                    ray.SetStartPosition(worldStart);
+                    ray.SetEndPosition(worldEnd); // volumeCollisionPoint
+                    ray.SetVolumeColor();
+
+                    //ExitPreviousWidget();
+
+                    if (widgetClicked != null) // trigger is held pushed.
+                    {
+                        if (prevWidget != null) // do it only once.
+                        {
+                            widgetClicked.OnRayExitClicked();
+                        }
+
+                        if (triggerJustReleased)
+                        {
+                            widgetClicked.OnRayExit(); // just UN-push, no events triggered.
+                            widgetClicked = null;
+                        }
+                    }
+                    else // no click, simple hover
                     {
                         if (prevWidget != null)
                         {
                             prevWidget.OnRayExit();
                         }
-
-                        widget.OnRayEnter();
-
-                        prevWidget = widget;
                     }
-                    else
-                    {
-                        widget.OnRayHover();
-                    }
+
+                    prevWidget = null;
                 }
-                //else if (volumeIsHit)
-                //{
-                //    ray.gameObject.SetActive(true);
-                //    ray.SetStartPosition(worldStart);
-                //    ray.SetEndPosition(worldEnd); // volumeCollisionPoint
-                //    ray.SetVolumeColor();
-
-                //    ExitPreviousWidget();
-                //}
-                else // does it happen??? -> layer UI but neither UIVolumeTag nor UIElement
+                else // Layer UI but neither UIVolumeTag nor UIElement == Grid, for example.
                 {
+                    //Debug.LogError("UIRay hitting an object in layer UI but neither a VolumeTag nor a UIElement.");
                     ray.gameObject.SetActive(false);
                     ExitPreviousWidget();
                 }
@@ -246,6 +411,12 @@ namespace VRtist
 
         private void ExitPreviousWidget()
         {
+            if (widgetClicked != null && prevWidget != widgetClicked)
+            {
+                widgetClicked.OnRayExit();
+                widgetClicked = null;
+            }
+
             if (prevWidget != null)
             {
                 prevWidget.OnRayExit();

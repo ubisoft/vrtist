@@ -160,7 +160,13 @@ namespace VRtist
         public virtual void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform) { }
 
         public virtual void OnRayEnter() { }
+        public virtual void OnRayEnterClicked() { }
         public virtual void OnRayHover() { }
+        public virtual void OnRayHoverClicked() { }
         public virtual void OnRayExit() { }
+        public virtual void OnRayExitClicked() { }
+
+        public virtual void OnRayClick() { }
+        public virtual void OnRayRelease() { }
     }
 }
