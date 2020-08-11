@@ -139,6 +139,7 @@ namespace VRtist
             Vector3 worldEnd = transform.TransformPoint(0.0104f, 0, 1f);
             Vector3 newWorldDirection = worldEnd - worldStart;
             Vector3 worldDirection = prevWorldDirection != Vector3.zero ? Vector3.Lerp(prevWorldDirection, newWorldDirection, rayStiffness) : newWorldDirection;
+            worldDirection.Normalize();
             prevWorldDirection = worldDirection;
 
             Ray r = new Ray(worldStart, worldDirection);
@@ -326,7 +327,7 @@ namespace VRtist
                 else if (volumeIsHit)
                 {
                     ray.gameObject.SetActive(true);
-                    ray.SetParameters(worldStart, worldEnd, newWorldDirection); // volumeCollisionPoint
+                    ray.SetParameters(worldStart, worldStart + worldDirection * 0.3f, newWorldDirection); // volumeCollisionPoint
                     ray.SetVolumeColor();
 
                     ExitWidget(triggerJustReleased);

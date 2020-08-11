@@ -47,8 +47,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   volumeColor:
     serializedVersion: 2
-    key0: {r: 0, g: 0.72843313, b: 1, a: 0}
-    key1: {r: 0, g: 0.72843313, b: 1, a: 0.2509804}
+    key0: {r: 0.2509804, g: 0.2509804, b: 0.2509804, a: 0}
+    key1: {r: 0.6039216, g: 0.6039216, b: 0.6039216, a: 0.2509804}
     key2: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 1}
     key3: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 0.2509804}
     key4: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 0}
@@ -76,8 +76,8 @@ MonoBehaviour:
     m_NumAlphaKeys: 5
   widgetColor:
     serializedVersion: 2
-    key0: {r: 1, g: 0.37005797, b: 0, a: 0}
-    key1: {r: 1, g: 0.37005797, b: 0, a: 0.2509804}
+    key0: {r: 0.19699997, g: 0.7827179, b: 1, a: 0}
+    key1: {r: 0.19999999, g: 0.78352964, b: 1, a: 0.2509804}
     key2: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 1}
     key3: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 0.2509804}
     key4: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 0}
@@ -105,8 +105,8 @@ MonoBehaviour:
     m_NumAlphaKeys: 5
   panelColor:
     serializedVersion: 2
-    key0: {r: 0.3045814, g: 1, b: 0, a: 0}
-    key1: {r: 0.3045814, g: 1, b: 0, a: 0.2509804}
+    key0: {r: 0.7058824, g: 0.7058824, b: 0.7058824, a: 0}
+    key1: {r: 0.7058824, g: 0.7058824, b: 0.7058824, a: 0.2509804}
     key2: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 1}
     key3: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 0.2509804}
     key4: {r: 0.21176471, g: 0.59607846, b: 0.4862745, a: 0}
@@ -162,6 +162,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 5
   endPoint: {fileID: 4251061557514575494}
+  endPointColorGrandientPct: 0.5
   startWidth: 30
   endWidth: 5
 --- !u!120 &248553507755954836

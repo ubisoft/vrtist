@@ -20,10 +20,10 @@ MonoBehaviour:
     value: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   pushedColor:
     isHdr: 0
-    value: {r: 0, g: 0.65, b: 1, a: 1}
+    value: {r: 0.3, g: 0.7551725, b: 1, a: 1}
   checkedColor:
     isHdr: 0
-    value: {r: 0, g: 0.85, b: 1, a: 1}
+    value: {r: 0, g: 0.6502464, b: 1, a: 1}
   disabledColor:
     isHdr: 0
     value: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
