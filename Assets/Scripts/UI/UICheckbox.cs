@@ -59,8 +59,29 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
-                onClickEvent.AddListener(OnPushCheckbox);
-                onReleaseEvent.AddListener(OnReleaseCheckbox);
+                //onClickEvent.AddListener(OnPushCheckbox);
+                //onReleaseEvent.AddListener(OnReleaseCheckbox);
+            }
+        }
+
+        public override void ResetColor()
+        {
+            SetColor(Disabled ? DisabledColor
+                  : (Pushed ? PushedColor
+//                  : (Checked ? CheckedColor // NO specific color for CHECKED checkboxes.
+                  : (Selected ? SelectedColor
+                  : (Hovered ? HoveredColor
+                  : BaseColor))));
+
+            // Make the canvas pop front if Hovered.
+            Canvas c = GetComponentInChildren<Canvas>();
+            if (c != null)
+            {
+                RectTransform rt = c.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+                }
             }
         }
 
@@ -249,6 +270,7 @@ namespace VRtist
             if ( (currentTime - prevTime)>0.4f && otherCollider.gameObject.name == "Cursor")
             {               
                 onClickEvent.Invoke();
+                OnPushCheckbox();
                 prevTime = currentTime;
                 //VRInput.SendHaptic(VRInput.rightController, 0.03f, 1.0f);
             }
@@ -262,6 +284,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
+                OnReleaseCheckbox();
             }
         }
 
@@ -280,16 +303,92 @@ namespace VRtist
         {
             Pushed = true;
             ResetColor();
-
-            Checked = !Checked;
-            onCheckEvent.Invoke(Checked);
         }
 
         public void OnReleaseCheckbox()
         {
             Pushed = false;
             ResetColor();
+
+            Checked = !Checked;
+            onCheckEvent.Invoke(Checked);
         }
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            onHoverEvent.Invoke();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+            onHoverEvent.Invoke();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+
+            Checked = !Checked;
+            onCheckEvent.Invoke(Checked);
+
+            ResetColor();
+        }
+
+        // --- / RAY API ----------------------------------------------------
+
+        #region create
 
         public class CreateParams
         {
@@ -463,5 +562,6 @@ namespace VRtist
 
             return uiCheckbox;
         }
+        #endregion
     }
 }
