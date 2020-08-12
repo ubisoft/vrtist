@@ -32,7 +32,7 @@ MonoBehaviour:
     value: {r: 0, g: 0.65, b: 1, a: 1}
   hoveredColor:
     isHdr: 0
-    value: {r: 0.4, g: 0.4, b: 0.4, a: 1}
+    value: {r: 0.3, g: 0.3, b: 0.3, a: 1}
   sliderRailColor:
     isHdr: 0
     value: {r: 0.1, g: 0.1, b: 0.1, a: 1}
