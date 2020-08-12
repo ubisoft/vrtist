@@ -123,16 +123,11 @@ namespace VRtist
 
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
+            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
 
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton, () =>
-            {
-                triggerJustClicked = true;
-            }, () =>
-            {
-                triggerJustReleased = true;
-            });
-
-
+            //
+            // Raycast, find out the closest volume, handle and widget.
+            //
 
             RaycastHit[] hits;
             Vector3 worldStart = transform.TransformPoint(0.0104f, 0, 0.065f);
@@ -145,6 +140,14 @@ namespace VRtist
             Ray r = new Ray(worldStart, worldDirection);
             int layersMask = LayerMask.GetMask(new string[] { "UI" });
             hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
+
+            // If a widget is locked (trigger has been pressed on it), give it a chance to handle the ray endpoint.
+            Vector3 rayEndPoint = worldEnd;
+            if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+            {
+                widgetClicked.OverrideRayEndPoint(r, ref rayEndPoint);
+            }
+
             if (hits.Length > 0)
             {
                 bool volumeIsHit = false;
@@ -230,22 +233,10 @@ namespace VRtist
 
                     ray.SetHandleColor();
 
-                    ExitWidget(triggerJustReleased);
+                    HandleRayOutOfWidget(triggerJustReleased);
                 }
                 else if (widgetIsHit)
                 {
-                    ray.gameObject.SetActive(true);
-                    ray.SetParameters(worldStart, widgetCollisionPoint, newWorldDirection);
-
-                    if (widget.GetComponent<UIPanel>())
-                    {
-                        ray.SetPanelColor();
-                    }
-                    else
-                    {
-                        ray.SetWidgetColor();
-                    }
-
                     if (prevWidget != widget) // change widget
                     {
                         if (widgetClicked != null) // trigger is held pushed.
@@ -323,29 +314,72 @@ namespace VRtist
                     }
 
                     prevWidget = widget; // even if the same.
+
+                    ray.gameObject.SetActive(true);
+
+                    if (widget.GetComponent<UIPanel>())
+                    {
+                        ray.SetPanelColor();
+                    }
+                    else
+                    {
+                        ray.SetWidgetColor();
+                    }
+
+                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    {
+                        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                    }
+                    else
+                    {
+                        ray.SetParameters(worldStart, widgetCollisionPoint, newWorldDirection);
+                    }
                 }
                 else if (volumeIsHit)
                 {
                     ray.gameObject.SetActive(true);
-                    ray.SetParameters(worldStart, worldStart + worldDirection * 0.3f, newWorldDirection); // volumeCollisionPoint
                     ray.SetVolumeColor();
+                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    {
+                        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                    }
+                    else
+                    {
+                        ray.SetParameters(worldStart, worldStart + worldDirection * 0.3f, newWorldDirection); // volumeCollisionPoint
+                    }
 
-                    ExitWidget(triggerJustReleased);
+                    HandleRayOutOfWidget(triggerJustReleased);
                 }
                 else // Layer UI but neither UIVolumeTag nor UIElement == Grid, for example.
                 {
-                    ray.gameObject.SetActive(false);
-                    ExitWidget(triggerJustReleased);
+                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    {
+                        ray.gameObject.SetActive(true);
+                        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                    }
+                    else
+                    {
+                        ray.gameObject.SetActive(false);
+                    }
+                    HandleRayOutOfWidget(triggerJustReleased);
                 }
             }
             else // No collision, most common case.
             {
-                ray.gameObject.SetActive(false);
-                ExitWidget(triggerJustReleased);
+                if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                {
+                    ray.gameObject.SetActive(true);
+                    ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                }
+                else
+                {
+                    ray.gameObject.SetActive(false);
+                }
+                HandleRayOutOfWidget(triggerJustReleased);
             }
         }
 
-        private void ExitWidget(bool triggerJustReleased)
+        private void HandleRayOutOfWidget(bool triggerJustReleased)
         {
             if (widgetClicked != null) // trigger is held pushed.
             {

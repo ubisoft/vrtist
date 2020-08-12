@@ -49,46 +49,46 @@ namespace VRtist
             rayMat = line.material;
         }
 
-        public void SetStartPosition(Vector3 start)
-        {
-            if (line != null)
-            {
-                line.SetPosition(0, start);
-                Vector3 end = line.GetPosition(10);
+        //public void SetStartPosition(Vector3 start)
+        //{
+        //    if (line != null)
+        //    {
+        //        line.SetPosition(0, start);
+        //        Vector3 end = line.GetPosition(10);
 
-                for (int i = 1; i < 10; ++i)
-                {
-                    float pct = ((float)i / 10.0f);
-                    line.SetPosition(i, start + (end - start) * pct);
-                }
+        //        for (int i = 1; i < 10; ++i)
+        //        {
+        //            float pct = ((float)i / 10.0f);
+        //            line.SetPosition(i, start + (end - start) * pct);
+        //        }
 
-                line.startWidth = startWidth / f;
-                line.endWidth = endWidth / f;
-            }
-        }
+        //        line.startWidth = startWidth / f;
+        //        line.endWidth = endWidth / f;
+        //    }
+        //}
 
-        public void SetEndPosition(Vector3 end)
-        {
-            if (line != null)
-            {
-                line.SetPosition(10, end);
-                Vector3 start = line.GetPosition(0);
+        //public void SetEndPosition(Vector3 end)
+        //{
+        //    if (line != null)
+        //    {
+        //        line.SetPosition(10, end);
+        //        Vector3 start = line.GetPosition(0);
 
-                for (int i = 1; i < 10; ++i)
-                {
-                    float pct = ((float)i / 10.0f);
-                    line.SetPosition(i, start + (end - start) * pct);
-                }
+        //        for (int i = 1; i < 10; ++i)
+        //        {
+        //            float pct = ((float)i / 10.0f);
+        //            line.SetPosition(i, start + (end - start) * pct);
+        //        }
 
-                line.startWidth = startWidth / f;
-                line.endWidth = endWidth / f;
-            }
+        //        line.startWidth = startWidth / f;
+        //        line.endWidth = endWidth / f;
+        //    }
 
-            if (endPoint != null)
-            {
-                endPoint.position = end;
-            }
-        }
+        //    if (endPoint != null)
+        //    {
+        //        endPoint.position = end;
+        //    }
+        //}
 
         public void SetParameters(Vector3 start, Vector3 end, Vector3 startTangent)
         {
