@@ -354,6 +354,14 @@ namespace VRtist
             }
         }
 
+        public static void GetInstantButtonEvent(InputDevice controller, InputFeatureUsage<bool> usage, ref bool outJustPressed, ref bool outJustReleased)
+        {
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            InputPair pair = new InputPair(c, usage);
+            outJustPressed = justPressed.Contains(pair);
+            outJustReleased = justReleased.Contains(pair);
+        }
+
         public static void InitInvertedControllers()
         {
             if (invertedController.Count == 0 && leftController.isValid && rightController.isValid)
