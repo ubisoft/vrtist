@@ -369,10 +369,15 @@ namespace VRtist
         {
             if (!head.isValid || !leftController.isValid || !rightController.isValid)
             {
-                head = InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
-                leftController = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-                rightController = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-
+                var inputDevices = new List<InputDevice>();
+                InputDevices.GetDevices(inputDevices);
+                foreach (var device in inputDevices)
+                {
+                    if (device.characteristics == (InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice)) { head = device; }
+                    if (device.characteristics == (InputDeviceCharacteristics.Right | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { rightController = device; }
+                    if (device.characteristics == (InputDeviceCharacteristics.Left | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { leftController = device; }
+                    Debug.Log(string.Format("Device found with name '{0}' and role '{1}'", device.name, device.characteristics.ToString()));
+                }
                 if (!head.isValid) { Debug.LogWarning("Generic device not found !!"); }
                 if (!leftController.isValid) { Debug.LogWarning("Left device not found !!"); }
                 else
