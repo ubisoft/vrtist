@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -72,6 +71,11 @@ namespace VRtist
             locked = sourceController.locked;
         }
 
+        public virtual void SetName(string name)
+        {
+            gameObject.name = name;
+        }
+
         protected Transform GetWorldTransform()
         {
             if (null != world)
@@ -104,7 +108,7 @@ namespace VRtist
 
         public void FireValueChanged()
         {
-            if(null != onChangedEvent)
+            if (null != onChangedEvent)
                 onChangedEvent.Invoke(gameObject);
         }
 
@@ -114,7 +118,7 @@ namespace VRtist
 
             ClearAnimationInfo info = new ClearAnimationInfo { gObject = gameObject };
             NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
-        
+
             FireValueChanged();
         }
 
@@ -142,6 +146,6 @@ namespace VRtist
             return channels;
         }
 
-        public virtual Parameters GetParameters() { return null;  }
+        public virtual Parameters GetParameters() { return null; }
     }
 }
