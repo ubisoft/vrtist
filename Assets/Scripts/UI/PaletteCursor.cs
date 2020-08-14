@@ -228,11 +228,29 @@ namespace VRtist
 
                 if (handleIsHit)
                 {
-                    ray.gameObject.SetActive(true);
-                    ray.SetParameters(worldStart, handleCollisionPoint, newWorldDirection);
+                    //ray.gameObject.SetActive(true);
 
-                    ray.SetHandleColor();
+                    //HandleRayOutOfWidget(triggerJustReleased);
 
+                    //if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    //{
+                    //    ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                    //}
+                    //else
+                    //{
+                    //    ray.SetHandleColor();
+                    //    ray.SetParameters(worldStart, handleCollisionPoint, newWorldDirection);
+                    //}
+
+                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    {
+                        ray.gameObject.SetActive(true);
+                        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                    }
+                    else
+                    {
+                        ray.gameObject.SetActive(false);
+                    }
                     HandleRayOutOfWidget(triggerJustReleased);
                 }
                 else if (widgetIsHit)
@@ -338,13 +356,13 @@ namespace VRtist
                 else if (volumeIsHit)
                 {
                     ray.gameObject.SetActive(true);
-                    ray.SetVolumeColor();
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
                     }
                     else
                     {
+                        ray.SetVolumeColor();
                         ray.SetParameters(worldStart, worldStart + worldDirection * 0.3f, newWorldDirection); // volumeCollisionPoint
                     }
 
