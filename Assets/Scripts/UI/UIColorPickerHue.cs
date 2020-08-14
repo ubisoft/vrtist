@@ -7,12 +7,12 @@ namespace VRtist
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
-    public class UIColorPickerHue : MonoBehaviour
+    public class UIColorPickerHue : UIElement
     {
         // UIElement ?
 
-        private float width = 1.0f;
-        private float height = 1.0f;
+        //private float width = 1.0f;
+        //private float height = 1.0f;
         private float thickness = 1.0f;
 
         public UIColorPicker colorPicker = null;
@@ -45,28 +45,6 @@ namespace VRtist
         {
             cursorPosition = value;
             cursor.localPosition = new Vector3(width * value, -height/2.0f, 0);
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            colorPicker.OnClick(other);
-        }
-        private void OnTriggerExit(Collider other)
-        {
-            colorPicker.OnRelease(other);
-        }
-        private void OnTriggerStay(Collider other)
-        {
-            if (other.gameObject.name != "Cursor")
-                return;
-
-            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
-            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
-
-            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
-
-            SetHue(Mathf.Clamp(position.x / width, 0, 1));
-            colorPicker.OnColorChanged();
         }
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness)
@@ -104,6 +82,46 @@ namespace VRtist
             }
         }
 
+        // --- TOUCH -----------------------------------------
+
+        private void OnTriggerEnter(Collider other)
+        {
+            colorPicker.OnClick(other);
+        }
+        private void OnTriggerExit(Collider other)
+        {
+            colorPicker.OnRelease(other);
+        }
+        private void OnTriggerStay(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
+            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
+
+            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
+
+            SetHue(Mathf.Clamp(position.x / width, 0, 1));
+            colorPicker.OnColorChanged();
+        }
+
+        // --- / TOUCH -----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public static UIColorPickerHue CreateUIColorPickerHue(
             string objectName,
             Transform parent,
@@ -130,7 +148,7 @@ namespace VRtist
             }
 
             UIColorPickerHue uiColorPickerHue = go.AddComponent<UIColorPickerHue>();
-            //uiColorPickerHue.relativeLocation = relativeLocation;
+            uiColorPickerHue.relativeLocation = relativeLocation;
             uiColorPickerHue.transform.parent = parent;
             uiColorPickerHue.transform.localPosition = parentAnchor + relativeLocation;
             uiColorPickerHue.transform.localRotation = Quaternion.identity;
@@ -144,7 +162,7 @@ namespace VRtist
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = UIUtils.BuildBoxEx(width, height, thickness);
-                //uiColorPickerHue.Anchor = Vector3.zero;
+                uiColorPickerHue.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {
