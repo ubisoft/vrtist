@@ -127,19 +127,17 @@ namespace VRtist
             hdrCheckbox.Checked = value;
         }
 
-        public void OnClick(Collider otherCollider)
+
+
+
+        public void OnClick()
         {
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onClickEvent.Invoke();
-            }
+            onClickEvent.Invoke();
         }
-        public void OnRelease(Collider otherCollider)
+
+        public void OnRelease()
         {
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
-            }
+            onReleaseEvent.Invoke();
         }
 
         public void OnColorChanged()
@@ -162,6 +160,8 @@ namespace VRtist
 
             onColorChangedEvent.Invoke(currentColor);
         }
+
+
 
         public override void RebuildMesh()
         {
