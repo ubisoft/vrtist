@@ -585,7 +585,7 @@ namespace VRtist
 
             // DRAG
 
-            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, .05f);
+            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
 
             // CLAMP
 
