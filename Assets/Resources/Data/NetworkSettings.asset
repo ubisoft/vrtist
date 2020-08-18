@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b274cfb87d9c4c7439d5c5427dcaa4ce, type: 3}
   m_Name: NetworkSettings
   m_EditorClassIdentifier: 
-  host: 185.172.233.143
+  host: 127.0.0.1
   port: 12800
   room: Local
-  master: 86.246.138.244:8352
+  master: 

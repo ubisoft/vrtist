@@ -246,7 +246,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 // SHOW cursor
-
+                onSlideEvent.Invoke(currentValue);
                 onReleaseEvent.Invoke();
             }
         }
