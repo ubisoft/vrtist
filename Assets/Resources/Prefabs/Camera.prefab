@@ -479,7 +479,7 @@ MonoBehaviour:
   cameraObject: {fileID: 0}
   focal: 35
   near: 0.07
-  far: 100
+  far: 1000
 --- !u!65 &1366448641114277504
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -938,6 +938,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 2.1
       objectReference: {fileID: 0}
+    - target: {fileID: -2397996973257786244, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: -927199367670048503, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
       propertyPath: m_Name
@@ -948,15 +953,30 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: -113181020801827196, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1318462475825722627, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 5b6c4054ff17ad1499c50638fe25c164, type: 2}
+    - target: {fileID: 1318462475825722627, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2502203975881118265, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
       propertyPath: m_Layer
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4063835366044962077, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7469484624682501897, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
