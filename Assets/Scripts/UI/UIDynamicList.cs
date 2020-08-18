@@ -200,14 +200,18 @@ namespace VRtist
 
         public void OnNextPage()
         {
-            currentPage = (currentPage + 1) % pagesCount;
+            currentPage = 0;
             NeedsRebuild = true;
+            if (pagesCount != 0)
+                currentPage = (currentPage + 1) % pagesCount;
         }
 
         public void OnPreviousPage()
         {
-            currentPage = (currentPage + pagesCount - 1) % pagesCount;
+            currentPage = 0;
             NeedsRebuild = true;
+            if (pagesCount != 0)
+                currentPage = (currentPage + pagesCount - 1) % pagesCount;
         }
 
         public void OnFirstPage()

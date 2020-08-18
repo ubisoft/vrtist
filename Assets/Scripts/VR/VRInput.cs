@@ -149,10 +149,12 @@ namespace VRtist
                 if (bCurrValue)
                 {
                     justPressed.Add(pair);
+                    justReleased.Remove(pair);
                 }
                 else
                 {
                     justReleased.Add(pair);
+                    justPressed.Remove(pair);
                 }
             }
         }

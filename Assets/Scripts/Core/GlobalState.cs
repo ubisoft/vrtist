@@ -116,7 +116,8 @@ namespace VRtist
             instance = Instance;
             settings.Load();
 
-            masterId = networkSettings.master;
+            if(null != networkSettings.master && networkSettings.master.Length > 0)
+                masterId = networkSettings.master;
 
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);

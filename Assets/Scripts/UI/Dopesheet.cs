@@ -298,6 +298,8 @@ namespace VRtist
 
         public void OnAddKeyFrame()
         {
+            if (null == controller)
+                return;
             string name = controller.gameObject.name;
             int frame = CurrentFrame;
             SendKeyInfo(name, "location", 0, frame, controller.transform.localPosition.x);
@@ -317,6 +319,8 @@ namespace VRtist
 
         public void OnRemoveKeyFrame()
         {
+            if (null == controller)
+                return;
             SendDeleteKeyInfo("location", 0);
             SendDeleteKeyInfo("location", 1);
             SendDeleteKeyInfo("location", 2);
