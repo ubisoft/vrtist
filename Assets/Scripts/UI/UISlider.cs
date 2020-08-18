@@ -59,6 +59,8 @@ namespace VRtist
         public float minValue = default_min_value;
         public float maxValue = default_max_value;
         public float currentValue = default_current_value;
+        public AnimationCurve dataCurve = new AnimationCurve(new Keyframe(0, default_min_value), new Keyframe(1, default_min_value));
+        public AnimationCurve invDataCurve = null;
 
         // TODO: precision, step?
 
@@ -75,6 +77,11 @@ namespace VRtist
         public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
         public string Text { get { return textContent; } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
+
+        public bool HasCurveData()
+        {
+            return (dataCurve != null && dataCurve.keys.Length > 0);
+        }
 
         void Start()
         {
@@ -281,6 +288,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateValueText();
+                    BuildInverseCurve();
                     UpdateSliderPosition();
                     ResetColor();
                 }
@@ -367,7 +375,8 @@ namespace VRtist
 
         private void UpdateSliderPosition()
         {
-            float pct = (currentValue - minValue) / (maxValue - minValue);
+            float pct = HasCurveData() ? invDataCurve.Evaluate(currentValue) 
+                : (currentValue - minValue) / (maxValue - minValue);
 
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
@@ -379,6 +388,31 @@ namespace VRtist
             knob.transform.localPosition = knobPosition;
         }
 
+        private void BuildInverseCurve()
+        {
+            if (dataCurve == null)
+                return;
+
+            // TODO: check c is strictly monotonic and Piecewise linear, log error otherwise
+
+            invDataCurve = new AnimationCurve();
+            for (int i = 0; i < dataCurve.keys.Length; i++)
+            {
+                var kf = dataCurve.keys[i];
+                var rkf = new Keyframe(kf.value, kf.time);
+                if (kf.inTangent < 0)
+                {
+                    rkf.inTangent = 1 / kf.outTangent;
+                    rkf.outTangent = 1 / kf.inTangent;
+                }
+                else
+                {
+                    rkf.inTangent = 1 / kf.inTangent;
+                    rkf.outTangent = 1 / kf.outTangent;
+                }
+                invDataCurve.AddKey(rkf);
+            }
+        }
 
         private void SetText(string textValue)
         {
@@ -479,7 +513,14 @@ namespace VRtist
                 bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
                 if (triggerState)
                 {
-                    Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    if (HasCurveData())
+                    {
+                        Value = dataCurve.Evaluate(pct);
+                    }
+                    else // linear
+                    {
+                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    }
                     onSlideEvent.Invoke(currentValue);
                     int intValue = Mathf.RoundToInt(currentValue);
                     onSlideEventInt.Invoke(intValue);
@@ -580,6 +621,7 @@ namespace VRtist
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
 
+            // TODO: use curve, invert curve.
             float currentValuePct = (Value - minValue) / (maxValue - minValue);
             float currentKnobPositionX = startX + currentValuePct * (endX - startX);
 
@@ -600,6 +642,7 @@ namespace VRtist
             // SET
 
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+            // TODO: put the "curve" code here
             Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);
