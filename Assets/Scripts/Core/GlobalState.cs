@@ -32,7 +32,10 @@ namespace VRtist
         public static string room = "Local";
 
         // Connected users
-        public Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
+        private Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
+        private Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
+        private GameObject avatarPrefab;
+        private Transform avatarsContainer;
 
         // Play / Pause
         public bool isPlaying = false;
@@ -66,9 +69,11 @@ namespace VRtist
 
         // Color
         private static Color currentColor = Color.blue;
-        public static Color CurrentColor {
+        public static Color CurrentColor
+        {
             get { return currentColor; }
-            set {
+            set
+            {
                 Instance.colorPicker.CurrentColor = value;
                 Instance.OnChangeColor(value);
                 colorChangedEvent.Invoke(value);
@@ -126,12 +131,13 @@ namespace VRtist
             settings.Save();
         }
 
-        private void Start() {
-            if(null != leftController) 
+        private void Start()
+        {
+            if (null != leftController)
             {
                 displayTooltip = Tooltips.CreateTooltip(leftController, Tooltips.Anchors.Info, "- fps");
             }
-            if(null != cameraFeedback)
+            if (null != cameraFeedback)
             {
                 cameraFeedback.transform.localPosition = settings.cameraFeedbackPosition;
                 cameraFeedback.transform.localRotation = settings.cameraFeedbackRotation;
@@ -140,6 +146,9 @@ namespace VRtist
                 cameraFeedback.transform.localScale = settings.cameraFeedbackScale;
                 cameraFeedback.SetActive(settings.cameraFeedbackVisible);
             }
+
+            avatarPrefab = Resources.Load<GameObject>("Prefabs/VR Avatar");
+            avatarsContainer = world.Find("Avatars");
         }
 
         public void SetPlaying(bool value)
@@ -154,12 +163,14 @@ namespace VRtist
             onRecordEvent.Invoke(value);
         }
 
-        private void UpdateFps() {
-            if(!settings.displayFPS) { return; }
+        private void UpdateFps()
+        {
+            if (!settings.displayFPS) { return; }
 
             // Initialize
-            if(null == fpsBuffer || fpsBuffer.Length != fpsFrameRange) {
-                if(fpsFrameRange <= 0) { fpsFrameRange = 1; }
+            if (null == fpsBuffer || fpsBuffer.Length != fpsFrameRange)
+            {
+                if (fpsFrameRange <= 0) { fpsFrameRange = 1; }
                 fpsBuffer = new int[fpsFrameRange];
                 fpsBufferIndex = 0;
             }
@@ -167,13 +178,15 @@ namespace VRtist
             // Bufferize
             fpsBuffer[fpsBufferIndex] = (int) (1f / Time.unscaledDeltaTime);
             ++fpsBufferIndex;
-            if(fpsBufferIndex >= fpsFrameRange) {
+            if (fpsBufferIndex >= fpsFrameRange)
+            {
                 fpsBufferIndex = 0;
             }
 
             // Calculate mean fps
             int sum = 0;
-            for(int i = 0; i < fpsFrameRange; ++i) {
+            for (int i = 0; i < fpsFrameRange; ++i)
+            {
                 sum += fpsBuffer[i];
             }
             fps = sum / fpsFrameRange;
@@ -181,16 +194,19 @@ namespace VRtist
 
         private void Update()
         {
-            if(null != displayTooltip)
+            // Info on the left controller
+            if (null != displayTooltip)
             {
                 string infoText = worldScale < 1f ? $"Scale down: {1f / worldScale:F2}" : $"Scale up: {worldScale:F2}";
-                if(settings.displayFPS)
+                if (settings.displayFPS)
                 {
                     UpdateFps();
                     infoText += $"\n{fps} fps";
                 }
                 Tooltips.SetTooltipText(displayTooltip, infoText);
             }
+
+            // Connected users
         }
 
         public void LateUpdate()
@@ -207,10 +223,10 @@ namespace VRtist
 
         public static void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
         {
-            foreach(var controller in controllers)
+            foreach (var controller in controllers)
             {
                 MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
-                foreach(MeshFilter meshFilter in meshFilters)
+                foreach (MeshFilter meshFilter in meshFilters)
                 {
                     meshFilter.gameObject.SetActive(value);
                 }
@@ -244,6 +260,45 @@ namespace VRtist
         public void OnCameraDamping(float value)
         {
             settings.cameraDamping = value;
+        }
+
+        public static bool HasConnectedUser(string userId)
+        {
+            return Instance.connectedUsers.ContainsKey(userId);
+        }
+
+        public static void AddConnectedUser(ConnectedUser user)
+        {
+            Instance.connectedUsers[user.id] = user;
+            GameObject avatar = Instantiate(Instance.avatarPrefab, Instance.avatarsContainer);
+            avatar.name = $"{user.name} {user.id}";
+            //avatar.transform.localPosition = user.eye;
+            //avatar.transform.LookAt(Instance.avatarsContainer.TransformPoint(user.target));
+            AvatarController controller = avatar.GetComponent<AvatarController>();
+            controller.SetUser(user);
+            Instance.connectedAvatars[user.id] = controller;
+        }
+
+        public static void RemoveConnectedUser(string userId)
+        {
+            if (Instance.connectedUsers.ContainsKey(userId))
+            {
+                Instance.connectedUsers.Remove(userId);
+                Instance.connectedAvatars.Remove(userId);
+            }
+        }
+
+        public static ConnectedUser GetConnectedUser(string userId)
+        {
+            return Instance.connectedUsers[userId];
+        }
+
+        public static void UpdateConnectedUser(ConnectedUser user)
+        {
+            if (Instance.connectedAvatars.ContainsKey(user.id))
+            {
+                Instance.connectedAvatars[user.id].SetUser(user);
+            }
         }
     }
 }

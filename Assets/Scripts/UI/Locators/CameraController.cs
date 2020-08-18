@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace VRtist
 {
@@ -24,11 +25,11 @@ namespace VRtist
 
         private void Init()
         {
-            if(null == cameraObject)
+            if (null == cameraObject)
             {
                 cameraObject = gameObject.GetComponentInChildren<Camera>(true);
             }
-            if(null == frustumRenderer)
+            if (null == frustumRenderer)
             {
                 GameObject frustum = transform.Find("Frustum").gameObject;
                 frustumRenderer = frustum.GetComponent<LineRenderer>();
@@ -38,9 +39,9 @@ namespace VRtist
 
         void Update()
         {
-            if(null == cameraObject)
+            if (null == cameraObject)
                 cameraObject = gameObject.GetComponentInChildren<Camera>();
-            if(null != cameraObject)
+            if (null != cameraObject)
             {
                 float scale = GlobalState.worldScale;
                 cameraObject.farClipPlane = far * scale;
@@ -48,7 +49,7 @@ namespace VRtist
                 cameraObject.focalLength = focal;
 
                 // Only draw frustum for selected camera
-                if(CameraTool.showCameraFrustum && (gameObject.layer == LayerMask.NameToLayer("Selection") || gameObject.layer == LayerMask.NameToLayer("Hover")))
+                if (CameraTool.showCameraFrustum && (gameObject.layer == LayerMask.NameToLayer("Selection") || gameObject.layer == LayerMask.NameToLayer("Hover")))
                 {
                     DrawFrustum();
                 }
@@ -67,6 +68,13 @@ namespace VRtist
             focal = other.focal;
             near = other.near;
             far = other.far;
+        }
+
+        public override void SetName(string name)
+        {
+            base.SetName(name);
+            TextMeshProUGUI text = gameObject.GetComponentInChildren<TextMeshProUGUI>();
+            text.text = name;
         }
 
         private void DrawFrustum()

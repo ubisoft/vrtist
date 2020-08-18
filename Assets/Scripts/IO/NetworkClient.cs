@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -1072,7 +1070,7 @@ namespace VRtist
 
         public static string GetString(byte[] data, ref int bufferIndex)
         {
-            int strLength = (int)BitConverter.ToUInt32(data, bufferIndex);
+            int strLength = (int) BitConverter.ToUInt32(data, bufferIndex);
             string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
             bufferIndex = bufferIndex + strLength + 4;
             return str;
@@ -1140,7 +1138,7 @@ namespace VRtist
             transform.localPosition = t;
             transform.localRotation = r;
             transform.localScale = s;
-            
+
             SyncData.ApplyTransformToInstances(transform);
             SyncData.ApplyVisibilityToInstances(transform);
 
@@ -1244,7 +1242,7 @@ namespace VRtist
 
             CameraController cameraController = cameraInfo.transform.GetComponent<CameraController>();
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
-            int sensorFit = (int)cam.gateFit;
+            int sensorFit = (int) cam.gateFit;
 
             byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(cameraController.focal), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
@@ -1301,7 +1299,7 @@ namespace VRtist
             }
 
             byte[] paramsBuffer = new byte[2 * sizeof(int) + 7 * sizeof(float)];
-            Buffer.BlockCopy(BitConverter.GetBytes((int)light.type), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes((int) light.type), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(shadow), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(light.color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
@@ -1483,7 +1481,7 @@ namespace VRtist
             if (keyChannelIndex != -1)
                 animationChannel += $"[{keyChannelIndex}]";
 
-            int keyCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int keyCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
             int[] intBuffer = new int[keyCount];
@@ -1573,7 +1571,7 @@ namespace VRtist
             float aperture = BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
             currentIndex += 4 * sizeof(float);
 
-            Camera.GateFitMode gateFit = (Camera.GateFitMode)BitConverter.ToInt32(data, currentIndex);
+            Camera.GateFitMode gateFit = (Camera.GateFitMode) BitConverter.ToInt32(data, currentIndex);
             if (gateFit == Camera.GateFitMode.None)
                 gateFit = Camera.GateFitMode.Horizontal;
             currentIndex += sizeof(Int32);
@@ -1610,7 +1608,7 @@ namespace VRtist
 
             string name = GetString(data, ref currentIndex);
 
-            LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
+            LightType lightType = (LightType) BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject = null;
@@ -1717,7 +1715,7 @@ namespace VRtist
             byte[] color;
             byte[] enabled;
 
-            byte[] action = IntToBytes((int)info.action);
+            byte[] action = IntToBytes((int) info.action);
             byte[] shotIndex = IntToBytes(info.shotIndex);
 
             switch (info.action)
@@ -1838,15 +1836,15 @@ namespace VRtist
             Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = GetString(data, ref currentIndex);
 
-            int baseMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
+            int baseMeshDataSize = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4 + baseMeshDataSize;
 
-            int bakedMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
+            int bakedMeshDataSize = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             if (bakedMeshDataSize == 0)
                 return null;
 
-            int verticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int verticesCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int size = verticesCount * sizeof(float) * 3;
             Vector3[] vertices = new Vector3[verticesCount];
@@ -1861,7 +1859,7 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int normalsCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int normalsCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             size = normalsCount * sizeof(float) * 3;
             Vector3[] normals = new Vector3[normalsCount];
@@ -1878,7 +1876,7 @@ namespace VRtist
             UInt32 UVsCount = BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
-            size = (int)UVsCount * sizeof(float) * 2;
+            size = (int) UVsCount * sizeof(float) * 2;
             Vector2[] uvs = new Vector2[UVsCount];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             idx = 0;
@@ -1889,14 +1887,14 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int materialIndicesCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int[] materialIndices = new int[materialIndicesCount * 2];
             size = materialIndicesCount * 2 * sizeof(int);
             Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
             currentIndex += size;
 
-            int indicesCount = (int)BitConverter.ToUInt32(data, currentIndex) * 3;
+            int indicesCount = (int) BitConverter.ToUInt32(data, currentIndex) * 3;
             currentIndex += 4;
             int[] indices = new int[indicesCount];
             size = indicesCount * sizeof(int);
@@ -1904,7 +1902,7 @@ namespace VRtist
             currentIndex += size;
 
 
-            int materialCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int materialCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             List<Material> meshMaterials = new List<Material>();
             if (materialCount == 0)
@@ -1916,7 +1914,7 @@ namespace VRtist
             {
                 for (int i = 0; i < materialCount; i++)
                 {
-                    int materialNameSize = (int)BitConverter.ToUInt32(data, currentIndex);
+                    int materialNameSize = (int) BitConverter.ToUInt32(data, currentIndex);
                     string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
                     currentIndex += materialNameSize + 4;
 
@@ -2491,11 +2489,11 @@ namespace VRtist
         public static NetCommand BuildSendFrameCommand(int frame)
         {
             byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
-            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Frame);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int) MessageType.Frame);
             byte[] frameBuffer = NetGeometry.IntToBytes(frame);
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, frameBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
-            return new NetCommand(buffer, MessageType.ClientIdWrapper);   
+            return new NetCommand(buffer, MessageType.ClientIdWrapper);
         }
 
         public static NetCommand BuildSendSetKey(SetKeyInfo data)
@@ -2596,70 +2594,92 @@ namespace VRtist
 
         public static void BuildClientAttribute(byte[] data)
         {
-            return;
-
             int index = 0;
-            string jsonAttr = NetGeometry.GetString(data, ref index);
-            Regex regex = new Regex("{\"(?<user_id>.+?)\"");
-            if (regex.IsMatch(jsonAttr))
+            string json = GetString(data, ref index);
+            // JArray exception... :(
+            //var d = JsonConvert.DeserializeObject<Dictionary<string, JsonClientId>>(jsonAttr);
+
+            ClientInfo client = JsonHelper.GetClientInfo(json);
+
+            if (client.id.IsValid)
             {
-                Match match = regex.Match(jsonAttr);
-                string userId = match.Groups["user_id"].Value;
+                // Ignore info on ourself
+                if (client.id.value == GlobalState.clientId) { return; }
 
-                if (userId == GlobalState.clientId)
-                    return;                
-
-                Regex roomRegex = new Regex("\"room\": (?<name>(?:\"(?:.+?)\")|(?:null))");
-                if (roomRegex.IsMatch(jsonAttr))
+                if (client.room.IsValid)
                 {
-                    Match roomMatch = roomRegex.Match(jsonAttr);
-                    string room = roomMatch.Groups["name"].Value;
-
-                    if(room == "null")
+                    // A client may leave the room
+                    if (client.room.value == "null")
                     {
-                        if (GlobalState.Instance.connectedUsers.ContainsKey(userId))
-                            GlobalState.Instance.connectedUsers.Remove(userId);
+                        GlobalState.RemoveConnectedUser(client.id.value);
                         return;
                     }
 
-                    if (room != GlobalState.room)
-                    {
-                        return;
-                    }
+                    // Ignore other room messages
+                    if (client.room.value != GlobalState.room) { return; }
 
-                    if(!GlobalState.Instance.connectedUsers.ContainsKey(userId))
+                    // Add client to the list of connected users in our room
+                    if (!GlobalState.HasConnectedUser(client.id.value))
                     {
                         ConnectedUser newUser = new ConnectedUser();
-                        newUser.id = userId;
-                        GlobalState.Instance.connectedUsers[userId] = newUser;
+                        newUser.id = client.id.value;
+                        GlobalState.AddConnectedUser(newUser);
                     }
                 }
 
-                if (!GlobalState.Instance.connectedUsers.ContainsKey(userId))
-                {
-                    ConnectedUser newUser = new ConnectedUser();
-                    newUser.id = userId;
-                    GlobalState.Instance.connectedUsers[userId] = newUser;
-                }
-                ConnectedUser user = GlobalState.Instance.connectedUsers[userId];
+                // Get client connected to our room
+                if (!GlobalState.HasConnectedUser(client.id.value)) { return; }
+                ConnectedUser user = GlobalState.GetConnectedUser(client.id.value);
 
-                Regex eyeRegex = new Regex("\"eye\": \\[(?<x>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<y>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<z>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?)]");
-                if (eyeRegex.IsMatch(jsonAttr))
+                bool changed = false;
+
+                // Get its eye position
+                if (client.eye.IsValid)
                 {
-                    Match eyeMatch = eyeRegex.Match(jsonAttr);
-                    float eyeX = float.Parse(eyeMatch.Groups["x"].Value, CultureInfo.InvariantCulture.NumberFormat);
-                    float eyeY = float.Parse(eyeMatch.Groups["y"].Value, CultureInfo.InvariantCulture.NumberFormat);
-                    float eyeZ = float.Parse(eyeMatch.Groups["z"].Value, CultureInfo.InvariantCulture.NumberFormat);
-                    user.eye = new Vector3(eyeX, eyeY, eyeZ);
+                    user.eye = client.eye.value;
+                    changed = true;
                 }
-                Regex targetRegex = new Regex("\"target\": \\[(?<x>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<y>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?),\\s(?<z>[-+]?\\d+?\\.\\d+(?:[eE][-]\\d+)?)]");
-                if (targetRegex.IsMatch(jsonAttr))
+
+                // Get its target look at
+                if (client.target.IsValid)
                 {
-                    Match targetMatch = targetRegex.Match(jsonAttr);
-                    float targetX = float.Parse(targetMatch.Groups["x"].Value, CultureInfo.InvariantCulture.NumberFormat);
-                    float targetY = float.Parse(targetMatch.Groups["y"].Value, CultureInfo.InvariantCulture.NumberFormat);
-                    float targetZ = float.Parse(targetMatch.Groups["z"].Value, CultureInfo.InvariantCulture.NumberFormat);
-                    user.target = new Vector3(targetX, targetY, targetZ);
+                    user.target = client.target.value;
+                    changed = true;
+                }
+
+                if (changed) { GlobalState.UpdateConnectedUser(user); }
+            }
+        }
+
+        public static void BuildListAllClients(byte[] data)
+        {
+            int index = 0;
+            string json = GetString(data, ref index);
+            List<ClientInfo> clients = JsonHelper.GetClientsInfo(json);
+            foreach (ClientInfo client in clients)
+            {
+                // Invalid client
+                if (!client.id.IsValid) { continue; }
+
+                // Ignore ourself
+                if (client.id.value == GlobalState.clientId) { continue; }
+
+                if (client.room.IsValid)
+                {
+                    // Only consider clients in our room
+                    if (client.room.value != GlobalState.room) { continue; }
+
+                    // Add client to the list of connected users in our room
+                    if (!GlobalState.HasConnectedUser(client.id.value))
+                    {
+                        ConnectedUser newUser = new ConnectedUser();
+                        newUser.id = client.id.value;
+                        if (client.userName.IsValid) { newUser.name = client.userName.value; }
+                        if (client.userColor.IsValid) { newUser.color = client.userColor.value; }
+                        if (client.eye.IsValid) { newUser.eye = client.eye.value; }
+                        if (client.target.IsValid) { newUser.target = client.target.value; }
+                        GlobalState.AddConnectedUser(newUser);
+                    }
                 }
             }
         }
@@ -2667,7 +2687,7 @@ namespace VRtist
         public static void BuildShotManagerAction(byte[] data)
         {
             int index = 0;
-            ShotManagerAction action = (ShotManagerAction)GetInt(data, ref index);
+            ShotManagerAction action = (ShotManagerAction) GetInt(data, ref index);
             int shotIndex = GetInt(data, ref index);
 
             switch (action)
@@ -2780,14 +2800,14 @@ namespace VRtist
         IPAddress GetIpAddressFromHostname(string hostname)
         {
             string[] splitted = hostname.Split('.');
-            if(splitted.Length == 4)
+            if (splitted.Length == 4)
             {
                 bool error = false;
                 byte[] baddr = new byte[4];
-                for(int i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     int val;
-                    if(Int32.TryParse(splitted[i], out val) && val >= 0 && val <= 255)
+                    if (Int32.TryParse(splitted[i], out val) && val >= 0 && val <= 255)
                     {
                         baddr[i] = (byte) val;
                     }
@@ -2797,18 +2817,18 @@ namespace VRtist
                         break;
                     }
                 }
-                if(!error)
+                if (!error)
                     return new IPAddress(baddr);
             }
 
             IPAddress ipAddress = null;
 
             IPHostEntry ipHostInfo = Dns.GetHostEntry(hostname);
-            if(ipHostInfo.AddressList.Length == 0)
+            if (ipHostInfo.AddressList.Length == 0)
                 return ipAddress;
 
 #pragma warning disable CS0162 // Unreachable code detected
-            for(int i = ipHostInfo.AddressList.Length - 1; i >= 0; i--)
+            for (int i = ipHostInfo.AddressList.Length - 1; i >= 0; i--)
 #pragma warning restore CS0162 // Unreachable code detected
             {
                 IPAddress addr = ipHostInfo.AddressList[i];
@@ -2826,25 +2846,25 @@ namespace VRtist
             string room = "Local";
             string hostname = "localhost";
             int port = 12800;
-            
+
             /*
             hostname = "10.22.3.161";
             room = "Room_VRtist_Incubator";            
             */
-            for(int i = 0; i < args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
-                if(args[i] == "--room")
+                if (args[i] == "--room")
                 {
                     room = args[i + 1];
                     GlobalState.room = room;
                 }
 
-                if(args[i] == "--hostname")
+                if (args[i] == "--hostname")
                 {
                     hostname = args[i + 1];
                 }
 
-                if(args[i] == "--port")
+                if (args[i] == "--port")
                 {
                     Int32.TryParse(args[i + 1], out port);
                 }
@@ -2857,7 +2877,7 @@ namespace VRtist
             }
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
-            if(null == ipAddress)
+            if (null == ipAddress)
                 return;
 
             IPEndPoint remoteEP = new IPEndPoint(ipAddress, port);
@@ -2870,17 +2890,17 @@ namespace VRtist
             {
                 socket.Connect(remoteEP);
             }
-            catch(ArgumentNullException ane)
+            catch (ArgumentNullException ane)
             {
                 Console.WriteLine("ArgumentNullException : {0}", ane.ToString());
                 return;
             }
-            catch(SocketException se)
+            catch (SocketException se)
             {
                 Console.WriteLine("SocketException : {0}", se.ToString());
                 return;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("Unexpected exception : {0}", e.ToString());
                 return;
@@ -2901,7 +2921,7 @@ namespace VRtist
 
         public void Join()
         {
-            if(thread == null)
+            if (thread == null)
                 return;
             alive = false;
             thread.Join();
@@ -2911,7 +2931,7 @@ namespace VRtist
         NetCommand ReadMessage()
         {
             int count = socket.Available;
-            if(count < 14)
+            if (count < 14)
                 return null;
 
             byte[] header = new byte[14];
@@ -2925,7 +2945,7 @@ namespace VRtist
             byte[] data = new byte[size];
             long remaining = size;
             long current = 0;
-            while(remaining > 0)
+            while (remaining > 0)
             {
                 int sizeRead = socket.Receive(data, (int) current, (int) remaining, SocketFlags.None);
                 current += sizeRead;
@@ -2949,7 +2969,7 @@ namespace VRtist
 
         void AddCommand(NetCommand command)
         {
-            lock(this)
+            lock (this)
             {
                 pendingCommands.Add(command);
             }
@@ -3017,7 +3037,7 @@ namespace VRtist
         public void SendPlay()
         {
             byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
-            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Play);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int) MessageType.Play);
             byte[] dataBuffer = new byte[0];
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
             byte[] buffer = NetGeometry.ConcatenateBuffers(buffers);
@@ -3027,7 +3047,7 @@ namespace VRtist
         public void SendPause()
         {
             byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
-            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int)MessageType.Pause);
+            byte[] messageTypeBuffer = NetGeometry.IntToBytes((int) MessageType.Pause);
             byte[] dataBuffer = new byte[0];
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
             byte[] buffer = NetGeometry.ConcatenateBuffers(buffers);
@@ -3072,7 +3092,7 @@ namespace VRtist
         public void SendAddObjectToColleciton(AddToCollectionInfo addToCollectionInfo)
         {
             string collectionName = addToCollectionInfo.collectionName;
-            if(!SyncData.collectionNodes.ContainsKey(collectionName))
+            if (!SyncData.collectionNodes.ContainsKey(collectionName))
             {
                 NetCommand addCollectionCommand = NetGeometry.BuildAddCollecitonCommand(collectionName);
                 AddCommand(addCollectionCommand);
@@ -3080,7 +3100,7 @@ namespace VRtist
 
             NetCommand commandAddObjectToCollection = NetGeometry.BuildAddObjectToCollecitonCommand(addToCollectionInfo);
             AddCommand(commandAddObjectToCollection);
-            if(!SyncData.sceneCollections.Contains(collectionName))
+            if (!SyncData.sceneCollections.Contains(collectionName))
             {
                 NetCommand commandAddCollectionToScene = NetGeometry.BuildAddCollectionToScene(collectionName);
                 AddCommand(commandAddCollectionToScene);
@@ -3121,7 +3141,7 @@ namespace VRtist
 
         void Send(byte[] data)
         {
-            lock(this)
+            lock (this)
             {
                 socket.Send(data);
             }
@@ -3129,28 +3149,28 @@ namespace VRtist
 
         void Run()
         {
-            while(alive)
+            while (alive)
             {
                 NetCommand command = ReadMessage();
-                if(command != null)
+                if (command != null)
                 {
-                    if(command.messageType == MessageType.ClientId ||
+                    if (command.messageType == MessageType.ClientId ||
                         command.messageType == MessageType.ClientUpdate ||
                         command.messageType == MessageType.ListAllClients ||
                         command.messageType > MessageType.Command)
                     {
-                        lock(this)
+                        lock (this)
                         {
                             receivedCommands.Add(command);
                         }
                     }
                 }
 
-                lock(this)
+                lock (this)
                 {
-                    if(pendingCommands.Count > 0)
+                    if (pendingCommands.Count > 0)
                     {
-                        foreach(NetCommand pendingCommand in pendingCommands)
+                        foreach (NetCommand pendingCommand in pendingCommands)
                         {
                             WriteMessage(pendingCommand);
                         }
@@ -3179,7 +3199,7 @@ namespace VRtist
 
             Buffer.BlockCopy(command.data, index, newBuffer, 0, newSize);
 
-            return new NetCommand(newBuffer, (MessageType)messageType);
+            return new NetCommand(newBuffer, (MessageType) messageType);
         }
 
         public int i = 0;
@@ -3189,15 +3209,15 @@ namespace VRtist
             DateTime before = DateTime.Now;
             int commandProcessedCount = 0;
 
-            lock(this)
+            lock (this)
             {
-                if(receivedCommands.Count == 0)
+                if (receivedCommands.Count == 0)
                     return;
 
-                foreach(NetCommand com in receivedCommands)
+                foreach (NetCommand com in receivedCommands)
                 {
                     NetCommand command = com;
-                    if(command.messageType == MessageType.ClientIdWrapper)
+                    if (command.messageType == MessageType.ClientIdWrapper)
                     {
                         command = ConvertFromClientId(command);
                         if (null == command)
@@ -3205,7 +3225,7 @@ namespace VRtist
                     }
                     try
                     {
-                        switch(command.messageType)
+                        switch (command.messageType)
                         {
                             case MessageType.ClientId:
                                 NetGeometry.BuildClientId(command.data);
@@ -3329,14 +3349,11 @@ namespace VRtist
                                 NetGeometry.BuildClientAttribute(command.data);
                                 break;
                             case MessageType.ListAllClients:
-                                {
-                                    int index = 0;
-                                    string json = NetGeometry.GetString(command.data, ref index);
-                                }
+                                NetGeometry.BuildListAllClients(command.data);
                                 break;
                         }
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         string message = $"Network exception (Command#{i}) Type {command.messageType}\n{e}";
                         Debug.LogError(message);
@@ -3346,7 +3363,7 @@ namespace VRtist
                     DateTime after = DateTime.Now;
                     TimeSpan duration = after.Subtract(before);
                     commandProcessedCount++;
-                    if(duration.Milliseconds > 40)
+                    if (duration.Milliseconds > 40)
                     {
                         receivedCommands.RemoveRange(0, commandProcessedCount);
                         return;
@@ -3358,8 +3375,8 @@ namespace VRtist
 
         public void SendEvent<T>(MessageType messageType, T data)
         {
-            if(!connected) { return; }
-            switch(messageType)
+            if (!connected) { return; }
+            switch (messageType)
             {
                 case MessageType.Transform:
                     SendTransform(data as Transform); break;
