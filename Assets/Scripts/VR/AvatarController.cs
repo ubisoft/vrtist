@@ -24,8 +24,8 @@ namespace VRtist
             canvas.LookAt(Camera.main.transform);
 
             // Constant scale
-            float scale = 1f / GlobalState.worldScale;
-            transform.localScale = new Vector3(scale, scale, scale);
+            //float scale = 1f / GlobalState.worldScale;
+            //transform.localScale = new Vector3(scale, scale, scale);
         }
 
         private void FetchMaterials()
