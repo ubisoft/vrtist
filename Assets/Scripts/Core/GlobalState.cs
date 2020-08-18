@@ -16,6 +16,7 @@ namespace VRtist
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;
+        public NetworkSettings networkSettings;
 
         [Header("Parameters")]
         public GameObject leftController = null;
@@ -114,6 +115,8 @@ namespace VRtist
         {
             instance = Instance;
             settings.Load();
+
+            masterId = networkSettings.master;
 
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);

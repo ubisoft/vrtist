@@ -2843,9 +2843,10 @@ namespace VRtist
         {
             connected = false;
             string[] args = System.Environment.GetCommandLineArgs();
-            string room = "Local";
-            string hostname = "localhost";
-            int port = 12800;
+            string room = GlobalState.Instance.networkSettings.room;
+            string hostname = GlobalState.Instance.networkSettings.host;
+            int port = GlobalState.Instance.networkSettings.port;
+            string master = GlobalState.Instance.networkSettings.master;
 
             /*
             hostname = "10.22.3.161";
@@ -2871,7 +2872,8 @@ namespace VRtist
 
                 if (args[i] == "--master")
                 {
-                    GlobalState.masterId = args[i + 1];
+                    master = args[i + 1];
+                    GlobalState.masterId = master;
                 }
 
             }
