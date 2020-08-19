@@ -7,12 +7,12 @@ namespace VRtist
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
-    public class UIColorPickerHue : MonoBehaviour
+    public class UIColorPickerHue : UIElement
     {
         // UIElement ?
 
-        private float width = 1.0f;
-        private float height = 1.0f;
+        //private float width = 1.0f;
+        //private float height = 1.0f;
         private float thickness = 1.0f;
 
         public UIColorPicker colorPicker = null;
@@ -35,6 +35,11 @@ namespace VRtist
             }
         }
 
+        public override void ResetColor()
+        {
+
+        }
+
         public float GetHue()
         {
             return cursorPosition;
@@ -45,28 +50,6 @@ namespace VRtist
         {
             cursorPosition = value;
             cursor.localPosition = new Vector3(width * value, -height/2.0f, 0);
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            colorPicker.OnClick(other);
-        }
-        private void OnTriggerExit(Collider other)
-        {
-            colorPicker.OnRelease(other);
-        }
-        private void OnTriggerStay(Collider other)
-        {
-            if (other.gameObject.name != "Cursor")
-                return;
-
-            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
-            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
-
-            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
-
-            SetHue(Mathf.Clamp(position.x / width, 0, 1));
-            colorPicker.OnColorChanged();
         }
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness)
@@ -104,6 +87,170 @@ namespace VRtist
             }
         }
 
+        // --- TOUCH -----------------------------------------
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            colorPicker.OnClick();
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            colorPicker.OnRelease();
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
+            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
+
+            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
+
+            SetHue(Mathf.Clamp(position.x / width, 0, 1));
+            colorPicker.OnColorChanged();
+        }
+
+        // --- / TOUCH -----------------------------------------
+
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            //onHoverEvent.Invoke();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+            //onHoverEvent.Invoke();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            ResetColor();
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        public override void OnRayClick()
+        {
+            colorPicker.OnClick();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            colorPicker.OnRelease();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override bool OverridesRayEndPoint() { return true; }
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
+        {
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            float startX = 0;
+            float endX = width;
+
+            float currentKnobPositionX = cursorPosition * width;
+
+            // DRAG
+
+            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+
+            // CLAMP
+
+            if (localProjectedWidgetPosition.x < startX)
+                localProjectedWidgetPosition.x = startX;
+
+            if (localProjectedWidgetPosition.x > endX)
+                localProjectedWidgetPosition.x = endX;
+
+            localProjectedWidgetPosition.y = -height / 2.0f;
+
+            // SET
+
+            float pct = localProjectedWidgetPosition.x / width;
+            SetHue(Mathf.Clamp(pct, 0, 1));
+            colorPicker.OnColorChanged();
+
+            // Haptic intensity as we go deeper into the widget.
+            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+            //intensity *= intensity; // ease-in
+
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            //cursorShapeTransform.position = worldProjectedWidgetPosition;
+            rayEndPoint = worldProjectedWidgetPosition;
+        }
+        // --- / RAY API ----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
         public static UIColorPickerHue CreateUIColorPickerHue(
             string objectName,
             Transform parent,
@@ -130,7 +277,7 @@ namespace VRtist
             }
 
             UIColorPickerHue uiColorPickerHue = go.AddComponent<UIColorPickerHue>();
-            //uiColorPickerHue.relativeLocation = relativeLocation;
+            uiColorPickerHue.relativeLocation = relativeLocation;
             uiColorPickerHue.transform.parent = parent;
             uiColorPickerHue.transform.localPosition = parentAnchor + relativeLocation;
             uiColorPickerHue.transform.localRotation = Quaternion.identity;
@@ -144,7 +291,7 @@ namespace VRtist
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = UIUtils.BuildBoxEx(width, height, thickness);
-                //uiColorPickerHue.Anchor = Vector3.zero;
+                uiColorPickerHue.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {

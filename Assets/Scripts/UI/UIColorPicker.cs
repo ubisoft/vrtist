@@ -92,7 +92,7 @@ namespace VRtist
 
             saturation.SetSaturation(new Vector2(s, v));
 
-            preview.SetColor(Color.HSVToRGB(h, s, v));
+            preview.SetPreviewColor(Color.HSVToRGB(h, s, v));
         }
 
         public void OnMinusOneHdr()
@@ -127,19 +127,17 @@ namespace VRtist
             hdrCheckbox.Checked = value;
         }
 
-        public void OnClick(Collider otherCollider)
+
+
+
+        public void OnClick()
         {
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onClickEvent.Invoke();
-            }
+            onClickEvent.Invoke();
         }
-        public void OnRelease(Collider otherCollider)
+
+        public void OnRelease()
         {
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
-            }
+            onReleaseEvent.Invoke();
         }
 
         public void OnColorChanged()
@@ -153,7 +151,7 @@ namespace VRtist
 
             saturation.SetBaseColor(baseColor);
 
-            preview.SetColor(currentColor.gamma); // back to sRGB
+            preview.SetPreviewColor(currentColor.gamma); // back to sRGB
 
             if (IsHdr)
             {
@@ -163,6 +161,8 @@ namespace VRtist
             onColorChangedEvent.Invoke(currentColor);
         }
 
+
+
         public override void RebuildMesh()
         {
             Vector3 saturationPosition = new Vector3(0.0f, hueToSaturationRatio * -(height - padding) - padding, 0.0f);
@@ -171,7 +171,8 @@ namespace VRtist
             float saturationThickness = thickness;
 
             saturation.RebuildMesh(saturationWidth, saturationHeight, saturationThickness);
-            saturation.transform.localPosition = Anchor + saturationPosition;
+            saturation.relativeLocation = saturationPosition;
+            //saturation.transform.localPosition = Anchor + saturationPosition;
 
             Vector3 huePosition = new Vector3(0.0f, 0.0f, 0.0f);
             float hueWidth = hueToPreviewRatio * (width - padding);
@@ -179,7 +180,8 @@ namespace VRtist
             float hueThickness = thickness;
 
             hue.RebuildMesh(hueWidth, hueHeight, hueThickness);
-            hue.transform.localPosition = Anchor + huePosition;
+            hue.relativeLocation = huePosition;
+            //hue.transform.localPosition = Anchor + huePosition;
 
             Vector3 previewPosition = new Vector3(hueToPreviewRatio * (width - padding) + padding, 0.0f, 0.0f);
             float previewWidth = (1.0f -hueToPreviewRatio) * (width - padding);
@@ -187,7 +189,8 @@ namespace VRtist
             float previewThickness = thickness;
 
             preview.RebuildMesh(previewWidth, previewHeight, previewThickness);
-            preview.transform.localPosition = Anchor + previewPosition;
+            preview.relativeLocation = previewPosition;
+            //preview.transform.localPosition = Anchor + previewPosition;
 
             // TODO: also move the HDR buttons
             // ...

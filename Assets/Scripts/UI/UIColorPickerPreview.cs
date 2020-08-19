@@ -6,15 +6,15 @@ namespace VRtist
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
-    public class UIColorPickerPreview : MonoBehaviour
+    public class UIColorPickerPreview : UIElement
     {
         // UIElement ?
 
-        private float width = 1.0f;
-        private float height = 1.0f;
+        //private float width = 1.0f;
+        //private float height = 1.0f;
         private float thickness = 1.0f;
 
-        public void SetColor(Color color)
+        public void SetPreviewColor(Color color)
         {
             //GetComponent<MeshRenderer>().material.SetColor("_Color", color);
             GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", color);
@@ -81,7 +81,7 @@ namespace VRtist
             }
 
             UIColorPickerPreview uiColorPickerPreview = go.AddComponent<UIColorPickerPreview>();
-            //uiColorPickerPreview.relativeLocation = relativeLocation;
+            uiColorPickerPreview.relativeLocation = relativeLocation;
             uiColorPickerPreview.transform.parent = parent;
             uiColorPickerPreview.transform.localPosition = parentAnchor + relativeLocation;
             uiColorPickerPreview.transform.localRotation = Quaternion.identity;
@@ -96,7 +96,7 @@ namespace VRtist
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = UIUtils.BuildBoxEx(width, height, thickness);
-                //uiColorPickerPreview.Anchor = Vector3.zero;
+                uiColorPickerPreview.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {

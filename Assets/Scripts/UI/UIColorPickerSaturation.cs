@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEditor;
 
 namespace VRtist
 {
@@ -9,17 +7,17 @@ namespace VRtist
     [RequireComponent(typeof(MeshFilter)),
      RequireComponent(typeof(MeshRenderer)),
      RequireComponent(typeof(BoxCollider))]
-    public class UIColorPickerSaturation : MonoBehaviour
+    public class UIColorPickerSaturation : UIElement
     {
         // UIElement ?
 
-        private float width = 1.0f;
-        private float height = 1.0f;
+        //private float width = 1.0f;
+        //private float height = 1.0f;
         private float thickness = 1.0f;
 
         public UIColorPicker colorPicker = null;
 
-        Color baseColor;
+        Color rootColor;
         Vector2 cursorPosition = new Vector2(0.5f, 0.5f); // normalized
 
         public Transform cursor;
@@ -41,9 +39,8 @@ namespace VRtist
 
         public void SetBaseColor(Color clr)
         {
-            baseColor = clr;
+            rootColor = clr;
             var renderer = GetComponent<MeshRenderer>();
-            //renderer.material.SetColor("_Color", clr);
             renderer.sharedMaterial.SetColor("_Color", clr);
         }
 
@@ -56,33 +53,6 @@ namespace VRtist
         {
             cursorPosition = sat;
             cursor.localPosition = new Vector3(width * sat.x, -height * (1.0f-sat.y), 0);
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            colorPicker.OnClick(other);
-        }
-        private void OnTriggerExit(Collider other)
-        {
-            colorPicker.OnRelease(other);
-        }
-        private void OnTriggerStay(Collider other)
-        {
-            if (other.gameObject.name != "Cursor")
-                return;
-
-            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
-            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
-
-            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
-
-            float x = position.x / width;
-            float y = 1.0f - (-position.y / height);
-            x = Mathf.Clamp(x, 0, 1);
-            y = Mathf.Clamp(y, 0, 1);
-            SetSaturation(new Vector2(x, y));
-
-            colorPicker.OnColorChanged();
         }
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness)
@@ -119,7 +89,176 @@ namespace VRtist
                 }
             }
         }
-        
+
+        // --- TOUCH -----------------------------------------
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            colorPicker.OnClick();
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            colorPicker.OnRelease();
+        }
+
+        private void OnTriggerStay(Collider other)
+        {
+            if (other.gameObject.name != "Cursor")
+                return;
+
+            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
+            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
+
+            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
+
+            float x = position.x / width;
+            float y = 1.0f - (-position.y / height);
+            x = Mathf.Clamp(x, 0, 1);
+            y = Mathf.Clamp(y, 0, 1);
+            SetSaturation(new Vector2(x, y));
+
+            colorPicker.OnColorChanged();
+        }
+
+        // --- / TOUCH -----------------------------------------
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            //onHoverEvent.Invoke();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+            //onHoverEvent.Invoke();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            ResetColor();
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        public override void OnRayClick()
+        {
+            colorPicker.OnClick();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            colorPicker.OnRelease();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override bool OverridesRayEndPoint() { return true; }
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
+        {
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            float startX = 0;
+            float endX = width;
+            float startY = 0;
+            float endY = -height;
+
+            Vector2 currentKnobPosition = new Vector2(cursorPosition.x * width, (-1.0f + cursorPosition.y) * height);
+
+            // DRAG
+
+            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPosition.x, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+            localProjectedWidgetPosition.y = Mathf.Lerp(currentKnobPosition.y, localProjectedWidgetPosition.y, GlobalState.Settings.RaySliderDrag);
+
+            // CLAMP
+
+            if (localProjectedWidgetPosition.x < startX)
+                localProjectedWidgetPosition.x = startX;
+
+            if (localProjectedWidgetPosition.x > endX)
+                localProjectedWidgetPosition.x = endX;
+
+            if (localProjectedWidgetPosition.y > startY)
+                localProjectedWidgetPosition.y = startY;
+
+            if (localProjectedWidgetPosition.y < endY)
+                localProjectedWidgetPosition.y = endY;
+
+            // SET
+
+            float x = localProjectedWidgetPosition.x / width;
+            float y = 1.0f - (-localProjectedWidgetPosition.y / height);
+            x = Mathf.Clamp(x, 0, 1);
+            y = Mathf.Clamp(y, 0, 1);
+            SetSaturation(new Vector2(x, y));
+            colorPicker.OnColorChanged();
+
+            // Haptic intensity as we go deeper into the widget.
+            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+            //intensity *= intensity; // ease-in
+
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            //cursorShapeTransform.position = worldProjectedWidgetPosition;
+            rayEndPoint = worldProjectedWidgetPosition;
+        }
+
+        // --- / RAY API ----------------------------------------------------
+
+
         public static UIColorPickerSaturation CreateUIColorPickerSaturation(
             string objectName,
             Transform parent,
@@ -145,7 +284,7 @@ namespace VRtist
             }
 
             UIColorPickerSaturation uiColorPickerSaturation = go.AddComponent<UIColorPickerSaturation>();
-            //uiColorPickerSaturation.relativeLocation = relativeLocation;
+            uiColorPickerSaturation.relativeLocation = relativeLocation;
             uiColorPickerSaturation.transform.parent = parent;
             uiColorPickerSaturation.transform.localPosition = parentAnchor + relativeLocation;
             uiColorPickerSaturation.transform.localRotation = Quaternion.identity;
@@ -159,7 +298,7 @@ namespace VRtist
             if (meshFilter != null)
             {
                 meshFilter.sharedMesh = UIUtils.BuildBoxEx(width, height, thickness);
-                //uiColorPickerSaturation.Anchor = Vector3.zero;
+                uiColorPickerSaturation.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)
                 {

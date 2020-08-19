@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -44,7 +42,11 @@ namespace VRtist
 
         [Range(1.0f, 100.0f)]
         public float scaleSpeed = 50f;
-    
+
+        [Range(1f, 100f)]
+        public float raySliderDrag = 95.0f;
+        public float RaySliderDrag { get { return 1.0f - (raySliderDrag / 100.0f); } }
+
         public void Reset()
         {
             displayGizmos = true;
@@ -62,6 +64,7 @@ namespace VRtist
             cameraDamping = 50f;
             castShadows = false;
             scaleSpeed = 50f;
+            raySliderDrag = 95.0f;
 
             cameraFeedbackPosition = Vector3.zero;
             cameraFeedbackRotation = Quaternion.identity;

@@ -70,8 +70,8 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
-                onClickEvent.AddListener(OnPushButton);
-                onReleaseEvent.AddListener(OnReleaseButton);
+                //onClickEvent.AddListener(OnPushButton);
+                //onReleaseEvent.AddListener(OnReleaseButton);
             }
         }
 
@@ -83,6 +83,17 @@ namespace VRtist
                   : (Selected ? SelectedColor
                   : (Hovered ? HoveredColor
                   :  BaseColor)))));
+
+            // Make the canvas pop front if Hovered.
+            Canvas c = GetComponentInChildren<Canvas>();
+            if (c != null)
+            {
+                RectTransform rt = c.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+                }
+            }
         }
 
         public override void RebuildMesh()
@@ -229,7 +240,6 @@ namespace VRtist
 #if UNITY_EDITOR
             if (NeedsRebuild)
             {
-                // NOTE: I do all these things because properties can't be called from the inspector.
                 RebuildMesh();
                 UpdateLocalPosition();
                 UpdateAnchor();
@@ -242,18 +252,29 @@ namespace VRtist
 
         private void OnDrawGizmosSelected()
         {
+#if UNITY_EDITOR
             Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -0.001f));
-            Vector3 posTopLeft = transform.TransformPoint(new Vector3(margin, -margin, -0.001f));
-            Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, -0.001f));
-            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(margin, -height + margin, -0.001f));
-            Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, -0.001f));
+            Vector3 posTopLeft = transform.TransformPoint(new Vector3(0, 0, -0.001f));
+            Vector3 posTopRight = transform.TransformPoint(new Vector3(width, 0, -0.001f));
+            Vector3 posBottomLeft = transform.TransformPoint(new Vector3(0, -height, -0.001f));
+            Vector3 posBottomRight = transform.TransformPoint(new Vector3(width, -height, -0.001f));
+            Vector3 posTopLeftM = transform.TransformPoint(new Vector3(margin, -margin, -0.001f));
+            Vector3 posTopRightM = transform.TransformPoint(new Vector3(width - margin, -margin, -0.001f));
+            Vector3 posBottomLeftM = transform.TransformPoint(new Vector3(margin, -height + margin, -0.001f));
+            Vector3 posBottomRightM = transform.TransformPoint(new Vector3(width - margin, -height + margin, -0.001f));
 
-            Gizmos.color = Color.white;
+            Gizmos.color = new Color(.6f, .6f, .6f);
             Gizmos.DrawLine(posTopLeft, posTopRight);
             Gizmos.DrawLine(posTopRight, posBottomRight);
             Gizmos.DrawLine(posBottomRight, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
-#if UNITY_EDITOR
+
+            Gizmos.color = new Color(.5f, .5f, .5f);
+            Gizmos.DrawLine(posTopLeftM, posTopRightM);
+            Gizmos.DrawLine(posTopRightM, posBottomRightM);
+            Gizmos.DrawLine(posBottomRightM, posBottomLeftM);
+            Gizmos.DrawLine(posBottomLeftM, posTopLeftM);
+
             UnityEditor.Handles.Label(labelPosition, gameObject.name);
 #endif
         }
@@ -292,6 +313,10 @@ namespace VRtist
             }
         }
 
+
+        // ---- GESTION CURSEUR PHYSIQUE - DELETE WHEN DONE WITH RAY -----------
+
+
         private void OnTriggerEnter(Collider otherCollider)
         {
             if (NeedToIgnoreCollisionEnter())
@@ -301,6 +326,7 @@ namespace VRtist
             if ((currentTime - prevTime) > 0.4f && otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
+                OnPushButton();
                 prevTime = currentTime;
             }
         }
@@ -313,6 +339,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
+                OnReleaseButton();
 
                 if (isCheckable)
                 {
@@ -333,6 +360,10 @@ namespace VRtist
             }
         }
 
+
+        // --------------------------------------------------------------------------------------
+
+
         public void OnPushButton()
         {
             Pushed = true;
@@ -345,27 +376,82 @@ namespace VRtist
             ResetColor();
         }
 
+        // --- RAY API ----------------------------------------------------
+
         public override void OnRayEnter()
         {
             Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
             ResetColor();
         }
 
         public override void OnRayHover()
         {
-            //Hovered = true;
-            //ResetColor();
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            onHoverEvent.Invoke();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+            onHoverEvent.Invoke();
         }
 
         public override void OnRayExit()
         {
             Hovered = false;
+            Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
             ResetColor();
         }
 
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
 
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+
+            if (isCheckable)
+            {
+                Checked = !Checked;
+                onCheckEvent.Invoke(Checked);
+            }
+
+            ResetColor();
+        }
+
+        // --- / RAY API ----------------------------------------------------
 
         //
         // CREATE
