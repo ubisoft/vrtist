@@ -15,6 +15,8 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UISlider : UIElement
     {
+        public enum SliderDataSource { Curve, MinMax };
+
         public static readonly string default_widget_name = "New Slider";
         public static readonly float default_width = 0.3f;
         public static readonly float default_height = 0.03f;
@@ -33,6 +35,7 @@ namespace VRtist
         public static readonly string default_rail_material_name = "UISliderRail";
         public static readonly string default_knob_material_name = "UISliderKnob";
         public static readonly string default_text = "Slider";
+        public static readonly SliderDataSource default_data_source = SliderDataSource.MinMax;
 
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = default_margin;
@@ -56,6 +59,7 @@ namespace VRtist
         [CentimeterFloat] public float knobDepth = default_knob_depth;
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
+        public SliderDataSource dataSource = default_data_source;
         public float minValue = default_min_value;
         public float maxValue = default_max_value;
         public float currentValue = default_current_value;
@@ -80,7 +84,7 @@ namespace VRtist
 
         public bool HasCurveData()
         {
-            return (dataCurve != null && dataCurve.keys.Length > 0);
+            return (dataSource == SliderDataSource.Curve && dataCurve != null && dataCurve.keys.Length > 0);
         }
 
         void Start()
@@ -677,6 +681,7 @@ namespace VRtist
             public float railThickness = UISlider.default_rail_thickness;
             public float knobRadius = UISlider.default_knob_radius;
             public float knobDepth = UISlider.default_knob_depth;
+            public SliderDataSource dataSource = UISlider.default_data_source;
             public float minValue = UISlider.default_min_value;
             public float maxValue = UISlider.default_max_value;
             public float currentValue = UISlider.default_current_value;
@@ -728,6 +733,7 @@ namespace VRtist
             uiSlider.railThickness = input.railThickness;
             uiSlider.knobRadius = input.knobRadius;
             uiSlider.knobDepth = input.knobDepth;
+            uiSlider.dataSource = input.dataSource;
             uiSlider.minValue = input.minValue;
             uiSlider.maxValue = input.maxValue;
             uiSlider.currentValue = input.currentValue;

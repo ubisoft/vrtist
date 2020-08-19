@@ -15,6 +15,7 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UIVerticalSlider : UIElement
     {
+        public enum SliderDataSource { Curve, MinMax };
         public enum SliderTextValueAlign { Left, Right };
 
         public static readonly string default_widget_name = "New VerticalSlider";
@@ -37,6 +38,7 @@ namespace VRtist
         public static readonly string default_text = "Slider";
         public static readonly string default_icon_name = "paint";
         public static readonly SliderTextValueAlign default_text_value_align = SliderTextValueAlign.Left;
+        public static readonly SliderDataSource default_data_source = SliderDataSource.MinMax;
 
         [SpaceHeader("Slider Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float margin = default_margin;
@@ -60,9 +62,12 @@ namespace VRtist
         [CentimeterFloat] public float knobDepth = default_knob_depth;
 
         [SpaceHeader("Slider Values", 6, 0.8f, 0.8f, 0.8f)]
+        public SliderDataSource dataSource = default_data_source;
         public float minValue = default_min_value;
         public float maxValue = default_max_value;
         public float currentValue = default_current_value;
+        public AnimationCurve dataCurve = new AnimationCurve(new Keyframe(0, default_min_value), new Keyframe(1, default_min_value));
+        public AnimationCurve invDataCurve = null;
 
         public SliderTextValueAlign textValueAlign = default_text_value_align;
 
@@ -79,6 +84,11 @@ namespace VRtist
         public float SliderPositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
         public string Text { get { return textContent; } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
+
+        public bool HasCurveData()
+        {
+            return (dataSource == SliderDataSource.Curve && dataCurve != null && dataCurve.keys.Length > 0);
+        }
 
         void Start()
         {
@@ -138,6 +148,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateValueText();
+                    BuildInverseCurve();
                     UpdateSliderPosition();
                     ResetColor();
                 }
@@ -300,8 +311,9 @@ namespace VRtist
 
         private void UpdateSliderPosition()
         {
-            float pct = (currentValue - minValue) / (maxValue - minValue);
-
+            float pct = HasCurveData() ? invDataCurve.Evaluate(currentValue)
+                : (currentValue - minValue) / (maxValue - minValue);
+            
             float heightWithoutMargins = height - 2.0f * margin;
             float startY = -height + margin + heightWithoutMargins * sliderPositionBegin + railMargin;
             float endY = -height + margin + heightWithoutMargins * sliderPositionEnd - railMargin;
@@ -313,6 +325,32 @@ namespace VRtist
 
             // FLOATING TEXT
             UpdateTextPosition();
+        }
+
+        private void BuildInverseCurve()
+        {
+            if (dataCurve == null)
+                return;
+
+            // TODO: check c is strictly monotonic and Piecewise linear, log error otherwise
+
+            invDataCurve = new AnimationCurve();
+            for (int i = 0; i < dataCurve.keys.Length; i++)
+            {
+                var kf = dataCurve.keys[i];
+                var rkf = new Keyframe(kf.value, kf.time);
+                if (kf.inTangent < 0)
+                {
+                    rkf.inTangent = 1 / kf.outTangent;
+                    rkf.outTangent = 1 / kf.inTangent;
+                }
+                else
+                {
+                    rkf.inTangent = 1 / kf.inTangent;
+                    rkf.outTangent = 1 / kf.outTangent;
+                }
+                invDataCurve.AddKey(rkf);
+            }
         }
 
         private void UpdateTextPosition()
@@ -504,7 +542,14 @@ namespace VRtist
                 bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
                 if (triggerState)
                 {
-                    Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    if (HasCurveData())
+                    {
+                        Value = dataCurve.Evaluate(pct);
+                    }
+                    else // linear
+                    {
+                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    }
                     onSlideEvent.Invoke(Value);
                     int intValue = Mathf.RoundToInt(Value);
                     onSlideEventInt.Invoke(intValue);
@@ -661,6 +706,7 @@ namespace VRtist
             public float railThickness = UIVerticalSlider.default_rail_thickness;
             public float knobRadius = UIVerticalSlider.default_knob_radius;
             public float knobDepth = UIVerticalSlider.default_knob_depth;
+            public SliderDataSource dataSource = UIVerticalSlider.default_data_source;
             public float minValue = UIVerticalSlider.default_min_value;
             public float maxValue = UIVerticalSlider.default_max_value;
             public float currentValue = UIVerticalSlider.default_current_value;
@@ -715,6 +761,7 @@ namespace VRtist
             uiSlider.railThickness = input.railThickness;
             uiSlider.knobRadius = input.knobRadius;
             uiSlider.knobDepth = input.knobDepth;
+            uiSlider.dataSource = input.dataSource;
             uiSlider.minValue = input.minValue;
             uiSlider.maxValue = input.maxValue;
             uiSlider.currentValue = input.currentValue;
