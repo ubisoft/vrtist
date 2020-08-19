@@ -9,5 +9,6 @@ namespace VRtist
         public int port = 12800;
         public string room = "Local";
         public string master;
+        public string userName;
     }
 }
