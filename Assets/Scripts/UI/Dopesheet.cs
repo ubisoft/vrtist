@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using System.Collections.Specialized;
+﻿using System.Collections.Generic;
 using TMPro;
+using UnityEngine;
 
 namespace VRtist
 {
@@ -25,6 +21,8 @@ namespace VRtist
         [SerializeField] private UILabel firstFrameLabel = null;
         [SerializeField] private UILabel lastFrameLabel = null;
         [SerializeField] private UILabel currentFrameLabel = null;
+        private UILabel titleBar = null;
+
         UICheckbox montage = null;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
@@ -67,12 +65,33 @@ namespace VRtist
                 firstFrameLabel = mainPanel.Find("FirstFrameLabel").GetComponent<UILabel>();
                 lastFrameLabel = mainPanel.Find("LastFrameLabel").GetComponent<UILabel>();
                 currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
-
+                titleBar = transform.parent.Find("TitleBar").GetComponent<UILabel>();
                 keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
 
                 montage = mainPanel.Find("Montage").GetComponent<UICheckbox>();
                 ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
+
+                GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
+                GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
             }
+        }
+
+        private void OnPlayingChanged(bool value)
+        {
+            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Recording)
+            {
+                titleBar.Pushed = value;
+            }
+            else
+            {
+                titleBar.Pushed = false;
+            }
+        }
+
+        private void OnRecordingChanged(bool value)
+        {
+            titleBar.Pushed = false;
+            titleBar.Hovered = value;
         }
 
         private void Update()
