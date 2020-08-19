@@ -15,4 +15,5 @@ MonoBehaviour:
   host: 127.0.0.1
   port: 12800
   room: Local
-  master: 
+  master: 127.0.0.1:12778
+  userName: VR Sylvain
