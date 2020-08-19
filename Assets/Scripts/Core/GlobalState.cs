@@ -14,6 +14,7 @@ namespace VRtist
         public Vector3 eye;
         public Vector3 target;
         public Color color;
+        public Vector3[] corners = new Vector3[4];
     }
 
     public class GlobalState : MonoBehaviour
@@ -118,8 +119,6 @@ namespace VRtist
             settings.Load();
 
             // Get network settings
-            if (null != networkSettings.master && networkSettings.master.Length > 0)
-                networkUser.masterId = networkSettings.master;
             networkUser.name = networkSettings.userName;
             if (null == networkUser.name || networkUser.name.Length == 0)
                 networkUser.name = "VRtist";

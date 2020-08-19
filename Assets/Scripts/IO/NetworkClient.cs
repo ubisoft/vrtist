@@ -28,7 +28,7 @@ namespace VRtist
         ConnectionLost,
         ListAllClients,
 
-        _SetClientCustomAttribute,
+        SetClientCustomAttribute,
         _SetRoomCustomAttribute,
         _SetRoomKeepOpen,
         ClientId,
@@ -1764,7 +1764,7 @@ namespace VRtist
             string json = JsonHelper.CreateJsonPlayerInfo(playerInfo);
             if (null == json) { return null; }
             byte[] buffer = StringToBytes(json);
-            NetCommand command = new NetCommand(buffer, MessageType.ClientUpdate);
+            NetCommand command = new NetCommand(buffer, MessageType.SetClientCustomAttribute);
             return command;
         }
 
@@ -2787,7 +2787,6 @@ namespace VRtist
         private static NetworkClient _instance;
         public Transform root;
         public Transform prefab;
-        public int port = 12800;
 
         Thread thread = null;
         bool alive = true;
@@ -2869,10 +2868,7 @@ namespace VRtist
             int port = GlobalState.Instance.networkSettings.port;
             string master = GlobalState.Instance.networkSettings.master;
 
-            /*
-            hostname = "10.22.3.161";
-            room = "Room_VRtist_Incubator";            
-            */
+            // Read command line
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "--room")
@@ -3163,7 +3159,7 @@ namespace VRtist
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
             AddCommand(command);
-            NetCommand commandClientName = new NetCommand(System.Text.Encoding.UTF8.GetBytes("VRtist"), MessageType.SetClientName);
+            NetCommand commandClientName = new NetCommand(System.Text.Encoding.UTF8.GetBytes(GlobalState.networkUser.name), MessageType.SetClientName);
             AddCommand(commandClientName);
         }
 
@@ -3213,8 +3209,8 @@ namespace VRtist
             int index = 0;
             string masterId = NetGeometry.GetString(command.data, ref index);
 
-            // For debug purpose (unity in editor mode)
-            if (null == GlobalState.networkUser.masterId)
+            // For debug purpose (unity in editor mode when networkSettings.master is empty)
+            if (null == GlobalState.networkUser.masterId || GlobalState.networkUser.masterId.Length == 0)
                 GlobalState.networkUser.masterId = masterId;
 
             if (masterId != GlobalState.networkUser.masterId)

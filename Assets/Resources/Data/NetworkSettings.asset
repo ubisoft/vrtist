@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b274cfb87d9c4c7439d5c5427dcaa4ce, type: 3}
   m_Name: NetworkSettings
   m_EditorClassIdentifier: 
-  host: localhost
+  host: 127.0.0.1
   port: 12800
   room: Local
-  master: 
-  userName: 
+  master: 127.0.0.1:12778
+  userName: VR Sylvain

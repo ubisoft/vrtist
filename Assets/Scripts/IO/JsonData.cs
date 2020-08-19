@@ -292,7 +292,6 @@ namespace VRtist
         }
 
         // {
-        // "127.0.0.1:59951": {
         //     "user_scenes": {
         //         "Scene": {
         //             "frame": 67,
@@ -315,17 +314,21 @@ namespace VRtist
         public static string CreateJsonPlayerInfo(ConnectedUser user)
         {
             if (null == user.id || null == user.viewId) { return null; }
-            return $"{{\"{user.id}\": {{" +
-                "\"user_scenes\": {" +
+            string json = "{\"user_scenes\": {" +
                 "\"Scene\": {" +
                 "\"frame\": 1," +
                 "\"selected_objects\": []," +
                 "\"views\": {" +
                 $"\"{user.viewId}\": {{" +
-                $"\"eye\": [{user.eye.x}, {user.eye.y}, {user.eye.z}]," +
-                $"\"target\": [{user.target.x}, {user.target.y}, {user.target.z}]" +
-                "\"screen_corners\": [[20.0, -5.0, 5.0], [20.0, -5.0, 5.0], [20.0, -5.0, 5.0]]" +
-                "}}}}}}";
+                $"\"eye\": [{user.eye.ToString().Substring(1, user.eye.ToString().Length - 2)}]," +
+                $"\"target\": [{user.target.ToString().Substring(1, user.target.ToString().Length - 2)}]," +
+                "\"screen_corners\": [" +
+                $"[{user.corners[0].ToString().Substring(1, user.corners[0].ToString().Length - 2)}]" +
+                $", [{user.corners[1].ToString().Substring(1, user.corners[1].ToString().Length - 2)}]" +
+                $", [{user.corners[2].ToString().Substring(1, user.corners[2].ToString().Length - 2)}]" +
+                $", [{user.corners[3].ToString().Substring(1, user.corners[3].ToString().Length - 2)}]]" +
+                "}}}}}";
+            return json;
         }
     }
 }
