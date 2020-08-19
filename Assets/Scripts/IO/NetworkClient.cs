@@ -2646,6 +2646,9 @@ namespace VRtist
                     GlobalState.networkUser.viewId = client.viewId.value;
                 }
 
+                if (client.userName.IsValid) { user.name = client.userName.value; }
+                if (client.userColor.IsValid) { user.color = client.userColor.value; }
+
                 bool changed = false;
 
                 // Get its eye position
