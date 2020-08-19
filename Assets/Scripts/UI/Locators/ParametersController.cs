@@ -59,7 +59,7 @@ namespace VRtist
 
     public class ParametersController : MonoBehaviour
     {
-        private ParametersEvent onChangedEvent;
+        private ParametersEvent onChangedEvent = null;
         protected Transform world = null;
         protected Dictionary<string, AnimationChannel> channels = new Dictionary<string, AnimationChannel>();
 
@@ -90,7 +90,6 @@ namespace VRtist
 
         protected virtual void Start()
         {
-            onChangedEvent = new ParametersEvent();
         }
 
         public void AddListener(UnityAction<GameObject> callback)
