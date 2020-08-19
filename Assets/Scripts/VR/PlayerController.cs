@@ -45,7 +45,7 @@ namespace VRtist
 
         private Vector3 previousPosition;
         private Vector3 previousForward;
-        private Matrix4x4 rightHanded;
+        private Transform rightHanded;
 
         void Start()
         {
@@ -75,8 +75,7 @@ namespace VRtist
             initCameraPosition = transform.position; // for reset
             initCameraRotation = transform.rotation; // for reset
 
-            rightHanded = new Matrix4x4();
-            rightHanded.SetTRS(Vector3.zero, Quaternion.Euler(-90f, 0f, 0f), new Vector3(-1f, 1f, 1f));
+            rightHanded = world.Find("Avatars");
         }
 
         void Update()
@@ -120,10 +119,20 @@ namespace VRtist
                 {
                     previousPosition = vrCamera.position;
                     previousForward = forward;
-                    GlobalState.networkUser.eye = vrCamera.position;
-                    GlobalState.networkUser.target = vrCamera.position + vrCamera.forward;
-                    GlobalState.networkUser.eye = rightHanded.MultiplyPoint(GlobalState.networkUser.eye);
-                    GlobalState.networkUser.target = rightHanded.MultiplyPoint(GlobalState.networkUser.target);
+
+                    Vector3 upRight = vrCamera.position + vrCamera.forward + vrCamera.up + vrCamera.right;
+                    Vector3 upLeft = vrCamera.position + vrCamera.forward + vrCamera.up - vrCamera.right;
+                    Vector3 bottomRight = vrCamera.position + vrCamera.forward - vrCamera.up + vrCamera.right;
+                    Vector3 bottomLeft = vrCamera.position + vrCamera.forward - vrCamera.up - vrCamera.right;
+                    Vector3 target = vrCamera.position + vrCamera.forward * 2f;
+
+                    GlobalState.networkUser.eye = rightHanded.InverseTransformPoint(vrCamera.position);
+                    GlobalState.networkUser.target = rightHanded.InverseTransformPoint(target);
+                    GlobalState.networkUser.corners[0] = rightHanded.InverseTransformPoint(upLeft);
+                    GlobalState.networkUser.corners[1] = rightHanded.InverseTransformPoint(upRight);
+                    GlobalState.networkUser.corners[2] = rightHanded.InverseTransformPoint(bottomRight);
+                    GlobalState.networkUser.corners[3] = rightHanded.InverseTransformPoint(bottomLeft);
+
                     NetworkClient.GetInstance().SendPlayerTransform(GlobalState.networkUser);
                 }
             }
