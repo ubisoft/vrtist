@@ -43,7 +43,7 @@ namespace VRtist
         public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
         // Record
         public enum RecordState { Stopped, Preroll, Recording };
-        public RecordState isRecording = RecordState.Stopped;
+        public RecordState recordState = RecordState.Stopped;
         public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
         public UnityEvent onCountdownFinished = new UnityEvent();
         public Countdown countdown = null;
@@ -168,12 +168,12 @@ namespace VRtist
         {
             if (value)
             {
-                isRecording = RecordState.Preroll;
+                recordState = RecordState.Preroll;
                 countdown.gameObject.SetActive(true);
             }
             else
             {
-                isRecording = RecordState.Stopped;
+                recordState = RecordState.Stopped;
                 countdown.gameObject.SetActive(false);
                 onCountdownFinished.RemoveAllListeners();
                 onRecordEvent.Invoke(false);
@@ -182,7 +182,7 @@ namespace VRtist
 
         public void OnCountdownFinished()
         {
-            isRecording = RecordState.Recording;
+            recordState = RecordState.Recording;
             onRecordEvent.Invoke(true);
             onCountdownFinished.Invoke();
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
