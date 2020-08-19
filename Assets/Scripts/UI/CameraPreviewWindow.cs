@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -12,7 +9,7 @@ namespace VRtist
         private Transform previewImagePlane = null;
         private UIVerticalSlider focalSlider = null;
         private UIVerticalSlider focusSlider = null;
-        
+        private UILabel titleBar = null;
         private CameraController activeCameraController = null;
 
         void Start()
@@ -24,9 +21,31 @@ namespace VRtist
                 previewImagePlane = mainPanel.Find("PreviewImage/Plane");
                 focalSlider = mainPanel.Find("Focal")?.GetComponent<UIVerticalSlider>();
                 focusSlider = mainPanel.Find("Focus")?.GetComponent<UIVerticalSlider>();
+                titleBar = transform.parent.Find("TitleBar").GetComponent<UILabel>();
             }
 
             Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+
+            GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
+            GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+        }
+
+        private void OnPlayingChanged(bool value)
+        {
+            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Recording)
+            {
+                titleBar.Pushed = value;
+            }
+            else
+            {
+                titleBar.Pushed = false;
+            }
+        }
+
+        private void OnRecordingChanged(bool value)
+        {
+            titleBar.Pushed = false;
+            titleBar.Hovered = value;
         }
 
         public void Show(bool doShow)

@@ -149,10 +149,12 @@ namespace VRtist
                 if (bCurrValue)
                 {
                     justPressed.Add(pair);
+                    justReleased.Remove(pair);
                 }
                 else
                 {
                     justReleased.Add(pair);
+                    justPressed.Remove(pair);
                 }
             }
         }
@@ -412,8 +414,8 @@ namespace VRtist
 
         class DeviceTransform
         {
-            public Quaternion rotation;
-            public Vector3 position;
+            public Quaternion rotation = Quaternion.identity;
+            public Vector3 position = Vector3.zero;
         }
         static Dictionary<InputDevice, DeviceTransform> prevDeviceTransform = new Dictionary<InputDevice, DeviceTransform>();
 

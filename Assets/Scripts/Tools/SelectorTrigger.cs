@@ -32,7 +32,7 @@ namespace VRtist
             // Clear selection on trigger click on nothing
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () => {
                 selectionHasChanged = false;
-                undoGroup = new CommandGroup("Clear Selection");
+                undoGroup = new CommandGroup("Selector Trigger");
             },
             () => {
                 try
