@@ -6,11 +6,15 @@ namespace VRtist
 {
     public class ConnectedUser
     {
-        public string id;
+        public string id;  // clientId
+        public string viewId;
+        public string masterId;
         public string name;
+        public string room;
         public Vector3 eye;
         public Vector3 target;
         public Color color;
+        public Vector3[] corners = new Vector3[4];
     }
 
     public class GlobalState : MonoBehaviour
@@ -25,14 +29,8 @@ namespace VRtist
 
         public static Settings Settings { get { return Instance.settings; } }
 
-        [HideInInspector]
-        public static string clientId;
-        [HideInInspector]
-        public static string masterId;
-
-        public static string room = "Local";
-
         // Connected users
+        public static ConnectedUser networkUser = new ConnectedUser();
         private Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
         private Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
         private GameObject avatarPrefab;
@@ -120,8 +118,10 @@ namespace VRtist
             instance = Instance;
             settings.Load();
 
-            if(null != networkSettings.master && networkSettings.master.Length > 0)
-                masterId = networkSettings.master;
+            // Get network settings
+            networkUser.name = networkSettings.userName;
+            if (null == networkUser.name || networkUser.name.Length == 0)
+                networkUser.name = "VRtist";
 
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);
