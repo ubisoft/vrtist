@@ -414,8 +414,8 @@ namespace VRtist
 
         class DeviceTransform
         {
-            public Quaternion rotation;
-            public Vector3 position;
+            public Quaternion rotation = Quaternion.identity;
+            public Vector3 position = Vector3.zero;
         }
         static Dictionary<InputDevice, DeviceTransform> prevDeviceTransform = new Dictionary<InputDevice, DeviceTransform>();
 
