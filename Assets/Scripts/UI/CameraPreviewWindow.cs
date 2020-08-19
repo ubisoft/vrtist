@@ -32,7 +32,7 @@ namespace VRtist
 
         private void OnPlayingChanged(bool value)
         {
-            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Recording)
+            if (GlobalState.Instance.recordState != GlobalState.RecordState.Recording)
             {
                 titleBar.Pushed = value;
             }
