@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Net.Mail;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -116,7 +114,7 @@ namespace VRtist
         }
         public void HandleRecord()
         {
-            if (!GlobalState.Instance.isRecording)
+            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Recording)
                 return;
             int frame = dopesheet.CurrentFrame;
             if (frame != recordCurrentFrame)
@@ -148,10 +146,16 @@ namespace VRtist
 
         public void OnBeginRecord()
         {
-            if (GlobalState.Instance.isRecording)
+            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Stopped)
                 return;
 
-            foreach(GameObject item in Selection.selection.Values)
+            GlobalState.Instance.StartRecording(true);
+            GlobalState.Instance.onCountdownFinished.AddListener(OnCountdownFinished);
+        }
+
+        public void OnCountdownFinished()
+        {
+            foreach (GameObject item in Selection.selection.Values)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
@@ -171,10 +175,6 @@ namespace VRtist
             }
 
             recordCurrentFrame = dopesheet.CurrentFrame - 1;
-            
-            GlobalState.Instance.SetRecording(true);
-
-            OnPlay();
         }
 
         private void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
@@ -188,13 +188,20 @@ namespace VRtist
 
         public void OnStopRecord()
         {
-            if (!GlobalState.Instance.isRecording)
+            if (GlobalState.Instance.isRecording == GlobalState.RecordState.Stopped)
                 return;
 
-            if(GlobalState.Instance.isPlaying)
+            if (GlobalState.Instance.isRecording == GlobalState.RecordState.Preroll)
+            {
+                animationSets.Clear();
+                GlobalState.Instance.StartRecording(false);
+                return;
+            }
+
+            if (GlobalState.Instance.isPlaying)
                 OnPause();
 
-            GlobalState.Instance.SetRecording(false);
+            GlobalState.Instance.StartRecording(false);
 
             foreach (var item in animationSets)
             {
@@ -209,7 +216,7 @@ namespace VRtist
                 SendAnimationChannel(name, item.Value.lens);
                 NetworkClient.GetInstance().SendQueryObjectData(name);
             }
-            animationSets.Clear();            
+            animationSets.Clear();
         }
 
         public void OnRecordOrStop(bool record)
