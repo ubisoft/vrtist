@@ -53,6 +53,9 @@ namespace VRtist
 
         private CommandSetValue<float> cameraFocalCommand = null;
 
+        private GameObject ATooltip = null;
+        private string prevATooltipText;
+
         struct ControllerDamping
         {
             public ControllerDamping(float time, Vector3 position, Quaternion rotation)
@@ -135,13 +138,27 @@ namespace VRtist
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
 
+            GlobalState.Instance.onRecordEvent.AddListener(OnRecord);
 
+        }
+        private void OnRecord(bool value)
+        {
+            if (null == ATooltip)
+                return;
+            if (value)
+            {
+                Tooltips.SetTooltipText(ATooltip, "Stop Record");
+            }
+            else
+            {
+                Tooltips.SetTooltipText(ATooltip, "Duplicate");
+            }
         }
 
         protected void CreateTooltips()
         {
             GameObject controller = rightController.gameObject;
-            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
+            ATooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
             Tooltips.CreateTooltip(controller, Tooltips.Anchors.Secondary, "Switch Tool");
             triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
             gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
@@ -152,7 +169,7 @@ namespace VRtist
         }
 
         protected override void DoUpdate()
-        {
+        {            
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
                 if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
