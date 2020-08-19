@@ -15,4 +15,4 @@ MonoBehaviour:
   host: 185.172.233.143
   port: 12800
   room: Local
-  master: 86.246.138.244:8352
+  master: 86.246.138.244:8457

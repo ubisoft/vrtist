@@ -424,7 +424,7 @@ namespace VRtist
         public static void BuildClientId(byte[] data)
         {
             string clientId = ConvertToString(data);
-            GlobalState.clientId = clientId;
+            GlobalState.networkUser.id = clientId;
         }
 
         public static void Rename(Transform root, byte[] data)
@@ -1759,6 +1759,15 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildSendPlayerTransform(ConnectedUser playerInfo)
+        {
+            string json = JsonHelper.CreateJsonPlayerInfo(playerInfo);
+            if (null == json) { return null; }
+            byte[] buffer = StringToBytes(json);
+            NetCommand command = new NetCommand(buffer, MessageType.ClientUpdate);
+            return command;
+        }
+
         public static MeshFilter GetOrCreateMeshFilter(GameObject obj)
         {
             MeshFilter meshFilter = obj.GetComponent<MeshFilter>();
@@ -2488,7 +2497,7 @@ namespace VRtist
 
         public static NetCommand BuildSendFrameCommand(int frame)
         {
-            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.networkUser.masterId);
             byte[] messageTypeBuffer = NetGeometry.IntToBytes((int) MessageType.Frame);
             byte[] frameBuffer = NetGeometry.IntToBytes(frame);
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, frameBuffer };
@@ -2604,7 +2613,7 @@ namespace VRtist
             if (client.id.IsValid)
             {
                 // Ignore info on ourself
-                if (client.id.value == GlobalState.clientId) { return; }
+                if (client.id.value == GlobalState.networkUser.id) { return; }
 
                 if (client.room.IsValid)
                 {
@@ -2616,7 +2625,7 @@ namespace VRtist
                     }
 
                     // Ignore other room messages
-                    if (client.room.value != GlobalState.room) { return; }
+                    if (client.room.value != GlobalState.networkUser.room) { return; }
 
                     // Add client to the list of connected users in our room
                     if (!GlobalState.HasConnectedUser(client.id.value))
@@ -2630,6 +2639,12 @@ namespace VRtist
                 // Get client connected to our room
                 if (!GlobalState.HasConnectedUser(client.id.value)) { return; }
                 ConnectedUser user = GlobalState.GetConnectedUser(client.id.value);
+
+                // Retrieve the viewId (one of possible - required to send data)
+                if (client.viewId.IsValid && null == GlobalState.networkUser.viewId)
+                {
+                    GlobalState.networkUser.viewId = client.viewId.value;
+                }
 
                 bool changed = false;
 
@@ -2662,12 +2677,18 @@ namespace VRtist
                 if (!client.id.IsValid) { continue; }
 
                 // Ignore ourself
-                if (client.id.value == GlobalState.clientId) { continue; }
+                if (client.id.value == GlobalState.networkUser.id) { continue; }
 
                 if (client.room.IsValid)
                 {
                     // Only consider clients in our room
-                    if (client.room.value != GlobalState.room) { continue; }
+                    if (client.room.value != GlobalState.networkUser.room) { continue; }
+
+                    // Retrieve the viewId (one of possible - required to send data)
+                    if (client.viewId.IsValid && null == GlobalState.networkUser.viewId)
+                    {
+                        GlobalState.networkUser.viewId = client.viewId.value;
+                    }
 
                     // Add client to the list of connected users in our room
                     if (!GlobalState.HasConnectedUser(client.id.value))
@@ -2857,7 +2878,6 @@ namespace VRtist
                 if (args[i] == "--room")
                 {
                     room = args[i + 1];
-                    GlobalState.room = room;
                 }
 
                 if (args[i] == "--hostname")
@@ -2873,10 +2893,10 @@ namespace VRtist
                 if (args[i] == "--master")
                 {
                     master = args[i + 1];
-                    GlobalState.masterId = master;
                 }
-
             }
+            GlobalState.networkUser.room = room;
+            GlobalState.networkUser.masterId = master;
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
             if (null == ipAddress)
@@ -3038,7 +3058,7 @@ namespace VRtist
 
         public void SendPlay()
         {
-            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.networkUser.masterId);
             byte[] messageTypeBuffer = NetGeometry.IntToBytes((int) MessageType.Play);
             byte[] dataBuffer = new byte[0];
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
@@ -3048,7 +3068,7 @@ namespace VRtist
 
         public void SendPause()
         {
-            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.masterId);
+            byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.networkUser.masterId);
             byte[] messageTypeBuffer = NetGeometry.IntToBytes((int) MessageType.Pause);
             byte[] dataBuffer = new byte[0];
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
@@ -3133,6 +3153,12 @@ namespace VRtist
             AddCommand(command);
         }
 
+        public void SendPlayerTransform(ConnectedUser info)
+        {
+            NetCommand command = NetGeometry.BuildSendPlayerTransform(info);
+            if (null != command) { AddCommand(command); }
+        }
+
         public void JoinRoom(string roomName)
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
@@ -3188,10 +3214,10 @@ namespace VRtist
             string masterId = NetGeometry.GetString(command.data, ref index);
 
             // For debug purpose (unity in editor mode)
-            if (null == GlobalState.masterId)
-                GlobalState.masterId = masterId;
+            if (null == GlobalState.networkUser.masterId)
+                GlobalState.networkUser.masterId = masterId;
 
-            if (masterId != GlobalState.masterId)
+            if (masterId != GlobalState.networkUser.masterId)
                 return null;
 
             int messageType = NetGeometry.GetInt(command.data, ref index);

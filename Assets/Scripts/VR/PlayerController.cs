@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -10,7 +8,7 @@ namespace VRtist
         [Header("Base Parameters")]
         [SerializeField] private Transform world = null;
         [SerializeField] private Transform buttonsContainer = null;
-        [SerializeField] private Transform navigationParametersContainer= null;
+        [SerializeField] private Transform navigationParametersContainer = null;
         [SerializeField] private Transform leftHandle = null;
         [SerializeField] private Transform rightHandle = null;
         [SerializeField] private Transform pivot = null;
@@ -45,6 +43,10 @@ namespace VRtist
         private GameObject tooltipRedo = null;
         private GameObject tooltipReset = null;
 
+        private Vector3 previousPosition;
+        private Vector3 previousForward;
+        private Matrix4x4 rightHanded;
+
         void Start()
         {
             if (!VRInput.TryGetDevices())
@@ -72,6 +74,9 @@ namespace VRtist
 
             initCameraPosition = transform.position; // for reset
             initCameraRotation = transform.rotation; // for reset
+
+            rightHanded = new Matrix4x4();
+            rightHanded.SetTRS(Vector3.zero, Quaternion.Euler(-90f, 0f, 0f), new Vector3(-1f, 1f, 1f));
         }
 
         void Update()
@@ -104,6 +109,23 @@ namespace VRtist
                 {
                     HandleUndoRedo();
                 }
+
+                // Send position and orientation
+                Vector3 forward = new Vector3(
+                    Mathf.RoundToInt(vrCamera.forward.x * 10f) / 10f,
+                    Mathf.RoundToInt(vrCamera.forward.y * 10f) / 10f,
+                    Mathf.RoundToInt(vrCamera.forward.z * 10f) / 10f
+                );
+                if (vrCamera.position != previousPosition || previousForward != forward)
+                {
+                    previousPosition = vrCamera.position;
+                    previousForward = forward;
+                    GlobalState.networkUser.eye = vrCamera.position;
+                    GlobalState.networkUser.target = vrCamera.position + vrCamera.forward;
+                    GlobalState.networkUser.eye = rightHanded.MultiplyPoint(GlobalState.networkUser.eye);
+                    GlobalState.networkUser.target = rightHanded.MultiplyPoint(GlobalState.networkUser.target);
+                    NetworkClient.GetInstance().SendPlayerTransform(GlobalState.networkUser);
+                }
             }
         }
 
@@ -117,14 +139,14 @@ namespace VRtist
             // Update left controller transform
             VRInput.UpdateTransformFromVRDevice(leftHandle, VRInput.leftController);
 
-            if(null != options.currentNavigationMode)
+            if (null != options.currentNavigationMode)
                 options.currentNavigationMode.Update();
         }
 
         private void FitToSelection()
         {
             Transform cam = vrCamera.transform;
-            
+
             Vector3 bmin = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
             Vector3 bmax = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
 
@@ -178,7 +200,7 @@ namespace VRtist
                 }
             }
 
-            center /= (float)bboxCount;
+            center /= (float) bboxCount;
 
             // compute distance to camera;
             float max = Mathf.Max(bmax.x - bmin.x, bmax.y - bmin.y);
@@ -196,7 +218,7 @@ namespace VRtist
             // compute new camera position
             Vector3 cameraGlobalForward = cam.forward;
             Vector3 newCameraPosition = center - cameraGlobalForward * newDistance;
-            
+
             // do not apply the position to the camera but invert it and apply to world
             Vector3 deltaCamera = newCameraPosition - cam.position;
             world.position -= deltaCamera;

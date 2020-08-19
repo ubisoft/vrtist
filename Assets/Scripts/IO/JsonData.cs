@@ -95,6 +95,7 @@ namespace VRtist
         public JsonValue<string> room;
         public JsonValue<string> userName;
         public JsonValue<Color> userColor;
+        public JsonValue<string> viewId;
         public JsonValue<Vector3> eye;
         public JsonValue<Vector3> target;
     }
@@ -170,13 +171,14 @@ namespace VRtist
         }
 
         private static Regex idRegex = new Regex("^{?\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex ipRegex = new Regex("\"ip\":\\s\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex portRegex = new Regex("\"port\":\\s(?<value>\\d+)", RegexOptions.Compiled);
-        private static Regex roomRegex = new Regex("\"room\":\\s(\"(?<value>(.+?))\")|(?<value>null)", RegexOptions.Compiled);
-        private static Regex userNameRegex = new Regex("\"user_name\":\\s\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex eyeRegex = new Regex("\"eye\":\\s\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
-        private static Regex targetRegex = new Regex("\"target\":\\s\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
-        private static Regex userColorRegex = new Regex("\"user_color\":\\s\\[(?<r>[-+]?([0-9]*[.])?[0-9]+),\\s(?<g>[-+]?([0-9]*[.])?[0-9]+),\\s(?<b>[-+]?([0-9]*[.])?[0-9]+)(,\\s(?<a>[-+]?([0-9]*[.])?[0-9]+))?]", RegexOptions.Compiled);
+        private static Regex ipRegex = new Regex("\"ip\":\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static Regex portRegex = new Regex("\"port\":\\s*(?<value>\\d+)", RegexOptions.Compiled);
+        private static Regex roomRegex = new Regex("\"room\":\\s*(\"(?<value>(.+?))\")|(?<value>null)", RegexOptions.Compiled);
+        private static Regex userNameRegex = new Regex("\"user_name\":\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static Regex viewRegex = new Regex("\"views\":\\s*{\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static Regex eyeRegex = new Regex("\"eye\":\\s*\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
+        private static Regex targetRegex = new Regex("\"target\":\\s*\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
+        private static Regex userColorRegex = new Regex("\"user_color\":\\s*\\[(?<r>[-+]?([0-9]*[.])?[0-9]+),\\s(?<g>[-+]?([0-9]*[.])?[0-9]+),\\s(?<b>[-+]?([0-9]*[.])?[0-9]+)(,\\s(?<a>[-+]?([0-9]*[.])?[0-9]+))?]", RegexOptions.Compiled);
 
         private static JsonValue<string> ExtractStringInfo(string json, Regex regex)
         {
@@ -272,6 +274,7 @@ namespace VRtist
             clientInfo.room = ExtractStringInfo(json, roomRegex);
             clientInfo.userName = ExtractStringInfo(json, userNameRegex);
             clientInfo.userColor = ExtractColorInfo(json, userColorRegex);
+            clientInfo.viewId = ExtractStringInfo(json, viewRegex);
             clientInfo.eye = ExtractVector3Info(json, eyeRegex);
             clientInfo.target = ExtractVector3Info(json, targetRegex);
             return clientInfo;
@@ -286,6 +289,43 @@ namespace VRtist
                 clientsInfo.Add(GetClientInfo(jsonClient));
             }
             return clientsInfo;
+        }
+
+        // {
+        // "127.0.0.1:59951": {
+        //     "user_scenes": {
+        //         "Scene": {
+        //             "frame": 67,
+        //             "selected_objects": [],
+        //             "views": {
+        //                 "1662222059768": {
+        //                     "eye": [21.046432495117188, -5.221196174621582, 5.855473041534424],
+        //                     "target": [1.233099102973938, 0.9093819260597229, -0.12044590711593628],
+        //                     "screen_corners": [
+        //                         [20.247392654418945, -5.561498641967773, 5.3597612380981445],
+        //                         [20.58077621459961, -4.4979352951049805, 5.345513820648193],
+        //                         [20.424291610717773, -4.441169261932373, 5.922540664672852],
+        //                         [20.090919494628906, -5.504717826843262, 5.936784267425537]
+        //                     ]
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        public static string CreateJsonPlayerInfo(ConnectedUser user)
+        {
+            if (null == user.id || null == user.viewId) { return null; }
+            return $"{{\"{user.id}\": {{" +
+                "\"user_scenes\": {" +
+                "\"Scene\": {" +
+                "\"frame\": 1," +
+                "\"selected_objects\": []," +
+                "\"views\": {" +
+                $"\"{user.viewId}\": {{" +
+                $"\"eye\": [{user.eye.x}, {user.eye.y}, {user.eye.z}]," +
+                $"\"target\": [{user.target.x}, {user.target.y}, {user.target.z}]" +
+                "\"screen_corners\": [[20.0, -5.0, 5.0], [20.0, -5.0, 5.0], [20.0, -5.0, 5.0]]" +
+                "}}}}}}";
         }
     }
 }
