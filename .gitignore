@@ -8,6 +8,7 @@
 [Ll]ogs/
 [Rr]ecording/
 [Rr]ecordings/
+Assets/Resources/Data/NetworkSettings.asset
 Assets/AssetStoreTools*
 Assets/AmplifyShaderEditor.meta
 AmplifyShaderEditor/
@@ -72,4 +73,4 @@ $RECYCLE.BIN/
 *.zip
 *.7z
 *.rar
-/Assets/Resources/Data/NetworkSettings.asset
+
