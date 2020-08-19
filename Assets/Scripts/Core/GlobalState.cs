@@ -298,8 +298,6 @@ namespace VRtist
             Instance.connectedUsers[user.id] = user;
             GameObject avatar = Instantiate(Instance.avatarPrefab, Instance.avatarsContainer);
             avatar.name = $"{user.name} {user.id}";
-            //avatar.transform.localPosition = user.eye;
-            //avatar.transform.LookAt(Instance.avatarsContainer.TransformPoint(user.target));
             AvatarController controller = avatar.GetComponent<AvatarController>();
             controller.SetUser(user);
             Instance.connectedAvatars[user.id] = controller;
@@ -310,6 +308,7 @@ namespace VRtist
             if (Instance.connectedUsers.ContainsKey(userId))
             {
                 Instance.connectedUsers.Remove(userId);
+                GameObject.Destroy(Instance.connectedAvatars[userId].gameObject);
                 Instance.connectedAvatars.Remove(userId);
             }
         }

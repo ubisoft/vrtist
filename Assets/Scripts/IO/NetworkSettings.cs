@@ -10,5 +10,6 @@ namespace VRtist
         public string room = "Local";
         public string master;
         public string userName;
+        public Color userColor;
     }
 }
