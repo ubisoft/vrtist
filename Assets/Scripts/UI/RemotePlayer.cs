@@ -114,7 +114,7 @@ namespace VRtist
         }
         public void HandleRecord()
         {
-            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Recording)
+            if (GlobalState.Instance.recordState != GlobalState.RecordState.Recording)
                 return;
             int frame = dopesheet.CurrentFrame;
             if (frame != recordCurrentFrame)
@@ -146,7 +146,7 @@ namespace VRtist
 
         public void OnBeginRecord()
         {
-            if (GlobalState.Instance.isRecording != GlobalState.RecordState.Stopped)
+            if (GlobalState.Instance.recordState != GlobalState.RecordState.Stopped)
                 return;
 
             GlobalState.Instance.StartRecording(true);
@@ -188,10 +188,10 @@ namespace VRtist
 
         public void OnStopRecord()
         {
-            if (GlobalState.Instance.isRecording == GlobalState.RecordState.Stopped)
+            if (GlobalState.Instance.recordState == GlobalState.RecordState.Stopped)
                 return;
 
-            if (GlobalState.Instance.isRecording == GlobalState.RecordState.Preroll)
+            if (GlobalState.Instance.recordState == GlobalState.RecordState.Preroll)
             {
                 animationSets.Clear();
                 GlobalState.Instance.StartRecording(false);
