@@ -42,8 +42,11 @@ namespace VRtist
         public bool isPlaying = false;
         public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
         // Record
-        public bool isRecording = false;
+        public enum RecordState { Stopped, Preroll, Recording };
+        public RecordState isRecording = RecordState.Stopped;
         public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
+        public UnityEvent onCountdownFinished = new UnityEvent();
+        public Countdown countdown = null;
 
         // FPS
         public static int fps { get; private set; }
@@ -161,10 +164,29 @@ namespace VRtist
             onPlayingEvent.Invoke(value);
         }
 
-        public void SetRecording(bool value)
+        public void StartRecording(bool value)
         {
-            isRecording = value;
-            onRecordEvent.Invoke(value);
+            if (value)
+            {
+                isRecording = RecordState.Preroll;
+                countdown.gameObject.SetActive(true);
+            }
+            else
+            {
+                isRecording = RecordState.Stopped;
+                countdown.gameObject.SetActive(false);
+                onCountdownFinished.RemoveAllListeners();
+                onRecordEvent.Invoke(false);
+            }
+        }
+
+        public void OnCountdownFinished()
+        {
+            isRecording = RecordState.Recording;
+            onRecordEvent.Invoke(true);
+            onCountdownFinished.Invoke();
+            NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
+            SetPlaying(true);
         }
 
         private void UpdateFps()

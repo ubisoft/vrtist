@@ -72,3 +72,4 @@ $RECYCLE.BIN/
 *.zip
 *.7z
 *.rar
+/Assets/Resources/Data/NetworkSettings.asset
