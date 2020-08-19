@@ -59,6 +59,8 @@ namespace VRtist
         public float minValue = default_min_value;
         public float maxValue = default_max_value;
         public float currentValue = default_current_value;
+        public AnimationCurve dataCurve = new AnimationCurve(new Keyframe(0, default_min_value), new Keyframe(1, default_min_value));
+        public AnimationCurve invDataCurve = null;
 
         // TODO: precision, step?
 
@@ -76,6 +78,11 @@ namespace VRtist
         public string Text { get { return textContent; } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
+        public bool HasCurveData()
+        {
+            return (dataCurve != null && dataCurve.keys.Length > 0);
+        }
+
         void Start()
         {
 #if UNITY_EDITOR
@@ -85,8 +92,8 @@ namespace VRtist
 #endif
             {
                 onSlideEvent.AddListener(OnSlide);
-                onClickEvent.AddListener(OnClickSlider);
-                onReleaseEvent.AddListener(OnReleaseSlider);
+                //onClickEvent.AddListener(OnClickSlider);
+                //onReleaseEvent.AddListener(OnReleaseSlider);
             }
         }
 
@@ -281,6 +288,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateValueText();
+                    BuildInverseCurve();
                     UpdateSliderPosition();
                     ResetColor();
                 }
@@ -298,6 +306,17 @@ namespace VRtist
             base.ResetColor(); // reset color of base mesh
             rail.ResetColor();
             knob.ResetColor();
+
+            // Make the canvas pop front if Hovered.
+            Canvas c = GetComponentInChildren<Canvas>();
+            if (c != null)
+            {
+                RectTransform rt = c.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+                }
+            }
         }
 
         private void OnDrawGizmosSelected()
@@ -356,7 +375,8 @@ namespace VRtist
 
         private void UpdateSliderPosition()
         {
-            float pct = (currentValue - minValue) / (maxValue - minValue);
+            float pct = HasCurveData() ? invDataCurve.Evaluate(currentValue) 
+                : (currentValue - minValue) / (maxValue - minValue);
 
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
@@ -368,6 +388,31 @@ namespace VRtist
             knob.transform.localPosition = knobPosition;
         }
 
+        private void BuildInverseCurve()
+        {
+            if (dataCurve == null)
+                return;
+
+            // TODO: check c is strictly monotonic and Piecewise linear, log error otherwise
+
+            invDataCurve = new AnimationCurve();
+            for (int i = 0; i < dataCurve.keys.Length; i++)
+            {
+                var kf = dataCurve.keys[i];
+                var rkf = new Keyframe(kf.value, kf.time);
+                if (kf.inTangent < 0)
+                {
+                    rkf.inTangent = 1 / kf.outTangent;
+                    rkf.outTangent = 1 / kf.inTangent;
+                }
+                else
+                {
+                    rkf.inTangent = 1 / kf.inTangent;
+                    rkf.outTangent = 1 / kf.outTangent;
+                }
+                invDataCurve.AddKey(rkf);
+            }
+        }
 
         private void SetText(string textValue)
         {
@@ -401,6 +446,7 @@ namespace VRtist
                 // HIDE cursor
 
                 onClickEvent.Invoke();
+                OnClickSlider();
             }
         }
 
@@ -414,6 +460,7 @@ namespace VRtist
                 // SHOW cursor
 
                 onReleaseEvent.Invoke();
+                OnReleaseSlider();
             }
         }
 
@@ -466,7 +513,14 @@ namespace VRtist
                 bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
                 if (triggerState)
                 {
-                    Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    if (HasCurveData())
+                    {
+                        Value = dataCurve.Evaluate(pct);
+                    }
+                    else // linear
+                    {
+                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    }
                     onSlideEvent.Invoke(currentValue);
                     int intValue = Mathf.RoundToInt(currentValue);
                     onSlideEventInt.Invoke(intValue);
@@ -482,6 +536,130 @@ namespace VRtist
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             cursorShapeTransform.position = worldProjectedWidgetPosition;
         }
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+
+        public override bool OverridesRayEndPoint() { return true; }
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint) 
+        {
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            float widthWithoutMargins = width - 2.0f * margin;
+            float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
+            float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+
+            // TODO: use curve, invert curve.
+            float currentValuePct = (Value - minValue) / (maxValue - minValue);
+            float currentKnobPositionX = startX + currentValuePct * (endX - startX);
+
+            // DRAG
+
+            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+
+            // CLAMP
+
+            if (localProjectedWidgetPosition.x < startX)
+                localProjectedWidgetPosition.x = startX;
+
+            if (localProjectedWidgetPosition.x > endX)
+                localProjectedWidgetPosition.x = endX;
+
+            localProjectedWidgetPosition.y = -height / 2.0f;
+
+            // SET
+
+            float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+            // TODO: put the "curve" code here
+            Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+            onSlideEvent.Invoke(currentValue);
+            int intValue = Mathf.RoundToInt(currentValue);
+            onSlideEventInt.Invoke(intValue);
+
+            // Haptic intensity as we go deeper into the widget.
+            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+            //intensity *= intensity; // ease-in
+
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            //cursorShapeTransform.position = worldProjectedWidgetPosition;
+            rayEndPoint = worldProjectedWidgetPosition;
+        }
+
+        // --- / RAY API ----------------------------------------------------
 
         public class CreateArgs
         {
