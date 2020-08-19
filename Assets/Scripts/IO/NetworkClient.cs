@@ -2870,32 +2870,23 @@ namespace VRtist
             string hostname = GlobalState.Instance.networkSettings.host;
             int port = GlobalState.Instance.networkSettings.port;
             string master = GlobalState.Instance.networkSettings.master;
+            string userName = GlobalState.Instance.networkSettings.userName;
+            Color userColor = GlobalState.Instance.networkSettings.userColor;
 
             // Read command line
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "--room")
-                {
-                    room = args[i + 1];
-                }
-
-                if (args[i] == "--hostname")
-                {
-                    hostname = args[i + 1];
-                }
-
-                if (args[i] == "--port")
-                {
-                    Int32.TryParse(args[i + 1], out port);
-                }
-
-                if (args[i] == "--master")
-                {
-                    master = args[i + 1];
-                }
+                if (args[i] == "--room") { room = args[i + 1]; }
+                if (args[i] == "--hostname") { hostname = args[i + 1]; }
+                if (args[i] == "--port") { Int32.TryParse(args[i + 1], out port); }
+                if (args[i] == "--master") { master = args[i + 1]; }
+                if (args[i] == "--username") { userName = args[i + 1]; }
+                if (args[i] == "--usercolor") { ColorUtility.TryParseHtmlString(args[i + 1], out userColor); }
             }
             GlobalState.networkUser.room = room;
             GlobalState.networkUser.masterId = master;
+            GlobalState.networkUser.name = userName;
+            GlobalState.networkUser.color = userColor;
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
             if (null == ipAddress)
