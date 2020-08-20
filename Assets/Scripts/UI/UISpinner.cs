@@ -69,6 +69,8 @@ namespace VRtist
         public UnityEvent onExitEvent = new UnityEvent();
         public UnityEvent onPressTriggerEvent = new UnityEvent();
         public FloatChangedEvent onReleaseTriggerEvent = new FloatChangedEvent();
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         private Vector3 localProjectedWidgetInitialPosition = Vector3.zero;
         private float initialFloatValue = 0.0f;
@@ -88,8 +90,8 @@ namespace VRtist
             if (Application.isPlaying)
 #endif
             {
-                onEnterEvent.AddListener(OnEnterSpinner);
-                onExitEvent.AddListener(OnExitSpinner);
+                //onEnterEvent.AddListener(OnEnterSpinner);
+                //onExitEvent.AddListener(OnExitSpinner);
             }
         }
 
@@ -249,6 +251,22 @@ namespace VRtist
             }
         }
 
+        public override void ResetColor()
+        {
+            base.ResetColor();
+
+            // Make the canvas pop front if Hovered.
+            Canvas c = GetComponentInChildren<Canvas>();
+            if (c != null)
+            {
+                RectTransform rt = c.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+                }
+            }
+        }
+
         private void OnDrawGizmosSelected()
         {
             float widthWithoutMargins = width - 2.0f * margin;
@@ -341,6 +359,10 @@ namespace VRtist
             currentIntValue = intValue;
         }
 
+
+
+
+
         private void OnTriggerEnter(Collider otherCollider)
         {
             if (NeedToIgnoreCollisionEnter())
@@ -352,6 +374,8 @@ namespace VRtist
             {
                 cursorExitedWidget = false;
                 onEnterEvent.Invoke();
+                onClickEvent.Invoke();
+                OnEnterSpinner();
             }
         }
 
@@ -367,6 +391,8 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {                
                 onExitEvent.Invoke();
+                onReleaseEvent.Invoke();
+                OnExitSpinner();
             }
         }
 
@@ -393,14 +419,7 @@ namespace VRtist
 
             bool justPushedTriggered = false;
             bool justReleasedTriggered = false;
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton,
-                () => {
-                    justPushedTriggered = true;
-                },
-                () => {
-                    justReleasedTriggered = true;
-                }
-            );
+            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref justPushedTriggered, ref justReleasedTriggered);
 
             if (justPushedTriggered)
             {
@@ -450,6 +469,108 @@ namespace VRtist
                     onExitEvent.Invoke();
             }
         }
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+
+        public override bool OverridesRayEndPoint() { return true; }
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
+        {
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            // TODO: use curve, invert curve.
+            float currentFloatValuePct = (FloatValue - minFloatValue) / (maxFloatValue - minFloatValue);
+            float currentIntValuePct = (float)(IntValue - minIntValue) / (float)(maxIntValue - minIntValue);
+
+            localProjectedWidgetPosition.x = width / 2.0f;
+            localProjectedWidgetPosition.y = -height / 2.0f;
+
+            // TODO: put the "curve" code here
+
+            // tmp
+            IntValue = (minIntValue + maxIntValue) / 2;
+            onSpinEventInt.Invoke(currentIntValue);
+
+            FloatValue = (minFloatValue + maxFloatValue) / 2.0f;
+            onSpinEvent.Invoke(currentFloatValue);
+
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            //cursorShapeTransform.position = worldProjectedWidgetPosition;
+            rayEndPoint = worldProjectedWidgetPosition;
+        }
+
+        // --- / RAY API ----------------------------------------------------
 
         //
         // CREATE

@@ -195,9 +195,9 @@ namespace VRtist
             shotEnabledCheckbox.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             shotNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             cameraNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            //startFrameSpinner = startFrameSpinner; // TODO: spinner dont have onClickEvent, yet
+            startFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             frameRangeLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            //endFrameSpinner = endFrameSpinner;
+            endFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             setCameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
         }
 
