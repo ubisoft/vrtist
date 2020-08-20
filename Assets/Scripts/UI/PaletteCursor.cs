@@ -114,6 +114,12 @@ namespace VRtist
             //HandleRaycast();
         }
 
+        private void ActivateRay(bool value)
+        {
+            ToolsUIManager.Instance.ShowTools(!value);
+            ray.gameObject.SetActive(value);
+        }
+
         private void HandleRaycast()
         {
 
@@ -244,12 +250,12 @@ namespace VRtist
 
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
-                        ray.gameObject.SetActive(true);
+                        ActivateRay(true);
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
                     }
                     else
                     {
-                        ray.gameObject.SetActive(false);
+                        ActivateRay(false);
                     }
                     HandleRayOutOfWidget(triggerJustReleased);
                 }
@@ -333,7 +339,7 @@ namespace VRtist
 
                     prevWidget = widget; // even if the same.
 
-                    ray.gameObject.SetActive(true);
+                    ActivateRay(true);
 
                     if (widget.GetComponent<UIPanel>())
                     {
@@ -372,12 +378,12 @@ namespace VRtist
                 {
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
-                        ray.gameObject.SetActive(true);
+                        ActivateRay(true);
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
                     }
                     else
                     {
-                        ray.gameObject.SetActive(false);
+                        ActivateRay(false);
                     }
                     HandleRayOutOfWidget(triggerJustReleased);
                 }
@@ -386,12 +392,12 @@ namespace VRtist
             {
                 if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                 {
-                    ray.gameObject.SetActive(true);
+                    ActivateRay(true);
                     ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
                 }
                 else
                 {
-                    ray.gameObject.SetActive(false);
+                    ActivateRay(false);
                 }
                 HandleRayOutOfWidget(triggerJustReleased);
             }
