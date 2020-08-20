@@ -30,6 +30,19 @@ namespace VRtist
             Content.gameObject.GetComponent<ListItemContent>().SetSelected(value);
         }
 
+        public override void ResetColor()
+        {
+            //SetColor(Disabled ? DisabledColor
+            //      : (Pushed ? PushedColor
+            //      : (Checked ? CheckedColor
+            //      : (Selected ? SelectedColor
+            //      : (Hovered ? HoveredColor
+            //      : BaseColor)))));
+
+            // Make the content pop front if Hovered.
+            content.transform.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+        }
+
         public void AdaptContent()
         {
             // TODO: handle resize/center content
@@ -77,7 +90,7 @@ namespace VRtist
             }
         }
 
-        public override bool HandlesCursorBehavior() { return true; }
+        public override bool HandlesCursorBehavior() { return UseColliderForUI; }
         public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
         {
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
@@ -90,6 +103,11 @@ namespace VRtist
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             cursorShapeTransform.position = worldProjectedWidgetPosition;
+        }
+
+        public void OnAnySubItemClicked()
+        {
+            list.FireItem(Content);
         }
 
         private void OnTriggerEnter(Collider otherCollider)
@@ -127,9 +145,77 @@ namespace VRtist
             }
         }
 
-        public void OnAnySubItemClicked()
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
         {
-            list.FireItem(Content);
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
         }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            //onHoverEvent.Invoke();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+            //onHoverEvent.Invoke();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayRelease()
+        {
+            onReleaseEvent.Invoke();
+            
+            list.FireItem(Content);
+
+            Hovered = true;
+            Pushed = false;
+
+            ResetColor();
+        }
+
+        // --- / RAY API ----------------------------------------------------
     }
 }
