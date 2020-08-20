@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b274cfb87d9c4c7439d5c5427dcaa4ce, type: 3}
   m_Name: NetworkSettings
   m_EditorClassIdentifier: 
-  host: 185.172.233.143
+  host: localhost
   port: 12800
   room: Local
   master: 
-  userName: VR Sylvain
+  userName: VR pouet
   userColor: {r: 0, g: 0.6293888, b: 1, a: 0}
