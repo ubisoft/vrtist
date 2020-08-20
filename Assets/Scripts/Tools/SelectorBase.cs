@@ -169,7 +169,7 @@ namespace VRtist
         }
 
         protected override void DoUpdate()
-        {            
+        {
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
             {
                 if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
@@ -549,11 +549,17 @@ namespace VRtist
             GetControllerPositionRotation();
             // Move & Duplicate selection
 
-            // Duplicate
+            // Duplicate / Stop Record
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
                 () => { },
                 () =>
                 {
+                    if (GlobalState.Instance.recordState == GlobalState.RecordState.Recording)
+                    {
+                        GlobalState.Instance.Pause();
+                        return;
+                    }
+
                     if (!Selection.IsHandleSelected())
                     {
                         List<GameObject> objects = Selection.GetObjects();

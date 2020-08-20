@@ -290,65 +290,14 @@ namespace VRtist
             onNextKeyframeEvent.Invoke(CurrentFrame);
         }
 
-        public void SendKeyInfo(string objectName, string channelName, int channelIndex, int frame, float value)
-        {
-            SetKeyInfo keyInfo = new SetKeyInfo()
-            {
-                objectName = controller.gameObject.name,
-                channelName = channelName,
-                channelIndex = channelIndex,
-                frame = frame,
-                value = value
-            };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
-        }
-
-        private void SendDeleteKeyInfo(string channelName, int channelIndex)
-        {
-            SetKeyInfo keyInfo = new SetKeyInfo()
-            {
-                objectName = controller.gameObject.name,
-                channelName = channelName,
-                channelIndex = channelIndex,
-                value = 0.0f
-            };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
-        }
-
         public void OnAddKeyFrame()
         {
-            if (null == controller)
-                return;
-            string name = controller.gameObject.name;
-            int frame = CurrentFrame;
-            SendKeyInfo(name, "location", 0, frame, controller.transform.localPosition.x);
-            SendKeyInfo(name, "location", 1, frame, controller.transform.localPosition.y);
-            SendKeyInfo(name, "location", 2, frame, controller.transform.localPosition.z);
-            Quaternion q = controller.transform.localRotation;
-            // convert to ZYX euler
-            Vector3 angles = Maths.ThreeAxisRotation(q);
-            SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
-            SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
-            SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
-            SendKeyInfo(name, "lens", -1, frame, (controller as CameraController).focal);
-
-            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, controller.gameObject.name);
-            onAddKeyframeEvent.Invoke(CurrentFrame);
+            GlobalState.Instance.AddKeyframe();
         }
 
         public void OnRemoveKeyFrame()
         {
-            if (null == controller)
-                return;
-            SendDeleteKeyInfo("location", 0);
-            SendDeleteKeyInfo("location", 1);
-            SendDeleteKeyInfo("location", 2);
-            SendDeleteKeyInfo("rotation_euler", 0);
-            SendDeleteKeyInfo("rotation_euler", 1);
-            SendDeleteKeyInfo("rotation_euler", 2);
-            SendDeleteKeyInfo("lens", -1);
-            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, controller.gameObject.name);
-            onRemoveKeyframeEvent.Invoke(CurrentFrame);
+            GlobalState.Instance.RemoveKeyframe();
         }
     }
 }

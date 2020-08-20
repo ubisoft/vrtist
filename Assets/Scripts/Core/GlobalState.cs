@@ -43,7 +43,6 @@ namespace VRtist
         public enum RecordState { Stopped, Preroll, Recording };
         public RecordState recordState = RecordState.Stopped;
         public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
-        public UnityEvent onCountdownFinished = new UnityEvent();
         public Countdown countdown = null;
 
         // FPS
@@ -89,6 +88,9 @@ namespace VRtist
 
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
+
+        // Animation
+        private AnimationController animationController;
 
         public static void FireObjectAdded(GameObject gObject)
         {
@@ -156,6 +158,55 @@ namespace VRtist
 
             avatarPrefab = Resources.Load<GameObject>("Prefabs/VR Avatar");
             avatarsContainer = world.Find("Avatars");
+            animationController = GetComponent<AnimationController>();
+            countdown.onCountdownFinished.AddListener(OnCountdownFinished);
+        }
+
+        // Animation helpers
+        ///////////////////////////
+        public void AddKeyframe()
+        {
+            animationController.AddKeyframe();
+        }
+
+        public void RemoveKeyframe()
+        {
+            animationController.RemoveKeyframe();
+        }
+
+        public void Record()
+        {
+            if (recordState != RecordState.Stopped)
+                return;
+
+            recordState = RecordState.Preroll;
+            countdown.gameObject.SetActive(true);
+        }
+
+        public void Play()
+        {
+            NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
+            GlobalState.Instance.SetPlaying(true);
+        }
+
+        public void Pause()
+        {
+            switch(recordState)
+            {
+                case RecordState.Preroll:
+                    recordState = RecordState.Stopped;
+                    countdown.gameObject.SetActive(false);
+                    break;
+                case RecordState.Recording:
+                    recordState = RecordState.Stopped;
+                    animationController.ApplyAnimations();
+                    countdown.gameObject.SetActive(false);
+                    onRecordEvent.Invoke(false);
+                    break;
+
+            }
+            NetworkClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
+            GlobalState.Instance.SetPlaying(false);
         }
 
         public void SetPlaying(bool value)
@@ -164,27 +215,11 @@ namespace VRtist
             onPlayingEvent.Invoke(value);
         }
 
-        public void StartRecording(bool value)
-        {
-            if (value)
-            {
-                recordState = RecordState.Preroll;
-                countdown.gameObject.SetActive(true);
-            }
-            else
-            {
-                recordState = RecordState.Stopped;
-                countdown.gameObject.SetActive(false);
-                onCountdownFinished.RemoveAllListeners();
-                onRecordEvent.Invoke(false);
-            }
-        }
-
         public void OnCountdownFinished()
         {
             recordState = RecordState.Recording;
+            animationController.OnCountdownFinished();
             onRecordEvent.Invoke(true);
-            onCountdownFinished.Invoke();
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
             SetPlaying(true);
         }
