@@ -187,6 +187,20 @@ namespace VRtist
             }
         }
 
+        public void SetListItem(UIDynamicListItem dlItem)
+        {
+            item = dlItem;
+
+            cameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            shotEnabledCheckbox.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            shotNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            cameraNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            //startFrameSpinner = startFrameSpinner; // TODO: spinner dont have onClickEvent, yet
+            frameRangeLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            //endFrameSpinner = endFrameSpinner;
+            setCameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+        }
+
         public static ShotItem GenerateShotItem(Shot shot)
         {
             GameObject root = new GameObject("shotItem");
@@ -232,7 +246,7 @@ namespace VRtist
                 height = 0.03f,
                 content = UICheckbox.CheckboxContent.CheckboxOnly
             });
-
+            
             shotEnabledCheckbox.SetLightLayer(5);
 
             cx += 0.03f;

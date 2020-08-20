@@ -101,14 +101,14 @@ namespace VRtist
             return items;
         }
 
-        public void AddItem(Transform t)
+        public UIDynamicListItem AddItem(Transform t)
         {
             // full page, add one page
             if (nbItemsInLastPage == nbItemsPerPage)
                 pagesCount++;
             currentPage = pagesCount == 0 ? 0 : pagesCount - 1;
 
-            GameObject gObj = new GameObject("List Item");// t.gameObject.name);
+            GameObject gObj = new GameObject("List Item");
             UIDynamicListItem item = gObj.AddComponent<UIDynamicListItem>();
             gObj.tag = "UICollider";
             gObj.layer = LayerMask.NameToLayer("UI");
@@ -126,6 +126,8 @@ namespace VRtist
             items.Add(item);
 
             NeedsRebuild = true;
+
+            return item;
         }
 
         public UIDynamicListItem DEBUG_GetLastItemTransform()
