@@ -77,11 +77,11 @@ namespace VRtist
             recordCurrentFrame = GlobalState.currentFrame - 1;
         }
 
-        public void SendKeyInfo(ParametersController controller, string channelName, int channelIndex, int frame, float value)
+        public void SendKeyInfo(string objectName, string channelName, int channelIndex, int frame, float value)
         {
             SetKeyInfo keyInfo = new SetKeyInfo()
             {
-                objectName = controller.gameObject.name,
+                objectName = objectName,
                 channelName = channelName,
                 channelIndex = channelIndex,
                 frame = frame,
@@ -102,12 +102,12 @@ namespace VRtist
             NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
-        private void SendAnimationChannel(ParametersController controller, AnimationChannel animationChannel)
+        private void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
         {
             foreach (AnimationKey key in animationChannel.keys)
             {
                 animationChannel.GetChannelInfo(out string channelName, out int channelIndex);
-                SendKeyInfo(controller, channelName, channelIndex, key.time, key.value);
+                SendKeyInfo(objectName, channelName, channelIndex, key.time, key.value);
             }
         }
 
@@ -116,16 +116,15 @@ namespace VRtist
             foreach (var item in animationSets)
             {
                 GameObject gObject = item.Key;
-                string name = gObject.name;
-                ParametersController controller = gObject.GetComponent<ParametersController>();
-                SendAnimationChannel(controller, item.Value.xPosition);
-                SendAnimationChannel(controller, item.Value.yPosition);
-                SendAnimationChannel(controller, item.Value.zPosition);
-                SendAnimationChannel(controller, item.Value.xRotation);
-                SendAnimationChannel(controller, item.Value.yRotation);
-                SendAnimationChannel(controller, item.Value.zRotation);
-                SendAnimationChannel(controller, item.Value.lens);
-                NetworkClient.GetInstance().SendQueryObjectData(name);
+                string objectName = gObject.name;
+                SendAnimationChannel(objectName, item.Value.xPosition);
+                SendAnimationChannel(objectName, item.Value.yPosition);
+                SendAnimationChannel(objectName, item.Value.zPosition);
+                SendAnimationChannel(objectName, item.Value.xRotation);
+                SendAnimationChannel(objectName, item.Value.yRotation);
+                SendAnimationChannel(objectName, item.Value.zRotation);
+                SendAnimationChannel(objectName, item.Value.lens);
+                NetworkClient.GetInstance().SendQueryObjectData(objectName);
             }
             animationSets.Clear();
         }
@@ -137,20 +136,20 @@ namespace VRtist
                 CameraController controller = item.GetComponent<CameraController>();
                 if (null != controller)
                 {
-                    string name = controller.gameObject.name;
+                    string name = item.name;
                     int frame = GlobalState.currentFrame;
-                    SendKeyInfo(controller, "location", 0, frame, controller.transform.localPosition.x);
-                    SendKeyInfo(controller, "location", 1, frame, controller.transform.localPosition.y);
-                    SendKeyInfo(controller, "location", 2, frame, controller.transform.localPosition.z);
-                    Quaternion q = controller.transform.localRotation;
+                    SendKeyInfo(name, "location", 0, frame, item.transform.localPosition.x);
+                    SendKeyInfo(name, "location", 1, frame, item.transform.localPosition.y);
+                    SendKeyInfo(name, "location", 2, frame, item.transform.localPosition.z);
+                    Quaternion q = item.transform.localRotation;
                     // convert to ZYX euler
                     Vector3 angles = Maths.ThreeAxisRotation(q);
-                    SendKeyInfo(controller, "rotation_euler", 0, frame, angles.x);
-                    SendKeyInfo(controller, "rotation_euler", 1, frame, angles.y);
-                    SendKeyInfo(controller, "rotation_euler", 2, frame, angles.z);
-                    SendKeyInfo(controller, "lens", -1, frame, (controller as CameraController).focal);
+                    SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
+                    SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
+                    SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
+                    SendKeyInfo(name, "lens", -1, frame, controller.focal);
 
-                    NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, controller.gameObject.name);
+                    NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
                 }
             }
         }
