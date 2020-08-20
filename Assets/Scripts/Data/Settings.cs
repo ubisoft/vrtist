@@ -11,6 +11,7 @@ namespace VRtist
         public int version = 1;
         public bool displayGizmos = true;
         public bool displayWorldGrid = true;
+        public bool displayAvatars = true;
         public bool displayFPS = false;
         public float masterVolume = 0f;
         public float ambientVolume = -35f;

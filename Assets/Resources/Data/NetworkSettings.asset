@@ -16,5 +16,5 @@ MonoBehaviour:
   port: 12800
   room: Local
   master: 
-  userName: VR pouet
+  userName: VR Sylvain
   userColor: {r: 0, g: 0.6293888, b: 1, a: 0}
