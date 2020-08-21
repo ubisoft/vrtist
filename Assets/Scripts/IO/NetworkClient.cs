@@ -1500,19 +1500,14 @@ namespace VRtist
             }
 
             Node node = SyncData.nodes[objectName];
-            ParametersController parameterController = node.prefab.GetComponent<ParametersController>();
-            if (!parameterController)
-                return;
-            parameterController.AddAnimationChannel(animationChannel, keys);
+            GlobalState.Instance.AddAnimationChannel(node.prefab, animationChannel, keys);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                ParametersController controller = gobj.GetComponent<ParametersController>();
-                controller.AddAnimationChannel(animationChannel, keys);
-
-                controller.FireValueChanged();
+                GlobalState.Instance.AddAnimationChannel(gobj, animationChannel, keys);
+                GlobalState.Instance.FireValueChanged(gobj);
             }
         }
 
@@ -1534,7 +1529,7 @@ namespace VRtist
                 GameObject gobj = t.Item1;
                 CameraController controller = gobj.GetComponent<CameraController>();
                 controller.focal = cameraController.focal;
-                controller.FireValueChanged();
+                GlobalState.Instance.FireValueChanged(gobj);
             }
         }
 
@@ -1595,7 +1590,7 @@ namespace VRtist
             cam.focalLength = focal;
             cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
 
-            cameraController.FireValueChanged();
+            GlobalState.Instance.FireValueChanged(camGameObject);
         }
 
         public static void BuildLight(Transform root, byte[] data)
@@ -1689,7 +1684,7 @@ namespace VRtist
                 lightContr.CopyParameters(lightController);
             }
 
-            lightController.FireValueChanged();
+            GlobalState.Instance.FireValueChanged(lightGameObject);
         }
 
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
