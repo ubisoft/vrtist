@@ -69,7 +69,7 @@ namespace VRtist
         public ParametersController parametersController = null;
     }
 
-    public class AnimationController : MonoBehaviour
+    public class AnimationController
     {
         private ParametersEvent onChangedEvent = null;
 
@@ -77,7 +77,7 @@ namespace VRtist
         private Dictionary<GameObject, AnimationSet> recordAnimationSets = new Dictionary<GameObject, AnimationSet>();
         private int recordCurrentFrame = 0;
 
-        void Update()
+        public void Update()
         {
             HandleRecord();
         }

@@ -117,7 +117,7 @@ namespace VRtist
 
         protected virtual void OnDisable()
         {
-            if(hasListener)
+            if(hasListener && null != GlobalState.Instance)
                 GlobalState.Instance.RemoveAnimationListener(OnParametersChanged);
             hasListener = false;
         }
