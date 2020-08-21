@@ -91,7 +91,7 @@ namespace VRtist
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
 
         // Animation
-        private AnimationController animationController;
+        private AnimationController animationController = new AnimationController();
 
         public static void FireObjectAdded(GameObject gObject)
         {
@@ -135,7 +135,6 @@ namespace VRtist
             colorReleasedEvent = new ColorChangedEvent();
             instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
             colorClickedEvent = colorPicker.onClickEvent;
-            animationController = GetComponent<AnimationController>();
         }
 
         private void OnDestroy()
@@ -288,6 +287,7 @@ namespace VRtist
 
         private void Update()
         {
+            animationController.Update();
             // Info on the left controller
             if (null != displayTooltip)
             {

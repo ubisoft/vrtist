@@ -177,7 +177,7 @@ namespace VRtist
 
         protected virtual void OnParametersChanged(GameObject gObject)
         {
-            if (gObject.GetComponent<ParametersController>() != controller)
+            if (null == controller || gObject != controller.gameObject)
                 return;
             Clear();
 
