@@ -3148,8 +3148,10 @@ namespace VRtist
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
             AddCommand(command);
-            NetCommand commandClientName = new NetCommand(System.Text.Encoding.UTF8.GetBytes(GlobalState.networkUser.name), MessageType.SetClientName);
-            AddCommand(commandClientName);
+
+            string json = JsonHelper.CreateJsonClientNameAndColor(GlobalState.networkUser.name, GlobalState.networkUser.color);
+            NetCommand commandClientInfo = new NetCommand(NetGeometry.StringToBytes(json), MessageType.SetClientCustomAttribute);
+            AddCommand(commandClientInfo);
         }
 
         void Send(byte[] data)

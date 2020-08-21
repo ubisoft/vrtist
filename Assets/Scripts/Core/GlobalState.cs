@@ -222,7 +222,7 @@ namespace VRtist
 
         public void Pause()
         {
-            switch(recordState)
+            switch (recordState)
             {
                 case RecordState.Preroll:
                     recordState = RecordState.Stopped;
@@ -309,18 +309,32 @@ namespace VRtist
         public static void SetDisplayGizmos(bool value)
         {
             Settings.displayGizmos = value;
-            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
-            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
+            ShowHideComponentsGizmos(FindObjectsOfType<LightController>(), value);
+            ShowHideComponentsGizmos(FindObjectsOfType<CameraController>(), value);
         }
 
-        public static void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
+        public static void SetDisplayAvatars(bool value)
         {
-            foreach (var controller in controllers)
+            Settings.displayAvatars = value;
+            ShowHideComponentsGizmos(FindObjectsOfType<AvatarController>(), value);
+        }
+
+        public static void ShowHideComponentsGizmos(Component[] components, bool value)
+        {
+            foreach (var component in components)
             {
-                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
+                // Hide geometry
+                MeshFilter[] meshFilters = component.gameObject.GetComponentsInChildren<MeshFilter>(true);
                 foreach (MeshFilter meshFilter in meshFilters)
                 {
                     meshFilter.gameObject.SetActive(value);
+                }
+
+                // Hide UI
+                Canvas[] canvases = component.gameObject.GetComponentsInChildren<Canvas>(true);
+                foreach (Canvas canvas in canvases)
+                {
+                    canvas.gameObject.SetActive(value);
                 }
             }
         }
