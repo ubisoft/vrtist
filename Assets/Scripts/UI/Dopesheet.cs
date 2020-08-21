@@ -177,6 +177,8 @@ namespace VRtist
 
         protected virtual void OnParametersChanged(GameObject gObject)
         {
+            if (gObject.GetComponent<ParametersController>() != controller)
+                return;
             Clear();
 
             Dictionary<string, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(gObject);
