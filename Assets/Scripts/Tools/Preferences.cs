@@ -109,7 +109,10 @@ namespace VRtist
 
         private void OnConnected()
         {
-            versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}\nClient ID: {GlobalState.networkUser.id}";
+            versionLabel.Text = $"VRtist Version: {Version.version}\n" +
+                $"Sync Version: {Version.syncVersion}\n" +
+                $"Client ID: {GlobalState.networkUser.id}\n" +
+                $"Master ID: {GlobalState.networkUser.masterId}";
         }
 
         public void OnReset()
