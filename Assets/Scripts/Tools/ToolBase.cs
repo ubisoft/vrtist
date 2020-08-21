@@ -17,11 +17,12 @@ namespace VRtist
         public bool IsInGui { get { return isInGui; } set { isInGui = value; ShowTool(!value); } }
 
         protected ICommand parameterCommand = null;
-        protected List<ParametersController> connectedObjects = new List<ParametersController>();
 
         protected Transform rightHandle;
         protected Transform rightMouthpiece;
         protected Transform rightController;
+
+        private bool hasListener = false;
 
         protected virtual void Awake()
         {
@@ -108,28 +109,17 @@ namespace VRtist
                 UpdateUI();
         }
 
-        protected void ClearListeners()
-        {
-            foreach (ParametersController parameterController in connectedObjects)
-            {
-                parameterController.RemoveListener(OnParametersChanged);
-            }
-            connectedObjects.Clear();
-        }
-
-        protected void AddListener(ParametersController parametersController)
-        {
-            parametersController.AddListener(OnParametersChanged);
-            connectedObjects.Add(parametersController);
-        }
-
         protected virtual void OnEnable()
         {
+            GlobalState.Instance.AddAnimationListener(OnParametersChanged);
+            hasListener = true;
         }
 
         protected virtual void OnDisable()
         {
-            ClearListeners();
+            if(hasListener)
+                GlobalState.Instance.RemoveAnimationListener(OnParametersChanged);
+            hasListener = false;
         }
 
         protected void OnSliderPressed(string title, string parameterPath)

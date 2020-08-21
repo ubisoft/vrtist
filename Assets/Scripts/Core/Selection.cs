@@ -149,7 +149,10 @@ namespace VRtist
                 obj = null;
             }
 
-            hoveredObject = obj;
+            if (obj == null || !IsSelected(obj))
+            {
+                hoveredObject = obj;
+            }
             UpdateCurrentObjectOutline();
         }
 
