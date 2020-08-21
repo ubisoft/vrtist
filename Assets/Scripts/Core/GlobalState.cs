@@ -133,6 +133,7 @@ namespace VRtist
             colorReleasedEvent = new ColorChangedEvent();
             instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
             colorClickedEvent = colorPicker.onClickEvent;
+            animationController = GetComponent<AnimationController>();
         }
 
         private void OnDestroy()
@@ -158,12 +159,42 @@ namespace VRtist
 
             avatarPrefab = Resources.Load<GameObject>("Prefabs/VR Avatar");
             avatarsContainer = world.Find("Avatars");
-            animationController = GetComponent<AnimationController>();
             countdown.onCountdownFinished.AddListener(OnCountdownFinished);
         }
 
         // Animation helpers
         ///////////////////////////
+        public void AddAnimationListener(UnityAction<GameObject> callback)
+        {
+            animationController.AddListener(callback);
+        }
+        public void RemoveAnimationListener(UnityAction<GameObject> callback)
+        {
+            animationController.RemoveListener(callback);
+        }
+        public void ClearAnimations(GameObject gameObject)
+        {
+            animationController.ClearAnimations(gameObject);
+        }
+        public void FireValueChanged(GameObject gameObject)
+        {
+            animationController.FireValueChanged(gameObject);
+        }
+
+        public void AddAnimationChannel(GameObject gameObject, string channelName, List<AnimationKey> keys)
+        {
+            animationController.AddAnimationChannel(gameObject, channelName, keys);
+        }
+        public bool HasAnimation(GameObject gameObject)
+        {
+            return animationController.HasAnimation(gameObject);
+        }
+
+        public Dictionary<string, AnimationChannel> GetAnimationChannels(GameObject gameObject)
+        {
+            return animationController.GetAnimationChannels(gameObject);
+        }
+
         public void AddKeyframe()
         {
             animationController.AddKeyframe();

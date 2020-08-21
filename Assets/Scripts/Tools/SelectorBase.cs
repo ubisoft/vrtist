@@ -397,19 +397,6 @@ namespace VRtist
             return null;
         }
 
-        private ParametersController GetFirstAnimation()
-        {
-            foreach (GameObject gObject in Selection.selection.Values)
-            {
-                ParametersController controller = gObject.GetComponent<ParametersController>();
-                if (null == controller)
-                    continue;
-                if (controller.HasAnimation())
-                    return controller;
-            }
-            return null;
-        }
-
         protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
             outOfDeadZone = false;
