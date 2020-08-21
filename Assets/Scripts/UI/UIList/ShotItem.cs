@@ -65,10 +65,8 @@ namespace VRtist
 
         private void InitSpinnerMinMax()
         {
-            startFrameSpinner.maxFloatValue = endFrameSpinner.FloatValue;
-            startFrameSpinner.maxIntValue = endFrameSpinner.IntValue;
-            endFrameSpinner.minFloatValue = startFrameSpinner.FloatValue;
-            endFrameSpinner.minIntValue = startFrameSpinner.IntValue;
+            startFrameSpinner.maxValue = endFrameSpinner.FloatValue;
+            endFrameSpinner.minValue = startFrameSpinner.FloatValue;
         }
 
         private void UpdateShotRange(int value)
@@ -308,8 +306,8 @@ namespace VRtist
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
-                min_spinner_value_int = 0, max_spinner_value_int = 10000, 
-                cur_spinner_value_int = shot.start, spinner_value_rate_int = 30
+                min_spinner_value = 0, max_spinner_value = 10000, cur_spinner_value = shot.start, 
+                spinner_value_rate = 30, spinner_value_rate_ray = 30
             });
 
             startFrameSpinner.baseColor.useConstant = true;
@@ -351,10 +349,11 @@ namespace VRtist
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
-                min_spinner_value_int = 0,
-                max_spinner_value_int = 10000,
-                cur_spinner_value_int = shot.end,
-                spinner_value_rate_int = 30
+                min_spinner_value = 0,
+                max_spinner_value = 10000,
+                cur_spinner_value = shot.end,
+                spinner_value_rate = 30,
+                spinner_value_rate_ray = 30
             });
 
             endFrameSpinner.baseColor.useConstant = true;

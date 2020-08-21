@@ -26,14 +26,11 @@ namespace VRtist
         public static readonly float default_spinner_separation = 0.65f;
         public static readonly UISpinner.TextAndValueVisibilityType default_visibility_type = UISpinner.TextAndValueVisibilityType.ShowTextAndValue;
         public static readonly UISpinner.SpinnerValueType default_value_type = UISpinner.SpinnerValueType.Float;
-        public static readonly float default_min_value_float = 0.0f;
-        public static readonly float default_max_value_float = 1.0f;
-        public static readonly float default_current_value_float = 0.5f;
-        public static readonly float default_value_rate_float = 0.01f;
-        public static readonly int default_min_value_int = 0;
-        public static readonly int default_max_value_int = 10;
-        public static readonly int default_current_value_int = 5;
-        public static readonly float default_value_rate_int = 0.1f;
+        public static readonly float default_min_value = 0.0f;
+        public static readonly float default_max_value = 1.0f;
+        public static readonly float default_current_value = 0.5f;
+        public static readonly float default_value_rate = 0.01f;
+        public static readonly float default_value_rate_ray = 1f; // per second per meter.
         public static readonly string default_background_material_name = "UIBase";
         public static readonly string default_text = "Spinner";
 
@@ -51,16 +48,11 @@ namespace VRtist
         public int nbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Spinner Float Values", 6, 0.3f, 0.3f, 0.3f)]
-        public float minFloatValue = 0.0f;
-        public float maxFloatValue = 1.0f;
-        public float currentFloatValue = 0.5f;
-        [Tooltip("Amount of change /m")] public float valueRateFloat = 0.01f; // increment per meter
-
-        [SpaceHeader("Spinner Int Values", 6, 0.3f, 0.3f, 0.3f)]
-        public int minIntValue = 0;
-        public int maxIntValue = 10;
-        public int currentIntValue = 5;
-        [Tooltip("Amount of change /m")] public float valueRateInt = 0.01f; // increment per meter
+        public float minValue = default_min_value;
+        public float maxValue = default_max_value;
+        public float currentValue = default_current_value;
+        [Tooltip("Amount of change /m")] public float valueRate = default_value_rate; // increment per meter
+        [Tooltip("Amount of change /s/m")] public float valueRateRay = default_value_rate_ray; // increment per second per meter
 
         [SpaceHeader("Callbacks", 6, 0.3f, 0.3f, 0.3f)]
         public FloatChangedEvent onSpinEvent = new FloatChangedEvent();
@@ -74,7 +66,6 @@ namespace VRtist
 
         private Vector3 localProjectedWidgetInitialPosition = Vector3.zero;
         private float initialFloatValue = 0.0f;
-        private int initialIntValue = 0;
 
         private bool cursorExitedWidget = true;
 
@@ -213,14 +204,10 @@ namespace VRtist
                 nbSubdivCornerFixed = min_nbSubdivCornerFixed;
             if (nbSubdivCornerPerUnit < min_nbSubdivCornerPerUnit)
                 nbSubdivCornerPerUnit = min_nbSubdivCornerPerUnit;
-            if (currentFloatValue < minFloatValue)
-                currentFloatValue = minFloatValue;
-            if (currentFloatValue > maxFloatValue)
-                currentFloatValue = maxFloatValue;
-            if (currentIntValue < minIntValue)
-                currentIntValue = minIntValue;
-            if (currentIntValue > maxIntValue)
-                currentIntValue = maxIntValue;
+            if (currentValue < minValue)
+                currentValue = minValue;
+            if (currentValue > maxValue)
+                currentValue = maxValue;
 
             // Realign button to parent anchor if we change the thickness.
             if (-thickness != relativeLocation.z)
@@ -320,9 +307,9 @@ namespace VRtist
                 TextMeshPro txt = textValueTransform.gameObject.GetComponent<TextMeshPro>();
                 if (txt != null)
                 {
-                    txt.text = spinnerValueType == SpinnerValueType.Float 
-                        ? currentFloatValue.ToString("#0.00")
-                        : currentIntValue.ToString();
+                    txt.text = spinnerValueType == SpinnerValueType.Float
+                        ? currentValue.ToString("#0.00")
+                        : Mathf.RoundToInt(currentValue).ToString();
                 }
             }
         }
@@ -341,22 +328,22 @@ namespace VRtist
 
         private float GetFloatValue()
         {
-            return currentFloatValue;
+            return currentValue;
         }
 
         private void SetFloatValue(float floatValue)
         {
-            currentFloatValue = floatValue;
+            currentValue = floatValue;
         }
 
         private int GetIntValue()
         {
-            return currentIntValue;
+            return Mathf.RoundToInt(currentValue);
         }
 
         private void SetIntValue(int intValue)
         {
-            currentIntValue = intValue;
+            currentValue = (float)intValue;
         }
 
 
@@ -428,26 +415,23 @@ namespace VRtist
                 GlobalState.Instance.cursor.LockOnWidget(true);
                 localProjectedWidgetInitialPosition = localProjectedWidgetPosition;
                 initialFloatValue = FloatValue;
-                initialIntValue = IntValue;
             }
 
             float distanceAlongAxis = localProjectedWidgetPosition.x - localProjectedWidgetInitialPosition.x;
-            float floatChange = valueRateFloat * distanceAlongAxis;
-            float intChange = valueRateInt * distanceAlongAxis;
+            float floatChange = valueRate * distanceAlongAxis;
 
             // Actually move the spinner ONLY if RIGHT_TRIGGER is pressed.
             bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
             if (triggerState)
             {
+                FloatValue = Mathf.Clamp(initialFloatValue + floatChange, minValue, maxValue);
                 if (spinnerValueType == SpinnerValueType.Float)
                 {
-                    FloatValue = Mathf.Clamp(initialFloatValue + floatChange, minFloatValue, maxFloatValue);
-                    onSpinEvent.Invoke(currentFloatValue);
+                    onSpinEvent.Invoke(FloatValue);
                 }
                 else // SpinnerValueType.Int
                 {
-                    IntValue = Mathf.Clamp(initialIntValue + Mathf.FloorToInt(intChange), minIntValue, maxIntValue);
-                    onSpinEventInt.Invoke(currentIntValue);
+                    onSpinEventInt.Invoke(IntValue);
                 }
             }
 
@@ -464,7 +448,7 @@ namespace VRtist
             if (justReleasedTriggered)
             {
                 GlobalState.Instance.cursor.LockOnWidget(false);
-                onReleaseTriggerEvent.Invoke(spinnerValueType == SpinnerValueType.Float ? FloatValue : (float)IntValue);                
+                onReleaseTriggerEvent.Invoke(spinnerValueType == SpinnerValueType.Float ? FloatValue : (float)IntValue);
                 if (cursorExitedWidget)
                     onExitEvent.Invoke();
             }
@@ -549,24 +533,21 @@ namespace VRtist
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
             Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
 
-            // TODO: use curve, invert curve.
-            float currentFloatValuePct = (FloatValue - minFloatValue) / (maxFloatValue - minFloatValue);
-            float currentIntValuePct = (float)(IntValue - minIntValue) / (float)(maxIntValue - minIntValue);
+            Vector2 localCenter = new Vector2(width / 2.0f, -height / 2.0f);
+            
+            float currentDistX = localProjectedWidgetPosition.x - localCenter.x;
+            FloatValue += Time.unscaledDeltaTime * valueRateRay * currentDistX;
 
-            localProjectedWidgetPosition.x = width / 2.0f;
-            localProjectedWidgetPosition.y = -height / 2.0f;
+            localProjectedWidgetPosition.x = localCenter.x;
+            localProjectedWidgetPosition.y = localCenter.y;
 
-            // TODO: put the "curve" code here
-
-            // tmp
-            IntValue = (minIntValue + maxIntValue) / 2;
-            onSpinEventInt.Invoke(currentIntValue);
-
-            FloatValue = (minFloatValue + maxFloatValue) / 2.0f;
-            onSpinEvent.Invoke(currentFloatValue);
+            if (spinnerValueType == SpinnerValueType.Float) {
+                onSpinEvent.Invoke(FloatValue);
+            } else {
+                onSpinEventInt.Invoke(IntValue);
+            }
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            //cursorShapeTransform.position = worldProjectedWidgetPosition;
             rayEndPoint = worldProjectedWidgetPosition;
         }
 
@@ -588,14 +569,11 @@ namespace VRtist
             public float spinner_separation_pct = UISpinner.default_spinner_separation;
             public TextAndValueVisibilityType visibility_type = UISpinner.default_visibility_type;
             public SpinnerValueType value_type = UISpinner.default_value_type;
-            public float min_spinner_value_float = UISpinner.default_min_value_float;
-            public float max_spinner_value_float = UISpinner.default_max_value_float;
-            public float cur_spinner_value_float = UISpinner.default_current_value_float;
-            public float spinner_value_rate_float = UISpinner.default_value_rate_float;
-            public int min_spinner_value_int = UISpinner.default_min_value_int;
-            public int max_spinner_value_int = UISpinner.default_max_value_int;
-            public int cur_spinner_value_int = UISpinner.default_current_value_int;
-            public float spinner_value_rate_int = UISpinner.default_value_rate_int;
+            public float min_spinner_value = UISpinner.default_min_value;
+            public float max_spinner_value = UISpinner.default_max_value;
+            public float cur_spinner_value = UISpinner.default_current_value;
+            public float spinner_value_rate = UISpinner.default_value_rate;
+            public float spinner_value_rate_ray = UISpinner.default_value_rate_ray;
             public Material background_material = UIUtils.LoadMaterial(UISpinner.default_background_material_name);
             public ColorVar background_color = UIOptions.BackgroundColorVar;
             public ColorVar textColor = UIOptions.ForegroundColorVar;
@@ -634,14 +612,11 @@ namespace VRtist
             uiSpinner.separationPositionPct = input.spinner_separation_pct;
             uiSpinner.textAndValueVisibilityType = input.visibility_type;
             uiSpinner.spinnerValueType = input.value_type;
-            uiSpinner.minFloatValue = input.min_spinner_value_float;
-            uiSpinner.maxFloatValue = input.max_spinner_value_float;
-            uiSpinner.currentFloatValue = input.cur_spinner_value_float;
-            uiSpinner.valueRateFloat = input.spinner_value_rate_float;
-            uiSpinner.minIntValue = input.min_spinner_value_int;
-            uiSpinner.maxIntValue = input.max_spinner_value_int;
-            uiSpinner.currentIntValue = input.cur_spinner_value_int;
-            uiSpinner.valueRateInt = input.spinner_value_rate_int;
+            uiSpinner.minValue = input.min_spinner_value;
+            uiSpinner.maxValue = input.max_spinner_value;
+            uiSpinner.currentValue = input.cur_spinner_value;
+            uiSpinner.valueRate = input.spinner_value_rate;
+            uiSpinner.valueRateRay = input.spinner_value_rate_ray;
             uiSpinner.textContent = input.caption;
             uiSpinner.baseColor.useConstant = false;
             uiSpinner.baseColor.reference = input.background_color;
@@ -753,8 +728,8 @@ namespace VRtist
 
                 TextMeshPro t = text.AddComponent<TextMeshPro>();
                 t.text = (input.value_type == SpinnerValueType.Float)
-                    ? input.cur_spinner_value_float.ToString("#0.00")
-                    : input.cur_spinner_value_int.ToString();
+                    ? input.cur_spinner_value.ToString("#0.00")
+                    : Mathf.RoundToInt(input.cur_spinner_value).ToString();
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;
                 t.fontSizeMax = 500;

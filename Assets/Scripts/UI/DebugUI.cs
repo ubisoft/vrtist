@@ -671,8 +671,8 @@ namespace VRtist
                         {
                             TextMeshPro t = textValueObjectTransform.gameObject.AddComponent<TextMeshPro>();
                             t.text = (spinner.spinnerValueType == UISpinner.SpinnerValueType.Float)
-                                    ? spinner.currentFloatValue.ToString("#0.00")
-                                    : spinner.currentIntValue.ToString();
+                                    ? spinner.FloatValue.ToString("#0.00")
+                                    : spinner.IntValue.ToString();
                             t.enableAutoSizing = true;
                             t.fontSizeMin = 1;
                             t.fontSizeMax = 500;
