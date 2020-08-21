@@ -120,6 +120,7 @@ namespace VRtist
         {
             instance = Instance;
             settings.Load();
+            networkSettings.Load();
 
             // Get network settings
             networkUser.name = networkSettings.userName;
