@@ -42,6 +42,8 @@ namespace VRtist
             // tmp
             // mixer.SetFloat("Volume_Master", -25.0f);
 
+            GlobalState.Instance.onConnected.AddListener(OnConnected);
+
             displayOptionsButton = panel.Find("DisplayOptionsButton").GetComponent<UIButton>();
             soundsOptionsButton = panel.Find("SoundsOptionsButton").GetComponent<UIButton>();
             advancedOptionsButton = panel.Find("AdvancedOptionsButton").GetComponent<UIButton>();
@@ -65,7 +67,7 @@ namespace VRtist
 
             Apply(onStart: true);
 
-            if (null != versionLabel)
+            if (null != versionLabel && versionLabel.Text.Length == 0)
             {
                 versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}";
             }
@@ -103,6 +105,11 @@ namespace VRtist
             backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
             backgroundFeedback.localScale = GlobalState.Settings.cameraFeedbackScale;
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
+        }
+
+        private void OnConnected()
+        {
+            versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}\nClient ID: {GlobalState.networkUser.id}";
         }
 
         public void OnReset()

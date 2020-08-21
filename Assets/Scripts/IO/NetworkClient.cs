@@ -424,7 +424,7 @@ namespace VRtist
         public static void BuildClientId(byte[] data)
         {
             string clientId = ConvertToString(data);
-            GlobalState.networkUser.id = clientId;
+            GlobalState.SetClientId(clientId);
         }
 
         public static void Rename(Transform root, byte[] data)

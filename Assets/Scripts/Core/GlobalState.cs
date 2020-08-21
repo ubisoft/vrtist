@@ -30,6 +30,7 @@ namespace VRtist
         public static Settings Settings { get { return Instance.settings; } }
 
         // Connected users
+        public UnityEvent onConnected = new UnityEvent();
         public static ConnectedUser networkUser = new ConnectedUser();
         private Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
         private Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
@@ -297,8 +298,6 @@ namespace VRtist
                 }
                 Tooltips.SetTooltipText(displayTooltip, infoText);
             }
-
-            // Connected users
         }
 
         public void LateUpdate()
@@ -366,6 +365,14 @@ namespace VRtist
         public void OnCameraDamping(float value)
         {
             settings.cameraDamping = value;
+        }
+
+        // Connected users
+        public static void SetClientId(string id)
+        {
+            networkUser.id = id;
+            Instance.onConnected.Invoke();
+            RemoveConnectedUser(id);
         }
 
         public static bool HasConnectedUser(string userId)
