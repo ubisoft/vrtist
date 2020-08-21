@@ -195,5 +195,11 @@ namespace VRtist
             TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
             tmpro.text = text;
         }
+
+        public static string GetTooltipText(GameObject tooltip)
+        {
+            TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            return tmpro.text;
+        }
     }
 }

@@ -186,16 +186,12 @@ namespace VRtist
             int pointCount = 0;
             int spotCount = 0;
 
-            ClearListeners();
-
             List<GameObject> selectedLights = new List<GameObject>();
             foreach (GameObject gobject in Selection.GetObjects())
             {
                 LightController lightController = gobject.GetComponent<LightController>();
                 if (null == lightController)
                     continue;
-
-                AddListener(lightController);
 
                 selectedLights.Add(gobject);
                 switch(lightController.lightType)

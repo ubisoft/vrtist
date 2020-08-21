@@ -53,6 +53,9 @@ namespace VRtist
 
         private CommandSetValue<float> cameraFocalCommand = null;
 
+        private GameObject ATooltip = null;
+        private string prevATooltipText;
+
         struct ControllerDamping
         {
             public ControllerDamping(float time, Vector3 position, Quaternion rotation)
@@ -135,13 +138,27 @@ namespace VRtist
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
 
+            GlobalState.Instance.onRecordEvent.AddListener(OnRecord);
 
+        }
+        private void OnRecord(bool value)
+        {
+            if (null == ATooltip)
+                return;
+            if (value)
+            {
+                Tooltips.SetTooltipText(ATooltip, "Stop Record");
+            }
+            else
+            {
+                Tooltips.SetTooltipText(ATooltip, "Duplicate");
+            }
         }
 
         protected void CreateTooltips()
         {
             GameObject controller = rightController.gameObject;
-            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
+            ATooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
             Tooltips.CreateTooltip(controller, Tooltips.Anchors.Secondary, "Switch Tool");
             triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
             gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
@@ -298,7 +315,7 @@ namespace VRtist
             }
             if (controllers.Count > 0)
             {
-                GlobalState.ShowHideControllersGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
+                GlobalState.ShowHideComponentsGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
             }
 
             if (!Selection.IsHandleSelected())
@@ -375,19 +392,6 @@ namespace VRtist
             {
                 ParametersController controller = gObject.GetComponent<ParametersController>();
                 if (null != controller)
-                    return controller;
-            }
-            return null;
-        }
-
-        private ParametersController GetFirstAnimation()
-        {
-            foreach (GameObject gObject in Selection.selection.Values)
-            {
-                ParametersController controller = gObject.GetComponent<ParametersController>();
-                if (null == controller)
-                    continue;
-                if (controller.HasAnimation())
                     return controller;
             }
             return null;
@@ -532,11 +536,17 @@ namespace VRtist
             GetControllerPositionRotation();
             // Move & Duplicate selection
 
-            // Duplicate
+            // Duplicate / Stop Record
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
                 () => { },
                 () =>
                 {
+                    if (GlobalState.Instance.recordState == GlobalState.RecordState.Recording)
+                    {
+                        GlobalState.Instance.Pause();
+                        return;
+                    }
+
                     if (!Selection.IsHandleSelected())
                     {
                         List<GameObject> objects = Selection.GetObjects();

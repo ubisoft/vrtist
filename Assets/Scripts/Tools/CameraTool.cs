@@ -516,18 +516,6 @@ namespace VRtist
         protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
             base.OnSelectionChanged(sender, args);
-
-            ClearListeners();
-
-            foreach(GameObject gobject in Selection.GetObjects())
-            {
-                CameraController cameraController = gobject.GetComponent<CameraController>();
-                if(null == cameraController)
-                    continue;
-
-                AddListener(cameraController);
-            }
-
             UpdateUI();
         }
 

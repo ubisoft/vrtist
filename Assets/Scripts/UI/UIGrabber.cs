@@ -129,7 +129,7 @@ namespace VRtist
             foreach (MeshRenderer meshRenderer in meshRenderers)
             {
                 Material[] materials = meshRenderer.materials;
-                foreach (Material material in materials)
+                foreach (Material material in meshRenderer.materials)
                 {
                     material.SetColor("_BaseColor", color);
                 }

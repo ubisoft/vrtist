@@ -424,7 +424,7 @@ namespace VRtist
         public static void BuildClientId(byte[] data)
         {
             string clientId = ConvertToString(data);
-            GlobalState.networkUser.id = clientId;
+            GlobalState.SetClientId(clientId);
         }
 
         public static void Rename(Transform root, byte[] data)
@@ -1500,19 +1500,14 @@ namespace VRtist
             }
 
             Node node = SyncData.nodes[objectName];
-            ParametersController parameterController = node.prefab.GetComponent<ParametersController>();
-            if (!parameterController)
-                return;
-            parameterController.AddAnimationChannel(animationChannel, keys);
+            GlobalState.Instance.AddAnimationChannel(node.prefab, animationChannel, keys);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                ParametersController controller = gobj.GetComponent<ParametersController>();
-                controller.AddAnimationChannel(animationChannel, keys);
-
-                controller.FireValueChanged();
+                GlobalState.Instance.AddAnimationChannel(gobj, animationChannel, keys);
+                GlobalState.Instance.FireValueChanged(gobj);
             }
         }
 
@@ -1534,7 +1529,7 @@ namespace VRtist
                 GameObject gobj = t.Item1;
                 CameraController controller = gobj.GetComponent<CameraController>();
                 controller.focal = cameraController.focal;
-                controller.FireValueChanged();
+                GlobalState.Instance.FireValueChanged(gobj);
             }
         }
 
@@ -1595,7 +1590,7 @@ namespace VRtist
             cam.focalLength = focal;
             cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
 
-            cameraController.FireValueChanged();
+            GlobalState.Instance.FireValueChanged(camGameObject);
         }
 
         public static void BuildLight(Transform root, byte[] data)
@@ -1689,7 +1684,7 @@ namespace VRtist
                 lightContr.CopyParameters(lightController);
             }
 
-            lightController.FireValueChanged();
+            GlobalState.Instance.FireValueChanged(lightGameObject);
         }
 
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
@@ -2646,6 +2641,9 @@ namespace VRtist
                     GlobalState.networkUser.viewId = client.viewId.value;
                 }
 
+                if (client.userName.IsValid) { user.name = client.userName.value; }
+                if (client.userColor.IsValid) { user.color = client.userColor.value; }
+
                 bool changed = false;
 
                 // Get its eye position
@@ -2867,32 +2865,23 @@ namespace VRtist
             string hostname = GlobalState.Instance.networkSettings.host;
             int port = GlobalState.Instance.networkSettings.port;
             string master = GlobalState.Instance.networkSettings.master;
+            string userName = GlobalState.Instance.networkSettings.userName;
+            Color userColor = GlobalState.Instance.networkSettings.userColor;
 
             // Read command line
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "--room")
-                {
-                    room = args[i + 1];
-                }
-
-                if (args[i] == "--hostname")
-                {
-                    hostname = args[i + 1];
-                }
-
-                if (args[i] == "--port")
-                {
-                    Int32.TryParse(args[i + 1], out port);
-                }
-
-                if (args[i] == "--master")
-                {
-                    master = args[i + 1];
-                }
+                if (args[i] == "--room") { room = args[i + 1]; }
+                if (args[i] == "--hostname") { hostname = args[i + 1]; }
+                if (args[i] == "--port") { Int32.TryParse(args[i + 1], out port); }
+                if (args[i] == "--master") { master = args[i + 1]; }
+                if (args[i] == "--username") { userName = args[i + 1]; }
+                if (args[i] == "--usercolor") { ColorUtility.TryParseHtmlString(args[i + 1], out userColor); }
             }
             GlobalState.networkUser.room = room;
             GlobalState.networkUser.masterId = master;
+            GlobalState.networkUser.name = userName;
+            GlobalState.networkUser.color = userColor;
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
             if (null == ipAddress)
@@ -3159,8 +3148,10 @@ namespace VRtist
         {
             NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
             AddCommand(command);
-            NetCommand commandClientName = new NetCommand(System.Text.Encoding.UTF8.GetBytes(GlobalState.networkUser.name), MessageType.SetClientName);
-            AddCommand(commandClientName);
+
+            string json = JsonHelper.CreateJsonClientNameAndColor(GlobalState.networkUser.name, GlobalState.networkUser.color);
+            NetCommand commandClientInfo = new NetCommand(NetGeometry.StringToBytes(json), MessageType.SetClientCustomAttribute);
+            AddCommand(commandClientInfo);
         }
 
         void Send(byte[] data)

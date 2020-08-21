@@ -30,6 +30,7 @@ namespace VRtist
         public static Settings Settings { get { return Instance.settings; } }
 
         // Connected users
+        public UnityEvent onConnected = new UnityEvent();
         public static ConnectedUser networkUser = new ConnectedUser();
         private Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
         private Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
@@ -41,9 +42,8 @@ namespace VRtist
         public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
         // Record
         public enum RecordState { Stopped, Preroll, Recording };
-        public RecordState isRecording = RecordState.Stopped;
+        public RecordState recordState = RecordState.Stopped;
         public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
-        public UnityEvent onCountdownFinished = new UnityEvent();
         public Countdown countdown = null;
 
         // FPS
@@ -90,6 +90,9 @@ namespace VRtist
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
 
+        // Animation
+        private AnimationController animationController;
+
         public static void FireObjectAdded(GameObject gObject)
         {
             ObjectAddedEvent.Invoke(gObject);
@@ -117,6 +120,7 @@ namespace VRtist
         {
             instance = Instance;
             settings.Load();
+            networkSettings.Load();
 
             // Get network settings
             networkUser.name = networkSettings.userName;
@@ -131,6 +135,7 @@ namespace VRtist
             colorReleasedEvent = new ColorChangedEvent();
             instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
             colorClickedEvent = colorPicker.onClickEvent;
+            animationController = GetComponent<AnimationController>();
         }
 
         private void OnDestroy()
@@ -156,6 +161,85 @@ namespace VRtist
 
             avatarPrefab = Resources.Load<GameObject>("Prefabs/VR Avatar");
             avatarsContainer = world.Find("Avatars");
+            countdown.onCountdownFinished.AddListener(OnCountdownFinished);
+        }
+
+        // Animation helpers
+        ///////////////////////////
+        public void AddAnimationListener(UnityAction<GameObject> callback)
+        {
+            animationController.AddListener(callback);
+        }
+        public void RemoveAnimationListener(UnityAction<GameObject> callback)
+        {
+            animationController.RemoveListener(callback);
+        }
+        public void ClearAnimations(GameObject gameObject)
+        {
+            animationController.ClearAnimations(gameObject);
+        }
+        public void FireValueChanged(GameObject gameObject)
+        {
+            animationController.FireValueChanged(gameObject);
+        }
+
+        public void AddAnimationChannel(GameObject gameObject, string channelName, List<AnimationKey> keys)
+        {
+            animationController.AddAnimationChannel(gameObject, channelName, keys);
+        }
+        public bool HasAnimation(GameObject gameObject)
+        {
+            return animationController.HasAnimation(gameObject);
+        }
+
+        public Dictionary<string, AnimationChannel> GetAnimationChannels(GameObject gameObject)
+        {
+            return animationController.GetAnimationChannels(gameObject);
+        }
+
+        public void AddKeyframe()
+        {
+            animationController.AddKeyframe();
+        }
+
+        public void RemoveKeyframe()
+        {
+            animationController.RemoveKeyframe();
+        }
+
+        public void Record()
+        {
+            if (recordState != RecordState.Stopped)
+                return;
+
+            recordState = RecordState.Preroll;
+            countdown.gameObject.SetActive(true);
+        }
+
+        public void Play()
+        {
+            NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
+            GlobalState.Instance.SetPlaying(true);
+        }
+
+        public void Pause()
+        {
+            switch (recordState)
+            {
+                case RecordState.Preroll:
+                    recordState = RecordState.Stopped;
+                    countdown.gameObject.SetActive(false);
+                    break;
+                case RecordState.Recording:
+                    recordState = RecordState.Stopped;
+                    animationController.ApplyAnimations();
+                    countdown.gameObject.SetActive(false);
+                    onRecordEvent.Invoke(false);
+                    break;
+
+            }
+            NetworkClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
+            GlobalState.Instance.SetPlaying(false);
         }
 
         public void SetPlaying(bool value)
@@ -164,27 +248,11 @@ namespace VRtist
             onPlayingEvent.Invoke(value);
         }
 
-        public void StartRecording(bool value)
-        {
-            if (value)
-            {
-                isRecording = RecordState.Preroll;
-                countdown.gameObject.SetActive(true);
-            }
-            else
-            {
-                isRecording = RecordState.Stopped;
-                countdown.gameObject.SetActive(false);
-                onCountdownFinished.RemoveAllListeners();
-                onRecordEvent.Invoke(false);
-            }
-        }
-
         public void OnCountdownFinished()
         {
-            isRecording = RecordState.Recording;
+            recordState = RecordState.Recording;
+            animationController.OnCountdownFinished();
             onRecordEvent.Invoke(true);
-            onCountdownFinished.Invoke();
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
             SetPlaying(true);
         }
@@ -231,8 +299,6 @@ namespace VRtist
                 }
                 Tooltips.SetTooltipText(displayTooltip, infoText);
             }
-
-            // Connected users
         }
 
         public void LateUpdate()
@@ -243,18 +309,32 @@ namespace VRtist
         public static void SetDisplayGizmos(bool value)
         {
             Settings.displayGizmos = value;
-            ShowHideControllersGizmos(FindObjectsOfType<LightController>() as LightController[], value);
-            ShowHideControllersGizmos(FindObjectsOfType<CameraController>() as CameraController[], value);
+            ShowHideComponentsGizmos(FindObjectsOfType<LightController>(), value);
+            ShowHideComponentsGizmos(FindObjectsOfType<CameraController>(), value);
         }
 
-        public static void ShowHideControllersGizmos(ParametersController[] controllers, bool value)
+        public static void SetDisplayAvatars(bool value)
         {
-            foreach (var controller in controllers)
+            Settings.displayAvatars = value;
+            ShowHideComponentsGizmos(FindObjectsOfType<AvatarController>(), value);
+        }
+
+        public static void ShowHideComponentsGizmos(Component[] components, bool value)
+        {
+            foreach (var component in components)
             {
-                MeshFilter[] meshFilters = controller.gameObject.GetComponentsInChildren<MeshFilter>(true);
+                // Hide geometry
+                MeshFilter[] meshFilters = component.gameObject.GetComponentsInChildren<MeshFilter>(true);
                 foreach (MeshFilter meshFilter in meshFilters)
                 {
                     meshFilter.gameObject.SetActive(value);
+                }
+
+                // Hide UI
+                Canvas[] canvases = component.gameObject.GetComponentsInChildren<Canvas>(true);
+                foreach (Canvas canvas in canvases)
+                {
+                    canvas.gameObject.SetActive(value);
                 }
             }
         }
@@ -288,6 +368,14 @@ namespace VRtist
             settings.cameraDamping = value;
         }
 
+        // Connected users
+        public static void SetClientId(string id)
+        {
+            networkUser.id = id;
+            Instance.onConnected.Invoke();
+            RemoveConnectedUser(id);
+        }
+
         public static bool HasConnectedUser(string userId)
         {
             return Instance.connectedUsers.ContainsKey(userId);
@@ -298,8 +386,6 @@ namespace VRtist
             Instance.connectedUsers[user.id] = user;
             GameObject avatar = Instantiate(Instance.avatarPrefab, Instance.avatarsContainer);
             avatar.name = $"{user.name} {user.id}";
-            //avatar.transform.localPosition = user.eye;
-            //avatar.transform.LookAt(Instance.avatarsContainer.TransformPoint(user.target));
             AvatarController controller = avatar.GetComponent<AvatarController>();
             controller.SetUser(user);
             Instance.connectedAvatars[user.id] = controller;
@@ -310,6 +396,7 @@ namespace VRtist
             if (Instance.connectedUsers.ContainsKey(userId))
             {
                 Instance.connectedUsers.Remove(userId);
+                GameObject.Destroy(Instance.connectedAvatars[userId].gameObject);
                 Instance.connectedAvatars.Remove(userId);
             }
         }

@@ -15,8 +15,20 @@ namespace VRtist
 
         [Header("UI Widgets")]
         public Transform panel = null;
+
+        private UIButton displayOptionsButton;
+        private UIButton soundsOptionsButton;
+        private UIButton advancedOptionsButton;
+        private UIButton infoOptionsButton;
+
+        private GameObject displaySubPanel;
+        private GameObject soundsSubPanel;
+        private GameObject advancedSubPanel;
+        private GameObject infoSubPanel;
+
         private UICheckbox worldGridCheckbox;
         private UICheckbox displayGizmos;
+        private UICheckbox displayAvatars;
         private UICheckbox displayFPS;
         private UISlider masterVolume;
         private UISlider ambientVolume;
@@ -30,27 +42,43 @@ namespace VRtist
             // tmp
             // mixer.SetFloat("Volume_Master", -25.0f);
 
-            worldGridCheckbox = panel.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
-            displayGizmos = panel.Find("DisplayGizmos").GetComponent<UICheckbox>();
-            displayFPS = panel.Find("DisplayFPS").GetComponent<UICheckbox>();
-            masterVolume = panel.Find("Master Volume").GetComponent<UISlider>();
-            ambientVolume = panel.Find("Ambient Volume").GetComponent<UISlider>();
-            uiVolume = panel.Find("UI Volume").GetComponent<UISlider>();
-            rightHanded = panel.Find("RightHanded").GetComponent<UICheckbox>();
-            forcePaletteOpen = panel.Find("ForcePaletteOpened").GetComponent<UICheckbox>();
-            versionLabel = panel.Find("Version").GetComponent<UILabel>();
+            GlobalState.Instance.onConnected.AddListener(OnConnected);
+
+            displayOptionsButton = panel.Find("DisplayOptionsButton").GetComponent<UIButton>();
+            soundsOptionsButton = panel.Find("SoundsOptionsButton").GetComponent<UIButton>();
+            advancedOptionsButton = panel.Find("AdvancedOptionsButton").GetComponent<UIButton>();
+            infoOptionsButton = panel.Find("InfoOptionsButton").GetComponent<UIButton>();
+
+            displaySubPanel = panel.Find("DisplayOptions").gameObject;
+            soundsSubPanel = panel.Find("SoundsOptions").gameObject;
+            advancedSubPanel = panel.Find("AdvancedOptions").gameObject;
+            infoSubPanel = panel.Find("InfoOptions").gameObject;
+
+            worldGridCheckbox = displaySubPanel.transform.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
+            displayGizmos = displaySubPanel.transform.Find("DisplayGizmos").GetComponent<UICheckbox>();
+            displayAvatars = displaySubPanel.transform.Find("DisplayAvatars").GetComponent<UICheckbox>();
+            displayFPS = displaySubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
+            masterVolume = soundsSubPanel.transform.Find("Master Volume").GetComponent<UISlider>();
+            ambientVolume = soundsSubPanel.transform.Find("Ambient Volume").GetComponent<UISlider>();
+            uiVolume = soundsSubPanel.transform.Find("UI Volume").GetComponent<UISlider>();
+            rightHanded = advancedSubPanel.transform.Find("RightHanded").GetComponent<UICheckbox>();
+            forcePaletteOpen = advancedSubPanel.transform.Find("ForcePaletteOpened").GetComponent<UICheckbox>();
+            versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
 
             Apply(onStart: true);
 
-            if (null != versionLabel)
+            if (null != versionLabel && versionLabel.Text.Length == 0)
             {
                 versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}";
             }
+
+            OnSetDisplaySubPanel();
         }
 
         private void Apply(bool onStart = false)
         {
             OnDisplayGizmos(GlobalState.Settings.displayGizmos);
+            OnDisplayAvatars(GlobalState.Settings.displayAvatars);
 
             bool value = GlobalState.Settings.displayWorldGrid;
             worldGridCheckbox.Checked = value;
@@ -58,6 +86,7 @@ namespace VRtist
 
             displayGizmos.Checked = GlobalState.Settings.displayGizmos;
             displayFPS.Checked = GlobalState.Settings.displayFPS;
+            displayAvatars.Checked = GlobalState.Settings.displayAvatars;
 
             masterVolume.Value = GlobalState.Settings.masterVolume;
             OnChangeMasterVolume(GlobalState.Settings.masterVolume);
@@ -78,6 +107,11 @@ namespace VRtist
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
         }
 
+        private void OnConnected()
+        {
+            versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}\nClient ID: {GlobalState.networkUser.id}";
+        }
+
         public void OnReset()
         {
             GlobalState.Settings.Reset();
@@ -94,10 +128,55 @@ namespace VRtist
             GlobalState.SetDisplayGizmos(show);
         }
 
+        public void OnDisplayAvatars(bool show)
+        {
+            GlobalState.SetDisplayAvatars(show);
+        }
+
         public void OnDisplayWorldGrid(bool show)
         {
             worldGrid.SetActive(show);
             GlobalState.Settings.displayWorldGrid = show;
+        }
+
+        private void ResetSubPanels()
+        {
+            displayOptionsButton.Checked = false;
+            displaySubPanel.SetActive(false);
+            soundsOptionsButton.Checked = false;
+            soundsSubPanel.SetActive(false);
+            advancedOptionsButton.Checked = false;
+            advancedSubPanel.SetActive(false);
+            infoOptionsButton.Checked = false;
+            infoSubPanel.SetActive(false);
+        }
+
+        public void OnSetDisplaySubPanel()
+        {
+            ResetSubPanels();
+            displayOptionsButton.Checked = true;
+            displaySubPanel.SetActive(true);
+        }
+
+        public void OnSetSoundsSubPanel()
+        {
+            ResetSubPanels();
+            soundsOptionsButton.Checked = true;
+            soundsSubPanel.SetActive(true);
+        }
+
+        public void OnSetAdvancedSubPanel()
+        {
+            ResetSubPanels();
+            advancedOptionsButton.Checked = true;
+            advancedSubPanel.SetActive(true);
+        }
+
+        public void OnSetInfoSubPanel()
+        {
+            ResetSubPanels();
+            infoOptionsButton.Checked = true;
+            infoSubPanel.SetActive(true);
         }
 
         public void OnExitApplication()

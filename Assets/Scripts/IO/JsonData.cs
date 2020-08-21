@@ -330,5 +330,17 @@ namespace VRtist
                 "}}}}}";
             return json;
         }
+
+        public static string CreateJsonClientNameAndColor(string name, Color color)
+        {
+            string col = color.ToString();
+            int start = col.IndexOf('(') + 1;
+            int end = col.LastIndexOf(',') - 1;
+            col = col.Substring(start, end - start + 1);
+            return "{" +
+                $"\"user_name\": \"{name}\"," +
+                $"\"user_color\": [{col}]" +
+                "}";
+        }
     }
 }
