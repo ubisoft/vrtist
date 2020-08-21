@@ -119,9 +119,7 @@ namespace VRtist
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, keyValuePair.Value);
 
-                ParametersController controller = gObject.GetComponent<ParametersController>();
-                if(controller)
-                    controller.FireValueChanged();
+                GlobalState.Instance.FireValueChanged(gObject);
             }
         }
         public override void Redo()
@@ -132,9 +130,7 @@ namespace VRtist
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, newValue);
 
-                ParametersController controller = gObject.GetComponent<ParametersController>();
-                if (controller)
-                    controller.FireValueChanged();
+                GlobalState.Instance.FireValueChanged(gObject);
             }
         }
 

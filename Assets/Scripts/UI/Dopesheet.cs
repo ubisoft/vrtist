@@ -55,6 +55,7 @@ namespace VRtist
         }
 
         private SortedList<int, List<AnimKey>> keys = new SortedList<int, List<AnimKey>>();
+        private bool listenerAdded = false;
 
         void Start()
         {
@@ -72,7 +73,7 @@ namespace VRtist
                 ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
 
                 GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
-                GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+                GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);                
             }
         }
 
@@ -96,6 +97,19 @@ namespace VRtist
 
         private void Update()
         {
+            bool enable = transform.localScale.x != 0f;
+            if(enable)
+            {
+                if (!listenerAdded)
+                    GlobalState.Instance.AddAnimationListener(OnParametersChanged);
+            }
+            else
+            {
+                if (listenerAdded)
+                    GlobalState.Instance.RemoveAnimationListener(OnParametersChanged);
+            }
+            listenerAdded = enable;
+
             if (FirstFrame != GlobalState.startFrame)
             {
                 FirstFrame = GlobalState.startFrame;
@@ -165,7 +179,9 @@ namespace VRtist
         {
             Clear();
 
-            Dictionary<string, AnimationChannel> channels = controller.GetAnimationChannels();
+            Dictionary<string, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(gObject);
+            if (null == channels)
+                return;
             foreach (AnimationChannel channel in channels.Values)
             {
                 foreach (AnimationKey key in channel.keys)
@@ -208,16 +224,10 @@ namespace VRtist
         }
 
         public void UpdateFromController(ParametersController controller)
-        {
-            if (this.controller != null)
-            {
-                this.controller.RemoveListener(OnParametersChanged);
-            }
-
+        {            
             this.controller = controller;
             if (this.controller != null)
             {
-                this.controller.AddListener(OnParametersChanged);
                 OnParametersChanged(controller.gameObject);
             }
             else
