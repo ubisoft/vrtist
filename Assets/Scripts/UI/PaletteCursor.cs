@@ -6,7 +6,7 @@ namespace VRtist
 {
     public class PaletteCursor : MonoBehaviour
     {
-        public UIRay ray = null;
+        private UIRay ray = null;
         [Range(0,1)]
         public float rayStiffness = 0.5f;
 
@@ -47,7 +47,7 @@ namespace VRtist
 
             initialCursorLocalPosition = GetComponentInChildren<MeshFilter>(true).gameObject.transform.localPosition;
 
-            // TODO: "find" the ray
+            ray = GetComponentInChildren<UIRay>();
 
             arrowCursor = transform.Find("Arrow");
             grabberCursor = transform.Find("Grabber");
@@ -271,7 +271,10 @@ namespace VRtist
                             }
                             else // click has been pushed on another widget
                             {
-                                widgetClicked.OnRayExitClicked();
+                                if (prevWidget == widgetClicked)
+                                {
+                                    widgetClicked.OnRayExitClicked();
+                                }
                                 // dont do anything for the new widget, not even hover.
                             }
                         }
@@ -295,6 +298,8 @@ namespace VRtist
                             }
                             else // still hovering a widget which is not the one clicked.
                             {
+                                // TODO: should we add another state here? this is a FAKE hover.
+                                //       we want to show that this was the clicked widget but the ray is elsewhere.
                                 widgetClicked.OnRayHover(); // simple hover without the click effect.
                                 // do nothing for the new widget.
                             }
@@ -321,12 +326,14 @@ namespace VRtist
                         {
                             if (widgetClicked == widget)
                             {
-                                widget.OnRayRelease();
+                                widget.OnRayReleaseInside();
                             }
                             else
                             {
-                                widgetClicked.OnRayExit(); // remove all effects on clicked widget.
-                                // ignore new widget.
+                                // clear state of previously clicked widget
+                                widgetClicked.OnRayReleaseOutside();
+                                // give the new widget a chance to play some OnHover animation.
+                                widget.OnRayEnter();
                             }
                         }
                         else
@@ -409,12 +416,15 @@ namespace VRtist
             {
                 if (prevWidget != null) // do it only once.
                 {
-                    widgetClicked.OnRayExitClicked();
+                    if (prevWidget == widgetClicked)
+                    {
+                        widgetClicked.OnRayExitClicked();
+                    }
                 }
 
                 if (triggerJustReleased)
                 {
-                    widgetClicked.OnRayExit(); // just UN-push, no events triggered.
+                    widgetClicked.OnRayReleaseOutside(); // just UN-push, no events triggered.
                     widgetClicked = null;
                 }
             }
