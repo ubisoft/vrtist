@@ -46,6 +46,36 @@ namespace VRtist
             innerAngle = other.innerAngle;
         }
 
+        public void SetPower(float power)
+        {
+            switch (lightType)
+            {
+                case LightType.Point:
+                    intensity = power * 0.1f;
+                    break;
+                case LightType.Directional:
+                    intensity = power * 1.5f;
+                    break;
+                case LightType.Spot:
+                    intensity = power * (0.4f / 3f);
+                    break;
+            }
+        }
+
+        public float GetPower()
+        {
+            switch (lightType)
+            {
+                case LightType.Point:
+                    return intensity * 10f;
+                case LightType.Directional:
+                    return intensity / 1.5f;  
+                case LightType.Spot:
+                    return intensity / (0.4f / 3f);
+            }
+            return 0;
+        }
+
         public void Init()
         {
             Light l = transform.GetComponentInChildren<Light>(true);

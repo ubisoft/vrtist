@@ -92,7 +92,7 @@ namespace VRtist
             if (null != onChangedEvent)
                 onChangedEvent.RemoveListener(callback);
         }
-        public void FireValueChanged(GameObject gameObject)
+        public void FireAnimationChanged(GameObject gameObject)
         {
             if (null != onChangedEvent)
                 onChangedEvent.Invoke(gameObject);
@@ -108,7 +108,7 @@ namespace VRtist
             ClearAnimationInfo info = new ClearAnimationInfo { gObject = gameObject };
             NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
 
-            FireValueChanged(gameObject);
+            FireAnimationChanged(gameObject);
         }
 
         public void AddAnimationChannel(GameObject gameObject, string name, List<AnimationKey> keys)
@@ -128,6 +128,8 @@ namespace VRtist
             {
                 channel.keys = keys;
             }
+
+            FireAnimationChanged(gameObject);
         }
 
         public bool HasAnimation(GameObject gameObject)
@@ -186,22 +188,22 @@ namespace VRtist
             recordAnimationSets.Clear();
             foreach (GameObject item in Selection.selection.Values)
             {
+                GlobalState.Instance.ClearAnimations(item);
+
+                AnimationSet animationSet = new AnimationSet();
+                animationSet.xPosition = new AnimationChannel("location[0]");
+                animationSet.yPosition = new AnimationChannel("location[1]");
+                animationSet.zPosition = new AnimationChannel("location[2]");
+                animationSet.xRotation = new AnimationChannel("rotation_euler[0]");
+                animationSet.yRotation = new AnimationChannel("rotation_euler[1]");
+                animationSet.zRotation = new AnimationChannel("rotation_euler[2]");
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
                 {
-                    GlobalState.Instance.ClearAnimations(item);
-
-                    AnimationSet animationSet = new AnimationSet();
-                    animationSet.xPosition = new AnimationChannel("location[0]");
-                    animationSet.yPosition = new AnimationChannel("location[1]");
-                    animationSet.zPosition = new AnimationChannel("location[2]");
-                    animationSet.xRotation = new AnimationChannel("rotation_euler[0]");
-                    animationSet.yRotation = new AnimationChannel("rotation_euler[1]");
-                    animationSet.zRotation = new AnimationChannel("rotation_euler[2]");
                     animationSet.lens = new AnimationChannel("lens");
                     animationSet.parametersController = cameraController;
-                    recordAnimationSets[item] = animationSet;
                 }
+                recordAnimationSets[item] = animationSet;
             }
 
             recordCurrentFrame = GlobalState.currentFrame - 1;
@@ -253,7 +255,17 @@ namespace VRtist
                 SendAnimationChannel(objectName, item.Value.xRotation);
                 SendAnimationChannel(objectName, item.Value.yRotation);
                 SendAnimationChannel(objectName, item.Value.zRotation);
-                SendAnimationChannel(objectName, item.Value.lens);
+
+                System.Type controllerType = null;
+                if (item.Value.parametersController)
+                {
+                    controllerType = item.Value.parametersController.GetType();
+
+                    if (controllerType == typeof(CameraController) || controllerType.IsSubclassOf(typeof(CameraController)))
+                    {
+                        SendAnimationChannel(objectName, item.Value.lens);
+                    }
+                }
                 NetworkClient.GetInstance().SendQueryObjectData(objectName);
             }
             recordAnimationSets.Clear();
@@ -264,23 +276,33 @@ namespace VRtist
             int frame = GlobalState.currentFrame;
             foreach (GameObject item in Selection.selection.Values)
             {
+                string name = item.name;
+                SendKeyInfo(name, "location", 0, frame, item.transform.localPosition.x);
+                SendKeyInfo(name, "location", 1, frame, item.transform.localPosition.y);
+                SendKeyInfo(name, "location", 2, frame, item.transform.localPosition.z);
+                Quaternion q = item.transform.localRotation;
+                // convert to ZYX euler
+                Vector3 angles = Maths.ThreeAxisRotation(q);
+                SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
+                SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
+                SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
+
                 CameraController controller = item.GetComponent<CameraController>();
                 if (null != controller)
                 {
-                    string name = item.name;
-                    SendKeyInfo(name, "location", 0, frame, item.transform.localPosition.x);
-                    SendKeyInfo(name, "location", 1, frame, item.transform.localPosition.y);
-                    SendKeyInfo(name, "location", 2, frame, item.transform.localPosition.z);
-                    Quaternion q = item.transform.localRotation;
-                    // convert to ZYX euler
-                    Vector3 angles = Maths.ThreeAxisRotation(q);
-                    SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
-                    SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
-                    SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
                     SendKeyInfo(name, "lens", -1, frame, controller.focal);
-
-                    NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
                 }
+
+                LightController lcontroller = item.GetComponent<LightController>();
+                if (null != lcontroller)
+                {
+                    SendKeyInfo(name, "energy", -1, frame, lcontroller.GetPower());
+                    SendKeyInfo(name, "color", 0, frame, lcontroller.color.r);
+                    SendKeyInfo(name, "color", 1, frame, lcontroller.color.g);
+                    SendKeyInfo(name, "color", 2, frame, lcontroller.color.b);
+                }
+
+                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
             }
         }
 
@@ -289,18 +311,29 @@ namespace VRtist
             foreach (GameObject item in Selection.selection.Values)
             {
                 string objectName = item.name;
+                
+                SendDeleteKeyInfo(objectName, "location", 0);
+                SendDeleteKeyInfo(objectName, "location", 1);
+                SendDeleteKeyInfo(objectName, "location", 2);
+                SendDeleteKeyInfo(objectName, "rotation_euler", 0);
+                SendDeleteKeyInfo(objectName, "rotation_euler", 1);
+                SendDeleteKeyInfo(objectName, "rotation_euler", 2);
+
                 CameraController controller = item.GetComponent<CameraController>();
                 if (null != controller)
                 {
-                    SendDeleteKeyInfo(objectName, "location", 0);
-                    SendDeleteKeyInfo(objectName, "location", 1);
-                    SendDeleteKeyInfo(objectName, "location", 2);
-                    SendDeleteKeyInfo(objectName, "rotation_euler", 0);
-                    SendDeleteKeyInfo(objectName, "rotation_euler", 1);
-                    SendDeleteKeyInfo(objectName, "rotation_euler", 2);
                     SendDeleteKeyInfo(objectName, "lens", -1);
-                    NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, objectName);
                 }
+
+                LightController lcontroller = item.GetComponent<LightController>();
+                if (null != lcontroller)
+                {
+                    SendDeleteKeyInfo(objectName, "energy", -1);
+                    SendDeleteKeyInfo(objectName, "color", 0);
+                    SendDeleteKeyInfo(objectName, "color", 1);
+                    SendDeleteKeyInfo(objectName, "color", 2);
+                }
+                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, objectName);
             }
         }
     }
