@@ -41,15 +41,15 @@ namespace VRtist
                     debug.UIOPTIONS_ResetAllColors();
                 }
 
-                if (GUILayout.Button("Link Widgets HOVERED Color", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.UIOPTIONS_HoveredColor();
-                }
+                //if (GUILayout.Button("Link Widgets HOVERED Color", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.UIOPTIONS_HoveredColor();
+                //}
 
-                if (GUILayout.Button("Add Collider to UIPanel", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    debug.AddCollidersToUIPanels();
-                }
+                //if (GUILayout.Button("Add Collider to UIPanel", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    debug.AddCollidersToUIPanels();
+                //}
 
                 //
                 // Asset Bank
