@@ -61,7 +61,7 @@ namespace VRtist
         GreasePencilConnection,
         GreasePencilTimeOffset,
         FrameStartEnd,
-        CameraAnimation,
+        Animation,
         RemoveObjectFromScene,
         RemoveCollectionFromScene,
         Scene,
@@ -77,6 +77,7 @@ namespace VRtist
         QueryObjectData,
         _BlenderDataUpdate,
         CameraAttributes,
+        LightAttributes,
         _BlenderDataRemove,
         _BlenderDataRename,
         ClearAnimations,
@@ -1274,25 +1275,19 @@ namespace VRtist
             int shadow = light.shadows != LightShadows.None ? 1 : 0;
             Color color = light.color;
 
-            float power = 0f;
             float spotSize = 0;
             float spotBlend = 0;
 
             float worldScale = root.parent.localScale.x;
 
             LightController lightController = lightInfo.transform.GetComponentInChildren<LightController>();
+            float power = lightController.GetPower();
+
             float intensity = lightController.intensity;
 
             switch (light.type)
             {
-                case LightType.Point:
-                    power = intensity * 10f;
-                    break;
-                case LightType.Directional:
-                    power = intensity / 1.5f;
-                    break;
                 case LightType.Spot:
-                    power = intensity / (0.4f / 3f);
                     spotSize = light.spotAngle / 180f * 3.14f;
                     spotBlend = 1f - (light.innerSpotAngle / 100f);
                     break;
@@ -1507,7 +1502,6 @@ namespace VRtist
             {
                 GameObject gobj = t.Item1;
                 GlobalState.Instance.AddAnimationChannel(gobj, animationChannel, keys);
-                GlobalState.Instance.FireValueChanged(gobj);
             }
         }
 
@@ -1529,7 +1523,29 @@ namespace VRtist
                 GameObject gobj = t.Item1;
                 CameraController controller = gobj.GetComponent<CameraController>();
                 controller.focal = cameraController.focal;
-                GlobalState.Instance.FireValueChanged(gobj);
+                //GlobalState.Instance.FireAnimationChanged(gobj);
+            }
+        }
+
+        public static void BuildLightAttributes(Transform root, byte[] data)
+        {
+            int currentIndex = 0;
+            string lightName = GetString(data, ref currentIndex);
+
+            Node node = SyncData.nodes[lightName];
+            LightController lightController = node.prefab.GetComponent<LightController>();
+            float power = GetFloat(data, ref currentIndex);
+            lightController.SetPower(power);
+            lightController.color = GetColor(data, ref currentIndex);
+
+            
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                LightController controller = gobj.GetComponent<LightController>();
+                controller.intensity = lightController.intensity;
+                controller.color = lightController.color;
             }
         }
 
@@ -1590,7 +1606,7 @@ namespace VRtist
             cam.focalLength = focal;
             cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
 
-            GlobalState.Instance.FireValueChanged(camGameObject);
+            //GlobalState.Instance.FireAnimationChanged(camGameObject);
         }
 
         public static void BuildLight(Transform root, byte[] data)
@@ -1655,19 +1671,9 @@ namespace VRtist
             LightController lightController = lightGameObject.GetComponent<LightController>();
             if (!lightController)
                 return;
+            lightController.lightType = lightType;
             lightController.color = lightColor;
-            switch (lightType)
-            {
-                case LightType.Point:
-                    lightController.intensity = power / 10f;
-                    break;
-                case LightType.Directional:
-                    lightController.intensity = power * 1.5f;
-                    break;
-                case LightType.Spot:
-                    lightController.intensity = power * 0.4f / 3f;
-                    break;
-            }
+            lightController.SetPower(power);
             if (lightType == LightType.Spot)
             {
                 lightController.range = 1000f;
@@ -1684,7 +1690,7 @@ namespace VRtist
                 lightContr.CopyParameters(lightController);
             }
 
-            GlobalState.Instance.FireValueChanged(lightGameObject);
+            //GlobalState.Instance.FireAnimationChanged(lightGameObject);
         }
 
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
@@ -3263,11 +3269,14 @@ namespace VRtist
                             case MessageType.Camera:
                                 NetGeometry.BuildCamera(prefab, command.data);
                                 break;
-                            case MessageType.CameraAnimation:
+                            case MessageType.Animation:
                                 NetGeometry.BuildAnimation(prefab, command.data);
                                 break;
                             case MessageType.CameraAttributes:
                                 NetGeometry.BuildCameraAttributes(prefab, command.data);
+                                break;
+                            case MessageType.LightAttributes:
+                                NetGeometry.BuildLightAttributes(prefab, command.data);
                                 break;
                             case MessageType.Light:
                                 NetGeometry.BuildLight(prefab, command.data);

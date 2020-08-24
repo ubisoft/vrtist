@@ -41,7 +41,7 @@ namespace VRtist
         public int CurrentFrame { get { return currentFrame; } set { currentFrame = value; UpdateCurrentFrame(); } }
 
         private GameObject keyframePrefab;
-        private ParametersController controller = null;
+        private GameObject currentObject = null;
 
         public class AnimKey
         {
@@ -101,12 +101,12 @@ namespace VRtist
             if(enable)
             {
                 if (!listenerAdded)
-                    GlobalState.Instance.AddAnimationListener(OnParametersChanged);
+                    GlobalState.Instance.AddAnimationListener(UpdateCurrentObject);
             }
             else
             {
                 if (listenerAdded)
-                    GlobalState.Instance.RemoveAnimationListener(OnParametersChanged);
+                    GlobalState.Instance.RemoveAnimationListener(UpdateCurrentObject);
             }
             listenerAdded = enable;
 
@@ -175,9 +175,11 @@ namespace VRtist
             montage.Checked = ShotManager.Instance.MontageMode;
         }
 
-        protected virtual void OnParametersChanged(GameObject gObject)
+        protected void UpdateCurrentObject(GameObject gObject)
         {
-            if (null == controller || gObject != controller.gameObject)
+            if (null == currentObject)
+                return;
+            if (currentObject != gObject)
                 return;
             Clear();
 
@@ -225,12 +227,12 @@ namespace VRtist
             }
         }
 
-        public void UpdateFromController(ParametersController controller)
+        public void OnSelectionChanged(GameObject gObject)
         {            
-            this.controller = controller;
-            if (this.controller != null)
+            this.currentObject = gObject;
+            if (gObject != null)
             {
-                OnParametersChanged(controller.gameObject);
+                UpdateCurrentObject(gObject);
             }
             else
             {

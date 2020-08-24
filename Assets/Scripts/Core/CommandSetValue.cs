@@ -119,7 +119,7 @@ namespace VRtist
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, keyValuePair.Value);
 
-                GlobalState.Instance.FireValueChanged(gObject);
+                GlobalState.Instance.FireAnimationChanged(gObject);
             }
         }
         public override void Redo()
@@ -130,7 +130,7 @@ namespace VRtist
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, newValue);
 
-                GlobalState.Instance.FireValueChanged(gObject);
+                GlobalState.Instance.FireAnimationChanged(gObject);
             }
         }
 

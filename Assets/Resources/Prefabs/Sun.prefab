@@ -46,7 +46,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lightType: 0
+  locked: 0
+  lightType: 1
   intensity: 8
   minIntensity: 0
   maxIntensity: 100

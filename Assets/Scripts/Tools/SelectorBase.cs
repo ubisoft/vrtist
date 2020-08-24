@@ -386,13 +386,11 @@ namespace VRtist
         }
 
 
-        private ParametersController GetFirstController()
+        private GameObject GetFirstSelectedObject()
         {
             foreach (GameObject gObject in Selection.selection.Values)
             {
-                ParametersController controller = gObject.GetComponent<ParametersController>();
-                if (null != controller)
-                    return controller;
+                return gObject;
             }
             return null;
         }
@@ -403,8 +401,8 @@ namespace VRtist
 
             int numSelected = Selection.selection.Count;
             Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
-            ParametersController controller = GetFirstController();
-            dopesheet.UpdateFromController(controller);
+            GameObject gObject = GetFirstSelectedObject();
+            dopesheet.OnSelectionChanged(gObject);
 
             // Update locked checkbox if anyone
             if (null != lockedCheckbox)

@@ -177,9 +177,9 @@ namespace VRtist
         {
             animationController.ClearAnimations(gameObject);
         }
-        public void FireValueChanged(GameObject gameObject)
+        public void FireAnimationChanged(GameObject gameObject)
         {
-            animationController.FireValueChanged(gameObject);
+            animationController.FireAnimationChanged(gameObject);
         }
 
         public void AddAnimationChannel(GameObject gameObject, string channelName, List<AnimationKey> keys)

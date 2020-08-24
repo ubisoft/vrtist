@@ -501,11 +501,6 @@ namespace VRtist
                 return;
             }
 
-            // if no selection
-
-            if(dopesheet != null)
-                dopesheet.Clear();
-
             //if (cameraPreviewWindow != null)
             //    cameraPreviewWindow.Clear();
 
