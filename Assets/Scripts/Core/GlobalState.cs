@@ -64,6 +64,7 @@ namespace VRtist
         public static int startFrame = 1;
         public static int endFrame = 250;
         public static int currentFrame = 1;
+        public static bool autoKeyEnabled = false;
 
         // Cursor
         public PaletteCursor cursor = null;
@@ -194,6 +195,17 @@ namespace VRtist
         public Dictionary<string, AnimationChannel> GetAnimationChannels(GameObject gameObject)
         {
             return animationController.GetAnimationChannels(gameObject);
+        }
+
+        public void ClearAnimations()
+        {
+            animationController.ClearAnimations();
+        }
+
+        public void ApplyAutoKey()
+        {
+            if (autoKeyEnabled)
+                AddKeyframe();
         }
 
         public void AddKeyframe()

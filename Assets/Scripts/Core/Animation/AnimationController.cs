@@ -98,6 +98,14 @@ namespace VRtist
                 onChangedEvent.Invoke(gameObject);
         }
 
+        public void ClearAnimations()
+        {
+            foreach(GameObject gObject in Selection.selection.Values)
+            {
+                ClearAnimations(gObject);
+            }
+        }
+
         public void ClearAnimations(GameObject gameObject)
         {
             if (!animationChannels.ContainsKey(gameObject))

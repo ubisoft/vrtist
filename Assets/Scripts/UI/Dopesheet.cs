@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace VRtist
 {
@@ -312,6 +313,21 @@ namespace VRtist
         public void OnRemoveKeyFrame()
         {
             GlobalState.Instance.RemoveKeyframe();
+        }
+
+        public void OnClearAnimations()
+        {
+            GlobalState.Instance.ClearAnimations();
+        }
+
+        public void OnEnableAutoKey(bool value)
+        {
+            GlobalState.autoKeyEnabled = value;
+        }
+
+        public bool IsAutoKeyEnabled()
+        {
+            return GlobalState.autoKeyEnabled;
         }
     }
 }
