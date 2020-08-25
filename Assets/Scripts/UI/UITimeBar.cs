@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -405,6 +406,10 @@ namespace VRtist
         public override bool OverridesRayEndPoint() { return true; }
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
         {
+            bool triggerJustClicked = false;
+            bool triggerJustReleased = false;
+            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);
             float enter;
@@ -425,7 +430,10 @@ namespace VRtist
 
             // DRAG
 
-            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+            if (!triggerJustClicked)
+            {
+                localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+            }
 
             // CLAMP
 

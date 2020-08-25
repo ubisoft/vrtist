@@ -300,7 +300,9 @@ namespace VRtist
                             {
                                 // TODO: should we add another state here? this is a FAKE hover.
                                 //       we want to show that this was the clicked widget but the ray is elsewhere.
-                                widgetClicked.OnRayHover(); // simple hover without the click effect.
+                                
+                                //widgetClicked.OnRayHover(); // simple hover without the click effect.
+
                                 // do nothing for the new widget.
                             }
                         }
@@ -315,6 +317,11 @@ namespace VRtist
                     {
                         widget.OnRayClick();
                         widgetClicked = widget;
+                        if (widgetClicked.OverridesRayEndPoint())
+                        {
+                            // call this here when the "triggerJustClicked" state of VRInput is still set.
+                            widgetClicked.OverrideRayEndPoint(r, ref rayEndPoint);
+                        }
                     }
 
                     // I prefer treating "Just released" outside of the rest.

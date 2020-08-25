@@ -609,8 +609,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
-            Hovered = true; // exiting while clicking shows a hovered button.
-            Pushed = false;
+            // exiting while clicking shows a pushed slider, because we are acting on it, not like a button.
+            Hovered = true;
+            Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
             ResetColor();
         }
@@ -643,6 +644,10 @@ namespace VRtist
         public override bool OverridesRayEndPoint() { return true; }
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
         {
+            bool triggerJustClicked = false;
+            bool triggerJustReleased = false;
+            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);
             float enter;
@@ -662,7 +667,10 @@ namespace VRtist
 
             // DRAG
 
-            localProjectedWidgetPosition.y = Mathf.Lerp(currentKnobPositionY, localProjectedWidgetPosition.y, GlobalState.Settings.RaySliderDrag);
+            if (!triggerJustClicked)
+            {
+                localProjectedWidgetPosition.y = Mathf.Lerp(currentKnobPositionY, localProjectedWidgetPosition.y, GlobalState.Settings.RaySliderDrag);
+            }
 
             // CLAMP
             // SNAP Y top
