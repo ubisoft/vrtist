@@ -138,9 +138,9 @@ namespace VRtist
             Transform srcParent = gObject.transform.parent;
             if (null != srcParent)
             {
-                intermediateParent.transform.localPosition = gObject.transform.parent.localPosition;
-                intermediateParent.transform.localRotation = gObject.transform.parent.localRotation;
-                intermediateParent.transform.localScale = gObject.transform.parent.localScale;
+                intermediateParent.transform.localPosition = srcParent.localPosition;
+                intermediateParent.transform.localRotation = srcParent.localRotation;
+                intermediateParent.transform.localScale = srcParent.localScale;
             }
 
             GameObject res;
