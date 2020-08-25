@@ -279,38 +279,43 @@ namespace VRtist
             recordAnimationSets.Clear();
         }
 
-        public void AddKeyframe()
+        public void AddKeyframe(GameObject gObject)
         {
             int frame = GlobalState.currentFrame;
+            string name = gObject.name;
+            SendKeyInfo(name, "location", 0, frame, gObject.transform.localPosition.x);
+            SendKeyInfo(name, "location", 1, frame, gObject.transform.localPosition.y);
+            SendKeyInfo(name, "location", 2, frame, gObject.transform.localPosition.z);
+            Quaternion q = gObject.transform.localRotation;
+            // convert to ZYX euler
+            Vector3 angles = Maths.ThreeAxisRotation(q);
+            SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
+            SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
+            SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
+
+            CameraController controller = gObject.GetComponent<CameraController>();
+            if (null != controller)
+            {
+                SendKeyInfo(name, "lens", -1, frame, controller.focal);
+            }
+
+            LightController lcontroller = gObject.GetComponent<LightController>();
+            if (null != lcontroller)
+            {
+                SendKeyInfo(name, "energy", -1, frame, lcontroller.GetPower());
+                SendKeyInfo(name, "color", 0, frame, lcontroller.color.r);
+                SendKeyInfo(name, "color", 1, frame, lcontroller.color.g);
+                SendKeyInfo(name, "color", 2, frame, lcontroller.color.b);
+            }
+
+            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
+        }
+
+        public void AddKeyframe()
+        {
             foreach (GameObject item in Selection.selection.Values)
             {
-                string name = item.name;
-                SendKeyInfo(name, "location", 0, frame, item.transform.localPosition.x);
-                SendKeyInfo(name, "location", 1, frame, item.transform.localPosition.y);
-                SendKeyInfo(name, "location", 2, frame, item.transform.localPosition.z);
-                Quaternion q = item.transform.localRotation;
-                // convert to ZYX euler
-                Vector3 angles = Maths.ThreeAxisRotation(q);
-                SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
-                SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
-                SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
-
-                CameraController controller = item.GetComponent<CameraController>();
-                if (null != controller)
-                {
-                    SendKeyInfo(name, "lens", -1, frame, controller.focal);
-                }
-
-                LightController lcontroller = item.GetComponent<LightController>();
-                if (null != lcontroller)
-                {
-                    SendKeyInfo(name, "energy", -1, frame, lcontroller.GetPower());
-                    SendKeyInfo(name, "color", 0, frame, lcontroller.color.r);
-                    SendKeyInfo(name, "color", 1, frame, lcontroller.color.g);
-                    SendKeyInfo(name, "color", 2, frame, lcontroller.color.b);
-                }
-
-                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
+                AddKeyframe(item);
             }
         }
 

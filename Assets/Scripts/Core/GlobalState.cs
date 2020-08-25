@@ -208,6 +208,11 @@ namespace VRtist
                 AddKeyframe();
         }
 
+        public void AddKeyframe(GameObject gObject)
+        {
+            animationController.AddKeyframe(gObject);
+        }
+
         public void AddKeyframe()
         {
             animationController.AddKeyframe();
