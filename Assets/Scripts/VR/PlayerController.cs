@@ -133,7 +133,11 @@ namespace VRtist
                     GlobalState.networkUser.corners[2] = rightHanded.InverseTransformPoint(bottomRight);
                     GlobalState.networkUser.corners[3] = rightHanded.InverseTransformPoint(bottomLeft);
 
-                    NetworkClient.GetInstance().SendPlayerTransform(GlobalState.networkUser);
+                    // TODO: fix this. Instance is sometimes null, even if retrieved in Awake.
+                    if (NetworkClient.GetInstance())
+                    {
+                        NetworkClient.GetInstance().SendPlayerTransform(GlobalState.networkUser);
+                    }
                 }
             }
         }
