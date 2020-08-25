@@ -117,7 +117,7 @@ namespace VRtist
         }
 
         // Update is called once per frame
-        void Update()
+        void LateUpdate()
         {
             if (!lightObject)
                 return;
@@ -125,9 +125,11 @@ namespace VRtist
             if (null == world)
                 GetWorldTransform();
 
-            float scale = world.localScale.x;
+
+            Transform parent = lightObject.transform.parent.parent;
+            float scale = parent.localScale.x * world.localScale.x;
             if (lightObject.type == LightType.Directional)
-                scale = 1f;
+                scale = 1f;            
             lightObject.intensity = (scale * scale * intensity);
             lightObject.range = scale * range;
             lightObject.shadowNearPlane = scale * near;
@@ -135,14 +137,16 @@ namespace VRtist
             LightShadows shadows = GlobalState.Settings.castShadows && castShadows ? LightShadows.Soft : LightShadows.None;
             if (shadows != lightObject.shadows)
                 lightObject.shadows = shadows;
+
             if (lightObject.type == LightType.Spot)
             {
                 lightObject.innerSpotAngle = innerAngle;
-                lightObject.spotAngle = outerAngle;
+                lightObject.spotAngle = outerAngle;                
             }
 
             // avoid flicking
-            lightObject.transform.localScale = new Vector3(1f / world.localScale.x, 1f / world.localScale.x, 1f / world.localScale.x);            
+            float invScale = 1f / scale;
+            lightObject.transform.localScale = new Vector3(invScale, invScale, invScale);            
         }
     }
 
