@@ -126,10 +126,6 @@ namespace VRtist
         protected override void ShowTool(bool show)
         {
             ActivateMouthpiece(selectorBrush, show);
-            if (rightController != null)
-            {
-                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
-            }
         }
 
         private void SetSliderValues(Transform slider, float value, float minValue, float maxValue)

@@ -197,11 +197,6 @@ namespace VRtist
         protected override void ShowTool(bool show)
         {
             ActivateMouthpiece(selectorBrush, show);
-
-            if (rightController != null)
-            {
-                rightController.localScale = show ? Vector3.one : Vector3.zero;
-            }
         }
 
         void SetControllerVisible(bool visible)
