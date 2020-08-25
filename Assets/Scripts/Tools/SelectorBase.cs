@@ -322,6 +322,7 @@ namespace VRtist
             {
                 ManageMoveObjectsUndo();
                 ManageCamerasFocalsUndo();
+                ManageAutoKeyframe();
             }
 
             if (null != undoGroup)
@@ -332,6 +333,20 @@ namespace VRtist
             Selection.SetGrippedObject(null);
         }
 
+
+        protected void ManageAutoKeyframe()
+        {
+            if (!GlobalState.autoKeyEnabled)
+                return;
+            foreach (GameObject obj in Selection.GetObjects())
+            {
+                if (!initPositions.ContainsKey(obj))
+                    continue;
+                if (initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
+                    continue;
+                GlobalState.Instance.AddKeyframe(obj);
+            }
+        }
 
         protected void ManageMoveObjectsUndo()
         {
