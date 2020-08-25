@@ -30,8 +30,8 @@ namespace VRtist
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
             endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
 
-            startFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
-            endFrameSpinner.onPressTriggerEvent.AddListener(InitSpinnerMinMax);
+            startFrameSpinner.onClickEvent.AddListener(InitSpinnerMinMax);
+            endFrameSpinner.onClickEvent.AddListener(InitSpinnerMinMax);
 
             this.nameAction = nameAction;
             this.startAction = startAction;
@@ -40,8 +40,8 @@ namespace VRtist
             this.enabledAction = enabledAction;
             this.setCameraAction = setCameraAction;
 
-            startFrameSpinner.onReleaseTriggerEvent.AddListener(startAction);
-            endFrameSpinner.onReleaseTriggerEvent.AddListener(endAction);
+            startFrameSpinner.onReleaseEvent.AddListener(OnEndEditStartSpinner);
+            endFrameSpinner.onReleaseEvent.AddListener(OnEndEditEndSpinner);
 
             shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
 
@@ -61,6 +61,18 @@ namespace VRtist
             Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
             setCameraButton.Checked = false;
             setCameraAction();
+        }
+
+        private void OnEndEditStartSpinner()
+        {
+            float fValue = (float)(startFrameSpinner.IntValue);
+            startAction.Invoke(fValue);
+        }
+
+        private void OnEndEditEndSpinner()
+        {
+            float fValue = (float)(endFrameSpinner.IntValue);
+            endAction.Invoke(fValue);
         }
 
         private void InitSpinnerMinMax()
@@ -103,14 +115,27 @@ namespace VRtist
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
 
-            startFrameSpinner.onSpinEventInt.RemoveListener(UpdateShotRange);
-            endFrameSpinner.onSpinEventInt.RemoveListener(UpdateShotRange);
-            startFrameSpinner.onPressTriggerEvent.RemoveListener(InitSpinnerMinMax);
-            endFrameSpinner.onPressTriggerEvent.RemoveListener(InitSpinnerMinMax);
-            startFrameSpinner.onReleaseTriggerEvent.RemoveListener(startAction);
-            endFrameSpinner.onReleaseTriggerEvent.RemoveListener(endAction);
-            shotEnabledCheckbox.onCheckEvent.RemoveListener(enabledAction);
-            setCameraButton.onClickEvent.RemoveListener(setCameraAction);
+            cameraButton.onClickEvent.RemoveAllListeners();
+
+            shotEnabledCheckbox.onCheckEvent.RemoveAllListeners();
+            shotEnabledCheckbox.onClickEvent.RemoveAllListeners();
+
+            shotNameLabel.onClickEvent.RemoveAllListeners();
+
+            cameraNameLabel.onClickEvent.RemoveAllListeners();
+
+            startFrameSpinner.onSpinEventInt.RemoveAllListeners();
+            startFrameSpinner.onClickEvent.RemoveAllListeners();
+            startFrameSpinner.onReleaseEvent.RemoveAllListeners();
+
+            frameRangeLabel.onClickEvent.RemoveAllListeners();
+
+            endFrameSpinner.onSpinEventInt.RemoveAllListeners();
+            endFrameSpinner.onClickEvent.RemoveAllListeners();
+            endFrameSpinner.onReleaseEvent.RemoveAllListeners();
+
+            setCameraButton.onCheckEvent.RemoveAllListeners();
+            setCameraButton.onClickEvent.RemoveAllListeners();
         }
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
