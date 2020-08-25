@@ -102,10 +102,27 @@ namespace VRtist
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
-                        // Label TextColor
+                        label.baseColor.useConstant = false;
+                        label.baseColor.constant = UIOptions.InvisibleColor;
+                        label.baseColor.reference = UIOptions.InvisibleColorVar;
+
                         label.textColor.useConstant = false;
                         label.textColor.constant = UIOptions.ForegroundColor;
                         label.textColor.reference = UIOptions.ForegroundColorVar;
+
+                        if (label.gameObject.name == "SectionLabel")
+                        {
+                            label.textColor.useConstant = false;
+                            label.textColor.constant = UIOptions.SectionTextColor;
+                            label.textColor.reference = UIOptions.SectionTextColorVar;
+                        }
+
+                        if (label.gameObject.name == "TitleBar")
+                        {
+                            label.baseColor.useConstant = false;
+                            label.baseColor.constant = UIOptions.PanelColor;
+                            label.baseColor.reference = UIOptions.PanelColorVar;
+                        }
                     }
 
                     UIPanel panel = element.GetComponent<UIPanel>();
@@ -147,6 +164,9 @@ namespace VRtist
                     UICheckbox checkbox = element.GetComponent<UICheckbox>();
                     if (checkbox != null)
                     {
+                        checkbox.baseColor.useConstant = false;
+                        checkbox.baseColor.constant = UIOptions.InvisibleColor;
+                        checkbox.baseColor.reference = UIOptions.InvisibleColorVar;
                     }
 
                     UISlider slider = element.GetComponent<UISlider>();
@@ -307,16 +327,10 @@ namespace VRtist
                     element.ResetMaterial();
                 }
             }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
 
-
-
-
-        //
-        // Add Colliders to UIPanel
-        //
-
-        public void AddCollidersToUIPanels()
+        public void CheckBox_SortingOrder()
         {
             for (int w = 0; w < windows.Length; ++w)
             {
@@ -325,29 +339,20 @@ namespace VRtist
                 {
                     UIElement element = uiElements[e];
 
-                    UIPanel panel = element.GetComponent<UIPanel>();
-                    if (panel != null)
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
                     {
-                        MeshFilter meshFilter = panel.gameObject.GetComponent<MeshFilter>();
-                        if (meshFilter != null) // some panels have no geometry (containers only).
+                        Canvas canvas = checkbox.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
+                        canvas.sortingOrder = 1;
+                        
+                        MeshRenderer r = canvas.transform.Find("Text").gameObject.GetComponent<MeshRenderer>();
+                        if (r != null)
                         {
-                            BoxCollider coll = panel.gameObject.GetComponent<BoxCollider>();
-                            if (coll == null) // get first in cas we already clicked on the button.
-                            {
-                                coll = panel.gameObject.AddComponent<BoxCollider>();
-                            }
-                            if (coll != null && meshFilter.sharedMesh != null)
-                            {
-                                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
-                                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
-                                coll.center = initColliderCenter;
-                                coll.size = initColliderSize;
-                                coll.isTrigger = true;
-                            }
+                            r.sortingOrder = 1;
                         }
-                    }
 
-                    element.NeedsRebuild = true;
+                        element.NeedsRebuild = true;
+                    }
                 }
             }
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -450,6 +455,47 @@ namespace VRtist
         #endregion
 
         #region DEPRECATED
+
+        //
+        // Add Colliders to UIPanel
+        //
+
+        public void AddCollidersToUIPanels()
+        {
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UIPanel panel = element.GetComponent<UIPanel>();
+                    if (panel != null)
+                    {
+                        MeshFilter meshFilter = panel.gameObject.GetComponent<MeshFilter>();
+                        if (meshFilter != null) // some panels have no geometry (containers only).
+                        {
+                            BoxCollider coll = panel.gameObject.GetComponent<BoxCollider>();
+                            if (coll == null) // get first in cas we already clicked on the button.
+                            {
+                                coll = panel.gameObject.AddComponent<BoxCollider>();
+                            }
+                            if (coll != null && meshFilter.sharedMesh != null)
+                            {
+                                Vector3 initColliderCenter = meshFilter.sharedMesh.bounds.center;
+                                Vector3 initColliderSize = meshFilter.sharedMesh.bounds.size;
+                                coll.center = initColliderCenter;
+                                coll.size = initColliderSize;
+                                coll.isTrigger = true;
+                            }
+                        }
+                    }
+
+                    element.NeedsRebuild = true;
+                }
+            }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
 
         //
         // Text Mesh Pro
@@ -671,8 +717,8 @@ namespace VRtist
                         {
                             TextMeshPro t = textValueObjectTransform.gameObject.AddComponent<TextMeshPro>();
                             t.text = (spinner.spinnerValueType == UISpinner.SpinnerValueType.Float)
-                                    ? spinner.currentFloatValue.ToString("#0.00")
-                                    : spinner.currentIntValue.ToString();
+                                    ? spinner.FloatValue.ToString("#0.00")
+                                    : spinner.IntValue.ToString();
                             t.enableAutoSizing = true;
                             t.fontSizeMin = 1;
                             t.fontSizeMax = 500;

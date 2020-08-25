@@ -166,7 +166,8 @@ namespace VRtist
         public virtual void OnRayExit() { }
         public virtual void OnRayExitClicked() { }
         public virtual void OnRayClick() { }
-        public virtual void OnRayRelease() { }
+        public virtual void OnRayReleaseInside() { }
+        public virtual void OnRayReleaseOutside() { }
 
         public virtual bool OverridesRayEndPoint() { return false; }
         public virtual void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint) { }

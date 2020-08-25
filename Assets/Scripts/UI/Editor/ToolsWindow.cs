@@ -70,23 +70,27 @@ namespace VRtist
                             debug.UIOPTIONS_ResetAllColors();
                         }
 
-                        if (GUILayout.Button("Link HOVERED Col", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
-                        {
-                            debug.UIOPTIONS_HoveredColor();
-                        }
+                        //if (GUILayout.Button("Link HOVERED Col", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
+                        //{
+                        //    debug.UIOPTIONS_HoveredColor();
+                        //}
                     }
                     GUILayout.EndHorizontal();
 
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Label(new GUIContent("Other:"), textStyle, GUILayout.Width(60), GUILayout.Height(20));
-                        if (GUILayout.Button("+Coll in Panel", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
-                        {
-                            debug.AddCollidersToUIPanels();
-                        }
+                        //if (GUILayout.Button("+Coll in Panel", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
+                        //{
+                        //    debug.AddCollidersToUIPanels();
+                        //}
                         if (GUILayout.Button("Relink/Fix Mats", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
                         {
                             debug.MATERIALS_RelinkAndFix();
+                        }
+                        if (GUILayout.Button("Checkbox sorting orger", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
+                        {
+                            debug.CheckBox_SortingOrder();
                         }
                     }
                     GUILayout.EndHorizontal();

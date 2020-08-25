@@ -74,3 +74,4 @@ $RECYCLE.BIN/
 *.7z
 *.rar
 
+/.vscode/settings.json

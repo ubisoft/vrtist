@@ -435,7 +435,7 @@ namespace VRtist
             ResetColor();
         }
 
-        public override void OnRayRelease()
+        public override void OnRayReleaseInside()
         {
             onReleaseEvent.Invoke();
 
@@ -448,6 +448,13 @@ namespace VRtist
                 onCheckEvent.Invoke(Checked);
             }
 
+            ResetColor();
+        }
+
+        public override void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
             ResetColor();
         }
 

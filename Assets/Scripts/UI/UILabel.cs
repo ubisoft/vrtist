@@ -186,6 +186,22 @@ namespace VRtist
 #endif
         }
 
+        public override void ResetColor()
+        {
+            base.ResetColor();
+
+            // Make the canvas pop front if Hovered.
+            Canvas c = GetComponentInChildren<Canvas>();
+            if (c != null)
+            {
+                RectTransform rt = c.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+                }
+            }
+        }
+
         private void OnDrawGizmosSelected()
         {
             Vector3 labelPosition = transform.TransformPoint(new Vector3(width / 4.0f, -height / 2.0f, -0.001f));
@@ -214,6 +230,9 @@ namespace VRtist
                 text.text = textValue;
             }
         }
+
+
+
 
         private void OnTriggerEnter(Collider otherCollider)
         {
@@ -250,7 +269,83 @@ namespace VRtist
 
 
 
+        // --- RAY API ----------------------------------------------------
 
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+            onHoverEvent.Invoke();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+            onHoverEvent.Invoke();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayReleaseInside()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+
+            ResetColor();
+        }
+
+        public override void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+        }
+
+        // --- / RAY API ----------------------------------------------------
 
 
 

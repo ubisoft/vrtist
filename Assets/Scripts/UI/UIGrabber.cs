@@ -30,10 +30,6 @@ namespace VRtist
                     ToolsUIManager.Instance.RegisterUI3DObject(prefab);
                 }
             }
-
-            onClickEvent.AddListener(OnPush3DObject);
-            onReleaseEvent.AddListener(OnRelease3DObject);
-            onHoverEvent.AddListener(OnStayOn3DObject);
         }
 
         private void OnValidate()
@@ -56,6 +52,22 @@ namespace VRtist
 #endif
         }
 
+        public override void ResetColor()
+        {
+            base.ResetColor();
+
+            // Make the canvas pop front if Hovered.
+            //Canvas c = GetComponentInChildren<Canvas>();
+            //if (c != null)
+            //{
+            //    RectTransform rt = c.GetComponent<RectTransform>();
+            //    if (rt != null)
+            //    {
+            //        rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+            //    }
+            //}
+        }
+
         private void OnTriggerEnter(Collider otherCollider)
         {
             if (NeedToIgnoreCollisionEnter())
@@ -64,6 +76,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onClickEvent.Invoke();
+                OnPush3DObject();
                 if (prefab != null)
                 {
                     int hash = prefab.GetHashCode();
@@ -80,6 +93,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onReleaseEvent.Invoke();
+                OnRelease3DObject();
                 if (prefab != null)
                 {
                     int hash = prefab.GetHashCode();
@@ -96,6 +110,7 @@ namespace VRtist
             if (otherCollider.gameObject.name == "Cursor")
             {
                 onHoverEvent.Invoke();
+                OnStayOn3DObject();
             }
         }
 
@@ -136,11 +151,151 @@ namespace VRtist
             }
         }
 
-        public override bool HandlesCursorBehavior() { return true; }
-        public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
+        //public override bool HandlesCursorBehavior() { return true; }
+        //public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
+        //{
+        //    cursorShapeTransform.position = transform.position;
+        //    cursorShapeTransform.rotation = transform.parent.rotation;
+        //}
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
         {
-            cursorShapeTransform.position = transform.position;
-            cursorShapeTransform.rotation = transform.parent.rotation;
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+
+            GoFrontAnimation();
+
+            if (prefab != null)
+            {
+                int hash = prefab.GetHashCode();
+                onEnterUI3DObject.Invoke(hash);
+            }
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+
+            GoFrontAnimation();
+
+            if (prefab != null)
+            {
+                int hash = prefab.GetHashCode();
+                onEnterUI3DObject.Invoke(hash);
+            }
+        }
+
+        public override void OnRayHover()
+        {
+            onHoverEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+
+            RotateAnimation();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            onHoverEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+
+            RotateAnimation();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+
+            GoBackAnimation();
+            ResetRotation();
+
+            if (prefab != null)
+            {
+                int hash = prefab.GetHashCode();
+                onExitUI3DObject.Invoke(hash);
+            }
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+
+            GoBackAnimation();
+
+            if (prefab != null)
+            {
+                int hash = prefab.GetHashCode();
+                onExitUI3DObject.Invoke(hash);
+            }
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayReleaseInside()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+
+            ResetRotation();
+        }
+
+        // --- / RAY API ----------------------------------------------------
+
+        public void GoFrontAnimation()
+        {
+            transform.localPosition += new Vector3(0f, 0f, -0.02f); // avance vers nous, dnas le repere de la page (local -Z)
+            transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+        }
+
+        public void GoBackAnimation()
+        {
+            transform.localPosition += new Vector3(0f, 0f, +0.02f); // recule, dnas le repere de la page (local +Z)
+            transform.localScale = Vector3.one;
+        }
+
+        public void RotateAnimation()
+        {
+            transform.localRotation *= Quaternion.Euler(0f, -3f, 0f); // rotate autour du Y du repere du parent (penche a 25, -35, 0)
+        }
+
+        public void ResetRotation()
+        {
+            transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
         }
     }
 }

@@ -22,9 +22,11 @@ namespace VRtist
         public ColorVar panelHoverColor = new ColorVar { value = new Color(0.4f, 0.4f, 0.4f, 1.0f) };
         public ColorVar grabberBaseColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
         public ColorVar grabberHoverColor = new ColorVar { value = new Color(0.1742f, 0.5336f, 0.723f, 1.0f) };
+        public ColorVar invisibleColor = new ColorVar { value = new Color(0.0f, 0.0f, 0.0f, 0.0f) };
 
         [SpaceHeader("Specific Widget Colors", 6, 0.3f, 0.3f, 0.3f)]
         public ColorVar attenuatedTextColor = new ColorVar { value = new Color(.7f,.7f,.7f) };
+        public ColorVar sectionTextColor = new ColorVar { value = new Color(.0f, .4739f, 1.0f) };
         public ColorVar closeWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar pinWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar exitButtonColor = new ColorVar { value = new Color(.7f, .1f, .1f) };
@@ -44,6 +46,7 @@ namespace VRtist
         public static Color SliderRailColor { get { return Instance.sliderRailColor.value; } }
         public static Color SliderKnobColor { get { return Instance.sliderKnobColor.value; } }
         public static Color AttenuatedTextColor { get { return Instance.attenuatedTextColor.value; } }
+        public static Color SectionTextColor { get { return Instance.sectionTextColor.value; } }
         public static Color PanelColor { get { return Instance.panelColor.value; } }
         public static Color PanelHoverColor { get { return Instance.panelHoverColor.value; } }
         public static Color CloseWindowButtonColor { get { return Instance.closeWindowButtonColor.value; } }
@@ -52,6 +55,7 @@ namespace VRtist
         public static Color FocusColor { get { return Instance.focusColor.value; } }
         public static Color GrabberBaseColor { get { return Instance.grabberBaseColor.value; } }
         public static Color GrabberHoverColor { get { return Instance.grabberHoverColor.value; } }
+        public static Color InvisibleColor { get { return Instance.invisibleColor.value; } }
         public static Color SceneHoverColor { get { return Instance.sceneHoverColor.value; } }
 
         public static ColorVar ForegroundColorVar { get { return Instance.foregroundColor; } }
@@ -64,6 +68,7 @@ namespace VRtist
         public static ColorVar SliderRailColorVar { get { return Instance.sliderRailColor; } }
         public static ColorVar SliderKnobColorVar { get { return Instance.sliderKnobColor; } }
         public static ColorVar AttenuatedTextColorVar { get { return Instance.attenuatedTextColor; } }
+        public static ColorVar SectionTextColorVar { get { return Instance.sectionTextColor; } }
         public static ColorVar PanelColorVar { get { return Instance.panelColor; } }
         public static ColorVar PanelHoverColorVar { get { return Instance.panelHoverColor; } }
         public static ColorVar CloseWindowButtonColorVar { get { return Instance.closeWindowButtonColor; } }
@@ -72,6 +77,7 @@ namespace VRtist
         public static ColorVar FocusColorVar { get { return Instance.focusColor; } }
         public static ColorVar GrabberBaseColorVar { get { return Instance.grabberBaseColor; } }
         public static ColorVar GrabberHoverColorVar { get { return Instance.grabberHoverColor; } }
+        public static ColorVar InvisibleColorVar { get { return Instance.invisibleColor; } }
         public static ColorVar SceneHoverColorVar { get { return Instance.sceneHoverColor; } }
 
         private static UIOptions instance = null;

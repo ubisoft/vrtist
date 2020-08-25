@@ -6,6 +6,15 @@ using UnityEngine.UI;
 
 namespace VRtist
 {
+    /* NOTE: si on veut rendre leur fond transparent
+     - MeshRenderer/AdditionalSettings/Priority = 1 (pas oblige, mais comme les labels)
+     - UIElementTransparent Sorting Priority = 1 (pas oblige, mais deja fait)
+     - Canvas/Canvas/Order in Layer = 1, pour l'image.
+     - Canvas/Text/MeshRenderer/AdditionalSettings/Priority = 1
+          OU
+     - Canvas/Text/TMP/Extra/Order in Layer = 1.
+     */
+
     [ExecuteInEditMode]
     [SelectionBase]
     [RequireComponent(typeof(MeshFilter)),
@@ -20,7 +29,7 @@ namespace VRtist
         public static readonly float default_height = 0.05f;
         public static readonly float default_margin = 0.005f;
         public static readonly float default_thickness = 0.001f;
-        public static readonly string default_material_name = "UIBase";
+        public static readonly string default_material_name = "UIElementTransparent";//"UIBase";
         //public static readonly Color default_color = UIElement.default_background_color;
         public static readonly CheckboxContent default_content = CheckboxContent.CheckboxAndText;
         public static readonly string default_text = "Checkbox";
@@ -373,7 +382,7 @@ namespace VRtist
             ResetColor();
         }
 
-        public override void OnRayRelease()
+        public override void OnRayReleaseInside()
         {
             onReleaseEvent.Invoke();
 
@@ -383,6 +392,13 @@ namespace VRtist
             Checked = !Checked;
             onCheckEvent.Invoke(Checked);
 
+            ResetColor();
+        }
+
+        public override void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
             ResetColor();
         }
 
@@ -496,6 +512,7 @@ namespace VRtist
 
             Canvas c = canvas.AddComponent<Canvas>();
             c.renderMode = RenderMode.WorldSpace;
+            c.sortingOrder = 1;
 
             RectTransform rt = canvas.GetComponent<RectTransform>(); // auto added when adding Canvas
             rt.localScale = Vector3.one;
@@ -548,6 +565,7 @@ namespace VRtist
                 t.fontStyle = FontStyles.Normal;
                 t.alignment = TextAlignmentOptions.MidlineLeft;
                 t.color = input.textColor.value;
+                t.sortingOrder = 1;
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;

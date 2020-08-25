@@ -183,7 +183,8 @@ namespace VRtist
             GameObject cameraItemObject = Instantiate(cameraItemPrefab);
             CameraItem cameraItem = cameraItemObject.GetComponentInChildren<CameraItem>();
             cameraItem.SetCameraObject(gObject);
-            cameraList.AddItem(cameraItem.transform);
+            UIDynamicListItem item = cameraList.AddItem(cameraItem.transform);
+            item.UseColliderForUI = true;
         }
 
         public void OnCameraRemoved(GameObject gObject)

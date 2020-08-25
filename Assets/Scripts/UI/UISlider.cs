@@ -598,7 +598,7 @@ namespace VRtist
             ResetColor();
         }
 
-        public override void OnRayRelease()
+        public override void OnRayReleaseInside()
         {
             onReleaseEvent.Invoke();
 
@@ -607,6 +607,12 @@ namespace VRtist
             ResetColor();
         }
 
+        public override void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+        }
 
         public override bool OverridesRayEndPoint() { return true; }
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint) 

@@ -51,8 +51,8 @@ namespace VRtist
 #endif
             {
                 onSlideEvent.AddListener(OnSlide);
-                onClickEvent.AddListener(OnClickTimeBar);
-                onReleaseEvent.AddListener(OnReleaseTimeBar);
+                //onClickEvent.AddListener(OnClickTimeBar);
+                //onReleaseEvent.AddListener(OnReleaseTimeBar);
             }
         }
 
@@ -235,6 +235,7 @@ namespace VRtist
                 // HIDE cursor
 
                 onClickEvent.Invoke();
+                OnClickTimeBar();
             }
         }
 
@@ -248,6 +249,7 @@ namespace VRtist
                 // SHOW cursor
                 onSlideEvent.Invoke(currentValue);
                 onReleaseEvent.Invoke();
+                OnReleaseTimeBar();
             }
         }
 
@@ -324,6 +326,147 @@ namespace VRtist
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             cursorShapeTransform.position = worldProjectedWidgetPosition;
         }
+
+        #region ray
+
+        // --- RAY API ----------------------------------------------------
+
+        public override void OnRayEnter()
+        {
+            Hovered = true;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayExit()
+        {
+            Hovered = false;
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayExitClicked()
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            ResetColor();
+        }
+
+        public override void OnRayClick()
+        {
+            onClickEvent.Invoke();
+
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public override void OnRayReleaseInside()
+        {
+            onReleaseEvent.Invoke();
+
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public override bool OverridesRayEndPoint() { return true; }
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
+        {
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            float startX = 0;
+            float endX = width;
+
+            float currentValuePct = (float)(Value - minValue) / (float)(maxValue - minValue);
+            float currentKnobPositionX = startX + currentValuePct * (endX - startX);
+
+            // TODO: apply drag directly on the Value and previous Value.
+
+            // DRAG
+
+            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+
+            // CLAMP
+
+            if (localProjectedWidgetPosition.x < startX)
+                localProjectedWidgetPosition.x = startX;
+
+            if (localProjectedWidgetPosition.x > endX)
+                localProjectedWidgetPosition.x = endX;
+
+            // Compute closest int for snapping.
+            float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+            float fValue = (float)minValue + pct * (float)(maxValue - minValue);
+            int roundedValue = Mathf.RoundToInt(fValue);
+
+            // SNAP X to closest int
+            localProjectedWidgetPosition.x = startX + ((float)roundedValue - minValue) * (endX - startX) / (float)(maxValue - minValue);
+            // SNAP Y to middle of knob object. TODO: use actual knob dimensions
+            localProjectedWidgetPosition.y = -height + 0.02f;
+            // SNAP Z to the thickness of the knob
+            localProjectedWidgetPosition.z = -0.005f;
+
+            // SET
+
+            Value = roundedValue; // will replace the slider knob.
+            onSlideEvent.Invoke(roundedValue);
+
+            // Haptic intensity as we go deeper into the widget.
+            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
+            //intensity *= intensity; // ease-in
+
+            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            rayEndPoint = worldProjectedWidgetPosition;
+        }
+
+        // --- / RAY API ----------------------------------------------------
+
+        #endregion
+
+        #region create
 
         //
         // CREATE
@@ -420,5 +563,6 @@ namespace VRtist
             GameObject K = new GameObject("Knob");
             uiTimeBar.knob = K.transform;
         }
+        #endregion
     }
 }

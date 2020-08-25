@@ -65,10 +65,8 @@ namespace VRtist
 
         private void InitSpinnerMinMax()
         {
-            startFrameSpinner.maxFloatValue = endFrameSpinner.FloatValue;
-            startFrameSpinner.maxIntValue = endFrameSpinner.IntValue;
-            endFrameSpinner.minFloatValue = startFrameSpinner.FloatValue;
-            endFrameSpinner.minIntValue = startFrameSpinner.IntValue;
+            startFrameSpinner.maxValue = endFrameSpinner.FloatValue;
+            endFrameSpinner.minValue = startFrameSpinner.FloatValue;
         }
 
         private void UpdateShotRange(int value)
@@ -187,6 +185,20 @@ namespace VRtist
             }
         }
 
+        public void SetListItem(UIDynamicListItem dlItem)
+        {
+            item = dlItem;
+
+            cameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            shotEnabledCheckbox.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            shotNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            cameraNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            startFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            frameRangeLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            endFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            setCameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+        }
+
         public static ShotItem GenerateShotItem(Shot shot)
         {
             GameObject root = new GameObject("shotItem");
@@ -232,7 +244,7 @@ namespace VRtist
                 height = 0.03f,
                 content = UICheckbox.CheckboxContent.CheckboxOnly
             });
-
+            
             shotEnabledCheckbox.SetLightLayer(5);
 
             cx += 0.03f;
@@ -294,8 +306,8 @@ namespace VRtist
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
-                min_spinner_value_int = 0, max_spinner_value_int = 10000, 
-                cur_spinner_value_int = shot.start, spinner_value_rate_int = 30
+                min_spinner_value = 0, max_spinner_value = 10000, cur_spinner_value = shot.start, 
+                spinner_value_rate = 30, spinner_value_rate_ray = 30
             });
 
             startFrameSpinner.baseColor.useConstant = true;
@@ -337,10 +349,11 @@ namespace VRtist
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
-                min_spinner_value_int = 0,
-                max_spinner_value_int = 10000,
-                cur_spinner_value_int = shot.end,
-                spinner_value_rate_int = 30
+                min_spinner_value = 0,
+                max_spinner_value = 10000,
+                cur_spinner_value = shot.end,
+                spinner_value_rate = 30,
+                spinner_value_rate_ray = 30
             });
 
             endFrameSpinner.baseColor.useConstant = true;
