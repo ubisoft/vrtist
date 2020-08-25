@@ -687,11 +687,6 @@ namespace VRtist
         {
             ActivateMouthpiece(selectorBrush, show);
             UpdateGrid();
-
-            if(rightController != null)
-            {
-                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
-            }
         }
 
         private void InitDeformerMatrix()

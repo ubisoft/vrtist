@@ -74,11 +74,6 @@ namespace VRtist
         protected override void ShowTool(bool show)
         {
             ActivateMouthpiece(paintBrush, show);
-
-            if (rightController != null)
-            {
-                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
-            }
         }
 
         private void TranslatePaintToItsCenter()

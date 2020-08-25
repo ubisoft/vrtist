@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -147,6 +146,13 @@ namespace VRtist
         protected abstract void DoUpdate();
         protected virtual void DoUpdateGui() { }
         protected virtual void ShowTool(bool show) { }
+        protected virtual void ShowController(bool show)
+        {
+            if (rightController != null)
+            {
+                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
+            }
+        }
 
         public virtual void OnUIObjectEnter(int gohash) { }
         public virtual void OnUIObjectExit(int gohash) { }
