@@ -154,6 +154,15 @@ namespace VRtist
             return false;
         }
 
+        public bool IgnoreRayInteraction()
+        {
+            if (!UIEnabled.Value) return true;
+
+            if (Disabled) { return true; }
+
+            return false;
+        }
+
         public virtual void RebuildMesh() { }
         public virtual void ResetMaterial() { }
         public virtual bool HandlesCursorBehavior() { return false; }

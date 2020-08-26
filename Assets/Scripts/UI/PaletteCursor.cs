@@ -24,7 +24,7 @@ namespace VRtist
         private Transform currentShapeTransform = null;
         private Transform arrowCursor = null;
         private Transform grabberCursor = null;
-        private IDisposable UIEnabled = null;
+        private IDisposable uiEnabledGuard = null;
         private bool paletteEnabled = true;
 
         private bool lockedOnAWidget = false;
@@ -72,46 +72,10 @@ namespace VRtist
             transform.localPosition = position;
             transform.localRotation = rotation;
 
-            if (!UIElement.UIEnabled.Value)
-                return;
-
-            if (isOnAWidget || lockedOnAWidget)
-            {
-                Vector3 localCursorColliderCenter = GetComponent<SphereCollider>().center;
-                Vector3 worldCursorColliderCenter = transform.TransformPoint(localCursorColliderCenter);
-
-                if (widgetHit != null && widgetHit.HandlesCursorBehavior())
-                {
-                    widgetHit.HandleCursorBehavior(worldCursorColliderCenter, ref currentShapeTransform);
-                    // TODO: est-ce qu'on gere le son dans les widgets, ou au niveau du curseur ???
-                    //       On peut faire ca dans le HandleCursorBehavior().
-                    //audioClick.Play();
-                }
-                else
-                { 
-                    //Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(cursorShapeTransform.position);
-                    Vector3 localWidgetPosition = widgetTransform.InverseTransformPoint(worldCursorColliderCenter);
-                    Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-                    Vector3 worldProjectedWidgetPosition = widgetTransform.TransformPoint(localProjectedWidgetPosition);
-                    currentShapeTransform.position = worldProjectedWidgetPosition;
-
-                    // Haptic intensity as we go deeper into the widget.
-                    float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                    intensity *= intensity; // ease-in
-                    if (UIElement.UIEnabled.Value)
-                        VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-                }
-            }
-
             if (ray != null)
             {
                 HandleRaycast();
             }
-        }
-
-        private void FixedUpdate()
-        {
-            //HandleRaycast();
         }
 
         private void ActivateRay(bool value)
@@ -122,6 +86,9 @@ namespace VRtist
 
         private void HandleRaycast()
         {
+            // TODO:
+            // - audioClick.Play(); ????
+            // - VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity); ???
 
             //
             // Find out if the trigger button was pressed, in order to send the info the the widget hit.
@@ -149,13 +116,31 @@ namespace VRtist
 
             // If a widget is locked (trigger has been pressed on it), give it a chance to handle the ray endpoint.
             Vector3 rayEndPoint = worldEnd;
-            if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+            if (UIElement.UIEnabled.Value)
             {
-                widgetClicked.OverrideRayEndPoint(r, ref rayEndPoint);
+                if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                {
+                    widgetClicked.OverrideRayEndPoint(r, ref rayEndPoint);
+                }
             }
 
             if (hits.Length > 0)
             {
+                if (!UIElement.UIEnabled.Value)
+                    return;
+
+                // Ray hits anything UI, but a tool action is happening.
+                // Create a guard to disable any action if not already created.
+                if (CommandManager.IsUndoGroupOpened())
+                {
+                    if (null == uiEnabledGuard)
+                    {
+                        uiEnabledGuard = UIElement.UIEnabled.SetValue(false);
+                    }
+                    ActivateRay(false);
+                    return;
+                }
+
                 bool volumeIsHit = false;
                 bool widgetIsHit = false;
                 bool handleIsHit = false;
@@ -234,20 +219,6 @@ namespace VRtist
 
                 if (handleIsHit)
                 {
-                    //ray.gameObject.SetActive(true);
-
-                    //HandleRayOutOfWidget(triggerJustReleased);
-
-                    //if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
-                    //{
-                    //    ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
-                    //}
-                    //else
-                    //{
-                    //    ray.SetHandleColor();
-                    //    ray.SetParameters(worldStart, handleCollisionPoint, newWorldDirection);
-                    //}
-
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
                         ActivateRay(true);
@@ -412,6 +383,7 @@ namespace VRtist
                 else
                 {
                     ActivateRay(false);
+                    ReleaseUIEnabledGuard(); // release the guard if there was one.
                 }
                 HandleRayOutOfWidget(triggerJustReleased);
             }
@@ -448,12 +420,19 @@ namespace VRtist
 
         private void ReleaseUIEnabledGuard()
         {
-            if (null != UIEnabled)
+            if (null != uiEnabledGuard)
             {
-                UIEnabled.Dispose();
-                UIEnabled = null;
+                uiEnabledGuard.Dispose();
+                uiEnabledGuard = null;
             }
         }
+
+
+
+
+
+
+
 
         void OnPrefabInstantiated(object sender, PrefabInstantiatedArgs args)
         {
@@ -478,9 +457,9 @@ namespace VRtist
 
                 if (CommandManager.IsUndoGroupOpened())
                 {
-                    if (null == UIEnabled)
+                    if (null == uiEnabledGuard)
                     {
-                        UIEnabled = UIElement.UIEnabled.SetValue(false);
+                        uiEnabledGuard = UIElement.UIEnabled.SetValue(false);
                         if (null != widgetHit)
                         {
                             UIGrabber grabber = widgetHit.GetComponent<UIGrabber>();
@@ -503,8 +482,8 @@ namespace VRtist
 
                 if (CommandManager.IsUndoGroupOpened())
                 {
-                    if(null == UIEnabled)
-                        UIEnabled = UIElement.UIEnabled.SetValue(false);
+                    if(null == uiEnabledGuard)
+                        uiEnabledGuard = UIElement.UIEnabled.SetValue(false);
                     return;
                 }
 
