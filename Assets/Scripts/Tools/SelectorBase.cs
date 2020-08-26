@@ -34,8 +34,9 @@ namespace VRtist
 
         float scale = 1f;
         bool outOfDeadZone = false;
-        protected bool gripped = false;
-        protected CommandGroup undoGroup = null;
+        private CommandGroup gripCmdGroup = null;
+        private bool Gripping { get { return null != gripCmdGroup; } }
+
 
         protected bool gripPrevented = false;
         protected bool gripInterrupted = false;
@@ -89,8 +90,9 @@ namespace VRtist
         protected override void OnDisable()
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
-            if (gripped)
+            if (Gripping)
                 OnEndGrip();
+            EndUndoGroup(); // secu
             SubmitCameraFocalCommand();
             base.OnDisable();
         }
@@ -247,7 +249,7 @@ namespace VRtist
         {
             if (value)
             {
-                if (!gripPrevented && gripped) // no need to interrupt if the grip was prevented
+                if (!gripPrevented && Gripping) // no need to interrupt if the grip was prevented
                 {
                     OnEndGrip(); // prematurely end the grip action
                     gripInterrupted = true; // set bool to return immediately in the "real" OnEndGrip called when ungripping the controller.
@@ -255,9 +257,18 @@ namespace VRtist
             }
         }
 
+        protected void EndUndoGroup()
+        {
+            if (Gripping)
+            {
+                gripCmdGroup.Submit();
+                gripCmdGroup = null;
+            }
+        }
+
         protected virtual void OnStartGrip()
         {
-            undoGroup = null;
+            EndUndoGroup(); // secu
             if (GlobalState.IsGrippingWorld)
             {
                 gripPrevented = true;
@@ -267,19 +278,17 @@ namespace VRtist
             enableToggleTool = false; // NO secondary button tool switch while gripping.
 
             Selection.SetGrippedObject(Selection.GetHoveredObject());            
-
-            gripped = true;
+            
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
-            undoGroup = new CommandGroup("Grip Selection");
+            gripCmdGroup = new CommandGroup("Grip Selection");
         }
 
         protected virtual void OnEndGrip()
         {
             enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
 
-            gripped = false;
             if (gripPrevented)
             {
                 gripPrevented = false;
@@ -320,11 +329,7 @@ namespace VRtist
                 ManageAutoKeyframe();
             }
 
-            if (null != undoGroup)
-            {
-                undoGroup.Submit();
-                undoGroup = null;
-            }
+            EndUndoGroup();
             Selection.SetGrippedObject(null);
         }
 
@@ -460,7 +465,7 @@ namespace VRtist
 
         protected bool HasDamping()
         {
-            if (!gripped)
+            if (!Gripping)
                 return false;
 
             List<GameObject> objecs = Selection.GetObjects();
@@ -573,9 +578,9 @@ namespace VRtist
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 
-            SetControllerVisible(!gripped || Selection.GetObjects().Count == 0);
+            SetControllerVisible(!Gripping || Selection.GetObjects().Count == 0);
 
-            if (gripped)
+            if (Gripping)
             {
                 Vector3 p = rightControllerPosition;
                 Quaternion r = rightControllerRotation;
@@ -637,8 +642,9 @@ namespace VRtist
                     CameraController cameraController = GetSingleSelectedCamera();
                     if (null != cameraController)
                     {
-                        if (null == cameraFocalCommand && null == undoGroup)
+                        if (null == cameraFocalCommand && !Gripping)
                         {
+                            // allow camera focal change when not gripped
                             cameraFocalCommand = new CommandSetValue<float>(cameraController.gameObject, "Camera Focal", "/CameraController/focal");
                         }
 
