@@ -7,54 +7,23 @@ namespace VRtist
     public class PaletteCursor : MonoBehaviour
     {
         private UIRay ray = null;
+
         [Range(0,1)]
         public float rayStiffness = 0.5f;
-
-        private Vector3 initialCursorLocalPosition = Vector3.zero;
-        private bool isOnAWidget = false;
-        private Transform widgetTransform = null;
-        private UIElement widgetHit = null;
 
         private UIElement widgetClicked = null;
 
         private AudioSource audioClick = null;
 
-        private int currentShapeId = 0;
-        private int previousShapeId = 0;
-        private Transform currentShapeTransform = null;
-        private Transform arrowCursor = null;
-        private Transform grabberCursor = null;
         private IDisposable uiEnabledGuard = null;
-        private bool paletteEnabled = true;
-
-        private bool lockedOnAWidget = false;
-        private bool isOutOfWidget = true;
-        private bool isOutOfVolume = true;
 
         UIElement prevWidget = null; // for RAY
         Vector3 prevWorldDirection = Vector3.zero;
 
         void Start()
         {
-            // Get the initial transform of the cursor mesh, in order to
-            // be able to restore it when we go out of a widget.
-            MeshFilter mf = GetComponentInChildren<MeshFilter>(true);
-            GameObject go = mf.gameObject;
-            Transform t = go.transform;
-            Vector3 lp = t.localPosition;
-
             audioClick = GetComponentInChildren<AudioSource>(true);
-
-            initialCursorLocalPosition = GetComponentInChildren<MeshFilter>(true).gameObject.transform.localPosition;
-
             ray = GetComponentInChildren<UIRay>();
-
-            arrowCursor = transform.Find("Arrow");
-            grabberCursor = transform.Find("Grabber");
-            SetCursorShape(0); // arrow
-            HideAllCursors();
-
-            Utils.OnPrefabInstantiated += OnPrefabInstantiated;
         }
 
         void Update()
@@ -208,14 +177,6 @@ namespace VRtist
                 // Send messages and states to the widget hit, with priorities.
                 //
 
-
-                //
-                // TODO
-                //
-                // REFACTOR this horrible code.
-                //
-                // state machine?
-                //
 
                 if (handleIsHit)
                 {
@@ -425,186 +386,6 @@ namespace VRtist
                 uiEnabledGuard.Dispose();
                 uiEnabledGuard = null;
             }
-        }
-
-
-
-
-
-
-
-
-        void OnPrefabInstantiated(object sender, PrefabInstantiatedArgs args)
-        {
-            ResetCursor();
-        }
-
-        private void ResetCursor()
-        {
-            ReleaseUIEnabledGuard();
-            ToolsUIManager.Instance.ShowTools(true);
-            HideAllCursors();
-        }
-
-        private void OnTriggerStay(Collider other)
-        {
-            if (lockedOnAWidget)
-                return;
-
-            if (other.GetComponent<UIVolumeTag>() != null)
-            {
-                isOutOfVolume = false;
-
-                if (CommandManager.IsUndoGroupOpened())
-                {
-                    if (null == uiEnabledGuard)
-                    {
-                        uiEnabledGuard = UIElement.UIEnabled.SetValue(false);
-                        if (null != widgetHit)
-                        {
-                            UIGrabber grabber = widgetHit.GetComponent<UIGrabber>();
-                            grabber.OnRelease3DObject();
-                        }                        
-                    }                    
-                    return;
-                }
-            }
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (lockedOnAWidget)
-                return;
-
-            if (other.GetComponent<UIVolumeTag>() != null)
-            {
-                isOutOfVolume = false;
-
-                if (CommandManager.IsUndoGroupOpened())
-                {
-                    if(null == uiEnabledGuard)
-                        uiEnabledGuard = UIElement.UIEnabled.SetValue(false);
-                    return;
-                }
-
-                // deactivate all tools
-                //tools.SetActive(false);
-                ToolsUIManager.Instance.ShowTools(false);
-                SetCursorShape(0); // arrow
-            }
-            else if (other.gameObject.tag == "UICollider")
-            {
-                isOnAWidget = true;
-                widgetTransform = other.transform;
-                widgetHit = other.GetComponent<UIElement>();
-                if (UIElement.UIEnabled.Value)
-                {
-                    VRInput.SendHaptic(VRInput.rightController, 0.015f, 0.5f);
-                    audioClick.Play();
-                }
-
-                isOutOfWidget = false;
-            }
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.GetComponent<UIVolumeTag>() != null)
-            {
-                if (!lockedOnAWidget)
-                {
-                    ResetCursor();
-                }
-                isOutOfVolume = true;
-            }
-            else if (other.gameObject.tag == "UICollider")
-            {
-                if (!lockedOnAWidget)
-                {
-                    ReleaseWidget();
-                }
-                isOutOfWidget = true;
-            }
-        }
-
-        private void ReleaseWidget()
-        {
-            isOnAWidget = false;
-            widgetTransform = null;
-            widgetHit = null;
-            MeshFilter meshFilter = GetComponentInChildren<MeshFilter>(true);
-            if (null != meshFilter)
-            {
-                meshFilter.gameObject.transform.localPosition = initialCursorLocalPosition;
-            }
-            SetCursorShape(0);
-        }
-
-        public bool IsLockedOnWidget()
-        {
-            return lockedOnAWidget;
-        }
-
-        public bool IsLockedOnThisWidget(Transform other)
-        {
-            return widgetTransform == other;
-        }
-
-        public void LockOnWidget(bool value)
-        {
-            if (value == lockedOnAWidget)
-                return;
-
-            if (value)
-            {
-                lockedOnAWidget = true;
-            }
-            else
-            {
-                lockedOnAWidget = false;
-                if (isOutOfWidget)
-                {
-                    ReleaseWidget();
-                }
-                if (isOutOfVolume)
-                {
-                    ResetCursor();
-                }
-            }
-        }
-
-        // 0: arrow, 1: box
-        private void SetCursorShape(int shape)
-        {
-            HideAllCursors(); // no we use the RAY.
-
-            // OLD CODE
-
-            //currentShapeId = shape;
-
-            //HideAllCursors();
-            //switch (shape)
-            //{
-            //    case 0: arrowCursor.gameObject.SetActive(true); currentShapeTransform = arrowCursor.transform; break;
-            //    case 1: grabberCursor.gameObject.SetActive(true); currentShapeTransform = grabberCursor.transform; break;
-            //}
-        }
-        
-        public void PushCursorShape(int shape)
-        {
-            previousShapeId = currentShapeId;
-            SetCursorShape(shape);
-        }
-
-        public void PopCursorShape()
-        {
-            SetCursorShape(previousShapeId);
-        }        
-
-        private void HideAllCursors()
-        {
-            arrowCursor.gameObject.SetActive(false);
-            grabberCursor.gameObject.SetActive(false);
         }
     }
 }
