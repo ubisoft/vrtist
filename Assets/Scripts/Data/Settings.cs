@@ -13,6 +13,7 @@ namespace VRtist
         public bool displayWorldGrid = true;
         public bool displayAvatars = true;
         public bool displayFPS = false;
+        public bool display3DCurves = true;
         public float masterVolume = 0f;
         public float ambientVolume = -35f;
         public float uiVolume = 0f;

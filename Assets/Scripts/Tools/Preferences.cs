@@ -30,6 +30,7 @@ namespace VRtist
         private UICheckbox displayGizmos;
         private UICheckbox displayAvatars;
         private UICheckbox displayFPS;
+        private UICheckbox display3DCurves;
         private UISlider masterVolume;
         private UISlider ambientVolume;
         private UISlider uiVolume;
@@ -58,6 +59,7 @@ namespace VRtist
             displayGizmos = displaySubPanel.transform.Find("DisplayGizmos").GetComponent<UICheckbox>();
             displayAvatars = displaySubPanel.transform.Find("DisplayAvatars").GetComponent<UICheckbox>();
             displayFPS = displaySubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
+            display3DCurves = displaySubPanel.transform.Find("Display3DCurves").GetComponent<UICheckbox>();
             masterVolume = soundsSubPanel.transform.Find("Master Volume").GetComponent<UISlider>();
             ambientVolume = soundsSubPanel.transform.Find("Ambient Volume").GetComponent<UISlider>();
             uiVolume = soundsSubPanel.transform.Find("UI Volume").GetComponent<UISlider>();
@@ -86,6 +88,7 @@ namespace VRtist
 
             displayGizmos.Checked = GlobalState.Settings.displayGizmos;
             displayFPS.Checked = GlobalState.Settings.displayFPS;
+            display3DCurves.Checked = GlobalState.Settings.display3DCurves;
             displayAvatars.Checked = GlobalState.Settings.displayAvatars;
 
             masterVolume.Value = GlobalState.Settings.masterVolume;
@@ -124,6 +127,11 @@ namespace VRtist
         public void OnDisplayFPS(bool show)
         {
             GlobalState.Settings.displayFPS = show;
+        }
+
+        public void OnDisplay3DCurves(bool show)
+        {
+            GlobalState.Settings.display3DCurves = show;
         }
 
         public void OnDisplayGizmos(bool show)

@@ -22,9 +22,22 @@ namespace VRtist
         // Update is called once per frame
         void Update()
         {
-
+            if(displaySelectedCurves != GlobalState.Settings.display3DCurves)
+            {
+                displaySelectedCurves = GlobalState.Settings.display3DCurves;
+                if (displaySelectedCurves)
+                    UpdateFromSelection();
+                else
+                    ClearCurves();
+            }
         }
+
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        {
+            UpdateFromSelection();
+        }
+
+        void UpdateFromSelection()
         {
             ClearCurves();
             foreach (GameObject gObject in Selection.selection.Values)
