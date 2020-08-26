@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1096113433820599433}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: -1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 3232348282570277378}
   - {fileID: 1108240311014929502}
@@ -183,6 +183,8 @@ MonoBehaviour:
   m_FilterSizeTraced: 16
   m_SunLightConeAngle: 0.5
   m_LightShadowRadius: 0.5
+  m_SemiTransparentShadow: 0
+  m_ColorShadow: 1
   m_EvsmExponent: 15
   m_EvsmLightLeakBias: 0
   m_EvsmVarianceBias: 0.00001
@@ -277,14 +279,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parameters:
-    id: 31
-    lightType: 2
-    intensity: 8
-    minIntensity: 0
-    maxIntensity: 10
-    color: {r: 1, g: 1, b: 1, a: 1}
-    castShadows: 0
+  locked: 0
+  lightType: 0
+  intensity: 8
+  minIntensity: 0
+  maxIntensity: 100
+  color: {r: 1, g: 1, b: 1, a: 1}
+  castShadows: 0
+  near: 0.01
+  range: 5
+  minRange: 0
+  maxRange: 100
+  outerAngle: 20
+  innerAngle: 30
 --- !u!65 &1204138857207612560
 BoxCollider:
   m_ObjectHideFlags: 0

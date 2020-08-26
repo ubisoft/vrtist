@@ -1676,7 +1676,7 @@ namespace VRtist
             lightController.SetPower(power);
             if (lightType == LightType.Spot)
             {
-                lightController.range = 1000f;
+                lightController.range = 5f;
                 lightController.outerAngle = spotSize * 180f / 3.14f;
                 lightController.innerAngle = (1f - spotBlend) * 100f;
             }
