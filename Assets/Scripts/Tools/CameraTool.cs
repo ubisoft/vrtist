@@ -139,6 +139,7 @@ namespace VRtist
             // Camera list
             GlobalState.ObjectAddedEvent.AddListener(OnCameraAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnCameraRemoved);
+            GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
             if(null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }
@@ -174,7 +175,22 @@ namespace VRtist
                 showCameraFrustumCheckbox.Checked = showCameraFrustum;
             }
         }
-        
+
+        public void OnCameraRenamed(GameObject gObject)
+        {
+            CameraController cameraController = gObject.GetComponent<CameraController>();
+            if (null == cameraController)
+                return;
+            foreach(UIDynamicListItem item in cameraList.GetItems())
+            {
+                CameraItem cameraItem = item.Content.gameObject.GetComponent<CameraItem>();
+                if (cameraItem.cameraObject == gObject)
+                {
+                    cameraItem.SetItemName(gObject.name);
+                }
+            }            
+        }
+
         public void OnCameraAdded(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();

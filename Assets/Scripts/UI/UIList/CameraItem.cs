@@ -12,14 +12,12 @@ namespace VRtist
         {
             Selection.OnSelectionChanged += OnSelectionChanged;
             Selection.OnActiveCameraChanged += OnActiveCameraChanged;
-            GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
         }
 
         public void OnDestroy()
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
             Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
-            GlobalState.ObjectRenamedEvent.RemoveListener(OnCameraNameChanged);
         }
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -58,14 +56,10 @@ namespace VRtist
             gameObject.GetComponentInChildren<MeshRenderer>(true).materials[0].SetColor("_BaseColor", color);
         }
 
-        void OnCameraNameChanged(GameObject gObject)
+        public void SetItemName(string name)
         {
-            if (gObject == cameraObject)
-            {
-                Camera cam = cameraObject.GetComponentInChildren<Camera>(true);
-                TextMeshProUGUI text = transform.Find("Canvas/Panel/Text").gameObject.GetComponent<TextMeshProUGUI>();
-                text.text = cameraObject.name;
-            }
+            TextMeshProUGUI text = transform.Find("Canvas/Panel/Text").gameObject.GetComponent<TextMeshProUGUI>();
+            text.text = name;
         }
 
         public void SetCameraObject(GameObject cameraObject)
@@ -74,8 +68,7 @@ namespace VRtist
             Camera cam = cameraObject.GetComponentInChildren<Camera>(true);
             SetColor(UIOptions.BackgroundColor);
             gameObject.GetComponentInChildren<MeshRenderer>(true).materials[1].SetTexture("_UnlitColorMap", cam.targetTexture);
-            TextMeshProUGUI text = transform.Find("Canvas/Panel/Text").gameObject.GetComponent<TextMeshProUGUI>();
-            text.text = cameraObject.name;
+            SetItemName(cameraObject.name);
         }
     }
 }
