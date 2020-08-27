@@ -285,10 +285,6 @@ namespace VRtist
             if (meshRenderer != null)
             {
                 Color prevColor = BaseColor;
-                //if (meshRenderer.sharedMaterial != null)
-                //{
-                //    prevColor = GetColor();
-                //}
 
                 Material materialInstance = Instantiate(source_material);
 
@@ -311,69 +307,6 @@ namespace VRtist
             {
                 text.text = textValue;
             }
-        }
-
-
-        // ---- GESTION CURSEUR PHYSIQUE - DELETE WHEN DONE WITH RAY -----------
-
-
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-                return;
-
-            float currentTime = Time.unscaledTime;
-            if ((currentTime - prevTime) > 0.4f && otherCollider.gameObject.name == "Cursor")
-            {
-                onClickEvent.Invoke();
-                OnPushButton();
-                prevTime = currentTime;
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionExit())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
-                OnReleaseButton();
-
-                if (isCheckable)
-                {
-                    Checked = !Checked;
-                    onCheckEvent.Invoke(Checked);
-                }
-            }
-        }
-
-        private void OnTriggerStay(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionStay())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onHoverEvent.Invoke();
-            }
-        }
-
-
-        // --------------------------------------------------------------------------------------
-
-
-        public void OnPushButton()
-        {
-            Pushed = true;
-            ResetColor();
-        }
-
-        public void OnReleaseButton()
-        {
-            Pushed = false;
-            ResetColor();
         }
 
         // --- RAY API ----------------------------------------------------
