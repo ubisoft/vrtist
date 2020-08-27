@@ -68,52 +68,6 @@ namespace VRtist
             //}
         }
 
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onClickEvent.Invoke();
-                OnPush3DObject();
-                if (prefab != null)
-                {
-                    int hash = prefab.GetHashCode();
-                    onEnterUI3DObject.Invoke(hash);
-                }
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionExit())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
-                OnRelease3DObject();
-                if (prefab != null)
-                {
-                    int hash = prefab.GetHashCode();
-                    onExitUI3DObject.Invoke(hash);
-                }
-            }
-        }
-
-        private void OnTriggerStay(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionStay())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onHoverEvent.Invoke();
-                OnStayOn3DObject();
-            }
-        }
-
         public void OnPush3DObject()
         {
             Pushed = true;

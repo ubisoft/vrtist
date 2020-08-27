@@ -69,10 +69,7 @@ namespace VRtist
 
         public virtual void OnDisable()
         {
-            if (GlobalState.Instance && GlobalState.Instance.cursor.IsLockedOnThisWidget(transform))
-            {
-                GlobalState.Instance.cursor.LockOnWidget(false);
-            }
+            // TODO: unlock the ray if it was locked on this widget.
         }
 
         public void UpdateChildren()
@@ -121,37 +118,6 @@ namespace VRtist
             {
                 meshRenderer.renderingLayerMask = layerIndex; // "LightLayer 1"
             }
-        }
-
-        public bool NeedToIgnoreCollisionEnter()
-        {
-            if (!UIEnabled.Value) return true;
-
-            if (Disabled) { return true; }
-
-            if (GlobalState.IsCursorLockedOnWidget()) { return true; }
-
-            return false;
-        }
-
-        public bool NeedToIgnoreCollisionExit()
-        {
-            if (!UIEnabled.Value) return true;
-
-            if (Disabled) { return true; }
-
-            if (GlobalState.IsCursorLockedOnWidget()) { return true; }
-
-            return false;
-        }
-
-        public bool NeedToIgnoreCollisionStay()
-        {
-            if (!UIEnabled.Value) return true;
-
-            if (Disabled) { return true; }
-
-            return false;
         }
 
         public bool IgnoreRayInteraction()
