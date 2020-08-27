@@ -391,7 +391,6 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
-            go.layer = LayerMask.NameToLayer("UI");
             
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -537,6 +536,8 @@ namespace VRtist
                 trt.sizeDelta = new Vector2((input.width - minSide - input.margin) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
                 trt.localPosition = new Vector3(minSide, -input.margin, -0.002f);
             }
+
+            UIUtils.SetRecursiveLayer(go, "UI");
 
             return uiCheckbox;
         }

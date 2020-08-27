@@ -645,7 +645,6 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
-            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -854,6 +853,8 @@ namespace VRtist
                 float textPosRight = uiSlider.width - uiSlider.margin;
                 trt.localPosition = new Vector3(textPosRight, -uiSlider.margin, -0.002f);
             }
+
+            UIUtils.SetRecursiveLayer(go, "UI");
         }
     }
 }

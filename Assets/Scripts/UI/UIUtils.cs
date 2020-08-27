@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace VRtist
@@ -1538,6 +1537,15 @@ namespace VRtist
                 field.SetValue(copy, field.GetValue(original));
             }
             return copy;
+        }
+
+        public static void SetRecursiveLayer(GameObject gObject, string layerName)
+        {
+            gObject.layer = LayerMask.NameToLayer(layerName); // TODO: init in one of the singletons
+            for (int i = 0; i < gObject.transform.childCount; i++)
+            {
+                SetRecursiveLayer(gObject.transform.GetChild(i).gameObject, layerName);
+            }
         }
     }
 }

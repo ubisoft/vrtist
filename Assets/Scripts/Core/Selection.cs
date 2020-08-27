@@ -63,15 +63,6 @@ namespace VRtist
             return selection.ContainsKey(gObject.GetInstanceID());
         }
 
-        private static void SetRecursiveLayer(GameObject gObject, string layerName)
-        {
-            gObject.layer = LayerMask.NameToLayer(layerName); // TODO: init in one of the singletons
-            for (int i = 0; i < gObject.transform.childCount; i++)
-            {
-                SetRecursiveLayer(gObject.transform.GetChild(i).gameObject, layerName);
-            }
-        }
-
         public static void SetActiveCamera(CameraController controller)
         {
             // Set no active camera
@@ -210,7 +201,7 @@ namespace VRtist
         {
             if (gObject)
             {
-                SetRecursiveLayer(gObject, "Hover");
+                UIUtils.SetRecursiveLayer(gObject, "Hover");
                 CameraController controller = gObject.GetComponent<CameraController>();
                 if (null != controller) { SetActiveCamera(controller); }
             }
@@ -247,7 +238,7 @@ namespace VRtist
 
             if (gObject)
             {
-                SetRecursiveLayer(gObject, layerName);
+                UIUtils.SetRecursiveLayer(gObject, layerName);
             }
 
             CameraController controller = gObject.GetComponent<CameraController>();
@@ -293,7 +284,7 @@ namespace VRtist
             CameraController controller = gObject.GetComponent<CameraController>();
             if (null != controller) { SetActiveCamera(controller); }
 
-            SetRecursiveLayer(gObject, "Selection");
+            UIUtils.SetRecursiveLayer(gObject, "Selection");
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -323,7 +314,7 @@ namespace VRtist
                 layerName = "UI";
             }
 
-            SetRecursiveLayer(gObject, layerName);
+            UIUtils.SetRecursiveLayer(gObject, layerName);
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -346,7 +337,7 @@ namespace VRtist
                     layerName = "UI";
                 }
 
-                SetRecursiveLayer(data.Value, layerName);
+                UIUtils.SetRecursiveLayer(data.Value, layerName);
             }
 
             SelectionChangedArgs args = new SelectionChangedArgs();

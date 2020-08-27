@@ -267,7 +267,6 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             //go.tag = "UICollider"; le colorpicker en lui meme n'a pas de geometrie a collider, seulement ses enfants.
-            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -332,6 +331,8 @@ namespace VRtist
                 "Preview", go.transform,
                 previewPosition, previewWidth, previewHeight, previewThickness,
                 input.previewMaterial);
+
+            UIUtils.SetRecursiveLayer(go, "UI");
         }
     }
 }

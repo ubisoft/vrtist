@@ -276,7 +276,6 @@ namespace VRtist
         {
             GameObject go = new GameObject(objectName);
             go.tag = "UICollider";
-            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -338,6 +337,8 @@ namespace VRtist
             cursor.transform.parent = uiColorPickerHue.transform;
             cursor.transform.localPosition = Vector3.zero;
             uiColorPickerHue.cursor = cursor.transform;
+
+            UIUtils.SetRecursiveLayer(go, "UI");
 
             return uiColorPickerHue;
         }

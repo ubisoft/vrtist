@@ -429,6 +429,8 @@ namespace VRtist
             uiDynamicList.margin = margin;
             uiDynamicList.itemWidth = item_width;
             uiDynamicList.itemHeight = item_height;
+
+            UIUtils.SetRecursiveLayer(go, "UI");
         }
     }
 }
