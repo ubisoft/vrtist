@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -90,49 +91,13 @@ namespace VRtist
             }
         }
 
-        // --- TOUCH -----------------------------------------
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.gameObject.name != "Cursor")
-                return;
-
-            colorPicker.OnClick();
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.gameObject.name != "Cursor")
-                return;
-
-            colorPicker.OnRelease();
-        }
-
-        private void OnTriggerStay(Collider other)
-        {
-            if (other.gameObject.name != "Cursor")
-                return;
-
-            Vector3 colliderSphereCenter = other.gameObject.GetComponent<SphereCollider>().center;
-            colliderSphereCenter = other.gameObject.transform.localToWorldMatrix.MultiplyPoint(colliderSphereCenter);
-
-            Vector3 position = transform.worldToLocalMatrix.MultiplyPoint(colliderSphereCenter);
-
-            float x = position.x / width;
-            float y = 1.0f - (-position.y / height);
-            x = Mathf.Clamp(x, 0, 1);
-            y = Mathf.Clamp(y, 0, 1);
-            SetSaturation(new Vector2(x, y));
-
-            colorPicker.OnColorChanged();
-        }
-
-        // --- / TOUCH -----------------------------------------
-
         // --- RAY API ----------------------------------------------------
 
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -141,6 +106,9 @@ namespace VRtist
 
         public override void OnRayEnterClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -149,6 +117,9 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -157,6 +128,9 @@ namespace VRtist
 
         public override void OnRayHoverClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             ResetColor();
@@ -165,6 +139,9 @@ namespace VRtist
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();
@@ -173,6 +150,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true; // exiting while clicking shows a hovered button.
             Pushed = false;
             ResetColor();
@@ -181,6 +161,9 @@ namespace VRtist
 
         public override void OnRayClick()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             colorPicker.OnClick();
 
             Hovered = true;
@@ -190,6 +173,9 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             colorPicker.OnRelease();
 
             Hovered = true;
@@ -199,6 +185,9 @@ namespace VRtist
 
         public override void OnRayReleaseOutside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();
@@ -207,6 +196,10 @@ namespace VRtist
         public override bool OverridesRayEndPoint() { return true; }
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
         {
+            bool triggerJustClicked = false;
+            bool triggerJustReleased = false;
+            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);
             float enter;
@@ -226,8 +219,11 @@ namespace VRtist
 
             // DRAG
 
-            localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPosition.x, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
-            localProjectedWidgetPosition.y = Mathf.Lerp(currentKnobPosition.y, localProjectedWidgetPosition.y, GlobalState.Settings.RaySliderDrag);
+            if (!triggerJustClicked) // if trigger just clicked, use the actual projection, no interpolation.
+            {
+                localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPosition.x, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+                localProjectedWidgetPosition.y = Mathf.Lerp(currentKnobPosition.y, localProjectedWidgetPosition.y, GlobalState.Settings.RaySliderDrag);
+            }
 
             // CLAMP
 

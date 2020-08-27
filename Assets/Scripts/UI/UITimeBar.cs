@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
@@ -42,20 +41,6 @@ namespace VRtist
         public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); } }
         public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); } }
         public int Value { get { return GetValue(); } set { SetValue(value); UpdateTimeBarPosition(); } }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                onSlideEvent.AddListener(OnSlide);
-                //onClickEvent.AddListener(OnClickTimeBar);
-                //onReleaseEvent.AddListener(OnReleaseTimeBar);
-            }
-        }
 
         public override void RebuildMesh()
         {
@@ -226,114 +211,15 @@ namespace VRtist
             currentValue = intValue;
         }
 
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                // HIDE cursor
-
-                onClickEvent.Invoke();
-                OnClickTimeBar();
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionExit())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                // SHOW cursor
-                onSlideEvent.Invoke(currentValue);
-                onReleaseEvent.Invoke();
-                OnReleaseTimeBar();
-            }
-        }
-
-        private void OnTriggerStay(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionStay())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                // NOTE: The correct "currentValue" is already computed in the HandleCursorBehavior callback.
-                //       Just call the listeners here.
-                onSlideEvent.Invoke(currentValue);
-            }
-        }
-
-        public void OnClickTimeBar()
-        {
-            Pushed = true;
-            ResetColor();
-        }
-
-        public void OnReleaseTimeBar()
-        {
-            Pushed = false;
-            ResetColor();
-        }
-
-        public void OnSlide(int f)
-        {
-            //Value = f; // Value already set in HandleCursorBehavior
-        }
-
-        public override bool HandlesCursorBehavior() { return true; }
-        public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
-        {
-            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
-            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-
-            float startX = 0.0f;
-            float endX = width;
-            float snapXDistance = 0.002f; // for snapping of a little bit to the right/left of extremities
-            if (localProjectedWidgetPosition.x > startX - snapXDistance && localProjectedWidgetPosition.x < endX + snapXDistance)
-            {
-                // SNAP X left
-                if (localProjectedWidgetPosition.x < startX)
-                    localProjectedWidgetPosition.x = startX;
-
-                // SNAP X right
-                if(localProjectedWidgetPosition.x > endX)
-                    localProjectedWidgetPosition.x = endX;
-
-                // Compute closest int for snapping.
-                float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-                float fValue = (float)minValue + pct * (float)(maxValue - minValue);
-                int roundedValue = Mathf.RoundToInt(fValue);
-                Value = roundedValue; // will replace the slider knob.
-
-                // SNAP X to closest int
-                localProjectedWidgetPosition.x = startX + ((float)roundedValue - minValue) * (endX - startX) / (float)(maxValue - minValue);
-                // SNAP Y to middle of knob object. TODO: use actual knob dimensions
-                localProjectedWidgetPosition.y = -height + 0.02f;
-                // SNAP Z to the thickness of the knob
-                localProjectedWidgetPosition.z = -0.005f;
-
-                // Haptic intensity as we go deeper into the widget.
-                float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                intensity *= intensity; // ease-in
-
-                // TODO : Re-enable
-                VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-            }
-
-            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            cursorShapeTransform.position = worldProjectedWidgetPosition;
-        }
-
         #region ray
 
         // --- RAY API ----------------------------------------------------
 
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -342,6 +228,9 @@ namespace VRtist
 
         public override void OnRayEnterClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -350,6 +239,9 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -357,6 +249,9 @@ namespace VRtist
 
         public override void OnRayHoverClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             ResetColor();
@@ -364,6 +259,9 @@ namespace VRtist
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -372,6 +270,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true; // exiting while clicking shows a hovered button.
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -380,6 +281,9 @@ namespace VRtist
 
         public override void OnRayClick()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onClickEvent.Invoke();
 
             Hovered = true;
@@ -389,6 +293,9 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onReleaseEvent.Invoke();
 
             Hovered = true;
@@ -398,6 +305,9 @@ namespace VRtist
 
         public override void OnRayReleaseOutside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();

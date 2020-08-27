@@ -1,5 +1,4 @@
 ﻿using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -59,19 +58,6 @@ namespace VRtist
         public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }
 
         public string Text { get { return textContent; } set { SetText(value); } }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                //onClickEvent.AddListener(OnPushCheckbox);
-                //onReleaseEvent.AddListener(OnReleaseCheckbox);
-            }
-        }
 
         public override void ResetColor()
         {

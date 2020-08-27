@@ -1,5 +1,4 @@
 ﻿using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -60,19 +59,6 @@ namespace VRtist
         {
             get { return isChecked; }
             set { isChecked = value; ResetColor(); UpdateCheckIcon(); }
-        }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                //onClickEvent.AddListener(OnPushButton);
-                //onReleaseEvent.AddListener(OnReleaseButton);
-            }
         }
 
         public override void ResetColor()

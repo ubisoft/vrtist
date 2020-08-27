@@ -1,6 +1,5 @@
 ﻿using System;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -85,20 +84,6 @@ namespace VRtist
         public bool HasCurveData()
         {
             return (dataSource == SliderDataSource.Curve && dataCurve != null && dataCurve.keys.Length > 0);
-        }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                onSlideEvent.AddListener(OnSlide);
-                //onClickEvent.AddListener(OnClickSlider);
-                //onReleaseEvent.AddListener(OnReleaseSlider);
-            }
         }
 
         public override void RebuildMesh()

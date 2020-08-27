@@ -1,6 +1,5 @@
 ﻿using System;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -71,19 +70,6 @@ namespace VRtist
         public string Text { get { return textContent; } set { SetText(value); } }
         public float FloatValue { get { return GetFloatValue(); } set { SetFloatValue(value); UpdateValueText(); } }
         public int IntValue { get { return GetIntValue(); } set { SetIntValue(value); UpdateValueText(); } }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                //onEnterEvent.AddListener(OnEnterSpinner);
-                //onExitEvent.AddListener(OnExitSpinner);
-            }
-        }
 
         public override void RebuildMesh()
         {
