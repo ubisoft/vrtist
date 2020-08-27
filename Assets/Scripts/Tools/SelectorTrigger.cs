@@ -60,17 +60,51 @@ namespace VRtist
 
         }
 
+        GameObject GetRootIfCollectionInstance(GameObject gObject)
+        {
+            if (null == gObject)
+                return null;
+
+            Transform obj = gObject.transform.parent;
+            while(null != obj)
+            {
+                if(obj.name == "__Offset")
+                {
+                    return GetRootIfCollectionInstance(obj.parent.gameObject);
+                }
+                obj = obj.parent;
+            }
+            return gObject;
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             if (other.tag == "PhysicObject")
             {
-                if(!collidedObjects.Contains(other.gameObject))
-                    collidedObjects.Add(other.gameObject);
-                if (Selection.GetHoveredObject() != other.gameObject)
+                GameObject gObject = GetRootIfCollectionInstance(other.gameObject);
+
+                if (!collidedObjects.Contains(gObject))
+                    collidedObjects.Add(gObject);
+                if (Selection.GetHoveredObject() != gObject)
                 {
-                    Selection.SetHoveredObject(other.gameObject);
+                    Selection.SetHoveredObject(gObject);
                     selector.OnSelectorTriggerEnter(other);
                 }
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.tag == "PhysicObject")
+            {
+                GameObject gObject = GetRootIfCollectionInstance(other.gameObject);
+
+                if (gObject == Selection.GetHoveredObject())
+                {
+                    selector.OnSelectorTriggerExit(other);
+                }
+
+                RemoveCollidedObject(gObject);
             }
         }
 
@@ -93,19 +127,6 @@ namespace VRtist
                 Selection.SetHoveredObject(hoveredObject);
             }
 
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if(other.tag == "PhysicObject")
-            {
-                if (other.gameObject == Selection.GetHoveredObject())
-                {
-                    selector.OnSelectorTriggerExit(other);
-                }
-
-                RemoveCollidedObject(other.gameObject);
-            }
         }
 
         private void UpdateSelection()

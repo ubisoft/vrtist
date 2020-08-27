@@ -70,7 +70,17 @@ namespace VRtist
             foreach (GameObject gobj in Selection.GetObjects())
             {
                 // Check if the object is outside the view frustum
-                if (!GeometryUtility.TestPlanesAABB(frustumPlanes, gobj.GetComponent<Collider>().bounds))
+                Bounds bounds;
+                Collider collider = gobj.GetComponent<Collider>();
+                if(null == collider)
+                {
+                    bounds = new Bounds(gobj.transform.position, Vector3.one * 0.001f);
+                }
+                else
+                {
+                    bounds = collider.bounds;
+                }
+                if (!GeometryUtility.TestPlanesAABB(frustumPlanes, bounds))
                 {
                     //// Get direction of the hidden object
                     //for (int i = 0; i < hidden.Length; i++)
