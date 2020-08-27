@@ -539,9 +539,15 @@ namespace VRtist
             widgetPlane.Raycast(ray, out enter);
             Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
 
-
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
             Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            if (IgnoreRayInteraction())
+            {
+                // return endPoint at the surface of the widget.
+                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                return;
+            }
 
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;

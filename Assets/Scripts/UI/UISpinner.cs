@@ -443,6 +443,13 @@ namespace VRtist
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
             Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
 
+            if (IgnoreRayInteraction())
+            {
+                // return endPoint at the surface of the widget.
+                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                return;
+            }
+
             Vector2 localCenter = new Vector2(width / 2.0f, -height / 2.0f);
             
             float currentDistX = localProjectedWidgetPosition.x - localCenter.x;
