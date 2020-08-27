@@ -232,47 +232,13 @@ namespace VRtist
         }
 
 
-
-
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onClickEvent.Invoke();
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionExit())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
-            }
-        }
-
-        private void OnTriggerStay(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionStay())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onHoverEvent.Invoke();
-            }
-        }
-
-
-
         // --- RAY API ----------------------------------------------------
 
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -281,6 +247,9 @@ namespace VRtist
 
         public override void OnRayEnterClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -289,6 +258,9 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -297,6 +269,9 @@ namespace VRtist
 
         public override void OnRayHoverClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             ResetColor();
@@ -305,6 +280,9 @@ namespace VRtist
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -313,6 +291,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true; // exiting while clicking shows a hovered button.
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -321,6 +302,9 @@ namespace VRtist
 
         public override void OnRayClick()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onClickEvent.Invoke();
 
             Hovered = true;
@@ -330,6 +314,9 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onReleaseEvent.Invoke();
 
             Hovered = true;
@@ -340,6 +327,9 @@ namespace VRtist
 
         public override void OnRayReleaseOutside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();

@@ -90,65 +90,18 @@ namespace VRtist
             }
         }
 
-        public override bool HandlesCursorBehavior() { return UseColliderForUI; }
-        public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
-        {
-            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
-            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-
-            // Haptic intensity as we go deeper into the widget.
-            float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-            intensity *= intensity; // ease-in
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-
-            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            cursorShapeTransform.position = worldProjectedWidgetPosition;
-        }
-
         public void OnAnySubItemClicked()
         {
             list.FireItem(Content);
-        }
-
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onClickEvent.Invoke();
-
-                list.FireItem(Content);
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionExit())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                onReleaseEvent.Invoke();
-            }
-        }
-
-        private void OnTriggerStay(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionStay())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-
-            }
         }
 
         // --- RAY API ----------------------------------------------------
 
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -157,6 +110,9 @@ namespace VRtist
 
         public override void OnRayEnterClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -165,6 +121,9 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -173,6 +132,9 @@ namespace VRtist
 
         public override void OnRayHoverClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             ResetColor();
@@ -181,6 +143,9 @@ namespace VRtist
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -189,6 +154,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true; // exiting while clicking shows a hovered button.
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -197,6 +165,9 @@ namespace VRtist
 
         public override void OnRayClick()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onClickEvent.Invoke();
 
             Hovered = true;
@@ -206,6 +177,9 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onReleaseEvent.Invoke();
             
             list.FireItem(Content);
@@ -218,6 +192,9 @@ namespace VRtist
 
         public override void OnRayReleaseOutside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();

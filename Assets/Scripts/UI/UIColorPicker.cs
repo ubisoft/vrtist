@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
@@ -59,19 +58,6 @@ namespace VRtist
         private void OnEnable()
         {
             CurrentColor = CurrentColor;
-        }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                //OnColorChanged();
-                //CurrentColor = new Color(0.2f, 0.5f, 0.6f);
-            }
         }
 
         public void SetPickedColor(Color color)

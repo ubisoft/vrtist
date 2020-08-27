@@ -361,15 +361,6 @@ namespace VRtist
                 }
             }
         }
-        public static bool IsCursorLockedOnWidget()
-        {
-            if (Instance && Instance.cursor)
-            {
-                return Instance.cursor.IsLockedOnWidget();
-            }
-
-            return false;
-        }
 
         public void OnLightsCastShadows(bool value)
         {

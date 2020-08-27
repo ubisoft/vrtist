@@ -158,26 +158,11 @@ namespace VRtist
 
 
 
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-
-        }
-
-        private void OnTriggerStay(Collider otherCollider)
-        {
-
-        }
-
-
-
-
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
             ResetColor();
@@ -185,12 +170,18 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             //Hovered = true;
             //ResetColor();
         }
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
             ResetColor();

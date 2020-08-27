@@ -1,6 +1,5 @@
 ﻿using System;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -85,20 +84,6 @@ namespace VRtist
         public bool HasCurveData()
         {
             return (dataSource == SliderDataSource.Curve && dataCurve != null && dataCurve.keys.Length > 0);
-        }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                onSlideEvent.AddListener(OnSlide);
-                //onClickEvent.AddListener(OnClickSlider);
-                //onReleaseEvent.AddListener(OnReleaseSlider);
-            }
         }
 
         public override void RebuildMesh()
@@ -440,111 +425,13 @@ namespace VRtist
             currentValue = floatValue;
         }
 
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                // HIDE cursor
-
-                onClickEvent.Invoke();
-                OnClickSlider();
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionExit())
-                return;
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                // SHOW cursor
-
-                onReleaseEvent.Invoke();
-                OnReleaseSlider();
-            }
-        }
-
-        public void OnClickSlider()
-        {
-            Pushed = true;
-            ResetColor();
-        }
-
-        public void OnReleaseSlider()
-        {
-            Pushed = false;
-            ResetColor();
-        }
-
-        public void OnSlide(float f)
-        {
-            //Value = f; // Value already set in HandleCursorBehavior
-        }
-
-        public override bool HandlesCursorBehavior() { return true; }
-        public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
-        {
-            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
-            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-
-            float widthWithoutMargins = width - 2.0f * margin;
-            float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
-            float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
-
-            float snapXDistance = 0.002f;
-            // TODO: snap X if X if a bit left of startX or a bit right of endX.
-
-            if (localProjectedWidgetPosition.x > startX - snapXDistance && localProjectedWidgetPosition.x < endX + snapXDistance)
-            {
-                // SNAP X left
-                if (localProjectedWidgetPosition.x < startX)
-                    localProjectedWidgetPosition.x = startX;
-
-                // SNAP X right
-                if(localProjectedWidgetPosition.x > endX)
-                    localProjectedWidgetPosition.x = endX;
-
-                // SNAP Y to middle
-                localProjectedWidgetPosition.y = -height / 2.0f;
-
-                float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-
-                // Actually move the slider ONLY if RIGHT_TRIGGER is pressed.
-                bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
-                if (triggerState)
-                {
-                    if (HasCurveData())
-                    {
-                        Value = dataCurve.Evaluate(pct);
-                    }
-                    else // linear
-                    {
-                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
-                    }
-                    onSlideEvent.Invoke(currentValue);
-                    int intValue = Mathf.RoundToInt(currentValue);
-                    onSlideEventInt.Invoke(intValue);
-                }
-
-                // Haptic intensity as we go deeper into the widget.
-                float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-                intensity *= intensity; // ease-in
-
-                VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-            }
-
-            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            cursorShapeTransform.position = worldProjectedWidgetPosition;
-        }
-
         // --- RAY API ----------------------------------------------------
 
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -553,6 +440,9 @@ namespace VRtist
 
         public override void OnRayEnterClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -561,6 +451,9 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -568,6 +461,9 @@ namespace VRtist
 
         public override void OnRayHoverClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             ResetColor();
@@ -575,6 +471,9 @@ namespace VRtist
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -583,6 +482,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             // exiting while clicking shows a pushed slider, because we are acting on it, not like a button.
             Hovered = true;
             Pushed = true;
@@ -592,6 +494,9 @@ namespace VRtist
 
         public override void OnRayClick()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onClickEvent.Invoke();
 
             Hovered = true;
@@ -601,6 +506,9 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onReleaseEvent.Invoke();
 
             Hovered = true;
@@ -610,6 +518,9 @@ namespace VRtist
 
         public override void OnRayReleaseOutside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();
@@ -628,9 +539,15 @@ namespace VRtist
             widgetPlane.Raycast(ray, out enter);
             Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
 
-
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
             Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            if (IgnoreRayInteraction())
+            {
+                // return endPoint at the surface of the widget.
+                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                return;
+            }
 
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
@@ -661,6 +578,16 @@ namespace VRtist
 
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
             // TODO: put the "curve" code here
+            /*
+             if (HasCurveData())
+                    {
+                        Value = dataCurve.Evaluate(pct);
+                    }
+                    else // linear
+                    {
+                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                    }
+            */
             Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);

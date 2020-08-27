@@ -1,10 +1,8 @@
 ﻿using System;
 using TMPro;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -72,19 +70,6 @@ namespace VRtist
         public string Text { get { return textContent; } set { SetText(value); } }
         public float FloatValue { get { return GetFloatValue(); } set { SetFloatValue(value); UpdateValueText(); } }
         public int IntValue { get { return GetIntValue(); } set { SetIntValue(value); UpdateValueText(); } }
-
-        void Start()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                //onEnterEvent.AddListener(OnEnterSpinner);
-                //onExitEvent.AddListener(OnExitSpinner);
-            }
-        }
 
         public override void RebuildMesh()
         {
@@ -346,118 +331,13 @@ namespace VRtist
             currentValue = (float)intValue;
         }
 
-
-
-
-
-        private void OnTriggerEnter(Collider otherCollider)
-        {
-            if (NeedToIgnoreCollisionEnter())
-            {
-                return;
-            }
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {
-                cursorExitedWidget = false;
-                onEnterEvent.Invoke();
-                onClickEvent.Invoke();
-                OnEnterSpinner();
-            }
-        }
-
-        private void OnTriggerExit(Collider otherCollider)
-        {            
-            if (NeedToIgnoreCollisionExit())
-            {          
-                if(otherCollider.gameObject.name == "Cursor")
-                    cursorExitedWidget = true;
-                return;
-            }
-
-            if (otherCollider.gameObject.name == "Cursor")
-            {                
-                onExitEvent.Invoke();
-                onReleaseEvent.Invoke();
-                OnExitSpinner();
-            }
-        }
-
-        public void OnEnterSpinner()
-        {
-            Pushed = true;
-            ResetColor();
-        }
-
-        public void OnExitSpinner()
-        {
-            Pushed = false;
-            ResetColor();
-        }
-
-        public override bool HandlesCursorBehavior() { return true; }
-        public override void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform)
-        {
-            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCursorColliderCenter);
-            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
-
-            // SNAP Y to middle
-            localProjectedWidgetPosition.y = -height / 2.0f;
-
-            bool justPushedTriggered = false;
-            bool justReleasedTriggered = false;
-            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref justPushedTriggered, ref justReleasedTriggered);
-
-            if (justPushedTriggered)
-            {
-                onPressTriggerEvent.Invoke();
-
-                GlobalState.Instance.cursor.LockOnWidget(true);
-                localProjectedWidgetInitialPosition = localProjectedWidgetPosition;
-                initialFloatValue = FloatValue;
-            }
-
-            float distanceAlongAxis = localProjectedWidgetPosition.x - localProjectedWidgetInitialPosition.x;
-            float floatChange = valueRate * distanceAlongAxis;
-
-            // Actually move the spinner ONLY if RIGHT_TRIGGER is pressed.
-            bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
-            if (triggerState)
-            {
-                FloatValue = Mathf.Clamp(initialFloatValue + floatChange, minValue, maxValue);
-                if (spinnerValueType == SpinnerValueType.Float)
-                {
-                    onSpinEvent.Invoke(FloatValue);
-                }
-                else // SpinnerValueType.Int
-                {
-                    onSpinEventInt.Invoke(IntValue);
-                }
-            }
-
-            // Haptic intensity as we go deeper into the widget.
-            float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-            intensity *= intensity; // ease-in
-
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
-
-            // Actually MOVE the cursor.
-            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            cursorShapeTransform.position = worldProjectedWidgetPosition;
-
-            if (justReleasedTriggered)
-            {
-                GlobalState.Instance.cursor.LockOnWidget(false);
-                onReleaseTriggerEvent.Invoke(spinnerValueType == SpinnerValueType.Float ? FloatValue : (float)IntValue);
-                if (cursorExitedWidget)
-                    onExitEvent.Invoke();
-            }
-        }
-
         // --- RAY API ----------------------------------------------------
 
         public override void OnRayEnter()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -466,6 +346,9 @@ namespace VRtist
 
         public override void OnRayEnterClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -474,6 +357,9 @@ namespace VRtist
 
         public override void OnRayHover()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -481,6 +367,9 @@ namespace VRtist
 
         public override void OnRayHoverClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true;
             Pushed = true;
             ResetColor();
@@ -488,6 +377,9 @@ namespace VRtist
 
         public override void OnRayExit()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -496,6 +388,9 @@ namespace VRtist
 
         public override void OnRayExitClicked()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = true; // exiting while clicking shows a hovered button.
             Pushed = false;
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
@@ -504,6 +399,9 @@ namespace VRtist
 
         public override void OnRayClick()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onClickEvent.Invoke();
 
             Hovered = true;
@@ -513,6 +411,9 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             onReleaseEvent.Invoke();
 
             Hovered = true;
@@ -522,6 +423,9 @@ namespace VRtist
 
         public override void OnRayReleaseOutside()
         {
+            if (IgnoreRayInteraction())
+                return;
+
             Hovered = false;
             Pushed = false;
             ResetColor();
@@ -538,6 +442,13 @@ namespace VRtist
 
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
             Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            if (IgnoreRayInteraction())
+            {
+                // return endPoint at the surface of the widget.
+                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                return;
+            }
 
             Vector2 localCenter = new Vector2(width / 2.0f, -height / 2.0f);
             
