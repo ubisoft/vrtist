@@ -118,8 +118,6 @@ namespace VRtist
                 GameObject gObject = objectPath.Length > 0 ? keyValuePair.Key.transform.Find(objectPath).gameObject : keyValuePair.Key;
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, keyValuePair.Value);
-
-                GlobalState.Instance.FireAnimationChanged(gObject);
             }
         }
         public override void Redo()
@@ -129,8 +127,6 @@ namespace VRtist
                 GameObject gObject = objectPath.Length > 0 ? keyValuePair.Key.transform.Find(objectPath).gameObject : keyValuePair.Key;
                 Component component = gObject.GetComponent(componentName);
                 SetValue(component, fieldName, newValue);
-
-                GlobalState.Instance.FireAnimationChanged(gObject);
             }
         }
 

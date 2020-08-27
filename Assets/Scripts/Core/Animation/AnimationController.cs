@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
-    public class ParametersEvent : UnityEvent<GameObject>
+    public class ParametersEvent : UnityEvent<GameObject, AnimationChannel>
     {
     }
 
@@ -81,21 +81,21 @@ namespace VRtist
         {
             HandleRecord();
         }
-        public void AddListener(UnityAction<GameObject> callback)
+        public void AddListener(UnityAction<GameObject, AnimationChannel> callback)
         {
             if (null == onChangedEvent)
                 onChangedEvent = new ParametersEvent();
             onChangedEvent.AddListener(callback);
         }
-        public void RemoveListener(UnityAction<GameObject> callback)
+        public void RemoveListener(UnityAction<GameObject, AnimationChannel> callback)
         {
             if (null != onChangedEvent)
                 onChangedEvent.RemoveListener(callback);
         }
-        public void FireAnimationChanged(GameObject gameObject)
+        public void FireAnimationChanged(GameObject gameObject, AnimationChannel channel)
         {
             if (null != onChangedEvent)
-                onChangedEvent.Invoke(gameObject);
+                onChangedEvent.Invoke(gameObject, channel);
         }
 
         public void ClearAnimations()
@@ -116,7 +116,7 @@ namespace VRtist
             ClearAnimationInfo info = new ClearAnimationInfo { gObject = gameObject };
             NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
 
-            FireAnimationChanged(gameObject);
+            FireAnimationChanged(gameObject, null);
         }
 
         public void AddAnimationChannel(GameObject gameObject, string name, List<AnimationKey> keys)
@@ -137,7 +137,7 @@ namespace VRtist
                 channel.keys = keys;
             }
 
-            FireAnimationChanged(gameObject);
+            FireAnimationChanged(gameObject, channel);
         }
 
         public bool HasAnimation(GameObject gameObject)

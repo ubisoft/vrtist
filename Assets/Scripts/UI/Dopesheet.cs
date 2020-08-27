@@ -102,12 +102,12 @@ namespace VRtist
             if(enable)
             {
                 if (!listenerAdded)
-                    GlobalState.Instance.AddAnimationListener(UpdateCurrentObject);
+                    GlobalState.Instance.AddAnimationListener(UpdateCurrentObjectChannel);
             }
             else
             {
                 if (listenerAdded)
-                    GlobalState.Instance.RemoveAnimationListener(UpdateCurrentObject);
+                    GlobalState.Instance.RemoveAnimationListener(UpdateCurrentObjectChannel);
             }
             listenerAdded = enable;
 
@@ -178,28 +178,49 @@ namespace VRtist
 
         protected void UpdateCurrentObject(GameObject gObject)
         {
+            Dictionary<string, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(gObject);
+            if (null == channels)
+            {
+                Clear();
+                return;
+            }
+
+            // Find location.z channel
+            AnimationChannel channelLocationZ = null;
+            channels.TryGetValue("location[2]", out channelLocationZ);
+
+            // call even if channelLocationZ == null (will clear keys)
+            UpdateCurrentObjectChannel(gObject, channelLocationZ);
+        }
+
+        protected void UpdateCurrentObjectChannel(GameObject gObject, AnimationChannel channel)
+        {
             if (null == currentObject)
                 return;
             if (currentObject != gObject)
                 return;
-            Clear();
 
-            Dictionary<string, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(gObject);
-            if (null == channels)
-                return;
-            foreach (AnimationChannel channel in channels.Values)
+            if (null == channel) // channel == null => remove animations
             {
-                foreach (AnimationKey key in channel.keys)
-                {
-                    List<AnimKey> keyList = null;
-                    if (!keys.TryGetValue(key.time, out keyList))
-                    {
-                        keyList = new List<AnimKey>();
-                        keys[key.time] = keyList;
-                    }
+                Clear();
+                return;
+            }
 
-                    keyList.Add(new AnimKey(channel.name, key.value));
+            // operates only on location.z
+            if (channel.name != "location[2]")
+                return;
+
+            Clear();
+            foreach (AnimationKey key in channel.keys)
+            {
+                List<AnimKey> keyList = null;
+                if (!keys.TryGetValue(key.time, out keyList))
+                {
+                    keyList = new List<AnimKey>();
+                    keys[key.time] = keyList;
                 }
+
+                keyList.Add(new AnimKey(channel.name, key.value));
             }
 
             TextMeshPro trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshPro>();
