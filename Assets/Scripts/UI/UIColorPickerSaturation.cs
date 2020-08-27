@@ -342,6 +342,8 @@ namespace VRtist
             cursor.transform.localPosition = Vector3.zero;
             uiColorPickerSaturation.cursor = cursor.transform;
 
+            UIUtils.SetRecursiveLayer(go, "UI");
+
             return uiColorPickerSaturation;
         }
     }

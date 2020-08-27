@@ -67,7 +67,6 @@ namespace VRtist
         {
             GameObject go = new GameObject(objectName);
             go.tag = "UICollider";
-            go.layer = LayerMask.NameToLayer("UI");
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -124,6 +123,8 @@ namespace VRtist
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
             }
+
+            UIUtils.SetRecursiveLayer(go, "UI");
 
             return uiColorPickerPreview;
         }
