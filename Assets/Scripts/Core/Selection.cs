@@ -133,13 +133,7 @@ namespace VRtist
         }
 
         public static void SetHoveredObject(GameObject obj)
-        {
-            GameObject collectionInstanceRoot = GetCollectionInstanceRoot(obj);
-            if(null != collectionInstanceRoot)
-            {
-                obj = null;
-            }
-
+        {                    
             if (obj == null || !IsSelected(obj))
             {
                 hoveredObject = obj;
@@ -154,12 +148,6 @@ namespace VRtist
 
         public static void SetGrippedObject(GameObject obj)
         {
-            GameObject collectionInstanceRoot = GetCollectionInstanceRoot(obj);
-            if (null != collectionInstanceRoot)
-            {
-                obj = null;
-            }
-
             grippedObject = obj;
             UpdateCurrentObjectOutline();
             TriggerGrippedObjectChanged();
@@ -252,28 +240,12 @@ namespace VRtist
             return true;
         }
 
-        public static GameObject GetCollectionInstanceRoot(GameObject gObject)
-        {
-            if (null == gObject)
-                return null;
-            if (gObject.name == "__Offset")
-                return gObject.transform.parent.gameObject;
-            Transform parent = gObject.transform.parent;
-            if (null == parent)
-                return null;
-            return GetCollectionInstanceRoot(parent.gameObject);
-        }
-
         public static bool AddToSelection(GameObject gObject)
         {
             if (gObject.GetComponent<UIHandle>())
                 return false;
 
             if (selection.ContainsKey(gObject.GetInstanceID()))
-                return false;
-
-            GameObject collectionInstanceRoot = GetCollectionInstanceRoot(gObject);
-            if (null != collectionInstanceRoot)
                 return false;
 
             SelectionChangedArgs args = new SelectionChangedArgs();
