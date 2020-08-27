@@ -174,7 +174,7 @@ namespace VRtist
                 showCameraFrustumCheckbox.Checked = showCameraFrustum;
             }
         }
-
+        
         public void OnCameraAdded(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();

@@ -90,6 +90,8 @@ namespace VRtist
 
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
+        public static GameObjectChangedEvent ObjectRenamedEvent = new GameObjectChangedEvent();
+
 
         // Animation
         private AnimationController animationController = new AnimationController();
@@ -101,6 +103,10 @@ namespace VRtist
         public static void FireObjectRemoved(GameObject gObject)
         {
             ObjectRemovedEvent.Invoke(gObject);
+        }
+        public static void FireObjectRenamed(GameObject gObject)
+        {
+            ObjectRenamedEvent.Invoke(gObject);
         }
 
         // Singleton

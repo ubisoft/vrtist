@@ -45,7 +45,9 @@ namespace VRtist
 
             shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
 
-            setCameraButton.onCheckEvent.AddListener(TogglePickCamera);            
+            setCameraButton.onCheckEvent.AddListener(TogglePickCamera);
+
+            GlobalState.ObjectRenamedEvent.AddListener(OnObjectRenamed);
         }
 
         private void TogglePickCamera(bool value)
@@ -79,6 +81,12 @@ namespace VRtist
         {
             startFrameSpinner.maxValue = endFrameSpinner.FloatValue;
             endFrameSpinner.minValue = startFrameSpinner.FloatValue;
+        }
+
+        void OnObjectRenamed(GameObject gObject)
+        {
+            if (shot.camera == gObject)
+                cameraNameLabel.Text = shot.camera.name;
         }
 
         private void UpdateShotRange(int value)

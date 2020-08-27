@@ -74,7 +74,8 @@ namespace VRtist
                 ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
 
                 GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
-                GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);                
+                GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+                GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
             }
         }
 
@@ -247,6 +248,12 @@ namespace VRtist
                     keyframe.SetActive(false); // clip out of range keyframes
                 }
             }
+        }
+
+        void OnCameraNameChanged(GameObject gObject)
+        {
+            if (Selection.IsSelected(gObject))
+                OnSelectionChanged(gObject);
         }
 
         public void OnSelectionChanged(GameObject gObject)
