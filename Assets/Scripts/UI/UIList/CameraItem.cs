@@ -12,12 +12,14 @@ namespace VRtist
         {
             Selection.OnSelectionChanged += OnSelectionChanged;
             Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+            GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
         }
 
         public void OnDestroy()
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
             Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+            GlobalState.ObjectRenamedEvent.RemoveListener(OnCameraNameChanged);
         }
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -54,6 +56,16 @@ namespace VRtist
         public void SetColor(Color color)
         {
             gameObject.GetComponentInChildren<MeshRenderer>(true).materials[0].SetColor("_BaseColor", color);
+        }
+
+        void OnCameraNameChanged(GameObject gObject)
+        {
+            if (gObject == cameraObject)
+            {
+                Camera cam = cameraObject.GetComponentInChildren<Camera>(true);
+                TextMeshProUGUI text = transform.Find("Canvas/Panel/Text").gameObject.GetComponent<TextMeshProUGUI>();
+                text.text = cameraObject.name;
+            }
         }
 
         public void SetCameraObject(GameObject cameraObject)

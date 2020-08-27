@@ -495,6 +495,7 @@ namespace VRtist
                 foreach(Tuple<GameObject, string> obj in node.instances)
                 {
                     obj.Item1.name = dstName;
+                    GlobalState.FireObjectRenamed(obj.Item1);
                 }
                 nodes[dstName] = node;
                 nodes.Remove(srcName);

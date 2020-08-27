@@ -35,6 +35,7 @@ namespace VRtist
                 frustumRenderer = frustum.GetComponent<LineRenderer>();
                 frustumRenderer.enabled = false;
             }
+            GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
         }
 
         void Update()
@@ -58,6 +59,12 @@ namespace VRtist
                     frustumRenderer.enabled = false;
                 }
             }
+        }
+
+        public void OnCameraRenamed(GameObject gObject)
+        {
+            if (gObject == gameObject)
+                SetName(gObject.name);
         }
 
         public override void CopyParameters(ParametersController otherController)

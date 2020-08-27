@@ -437,7 +437,7 @@ namespace VRtist
             string srcName = srcPath[srcPath.Length - 1];
             string dstName = dstPath[dstPath.Length - 1];
 
-            SyncData.Rename(srcName, dstName);
+            SyncData.Rename(srcName, dstName);            
         }
 
         public static void Delete(Transform prefab, byte[] data)
