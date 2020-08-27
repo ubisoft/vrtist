@@ -46,9 +46,12 @@ namespace VRtist
             }
         }
 
-        void OnAnimationChanged(GameObject gObject)
+        void OnAnimationChanged(GameObject gObject, AnimationChannel channel)
         {
-            if(Selection.IsSelected(gObject))
+            if (!Selection.IsSelected(gObject))
+                return;
+
+            if(null == channel || channel.name == "location[2]")
                 UpdateCurve(gObject);
         }
 

@@ -166,11 +166,11 @@ namespace VRtist
 
         // Animation helpers
         ///////////////////////////
-        public void AddAnimationListener(UnityAction<GameObject> callback)
+        public void AddAnimationListener(UnityAction<GameObject, AnimationChannel> callback)
         {
             animationController.AddListener(callback);
         }
-        public void RemoveAnimationListener(UnityAction<GameObject> callback)
+        public void RemoveAnimationListener(UnityAction<GameObject, AnimationChannel> callback)
         {
             animationController.RemoveListener(callback);
         }
@@ -178,9 +178,9 @@ namespace VRtist
         {
             animationController.ClearAnimations(gameObject);
         }
-        public void FireAnimationChanged(GameObject gameObject)
+        public void FireAnimationChanged(GameObject gameObject, AnimationChannel channel)
         {
-            animationController.FireAnimationChanged(gameObject);
+            animationController.FireAnimationChanged(gameObject, channel);
         }
 
         public void AddAnimationChannel(GameObject gameObject, string channelName, List<AnimationKey> keys)
