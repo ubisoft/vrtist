@@ -281,17 +281,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   locked: 0
   lightType: 0
-  intensity: 8
+  intensity: 70
   minIntensity: 0
   maxIntensity: 100
   color: {r: 1, g: 1, b: 1, a: 1}
   castShadows: 0
   near: 0.01
-  range: 5
+  range: 10
   minRange: 0
   maxRange: 100
-  outerAngle: 20
-  innerAngle: 30
+  outerAngle: 120
+  innerAngle: 80
 --- !u!65 &1204138857207612560
 BoxCollider:
   m_ObjectHideFlags: 0
