@@ -40,7 +40,9 @@ namespace VRtist
 
         public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); } }
         public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); } }
-        public int Value { get { return GetValue(); } set { SetValue(value); UpdateTimeBarPosition(); } }
+
+        bool lerp = false;
+        public int Value { get { return GetValue(); } set { SetValue(value); lerp = true;  UpdateTimeBarPosition(); } }
 
         public override void RebuildMesh()
         {
@@ -346,7 +348,7 @@ namespace VRtist
 
             // DRAG
 
-            if (!triggerJustClicked)
+            if (!triggerJustClicked && lerp)
             {
                 localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
             }
@@ -372,9 +374,12 @@ namespace VRtist
             localProjectedWidgetPosition.z = -0.005f;
 
             // SET
-
-            Value = roundedValue; // will replace the slider knob.
-            onSlideEvent.Invoke(roundedValue);
+            if(roundedValue != GlobalState.currentFrame)
+            {
+                onSlideEvent.Invoke(roundedValue);
+                if(triggerJustClicked)
+                    lerp = false;
+            }
 
             // Haptic intensity as we go deeper into the widget.
             //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);

@@ -31,7 +31,6 @@ namespace VRtist
         public IntChangedEvent onRemoveKeyframeEvent = new IntChangedEvent();
         public IntChangedEvent onPreviousKeyframeEvent = new IntChangedEvent();
         public IntChangedEvent onNextKeyframeEvent = new IntChangedEvent();
-        public IntChangedEvent onChangeCurrentKeyframeEvent = new IntChangedEvent();
 
         private int firstFrame = 0;
         private int lastFrame = 250;
@@ -156,11 +155,11 @@ namespace VRtist
         {
             if (currentFrameLabel != null)
             {
-                currentFrameLabel.Text = currentFrame.ToString();
+                currentFrameLabel.Text = GlobalState.currentFrame.ToString();
             }
             if (timeBar != null)
             {
-                timeBar.Value = currentFrame; // changes the knob's position
+                timeBar.Value = GlobalState.currentFrame; // changes the knob's position
             }
         }
 
@@ -315,12 +314,8 @@ namespace VRtist
         // called by the slider when moved
         public void OnChangeCurrentFrame(int i)
         {
-            CurrentFrame = i;
-
             FrameInfo info = new FrameInfo() { frame = i };
             NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
-
-            onChangeCurrentKeyframeEvent.Invoke(i);
         }
 
         public void OnPrevKeyFrame()
