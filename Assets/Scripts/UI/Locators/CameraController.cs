@@ -41,7 +41,7 @@ namespace VRtist
         void Update()
         {
             if (null == cameraObject)
-                cameraObject = gameObject.GetComponentInChildren<Camera>();
+                cameraObject = gameObject.GetComponentInChildren<Camera>(true);
             if (null != cameraObject)
             {
                 float scale = GlobalState.worldScale;
@@ -80,7 +80,7 @@ namespace VRtist
         public override void SetName(string name)
         {
             base.SetName(name);
-            TextMeshProUGUI text = gameObject.GetComponentInChildren<TextMeshProUGUI>();
+            TextMeshProUGUI text = gameObject.GetComponentInChildren<TextMeshProUGUI>(true);
             text.text = name;
         }
 

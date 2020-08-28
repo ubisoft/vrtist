@@ -19,6 +19,9 @@ namespace VRtist
 
             newCamera.GetComponentInChildren<CameraController>(true).CopyParameters(source.GetComponentInChildren<CameraController>(true));
 
+            if (!GlobalState.Settings.displayGizmos)
+                GlobalState.SetGizmoVisible(newCamera, false);
+
             return newCamera;
         }
     }

@@ -319,7 +319,7 @@ namespace VRtist
             }
             if (controllers.Count > 0)
             {
-                GlobalState.ShowHideComponentsGizmos(controllers.ToArray(), GlobalState.Settings.displayGizmos);
+                GlobalState.SetGizmosVisible(controllers.ToArray(), GlobalState.Settings.displayGizmos);
             }
 
             if (!Selection.IsHandleSelected())

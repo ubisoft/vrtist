@@ -173,7 +173,7 @@ namespace VRtist
             if (null != controller) { controller.SetName(appliedName); }
 
             // Name material too
-            MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>();
+            MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>(true);
             if (null != meshRenderer)
             {
                 meshRenderer.material.name = GetMaterialName(res);

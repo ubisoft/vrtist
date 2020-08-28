@@ -332,33 +332,45 @@ namespace VRtist
         public static void SetDisplayGizmos(bool value)
         {
             Settings.displayGizmos = value;
-            ShowHideComponentsGizmos(FindObjectsOfType<LightController>(), value);
-            ShowHideComponentsGizmos(FindObjectsOfType<CameraController>(), value);
+            SetGizmosVisible(FindObjectsOfType<LightController>(), value);
+            SetGizmosVisible(FindObjectsOfType<CameraController>(), value);
         }
 
         public static void SetDisplayAvatars(bool value)
         {
             Settings.displayAvatars = value;
-            ShowHideComponentsGizmos(FindObjectsOfType<AvatarController>(), value);
+            SetGizmosVisible(FindObjectsOfType<AvatarController>(), value);
         }
 
-        public static void ShowHideComponentsGizmos(Component[] components, bool value)
+        public static void SetGizmoVisible(GameObject gObject, bool value)
+        {
+            // Disable colliders
+            Collider[] colliders = gObject.GetComponentsInChildren<Collider>(true);
+            foreach (Collider collider in colliders)
+            {
+                collider.enabled = value;
+            }
+
+            // Hide geometry
+            MeshFilter[] meshFilters = gObject.GetComponentsInChildren<MeshFilter>(true);
+            foreach (MeshFilter meshFilter in meshFilters)
+            {
+                meshFilter.gameObject.SetActive(value);
+            }
+
+            // Hide UI
+            Canvas[] canvases = gObject.GetComponentsInChildren<Canvas>(true);
+            foreach (Canvas canvas in canvases)
+            {
+                canvas.gameObject.SetActive(value);
+            }
+        }
+
+        public static void SetGizmosVisible(Component[] components, bool value)
         {
             foreach (var component in components)
             {
-                // Hide geometry
-                MeshFilter[] meshFilters = component.gameObject.GetComponentsInChildren<MeshFilter>(true);
-                foreach (MeshFilter meshFilter in meshFilters)
-                {
-                    meshFilter.gameObject.SetActive(value);
-                }
-
-                // Hide UI
-                Canvas[] canvases = component.gameObject.GetComponentsInChildren<Canvas>(true);
-                foreach (Canvas canvas in canvases)
-                {
-                    canvas.gameObject.SetActive(value);
-                }
+                SetGizmoVisible(component.gameObject, value);
             }
         }
 
