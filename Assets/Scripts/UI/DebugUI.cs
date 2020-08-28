@@ -31,6 +31,32 @@ namespace VRtist
             }
         }
 
+        public void UIOPTIONS_ResetAllThickness()
+        {
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+                        checkbox.thickness = 0.005f;
+                    }
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+                        slider.thickness = 0.005f;
+                    }
+                    element.NeedsRebuild = true;
+                }
+            }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
+
         public void UIOPTIONS_ResetAllColors()
         {
             for (int w = 0; w < windows.Length; ++w)

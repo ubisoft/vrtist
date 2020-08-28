@@ -34,7 +34,8 @@ namespace VRtist
 
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            UpdateFromSelection();
+            if(GlobalState.Settings.display3DCurves)
+                UpdateFromSelection();
         }
 
         void UpdateFromSelection()

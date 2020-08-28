@@ -482,6 +482,11 @@ namespace VRtist
             options.orbitRotationalSpeed = value;
         }
 
+        public void OnTeleportLockHeightChange(bool value)
+        {
+            options.lockHeight = value;
+        }
+
         #endregion
 
         private bool IsCompatibleWithPalette(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_TRIGGER); }

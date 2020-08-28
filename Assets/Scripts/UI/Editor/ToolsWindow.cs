@@ -70,6 +70,11 @@ namespace VRtist
                             debug.UIOPTIONS_ResetAllColors();
                         }
 
+                        if (GUILayout.Button("Relink Thickness", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
+                        {
+                            debug.UIOPTIONS_ResetAllThickness();
+                        }
+
                         //if (GUILayout.Button("Link HOVERED Col", GUILayout.ExpandWidth(false), GUILayout.Height(20)))
                         //{
                         //    debug.UIOPTIONS_HoveredColor();

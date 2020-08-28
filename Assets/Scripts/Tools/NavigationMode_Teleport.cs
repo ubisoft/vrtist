@@ -73,16 +73,22 @@ namespace VRtist
             Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Target/Turn");
 
             usedControls = UsedControls.LEFT_JOYSTICK;
+
+            Transform drone = parameters.Find("Teleport");
+            drone.gameObject.SetActive(true);
         }
 
         public override void DeInit()
         {
-            base.DeInit();
+            Transform drone = parameters.Find("Teleport");
+            drone.gameObject.SetActive(false);
 
             if (teleport != null)
             {
                 teleport.gameObject.SetActive(false);
             }
+
+            base.DeInit();
         }
 
         public override void Update()
@@ -99,7 +105,7 @@ namespace VRtist
             {
                 if (joyMag > deadZone)
                 {
-                    Vector3 rayStartPosition = leftHandle.TransformPoint(-0.01f, 0.0f, 0.05f);
+                    Vector3 rayStartPosition = leftHandle.Find("left_controller").Find("FrontAnchor").transform.position;
                     Vector3 rayStartDirection = leftHandle.forward;
 
                     List<Vector3> points;
@@ -137,8 +143,10 @@ namespace VRtist
                         Vector3 camera_to_rig = rig.transform.position - camera.transform.position;
                         Vector3 new_camera_to_target = new Vector3(0.0f, teleportTarget.y - camera.transform.position.y, 0.0f); // place camera above target
                         Vector3 deltaPosition = camera_to_rig - new_camera_to_target;
-                        rig.position = teleportTarget + deltaPosition;
-                        
+                        rig.position = teleportTarget;
+                        if (options.lockHeight)
+                            rig.position += deltaPosition;
+
                         isValidLocationHit = false;
                     }
 

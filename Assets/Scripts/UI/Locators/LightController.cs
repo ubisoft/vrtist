@@ -9,17 +9,17 @@ namespace VRtist
         private Light lightObject = null;
 
         public LightType lightType;
-        public float intensity = 8f;
+        public float intensity = 50f;
         public float minIntensity = 0f;
         public float maxIntensity = 100f;
         public Color color = Color.white;
         public bool castShadows = false;
         public float near = 0.01f;
-        public float range = 5f;
+        public float range = 20f;
         public float minRange = 0f;
         public float maxRange = 100f;
-        public float outerAngle = 20f;
-        public float innerAngle = 30f;
+        public float outerAngle = 100f;
+        public float innerAngle = 80f;
 
         public void SetLightEnable(bool enable)
         {
@@ -89,7 +89,7 @@ namespace VRtist
                     maxIntensity = 100.0f;
                     break;
                 case LightType.Point:
-                    intensity = 10.0f;
+                    intensity = 50.0f;
                     minIntensity = 0.0f;
                     maxIntensity = 100.0f;
                     range = 10f;
@@ -97,15 +97,15 @@ namespace VRtist
                     maxRange = 100f;
                     break;
                 case LightType.Spot:
-                    intensity = 3.0f;
+                    intensity = 50.0f;
                     minIntensity = 0.0f;
                     maxIntensity = 100.0f;
                     near = 0.01f;
-                    range = 5f;
+                    range = 20f;
                     minRange = 0f;
                     maxRange = 100f;
-                    outerAngle = 20f;
-                    innerAngle = 30f;
+                    outerAngle = 100f;
+                    innerAngle = 80;
                     break;
             }
         }
@@ -126,8 +126,8 @@ namespace VRtist
                 GetWorldTransform();
 
 
-            Transform parent = lightObject.transform.parent.parent;
-            float scale = parent.localScale.x * world.localScale.x;
+            float worldScale = world.localScale.x;
+            float scale = worldScale;
             if (lightObject.type == LightType.Directional)
                 scale = 1f;            
             lightObject.intensity = (scale * scale * intensity);
@@ -140,13 +140,16 @@ namespace VRtist
 
             if (lightObject.type == LightType.Spot)
             {
-                lightObject.innerSpotAngle = innerAngle;
-                lightObject.spotAngle = outerAngle;                
+                lightObject.spotAngle = outerAngle;
+                lightObject.intensity *= 4f;
             }
-
+            if (lightObject.type == LightType.Directional)
+            {
+                lightObject.intensity *= 0.05f;
+            }
             // avoid flicking
-            float invScale = 1f / scale;
-            lightObject.transform.localScale = new Vector3(invScale, invScale, invScale);            
+            float invWorldScale = 1f / worldScale;
+            lightObject.transform.localScale = new Vector3(invWorldScale, invWorldScale, invWorldScale);
         }
     }
 
