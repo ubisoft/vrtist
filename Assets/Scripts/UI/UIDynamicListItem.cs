@@ -95,111 +95,62 @@ namespace VRtist
             list.FireItem(Content);
         }
 
-        // --- RAY API ----------------------------------------------------
+        #region ray
 
         public override void OnRayEnter()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayEnter();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayEnterClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = true;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayEnterClicked();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayHover()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = false;
-            ResetColor();
+            base.OnRayHover();
             //onHoverEvent.Invoke();
         }
 
         public override void OnRayHoverClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = true;
-            ResetColor();
+            base.OnRayHoverClicked();
             //onHoverEvent.Invoke();
         }
 
         public override void OnRayExit()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            Pushed = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayExit();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayExitClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true; // exiting while clicking shows a hovered button.
-            Pushed = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayExitClicked();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayClick()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayClick();
             onClickEvent.Invoke();
-
-            Hovered = true;
-            Pushed = true;
-            ResetColor();
         }
 
         public override void OnRayReleaseInside()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayReleaseInside();
             onReleaseEvent.Invoke();
-            
             list.FireItem(Content);
-
-            Hovered = true;
-            Pushed = false;
-
-            ResetColor();
         }
 
         public override void OnRayReleaseOutside()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            Pushed = false;
-            ResetColor();
+            base.OnRayReleaseOutside();
         }
 
-        // --- / RAY API ----------------------------------------------------
+        #endregion
     }
 }

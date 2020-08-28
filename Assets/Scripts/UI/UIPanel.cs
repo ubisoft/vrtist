@@ -86,6 +86,13 @@ namespace VRtist
             }
         }
 
+        public override void ResetColor()
+        {
+            SetColor(Disabled ? DisabledColor
+                  : (Hovered ? HoveredColor
+                  : BaseColor));
+        }
+
         private void OnDrawGizmosSelected()
         {
             Vector3 labelPosition = transform.TransformPoint(new Vector3(margin + radius, -margin - radius, 0.0f));
@@ -156,40 +163,60 @@ namespace VRtist
             }
         }
 
-
+        #region ray
 
         public override void OnRayEnter()
         {
-            if (IgnoreRayInteraction())
-                return;
+            base.OnRayEnter();
+            WidgetBorderHapticFeedback();
+        }
 
-            Hovered = true;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+        public override void OnRayEnterClicked()
+        {
+            base.OnRayEnterClicked();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayHover()
         {
-            if (IgnoreRayInteraction())
-                return;
+            base.OnRayHover();
+        }
 
-            //Hovered = true;
-            //ResetColor();
+        public override void OnRayHoverClicked()
+        {
+            base.OnRayHoverClicked();
         }
 
         public override void OnRayExit()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayExit();
+            WidgetBorderHapticFeedback();
         }
 
+        public override void OnRayExitClicked()
+        {
+            base.OnRayExitClicked();
+            WidgetBorderHapticFeedback();
+        }
 
+        public override void OnRayClick()
+        {
+            base.OnRayClick();
+        }
 
+        public override void OnRayReleaseInside()
+        {
+            base.OnRayReleaseInside();
+        }
 
+        public override void OnRayReleaseOutside()
+        {
+            base.OnRayReleaseOutside();
+        }
+
+        #endregion
+
+        #region create
 
         public class CreatePanelParams
         {
@@ -274,5 +301,6 @@ namespace VRtist
 
             UIUtils.SetRecursiveLayer(go, "UI");
         }
+        #endregion
     }
 }

@@ -105,17 +105,11 @@ namespace VRtist
             }
         }
 
-        // --- RAY API ----------------------------------------------------
+        #region ray
 
         public override void OnRayEnter()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayEnter();
 
             GoFrontAnimation();
 
@@ -124,17 +118,13 @@ namespace VRtist
                 int hash = prefab.GetHashCode();
                 onEnterUI3DObject.Invoke(hash);
             }
+
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayEnterClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = true;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayEnterClicked();
 
             GoFrontAnimation();
 
@@ -143,45 +133,31 @@ namespace VRtist
                 int hash = prefab.GetHashCode();
                 onEnterUI3DObject.Invoke(hash);
             }
+
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayHover()
         {
-            if (IgnoreRayInteraction())
-                return;
+            base.OnRayHover();
 
             onHoverEvent.Invoke();
-
-            Hovered = true;
-            Pushed = false;
-            ResetColor();
 
             RotateAnimation();
         }
 
         public override void OnRayHoverClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayHoverClicked();
+            
             onHoverEvent.Invoke();
-
-            Hovered = true;
-            Pushed = true;
-            ResetColor();
 
             RotateAnimation();
         }
 
         public override void OnRayExit()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            Pushed = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayExit();
 
             GoBackAnimation();
             ResetRotation();
@@ -191,17 +167,13 @@ namespace VRtist
                 int hash = prefab.GetHashCode();
                 onExitUI3DObject.Invoke(hash);
             }
+
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayExitClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true; // exiting while clicking shows a hovered button.
-            Pushed = false;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayExitClicked();
 
             GoBackAnimation();
 
@@ -210,45 +182,27 @@ namespace VRtist
                 int hash = prefab.GetHashCode();
                 onExitUI3DObject.Invoke(hash);
             }
+
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayClick()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayClick();
             onClickEvent.Invoke();
-
-            Hovered = true;
-            Pushed = true;
-            ResetColor();
         }
 
         public override void OnRayReleaseInside()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayReleaseInside();
             onReleaseEvent.Invoke();
-
-            Hovered = true;
-            Pushed = false;
-            ResetColor();
         }
 
         public override void OnRayReleaseOutside()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            Pushed = false;
-            ResetColor();
-
+            base.OnRayReleaseOutside();
             ResetRotation();
         }
-
-        // --- / RAY API ----------------------------------------------------
 
         public void GoFrontAnimation()
         {
@@ -271,5 +225,7 @@ namespace VRtist
         {
             transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
         }
+
+        #endregion
     }
 }

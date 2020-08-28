@@ -246,13 +246,15 @@ namespace VRtist
                         {
                             if (widgetClicked == widget) // on same widget
                             {
-                                widgetClicked.OnRayEnterClicked(); // act as if we re-click on widget.
+                                if (!widgetClicked.IgnoreRayInteraction())
+                                    widgetClicked.OnRayEnterClicked(); // act as if we re-click on widget.
                             }
                             else // click has been pushed on another widget
                             {
                                 if (prevWidget == widgetClicked)
                                 {
-                                    widgetClicked.OnRayExitClicked();
+                                    if (!widgetClicked.IgnoreRayInteraction())
+                                        widgetClicked.OnRayExitClicked();
                                 }
                                 // dont do anything for the new widget, not even hover.
                             }
@@ -261,10 +263,12 @@ namespace VRtist
                         {
                             if (prevWidget != null)
                             {
-                                prevWidget.OnRayExit();
+                                if (!prevWidget.IgnoreRayInteraction())
+                                    prevWidget.OnRayExit();
                             }
 
-                            widget.OnRayEnter();
+                            if (!widget.IgnoreRayInteraction())
+                                widget.OnRayEnter();
                         }
                     }
                     else // still on same widget
@@ -273,13 +277,14 @@ namespace VRtist
                         {
                             if (widgetClicked == widget) // on same widget
                             {
-                                widgetClicked.OnRayHoverClicked();
+                                if (!widgetClicked.IgnoreRayInteraction())
+                                    widgetClicked.OnRayHoverClicked();
                             }
                             else // still hovering a widget which is not the one clicked.
                             {
                                 // TODO: should we add another state here? this is a FAKE hover.
                                 //       we want to show that this was the clicked widget but the ray is elsewhere.
-                                
+                                //if (!widgetClicked.IgnoreRayInteraction())
                                 //widgetClicked.OnRayHover(); // simple hover without the click effect.
 
                                 // do nothing for the new widget.
@@ -287,14 +292,17 @@ namespace VRtist
                         }
                         else
                         {
-                            widget.OnRayHover();
+                            if (!widget.IgnoreRayInteraction())
+                                widget.OnRayHover();
                         }
                     }
 
                     // "Just click" is independant of whether we stay or change hit widget.
                     if (triggerJustClicked)
                     {
-                        widget.OnRayClick();
+                        if (!widget.IgnoreRayInteraction())
+                            widget.OnRayClick();
+
                         widgetClicked = widget;
                         if (widgetClicked.OverridesRayEndPoint())
                         {
@@ -312,14 +320,18 @@ namespace VRtist
                         {
                             if (widgetClicked == widget)
                             {
-                                widget.OnRayReleaseInside();
+                                if (!widget.IgnoreRayInteraction())
+                                    widget.OnRayReleaseInside();
                             }
                             else
                             {
                                 // clear state of previously clicked widget
-                                widgetClicked.OnRayReleaseOutside();
+                                if (!widgetClicked.IgnoreRayInteraction())
+                                    widgetClicked.OnRayReleaseOutside();
+
                                 // give the new widget a chance to play some OnHover animation.
-                                widget.OnRayEnter();
+                                if (!widget.IgnoreRayInteraction())
+                                    widget.OnRayEnter();
                             }
                         }
                         else
@@ -395,13 +407,15 @@ namespace VRtist
                 {
                     if (prevWidget == widgetClicked)
                     {
-                        widgetClicked.OnRayExitClicked();
+                        if (!widgetClicked.IgnoreRayInteraction())
+                            widgetClicked.OnRayExitClicked();
                     }
                 }
 
                 if (triggerJustReleased)
                 {
-                    widgetClicked.OnRayReleaseOutside(); // just UN-push, no events triggered.
+                    if (!widgetClicked.IgnoreRayInteraction())
+                        widgetClicked.OnRayReleaseOutside(); // just UN-push, no events triggered.
                     widgetClicked = null;
                 }
             }
@@ -409,7 +423,8 @@ namespace VRtist
             {
                 if (prevWidget != null)
                 {
-                    prevWidget.OnRayExit();
+                    if (!prevWidget.IgnoreRayInteraction())
+                        prevWidget.OnRayExit();
                 }
             }
 

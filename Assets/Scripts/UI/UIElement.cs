@@ -120,7 +120,7 @@ namespace VRtist
             }
         }
 
-        public bool IgnoreRayInteraction()
+        public virtual bool IgnoreRayInteraction()
         {
             if (!UIEnabled.Value) return true;
 
@@ -131,20 +131,82 @@ namespace VRtist
 
         public virtual void RebuildMesh() { }
         public virtual void ResetMaterial() { }
-        public virtual bool HandlesCursorBehavior() { return false; }
-        public virtual void HandleCursorBehavior(Vector3 worldCursorColliderCenter, ref Transform cursorShapeTransform) { }
 
-        public virtual void OnRayEnter() { }
-        public virtual void OnRayEnterClicked() { }
-        public virtual void OnRayHover() { }
-        public virtual void OnRayHoverClicked() { }
-        public virtual void OnRayExit() { }
-        public virtual void OnRayExitClicked() { }
-        public virtual void OnRayClick() { }
-        public virtual void OnRayReleaseInside() { }
-        public virtual void OnRayReleaseOutside() { }
+        public void WidgetBorderHapticFeedback()
+        {
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
+        #region ray
+
+        // Most common code implemented here.
+
+        public virtual void OnRayEnter()
+        {            
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public virtual void OnRayEnterClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public virtual void OnRayHover()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public virtual void OnRayHoverClicked()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public virtual void OnRayExit() 
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public virtual void OnRayExitClicked() 
+        {
+            Hovered = true; // exiting while clicking shows a hovered button.
+            Pushed = false;
+            ResetColor();
+        }
+
+        public virtual void OnRayClick()
+        {
+            Hovered = true;
+            Pushed = true;
+            ResetColor();
+        }
+
+        public virtual void OnRayReleaseInside()
+        {
+            Hovered = true;
+            Pushed = false;
+            ResetColor();
+        }
+
+        public virtual void OnRayReleaseOutside()
+        {
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+        }
 
         public virtual bool OverridesRayEndPoint() { return false; }
         public virtual void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint) { }
+
+        #endregion
     }
 }

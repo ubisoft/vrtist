@@ -88,106 +88,55 @@ namespace VRtist
             }
         }
 
-        // --- RAY API ----------------------------------------------------
+        #region ray
 
         public override void OnRayEnter()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = false;
-            ResetColor();
-            //VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            base.OnRayEnter();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayEnterClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = true;
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
-            ResetColor();
+            base.OnRayEnterClicked();
         }
 
         public override void OnRayHover()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = false;
-            ResetColor();
-            //onHoverEvent.Invoke();
+            base.OnRayHover();
         }
 
         public override void OnRayHoverClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true;
-            Pushed = true;
-            ResetColor();
-            //onHoverEvent.Invoke();
+            base.OnRayHoverClicked();
         }
 
         public override void OnRayExit()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            Pushed = false;
-            ResetColor();
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            base.OnRayExit();
+            WidgetBorderHapticFeedback();
         }
 
         public override void OnRayExitClicked()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = true; // exiting while clicking shows a hovered button.
-            Pushed = false;
-            ResetColor();
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            base.OnRayExitClicked();
         }
 
         public override void OnRayClick()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayClick();
             colorPicker.OnClick();
-
-            Hovered = true;
-            Pushed = true;
-            ResetColor();
         }
 
         public override void OnRayReleaseInside()
         {
-            if (IgnoreRayInteraction())
-                return;
-
+            base.OnRayReleaseInside();
             colorPicker.OnRelease();
-
-            Hovered = true;
-            Pushed = false;
-            ResetColor();
         }
 
         public override void OnRayReleaseOutside()
         {
-            if (IgnoreRayInteraction())
-                return;
-
-            Hovered = false;
-            Pushed = false;
-            ResetColor();
+            base.OnRayReleaseOutside();
         }
 
         public override bool OverridesRayEndPoint() { return true; }
@@ -251,18 +200,10 @@ namespace VRtist
             //cursorShapeTransform.position = worldProjectedWidgetPosition;
             rayEndPoint = worldProjectedWidgetPosition;
         }
-        // --- / RAY API ----------------------------------------------------
 
+        #endregion
 
-
-
-
-
-
-
-
-
-
+        #region create
 
         public static UIColorPickerHue CreateUIColorPickerHue(
             string objectName,
@@ -342,5 +283,7 @@ namespace VRtist
 
             return uiColorPickerHue;
         }
+
+        #endregion
     }
 }
