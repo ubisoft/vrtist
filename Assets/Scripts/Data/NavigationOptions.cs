@@ -22,6 +22,9 @@ namespace VRtist
         public float orbitMoveSpeed = 0.05f; // 0-1 slider *100
         [Tooltip("Speed in degrees/s")] public float orbitRotationalSpeed = 3.0f; // 0-10
 
+        [Header("Teleport Navigation")]
+        public bool lockHeight = false;
+
         [Header("Fly Navigation")]
         [Tooltip("Speed in m/s")] public float flySpeed = 0.2f;
 

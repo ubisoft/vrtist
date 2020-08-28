@@ -28,7 +28,7 @@ namespace VRtist
 
             usedControls = UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
 
-            Transform drone = parametersTransform.Find("Drone");
+            Transform drone = parameters.Find("Drone");
             drone.gameObject.SetActive(true);
         }
 
