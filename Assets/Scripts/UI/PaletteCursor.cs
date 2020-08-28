@@ -71,28 +71,75 @@ namespace VRtist
             // Raycast, find out the closest volume, handle and widget.
             //
 
-            RaycastHit[] hits;
             Vector3 worldStart = transform.TransformPoint(0.0104f, 0, 0.065f);
             Vector3 worldEnd = transform.TransformPoint(0.0104f, 0, 1f);
             Vector3 newWorldDirection = worldEnd - worldStart;
             Vector3 worldDirection = prevWorldDirection != Vector3.zero ? Vector3.Lerp(prevWorldDirection, newWorldDirection, rayStiffness) : newWorldDirection;
             worldDirection.Normalize();
             prevWorldDirection = worldDirection;
+            Vector3 rayEndPoint = worldEnd;
 
             Ray r = new Ray(worldStart, worldDirection);
-            int layersMask = LayerMask.GetMask(new string[] { "UI" });
-            hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
 
-            // If a widget is locked (trigger has been pressed on it), give it a chance to handle the ray endpoint.
-            Vector3 rayEndPoint = worldEnd;
             if (UIElement.UIEnabled.Value)
             {
+                // If a widget is locked (trigger has been pressed on it), give it a chance to handle the ray endpoint.
                 if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                 {
                     widgetClicked.OverrideRayEndPoint(r, ref rayEndPoint);
                 }
             }
 
+            // Lambda to avoid copy-paste.
+            System.Action handleHitNothing = () =>
+            {
+                if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                {
+                    ActivateRay(true);
+                    ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                }
+                else
+                {
+                    ActivateRay(false);
+                    ReleaseUIEnabledGuard(); // release the guard if there was one.
+                }
+                HandleRayOutOfWidget(triggerJustReleased);
+            };
+
+            //
+            // First, try to hit anything, in order to findout if we hit a Non-UI object first.
+            //
+
+            RaycastHit hitInfo;
+            int allLayersMask = -1; // ~0
+            if (!Physics.Raycast(r, out hitInfo, 3.0f, allLayersMask, QueryTriggerInteraction.Collide)
+                || hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("UI"))
+            {
+                // Nothing hit, or hit a non-UI object.
+                handleHitNothing();
+                return;
+            }
+            else
+            {
+                // detect if the first ray was shoot from inside an object
+
+                Ray backRay = new Ray(hitInfo.point - 0.01f * worldDirection, -worldDirection);
+                float d = hitInfo.distance - 0.01f;
+                bool raycastOK = Physics.Raycast(backRay, out hitInfo, hitInfo.distance, allLayersMask, QueryTriggerInteraction.Collide);
+                if (raycastOK && hitInfo.distance < d)
+                {
+                    handleHitNothing();
+                    return;
+                }
+            }
+
+            //
+            // Raycast ALL UI elements
+            //
+
+            RaycastHit[] hits;
+            int layersMask = LayerMask.GetMask(new string[] { "UI" });
+            hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
             if (hits.Length > 0)
             {
                 if (!UIElement.UIEnabled.Value)
@@ -320,7 +367,7 @@ namespace VRtist
 
                     HandleRayOutOfWidget(triggerJustReleased);
                 }
-                else // Layer UI but neither UIVolumeTag nor UIElement == Grid, for example.
+                else // Layer UI but neither UIVolumeTag nor UIElement ==> Grid or Tool Mouthpiece.
                 {
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
@@ -336,17 +383,7 @@ namespace VRtist
             }
             else // No collision, most common case.
             {
-                if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
-                {
-                    ActivateRay(true);
-                    ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
-                }
-                else
-                {
-                    ActivateRay(false);
-                    ReleaseUIEnabledGuard(); // release the guard if there was one.
-                }
-                HandleRayOutOfWidget(triggerJustReleased);
+                handleHitNothing();
             }
         }
 
