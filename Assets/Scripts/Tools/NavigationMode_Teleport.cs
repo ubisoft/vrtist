@@ -199,8 +199,12 @@ namespace VRtist
                 aimDirection = aimVector;
                 aimPosition += aimVector * tParams.aimStep;
 
-                
-                int layerMask = ~LayerMask.NameToLayer("UI");
+
+                //int uiLayerMask = LayerMask.NameToLayer("UI");
+                //int layerMask = ~0 & ~uiLayerMask;
+
+                //int layersMask = LayerMask.GetMask(new string[] { "Default" });
+                int layerMask = ~(1 << 5);
                 hit = Physics.Raycast(oldAimPosition, (aimPosition - oldAimPosition).normalized, out hitInfo, (aimPosition - oldAimPosition).magnitude, layerMask);
             } while (!hit && (aimPosition.y - startRay.origin.y > tParams.minimumElevation) && ((startRay.origin - aimPosition).sqrMagnitude <= rangeSquared));
 
