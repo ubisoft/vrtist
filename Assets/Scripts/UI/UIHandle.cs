@@ -1,17 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 namespace VRtist
 {
     public class UIHandle : MonoBehaviour
     {
-        private void OnApplicationQuit()
+        private void Start()
         {
-            GlobalState.Settings.SetWindowPosition(transform);
+            GlobalState.Settings.LoadWindowPosition(transform);
         }
 
-
+        private void OnApplicationQuit()
+        {
+            GlobalState.Settings.SaveWindowPosition(transform);
+        }
     }
 }
