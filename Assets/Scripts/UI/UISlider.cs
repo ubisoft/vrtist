@@ -506,8 +506,11 @@ namespace VRtist
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
 
-            // TODO: use curve, invert curve.
             float currentValuePct = (Value - minValue) / (maxValue - minValue);
+            if (HasCurveData())
+            {
+                currentValuePct = invDataCurve.Evaluate(Value);
+            }
             float currentKnobPositionX = startX + currentValuePct * (endX - startX);
 
             // DRAG
@@ -530,30 +533,21 @@ namespace VRtist
             // SET
 
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-            // TODO: put the "curve" code here
-            /*
-             if (HasCurveData())
-                    {
-                        Value = dataCurve.Evaluate(pct);
-                    }
-                    else // linear
-                    {
-                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
-                    }
-            */
-            Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+            if (HasCurveData())
+            {
+                Value = dataCurve.Evaluate(pct);
+            }
+            else // linear
+            {
+                Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+            }
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);
             onSlideEventInt.Invoke(intValue);
 
-            // Haptic intensity as we go deeper into the widget.
-            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-            //intensity *= intensity; // ease-in
-
-            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+            // OUT ray end point
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            //cursorShapeTransform.position = worldProjectedWidgetPosition;
             rayEndPoint = worldProjectedWidgetPosition;
         }
 
