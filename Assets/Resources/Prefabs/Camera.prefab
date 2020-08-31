@@ -943,6 +943,11 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -2397996973257786244, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: -927199367670048503, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
       propertyPath: m_Name
@@ -958,6 +963,16 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -113181020801827196, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: -113181020801827196, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_Materials.Array.data[1]
+      value: 
+      objectReference: {fileID: 2100000, guid: 80834fa44ed8ba244bba1d0529395c24, type: 2}
     - target: {fileID: 1318462475825722627, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -968,6 +983,11 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1318462475825722627, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 2502203975881118265, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
       propertyPath: m_Layer
@@ -977,6 +997,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_CastShadows
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4063835366044962077, guid: d646cd7d85eee264386b253ec1724252,
+        type: 3}
+      propertyPath: m_RenderingLayerMask
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7469484624682501897, guid: d646cd7d85eee264386b253ec1724252,
         type: 3}
