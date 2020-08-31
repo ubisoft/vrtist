@@ -190,17 +190,6 @@ namespace VRtist
         {
             SetColor(Disabled ? DisabledColor
                    : BaseColor);
-
-            // Make the canvas pop front if Hovered.
-            Canvas c = GetComponentInChildren<Canvas>();
-            if (c != null)
-            {
-                RectTransform rt = c.GetComponent<RectTransform>();
-                if (rt != null)
-                {
-                    rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
-                }
-            }
         }
 
         private void OnDrawGizmosSelected()

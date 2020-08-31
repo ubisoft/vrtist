@@ -51,6 +51,13 @@ namespace VRtist
                     {
                         slider.thickness = 0.005f;
                     }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+                        vslider.thickness = 0.005f;
+                    }
+
                     element.NeedsRebuild = true;
                 }
             }
