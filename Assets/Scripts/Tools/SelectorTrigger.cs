@@ -148,11 +148,12 @@ namespace VRtist
                 selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
-                    selector.AddSiblingsToSelection(hoveredObject);
+                    foreach(GameObject obj in collidedObjects)
+                        selector.AddSiblingsToSelection(obj);
                 }
                 else
                 {
-                    selector.RemoveSiblingsFromSelection(hoveredObject);
+                    //selector.RemoveSiblingsFromSelection(hoveredObject);
                 }
             }
         }
