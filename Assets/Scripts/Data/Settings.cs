@@ -24,12 +24,12 @@ namespace VRtist
         public Quaternion paletteRotation;
         public bool pinnedPalette = false;
 
-        public Vector3 dopeSheetPosition;
-        public Quaternion dopeSheetRotation;
+        public Vector3 dopeSheetPosition = Vector3.zero;
+        public Quaternion dopeSheetRotation = Quaternion.identity;
         public bool dopeSheetVisible = false;
 
-        public Vector3 cameraPreviewPosition;
-        public Quaternion cameraPreviewRotation;
+        public Vector3 cameraPreviewPosition = Vector3.zero;
+        public Quaternion cameraPreviewRotation = Quaternion.identity;
         public bool cameraPreviewVisible = false;
 
         public Vector3 cameraFeedbackPosition = Vector3.zero;
@@ -75,7 +75,7 @@ namespace VRtist
             cameraFeedbackVisible = false;
         }
 
-        public void SetWindowPosition(Transform window)
+        public void SaveWindowPosition(Transform window)
         {
             if (window.name == "PaletteHandle")
             {
@@ -98,6 +98,33 @@ namespace VRtist
                 cameraFeedbackPosition = window.localPosition;
                 cameraFeedbackRotation = window.localRotation;
                 cameraFeedbackScale = window.localScale;
+            }
+            */
+        }
+
+        public void LoadWindowPosition(Transform window)
+        {
+            if (window.name == "PaletteHandle")
+            {
+                window.localPosition = palettePosition;
+                window.localRotation = paletteRotation;
+            }
+            if (window.name == "DopesheetHandle")
+            {
+                window.localPosition = dopeSheetPosition;
+                window.localRotation = dopeSheetRotation;
+            }
+            if (window.name == "CameraPreviewHandle")
+            {
+                window.localPosition = cameraPreviewPosition;
+                window.localRotation = cameraPreviewRotation;
+            }
+            /*
+            if (window.name == "CameraFeedback")
+            {
+                window.localPosition = cameraFeedbackPosition;
+                window.localRotation = cameraFeedbackRotation;
+                window.localScale = cameraFeedbackScale;
             }
             */
         }

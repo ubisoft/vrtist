@@ -71,7 +71,7 @@ namespace VRtist
 
             if (null != versionLabel && versionLabel.Text.Length == 0)
             {
-                versionLabel.Text = $"VRtist Version: {Version.version}\nSync Version: {Version.syncVersion}";
+                versionLabel.Text = $"<color=#0079FF>VRtist Version</color>: {Version.version}\n<color=#0079FF>Sync Version</color>: {Version.syncVersion}";
             }
 
             OnSetDisplaySubPanel();
@@ -112,10 +112,10 @@ namespace VRtist
 
         private void OnConnected()
         {
-            versionLabel.Text = $"VRtist Version: {Version.version}\n" +
-                $"Sync Version: {Version.syncVersion}\n" +
-                $"Client ID: {GlobalState.networkUser.id}\n" +
-                $"Master ID: {GlobalState.networkUser.masterId}";
+            versionLabel.Text = $"<color=#0079FF>VRtist Version</color>: {Version.version}\n" +
+                $"<color=#0079FF>Sync Version</color>: {Version.syncVersion}\n\n" +
+                $"<color=#0079FF>Client ID</color>: {GlobalState.networkUser.id}\n" +
+                $"<color=#0079FF>Master ID</color>: {GlobalState.networkUser.masterId}";
         }
 
         public void OnReset()
