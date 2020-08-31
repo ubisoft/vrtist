@@ -533,6 +533,10 @@ namespace VRtist
             float endY = -height + margin + heightWithoutMargins * sliderPositionEnd - railMargin;
 
             float currentValuePct = (Value - minValue) / (maxValue - minValue);
+            if (HasCurveData())
+            {
+                currentValuePct = invDataCurve.Evaluate(Value);
+            }
             float currentKnobPositionY = startY + currentValuePct * (endY - startY);
 
             // DRAG
@@ -557,16 +561,14 @@ namespace VRtist
             // SET
 
             float pct = (localProjectedWidgetPosition.y - startY) / (endY - startY);
-            /*
-             if (HasCurveData())
-                    {
-                        Value = dataCurve.Evaluate(pct);
-                    }
-                    else // linear
-                    {
-                        Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
-                    }
-             */
+            if (HasCurveData())
+            {
+                Value = dataCurve.Evaluate(pct);
+            }
+            else // linear
+            {
+                Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+            }
             Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);

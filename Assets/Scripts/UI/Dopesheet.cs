@@ -182,6 +182,7 @@ namespace VRtist
             if (null == channels)
             {
                 Clear();
+                UpdateTrackName();
                 return;
             }
 
@@ -203,6 +204,7 @@ namespace VRtist
             if (null == channel) // channel == null => remove animations
             {
                 Clear();
+                UpdateTrackName();
                 return;
             }
 
@@ -223,8 +225,7 @@ namespace VRtist
                 keyList.Add(new AnimKey(channel.name, key.value));
             }
 
-            TextMeshPro trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshPro>();
-            trackLabel.text = gObject.name;
+            UpdateTrackName();
 
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
             UILabel track = keyframes.gameObject.GetComponent<UILabel>();
@@ -256,7 +257,7 @@ namespace VRtist
         }
 
         public void OnSelectionChanged(GameObject gObject)
-        {            
+        {
             this.currentObject = gObject;
             if (gObject != null)
             {
@@ -265,6 +266,7 @@ namespace VRtist
             else
             {
                 Clear();
+                UpdateTrackName();
             }
         }
 
@@ -293,6 +295,23 @@ namespace VRtist
             return LastFrame;
         }
 
+        public void UpdateTrackName()
+        {
+            TextMeshPro trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshPro>();
+            int count = Selection.selection.Count;
+            if (count > 1)
+            {
+                trackLabel.text = count.ToString() + " Objects";
+                return;
+            }
+            foreach(GameObject obj in Selection.selection.Values)
+            {
+                trackLabel.text = obj.name;
+                return;
+            }
+            trackLabel.text = "";
+        }
+
         public void Clear()
         {
             Transform tracks = transform.Find("MainPanel/Tracks");
@@ -310,7 +329,7 @@ namespace VRtist
 
             keys.Clear();
         }
-        
+
         // called by the slider when moved
         public void OnChangeCurrentFrame(int i)
         {
