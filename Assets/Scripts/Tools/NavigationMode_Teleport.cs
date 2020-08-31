@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -200,7 +199,9 @@ namespace VRtist
                 aimDirection = aimVector;
                 aimPosition += aimVector * tParams.aimStep;
 
-                hit = Physics.Raycast(oldAimPosition, (aimPosition - oldAimPosition).normalized, out hitInfo, (aimPosition - oldAimPosition).magnitude);
+                
+                int layerMask = ~LayerMask.NameToLayer("UI");
+                hit = Physics.Raycast(oldAimPosition, (aimPosition - oldAimPosition).normalized, out hitInfo, (aimPosition - oldAimPosition).magnitude, layerMask);
             } while (!hit && (aimPosition.y - startRay.origin.y > tParams.minimumElevation) && ((startRay.origin - aimPosition).sqrMagnitude <= rangeSquared));
 
             return hit;
