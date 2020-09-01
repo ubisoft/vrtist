@@ -23,6 +23,9 @@ namespace VRtist
 
         private GameObject UIObject = null;
 
+        public UIDynamicList lightList;
+        private GameObject lightItemPrefab;
+
         void DisableUI()
         {
             intensitySlider.gameObject.SetActive(false);
@@ -54,6 +57,13 @@ namespace VRtist
 
             Init();
             CreateTooltips();
+
+            // Camera list
+            GlobalState.ObjectAddedEvent.AddListener(OnLightAdded);
+            GlobalState.ObjectRemovedEvent.AddListener(OnLightRemoved);
+            GlobalState.ObjectRenamedEvent.AddListener(OnLightRenamed);
+            if (null != lightList) { lightList.ItemClickedEvent += OnSelectLightItem; }
+            lightItemPrefab = Resources.Load<GameObject>("Prefabs/UI/LightItem");
         }
 
         private void Start()
@@ -131,7 +141,7 @@ namespace VRtist
         private void SetSliderValues(Transform slider, float value, float minValue, float maxValue)
         {
             UISlider sliderComp = slider.GetComponent<UISlider>();
-            if(sliderComp != null)
+            if (sliderComp != null)
             {
                 sliderComp.minValue = minValue;
                 sliderComp.maxValue = maxValue;
@@ -142,7 +152,7 @@ namespace VRtist
         private void SetCheckboxValue(Transform checkbox, bool value)
         {
             UICheckbox checkboxComp = checkbox.GetComponent<UICheckbox>();
-            if (checkboxComp!= null)
+            if (checkboxComp != null)
             {
                 checkboxComp.Checked = value;
             }
@@ -150,7 +160,7 @@ namespace VRtist
 
         protected override void UpdateUI()
         {
-            foreach(var item in Selection.selection)
+            foreach (var item in Selection.selection)
             {
                 GameObject gobject = item.Value;
                 LightController lightController = gobject.GetComponent<LightController>();
@@ -190,7 +200,7 @@ namespace VRtist
                     continue;
 
                 selectedLights.Add(gobject);
-                switch(lightController.lightType)
+                switch (lightController.lightType)
                 {
                     case LightType.Directional:
                         sunCount++;
@@ -230,7 +240,7 @@ namespace VRtist
 
         public void OnLightColor(Color color)
         {
-            if(!gameObject.activeSelf) { return; }
+            if (!gameObject.activeSelf) { return; }
 
             // update selection light color from UI
             foreach (KeyValuePair<int, GameObject> data in Selection.selection)
@@ -272,7 +282,7 @@ namespace VRtist
                     Light light = gobject.transform.GetComponentInChildren<Light>(true);
                     light.gameObject.SetActive(value);
                 }
-                
+
                 SendLightParams(gobject);
             }
         }
@@ -281,7 +291,7 @@ namespace VRtist
         {
             // Set the cast shadows parameter to all lights
             LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
-            foreach(LightController lightController in lightControllers) 
+            foreach (LightController lightController in lightControllers)
             {
                 lightController.castShadows = value;
                 SendLightParams(lightController.gameObject);
@@ -299,18 +309,19 @@ namespace VRtist
         public void OnAngleSliderPressed()
         {
             OnSliderPressed("Light Angle", "/LightController/outerAngle");
-        }       
+        }
 
         public void OnCastShadowCheckboxPressed()
         {
             OnCheckboxPressed("Light Cast Shadows", "/LightController/castShadows");
         }
 
-        public void OnGlobalCastShadowCheckboxPressed() {
+        public void OnGlobalCastShadowCheckboxPressed()
+        {
             // Get all lights
             LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
             List<GameObject> lights = new List<GameObject>();
-            foreach(LightController lightController in lightControllers)
+            foreach (LightController lightController in lightControllers)
             {
                 lights.Add(lightController.gameObject);
             }
@@ -321,7 +332,7 @@ namespace VRtist
 
         public void OnColorPickerPressed()
         {
-            if(!gameObject.activeSelf) { return; }
+            if (!gameObject.activeSelf) { return; }
             OnColorPressed("Light Color", "/LightController/color");
         }
 
@@ -364,6 +375,67 @@ namespace VRtist
                 if (param == "InnerAngle")
                     lightingController.innerAngle = value;
                 SendLightParams(gobject);
+            }
+        }
+
+        public void OnLightAdded(GameObject gObject)
+        {
+            LightController controller = gObject.GetComponent<LightController>();
+            if (null == controller)
+                return;
+            GameObject lightItemObject = Instantiate(lightItemPrefab);
+            LightItem lightItem = lightItemObject.GetComponentInChildren<LightItem>();
+            lightItem.SetLightObject(gObject, controller);
+            UIDynamicListItem item = lightList.AddItem(lightItem.transform);
+            item.UseColliderForUI = true;
+        }
+
+        public void OnLightRemoved(GameObject gObject)
+        {
+            LightController controller = gObject.GetComponent<LightController>();
+            if (null == controller)
+                return;
+            foreach (var item in lightList.GetItems())
+            {
+                LightItem lightItem = item.Content.GetComponent<LightItem>();
+                if (lightItem.lightObject == gObject)
+                {
+                    lightList.RemoveItem(item);
+                    return;
+                }
+            }
+        }
+
+        public void OnLightRenamed(GameObject gObject)
+        {
+            LightController controller = gObject.GetComponent<LightController>();
+            if (null == controller)
+                return;
+            foreach (UIDynamicListItem item in lightList.GetItems())
+            {
+                LightItem lightItem = item.Content.gameObject.GetComponent<LightItem>();
+                if (lightItem.lightObject == gObject)
+                {
+                    lightItem.SetItemName(gObject.name);
+                }
+            }
+        }
+
+        public void OnSelectLightItem(object sender, IndexedGameObjectArgs args)
+        {
+            GameObject item = args.gobject;
+            LightItem lightItem = item.GetComponent<LightItem>();
+
+            // Select light in scene
+            CommandGroup command = new CommandGroup("Select Light");
+            try
+            {
+                ClearSelection();
+                AddToSelection(lightItem.lightObject);
+            }
+            finally
+            {
+                command.Submit();
             }
         }
     }
