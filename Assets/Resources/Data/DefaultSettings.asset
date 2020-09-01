@@ -14,27 +14,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   displayGizmos: 1
-  displayWorldGrid: 1
-  displayFPS: 0
+  displayWorldGrid: 0
+  displayAvatars: 1
+  displayFPS: 1
+  display3DCurves: 1
   masterVolume: -20.902514
   ambientVolume: 1
   uiVolume: 0
   rightHanded: 1
   forcePaletteOpen: 0
-  palettePosition: {x: -0.02, y: 0.05, z: 0.05}
+  palettePosition: {x: -0.02, y: 0.05, z: -0.05}
   paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   pinnedPalette: 0
-  dopeSheetPosition: {x: -0.43166938, y: 1.6508534, z: 0.828811}
-  dopeSheetRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
+  dopeSheetPosition: {x: 0.053405333, y: 1.596644, z: 0.5588254}
+  dopeSheetRotation: {x: 0.11454293, y: 0.106019005, z: -0.04046857, w: 0.9869155}
   dopeSheetVisible: 1
-  cameraPreviewPosition: {x: 0.0457, y: 1.674, z: 0.821}
-  cameraPreviewRotation: {x: 0.2588191, y: -0, z: -0, w: 0.9659258}
+  cameraPreviewPosition: {x: 0.35908973, y: 1.535397, z: 0.4590031}
+  cameraPreviewRotation: {x: 0.06101212, y: 0.3917295, z: -0.11199341, w: 0.9111987}
   cameraPreviewVisible: 1
-  cameraFeedbackPosition: {x: 0.34512818, y: 1.2131829, z: 700.60376}
-  cameraFeedbackRotation: {x: 0, y: -0.00000021855695, z: 0, w: -1}
-  cameraFeedbackScale: {x: 715.7847, y: 402.6289, z: 402.6289}
+  cameraFeedbackPosition: {x: 0.02355202, y: 1.315273, z: 700.169}
+  cameraFeedbackRotation: {x: -0, y: -0.0000013550526, z: -0, w: -1}
+  cameraFeedbackScale: {x: 203.97475, y: 114.735794, z: 114.735794}
   cameraFeedbackScaleValue: 1
   cameraFeedbackVisible: 1
-  cameraDamping: 60.771095
+  cameraDamping: 33.733616
   castShadows: 1
   scaleSpeed: 50
+  raySliderDrag: 95

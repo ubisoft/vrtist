@@ -5,8 +5,8 @@ namespace VRtist
 {
     public class CameraItem : ListItemContent
     {
-        public GameObject cameraObject;
-        public UIDynamicListItem item;
+        [HideInInspector] public GameObject cameraObject;
+        [HideInInspector] public UIDynamicListItem item;
 
         public void Start()
         {
