@@ -33,7 +33,7 @@ namespace VRtist
 
         public void SetColor(Color color)
         {
-            gameObject.GetComponentInChildren<MeshRenderer>(true).materials[1].SetColor("_BaseColor", color);
+            gameObject.GetComponentInChildren<MeshRenderer>(true).materials[0].SetColor("_BaseColor", color);
         }
 
         public void SetItemName(string name)
