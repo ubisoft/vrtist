@@ -308,6 +308,17 @@ namespace VRtist
                 SendKeyInfo(name, "color", 2, frame, lcontroller.color.b);
             }
 
+            if(null == gObject.GetComponent<ParametersController>())
+            {
+                // Scale
+                Vector3 scale = gObject.transform.localScale;
+                SendKeyInfo(name, "scale", 0, frame, scale.x);
+                SendKeyInfo(name, "scale", 1, frame, scale.y);
+                SendKeyInfo(name, "scale", 2, frame, scale.z);
+                //bool visible = SyncData.nodes[gObject.name].visible;
+                //SendKeyInfo(name, "hide_viewport", -1, frame, visible ? 0 : 1f);
+            }
+
             NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
         }
 

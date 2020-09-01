@@ -180,6 +180,9 @@ namespace VRtist
 
             Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
 
+            bool visibile = GlobalState.currentFrame >= minValue && GlobalState.currentFrame <= maxValue;
+            knob.gameObject.SetActive(visibile);
+
             knob.localPosition = knobPosition;
         }
 
