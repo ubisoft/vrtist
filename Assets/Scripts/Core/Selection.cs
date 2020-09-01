@@ -60,6 +60,8 @@ namespace VRtist
 
         public static bool IsSelected(GameObject gObject)
         {
+            if (null == gObject)
+                return false;
             return selection.ContainsKey(gObject.GetInstanceID());
         }
 
@@ -133,12 +135,32 @@ namespace VRtist
         }
 
         public static void SetHoveredObject(GameObject obj)
-        {                    
-            if (obj == null || !IsSelected(obj))
+        {
+            // obj == null
+            if(null == obj)
+            {
+                if (hoveredObject != obj)
+                {
+                    hoveredObject = obj;
+                    UpdateCurrentObjectOutline();
+                }
+                return;
+            }
+
+            // obj is selected => reset hoveredObject
+            if(IsSelected(obj) && hoveredObject != null)
+            {
+                hoveredObject = null;
+                UpdateCurrentObjectOutline();
+                return;
+            }
+
+            // not selected, hover it
+            if (hoveredObject != obj)
             {
                 hoveredObject = obj;
+                UpdateCurrentObjectOutline();
             }
-            UpdateCurrentObjectOutline();
         }
 
         public static GameObject GetGrippedObject()
