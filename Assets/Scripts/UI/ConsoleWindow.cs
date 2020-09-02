@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -51,8 +50,6 @@ namespace VRtist
         FixedSizeQueue<LogItem> logs;
         List<LogItem> filteredLogs = new List<LogItem>();
 
-        int plop = 0;
-
         void Start()
         {
             mainPanel = transform.Find("MainPanel");
@@ -68,20 +65,6 @@ namespace VRtist
 
             logs = new FixedSizeQueue<LogItem>(capacity);
             Application.logMessageReceived += HandleLog;
-
-            StartCoroutine(DebugMessages());
-        }
-
-        private IEnumerator DebugMessages()
-        {
-            while (plop < 50)
-            {
-                Debug.Log($"A debug message {plop}");
-                if (plop % 2 == 0) { Debug.LogWarning($"A warning {plop}"); }
-                if (plop % 3 == 0) { Debug.LogError($"An error {plop}"); }
-                ++plop;
-                yield return null;
-            }
         }
 
         private void Update()
