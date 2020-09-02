@@ -140,21 +140,45 @@ namespace VRtist
     {
         public Vector3[] vertices;
         public int[] triangles;
-        public Material material;
+        public MaterialParameters materialParameters;
+    }
+
+    public enum MaterialType
+    {
+        Opaque,
+        Transparent,
+        EditorOpaque,
+        EditorTransparent,
+        GreasePencil,
+    }
+
+    public class MaterialParameters
+    {
+        public string name;
+        public MaterialType materialType;
+        public float opacity;
+        public string opacityTexturePath;
+        public Color baseColor;
+        public string baseColorTexturePath;
+        public float metallic;
+        public string metallicTexturePath;
+        public float roughness;
+        public string roughnessTexturePath;
+        public string normalTexturePath;
+        public Color emissionColor;
+        public string emissionColorTexturePath;
     }
 
     public class NetGeometry
     {
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
 
-        public static Material currentMaterial = null;
-
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
-        public static Dictionary<string, List<Material>> meshesMaterials = new Dictionary<string, List<Material>>();
+        public static Dictionary<string, List<MaterialParameters>> meshesMaterials = new Dictionary<string, List<MaterialParameters>>();
+        
+        public static Dictionary<MaterialType, Material> baseMaterials = new Dictionary<MaterialType, Material>();
+        public static Dictionary<string, MaterialParameters> materialsParameters = new Dictionary<string, MaterialParameters>();
 
-        public static Material greasePencilMaterial = null;
-        public static Dictionary<string, List<Material>> greasePencilStrokeMaterials = new Dictionary<string, List<Material>>();
-        public static Dictionary<string, List<Material>> greasePencilFillMaterials = new Dictionary<string, List<Material>>();
         public static Dictionary<string, GreasePencilData> greasePencils = new Dictionary<string, GreasePencilData>();
         public static HashSet<string> materialsFillEnabled = new HashSet<string>();
         public static HashSet<string> materialStrokesEnabled = new HashSet<string>();
@@ -599,41 +623,36 @@ namespace VRtist
             SyncData.SetScene(sceneName);
         }
 
-        public static Material DefaultMaterial()
+        public static MaterialParameters DefaultMaterial()
         {
             string name = "defaultMaterial";
-            if (materials.ContainsKey(name))
-                return materials[name];
 
+            if (materialsParameters.TryGetValue(name, out MaterialParameters materialParameters))
+                return materialParameters;
+
+            MaterialType materialType;
 #if UNITY_EDITOR
-            Shader hdrplit = Shader.Find("VRtist/BlenderImportEditor");
+            materialType = MaterialType.EditorOpaque;
 #else
-            Shader hdrplit = Shader.Find("VRtist/BlenderImport");
+            materialType = MaterialType.Opaque;
 #endif
-            Material material = new Material(hdrplit);
-            material.enableInstancing = true;
-            material.name = name;
-            material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
-            material.SetFloat("_Metallic", 0.0f);
-            material.SetFloat("_Roughness", 0.5f);
-            materials[name] = material;
+            materialParameters = new MaterialParameters();
+            materialsParameters[name] = materialParameters;
+            materialParameters.name = name;
+            materialParameters.materialType = materialType;
+            materialParameters.opacity = 0;
+            materialParameters.opacityTexturePath = "";
+            materialParameters.baseColor = new Color(0.8f, 0.8f, 0.8f);
+            materialParameters.baseColorTexturePath = "";
+            materialParameters.metallic = 0f;
+            materialParameters.metallicTexturePath = "";
+            materialParameters.roughness = 0.5f;
+            materialParameters.roughnessTexturePath = "";
+            materialParameters.normalTexturePath = "";
+            materialParameters.emissionColor = new Color(0,0,0);;
+            materialParameters.emissionColorTexturePath = "";
 
-            return material;
-        }
-
-        public static Material GetDefaultUnlitMaterial()
-        {
-            string name = "default unlit";
-            Shader hdrpunlit = Shader.Find("HDRP/Unlit");
-            Material material = new Material(hdrpunlit);
-            material.enableInstancing = true;
-            material.name = name;
-            material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
-            material.SetFloat("_Metallic", 0.0f);
-            material.SetFloat("_Roughness", 0.5f);
-            materials[name] = material;
-
-            return material;
+            return materialParameters;
         }
 
         public static Texture2D CreateSmallImage()
@@ -879,6 +898,18 @@ namespace VRtist
             return texture;
         }
 
+        public static Material GetMaterial(MaterialType materialType)
+        {
+            if (baseMaterials.Count == 0)
+            {
+                baseMaterials.Add(MaterialType.Opaque, Resources.Load<Material>("Materials/BlenderImport"));
+                baseMaterials.Add(MaterialType.Transparent, Resources.Load<Material>("Materials/BlenderImportTransparent"));
+                baseMaterials.Add(MaterialType.EditorOpaque, Resources.Load<Material>("Materials/BlenderImportEditor"));
+                baseMaterials.Add(MaterialType.EditorTransparent, Resources.Load<Material>("Materials/BlenderImportTransparentEditor"));
+                baseMaterials.Add(MaterialType.GreasePencil, Resources.Load<Material>("Materials/GreasePencilMat"));
+            }
+            return baseMaterials[materialType];
+        }
 
         public static void BuildMaterial(byte[] data)
         {
@@ -887,51 +918,70 @@ namespace VRtist
             float opacity = GetFloat(data, ref currentIndex);
             string opacityTexturePath = GetString(data, ref currentIndex);
 
-            Material material;
-            
-            if(materials.Count > 0)
+            if (!materialsParameters.TryGetValue(name, out MaterialParameters materialParameters))
             {
-                foreach(Material mat in materials.Values)
-                {
-                    material = mat;
-                    currentMaterial = material;
-                    material.enableInstancing = true;
-                    return;
-                }
-            }
-            
-
-            if (materials.ContainsKey(name))
-                material = materials[name];
-            else
-            {
+                MaterialType materialType;
 #if UNITY_EDITOR
-                Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
-                    ? Shader.Find("VRtist/BlenderImportTransparentEditor")
-                    : Shader.Find("VRtist/BlenderImportEditor");
+                materialType = (opacityTexturePath.Length > 0 || opacity < 1.0f)
+                    ? MaterialType.EditorTransparent : MaterialType.EditorOpaque;
 #else
-                Shader importShader = (opacityTexturePath.Length > 0 || opacity < 1.0f)
-                    ? Shader.Find("VRtist/BlenderImportTransparent")
-                    : Shader.Find("VRtist/BlenderImport");
+                materialType = (opacityTexturePath.Length > 0 || opacity < 1.0f)
+                    ? MaterialType.Transparent : MaterialType.Opaque;
 #endif
-                material = new Material(importShader);
-                material.name = name;
-                material.enableInstancing = true;
-                materials[name] = material;
+                materialParameters = new MaterialParameters();
+                materialParameters.name = name;
+                materialParameters.materialType = materialType;
+                materialsParameters[name] = materialParameters;
             }
 
+
+            materialParameters.opacity = opacity;
+            materialParameters.opacityTexturePath = opacityTexturePath;
+            materialParameters.baseColor = GetColor(data, ref currentIndex);
+            materialParameters.baseColorTexturePath = GetString(data, ref currentIndex);
+            materialParameters.metallic = GetFloat(data, ref currentIndex);
+            materialParameters.metallicTexturePath = GetString(data, ref currentIndex);
+            materialParameters.roughness = GetFloat(data, ref currentIndex);
+            materialParameters.roughnessTexturePath = GetString(data, ref currentIndex);
+            materialParameters.normalTexturePath = GetString(data, ref currentIndex);
+            materialParameters.emissionColor = GetColor(data, ref currentIndex);
+            materialParameters.emissionColorTexturePath = GetString(data, ref currentIndex);
+        }
+
+        public static void ApplyMaterialParameters(MeshRenderer meshRenderer, List<MaterialParameters> meshMaterials)
+        {
+            MaterialParameters[] materialParameters = meshMaterials.ToArray();
+            Material[] materials = new Material[materialParameters.Length];
+            for (int i = 0; i < materialParameters.Length; i++)
+            {
+                materials[i] = GetMaterial(materialParameters[i].materialType);
+            }
+            meshRenderer.sharedMaterials = materials;
+            for (int i = 0; i < materialParameters.Length; i++)
+            {
+                ApplyMaterialParameters(meshRenderer.materials[i], materialParameters[i]);
+            }
+        }
+        public static void ApplyMaterialParameters(Material material, MaterialParameters parameters)
+        {
+            if(parameters.materialType == MaterialType.GreasePencil)
+            {
+                material.SetColor("_UnlitColor", parameters.baseColor);
+                return;
+            }
+            
             //
             // OPACITY
             //
-            material.SetFloat("_Opacity", opacity);
-            if (opacityTexturePath.Length > 0)
+            material.SetFloat("_Opacity", parameters.opacity);
+            if (parameters.opacityTexturePath.Length > 0)
             {
-                Texture2D tex = GetTexture(opacityTexturePath, true);
+                Texture2D tex = GetTexture(parameters.opacityTexturePath, true);
                 if (tex != null)
                 {
                     material.SetFloat("_UseOpacityMap", 1f);
                     material.SetTexture("_OpacityMap", tex);
-                    if (texturesFlipY.Contains(opacityTexturePath))
+                    if (texturesFlipY.Contains(parameters.opacityTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
@@ -939,9 +989,9 @@ namespace VRtist
             //
             // BASE COLOR
             //
-            Color baseColor = GetColor(data, ref currentIndex);
+            Color baseColor = parameters.baseColor;
             material.SetColor("_BaseColor", baseColor);
-            string baseColorTexturePath = GetString(data, ref currentIndex);
+            string baseColorTexturePath = parameters.baseColorTexturePath;
             if (baseColorTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(baseColorTexturePath, false);
@@ -958,9 +1008,9 @@ namespace VRtist
             //
             // METALLIC
             //
-            float metallic = GetFloat(data, ref currentIndex);
+            float metallic = parameters.metallic;
             material.SetFloat("_Metallic", metallic);
-            string metallicTexturePath = GetString(data, ref currentIndex);
+            string metallicTexturePath = parameters.metallicTexturePath;
             if (metallicTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(metallicTexturePath, true);
@@ -976,9 +1026,9 @@ namespace VRtist
             //
             // ROUGHNESS
             //
-            float roughness = GetFloat(data, ref currentIndex);
+            float roughness = parameters.roughness;
             material.SetFloat("_Roughness", roughness);
-            string roughnessTexturePath = GetString(data, ref currentIndex);
+            string roughnessTexturePath = parameters.roughnessTexturePath;
             if (roughnessTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(roughnessTexturePath, true);
@@ -994,7 +1044,7 @@ namespace VRtist
             //
             // NORMAL
             //
-            string normalTexturePath = GetString(data, ref currentIndex);
+            string normalTexturePath = parameters.normalTexturePath;
             if (normalTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(normalTexturePath, true);
@@ -1010,9 +1060,9 @@ namespace VRtist
             //
             // EMISSION
             //
-            Color emissionColor = GetColor(data, ref currentIndex);
+            Color emissionColor = parameters.emissionColor;
             material.SetColor("_EmissiveColor", baseColor);
-            string emissionColorTexturePath = GetString(data, ref currentIndex);
+            string emissionColorTexturePath = parameters.emissionColorTexturePath;
             if (emissionColorTexturePath.Length > 0)
             {
                 Texture2D tex = GetTexture(emissionColorTexturePath, true);
@@ -1025,8 +1075,6 @@ namespace VRtist
                 }
             }
 
-
-            currentMaterial = material;
         }
 
         public static void BuildAssignMaterial(byte[] data)
@@ -1035,22 +1083,23 @@ namespace VRtist
             string objectName = GetString(data, ref currentIndex);
             string materialName = GetString(data, ref currentIndex);
 
-            
-            Material material = null;
-            foreach (Material mat in materials.Values)
+            if(!materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
             {
-                material = mat;
-                break;
+                Debug.LogError("Could not assign material " + materialName + " to " + objectName);
+                return;
             }
-            //Material material = materials[materialName];
+
+            Material material = GetMaterial(materialParameters.materialType);
             Node prefabNode = SyncData.nodes[objectName];
             MeshRenderer[] renderers = prefabNode.prefab.GetComponentsInChildren<MeshRenderer>();
             if (renderers.Length > 0)
             {
                 foreach (MeshRenderer renderer in renderers)
                 {
-                    //renderer.material = material;
-                    renderer.sharedMaterial = material;                   
+                    renderer.sharedMaterial = material;
+                    Material m = renderer.material;
+                    ApplyMaterialParameters(m, materialParameters);
+                    renderer.material = m;
                 }
                 foreach (Tuple<GameObject, string> item in prefabNode.instances)
                 {
@@ -1059,8 +1108,10 @@ namespace VRtist
                     {
                         foreach (MeshRenderer rend in rends)
                         {
-                            //rend.material = material;
                             rend.sharedMaterial = material;
+                            Material m2 = rend.material;
+                            ApplyMaterialParameters(m2, materialParameters);
+                            rend.material = m2;
                         }
                     }
                 }
@@ -1404,7 +1455,7 @@ namespace VRtist
 
             byte[] triangles = TriangleIndicesToBytes(mesh.triangles);
 
-            Material[] materials = meshInfos.meshRenderer.sharedMaterials;
+            Material[] materials = meshInfos.meshRenderer.materials;
             string[] materialNames = new string[materials.Length];
             int index = 0;
             foreach (Material material in materials)
@@ -1833,7 +1884,8 @@ namespace VRtist
                 filter.mesh = mesh;
                 GameObject obj = filter.gameObject;
                 MeshRenderer meshRenderer = GetOrCreateMeshRenderer(obj);
-                meshRenderer.sharedMaterials = meshesMaterials[meshName].ToArray();
+
+                ApplyMaterialParameters(meshRenderer, meshesMaterials[meshName]);
                 GetOrCreateMeshCollider(obj);
 
                 if (SyncData.nodes.ContainsKey(obj.name))
@@ -1845,7 +1897,7 @@ namespace VRtist
                         instanceMeshFilter.mesh = mesh;
 
                         MeshRenderer instanceMeshRenderer = GetOrCreateMeshRenderer(instance);
-                        instanceMeshRenderer.sharedMaterials = meshesMaterials[meshName].ToArray();
+                        ApplyMaterialParameters(instanceMeshRenderer, meshesMaterials[meshName]);
 
                         MeshCollider meshCollider = GetOrCreateMeshCollider(instance);
                         meshCollider.sharedMesh = null;
@@ -1938,10 +1990,10 @@ namespace VRtist
 
             int materialCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
-            List<Material> meshMaterials = new List<Material>();
+            List<MaterialParameters> meshMaterialParameters = new List<MaterialParameters>();
             if (materialCount == 0)
             {
-                meshMaterials.Add(DefaultMaterial());
+                meshMaterialParameters.Add(DefaultMaterial());
                 materialCount = 1;
             }
             else
@@ -1952,13 +2004,13 @@ namespace VRtist
                     string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
                     currentIndex += materialNameSize + 4;
 
-                    if (materials.ContainsKey(materialName))
+                    if(materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
                     {
-                        meshMaterials.Add(materials[materialName]);
+                        meshMaterialParameters.Add(materialParameters);
                     }
                     else
                     {
-                        meshMaterials.Add(DefaultMaterial());
+                        meshMaterialParameters.Add(DefaultMaterial());
                     }
                 }
             }
@@ -2033,7 +2085,7 @@ namespace VRtist
 
             mesh.RecalculateBounds();
             meshes[meshName] = mesh;
-            meshesMaterials[meshName] = meshMaterials;
+            meshesMaterials[meshName] = meshMaterialParameters;
 
             ConnectMesh(transform, mesh);
             return mesh;
@@ -2197,29 +2249,19 @@ namespace VRtist
         }
         */
 
-        public static Material BuildMaterial(Material baseMaterial, string materialName, Color color)
+        public static MaterialParameters BuildGreasePencilMaterial(string materialName, Color color)
         {
-            Material material = null;
-            if (materials.ContainsKey(materialName))
+            if (!materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))            
             {
-                material = materials[materialName];
-                if (material.shader.name != "HDRP/Unlit")
-                {
-                    material = GameObject.Instantiate(greasePencilMaterial);
-                    material.name = materialName;
-                }
-            }
-            else
-            {
-                material = GameObject.Instantiate(greasePencilMaterial);
-                material.name = materialName;
+                materialParameters = new MaterialParameters();
+                materialParameters.materialType = MaterialType.GreasePencil;
+                materialParameters.name = materialName;
+                materialsParameters[materialName] = materialParameters;
             }
 
-            //if (!strokeEnabled || fillEnabled) { strokeColor.a = 0.0f; }
-            material.SetColor("_UnlitColor", color);
-            materials[materialName] = material;
+            materialParameters.baseColor = color;
 
-            return material;
+            return materialParameters;
         }
 
 
@@ -2234,17 +2276,12 @@ namespace VRtist
             bool strokeOverlap = GetBool(data, ref currentIndex);
             bool fillEnabled = GetBool(data, ref currentIndex);
             string fillStyle = GetString(data, ref currentIndex);
-            Color fillColor = GetColor(data, ref currentIndex);
-
-            if (null == greasePencilMaterial)
-            {
-                greasePencilMaterial = Resources.Load<Material>("Materials/GreasePencilMat");
-            }
+            Color fillColor = GetColor(data, ref currentIndex);           
 
             string materialStrokeName = materialName + "_stroke";
-            string materialFiillName = materialName + "_fill";
-            Material strokeMaterial = BuildMaterial(greasePencilMaterial, materialStrokeName, strokeColor);
-            Material fillMaterial = BuildMaterial(greasePencilMaterial, materialFiillName, fillColor);
+            string materialFillName = materialName + "_fill";
+            MaterialParameters strokeMaterial = BuildGreasePencilMaterial(materialStrokeName, strokeColor);
+            MaterialParameters fillMaterial = BuildGreasePencilMaterial(materialFillName, fillColor);
 
             // stroke enable
             if (strokeEnabled)
@@ -2260,12 +2297,12 @@ namespace VRtist
             // fill
             if (fillEnabled)
             {
-                materialsFillEnabled.Add(materialFiillName);
+                materialsFillEnabled.Add(materialFillName);
             }
             else
             {
-                if (materialsFillEnabled.Contains(materialFiillName))
-                    materialsFillEnabled.Remove(materialFiillName);
+                if (materialsFillEnabled.Contains(materialFillName))
+                    materialsFillEnabled.Remove(materialFillName);
             }
         }
 
@@ -2288,7 +2325,7 @@ namespace VRtist
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
                 CreateStroke(points, numPoints, lineWidth, offset, ref subMesh);
-                subMesh.material = materials[materialNames[materialIndex] + "_stroke"];
+                subMesh.materialParameters = materialsParameters[materialNames[materialIndex] + "_stroke"];
                 frame.strokes.Add(subMesh);
             }
 
@@ -2297,7 +2334,7 @@ namespace VRtist
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
                 CreateFill(points, numPoints, offset, ref subMesh);
-                subMesh.material = materials[materialNames[materialIndex] + "_fill"];
+                subMesh.materialParameters = materialsParameters[materialNames[materialIndex] + "_fill"];
                 frame.strokes.Add(subMesh);
             }
         }
@@ -2333,7 +2370,7 @@ namespace VRtist
             }
         }
 
-        public static Tuple<Mesh, List<Material>> BuildGPFrameMesh(List<GPStroke> strokes)
+        public static Tuple<Mesh, List<MaterialParameters>> BuildGPFrameMesh(List<GPStroke> strokes)
         {
             // Build mesh from sub-meshes
             int vertexCount = 0;
@@ -2357,9 +2394,9 @@ namespace VRtist
             mesh.vertices = vertices;
 
             int currentSubMesh = 0;
-            List<Material> mats = new List<Material>();
+            List<MaterialParameters> mats = new List<MaterialParameters>();
 
-            Tuple<Mesh, List<Material>> result = new Tuple<Mesh, List<Material>>(mesh, mats);
+            Tuple<Mesh, List<MaterialParameters>> result = new Tuple<Mesh, List<MaterialParameters>>(mesh, mats);
 
             int currentIndexIndex = 0;
             foreach (var subMesh in strokes)
@@ -2372,7 +2409,7 @@ namespace VRtist
                 }
 
                 mesh.SetTriangles(triangles, currentSubMesh++);
-                mats.Add(subMesh.material);
+                mats.Add(subMesh.materialParameters);
 
                 currentIndexIndex += verticesCount;
             }
@@ -2455,10 +2492,10 @@ namespace VRtist
                 List<GPFrame> gpframes = GetGPFrames(layers, frame);
                 List<GPStroke> strokes = GetStrokes(gpframes);
 
-                Tuple<Mesh, List<Material>> meshData = BuildGPFrameMesh(strokes);
+                Tuple<Mesh, List<MaterialParameters>> meshData = BuildGPFrameMesh(strokes);
 
                 meshData.Item1.RecalculateBounds();
-                gpdata.AddMesh(frame, new Tuple<Mesh, Material[]>(meshData.Item1, meshData.Item2.ToArray()));
+                gpdata.AddMesh(frame, new Tuple<Mesh, List<MaterialParameters>>(meshData.Item1, meshData.Item2));
             }
         }
         public static void BuildGreasePencilConnection(byte[] data)

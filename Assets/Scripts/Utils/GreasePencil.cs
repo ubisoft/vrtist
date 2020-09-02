@@ -18,14 +18,14 @@ namespace VRtist
 
     public class GreasePencilData
     {
-        public Dictionary<int, Tuple<Mesh, Material[]>> meshes = new Dictionary<int, Tuple<Mesh, Material[]>>();
+        public Dictionary<int, Tuple<Mesh, List<MaterialParameters>>> meshes = new Dictionary<int, Tuple<Mesh, List<MaterialParameters>>>();
         public int frameOffset = 0;
         public float frameScale = 1f;
         public bool hasCustomRange = false;
         public int rangeStartFrame;
         public int rangeEndFrame;
 
-        public void AddMesh(int frame, Tuple<Mesh, Material[]> mesh)
+        public void AddMesh(int frame, Tuple<Mesh, List<MaterialParameters>> mesh)
         {
             meshes[frame] = mesh;
         }
@@ -36,7 +36,7 @@ namespace VRtist
         public GreasePencilData data;
         private int frame = -1;
        
-        private Tuple<Mesh, Material[]> findMesh(int frame)
+        private Tuple<Mesh, List<MaterialParameters>> findMesh(int frame)
         {
             int curFrame = -1;
             int firstFrame = -1;
@@ -71,7 +71,7 @@ namespace VRtist
             }
 
 
-            Tuple<Mesh, Material[]> meshData = findMesh(mappedFrame);
+            Tuple<Mesh, List<MaterialParameters>> meshData = findMesh(mappedFrame);
             if (null == meshData)
                 return;
 
@@ -88,7 +88,8 @@ namespace VRtist
             MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
             if (null == meshRenderer)
                 meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            meshRenderer.materials = meshData.Item2;
+
+            NetGeometry.ApplyMaterialParameters(meshRenderer, meshData.Item2);
         }
 
         // Update is called once per frame
