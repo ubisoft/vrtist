@@ -15,6 +15,9 @@ namespace VRtist
 
         [Header("UI Widgets")]
         public Transform panel = null;
+        public Transform paletteHandle;
+        public Transform consoleHandle;
+        public ConsoleWindow consoleWindow;
 
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
@@ -31,12 +34,15 @@ namespace VRtist
         private UICheckbox displayAvatars;
         private UICheckbox displayFPS;
         private UICheckbox display3DCurves;
+        private UICheckbox showConsoleWindow;
         private UISlider masterVolume;
         private UISlider ambientVolume;
         private UISlider uiVolume;
         private UICheckbox rightHanded;
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
+
+        private bool firstTimeShowConsole = true;
 
         private void Start()
         {
@@ -58,13 +64,14 @@ namespace VRtist
             worldGridCheckbox = displaySubPanel.transform.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
             displayGizmos = displaySubPanel.transform.Find("DisplayGizmos").GetComponent<UICheckbox>();
             displayAvatars = displaySubPanel.transform.Find("DisplayAvatars").GetComponent<UICheckbox>();
-            displayFPS = displaySubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
             display3DCurves = displaySubPanel.transform.Find("Display3DCurves").GetComponent<UICheckbox>();
             masterVolume = soundsSubPanel.transform.Find("Master Volume").GetComponent<UISlider>();
             ambientVolume = soundsSubPanel.transform.Find("Ambient Volume").GetComponent<UISlider>();
             uiVolume = soundsSubPanel.transform.Find("UI Volume").GetComponent<UISlider>();
             rightHanded = advancedSubPanel.transform.Find("RightHanded").GetComponent<UICheckbox>();
             forcePaletteOpen = advancedSubPanel.transform.Find("ForcePaletteOpened").GetComponent<UICheckbox>();
+            displayFPS = advancedSubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
+            showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
 
             Apply(onStart: true);
@@ -291,6 +298,35 @@ namespace VRtist
             {
                 mixer.SetFloat("Volume_UI", volume);
             }
+        }
+
+        public void OnShowConsoleWindow(bool value)
+        {
+            GlobalState.Settings.consoleVisible = value;
+            if (consoleWindow != null && consoleHandle != null)
+            {
+                if (value)
+                {
+                    if (firstTimeShowConsole && consoleHandle.position == Vector3.zero)
+                    {
+                        Vector3 offset = new Vector3(0.5f, 0.5f, 0.0f);
+                        consoleHandle.position = paletteHandle.TransformPoint(offset);
+                        consoleHandle.rotation = paletteHandle.rotation;
+                        firstTimeShowConsole = false;
+                    }
+                    ToolsUIManager.Instance.OpenWindow(consoleHandle, 0.7f);
+                }
+                else
+                {
+                    ToolsUIManager.Instance.CloseWindow(consoleHandle, 0.7f);
+                }
+            }
+        }
+
+        public void OnCloseConsoleWindow()
+        {
+            OnShowConsoleWindow(false);
+            showConsoleWindow.Checked = false;
         }
     }
 }

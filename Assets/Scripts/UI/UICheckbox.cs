@@ -54,7 +54,7 @@ namespace VRtist
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
-        private bool isChecked = false;
+        public bool isChecked = false;
         public bool Checked { get { return isChecked; } set { isChecked = value; UpdateCheckIcon(); } }
 
         public string Text { get { return textContent; } set { SetText(value); } }
@@ -63,7 +63,7 @@ namespace VRtist
         {
             SetColor(Disabled ? DisabledColor
                   : (Pushed ? PushedColor
-//                  : (Checked ? CheckedColor // NO specific color for CHECKED checkboxes.
+                  //                  : (Checked ? CheckedColor // NO specific color for CHECKED checkboxes.
                   : (Selected ? SelectedColor
                   : (Hovered ? HoveredColor
                   : BaseColor))));
@@ -305,10 +305,10 @@ namespace VRtist
 
             Hovered = true;
             Pushed = false;
-            
+
             Checked = !Checked;
             onCheckEvent.Invoke(Checked);
-            
+
             ResetColor();
         }
 
@@ -346,7 +346,7 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
-            
+
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
             if (input.parent)

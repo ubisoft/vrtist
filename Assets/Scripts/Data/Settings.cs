@@ -36,9 +36,12 @@ namespace VRtist
         public Quaternion cameraFeedbackRotation = Quaternion.identity;
         public Vector3 cameraFeedbackScale = new Vector3(160, 90, 100);
         public float cameraFeedbackScaleValue = 1f;
-
         public bool cameraFeedbackVisible = false;
         public float cameraDamping = 50f;
+
+        public bool consoleVisible = false;
+        public Vector3 consolePosition = Vector3.zero;
+        public Quaternion consoleRotation = Quaternion.identity;
 
         public bool castShadows = false;
 
@@ -60,19 +63,28 @@ namespace VRtist
             rightHanded = true;
             forcePaletteOpen = false;
             pinnedPalette = false;
-            dopeSheetVisible = false;
-            cameraPreviewVisible = false;
-            cameraFeedbackVisible = false;
             cameraDamping = 50f;
             castShadows = false;
             scaleSpeed = 50f;
             raySliderDrag = 95.0f;
+
+            dopeSheetVisible = false;
+            dopeSheetPosition = Vector3.zero;
+            dopeSheetRotation = Quaternion.identity;
+
+            cameraPreviewVisible = false;
+            cameraPreviewPosition = Vector3.zero;
+            cameraPreviewRotation = Quaternion.identity;
 
             cameraFeedbackPosition = Vector3.zero;
             cameraFeedbackRotation = Quaternion.identity;
             cameraFeedbackScale = Vector3.one;
             cameraFeedbackScaleValue = 1f;
             cameraFeedbackVisible = false;
+
+            consoleVisible = false;
+            consolePosition = Vector3.zero;
+            consoleRotation = Quaternion.identity;
         }
 
         public void SaveWindowPosition(Transform window)
@@ -100,6 +112,11 @@ namespace VRtist
                 cameraFeedbackScale = window.localScale;
             }
             */
+            if (window.name == "ConsoleHandle")
+            {
+                consolePosition = window.localPosition;
+                consoleRotation = window.localRotation;
+            }
         }
 
         public void LoadWindowPosition(Transform window)
@@ -127,6 +144,11 @@ namespace VRtist
                 window.localScale = cameraFeedbackScale;
             }
             */
+            if (window.name == "ConsoleHandle")
+            {
+                window.localPosition = consolePosition;
+                window.localRotation = consoleRotation;
+            }
         }
 
         private string GetJsonFilename()

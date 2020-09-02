@@ -53,6 +53,7 @@ namespace VRtist
         public UnityEvent onReleaseEvent = new UnityEvent();
 
         public string Text { get { return textContent; } set { SetText(value); } }
+        public Sprite Image { get { return image; } set { SetImage(value); } }
 
         public override void RebuildMesh()
         {
@@ -114,22 +115,65 @@ namespace VRtist
             Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
             if (canvas != null)
             {
-                canvas.sortingOrder = 1;
-
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
                 canvasRT.sizeDelta = new Vector2(width, height);
+
+                float minSide = Mathf.Min(width, height);
+
+                // IMAGE
+                Image image = canvas.GetComponentInChildren<Image>(true);
+                if (image != null)
+                {
+                    image.color = TextColor;
+                    if (content != LabelContent.TextOnly)
+                    {
+                        image.gameObject.SetActive(true);
+
+                        RectTransform rt = image.gameObject.GetComponent<RectTransform>();
+                        if (rt)
+                        {
+                            float m = iconMarginBehavior == IconMarginBehavior.UseWidgetMargin ? margin : iconMargin;
+                            float offsetx = content == LabelContent.TextAndImage ? 0.0f : (width - minSide) / 2.0f;
+                            float offsety = content == LabelContent.TextAndImage ? 0.0f : (height - minSide) / 2.0f;
+                            rt.sizeDelta = new Vector2(minSide - 2.0f * m, minSide - 2.0f * m);
+                            rt.localPosition = new Vector3(m + offsetx, -m - offsety, -0.001f);
+                        }
+                    }
+                    else
+                    {
+                        image.gameObject.SetActive(false);
+                    }
+                }
 
                 // TEXT
                 TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>(true);
                 if (text != null)
                 {
-                    text.text = Text;
-                    text.color = TextColor;
-                    RectTransform rt = text.gameObject.GetComponent<RectTransform>();
-                    if (rt != null)
+                    if (content != LabelContent.ImageOnly)
                     {
-                        rt.sizeDelta = new Vector2((width - 2.0f * margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
-                        rt.localPosition = new Vector3(margin, -margin, -0.002f);
+                        text.gameObject.SetActive(true);
+
+                        text.text = Text;
+                        text.color = TextColor;
+
+                        RectTransform rt = text.gameObject.GetComponent<RectTransform>();
+                        if (rt != null)
+                        {
+                            if (content == LabelContent.TextAndImage)
+                            {
+                                rt.sizeDelta = new Vector2((width - minSide - margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                                rt.localPosition = new Vector3(minSide, -margin, -0.002f);
+                            }
+                            else // TextOnly
+                            {
+                                rt.sizeDelta = new Vector2((width - 2.0f * margin) * 100.0f, (height - 2.0f * margin) * 100.0f);
+                                rt.localPosition = new Vector3(margin, -margin, -0.002f);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        text.gameObject.SetActive(false);
                     }
                 }
             }
@@ -221,6 +265,17 @@ namespace VRtist
             }
         }
 
+        private void SetImage(Sprite sprite)
+        {
+            image = sprite;
+
+            Image img = GetComponentInChildren<Image>();
+            if (null != img)
+            {
+                img.sprite = image;
+            }
+        }
+
         #region ray
 
         public override void OnRayEnter()
@@ -302,7 +357,7 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
-            
+
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
             if (input.parent)
@@ -401,31 +456,71 @@ namespace VRtist
             cs.dynamicPixelsPerUnit = 300; // 300 dpi, sharp font
             cs.referencePixelsPerUnit = 100; // default?
 
-            // Add a Text under the Canvas
-            if (input.caption.Length > 0)
+            // Add image
+            float minSide = Mathf.Min(uiLabel.width, uiLabel.height);
+            GameObject image = new GameObject("Image");
+            image.transform.parent = canvas.transform;
+
+            Image img = image.AddComponent<Image>();
+            img.sprite = input.icon;
+            img.color = input.fgcolor.value;
+
+            RectTransform irt = image.GetComponent<RectTransform>();
+            irt.localScale = Vector3.one;
+            irt.localRotation = Quaternion.identity;
+            irt.anchorMin = new Vector2(0, 1);
+            irt.anchorMax = new Vector2(0, 1);
+            irt.pivot = new Vector2(0, 1); // top left
+            // TODO: non square icons ratio...
+            if (uiLabel.iconMarginBehavior == IconMarginBehavior.UseWidgetMargin)
             {
-                GameObject text = new GameObject("Text");
-                text.transform.parent = canvas.transform;
-
-                TextMeshPro t = text.AddComponent<TextMeshPro>();
-                t.text = input.caption;
-                t.enableAutoSizing = true;
-                t.fontSizeMin = 1;
-                t.fontSizeMax = 500;
-                t.renderer.sortingOrder = 1;
-                t.fontStyle = FontStyles.Normal;
-                t.alignment = TextAlignmentOptions.MidlineLeft;
-                t.color = input.fgcolor.value;
-
-                RectTransform trt = t.GetComponent<RectTransform>();
-                trt.localScale = 0.01f * Vector3.one;
-                trt.sizeDelta = new Vector2((uiLabel.width - 2.0f * input.margin ) * 100.0f, (uiLabel.height - 2.0f * input.margin ) * 100.0f);
-                trt.localRotation = Quaternion.identity;
-                trt.anchorMin = new Vector2(0, 1);
-                trt.anchorMax = new Vector2(0, 1);
-                trt.pivot = new Vector2(0, 1); // top left
-                trt.localPosition = new Vector3(input.margin, -input.margin, -0.002f); // centered, on-top
+                irt.sizeDelta = new Vector2(minSide - 2.0f * input.margin, minSide - 2.0f * input.margin);
+                irt.localPosition = new Vector3(input.margin, -input.margin, -0.001f);
             }
+            else // IconMarginBehavior.UseIconMargin for the moment
+            {
+                irt.sizeDelta = new Vector2(minSide - 2.0f * uiLabel.iconMargin, minSide - 2.0f * uiLabel.iconMargin);
+                irt.localPosition = new Vector3(uiLabel.iconMargin, -uiLabel.iconMargin, -0.001f);
+            }
+
+            image.SetActive(input.labelContent != LabelContent.TextOnly);
+
+
+            // Add a Text under the Canvas
+            GameObject text = new GameObject("Text");
+            text.transform.parent = canvas.transform;
+
+            TextMeshPro t = text.AddComponent<TextMeshPro>();
+            t.text = input.caption;
+            t.enableAutoSizing = false;
+            t.fontSize = 16;
+            t.fontSizeMin = 18;
+            t.fontSizeMax = 18;
+            t.fontStyle = FontStyles.Normal;
+            t.alignment = TextAlignmentOptions.MidlineLeft;
+            t.color = input.fgcolor.value;
+
+            RectTransform trt = t.GetComponent<RectTransform>();
+            trt.localScale = 0.01f * Vector3.one;
+            trt.localRotation = Quaternion.identity;
+            trt.anchorMin = new Vector2(0, 1);
+            trt.anchorMax = new Vector2(0, 1);
+            trt.pivot = new Vector2(0, 1); // top left
+
+            // TODO: option for V Margin.
+
+            if (input.labelContent == LabelContent.TextAndImage)
+            {
+                trt.sizeDelta = new Vector2((input.width - minSide - input.margin) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
+                trt.localPosition = new Vector3(minSide, 0.0f, -0.002f);
+            }
+            else // TextOnly
+            {
+                trt.sizeDelta = new Vector2((input.width - 2.0f * input.margin) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
+                trt.localPosition = new Vector3(input.margin, -input.margin, -0.002f);
+            }
+
+            text.SetActive(input.labelContent != LabelContent.ImageOnly);
 
             UIUtils.SetRecursiveLayer(go, "UI");
 
