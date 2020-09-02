@@ -664,6 +664,26 @@ namespace VRtist
                         cameraController.focal = currentFocal;
                         SendCameraFocal(cameraController);
                     }
+
+                    foreach(GameObject obj in Selection.selection.Values)
+                    {
+                        ParametersController controller = obj.GetComponent<ParametersController>();
+                        if(null == controller)
+                        {
+                            Vector3 currentScale = obj.transform.localScale;
+                            float newScale = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
+                            if (joystickAxis.x > deadZone)
+                                currentScale *= newScale;
+                            if (joystickAxis.x < -deadZone)
+                                currentScale /= newScale;
+
+                            if (currentScale.x < 0.0001f)
+                                continue;
+                            if (currentScale.x > 1000f)
+                                continue;
+                            obj.transform.localScale = currentScale;
+                        }
+                    }
                 }
                 else
                 {
