@@ -14,6 +14,7 @@ namespace VRtist
 
         enum LightTools { None = 0, Sun, Spot, Point }
 
+        private Transform globalCastShadows;
         private Transform intensitySlider;
         private Transform rangeSlider;
         //private Transform innerAngleSlider;
@@ -64,6 +65,9 @@ namespace VRtist
             GlobalState.ObjectRenamedEvent.AddListener(OnLightRenamed);
             if (null != lightList) { lightList.ItemClickedEvent += OnSelectLightItem; }
             lightItemPrefab = Resources.Load<GameObject>("Prefabs/UI/LightItem");
+
+            globalCastShadows = panel.Find("GlobalCastShadows");
+            SetCheckboxValue(globalCastShadows, GlobalState.Instance.settings.castShadows);
         }
 
         private void Start()
