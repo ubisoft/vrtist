@@ -611,6 +611,7 @@ namespace VRtist
             Shader hdrplit = Shader.Find("VRtist/BlenderImport");
 #endif
             Material material = new Material(hdrplit);
+            material.enableInstancing = true;
             material.name = name;
             material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
             material.SetFloat("_Metallic", 0.0f);
@@ -625,6 +626,7 @@ namespace VRtist
             string name = "default unlit";
             Shader hdrpunlit = Shader.Find("HDRP/Unlit");
             Material material = new Material(hdrpunlit);
+            material.enableInstancing = true;
             material.name = name;
             material.SetColor("_BaseColor", new Color(0.8f, 0.8f, 0.8f));
             material.SetFloat("_Metallic", 0.0f);
@@ -886,6 +888,19 @@ namespace VRtist
             string opacityTexturePath = GetString(data, ref currentIndex);
 
             Material material;
+            
+            if(materials.Count > 0)
+            {
+                foreach(Material mat in materials.Values)
+                {
+                    material = mat;
+                    currentMaterial = material;
+                    material.enableInstancing = true;
+                    return;
+                }
+            }
+            
+
             if (materials.ContainsKey(name))
                 material = materials[name];
             else
@@ -1020,14 +1035,22 @@ namespace VRtist
             string objectName = GetString(data, ref currentIndex);
             string materialName = GetString(data, ref currentIndex);
 
-            Material material = materials[materialName];
+            
+            Material material = null;
+            foreach (Material mat in materials.Values)
+            {
+                material = mat;
+                break;
+            }
+            //Material material = materials[materialName];
             Node prefabNode = SyncData.nodes[objectName];
             MeshRenderer[] renderers = prefabNode.prefab.GetComponentsInChildren<MeshRenderer>();
             if (renderers.Length > 0)
             {
                 foreach (MeshRenderer renderer in renderers)
                 {
-                    renderer.material = material;
+                    //renderer.material = material;
+                    renderer.sharedMaterial = material;                   
                 }
                 foreach (Tuple<GameObject, string> item in prefabNode.instances)
                 {
@@ -1036,7 +1059,8 @@ namespace VRtist
                     {
                         foreach (MeshRenderer rend in rends)
                         {
-                            rend.material = material;
+                            //rend.material = material;
+                            rend.sharedMaterial = material;
                         }
                     }
                 }
