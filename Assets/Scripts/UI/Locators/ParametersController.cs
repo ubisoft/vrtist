@@ -11,6 +11,7 @@ namespace VRtist
         protected Transform world = null;
 
         public bool locked = false;
+        public string controllerName;
 
         public virtual void CopyParameters(ParametersController sourceController)
         {

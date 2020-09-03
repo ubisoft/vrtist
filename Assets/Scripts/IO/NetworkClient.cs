@@ -1171,6 +1171,13 @@ namespace VRtist
         public static Transform BuildPath(byte[] data, ref int bufferIndex, bool includeLeaf)
         {
             string path = GetString(data, ref bufferIndex);
+            if(!includeLeaf)
+            {
+                int index = path.LastIndexOf('/');
+                if (index == -1)
+                    return null;
+                path = path.Substring(0, index);
+            }
             return SyncData.GetOrCreatePrefabPath(path);
         }
 
@@ -1627,28 +1634,36 @@ namespace VRtist
         public static void BuildCamera(Transform root, byte[] data)
         {
             int currentIndex = 0;
-            string path = GetString(data, ref currentIndex);
-
-            Transform transform = root;
+            Transform transform = BuildPath(data, ref currentIndex, false);
             if (transform == null)
-                return;
+                transform = root;
 
+            currentIndex = 0;
+            string leafName = GetString(data, ref currentIndex);
+            int index = leafName.LastIndexOf('/');
+            if (index != -1)
+            {
+                leafName = leafName.Substring(index + 1, leafName.Length - index - 1);
+            }
             string name = GetString(data, ref currentIndex);
 
             GameObject camGameObject = null;
-            Transform camTransform = SyncData.FindChild(transform, name);
-            if (camTransform == null)
+            Node node = null;
+            if (!SyncData.nodes.ContainsKey(leafName))
             {
-                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, name, isPrefab: true);
-                Node node = SyncData.CreateNode(name);
+                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, leafName, isPrefab: true);
+                node = SyncData.CreateNode(name);
                 node.prefab = camGameObject;
+                CameraController camera = camGameObject.GetComponentInChildren<CameraController>(true);
+                camera.controllerName = name;
 
                 //camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
                 //camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
             }
             else // TODO: found a case where a camera was found (don't know when it was created???), but had no Camera child object.
             {
-                camGameObject = camTransform.gameObject;
+                node = SyncData.nodes[leafName];
+                camGameObject = node.prefab;
             }
 
             float focal = BitConverter.ToSingle(data, currentIndex);
@@ -1687,41 +1702,49 @@ namespace VRtist
         public static void BuildLight(Transform root, byte[] data)
         {
             int currentIndex = 0;
-            string path = GetString(data, ref currentIndex);
-            Transform transform = root;/*BuildPath(root, data, 0, false, out currentIndex);*/
+            Transform transform = BuildPath(data, ref currentIndex, false);
             if (transform == null)
-                return;
+                transform = root;
 
+            currentIndex = 0;
+            string leafName = GetString(data, ref currentIndex);
+            int index = leafName.LastIndexOf('/');
+            if (index != -1)
+            {
+                leafName = leafName.Substring(index + 1, leafName.Length - index - 1);
+            }
             string name = GetString(data, ref currentIndex);
 
             LightType lightType = (LightType) BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject = null;
-            Transform lightTransform = SyncData.FindChild(transform, name);
-            if (lightTransform == null)
+            Node node = null;
+            if (!SyncData.nodes.ContainsKey(leafName))
             {
                 switch (lightType)
                 {
                     case LightType.Directional:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform, name);
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform, leafName);
                         break;
                     case LightType.Point:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform, name);
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform, leafName);
                         break;
                     case LightType.Spot:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform, name);
+                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform, leafName);
                         break;
                     default:
                         return;
                 }
-                //lightGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
-                Node node = SyncData.CreateNode(name);
+                node = SyncData.CreateNode(leafName);
                 node.prefab = lightGameObject;
+                LightController light = lightGameObject.GetComponentInChildren<LightController>(true);
+                light.controllerName = name;
             }
             else
             {
-                lightGameObject = lightTransform.gameObject;
+                node = SyncData.nodes[leafName];
+                lightGameObject = node.prefab;
             }
 
             // Read data
@@ -1743,7 +1766,7 @@ namespace VRtist
             currentIndex += sizeof(float);
 
             // Set data to all instances
-            LightController lightController = lightGameObject.GetComponent<LightController>();
+            LightController lightController = lightGameObject.GetComponentInChildren<LightController>(true);
             if (!lightController)
                 return;
             lightController.lightType = lightType;
@@ -1757,10 +1780,10 @@ namespace VRtist
             }
             lightController.castShadows = shadow != 0 ? true : false;
 
-            foreach (Tuple<GameObject, string> t in SyncData.nodes[lightGameObject.name].instances)
+            foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                LightController lightContr = gobj.GetComponent<LightController>();
+                LightController lightContr = gobj.GetComponentInChildren<LightController>(true);
 
                 lightContr.CopyParameters(lightController);
             }
