@@ -170,7 +170,11 @@ namespace VRtist
 
             // Get controller to set the name
             ParametersController controller = res.GetComponent<ParametersController>();
-            if (null != controller) { controller.SetName(appliedName); }
+            if (null != controller) 
+            { 
+                controller.SetName(appliedName);
+                controller.controllerName = appliedName;
+            }
 
             // Name material too
             MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>(true);

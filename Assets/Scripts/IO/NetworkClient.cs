@@ -1321,9 +1321,10 @@ namespace VRtist
                 path = current.name + "/" + path;
             }
             byte[] bpath = StringToBytes(path);
-            byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             CameraController cameraController = cameraInfo.transform.GetComponent<CameraController>();
+            byte[] bname = StringToBytes(cameraController.controllerName);
+
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int) cam.gateFit;
 
@@ -1351,7 +1352,6 @@ namespace VRtist
                 path = current.name + "/" + path;
             }
             byte[] bpath = StringToBytes(path);
-            byte[] bname = StringToBytes(lightInfo.transform.name);
 
             Light light = lightInfo.transform.GetComponentInChildren<Light>();
             int shadow = light.shadows != LightShadows.None ? 1 : 0;
@@ -1363,6 +1363,8 @@ namespace VRtist
             float worldScale = root.parent.localScale.x;
 
             LightController lightController = lightInfo.transform.GetComponentInChildren<LightController>();
+            byte[] bname = StringToBytes(lightController.controllerName);
+
             float power = lightController.GetPower();
 
             float intensity = lightController.intensity;
