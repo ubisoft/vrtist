@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -76,6 +77,8 @@ namespace VRtist
             initCameraRotation = transform.rotation; // for reset
 
             rightHanded = world.Find("Avatars");
+
+            StartCoroutine(SendPlayerTransform());
         }
 
         void Update()
@@ -107,14 +110,16 @@ namespace VRtist
                 if (IsCompatibleWithUndoRedo(options.currentNavigationMode))
                 {
                     HandleUndoRedo();
-                }
+                }                
+            }
+        }
 
+        IEnumerator SendPlayerTransform()
+        {
+            while (true)
+            {
                 // Send position and orientation
-                Vector3 forward = new Vector3(
-                    Mathf.RoundToInt(vrCamera.forward.x * 10f) / 10f,
-                    Mathf.RoundToInt(vrCamera.forward.y * 10f) / 10f,
-                    Mathf.RoundToInt(vrCamera.forward.z * 10f) / 10f
-                );
+                Vector3 forward = vrCamera.forward;
                 if (vrCamera.position != previousPosition || previousForward != forward)
                 {
                     previousPosition = vrCamera.position;
@@ -139,6 +144,7 @@ namespace VRtist
                         NetworkClient.GetInstance().SendPlayerTransform(GlobalState.networkUser);
                     }
                 }
+                yield return new WaitForSeconds(1f / 15f);
             }
         }
 

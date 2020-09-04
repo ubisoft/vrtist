@@ -760,7 +760,14 @@ namespace VRtist
             }
 
             string objectName = splitted[splitted.Length - 1];
-            Transform transform = FindChild(prefab, objectName);
+
+            Node child;
+            Transform transform = null;
+            if (nodes.TryGetValue(objectName, out child))
+            {
+                transform = child.prefab.transform;
+            }
+
             Node node = null;
             if(null == transform)
             {

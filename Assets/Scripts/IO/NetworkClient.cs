@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -956,12 +957,20 @@ namespace VRtist
             {
                 materials[i] = GetMaterial(materialParameters[i].materialType);
             }
+
+            Material[] materialsToDestroy = meshRenderer.materials;
+            for (int i = 0; i < materialsToDestroy.Length; i++)
+                GameObject.Destroy(materialsToDestroy[i]);
+
             meshRenderer.sharedMaterials = materials;
+            Material[] instanceMaterials = meshRenderer.materials;
             for (int i = 0; i < materialParameters.Length; i++)
             {
-                ApplyMaterialParameters(meshRenderer.materials[i], materialParameters[i]);
+                ApplyMaterialParameters(instanceMaterials[i], materialParameters[i]);
             }
+            meshRenderer.materials = instanceMaterials;
         }
+
         public static void ApplyMaterialParameters(Material material, MaterialParameters parameters)
         {
             if(parameters.materialType == MaterialType.GreasePencil)
@@ -1097,9 +1106,9 @@ namespace VRtist
                 foreach (MeshRenderer renderer in renderers)
                 {
                     renderer.sharedMaterial = material;
-                    Material m = renderer.material;
-                    ApplyMaterialParameters(m, materialParameters);
-                    renderer.material = m;
+                    Material instanceMaterial = renderer.material;
+                    ApplyMaterialParameters(instanceMaterial, materialParameters);
+                    renderer.material = instanceMaterial;
                 }
                 foreach (Tuple<GameObject, string> item in prefabNode.instances)
                 {
@@ -1109,9 +1118,9 @@ namespace VRtist
                         foreach (MeshRenderer rend in rends)
                         {
                             rend.sharedMaterial = material;
-                            Material m2 = rend.material;
-                            ApplyMaterialParameters(m2, materialParameters);
-                            rend.material = m2;
+                            Material instanceMaterial = rend.material;
+                            ApplyMaterialParameters(instanceMaterial, materialParameters);
+                            rend.material = instanceMaterial;
                         }
                     }
                 }
@@ -1223,7 +1232,6 @@ namespace VRtist
             transform.localScale = s;
 
             SyncData.ApplyTransformToInstances(transform);
-            SyncData.ApplyVisibilityToInstances(transform);
 
             return transform;
         }
@@ -2579,6 +2587,7 @@ namespace VRtist
         {
             int index = 0;
             int frame = GetInt(data, ref index);
+
             GlobalState.currentFrame = frame;
         }
 
@@ -2905,6 +2914,7 @@ namespace VRtist
         {
             Connect();
             SyncData.Init(prefab, root);
+            StartCoroutine(ProcessIncomingCommands());
         }
 
         IPAddress GetIpAddressFromHostname(string hostname)
@@ -3254,6 +3264,7 @@ namespace VRtist
             }
         }
 
+        public DateTime before = DateTime.Now;
         void Run()
         {
             while (alive)
@@ -3268,7 +3279,14 @@ namespace VRtist
                     {
                         lock (this)
                         {
-                            receivedCommands.Add(command);
+                            if (command.messageType == MessageType.ClientIdWrapper)
+                            {
+                                UnpackFromClientId(command, ref receivedCommands);
+                            }
+                            else
+                            {
+                                receivedCommands.Add(command);
+                            }                            
                         }
                     }
                 }
@@ -3287,7 +3305,7 @@ namespace VRtist
             }
         }
 
-        public NetCommand ConvertFromClientId(NetCommand command)
+        public bool UnpackFromClientId(NetCommand command, ref List<NetCommand> commands)
         {
             int index = 0;
             string masterId = NetGeometry.GetString(command.data, ref index);
@@ -3297,39 +3315,51 @@ namespace VRtist
                 GlobalState.networkUser.masterId = masterId;
 
             if (masterId != GlobalState.networkUser.masterId)
-                return null;
+                return false;
 
-            int messageType = NetGeometry.GetInt(command.data, ref index);
+            int remainingData = command.data.Length - index;
+            while(remainingData > 0)
+            {
+                int dataLength = NetGeometry.GetInt(command.data, ref index);
+                remainingData -= dataLength + sizeof(int);
 
-            int newSize = command.data.Length - index;
-            byte[] newBuffer = new byte[newSize];
+                dataLength -= sizeof(int);
+                int messageType = NetGeometry.GetInt(command.data, ref index);
+                byte[] newBuffer = new byte[dataLength];
 
-            Buffer.BlockCopy(command.data, index, newBuffer, 0, newSize);
+                Buffer.BlockCopy(command.data, index, newBuffer, 0, dataLength);
+                index += dataLength;
 
-            return new NetCommand(newBuffer, (MessageType) messageType);
+                NetCommand newCommand = new NetCommand(newBuffer, (MessageType)messageType);
+                commands.Add(newCommand);
+            }
+
+            return true;
         }
 
         public int i = 0;
+        public List<NetCommand> commands = new List<NetCommand>();
+        int commandProcessedCount = 0;
 
-        void Update()
+        IEnumerator ProcessIncomingCommands()
         {
-            DateTime before = DateTime.Now;
-            int commandProcessedCount = 0;
-
-            lock (this)
+            while (true)
             {
-                if (receivedCommands.Count == 0)
-                    return;
-
-                foreach (NetCommand com in receivedCommands)
+                lock (this)
                 {
-                    NetCommand command = com;
-                    if (command.messageType == MessageType.ClientIdWrapper)
-                    {
-                        command = ConvertFromClientId(command);
-                        if (null == command)
-                            continue;
-                    }
+                    commands.AddRange(receivedCommands);
+                    receivedCommands.Clear();
+                }
+
+                if (commands.Count == 0)
+                    yield return null;
+
+                DateTime before = DateTime.Now;
+                bool prematuredExit = false;
+                foreach (NetCommand command in commands)
+                {
+                    commandProcessedCount++;
+
                     try
                     {
                         switch (command.messageType)
@@ -3472,14 +3502,17 @@ namespace VRtist
 
                     DateTime after = DateTime.Now;
                     TimeSpan duration = after.Subtract(before);
-                    commandProcessedCount++;
-                    if (duration.Milliseconds > 40)
+                    if (duration.Milliseconds > 20)
                     {
-                        receivedCommands.RemoveRange(0, commandProcessedCount);
-                        return;
+                        commands.RemoveRange(0, commandProcessedCount);
+                        prematuredExit = true;
+                        break;
                     }
                 }
-                receivedCommands.Clear();
+                if(!prematuredExit)
+                    commands.Clear();
+                commandProcessedCount = 0;
+                yield return null;
             }
         }
 
