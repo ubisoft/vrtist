@@ -148,7 +148,7 @@ namespace VRtist
             }
 
             // obj is selected => reset hoveredObject
-            if(IsSelected(obj) && hoveredObject != null)
+            if(hoveredObject != null && IsSelected(obj))
             {
                 hoveredObject = null;
                 UpdateCurrentObjectOutline();
@@ -156,7 +156,7 @@ namespace VRtist
             }
 
             // not selected, hover it
-            if (hoveredObject != obj)
+            if (hoveredObject != obj && !IsSelected(obj))
             {
                 hoveredObject = obj;
                 UpdateCurrentObjectOutline();
