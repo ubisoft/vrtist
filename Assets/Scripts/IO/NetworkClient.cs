@@ -2649,8 +2649,10 @@ namespace VRtist
             {
                 Node prefabNode = SyncData.nodes[cameraName];
                 // We only have one instance of any camera in the scene
+                /*
                 CameraController controller = prefabNode.instances[0].Item1.GetComponent<CameraController>();
                 if (null != controller) { Selection.SetActiveCamera(controller); }
+                */
             }
         }
 

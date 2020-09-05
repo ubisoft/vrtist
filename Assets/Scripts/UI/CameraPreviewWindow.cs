@@ -58,7 +58,9 @@ namespace VRtist
 
         private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
         {
-            CameraController cameraController = args.activeCamera.GetComponent<CameraController>();
+            CameraController cameraController = null;
+            if(args.activeCamera)
+                cameraController = args.activeCamera.GetComponent<CameraController>();
             if (null != cameraController)
                 UpdateFromController(cameraController);
             else

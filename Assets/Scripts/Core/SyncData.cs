@@ -807,7 +807,7 @@ namespace VRtist
 
         public static void ApplyVisibility(GameObject obj, bool inheritVisible = true, string instanceName = "")
         {
-            Node node = nodes[obj.name];
+            Node node = nodes[obj.name];            
             CollectionNode collectionNode = node.collectionInstance;
             if(null != collectionNode)
             {
@@ -846,6 +846,27 @@ namespace VRtist
             //obj.SetActive(node.containerVisible & node.visible);
         }
 
+        public static bool IsInstanceParentVisible(GameObject instance)
+        {
+            bool parentIsVisible = true;
+            Transform parentObject = instance.transform.parent.parent;
+            while (parentObject && parentIsVisible)
+            {
+                if (parentObject.name == "__Offset")
+                    parentObject = parentObject.parent;
+                nodes.TryGetValue(parentObject.name, out Node parentNode);
+                if (null == parentNode)
+                    break;
+                if (!parentNode.visible || !parentNode.tempVisible)
+                {
+                    parentIsVisible = false;
+                    break;
+                }
+                parentObject = parentObject.parent.parent;
+            }
+            return parentIsVisible;
+        }
+
         public static void ApplyVisibilityToInstances(Transform transform)
         {
             if (!nodes.ContainsKey(transform.name))
@@ -855,7 +876,7 @@ namespace VRtist
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject obj = t.Item1;
-                ApplyVisibility(obj);
+                ApplyVisibility(obj, IsInstanceParentVisible(obj));
             }
         }
 

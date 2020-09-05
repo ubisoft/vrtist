@@ -47,7 +47,6 @@ namespace VRtist
         public float deadZone = 0.8f;
 
         private Transform controller;
-        private Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
 
         public UIDynamicList cameraList;
         private GameObject cameraItemPrefab;
@@ -128,7 +127,7 @@ namespace VRtist
                 cameraPreviewHandle.position = Vector3.zero;
             }
 
-            cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
+            GlobalState.Instance.cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
             Init();
 
@@ -148,7 +147,7 @@ namespace VRtist
 
         void Start()
         {
-            cameraPreviewDirection = backgroundFeedback.forward;
+            GlobalState.Instance.cameraPreviewDirection = backgroundFeedback.forward;
         }
 
         protected override void Init()
@@ -221,30 +220,6 @@ namespace VRtist
             }
         }
 
-        protected void UpdateCameraFeedback(Vector3 position, Vector3 direction)
-        {
-            GameObject currentCamera = Selection.activeCamera;
-            float far = 1000f * 0.7f; // 70% of far clip plane
-            float fov = 36.3f;
-            float aspect = 16f / 9f;
-            if (null != currentCamera)
-            {
-                far = Camera.main.farClipPlane * 0.7f;
-                fov = Camera.main.fieldOfView;
-
-                Camera cam = currentCamera.GetComponentInChildren<Camera>();
-                aspect = cam.aspect;
-            }
-            float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
-            backgroundFeedback.position = position + direction.normalized * far;
-            backgroundFeedback.rotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
-            backgroundFeedback.localScale = new Vector3(scale * aspect, scale, scale);
-
-            GlobalState.Settings.cameraFeedbackPosition = backgroundFeedback.position;
-            GlobalState.Settings.cameraFeedbackRotation = backgroundFeedback.rotation;
-            GlobalState.Settings.cameraFeedbackScale = backgroundFeedback.localScale;
-        }
-
         public override void OnUIObjectEnter(int gohash)
         {
             feedbackPositioning = false;
@@ -261,10 +236,6 @@ namespace VRtist
             GlobalState.Settings.cameraFeedbackVisible = value;
 
             backgroundFeedback.gameObject.SetActive(value);
-            if (value)
-            {
-                UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
-            }
 
             UICheckbox feedbackPositionningCB = feedbackPositionningCheckbox.GetComponent<UICheckbox>();
             if (feedbackPositionningCB != null)
@@ -428,7 +399,7 @@ namespace VRtist
                 if (feedbackPositioning
                     && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
                 {
-                    cameraPreviewDirection = transform.forward;
+                    GlobalState.Instance.cameraPreviewDirection = transform.forward;
                     trigger = true;
                 }
                 if (trigger)
@@ -440,7 +411,6 @@ namespace VRtist
                     if (joystickAxis.y < -deadZone)
                         GlobalState.Settings.cameraFeedbackScaleValue /= cameraFeedbackScaleFactor;
                 }
-                UpdateCameraFeedback(transform.parent.parent.position, cameraPreviewDirection);
             }
 
             // called to update focal slider value

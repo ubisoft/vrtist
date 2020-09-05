@@ -96,6 +96,8 @@ namespace VRtist
         // Animation
         private AnimationController animationController = new AnimationController();
 
+        public Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
+
         public static void FireObjectAdded(GameObject gObject)
         {
             ObjectAddedEvent.Invoke(gObject);
