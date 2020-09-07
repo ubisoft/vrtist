@@ -52,6 +52,12 @@ namespace VRtist
         public float raySliderDrag = 95.0f;
         public float RaySliderDrag { get { return 1.0f - (raySliderDrag / 100.0f); } }
 
+        [Range(1f, 100f)]
+        public float raySliderAccurateDrag = 90.0f;
+        public float RaySliderAccurateDrag { get { return 1.0f - (raySliderAccurateDrag / 100.0f); } }
+
+        public AnimationCurve focalCurve;
+
         public void Reset()
         {
             displayGizmos = true;

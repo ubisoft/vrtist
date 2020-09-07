@@ -486,6 +486,7 @@ namespace VRtist
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
             VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+            bool primary = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
 
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);
@@ -518,7 +519,8 @@ namespace VRtist
 
             if (!triggerJustClicked) // if trigger just clicked, use the actual projection, no interpolation.
             {
-                localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+                float drag = primary ? GlobalState.Settings.RaySliderAccurateDrag : GlobalState.Settings.RaySliderDrag;
+                localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, drag);
             }
 
             // CLAMP
@@ -536,11 +538,12 @@ namespace VRtist
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
             if (HasCurveData())
             {
-                Value = dataCurve.Evaluate(pct);
+                Value = primary ? Mathf.RoundToInt(dataCurve.Evaluate(pct)) : dataCurve.Evaluate(pct);
             }
             else // linear
             {
-                Value = minValue + pct * (maxValue - minValue); // will replace the slider cursor.
+                float v = minValue + pct * (maxValue - minValue);
+                Value = primary ? Mathf.RoundToInt(v) : v; // will replace the slider cursor.
             }
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);

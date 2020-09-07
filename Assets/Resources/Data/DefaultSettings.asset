@@ -26,18 +26,22 @@ MonoBehaviour:
   palettePosition: {x: -0.02, y: 0.05, z: -0.05}
   paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   pinnedPalette: 0
-  dopeSheetPosition: {x: 0.053405333, y: 1.596644, z: 0.5588254}
-  dopeSheetRotation: {x: 0.11454293, y: 0.106019005, z: -0.04046857, w: 0.9869155}
-  dopeSheetVisible: 1
+  dopeSheetPosition: {x: 0.060833056, y: 1.5496342, z: 0.37308997}
+  dopeSheetRotation: {x: 0.16400424, y: 0.0703451, z: -0.010577361, w: 0.9838914}
+  dopeSheetVisible: 0
   cameraPreviewPosition: {x: 0.35908973, y: 1.535397, z: 0.4590031}
   cameraPreviewRotation: {x: 0.06101212, y: 0.3917295, z: -0.11199341, w: 0.9111987}
-  cameraPreviewVisible: 1
-  cameraFeedbackPosition: {x: 0.02355202, y: 1.315273, z: 700.169}
-  cameraFeedbackRotation: {x: -0, y: -0.0000013550526, z: -0, w: -1}
-  cameraFeedbackScale: {x: 203.97475, y: 114.735794, z: 114.735794}
+  cameraPreviewVisible: 0
+  cameraFeedbackPosition: {x: -0.2781396, y: 1.1537256, z: 700.33246}
+  cameraFeedbackRotation: {x: -0, y: -0.0000027538176, z: -0, w: -1}
+  cameraFeedbackScale: {x: 825.7168, y: 464.4657, z: 464.4657}
   cameraFeedbackScaleValue: 1
   cameraFeedbackVisible: 1
   cameraDamping: 33.733616
+  consoleVisible: 1
+  consolePosition: {x: 0.48863688, y: 1.5318522, z: 0.34476107}
+  consoleRotation: {x: 0.13086647, y: 0.4864504, z: -0.08258568, w: 0.8598951}
   castShadows: 1
   scaleSpeed: 50
   raySliderDrag: 95
+  raySliderAccurateDrag: 92

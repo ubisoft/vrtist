@@ -45,13 +45,13 @@ namespace VRtist
             if (null == focalSlider)
             {
                 focalSlider = gameObject.GetComponentInChildren<UISlider>();
-                focalSlider.onSlideEvent.AddListener(OnFocalSliderChange);
+                focalSlider.onSlideEventInt.AddListener(OnFocalSliderChange);
                 focalSlider.onClickEvent.AddListener(OnFocalClicked);
                 focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
             }
         }
 
-        private void OnFocalSliderChange(float focal)
+        private void OnFocalSliderChange(int focal)
         {
             this.focal = focal;
             ComputeFOV();

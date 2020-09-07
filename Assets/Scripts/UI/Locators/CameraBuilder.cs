@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -33,13 +32,7 @@ namespace VRtist
                     caption = "Focal",
                     currentValue = 35f
                 });
-                focalSlider.dataCurve = new AnimationCurve(new Keyframe(0f, 10f), new Keyframe(.7f, 70f), new Keyframe(1f, 300f));
-                for (int index = 0; index < 3; index++)
-                {
-                    AnimationUtility.SetKeyBroken(focalSlider.dataCurve, index, true);
-                    AnimationUtility.SetKeyLeftTangentMode(focalSlider.dataCurve, index, AnimationUtility.TangentMode.Linear);
-                    AnimationUtility.SetKeyRightTangentMode(focalSlider.dataCurve, index, AnimationUtility.TangentMode.Linear);
-                }
+                focalSlider.dataCurve = GlobalState.Settings.focalCurve;
                 focalSlider.BuildInverseCurve();
                 focalSlider.dataSource = UISlider.SliderDataSource.Curve;
                 focalSlider.RelativeLocation = new Vector3(-0.30f, -0.0105f, -UISlider.default_thickness);
