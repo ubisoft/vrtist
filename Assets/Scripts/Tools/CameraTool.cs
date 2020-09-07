@@ -383,7 +383,7 @@ namespace VRtist
             UpdateUI();
         }
 
-        public void SendCameraParams(GameObject camera)
+        public static void SendCameraParams(GameObject camera)
         {
             CameraInfo cameraInfo = new CameraInfo();
             cameraInfo.transform = camera.transform;

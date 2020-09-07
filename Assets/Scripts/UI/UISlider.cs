@@ -377,7 +377,7 @@ namespace VRtist
             knob.transform.localPosition = knobPosition;
         }
 
-        private void BuildInverseCurve()
+        public void BuildInverseCurve()
         {
             if (dataCurve == null)
                 return;
@@ -477,6 +477,7 @@ namespace VRtist
         public override void OnRayReleaseOutside()
         {
             base.OnRayReleaseOutside();
+            onReleaseEvent.Invoke();
         }
 
         public override bool OverridesRayEndPoint() { return true; }

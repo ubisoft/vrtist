@@ -9,6 +9,11 @@ namespace VRtist
         public float focal = 35f;
         public float near = 0.07f;
         public float far = 1000f;
+        public float filmHeight = 24f;
+
+        private UISlider focalSlider = null;
+        private bool focalActionSelected;
+        private CommandSetValue<float> focalValueCommand;
 
         private LineRenderer frustumRenderer = null;
 
@@ -36,6 +41,47 @@ namespace VRtist
                 frustumRenderer.enabled = false;
             }
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
+
+            if (null == focalSlider)
+            {
+                focalSlider = gameObject.GetComponentInChildren<UISlider>();
+                focalSlider.onSlideEvent.AddListener(OnFocalSliderChange);
+                focalSlider.onClickEvent.AddListener(OnFocalClicked);
+                focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
+            }
+        }
+
+        private void OnFocalSliderChange(float focal)
+        {
+            this.focal = focal;
+            ComputeFOV();
+            CameraTool.SendCameraParams(gameObject);
+        }
+
+        private float ComputeFOV()
+        {
+            cameraObject.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * focal)) * Mathf.Rad2Deg;
+            return cameraObject.fieldOfView;
+        }
+
+        private void OnFocalClicked()
+        {
+
+            focalActionSelected = Selection.IsSelected(gameObject);
+            if (!focalActionSelected)
+            {
+                Selection.AddToSelection(gameObject);
+            }
+            focalValueCommand = new CommandSetValue<float>("Camera Focal", "/CameraController/focal");
+        }
+
+        private void OnFocalReleased()
+        {
+            focalValueCommand.Submit();
+            if (!focalActionSelected)
+            {
+                Selection.RemoveFromSelection(gameObject);
+            }
         }
 
         void Update()
@@ -58,6 +104,11 @@ namespace VRtist
                 {
                     frustumRenderer.enabled = false;
                 }
+            }
+
+            if (null != focalSlider && focalSlider.Value != focal)
+            {
+                focalSlider.Value = focal;
             }
         }
 

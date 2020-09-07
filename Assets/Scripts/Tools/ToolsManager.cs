@@ -92,6 +92,11 @@ namespace VRtist
             currentToolRef = tool;
         }
 
+        public static GameObject GetTool(string name)
+        {
+            return Instance.Tools[name];
+        }
+
         public static void OnChangeTool(object sender, ToolChangedArgs args)
         {
             Instance.currentToolRef.SetActive(false);
@@ -101,6 +106,6 @@ namespace VRtist
 
         public static void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)
         {
-        }        
+        }
     }
 }
