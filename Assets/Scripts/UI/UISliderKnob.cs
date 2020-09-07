@@ -10,7 +10,7 @@ namespace VRtist
         public float radius;
         public float depth;
 
-        public ColorReference _color;
+        public ColorReference _color = new ColorReference();
         public Color Color { get { return _color.Value; } set { _color.Value = value; ResetColor(); } }
 
         public void RebuildMesh(float newKnobRadius, float newKnobDepth)
