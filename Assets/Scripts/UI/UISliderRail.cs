@@ -14,7 +14,7 @@ namespace VRtist
         public float thickness;
         public float margin;
 
-        public ColorReference _color;
+        public ColorReference _color = new ColorReference();
         public Color Color { get { return _color.Value; } set { _color.Value = value; ResetColor(); } }
 
         void Awake()
