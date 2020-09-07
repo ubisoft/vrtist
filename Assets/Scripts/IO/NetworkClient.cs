@@ -151,6 +151,7 @@ namespace VRtist
         EditorOpaque,
         EditorTransparent,
         GreasePencil,
+        Paint,
     }
 
     public class MaterialParameters
@@ -908,6 +909,7 @@ namespace VRtist
                 baseMaterials.Add(MaterialType.EditorOpaque, Resources.Load<Material>("Materials/BlenderImportEditor"));
                 baseMaterials.Add(MaterialType.EditorTransparent, Resources.Load<Material>("Materials/BlenderImportTransparentEditor"));
                 baseMaterials.Add(MaterialType.GreasePencil, Resources.Load<Material>("Materials/GreasePencilMat"));
+                baseMaterials.Add(MaterialType.Paint, Resources.Load<Material>("Materials/Paint"));
             }
             return baseMaterials[materialType];
         }
@@ -973,7 +975,13 @@ namespace VRtist
 
         public static void ApplyMaterialParameters(Material material, MaterialParameters parameters)
         {
-            if(parameters.materialType == MaterialType.GreasePencil)
+            if (parameters.materialType == MaterialType.Paint)
+            {
+                material.SetColor("_BaseColor", parameters.baseColor);
+                return;
+            }
+
+            if (parameters.materialType == MaterialType.GreasePencil)
             {
                 material.SetColor("_UnlitColor", parameters.baseColor);
                 return;

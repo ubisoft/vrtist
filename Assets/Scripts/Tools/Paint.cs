@@ -25,6 +25,7 @@ namespace VRtist
         GameObject flatCursor;
 
         FreeDraw freeDraw;
+        CommandGroup undoGroup = null;
 
         // Start is called before the first frame update
         void Start()
@@ -56,6 +57,12 @@ namespace VRtist
 
         protected override void OnDisable()
         {
+            if (null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
+
             EndCurrentPaint();
             base.OnDisable();
         }
@@ -132,6 +139,7 @@ namespace VRtist
                 paintPrevPosition = Vector3.zero;
                 freeDraw = new FreeDraw();
                 freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
+                undoGroup = new CommandGroup("Paint");
 
                 /*
                 freeDraw.matrix = Matrix4x4.identity;
@@ -144,7 +152,19 @@ namespace VRtist
             },            
             () =>
             {
-                EndCurrentPaint();
+                try
+                {
+                    EndCurrentPaint();
+                }
+                finally
+                {
+                    if (null != undoGroup)
+                    {
+                        undoGroup.Submit();
+                        undoGroup = null;
+                    }
+                }
+
             });
 
             float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);

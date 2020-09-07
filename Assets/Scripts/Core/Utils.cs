@@ -19,6 +19,7 @@ namespace VRtist
         static int gameObjectNameId = 0;
         static long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
         static string hostname = Dns.GetHostName();
+        static Material paintMaterial = null;
 
         public static event EventHandler<PrefabInstantiatedArgs> OnPrefabInstantiated;
 
@@ -206,13 +207,19 @@ namespace VRtist
             MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = paint.AddComponent<MeshRenderer>();
-            Material paintMaterial = Resources.Load("Materials/Paint") as Material;
-            renderer.material = GameObject.Instantiate<Material>(paintMaterial);
-            renderer.material.SetColor("_BaseColor", color);
-            renderer.material.name = GetMaterialName(paint);// "Paint_" + color.ToString();
+            Material paintMaterial = NetGeometry.GetMaterial(MaterialType.Paint);
+            renderer.sharedMaterial = paintMaterial;
+
+            MaterialParameters parameters = new MaterialParameters();
+            parameters.materialType = MaterialType.Paint;
+            parameters.baseColor = color;
+
+            NetGeometry.materialsParameters[GetMaterialName(paint)] = parameters;
+            Material instanceMaterial = renderer.material;
+            NetGeometry.ApplyMaterialParameters(instanceMaterial, parameters);
+            renderer.material = instanceMaterial;
 
             paint.AddComponent<MeshCollider>();
-
             PaintController paintController = paint.AddComponent<PaintController>();
 
             return paint;
