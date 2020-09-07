@@ -273,13 +273,14 @@ namespace VRtist
                 Transform cam = vrCamera.transform;
 
                 Vector3 initCameraInWorldPosition = world.worldToLocalMatrix.MultiplyPoint(cam.position);
+                Matrix4x4 m1 = world.worldToLocalMatrix;
                 world.localScale = Vector3.one;
                 GlobalState.worldScale = 1f;
                 Vector3 initGlobalCamera = world.localToWorldMatrix.MultiplyPoint(initCameraInWorldPosition);
                 world.position += cam.position - initGlobalCamera;
 
                 // reset world up vector as well
-                world.up = Vector3.up;
+                world.localEulerAngles = new Vector3(0, world.localEulerAngles.y, 0);
             });
         }
 

@@ -1231,7 +1231,19 @@ namespace VRtist
             transform.localRotation = r;
             transform.localScale = s;
 
-            SyncData.ApplyTransformToInstances(transform);
+            if (SyncData.nodes.TryGetValue(transform.name, out Node node))
+            {
+                bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+                foreach (Tuple<GameObject, string> instance in node.instances)
+                {
+                    GameObject obj = instance.Item1;
+                    if (recording && Selection.IsSelected(obj))
+                        continue;
+                    obj.transform.localPosition = transform.localPosition;
+                    obj.transform.localRotation = transform.localRotation;
+                    obj.transform.localScale = transform.localScale;
+                }
+            }
 
             return transform;
         }
@@ -1610,9 +1622,13 @@ namespace VRtist
             //float focus_distance = GetFloat(data, ref currentIndex);
 
             // Apply to instances
+            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
+                if (recording && Selection.IsSelected(gobj))
+                    continue;
+
                 CameraController controller = gobj.GetComponent<CameraController>();
                 controller.focal = cameraController.focal;
                 //GlobalState.Instance.FireAnimationChanged(gobj);
@@ -1625,16 +1641,21 @@ namespace VRtist
             string lightName = GetString(data, ref currentIndex);
 
             Node node = SyncData.nodes[lightName];
+
             LightController lightController = node.prefab.GetComponent<LightController>();
             float power = GetFloat(data, ref currentIndex);
             lightController.SetPower(power);
             lightController.color = GetColor(data, ref currentIndex);
 
-            
+
             // Apply to instances
+            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
+                if (recording && Selection.IsSelected(gobj))
+                    continue;
+
                 LightController controller = gobj.GetComponent<LightController>();
                 controller.intensity = lightController.intensity;
                 controller.color = lightController.color;

@@ -893,7 +893,6 @@ namespace VRtist
                 obj.transform.localPosition = transform.localPosition;
                 obj.transform.localRotation = transform.localRotation;
                 obj.transform.localScale = transform.localScale;
-                //ApplyVisibility(obj);
             }
         }
 
