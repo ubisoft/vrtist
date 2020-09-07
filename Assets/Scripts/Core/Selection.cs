@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace VRtist
 {
+    public enum LayerType
+    {
+        Selection,
+        Default,
+        Hover
+    }
+
     public class SelectionChangedArgs : EventArgs
     {
         public Dictionary<int, GameObject> selectionBefore = new Dictionary<int, GameObject>();
@@ -137,7 +144,7 @@ namespace VRtist
         public static void SetHoveredObject(GameObject obj)
         {
             // obj == null
-            if(null == obj)
+            if (null == obj)
             {
                 if (hoveredObject != obj)
                 {
@@ -148,7 +155,7 @@ namespace VRtist
             }
 
             // obj is selected => reset hoveredObject
-            if(hoveredObject != null && IsSelected(obj))
+            if (hoveredObject != null && IsSelected(obj))
             {
                 hoveredObject = null;
                 UpdateCurrentObjectOutline();
@@ -211,11 +218,11 @@ namespace VRtist
         {
             if (gObject)
             {
-                UIUtils.SetRecursiveLayer(gObject, "Hover");
+                UIUtils.SetRecursiveLayerSmart(gObject, LayerType.Hover);
                 CameraController controller = gObject.GetComponent<CameraController>();
-                if (null != controller) 
-                { 
-                    SetActiveCamera(controller); 
+                if (null != controller)
+                {
+                    SetActiveCamera(controller);
                 }
             }
 
@@ -236,22 +243,15 @@ namespace VRtist
 
         public static bool RemoveFromHover(GameObject gObject)
         {
-            string layerName = "Default";
-
+            LayerType layerType = LayerType.Default;
             if (selection.ContainsKey(gObject.GetInstanceID()))
             {
-                layerName = "Selection";
-            }
-            else if (gObject.GetComponent<LightController>()
-                    || gObject.GetComponent<CameraController>()
-                    || gObject.GetComponent<UIHandle>())
-            {
-                layerName = "UI";
+                layerType = LayerType.Selection;
             }
 
             if (gObject)
             {
-                UIUtils.SetRecursiveLayer(gObject, layerName);
+                UIUtils.SetRecursiveLayerSmart(gObject, layerType);
             }
 
             CameraController controller = gObject.GetComponent<CameraController>();
@@ -278,10 +278,10 @@ namespace VRtist
             selection.Add(gObject.GetInstanceID(), gObject);
 
             CameraController controller = gObject.GetComponent<CameraController>();
-            if(null != controller)
+            if (null != controller)
                 SetActiveCamera(controller);
 
-            UIUtils.SetRecursiveLayer(gObject, "Selection");
+            UIUtils.SetRecursiveLayerSmart(gObject, LayerType.Selection);
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -302,18 +302,11 @@ namespace VRtist
 
             selection.Remove(gObject.GetInstanceID());
 
-            if(activeCamera != gObject)
+            if (activeCamera != gObject)
                 SetActiveCamera(null);
 
-            string layerName = "Default";
-            if (gObject.GetComponent<LightController>()
-             || gObject.GetComponent<CameraController>()
-             || gObject.GetComponent<UIHandle>())
-            {
-                layerName = "UI";
-            }
 
-            UIUtils.SetRecursiveLayer(gObject, layerName);
+            UIUtils.SetRecursiveLayerSmart(gObject, LayerType.Default);
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
             if (handler != null)
@@ -328,15 +321,7 @@ namespace VRtist
         {
             foreach (KeyValuePair<int, GameObject> data in selection)
             {
-                string layerName = "Default";
-                if (data.Value.GetComponent<LightController>()
-                 || data.Value.GetComponent<CameraController>()
-                 || data.Value.GetComponent<UIHandle>())
-                {
-                    layerName = "UI";
-                }
-
-                UIUtils.SetRecursiveLayer(data.Value, layerName);
+                UIUtils.SetRecursiveLayerSmart(data.Value, LayerType.Default);
             }
 
             SelectionChangedArgs args = new SelectionChangedArgs();
@@ -344,7 +329,7 @@ namespace VRtist
 
             selection.Clear();
 
-            if(hoveredObject != activeCamera)
+            if (hoveredObject != activeCamera)
                 SetActiveCamera(null);
 
             EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;

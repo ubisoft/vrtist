@@ -8,7 +8,7 @@ namespace VRtist
     {
         private UIRay ray = null;
 
-        [Range(0,1)]
+        [Range(0, 1)]
         public float rayStiffness = 0.5f;
 
         private UIElement widgetClicked = null;
@@ -113,7 +113,9 @@ namespace VRtist
             RaycastHit hitInfo;
             int allLayersMask = -1; // ~0
             if (!Physics.Raycast(r, out hitInfo, 3.0f, allLayersMask, QueryTriggerInteraction.Collide)
-                || hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("UI"))
+                || (hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("UI")
+                && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("SelectionUI")
+                && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("HoverUI")))
             {
                 // Nothing hit, or hit a non-UI object.
                 handleHitNothing();
@@ -138,7 +140,7 @@ namespace VRtist
             //
 
             RaycastHit[] hits;
-            int layersMask = LayerMask.GetMask(new string[] { "UI" });
+            int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI" });
             hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
             if (hits.Length > 0)
             {

@@ -22,6 +22,24 @@ namespace VRtist
             if (!GlobalState.Settings.displayGizmos)
                 GlobalState.SetGizmoVisible(newCamera, false);
 
+            // Add UI
+            if (isPrefab)
+            {
+                UISlider focalSlider = UISlider.Create(new UISlider.CreateArgs
+                {
+                    parent = newCamera.transform.Find("Rotate/UI"),
+                    widgetName = "Focal",
+                    minValue = 10f,
+                    maxValue = 300f,
+                    caption = "Focal",
+                    currentValue = 35f
+                });
+                focalSlider.RelativeLocation = new Vector3(-0.30f, -0.0105f, -UISlider.default_thickness);
+                focalSlider.Width = 0.3f;
+                focalSlider.Height = 0.03f;
+                focalSlider.gameObject.GetComponent<MeshRenderer>().renderingLayerMask = 3;  // light layer 2, HUD light
+            }
+
             return newCamera;
         }
     }

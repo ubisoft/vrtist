@@ -101,7 +101,7 @@ namespace VRtist
             float newKnobDepth = knobDepth;
 
             knob.RebuildMesh(newKnobRadius, newKnobDepth);
-            
+
             // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, nbSubdivCornerFixed, nbSubdivCornerPerUnit);
@@ -281,7 +281,7 @@ namespace VRtist
                     UpdateSliderPosition();
                     ResetColor();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.Log("Exception: " + e);
                 }
@@ -364,7 +364,7 @@ namespace VRtist
 
         private void UpdateSliderPosition()
         {
-            float pct = HasCurveData() ? invDataCurve.Evaluate(currentValue) 
+            float pct = HasCurveData() ? invDataCurve.Evaluate(currentValue)
                 : (currentValue - minValue) / (maxValue - minValue);
 
             float widthWithoutMargins = width - 2.0f * margin;
@@ -480,7 +480,7 @@ namespace VRtist
         }
 
         public override bool OverridesRayEndPoint() { return true; }
-        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint) 
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
         {
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
@@ -590,7 +590,7 @@ namespace VRtist
             public string caption = UISlider.default_text;
         }
 
-        public static void Create(CreateArgs input)
+        public static UISlider Create(CreateArgs input)
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
@@ -673,7 +673,7 @@ namespace VRtist
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
-                
+
                 uiSlider.SetColor(input.color.value);
             }
 
@@ -707,7 +707,7 @@ namespace VRtist
             float newKnobDepth = uiSlider.knobDepth;
 
             float pct = (uiSlider.currentValue - uiSlider.minValue) / (uiSlider.maxValue - uiSlider.minValue);
-  
+
             float widthWithoutMargins = input.width - 2.0f * input.margin;
             float startX = input.margin + widthWithoutMargins * uiSlider.sliderPositionBegin + railMargin;
             float endX = input.margin + widthWithoutMargins * uiSlider.sliderPositionEnd - railMargin;
@@ -772,7 +772,7 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
-                trt.sizeDelta = new Vector2((uiSlider.width-2*uiSlider.margin) * uiSlider.sliderPositionBegin * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
+                trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * uiSlider.sliderPositionBegin * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
                 float textPosLeft = uiSlider.margin;
                 trt.localPosition = new Vector3(textPosLeft, -uiSlider.margin, -0.002f);
             }
@@ -798,12 +798,14 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(1, 1); // top right?
-                trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * (1-uiSlider.sliderPositionEnd) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
+                trt.sizeDelta = new Vector2((uiSlider.width - 2 * uiSlider.margin) * (1 - uiSlider.sliderPositionEnd) * 100.0f, (input.height - 2.0f * input.margin) * 100.0f);
                 float textPosRight = uiSlider.width - uiSlider.margin;
                 trt.localPosition = new Vector3(textPosRight, -uiSlider.margin, -0.002f);
             }
 
             UIUtils.SetRecursiveLayer(go, "UI");
+
+            return uiSlider;
         }
 
         #endregion

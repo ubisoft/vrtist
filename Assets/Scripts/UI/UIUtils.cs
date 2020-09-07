@@ -31,7 +31,7 @@ namespace VRtist
             Vector3 innerBottomRight_back = new Vector3(width, -height, thickness);
             Vector3 innerBottomLeft_back = new Vector3(0.0f, -height, thickness);
 
-            Vector2 uv00 = new Vector2(0,0);
+            Vector2 uv00 = new Vector2(0, 0);
             Vector2 uv01 = new Vector2(0, 1);
             Vector2 uv11 = new Vector2(1, 1);
             Vector2 uv10 = new Vector2(1, 0);
@@ -143,7 +143,7 @@ namespace VRtist
         {
             const int default_nbSubdivCornerFixed = 3;
             const int default_nbSubdivCornerPerUnit = 3;
-            
+
             return BuildRoundedBoxEx(
                 width, height, margin, thickness,
                 default_nbSubdivCornerFixed, default_nbSubdivCornerPerUnit);
@@ -318,7 +318,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -348,7 +348,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -376,7 +376,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -409,7 +409,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -439,7 +439,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -467,7 +467,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
                 Vector3 outerCirclePos = new Vector3(
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
                     +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
@@ -500,7 +500,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -530,7 +530,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -558,7 +558,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
                 Vector3 outerCirclePos = new Vector3(
                     -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
@@ -590,7 +590,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
@@ -620,7 +620,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                 Vector3 outerCirclePos = new Vector3(
                     +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
                     -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
@@ -648,7 +648,7 @@ namespace VRtist
 
             for (int cs = 0; cs < nbVerticesOnCorner; ++cs)
             {
-                float fQuarterPercent = 0.25f * (float)cs / (float)(nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
+                float fQuarterPercent = 0.25f * (float) cs / (float) (nbVerticesOnCorner - 1); // [0..1], over a quarter of circle
                 Vector3 outerCirclePos = new Vector3(
                     +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                     -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -706,20 +706,20 @@ namespace VRtist
             Vector3 front_outer_bottom_left = new Vector3(0.0f, -h2, -thickness);
             Vector3 front_outer_bottom_right = new Vector3(width, -h2, -thickness);
 
-            Vector3 front_inner_top_left = new Vector3(m, h2-m, -thickness);
-            Vector3 front_inner_top_right = new Vector3(width-m, h2-m, -thickness);
-            Vector3 front_inner_bottom_left = new Vector3(m, -h2+m, -thickness);
-            Vector3 front_inner_bottom_right = new Vector3(width-m, -h2+m, -thickness);
+            Vector3 front_inner_top_left = new Vector3(m, h2 - m, -thickness);
+            Vector3 front_inner_top_right = new Vector3(width - m, h2 - m, -thickness);
+            Vector3 front_inner_bottom_left = new Vector3(m, -h2 + m, -thickness);
+            Vector3 front_inner_bottom_right = new Vector3(width - m, -h2 + m, -thickness);
 
             Vector3 back_outer_top_left = new Vector3(0.0f, h2, 0.0f);
             Vector3 back_outer_top_right = new Vector3(width, h2, 0.0f);
             Vector3 back_outer_bottom_left = new Vector3(0.0f, -h2, 0.0f);
             Vector3 back_outer_bottom_right = new Vector3(width, -h2, 0.0f);
 
-            Vector3 back_inner_top_left = new Vector3(m, h2-m, 0.0f);
-            Vector3 back_inner_top_right = new Vector3(width-m, h2-m, 0.0f);
-            Vector3 back_inner_bottom_left = new Vector3(m, -h2+m, 0.0f);
-            Vector3 back_inner_bottom_right = new Vector3(width-m, -h2+m, 0.0f);
+            Vector3 back_inner_top_left = new Vector3(m, h2 - m, 0.0f);
+            Vector3 back_inner_top_right = new Vector3(width - m, h2 - m, 0.0f);
+            Vector3 back_inner_bottom_left = new Vector3(m, -h2 + m, 0.0f);
+            Vector3 back_inner_bottom_right = new Vector3(width - m, -h2 + m, 0.0f);
 
 
             #region front-hollow-face
@@ -892,7 +892,7 @@ namespace VRtist
             vertices.Add(back_outer_top_right);
             vertices.Add(front_outer_top_left);
             vertices.Add(front_outer_top_right);
-            
+
             for (int i = 0; i < 4; ++i) normals.Add(Vector3.down);
 
             int[] outer_top_face_indices = new int[]
@@ -1025,10 +1025,10 @@ namespace VRtist
             Vector3 back_head_bottom_left = new Vector3(-hw2, -hh2, -fd);
             Vector3 back_head_bottom_right = new Vector3(hw2, -hh2, -fd);
 
-            Vector3 front_head_top_left = new Vector3(-hw2, hh2, -fd-hd);
-            Vector3 front_head_top_right = new Vector3(hw2, hh2, -fd-hd);
-            Vector3 front_head_bottom_left = new Vector3(-hw2, -hh2, -fd-hd);
-            Vector3 front_head_bottom_right = new Vector3(hw2, -hh2, -fd-hd);
+            Vector3 front_head_top_left = new Vector3(-hw2, hh2, -fd - hd);
+            Vector3 front_head_top_right = new Vector3(hw2, hh2, -fd - hd);
+            Vector3 front_head_bottom_left = new Vector3(-hw2, -hh2, -fd - hd);
+            Vector3 front_head_bottom_right = new Vector3(hw2, -hh2, -fd - hd);
 
             #region foot
 
@@ -1222,8 +1222,8 @@ namespace VRtist
             int nbSubdivOnCorner = Mathf.FloorToInt(nbSubdivCornerFixed + cornerLength * nbSubdivCornerPerUnit);
             int nbSectionsOnCorner = 1 + nbSubdivOnCorner;
             int nbCirclesOnCorner = 2 + nbSubdivOnCorner;
-            float sectionWidth = hTubeWidth / (float)(nbSubdivOnWidth + 1);
-            float sectionHeight = vTubeHeight / (float)(nbSubdivOnHeight + 1);
+            float sectionWidth = hTubeWidth / (float) (nbSubdivOnWidth + 1);
+            float sectionHeight = vTubeHeight / (float) (nbSubdivOnHeight + 1);
 
             Vector3 panelTopLeft = new Vector3(0.0f, 0.0f, 0.0f);
             Vector3 panelTopRight = new Vector3(width, 0.0f, 0.0f);
@@ -1239,7 +1239,7 @@ namespace VRtist
                 {
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
                         vertices.Add(new Vector3(
                             sectionOffset.x,
                             sectionOffset.y + radius * Mathf.Sin(2.0f * Mathf.PI * fi),
@@ -1265,7 +1265,7 @@ namespace VRtist
                 {
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
                         vertices.Add(new Vector3(
                             sectionOffset.x,
                             sectionOffset.y + radius * Mathf.Sin(2.0f * Mathf.PI * fi),
@@ -1291,7 +1291,7 @@ namespace VRtist
                 {
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
                         vertices.Add(new Vector3(
                             sectionOffset.x - radius * Mathf.Sin(2.0f * Mathf.PI * fi),
                             sectionOffset.y,
@@ -1317,7 +1317,7 @@ namespace VRtist
                 {
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
                         vertices.Add(new Vector3(
                             sectionOffset.x - radius * Mathf.Sin(2.0f * Mathf.PI * fi),
                             sectionOffset.y,
@@ -1343,7 +1343,7 @@ namespace VRtist
                 Vector3 unitUp = new Vector3(0, 1, 0);
                 for (int cs = 0; cs < nbCirclesOnCorner; ++cs)
                 {
-                    float fQuarterPercent = 0.25f * (float)cs / (float)(nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                    float fQuarterPercent = 0.25f * (float) cs / (float) (nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                     Vector3 outerCirclePos = new Vector3(
                         -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                         +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -1352,7 +1352,7 @@ namespace VRtist
                     unitUp = outerCirclePos.normalized;
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
 
                         Vector3 innerCirclePos = unitRight * radius * Mathf.Cos(2.0f * Mathf.PI * fi)
                                                 + unitUp * radius * Mathf.Sin(2.0f * Mathf.PI * fi);
@@ -1373,7 +1373,7 @@ namespace VRtist
                 Vector3 unitUp = new Vector3(0, 1, 0);
                 for (int cs = 0; cs < nbCirclesOnCorner; ++cs)
                 {
-                    float fQuarterPercent = 0.25f * (float)cs / (float)(nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                    float fQuarterPercent = 0.25f * (float) cs / (float) (nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                     Vector3 outerCirclePos = new Vector3(
                         +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
                         +margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
@@ -1382,7 +1382,7 @@ namespace VRtist
                     unitUp = outerCirclePos.normalized;
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
 
                         Vector3 innerCirclePos = unitRight * radius * Mathf.Cos(2.0f * Mathf.PI * fi)
                                                 + unitUp * radius * Mathf.Sin(2.0f * Mathf.PI * fi);
@@ -1403,7 +1403,7 @@ namespace VRtist
                 Vector3 unitUp = new Vector3(0, 1, 0);
                 for (int cs = 0; cs < nbCirclesOnCorner; ++cs)
                 {
-                    float fQuarterPercent = 0.25f * (float)cs / (float)(nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                    float fQuarterPercent = 0.25f * (float) cs / (float) (nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                     Vector3 outerCirclePos = new Vector3(
                         +margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
                         -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
@@ -1412,7 +1412,7 @@ namespace VRtist
                     unitUp = -outerCirclePos.normalized;
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
 
                         Vector3 innerCirclePos = unitRight * radius * Mathf.Cos(2.0f * Mathf.PI * fi)
                                                 + unitUp * radius * Mathf.Sin(2.0f * Mathf.PI * fi);
@@ -1433,7 +1433,7 @@ namespace VRtist
                 Vector3 unitUp = new Vector3(0, 1, 0);
                 for (int cs = 0; cs < nbCirclesOnCorner; ++cs)
                 {
-                    float fQuarterPercent = 0.25f * (float)cs / (float)(nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
+                    float fQuarterPercent = 0.25f * (float) cs / (float) (nbCirclesOnCorner - 1); // [0..1], from top to left of corner quarter of circle.
                     Vector3 outerCirclePos = new Vector3(
                         -margin * Mathf.Cos(2.0f * Mathf.PI * fQuarterPercent),
                         -margin * Mathf.Sin(2.0f * Mathf.PI * fQuarterPercent),
@@ -1442,7 +1442,7 @@ namespace VRtist
                     unitUp = -outerCirclePos.normalized;
                     for (int i = 0; i < circleSubdiv; ++i)
                     {
-                        float fi = (float)i / (float)circleSubdiv;
+                        float fi = (float) i / (float) circleSubdiv;
 
                         Vector3 innerCirclePos = unitRight * radius * Mathf.Cos(2.0f * Mathf.PI * fi)
                                                 + unitUp * radius * Mathf.Sin(2.0f * Mathf.PI * fi);
@@ -1495,7 +1495,7 @@ namespace VRtist
                 }
             }
         }
-        
+
         #endregion
 
         #region Resource Loading
@@ -1541,10 +1541,42 @@ namespace VRtist
 
         public static void SetRecursiveLayer(GameObject gObject, string layerName)
         {
-            gObject.layer = LayerMask.NameToLayer(layerName); // TODO: init in one of the singletons
+            gObject.layer = LayerMask.NameToLayer(layerName);
             for (int i = 0; i < gObject.transform.childCount; i++)
             {
                 SetRecursiveLayer(gObject.transform.GetChild(i).gameObject, layerName);
+            }
+        }
+
+        public static void SetRecursiveLayerSmart(GameObject gObject, LayerType layerType)
+        {
+            string layerName = LayerMask.LayerToName(gObject.layer);
+            if (layerType == LayerType.Selection)
+            {
+                if (layerName == "Default") { layerName = "Selection"; }
+                else if (layerName == "Hover") { layerName = "Selection"; }
+                else if (layerName == "UI") { layerName = "SelectionUI"; }
+                else if (layerName == "HoverUI") { layerName = "SelectionUI"; }
+            }
+            else if (layerType == LayerType.Default)
+            {
+                if (layerName == "SelectionUI") { layerName = "UI"; }
+                else if (layerName == "Hover") { layerName = "Default"; }
+                else if (layerName == "HoverUI") { layerName = "UI"; }
+                else if (layerName == "Selection") { layerName = "Default"; }
+            }
+            else if (layerType == LayerType.Hover)
+            {
+                if (layerName == "Default") { layerName = "Hover"; }
+                else if (layerName == "UI") { layerName = "HoverUI"; }
+                else if (layerName == "Selection") { layerName = "Hover"; }
+                else if (layerName == "SelectionUI") { layerName = "HoverUI"; }
+            }
+
+            gObject.layer = LayerMask.NameToLayer(layerName);
+            for (int i = 0; i < gObject.transform.childCount; i++)
+            {
+                SetRecursiveLayerSmart(gObject.transform.GetChild(i).gameObject, layerType);
             }
         }
     }

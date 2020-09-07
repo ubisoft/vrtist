@@ -19,8 +19,8 @@ TagManager:
   - PostProcessing
   - Selection
   - Hover
-  - 
-  - 
+  - SelectionUI
+  - HoverUI
   - 
   - 
   - 
