@@ -45,3 +45,36 @@ MonoBehaviour:
   scaleSpeed: 50
   raySliderDrag: 95
   raySliderAccurateDrag: 92
+  focalCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 10
+      inSlope: 85.71429
+      outSlope: 85.71429
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7
+      value: 70
+      inSlope: 85.71429
+      outSlope: 766.6666
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 300
+      inSlope: 766.6666
+      outSlope: 766.6666
+      tangentMode: 69
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
