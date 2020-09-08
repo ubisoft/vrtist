@@ -38,7 +38,7 @@ namespace VRtist
                 focalSlider.RelativeLocation = new Vector3(-0.30f, -0.0105f, -UISlider.default_thickness);
                 focalSlider.Width = 0.3f;
                 focalSlider.Height = 0.03f;
-                focalSlider.SetLightLayer(3);  // light layer 2, HUD light
+                focalSlider.SetLightLayer(2);  // light layer 2, HUD light
             }
 
             return newCamera;

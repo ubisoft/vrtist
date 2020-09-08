@@ -432,7 +432,7 @@ namespace VRtist
                 meshRenderer.sharedMaterial = Instantiate(input.background_material);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 4; // "LightLayer 3"
+                meshRenderer.renderingLayerMask = (1 << 3);
 
                 uiTimeBar.SetColor(input.background_color.value);
             }

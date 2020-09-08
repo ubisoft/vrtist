@@ -111,12 +111,12 @@ namespace VRtist
             return GetComponent<MeshRenderer>().sharedMaterial.GetColor("_BaseColor");
         }
 
-        public virtual void SetLightLayer(uint layerIndex)
+        public virtual void SetLightLayer(int layerIndex)
         {
             MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                meshRenderer.renderingLayerMask = layerIndex; // "LightLayer 1"
+                meshRenderer.renderingLayerMask = (1u << layerIndex);
             }
         }
 

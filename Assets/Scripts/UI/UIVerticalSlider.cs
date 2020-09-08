@@ -430,6 +430,22 @@ namespace VRtist
             }
         }
 
+        public override void SetLightLayer(int layerIndex)
+        {
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                meshRenderer.renderingLayerMask = (1u << layerIndex);
+            }
+
+            // Rail, Knob, Text and TextValue
+            MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>(true);
+            foreach (MeshRenderer r in renderers)
+            {
+                r.renderingLayerMask = (1u << layerIndex);
+            }
+        }
+
         private void SetText(string textValue)
         {
             textContent = textValue;
