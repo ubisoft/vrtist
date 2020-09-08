@@ -261,7 +261,7 @@ namespace VRtist
             cameraButton.isCheckable = true;
             cameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
             cameraButton.baseSprite = null;
-            cameraButton.SetLightLayer(5);
+            cameraButton.SetLightLayer(3);
 
             cx += 0.03f;
 
@@ -278,7 +278,7 @@ namespace VRtist
                 content = UICheckbox.CheckboxContent.CheckboxOnly
             });
             
-            shotEnabledCheckbox.SetLightLayer(5);
+            shotEnabledCheckbox.SetLightLayer(3);
 
             cx += 0.03f;
 
@@ -296,13 +296,18 @@ namespace VRtist
                 
             });
 
-            shotNameLabel.SetLightLayer(5);
-            TextMeshPro text = shotNameLabel.GetComponentInChildren<TextMeshPro>();
-            text.fontStyle = FontStyles.Normal;
-            //text.fontSize = 8;
-            //text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            //text.verticalOverflow = VerticalWrapMode.Overflow;
-            //text.alignByGeometry = true;
+            {
+                shotNameLabel.SetLightLayer(3);
+                Canvas canvas = shotNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
+                canvas.sortingOrder = 1;
+                TextMeshPro text = shotNameLabel.GetComponentInChildren<TextMeshPro>();
+                text.fontStyle = FontStyles.Normal;
+                text.enableAutoSizing = true;
+                text.fontSizeMin = 1;
+                text.fontSizeMax = 500;
+                MeshRenderer r = text.GetComponent<MeshRenderer>();
+                r.sortingOrder = 1;
+            }
 
             //
             // CAMERA NAME Label
@@ -318,15 +323,21 @@ namespace VRtist
                 fgcolor = UIOptions.Instance.attenuatedTextColor
             });
 
-            cameraNameLabel.SetLightLayer(5);
-            text = cameraNameLabel.GetComponentInChildren<TextMeshPro>();
-            text.alignment = TextAlignmentOptions.BottomRight;
-            text.fontStyle = FontStyles.Normal;
-            //text.fontSize = 8;
-            //text.horizontalOverflow = HorizontalWrapMode.Overflow;
-            //text.verticalOverflow = VerticalWrapMode.Overflow;
-            //text.alignByGeometry = true;
-            
+            {
+                cameraNameLabel.SetLightLayer(3);
+                Canvas canvas = cameraNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
+                canvas.sortingOrder = 1;
+                TextMeshPro text = cameraNameLabel.GetComponentInChildren<TextMeshPro>();
+                MeshRenderer r = text.GetComponent<MeshRenderer>();
+                r.sortingOrder = 1;
+                text.fontStyle = FontStyles.Normal;
+                text.alignment = TextAlignmentOptions.BottomRight;
+                text.fontStyle = FontStyles.Normal;
+                text.enableAutoSizing = true;
+                text.fontSizeMin = 1;
+                text.fontSizeMax = 500;
+            }
+
             cx += 0.17f;
 
             // START: Add UISpinner
@@ -348,7 +359,7 @@ namespace VRtist
             startFrameSpinner.selectedColor.useConstant = true;
             startFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
 
-            startFrameSpinner.SetLightLayer(5);
+            startFrameSpinner.SetLightLayer(3);
 
             cx += 0.055f;
 
@@ -362,14 +373,23 @@ namespace VRtist
                 height = 0.03f
             });
 
-            frameRangeLabel.baseColor.useConstant = true;
-            frameRangeLabel.baseColor.constant = UIOptions.BackgroundColor;
-            frameRangeLabel.selectedColor.useConstant = true;
-            frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
+            {
+                frameRangeLabel.baseColor.useConstant = true;
+                frameRangeLabel.baseColor.constant = UIOptions.BackgroundColor;
+                frameRangeLabel.selectedColor.useConstant = true;
+                frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
 
-            frameRangeLabel.SetLightLayer(5);
-            TextMeshPro frameRangeText = frameRangeLabel.GetComponentInChildren<TextMeshPro>();
-            frameRangeText.alignment = TextAlignmentOptions.Center;
+                frameRangeLabel.SetLightLayer(3);
+                Canvas canvas = frameRangeLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
+                canvas.sortingOrder = 1;
+                TextMeshPro text = frameRangeLabel.GetComponentInChildren<TextMeshPro>();
+                MeshRenderer r = text.GetComponent<MeshRenderer>();
+                r.sortingOrder = 1;
+                text.alignment = TextAlignmentOptions.Center;
+                text.enableAutoSizing = true;
+                text.fontSizeMin = 1;
+                text.fontSizeMax = 500;
+            }
             cx += 0.04f;
 
             // END: Add UISpinner
@@ -393,7 +413,7 @@ namespace VRtist
             endFrameSpinner.baseColor.constant = UIOptions.BackgroundColor;
             endFrameSpinner.selectedColor.useConstant = true;
             endFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
-            endFrameSpinner.SetLightLayer(5);
+            endFrameSpinner.SetLightLayer(3);
 
             cx += 0.055f;
 
@@ -415,7 +435,7 @@ namespace VRtist
             setCameraButton.checkedColor.reference = UIOptions.FocusColorVar;
             setCameraButton.baseSprite = UIUtils.LoadIcon("icon-camera");
             
-            setCameraButton.SetLightLayer(5);
+            setCameraButton.SetLightLayer(3);
 
             // Link widgets to the item script.
             shotItem.cameraButton = cameraButton;
