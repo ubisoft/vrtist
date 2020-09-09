@@ -30,11 +30,13 @@ namespace VRtist
         void Update()
         {
             // Clear selection on trigger click on nothing
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () => {
+            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
+            {
                 selectionHasChanged = false;
                 undoGroup = new CommandGroup("Selector Trigger");
             },
-            () => {
+            () =>
+            {
                 try
                 {
                     if (!selectionHasChanged && !VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
@@ -66,9 +68,9 @@ namespace VRtist
                 return null;
 
             Transform obj = gObject.transform.parent;
-            while(null != obj)
+            while (null != obj)
             {
-                if(obj.name == "__Offset")
+                if (obj.name == "__Offset")
                 {
                     return GetRootIfCollectionInstance(obj.parent.gameObject);
                 }
@@ -112,7 +114,7 @@ namespace VRtist
         {
             collidedObjects.Remove(obj);
             GameObject hoveredObject = Selection.GetHoveredObject();
-            if(hoveredObject == obj)
+            if (hoveredObject == obj)
             {
                 hoveredObject = null;
                 while (collidedObjects.Count > 0)
@@ -148,7 +150,7 @@ namespace VRtist
                 selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
-                    foreach(GameObject obj in collidedObjects)
+                    foreach (GameObject obj in collidedObjects)
                         selector.AddSiblingsToSelection(obj);
                 }
                 else
@@ -169,7 +171,7 @@ namespace VRtist
 
             if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
             {
-                CommandGroup group = new CommandGroup("Erase Selection");
+                CommandGroup group = new CommandGroup("Erase Selected Object");
                 try
                 {
                     RemoveCollidedObject(hoveredObject);

@@ -88,6 +88,7 @@ namespace VRtist
         {
             OnDisplayGizmos(GlobalState.Settings.displayGizmos);
             OnDisplayAvatars(GlobalState.Settings.displayAvatars);
+            OnShowConsoleWindow(GlobalState.Settings.consoleVisible);
 
             bool value = GlobalState.Settings.displayWorldGrid;
             worldGridCheckbox.Checked = value;
@@ -110,6 +111,7 @@ namespace VRtist
                 OnRightHanded(GlobalState.Settings.rightHanded);
 
             forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
+            showConsoleWindow.Checked = GlobalState.Settings.consoleVisible;
 
             backgroundFeedback.localPosition = GlobalState.Settings.cameraFeedbackPosition;
             backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;

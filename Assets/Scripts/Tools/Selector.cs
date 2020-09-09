@@ -84,7 +84,7 @@ namespace VRtist
             InitUIPanel();
             UpdateGrid();
             Selection.OnSelectionChanged += UpdateGridFromSelection;
-            if(null != planesContainer) { planesContainer.SetActive(false); }
+            if (null != planesContainer) { planesContainer.SetActive(false); }
         }
 
         protected override void OnDisable()
@@ -97,8 +97,29 @@ namespace VRtist
 
             base.OnDisable();
             Selection.OnSelectionChanged -= UpdateGridFromSelection;
-            if(null != grid) { grid.gameObject.SetActive(false); }
-            if(null != planesContainer) { planesContainer.SetActive(false); }
+            if (null != grid) { grid.gameObject.SetActive(false); }
+            if (null != planesContainer) { planesContainer.SetActive(false); }
+        }
+
+        public void OnDeleteSelection()
+        {
+            List<GameObject> allSelected = Selection.GetObjects();
+            if (allSelected.Count == 0) { return; }
+
+            CommandGroup group = new CommandGroup("Delete All Selection");
+            try
+            {
+                foreach (GameObject selected in allSelected)
+                {
+                    new CommandRemoveGameObject(selected).Submit();
+                }
+                VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
+
+            }
+            finally
+            {
+                group.Submit();
+            }
         }
 
         protected void UpdateGrid()
@@ -106,16 +127,16 @@ namespace VRtist
             List<GameObject> objects = Selection.GetGrippedOrSelection();
             int numSelected = objects.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
-            if(grid != null)
+            if (grid != null)
             {
                 grid.gameObject.SetActive(showGrid);
-                if(showGrid)
+                if (showGrid)
                 {
                     grid.SetStepSize(snapPrecision);
 
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
 
-                    foreach(GameObject gobj in objects)
+                    foreach (GameObject gobj in objects)
                     {
                         // Snap VFX position in (world object) local space.
                         Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
@@ -136,8 +157,8 @@ namespace VRtist
         {
             snapToGrid = value;
             UpdateGrid();
-            if(null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
-            if(!value)  // reset all constraints
+            if (null != snapGridSizeSlider) { snapGridSizeSlider.Disabled = !snapToGrid; }
+            if (!value)  // reset all constraints
             {
                 OnMoveOnAll();
             }
@@ -183,7 +204,7 @@ namespace VRtist
         {
             snapRotation = value;
             InitUIPanel();
-            if(!value)  // reset all constraints
+            if (!value)  // reset all constraints
             {
                 OnTurnAroundAll();
             }
@@ -203,7 +224,7 @@ namespace VRtist
 
         public void SetTurnAroundX(bool value)
         {
-            if(value || !value && turnAroundAll)  // as a radio button
+            if (value || !value && turnAroundAll)  // as a radio button
             {
                 turnAroundAll = false;
                 turnAroundX = true;
@@ -215,7 +236,7 @@ namespace VRtist
 
         public void SetTurnAroundY(bool value)
         {
-            if(value || !value && turnAroundAll)  // as a radio button
+            if (value || !value && turnAroundAll)  // as a radio button
             {
                 turnAroundAll = false;
                 turnAroundX = false;
@@ -227,7 +248,7 @@ namespace VRtist
 
         public void SetTurnAroundZ(bool value)
         {
-            if(value || !value && turnAroundAll)  // as a radio button
+            if (value || !value && turnAroundAll)  // as a radio button
             {
                 turnAroundAll = false;
                 turnAroundX = false;
@@ -240,7 +261,7 @@ namespace VRtist
         public void EnableDeformMode(bool enabled)
         {
             deformEnabled = enabled;
-            if(!enabled)
+            if (!enabled)
             {
                 planesContainer.SetActive(false);
             }
@@ -253,25 +274,25 @@ namespace VRtist
 
         protected virtual void InitUIPanel()
         {
-            if(null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
-            if(null != snapGridSizeSlider)
+            if (null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
+            if (null != snapGridSizeSlider)
             {
                 snapGridSizeSlider.Value = snapPrecision * 100.0f; // meters-to-centimeters
                 snapGridSizeSlider.Disabled = !snapToGrid;
             }
-            if(null != moveOnXCheckbox) { moveOnXCheckbox.Checked = moveOnX; }
-            if(null != moveOnYCheckbox) { moveOnYCheckbox.Checked = moveOnY; }
-            if(null != moveOnZCheckbox) { moveOnZCheckbox.Checked = moveOnZ; }
+            if (null != moveOnXCheckbox) { moveOnXCheckbox.Checked = moveOnX; }
+            if (null != moveOnYCheckbox) { moveOnYCheckbox.Checked = moveOnY; }
+            if (null != moveOnZCheckbox) { moveOnZCheckbox.Checked = moveOnZ; }
 
-            if(null != snapRotationCheckbox) { snapRotationCheckbox.Checked = snapRotation; }
-            if(null != snapAngleSlider)
+            if (null != snapRotationCheckbox) { snapRotationCheckbox.Checked = snapRotation; }
+            if (null != snapAngleSlider)
             {
                 snapAngleSlider.Value = snapAngle;
                 snapAngleSlider.Disabled = !snapRotation;
             }
-            if(null != turnAroundXCheckbox) { turnAroundXCheckbox.Checked = turnAroundX; }
-            if(null != turnAroundYCheckbox) { turnAroundYCheckbox.Checked = turnAroundY; }
-            if(null != turnAroundZCheckbox) { turnAroundZCheckbox.Checked = turnAroundZ; }
+            if (null != turnAroundXCheckbox) { turnAroundXCheckbox.Checked = turnAroundX; }
+            if (null != turnAroundYCheckbox) { turnAroundYCheckbox.Checked = turnAroundY; }
+            if (null != turnAroundZCheckbox) { turnAroundZCheckbox.Checked = turnAroundZ; }
         }
 
         protected override void OnStartGrip()
@@ -290,10 +311,10 @@ namespace VRtist
         public override void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed)
         {
             // Constrain movement
-            if(turnAroundAll)
+            if (turnAroundAll)
             {
                 // Translate
-                if(!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
+                if (!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
                 {
                     Vector4 column = transformed.GetColumn(3);
 
@@ -307,20 +328,20 @@ namespace VRtist
 
                     float snapThreshold = (snapGap * snapPrecision) / absWorldScale;
 
-                    if(!moveOnX) { column.x = transform.localPosition.x; }
-                    else if(snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapThreshold)
+                    if (!moveOnX) { column.x = transform.localPosition.x; }
+                    else if (snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapThreshold)
                     {
                         column.x = roundedPosition.x;
                     }
 
-                    if(!moveOnY) { column.y = transform.localPosition.y; }
-                    else if(snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapThreshold)
+                    if (!moveOnY) { column.y = transform.localPosition.y; }
+                    else if (snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapThreshold)
                     {
                         column.y = roundedPosition.y;
                     }
 
-                    if(!moveOnZ) { column.z = transform.localPosition.z; }
-                    else if(snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapThreshold)
+                    if (!moveOnZ) { column.z = transform.localPosition.z; }
+                    else if (snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapThreshold)
                     {
                         column.z = roundedPosition.z;
                     }
@@ -342,7 +363,7 @@ namespace VRtist
                 float angle = (controllerPosition.x - initControllerPositionRelativeToHead.x) * 1000f;
 
                 Quaternion newQuaternion = new Quaternion();
-                if(snapRotation)
+                if (snapRotation)
                 {
                     float roundedAngle = Mathf.Round(angle / snapAngle) * snapAngle;
                     Vector3 initAngles = world.worldToLocalMatrix * initParentMatrix[transform.gameObject] * initRotations[transform.gameObject].eulerAngles;
@@ -392,7 +413,7 @@ namespace VRtist
         {
             deforming = true;
 
-            if(null != undoGroup)
+            if (null != undoGroup)
             {
                 undoGroup.Submit();
                 undoGroup = null;
@@ -454,15 +475,15 @@ namespace VRtist
         // TODO: check for multiselection of a light and and simple primitive for example
         private bool IsHierarchical()
         {
-            foreach(KeyValuePair<int, GameObject> item in Selection.selection)
+            foreach (KeyValuePair<int, GameObject> item in Selection.selection)
             {
                 GameObject gObject = item.Value;
-                if(gObject.GetComponent<LightController>() != null || gObject.GetComponent<CameraController>() != null)
+                if (gObject.GetComponent<LightController>() != null || gObject.GetComponent<CameraController>() != null)
                 {
                     return true;
                 }
                 MeshFilter meshFilter = gObject.GetComponentInChildren<MeshFilter>();
-                if(meshFilter.gameObject != gObject)
+                if (meshFilter.gameObject != gObject)
                 {
                     return true;
                 }
@@ -473,7 +494,7 @@ namespace VRtist
         public void ComputeSelectionBounds()
         {
             planesContainer.SetActive(gameObject.activeSelf && Selection.selection.Count > 0);
-            if(Selection.selection.Count == 0 || Selection.IsHandleSelected())
+            if (Selection.selection.Count == 0 || Selection.IsHandleSelected())
             {
                 planesContainer.SetActive(false);
                 return;
@@ -486,15 +507,15 @@ namespace VRtist
             int selectionCount = Selection.selection.Count;
 
             bool foundHierarchicalObject = false;
-            if(selectionCount == 1)
+            if (selectionCount == 1)
             {
                 foundHierarchicalObject = IsHierarchical();
             }
 
-            if(selectionCount == 1 && !foundHierarchicalObject)
+            if (selectionCount == 1 && !foundHierarchicalObject)
             {
                 // NOTE: pourquoi un foreach si on a un seul element?
-                foreach(KeyValuePair<int, GameObject> item in Selection.selection)
+                foreach (KeyValuePair<int, GameObject> item in Selection.selection)
                 {
                     Transform transform = item.Value.GetComponentInChildren<MeshFilter>().transform;
                     planesContainer.transform.parent = transform.parent;
@@ -511,15 +532,15 @@ namespace VRtist
                 planesContainer.transform.localScale = Vector3.one;
             }
 
-            foreach(KeyValuePair<int, GameObject> item in Selection.selection)
+            foreach (KeyValuePair<int, GameObject> item in Selection.selection)
             {
                 MeshFilter meshFilter = item.Value.GetComponentInChildren<MeshFilter>();
-                if(null != meshFilter)
+                if (null != meshFilter)
                 {
                     Matrix4x4 transform;
-                    if(selectionCount > 1 || foundHierarchicalObject)
+                    if (selectionCount > 1 || foundHierarchicalObject)
                     {
-                        if(meshFilter.gameObject != item.Value)
+                        if (meshFilter.gameObject != item.Value)
                         {
                             transform = container.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
                         }
@@ -545,23 +566,23 @@ namespace VRtist
                     vertices[6] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.min.z);
                     vertices[7] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.max.z);
 
-                    for(int i = 0; i < vertices.Length; i++)
+                    for (int i = 0; i < vertices.Length; i++)
                     {
                         vertices[i] = transform.MultiplyPoint(vertices[i]);
                         //  Compute min and max bounds
-                        if(vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
-                        if(vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
-                        if(vertices[i].z < minBound.z) { minBound.z = vertices[i].z; }
+                        if (vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
+                        if (vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
+                        if (vertices[i].z < minBound.z) { minBound.z = vertices[i].z; }
 
-                        if(vertices[i].x > maxBound.x) { maxBound.x = vertices[i].x; }
-                        if(vertices[i].y > maxBound.y) { maxBound.y = vertices[i].y; }
-                        if(vertices[i].z > maxBound.z) { maxBound.z = vertices[i].z; }
+                        if (vertices[i].x > maxBound.x) { maxBound.x = vertices[i].x; }
+                        if (vertices[i].y > maxBound.y) { maxBound.y = vertices[i].y; }
+                        if (vertices[i].z > maxBound.z) { maxBound.z = vertices[i].z; }
                     }
                     foundBounds = true;
                 }
             }
 
-            if(!foundBounds)
+            if (!foundBounds)
             {
                 planesContainer.SetActive(false);
                 return;
@@ -640,7 +661,7 @@ namespace VRtist
             base.DoUpdate();
 
             // Deform
-            if(deformEnabled && activePlane != null)
+            if (deformEnabled && activePlane != null)
             {
                 VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
                 {
@@ -660,7 +681,7 @@ namespace VRtist
 
             }
 
-            if(deformEnabled && deforming)
+            if (deformEnabled && deforming)
             {
                 Vector3 controllerPosition = FilterControllerDirection();
                 controllerPosition -= planeControllerDelta;
@@ -674,13 +695,13 @@ namespace VRtist
 
                 int selectionCount = Selection.selection.Count;
                 bool foundLightOrCamera = false;
-                if(selectionCount == 1)
+                if (selectionCount == 1)
                 {
                     foundLightOrCamera = IsHierarchical();
                 }
 
                 bool scaleAll = Selection.selection.Count != 1 || foundLightOrCamera || uniformScale;
-                if(!scaleAll)
+                if (!scaleAll)
                 {
                     scale = new Vector3(
                         activePlane.direction.x == 0f ? 1f : scale.x,
@@ -696,7 +717,7 @@ namespace VRtist
             }
 
             // Bounds
-            if(deformEnabled)
+            if (deformEnabled)
                 ComputeSelectionBounds();
 
             // Move grid with object(s), enable/disable it.
@@ -723,13 +744,13 @@ namespace VRtist
         }
         public void SetActivePLane(DeformerPlane plane)
         {
-            if(!deforming)
+            if (!deforming)
             {
-                if(activePlane)
+                if (activePlane)
                     activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_PlaneColor", new Color(128f / 255f, 128f / 255f, 128f / 255f, 0.2f));
 
                 activePlane = plane;
-                if(plane != null)
+                if (plane != null)
                 {
                     Color selectColor = new Color(selectionColor.r, selectionColor.g, selectionColor.b, 0.2f);
                     activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_PlaneColor", selectColor);
