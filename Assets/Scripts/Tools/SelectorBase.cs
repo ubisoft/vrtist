@@ -263,6 +263,7 @@ namespace VRtist
             {
                 gripCmdGroup.Submit();
                 gripCmdGroup = null;
+                GlobalState.Instance.selectionGripped = false;
             }
         }
 
@@ -282,7 +283,9 @@ namespace VRtist
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
+
             gripCmdGroup = new CommandGroup("Grip Selection");
+            GlobalState.Instance.selectionGripped = true;
         }
 
         protected virtual void OnEndGrip()
@@ -661,7 +664,7 @@ namespace VRtist
                         if (currentFocal > 300f)
                             currentFocal = 300f;
 
-                        cameraController.focal = currentFocal;
+                        cameraController.focal = Mathf.RoundToInt(currentFocal);
                         SendCameraFocal(cameraController);
                     }
 

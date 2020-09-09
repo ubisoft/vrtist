@@ -40,11 +40,15 @@ namespace VRtist
         // Play / Pause
         public bool isPlaying = false;
         public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
+
         // Record
         public enum RecordState { Stopped, Preroll, Recording };
         public RecordState recordState = RecordState.Stopped;
         public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
         public Countdown countdown = null;
+
+        // Selection gripped
+        public bool selectionGripped = false;
 
         // FPS
         public static int fps { get; private set; }

@@ -26,25 +26,24 @@ MonoBehaviour:
   palettePosition: {x: -0.02, y: 0.05, z: -0.05}
   paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   pinnedPalette: 0
-  dopeSheetPosition: {x: 0.060833056, y: 1.5496342, z: 0.37308997}
-  dopeSheetRotation: {x: 0.16400424, y: 0.0703451, z: -0.010577361, w: 0.9838914}
-  dopeSheetVisible: 0
+  dopeSheetPosition: {x: 0.38700244, y: 1.6078091, z: 0.19743504}
+  dopeSheetRotation: {x: 0.08116017, y: 0.3279184, z: -0.0370871, w: 0.9404824}
+  dopeSheetVisible: 1
   cameraPreviewPosition: {x: 0.35908973, y: 1.535397, z: 0.4590031}
   cameraPreviewRotation: {x: 0.06101212, y: 0.3917295, z: -0.11199341, w: 0.9111987}
   cameraPreviewVisible: 0
-  cameraFeedbackPosition: {x: -0.2781396, y: 1.1537256, z: 700.33246}
-  cameraFeedbackRotation: {x: -0, y: -0.0000027538176, z: -0, w: -1}
-  cameraFeedbackScale: {x: 825.7168, y: 464.4657, z: 464.4657}
+  cameraFeedbackPosition: {x: 0.08893606, y: 1.7096623, z: 700.0464}
+  cameraFeedbackRotation: {x: -0, y: -0.00000013113416, z: -0, w: -1}
+  cameraFeedbackScale: {x: 715.7847, y: 402.6289, z: 402.6289}
   cameraFeedbackScaleValue: 1
   cameraFeedbackVisible: 1
   cameraDamping: 33.733616
-  consoleVisible: 1
-  consolePosition: {x: 0.48863688, y: 1.5318522, z: 0.34476107}
-  consoleRotation: {x: 0.13086647, y: 0.4864504, z: -0.08258568, w: 0.8598951}
+  consoleVisible: 0
+  consolePosition: {x: 0.9457, y: 1.7179871, z: -0.1891857}
+  consoleRotation: {x: -0.0010729734, y: 0.7981412, z: -0.050995618, w: 0.6003074}
   castShadows: 1
   scaleSpeed: 50
-  raySliderDrag: 95
-  raySliderAccurateDrag: 92
+  raySliderDrag: 97
   focalCurve:
     serializedVersion: 2
     m_Curve:
@@ -53,7 +52,7 @@ MonoBehaviour:
       value: 10
       inSlope: 85.71429
       outSlope: 85.71429
-      tangentMode: 69
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
@@ -62,7 +61,7 @@ MonoBehaviour:
       value: 70
       inSlope: 85.71429
       outSlope: 766.6666
-      tangentMode: 69
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
@@ -71,7 +70,7 @@ MonoBehaviour:
       value: 300
       inSlope: 766.6666
       outSlope: 766.6666
-      tangentMode: 69
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0

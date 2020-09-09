@@ -64,6 +64,8 @@ namespace VRtist
         private Vector3 initControllerPositionRelativeToHead;
         private Matrix4x4 inverseHeadMatrix;
 
+        private CommandGroup undoGroup = null;
+
         void Start()
         {
             Init();
@@ -87,6 +89,12 @@ namespace VRtist
 
         protected override void OnDisable()
         {
+            if (null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
+
             base.OnDisable();
             Selection.OnSelectionChanged -= UpdateGridFromSelection;
             if(null != grid) { grid.gameObject.SetActive(false); }
@@ -383,10 +391,22 @@ namespace VRtist
         protected void OnStartDeform()
         {
             deforming = true;
+
+            if(null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
+            undoGroup = new CommandGroup("Deform");
         }
 
         protected void OnEndDeform()
         {
+            if (null != undoGroup)
+            {
+                undoGroup.Submit();
+                undoGroup = null;
+            }
             deforming = false;
             SetActivePLane(null);
 

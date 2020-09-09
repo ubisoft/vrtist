@@ -1242,10 +1242,11 @@ namespace VRtist
             if (SyncData.nodes.TryGetValue(transform.name, out Node node))
             {
                 bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+                bool gripped = GlobalState.Instance.selectionGripped;
                 foreach (Tuple<GameObject, string> instance in node.instances)
                 {
                     GameObject obj = instance.Item1;
-                    if (recording && Selection.IsSelected(obj))
+                    if ((recording || gripped) && Selection.IsSelected(obj))
                         continue;
                     obj.transform.localPosition = transform.localPosition;
                     obj.transform.localRotation = transform.localRotation;
