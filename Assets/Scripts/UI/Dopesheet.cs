@@ -252,7 +252,7 @@ namespace VRtist
 
         void OnCameraNameChanged(GameObject gObject)
         {
-            if (Selection.IsSelected(gObject))
+            if (Selection.IsSelected(gObject) || Selection.GetHoveredObject() == gObject)
                 OnSelectionChanged(gObject);
         }
 
@@ -298,13 +298,14 @@ namespace VRtist
         public void UpdateTrackName()
         {
             TextMeshPro trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshPro>();
-            int count = Selection.selection.Count;
+            List<GameObject> selectedObjects = Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection | SelectionType.Gripped);
+            int count = selectedObjects.Count;
             if (count > 1)
             {
                 trackLabel.text = count.ToString() + " Objects";
                 return;
             }
-            foreach(GameObject obj in Selection.selection.Values)
+            foreach(GameObject obj in selectedObjects)
             {
                 trackLabel.text = obj.name;
                 return;

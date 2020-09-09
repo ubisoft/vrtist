@@ -231,7 +231,7 @@ namespace VRtist
             initRotations.Clear();
             initScales.Clear();
             initFocals.Clear();
-            foreach (GameObject obj in Selection.GetObjects())
+            foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
                 initParentMatrix[obj] = obj.transform.parent.localToWorldMatrix;
                 initPositions[obj] = obj.transform.localPosition;
@@ -305,7 +305,7 @@ namespace VRtist
             }
 
             List<ParametersController> controllers = new List<ParametersController>();
-            foreach (var obj in Selection.GetObjects())
+            foreach (var obj in Selection.GetGrippedOrSelection())
             {
                 LightController lightController = obj.GetComponentInChildren<LightController>();
                 if (null != lightController)
@@ -341,7 +341,7 @@ namespace VRtist
         {
             if (!GlobalState.autoKeyEnabled)
                 return;
-            foreach (GameObject obj in Selection.GetObjects())
+            foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
                 if (!initPositions.ContainsKey(obj))
                     continue;
@@ -361,7 +361,7 @@ namespace VRtist
             List<Quaternion> endRotations = new List<Quaternion>();
             List<Vector3> endScales = new List<Vector3>();
 
-            foreach (GameObject obj in Selection.GetObjects())
+            foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
                 if (!initPositions.ContainsKey(obj))
                     continue;
@@ -403,14 +403,12 @@ namespace VRtist
 
         }
 
-
         private GameObject GetFirstSelectedObject()
         {
-            foreach (GameObject gObject in Selection.selection.Values)
-            {
-                return gObject;
-            }
-            return null;
+            List<GameObject> selectedObjects = Selection.GetSelectedObjects(SelectionType.All);
+            if (selectedObjects.Count == 0)
+                return null;
+            return selectedObjects[0];
         }
 
         protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -427,7 +425,7 @@ namespace VRtist
             {
                 int numLocked = 0;
                 int numUnlocked = 0;
-                foreach (GameObject gobject in Selection.GetObjects())
+                foreach (GameObject gobject in Selection.GetGrippedOrSelection())
                 {
                     ParametersController parameters = gobject.GetComponent<ParametersController>();
                     if (null != parameters)
@@ -454,7 +452,7 @@ namespace VRtist
 
         protected CameraController GetSingleSelectedCamera()
         {
-            List<GameObject> objecs = Selection.GetObjects();
+            List<GameObject> objecs = Selection.GetGrippedOrSelection();
             if (objecs.Count != 1)
                 return null;
 
@@ -471,7 +469,7 @@ namespace VRtist
             if (!Gripping)
                 return false;
 
-            List<GameObject> objecs = Selection.GetObjects();
+            List<GameObject> objecs = Selection.GetGrippedOrSelection();
             if (objecs.Count != 1)
                 return false;
 
@@ -565,7 +563,7 @@ namespace VRtist
 
                     if (!Selection.IsHandleSelected())
                     {
-                        List<GameObject> objects = Selection.GetObjects();
+                        List<GameObject> objects = Selection.GetGrippedOrSelection();
 
                         if (objects.Count > 0)
                         {
@@ -581,7 +579,7 @@ namespace VRtist
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 
-            SetControllerVisible(!Gripping || Selection.GetObjects().Count == 0);
+            SetControllerVisible(!Gripping || Selection.GetGrippedOrSelection().Count == 0);
 
             if (Gripping)
             {
@@ -600,7 +598,7 @@ namespace VRtist
                     {
                         if (!Selection.IsHandleSelected())
                         {
-                            List<GameObject> objects = Selection.GetObjects();
+                            List<GameObject> objects = Selection.GetGrippedOrSelection();
 
                             if (objects.Count > 0)
                             {
@@ -700,7 +698,7 @@ namespace VRtist
         {
             transformation = transformation * initTransformation;
 
-            foreach (GameObject obj in Selection.GetObjects())
+            foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
                 // Some objects may be locked, so check that
                 ParametersController parameters = obj.GetComponent<ParametersController>();
@@ -875,7 +873,7 @@ namespace VRtist
             {
                 ManageMoveObjectsUndo();
 
-                List<GameObject> objectsToBeDuplicated = Selection.GetObjects();
+                List<GameObject> objectsToBeDuplicated = Selection.GetGrippedOrSelection();
                 foreach (GameObject obj in objectsToBeDuplicated)
                     DuplicateObject(obj);
             }
@@ -887,7 +885,7 @@ namespace VRtist
 
         public void EraseSelection()
         {
-            List<GameObject> selectedObjects = Selection.GetObjects();
+            List<GameObject> selectedObjects = Selection.GetGrippedOrSelection();
 
             CommandGroup group = new CommandGroup("Erase Selection");
             try
@@ -1038,7 +1036,7 @@ namespace VRtist
 
         public void OnSetLocked(bool locked)
         {
-            foreach (GameObject gobject in Selection.GetObjects())
+            foreach (GameObject gobject in Selection.GetGrippedOrSelection())
             {
                 ParametersController parameters = gobject.GetComponent<ParametersController>();
                 if (null != parameters)

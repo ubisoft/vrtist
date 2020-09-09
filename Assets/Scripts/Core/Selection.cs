@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
-{
+{   
     public enum LayerType
     {
         Selection,
         Default,
         Hover
     }
-
     public class SelectionChangedArgs : EventArgs
     {
         public Dictionary<int, GameObject> selectionBefore = new Dictionary<int, GameObject>();
@@ -19,6 +18,14 @@ namespace VRtist
     public class ActiveCameraChangedArgs : EventArgs
     {
         public GameObject activeCamera = null;
+    }
+
+    public enum SelectionType
+    {
+        Selection = 1,
+        Hovered = 2,
+        Gripped = 4,
+        All = 7,
     }
 
     public class Selection
@@ -150,6 +157,7 @@ namespace VRtist
                 {
                     hoveredObject = obj;
                     UpdateCurrentObjectOutline();
+                    TriggerSelectionChanged();
                 }
                 return;
             }
@@ -159,6 +167,7 @@ namespace VRtist
             {
                 hoveredObject = null;
                 UpdateCurrentObjectOutline();
+                TriggerSelectionChanged();
                 return;
             }
 
@@ -167,6 +176,7 @@ namespace VRtist
             {
                 hoveredObject = obj;
                 UpdateCurrentObjectOutline();
+                TriggerSelectionChanged();
             }
         }
 
@@ -182,7 +192,27 @@ namespace VRtist
             TriggerGrippedObjectChanged();
         }
 
-        public static List<GameObject> GetObjects()
+        public static List<GameObject> GetSelectedObjects(SelectionType selectionType = SelectionType.Selection)
+        {
+            List<GameObject> gameObjects = new List<GameObject>();
+            if (0 != (selectionType & SelectionType.Gripped))
+            {
+                if (null != grippedObject)
+                    gameObjects.Add(grippedObject);
+            }
+            if (0 != (selectionType & SelectionType.Hovered))
+            {
+                if (null != hoveredObject)
+                    gameObjects.Add(hoveredObject);
+            }
+            if (0 != (selectionType & SelectionType.Selection))
+            {
+                gameObjects.InsertRange(gameObjects.Count, selection.Values);
+            }
+            return gameObjects;
+        }
+
+        public static List<GameObject> GetGrippedOrSelection()
         {
             List<GameObject> gameObjects = new List<GameObject>();
             if (grippedObject && !IsSelected(grippedObject))
@@ -201,7 +231,7 @@ namespace VRtist
         public static bool IsHandleSelected()
         {
             bool handleSelected = false;
-            List<GameObject> objects = GetObjects();
+            List<GameObject> objects = GetGrippedOrSelection();
 
             if (objects.Count == 1)
             {

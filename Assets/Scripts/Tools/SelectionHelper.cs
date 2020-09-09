@@ -67,7 +67,7 @@ namespace VRtist
                 return;
             }
 
-            foreach (GameObject gobj in Selection.GetObjects())
+            foreach (GameObject gobj in Selection.GetGrippedOrSelection())
             {
                 // Check if the object is outside the view frustum
                 Bounds bounds;

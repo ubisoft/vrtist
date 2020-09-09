@@ -103,7 +103,7 @@ namespace VRtist
 
         protected void UpdateGrid()
         {
-            List<GameObject> objects = Selection.GetObjects();
+            List<GameObject> objects = Selection.GetGrippedOrSelection();
             int numSelected = objects.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
             if(grid != null)

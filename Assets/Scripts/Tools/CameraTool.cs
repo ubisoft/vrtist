@@ -320,7 +320,7 @@ namespace VRtist
         private List<Camera> SelectedCameras()
         {
             List<Camera> selectedCameras = new List<Camera>();
-            foreach (var selectedItem in Selection.GetObjects())
+            foreach (var selectedItem in Selection.GetGrippedOrSelection())
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
@@ -334,7 +334,7 @@ namespace VRtist
         {
             List<GameObject> selectedCameras = new List<GameObject>();
 
-            foreach (var selectedItem in Selection.GetObjects())
+            foreach (var selectedItem in Selection.GetGrippedOrSelection())
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
