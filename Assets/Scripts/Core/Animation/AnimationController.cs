@@ -65,7 +65,14 @@ namespace VRtist
         public AnimationChannel xRotation;
         public AnimationChannel yRotation;
         public AnimationChannel zRotation;
+        public AnimationChannel xScale;
+        public AnimationChannel yScale;
+        public AnimationChannel zScale;
         public AnimationChannel lens;
+        public AnimationChannel energy;
+        public AnimationChannel RColor;
+        public AnimationChannel GColor;
+        public AnimationChannel BColor;
         public ParametersController parametersController = null;
     }
 
@@ -185,6 +192,20 @@ namespace VRtist
                             CameraController cameraController = item.Value.parametersController as CameraController;
                             item.Value.lens.keys.Add(new AnimationKey(frame, cameraController.focal));
                         }
+                        if (controllerType == typeof(LightController) || controllerType.IsSubclassOf(typeof(LightController)))
+                        {
+                            LightController lightController = item.Value.parametersController as LightController;
+                            item.Value.energy.keys.Add(new AnimationKey(frame, lightController.GetPower()));
+                            item.Value.RColor.keys.Add(new AnimationKey(frame, lightController.color.r));
+                            item.Value.GColor.keys.Add(new AnimationKey(frame, lightController.color.g));
+                            item.Value.BColor.keys.Add(new AnimationKey(frame, lightController.color.b));
+                        }
+                    }
+                    else
+                    {
+                        item.Value.xScale.keys.Add(new AnimationKey(frame, item.Key.transform.localScale.x));
+                        item.Value.yScale.keys.Add(new AnimationKey(frame, item.Key.transform.localScale.y));
+                        item.Value.zScale.keys.Add(new AnimationKey(frame, item.Key.transform.localScale.z));
                     }
                 }
             }
@@ -211,6 +232,24 @@ namespace VRtist
                     animationSet.lens = new AnimationChannel("lens");
                     animationSet.parametersController = cameraController;
                 }
+
+                LightController lcontroller = item.GetComponent<LightController>();
+                if (null != lcontroller)
+                {
+                    animationSet.energy = new AnimationChannel("energy");
+                    animationSet.RColor = new AnimationChannel("color[0]");
+                    animationSet.GColor = new AnimationChannel("color[1]");
+                    animationSet.BColor = new AnimationChannel("color[2]");
+                    animationSet.parametersController = lcontroller;
+                }
+
+                if (null == item.GetComponent<ParametersController>())
+                {
+                    animationSet.xScale = new AnimationChannel("scale[0]");
+                    animationSet.yScale = new AnimationChannel("scale[1]");
+                    animationSet.zScale = new AnimationChannel("scale[2]");
+                }
+
                 recordAnimationSets[item] = animationSet;
             }
 
@@ -273,6 +312,19 @@ namespace VRtist
                     {
                         SendAnimationChannel(objectName, item.Value.lens);
                     }
+                    if (controllerType == typeof(LightController) || controllerType.IsSubclassOf(typeof(LightController)))
+                    {
+                        SendAnimationChannel(objectName, item.Value.energy);
+                        SendAnimationChannel(objectName, item.Value.RColor);
+                        SendAnimationChannel(objectName, item.Value.GColor);
+                        SendAnimationChannel(objectName, item.Value.BColor);
+                    }
+                }
+                else
+                {
+                    SendAnimationChannel(objectName, item.Value.xScale);
+                    SendAnimationChannel(objectName, item.Value.yScale);
+                    SendAnimationChannel(objectName, item.Value.zScale);
                 }
                 NetworkClient.GetInstance().SendQueryObjectData(objectName);
             }
@@ -356,6 +408,14 @@ namespace VRtist
                     SendDeleteKeyInfo(objectName, "color", 0);
                     SendDeleteKeyInfo(objectName, "color", 1);
                     SendDeleteKeyInfo(objectName, "color", 2);
+                }
+
+                ParametersController pController = item.GetComponent<ParametersController>();
+                if(null == pController)
+                {
+                    SendDeleteKeyInfo(objectName, "scale", 0);
+                    SendDeleteKeyInfo(objectName, "scale", 1);
+                    SendDeleteKeyInfo(objectName, "scale", 2);
                 }
                 NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, objectName);
             }
