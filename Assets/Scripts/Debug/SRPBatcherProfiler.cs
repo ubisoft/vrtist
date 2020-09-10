@@ -6,7 +6,7 @@ namespace UnityEngine.Experimental.Rendering
 {
     public class SRPBatcherProfiler : MonoBehaviour
     {
-        public bool m_Enable = true;
+        public bool m_Enable = false;
         private const float kAverageStatDuration = 1.0f;            // stats refresh each second
         private int m_frameCount;
         private float m_AccDeltaTime;

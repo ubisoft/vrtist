@@ -84,10 +84,24 @@ namespace VRtist
         private Dictionary<GameObject, AnimationSet> recordAnimationSets = new Dictionary<GameObject, AnimationSet>();
         private int recordCurrentFrame = 0;
 
+        public void Start()
+        {
+            Selection.OnSelectionChanged += OnSelectionChanged;
+        }
+
         public void Update()
         {
             HandleRecord();
         }
+
+        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        {
+            foreach(GameObject gObject in Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection))
+            {
+                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
+            }
+        }
+
         public void AddListener(UnityAction<GameObject, AnimationChannel> callback)
         {
             if (null == onChangedEvent)

@@ -176,11 +176,6 @@ namespace VRtist
             montage.Checked = ShotManager.Instance.MontageMode;
         }
 
-        protected void UpdateCurrentObject(GameObject gObject)
-        {
-            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
-        }
-
         protected void UpdateCurrentObjectChannel(GameObject gObject, AnimationChannel channel)
         {
             if (null == currentObject)
@@ -245,15 +240,14 @@ namespace VRtist
 
         public void OnSelectionChanged(GameObject gObject)
         {
-            this.currentObject = gObject;
-            if (gObject != null)
-            {
-                UpdateCurrentObject(gObject);
-            }
-            else
-            {
-                Clear();
-                UpdateTrackName();
+            if(currentObject != gObject)
+            { 
+                currentObject = gObject;
+                if (null == currentObject)
+                {
+                    Clear();
+                    UpdateTrackName();
+                }
             }
         }
 
