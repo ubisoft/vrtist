@@ -48,6 +48,12 @@ namespace VRtist
                 focalSlider.onSlideEventInt.AddListener(OnFocalSliderChange);
                 focalSlider.onClickEvent.AddListener(OnFocalClicked);
                 focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
+
+                // Hack : forces font size min when component is enabled
+                foreach(TextMeshProUGUI text in focalSlider.GetComponentsInChildren<TextMeshProUGUI>())
+                {
+                    text.fontSizeMin = 1f;
+                }
             }
         }
 

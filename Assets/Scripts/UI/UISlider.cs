@@ -787,6 +787,7 @@ namespace VRtist
                 t.fontStyle = FontStyles.Normal;
                 t.alignment = TextAlignmentOptions.Left;
                 t.color = input.textColor.value;
+                t.ForceMeshUpdate();
 
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
@@ -810,6 +811,7 @@ namespace VRtist
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;
                 t.fontSizeMax = 500;
+                t.fontSize = 1.85f;
                 t.fontStyle = FontStyles.Normal;
                 t.alignment = TextAlignmentOptions.Right;
                 t.color = input.textColor.value;
