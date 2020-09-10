@@ -18,6 +18,7 @@ namespace VRtist
         public Transform paletteHandle;
         public Transform consoleHandle;
         public ConsoleWindow consoleWindow;
+        public UIButton showGizmosShortcut;
 
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
@@ -95,6 +96,7 @@ namespace VRtist
             worldGrid.SetActive(value);
 
             displayGizmos.Checked = GlobalState.Settings.displayGizmos;
+            showGizmosShortcut.Checked = GlobalState.Settings.displayGizmos;
             displayFPS.Checked = GlobalState.Settings.displayFPS;
             display3DCurves.Checked = GlobalState.Settings.display3DCurves;
             displayAvatars.Checked = GlobalState.Settings.displayAvatars;

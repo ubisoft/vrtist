@@ -40,6 +40,7 @@ namespace VRtist
         // Play / Pause
         public bool isPlaying = false;
         public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
+        public UIButton playButtonShortcut;
 
         // Record
         public enum RecordState { Stopped, Preroll, Recording };
@@ -244,6 +245,12 @@ namespace VRtist
             countdown.gameObject.SetActive(true);
         }
 
+        public void OnTogglePlayPause(bool play)
+        {
+            if (play) { Play(); }
+            else { Pause(); }
+        }
+
         public void Play()
         {
             NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
@@ -274,6 +281,7 @@ namespace VRtist
         {
             isPlaying = value;
             onPlayingEvent.Invoke(value);
+            playButtonShortcut.Checked = value;
         }
 
         public void OnCountdownFinished()
