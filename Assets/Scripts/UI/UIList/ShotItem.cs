@@ -300,7 +300,7 @@ namespace VRtist
                 shotNameLabel.SetLightLayer(3);
                 Canvas canvas = shotNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
                 canvas.sortingOrder = 1;
-                TextMeshPro text = shotNameLabel.GetComponentInChildren<TextMeshPro>();
+                TextMeshProUGUI text = shotNameLabel.GetComponentInChildren<TextMeshProUGUI>();
                 text.fontStyle = FontStyles.Normal;
                 text.enableAutoSizing = true;
                 text.fontSizeMin = 1;
@@ -327,7 +327,7 @@ namespace VRtist
                 cameraNameLabel.SetLightLayer(3);
                 Canvas canvas = cameraNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
                 canvas.sortingOrder = 1;
-                TextMeshPro text = cameraNameLabel.GetComponentInChildren<TextMeshPro>();
+                TextMeshProUGUI text = cameraNameLabel.GetComponentInChildren<TextMeshProUGUI>();
                 MeshRenderer r = text.GetComponent<MeshRenderer>();
                 r.sortingOrder = 1;
                 text.fontStyle = FontStyles.Normal;
@@ -382,7 +382,7 @@ namespace VRtist
                 frameRangeLabel.SetLightLayer(3);
                 Canvas canvas = frameRangeLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
                 canvas.sortingOrder = 1;
-                TextMeshPro text = frameRangeLabel.GetComponentInChildren<TextMeshPro>();
+                TextMeshProUGUI text = frameRangeLabel.GetComponentInChildren<TextMeshProUGUI>();
                 MeshRenderer r = text.GetComponent<MeshRenderer>();
                 r.sortingOrder = 1;
                 text.alignment = TextAlignmentOptions.Center;

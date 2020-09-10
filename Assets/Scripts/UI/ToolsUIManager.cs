@@ -289,7 +289,7 @@ namespace VRtist
             Transform textComponentTransform = window.Find("TitleBar/Canvas/Text");
             if (textComponentTransform != null)
             {
-                TextMeshPro textComponent = textComponentTransform.GetComponent<TextMeshPro>();
+                TextMeshProUGUI textComponent = textComponentTransform.GetComponent<TextMeshProUGUI>();
                 if (textComponent != null)
                 {
                     textComponent.text = text;

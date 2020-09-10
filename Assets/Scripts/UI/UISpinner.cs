@@ -116,7 +116,7 @@ namespace VRtist
                 float textPosLeft = margin;
 
                 Transform textTransform = canvas.transform.Find("Text");
-                TextMeshPro text = textTransform.GetComponent<TextMeshPro>();
+                TextMeshProUGUI text = textTransform.GetComponent<TextMeshProUGUI>();
                 if (text != null)
                 {
                     text.text = Text;
@@ -129,7 +129,7 @@ namespace VRtist
                 }
 
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                TextMeshPro textValue = textValueTransform.GetComponent<TextMeshPro>();
+                TextMeshProUGUI textValue = textValueTransform.GetComponent<TextMeshProUGUI>();
                 if (textValue != null)
                 {
                     textValue.color = TextColor;
@@ -289,7 +289,7 @@ namespace VRtist
             if (canvas != null)
             {
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                TextMeshPro txt = textValueTransform.gameObject.GetComponent<TextMeshPro>();
+                TextMeshProUGUI txt = textValueTransform.gameObject.GetComponent<TextMeshProUGUI>();
                 if (txt != null)
                 {
                     txt.text = spinnerValueType == SpinnerValueType.Float
@@ -304,7 +304,7 @@ namespace VRtist
             textContent = textValue;
 
             Transform t = transform.Find("Canvas/Text");
-            TextMeshPro text = t.GetComponent<TextMeshPro>();
+            TextMeshProUGUI text = t.GetComponent<TextMeshProUGUI>();
             if (text != null)
             {
                 text.text = textValue;
@@ -380,6 +380,7 @@ namespace VRtist
         public override void OnRayReleaseOutside()
         {
             base.OnRayReleaseOutside();
+            onReleaseEvent.Invoke();
         }
 
         public override bool OverridesRayEndPoint() { return true; }
@@ -561,7 +562,7 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                TextMeshPro t = text.AddComponent<TextMeshPro>();
+                TextMeshProUGUI t = text.AddComponent<TextMeshProUGUI>();
                 t.text = input.caption;
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;
@@ -591,7 +592,7 @@ namespace VRtist
                 GameObject text = new GameObject("TextValue");
                 text.transform.parent = canvas.transform;
 
-                TextMeshPro t = text.AddComponent<TextMeshPro>();
+                TextMeshProUGUI t = text.AddComponent<TextMeshProUGUI>();
                 t.text = (input.value_type == SpinnerValueType.Float)
                     ? input.cur_spinner_value.ToString("#0.00")
                     : Mathf.RoundToInt(input.cur_spinner_value).ToString();

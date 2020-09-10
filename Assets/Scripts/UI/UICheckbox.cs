@@ -137,7 +137,7 @@ namespace VRtist
                 }
 
                 // TEXT
-                TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>();
+                TextMeshProUGUI text = canvas.gameObject.GetComponentInChildren<TextMeshProUGUI>();
                 if (text != null)
                 {
                     text.text = Text;
@@ -248,7 +248,7 @@ namespace VRtist
         {
             textContent = textValue;
 
-            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
+            TextMeshProUGUI text = GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
                 text.text = textValue;
@@ -470,7 +470,7 @@ namespace VRtist
                 GameObject text = new GameObject("Text");
                 text.transform.parent = canvas.transform;
 
-                TextMeshPro t = text.AddComponent<TextMeshPro>();
+                TextMeshProUGUI t = text.AddComponent<TextMeshProUGUI>();
                 t.text = input.caption;
                 t.enableAutoSizing = false;
                 t.fontSize = 18;
@@ -479,8 +479,7 @@ namespace VRtist
                 t.fontStyle = FontStyles.Normal;
                 t.alignment = TextAlignmentOptions.MidlineLeft;
                 t.color = input.textColor.value;
-                t.sortingOrder = 1;
-
+                
                 RectTransform trt = t.GetComponent<RectTransform>();
                 trt.localScale = 0.01f * Vector3.one;
                 trt.localRotation = Quaternion.identity;

@@ -146,7 +146,7 @@ namespace VRtist
                 }
 
                 // TEXT
-                TextMeshPro text = canvas.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                TextMeshProUGUI text = canvas.gameObject.GetComponentInChildren<TextMeshProUGUI>(true);
                 if (text != null)
                 {
                     if (content != LabelContent.ImageOnly)
@@ -181,7 +181,7 @@ namespace VRtist
 
         public void UpdateTextColor()
         {
-            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
+            TextMeshProUGUI text = GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
                 text.color = TextColor;
@@ -258,7 +258,7 @@ namespace VRtist
         {
             textContent = textValue;
 
-            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
+            TextMeshProUGUI text = GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
                 text.text = textValue;
@@ -490,7 +490,7 @@ namespace VRtist
             GameObject text = new GameObject("Text");
             text.transform.parent = canvas.transform;
 
-            TextMeshPro t = text.AddComponent<TextMeshPro>();
+            TextMeshProUGUI t = text.AddComponent<TextMeshProUGUI>();
             t.text = input.caption;
             t.enableAutoSizing = false;
             t.fontSize = 16;

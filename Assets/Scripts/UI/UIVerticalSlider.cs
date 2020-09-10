@@ -286,7 +286,7 @@ namespace VRtist
             if (canvas != null)
             {
                 Transform textValueTransform = canvas.transform.Find("TextValue");
-                TextMeshPro txt = textValueTransform.gameObject.GetComponent<TextMeshPro>();
+                TextMeshProUGUI txt = textValueTransform.gameObject.GetComponent<TextMeshProUGUI>();
                 if (txt != null)
                 {
                     txt.text = currentValue.ToString("#0.00");
@@ -346,7 +346,7 @@ namespace VRtist
             Transform textValueTransform = transform.Find("Canvas/TextValue");
             if (textValueTransform != null)
             {
-                TextMeshPro text = textValueTransform.GetComponent<TextMeshPro>();
+                TextMeshProUGUI text = textValueTransform.GetComponent<TextMeshProUGUI>();
                 if (text != null)
                 {
                     RectTransform rectTextValue = textValueTransform.GetComponent<RectTransform>();
@@ -450,7 +450,7 @@ namespace VRtist
         {
             textContent = textValue;
 
-            TextMeshPro text = GetComponentInChildren<TextMeshPro>();
+            TextMeshProUGUI text = GetComponentInChildren<TextMeshProUGUI>();
             if (text != null)
             {
                 text.text = textValue;
@@ -519,6 +519,7 @@ namespace VRtist
         public override void OnRayReleaseOutside()
         {
             base.OnRayReleaseOutside();
+            onReleaseEvent.Invoke();
         }
 
         public override bool OverridesRayEndPoint() { return true; }
@@ -835,7 +836,7 @@ namespace VRtist
                 GameObject text = new GameObject("TextValue");
                 text.transform.parent = canvas.transform;
 
-                TextMeshPro t = text.AddComponent<TextMeshPro>();
+                TextMeshProUGUI t = text.AddComponent<TextMeshProUGUI>();
                 t.text = input.currentValue.ToString("#0.00");
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;

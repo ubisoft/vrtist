@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace VRtist
 {
@@ -278,7 +277,7 @@ namespace VRtist
 
         public void UpdateTrackName()
         {
-            TextMeshPro trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshPro>();
+            TextMeshProUGUI trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshProUGUI>();
             List<GameObject> selectedObjects = Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection | SelectionType.Gripped);
             int count = selectedObjects.Count;
             if (count > 1)
