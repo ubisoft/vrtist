@@ -78,7 +78,7 @@ namespace VRtist
 
             rightHanded = world.Find("Avatars");
 
-            //StartCoroutine(SendPlayerTransform());
+            StartCoroutine(SendPlayerTransform());
         }
 
         void Update()
