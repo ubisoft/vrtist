@@ -391,6 +391,174 @@ namespace VRtist
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
 
+        //
+        // Text Mesh Pro
+        //
+
+        private void TMP_2_TMPUI(TextMeshPro tmp, GameObject gObj)
+        {
+
+            TMPro.TextAlignmentOptions align = tmp.alignment;
+            float tmin = tmp.fontSizeMin;
+            float tmax = tmp.fontSizeMax;
+            bool autoS = tmp.enableAutoSizing;
+            TMPro.FontStyles fs = tmp.fontStyle;
+            Color c = tmp.color;
+            string s = tmp.text;
+
+            DestroyImmediate(tmp);
+
+            if (gObj.GetComponent<TextMeshProUGUI>() == null)
+            {
+                TextMeshProUGUI tui = gObj.AddComponent<TextMeshProUGUI>();
+                tui.alignment = align;
+                tui.fontSizeMin = tmin;
+                tui.fontSizeMax = tmax;
+                tui.enableAutoSizing = autoS;
+                tui.fontStyle = fs;
+                tui.color = c;
+                tui.text = s;
+            }
+        }
+
+        public void Replace_TextMeshPro_By_TextMeshProUGUI()
+        {
+            for (int w = 0; w < windows.Length; ++w)
+            {
+                UIElement[] uiElements = windows[w].GetComponentsInChildren<UIElement>(true);
+                for (int e = 0; e < uiElements.Length; ++e)
+                {
+                    UIElement element = uiElements[e];
+
+                    #region button
+                    UIButton button = element.GetComponent<UIButton>();
+                    if (button != null)
+                    {
+                        Transform textObjectTransform = button.transform.Find("Canvas/Text");
+
+                        TextMeshPro oldText = textObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldText != null)
+                        {
+                            TMP_2_TMPUI(oldText, textObjectTransform.gameObject);
+                        }
+
+                        textObjectTransform.gameObject.SetActive(button.content != UIButton.ButtonContent.ImageOnly);
+                    }
+                    #endregion
+
+                    #region label
+                    UILabel label = element.GetComponent<UILabel>();
+                    if (label != null)
+                    {
+                        Transform textObjectTransform = label.transform.Find("Canvas/Text");
+                        TextMeshPro oldText = label.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldText != null)
+                        {
+                            TMP_2_TMPUI(oldText, textObjectTransform.gameObject);
+                        }
+                    }
+                    #endregion
+
+                    #region checkbox
+                    UICheckbox checkbox = element.GetComponent<UICheckbox>();
+                    if (checkbox != null)
+                    {
+                        Transform textObjectTransform = checkbox.transform.Find("Canvas/Text");
+                        TextMeshPro oldText = textObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldText != null)
+                        {
+                            TMP_2_TMPUI(oldText, textObjectTransform.gameObject);
+                        }
+                    }
+                    #endregion
+
+                    UISlider slider = element.GetComponent<UISlider>();
+                    if (slider != null)
+                    {
+                        Transform textObjectTransform = slider.transform.Find("Canvas/Text");
+                        TextMeshPro oldText = textObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldText != null)
+                        {
+                            TMP_2_TMPUI(oldText, textObjectTransform.gameObject);
+                        }
+
+                        Transform textValueObjectTransform = slider.transform.Find("Canvas/TextValue");
+                        TextMeshPro oldTextValue = textValueObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldTextValue != null)
+                        {
+                            TMP_2_TMPUI(oldTextValue, textValueObjectTransform.gameObject);
+                        }
+                    }
+
+                    UIVerticalSlider vslider = element.GetComponent<UIVerticalSlider>();
+                    if (vslider != null)
+                    {
+                        Transform textValueObjectTransform = vslider.transform.Find("Canvas/TextValue");
+                        TextMeshPro oldTextValue = textValueObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldTextValue != null)
+                        {
+                            TMP_2_TMPUI(oldTextValue, textValueObjectTransform.gameObject);
+                        }
+                    }
+
+                    UISpinner spinner = element.GetComponent<UISpinner>();
+                    if (spinner)
+                    {
+                        bool hasText = (spinner.textAndValueVisibilityType == UISpinner.TextAndValueVisibilityType.ShowTextAndValue);
+
+                        Transform textObjectTransform = spinner.transform.Find("Canvas/Text");
+                        TextMeshPro oldText = textObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldText != null)
+                        {
+                            TMP_2_TMPUI(oldText, textObjectTransform.gameObject);
+                        }
+
+                        textObjectTransform.gameObject.SetActive(hasText);
+
+                        Transform textValueObjectTransform = spinner.transform.Find("Canvas/TextValue");
+                        TextMeshPro oldTextValue = textValueObjectTransform.gameObject.GetComponentInChildren<TextMeshPro>(true);
+                        if (oldTextValue != null)
+                        {
+                            TMP_2_TMPUI(oldTextValue, textValueObjectTransform.gameObject);
+                        }
+                    }
+
+                    //UIPanel panel = element.GetComponent<UIPanel>();
+                    //if (panel != null)
+                    //{
+
+                    //}
+
+                    //UITimeBar timebar = element.GetComponent<UITimeBar>();
+                    //if (timebar)
+                    //{
+
+                    //}
+
+                    //UIColorPickerHue colorpickerhue = element.GetComponent<UIColorPickerHue>();
+                    //if (colorpickerhue)
+                    //{
+
+                    //}
+
+                    //UIColorPickerSaturation colorpickersat = element.GetComponent<UIColorPickerSaturation>();
+                    //if (colorpickersat)
+                    //{
+
+                    //}
+
+                    //UIColorPickerPreview colorpickerprev = element.GetComponent<UIColorPickerPreview>();
+                    //if (colorpickerprev)
+                    //{
+
+                    //}
+
+                    element.NeedsRebuild = true;
+                }
+            }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        }
+
         #region UTILS
         static void PrintObjectProperties(Object o)
         {
