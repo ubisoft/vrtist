@@ -274,11 +274,11 @@ namespace VRtist
                         dopesheetHandle.rotation = paletteHandle.rotation;
                         firstTimeShowDopesheet = false;
                     }
-                    ToolsUIManager.Instance.OpenWindow(dopesheetHandle, 0.5f);
+                    ToolsUIManager.Instance.OpenWindow(dopesheetHandle, 0.7f);
                 }
                 else
                 {
-                    ToolsUIManager.Instance.CloseWindow(dopesheetHandle, 0.5f);
+                    ToolsUIManager.Instance.CloseWindow(dopesheetHandle, 0.7f);
                 }
             }
         }

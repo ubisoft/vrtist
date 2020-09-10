@@ -75,7 +75,7 @@ namespace VRtist
         AddKeyframe,
         RemoveKeyframe,
         _QueryCurrentFrame,
-        QueryObjectData,
+        QueryAnimationData,
         _BlenderDataUpdate,
         CameraAttributes,
         LightAttributes,
@@ -2653,9 +2653,9 @@ namespace VRtist
             return new NetCommand(buffer, MessageType.RemoveKeyframe);
         }
 
-        public static NetCommand BuildSendQueryObjectData(string name)
+        public static NetCommand BuildSendQueryAnimationData(string name)
         {
-            return new NetCommand(StringToBytes(name), MessageType.QueryObjectData);
+            return new NetCommand(StringToBytes(name), MessageType.QueryAnimationData);
         }
 
         public static void BuildFrameStartEnd(byte[] data)
@@ -3209,7 +3209,7 @@ namespace VRtist
 
         public void SendQueryObjectData(string name)
         {
-            NetCommand command = NetGeometry.BuildSendQueryObjectData(name);
+            NetCommand command = NetGeometry.BuildSendQueryAnimationData(name);
             AddCommand(command);
         }
         public void SendDuplicate(DuplicateInfos duplicate)
@@ -3593,7 +3593,7 @@ namespace VRtist
                     SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
                     SendRemoveKeyframe(data as SetKeyInfo); break;
-                case MessageType.QueryObjectData:
+                case MessageType.QueryAnimationData:
                     SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
                     SendClearAnimations(data as ClearAnimationInfo); break;

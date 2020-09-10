@@ -371,7 +371,7 @@ namespace VRtist
                 //SendKeyInfo(name, "hide_viewport", -1, frame, visible ? 0 : 1f);
             }
 
-            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, name);
+            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, name);
         }
 
         public void AddKeyframe()
@@ -417,7 +417,7 @@ namespace VRtist
                     SendDeleteKeyInfo(objectName, "scale", 1);
                     SendDeleteKeyInfo(objectName, "scale", 2);
                 }
-                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryObjectData, objectName);
+                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, objectName);
             }
         }
     }
