@@ -178,20 +178,7 @@ namespace VRtist
 
         protected void UpdateCurrentObject(GameObject gObject)
         {
-            Dictionary<string, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(gObject);
-            if (null == channels)
-            {
-                Clear();
-                UpdateTrackName();
-                return;
-            }
-
-            // Find location.z channel
-            AnimationChannel channelLocationZ = null;
-            channels.TryGetValue("location[2]", out channelLocationZ);
-
-            // call even if channelLocationZ == null (will clear keys)
-            UpdateCurrentObjectChannel(gObject, channelLocationZ);
+            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
         }
 
         protected void UpdateCurrentObjectChannel(GameObject gObject, AnimationChannel channel)
