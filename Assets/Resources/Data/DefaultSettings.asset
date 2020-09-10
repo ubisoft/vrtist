@@ -26,14 +26,14 @@ MonoBehaviour:
   palettePosition: {x: -0.02, y: 0.05, z: -0.05}
   paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   pinnedPalette: 0
-  dopeSheetPosition: {x: 0.38700244, y: 1.6078091, z: 0.19743504}
-  dopeSheetRotation: {x: 0.08116017, y: 0.3279184, z: -0.0370871, w: 0.9404824}
+  dopeSheetPosition: {x: 0.37167427, y: 1.5881709, z: 0.069777936}
+  dopeSheetRotation: {x: 0.05244319, y: 0.4610862, z: -0.022301769, w: 0.8855235}
   dopeSheetVisible: 1
   cameraPreviewPosition: {x: 0.35908973, y: 1.535397, z: 0.4590031}
   cameraPreviewRotation: {x: 0.06101212, y: 0.3917295, z: -0.11199341, w: 0.9111987}
   cameraPreviewVisible: 0
-  cameraFeedbackPosition: {x: 0.08893606, y: 1.7096623, z: 700.0464}
-  cameraFeedbackRotation: {x: -0, y: -0.00000013113416, z: -0, w: -1}
+  cameraFeedbackPosition: {x: -0.06853569, y: 1.5546024, z: 699.7072}
+  cameraFeedbackRotation: {x: -0, y: -0.00000030597974, z: -0, w: -1}
   cameraFeedbackScale: {x: 715.7847, y: 402.6289, z: 402.6289}
   cameraFeedbackScaleValue: 1
   cameraFeedbackVisible: 1
@@ -41,9 +41,9 @@ MonoBehaviour:
   consoleVisible: 0
   consolePosition: {x: 0.9457, y: 1.7179871, z: -0.1891857}
   consoleRotation: {x: -0.0010729734, y: 0.7981412, z: -0.050995618, w: 0.6003074}
-  castShadows: 1
+  castShadows: 0
   scaleSpeed: 50
-  raySliderDrag: 97
+  raySliderDrag: 99
   focalCurve:
     serializedVersion: 2
     m_Curve:

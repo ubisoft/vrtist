@@ -103,7 +103,7 @@ namespace VRtist
 
         public void OnDeleteSelection()
         {
-            List<GameObject> allSelected = Selection.GetObjects();
+            List<GameObject> allSelected = Selection.GetSelectedObjects(SelectionType.Selection);
             if (allSelected.Count == 0) { return; }
 
             CommandGroup group = new CommandGroup("Delete All Selection");
