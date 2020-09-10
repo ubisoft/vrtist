@@ -175,6 +175,8 @@ namespace VRtist
             avatarPrefab = Resources.Load<GameObject>("Prefabs/VR Avatar");
             avatarsContainer = world.Find("Avatars");
             countdown.onCountdownFinished.AddListener(OnCountdownFinished);
+
+            animationController.Start();
         }
 
         // Animation helpers
