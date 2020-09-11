@@ -25,6 +25,11 @@ namespace VRtist
         private UnityAction<bool> enabledAction;
         private UnityAction setCameraAction;
 
+        private void OnEnable()
+        {
+            foreach(TextMeshProUGUI text in GetComponentsInChildren<TextMeshProUGUI>())
+                text.fontSizeMin = 1;
+        }
         public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
         {
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
@@ -305,8 +310,10 @@ namespace VRtist
                 text.enableAutoSizing = true;
                 text.fontSizeMin = 1;
                 text.fontSizeMax = 500;
+                /*
                 MeshRenderer r = text.GetComponent<MeshRenderer>();
                 r.sortingOrder = 1;
+                */
             }
 
             //
@@ -328,8 +335,10 @@ namespace VRtist
                 Canvas canvas = cameraNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
                 canvas.sortingOrder = 1;
                 TextMeshProUGUI text = cameraNameLabel.GetComponentInChildren<TextMeshProUGUI>();
+                /*
                 MeshRenderer r = text.GetComponent<MeshRenderer>();
                 r.sortingOrder = 1;
+                */
                 text.fontStyle = FontStyles.Normal;
                 text.alignment = TextAlignmentOptions.BottomRight;
                 text.fontStyle = FontStyles.Normal;
@@ -383,8 +392,10 @@ namespace VRtist
                 Canvas canvas = frameRangeLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
                 canvas.sortingOrder = 1;
                 TextMeshProUGUI text = frameRangeLabel.GetComponentInChildren<TextMeshProUGUI>();
+                /*
                 MeshRenderer r = text.GetComponent<MeshRenderer>();
                 r.sortingOrder = 1;
+                */
                 text.alignment = TextAlignmentOptions.Center;
                 text.enableAutoSizing = true;
                 text.fontSizeMin = 1;
