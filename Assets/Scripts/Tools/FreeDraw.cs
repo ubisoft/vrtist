@@ -1,5 +1,4 @@
-using Newtonsoft.Json;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // Generates mesh arrays from free drawing
@@ -21,8 +20,15 @@ namespace VRtist
         public Vector3[] normals;
         public int[] triangles;
 
+        public List<Vector3> hullControlPoints;
+        public List<Vector3> hullVertices;
+        public List<Vector3> hullNormals;
+        public List<int> hullTriangles;
+
         Vector3 prevControlPoint;
         public Matrix4x4 matrix;
+
+        GK.ConvexHullCalculator calc;
 
         public FreeDraw()
         {
@@ -38,6 +44,32 @@ namespace VRtist
             for (int i = 0; i < count; i++)
             {
                 AddControlPoint(points[i], radius[i]);
+            }
+        }
+
+        public void AddConvexHullPoint(Vector3 nextPoint)
+        {
+            Vector3 next = matrix.MultiplyPoint(nextPoint);
+
+            int size = controlPoints.Length;
+
+            if (Vector3.Distance(prevControlPoint, next) < 0.01)
+                return;
+            
+            prevControlPoint = next;
+
+            System.Array.Resize(ref controlPoints, size + 1);
+            controlPoints[size] = next;
+
+            hullControlPoints.Add(next);
+
+            if (size >= 4)
+            {
+                calc.GenerateHull(hullControlPoints, true, ref hullVertices, ref hullTriangles, ref hullNormals);
+
+                vertices = hullVertices.ToArray();
+                triangles = hullTriangles.ToArray();
+                normals = hullNormals.ToArray();
             }
         }
 
@@ -281,6 +313,12 @@ namespace VRtist
 
         private void Reset()
         {
+            calc = new GK.ConvexHullCalculator();
+            hullControlPoints = new List<Vector3>();
+            hullVertices = new List<Vector3>();
+            hullNormals = new List<Vector3>();
+            hullTriangles = new List<int>();
+
             System.Array.Resize(ref controlPoints, 0);
             System.Array.Resize(ref controlPointsRadius, 0);
             System.Array.Resize(ref vertices, 0);

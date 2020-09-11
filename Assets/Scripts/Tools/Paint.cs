@@ -15,7 +15,7 @@ namespace VRtist
         Vector3 paintPrevPosition;
         GameObject currentPaintLine;
         float brushSize = 0.01f;
-        enum PaintTools { Pencil = 0, FlatPencil }
+        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull }
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
         int paintId = 0;
@@ -23,6 +23,7 @@ namespace VRtist
 
         GameObject volumeCursor;
         GameObject flatCursor;
+        GameObject convexCursor;
 
         FreeDraw freeDraw;
         CommandGroup undoGroup = null;
@@ -44,8 +45,10 @@ namespace VRtist
 
             volumeCursor = paintBrush.transform.Find("curve").gameObject;
             flatCursor = paintBrush.transform.Find("flat_curve").gameObject;
+            convexCursor = paintBrush.transform.Find("convex").gameObject;
             volumeCursor.SetActive(paintTool == PaintTools.Pencil);
             flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
+            convexCursor.SetActive(paintTool == PaintTools.ConvexHull);
 
             // Create tooltips
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
@@ -71,11 +74,8 @@ namespace VRtist
             Vector3 position;
             Quaternion rotation;
             VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
-            switch (paintTool)
-            {
-                case PaintTools.Pencil: UpdateToolPaintPencil(position, rotation, false); break;
-                case PaintTools.FlatPencil: UpdateToolPaintPencil(position, rotation, true); break;
-            }
+
+            UpdateToolPaintPencil(position, rotation);
         }
 
         protected override void ShowTool(bool show)
@@ -128,7 +128,7 @@ namespace VRtist
 
         }
 
-        private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation, bool flat)
+        private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation)//, bool flat)
         {
             // Activate a new paint            
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
@@ -211,10 +211,13 @@ namespace VRtist
                 //OVRInput.SetControllerVibration(1, ratio, OVRInput.Controller.RTouch);
                 //VRInput.rightController.SendHapticImpulse(0, ratio, 1f);                       
 
-                if (flat)
-                    freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, brushSize * ratio);
-                else
-                    freeDraw.AddControlPoint(penPosition, brushSize * ratio);
+                switch(paintTool)
+                {
+                    case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, brushSize * ratio); break;
+                    case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, brushSize * ratio); break;
+                    case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
+                }
+
                 // set mesh components
                 MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
                 Mesh mesh = meshFilter.mesh;
@@ -258,6 +261,10 @@ namespace VRtist
                     { 
                         button.Checked = true;
                     }
+                    if (child.name == "ConvexHullPencilButton" && paintTool == PaintTools.ConvexHull)
+                    {
+                        button.Checked = true;
+                    }
                 }
             }
         }
@@ -267,6 +274,7 @@ namespace VRtist
             paintTool = PaintTools.Pencil;
             volumeCursor.SetActive(true);
             flatCursor.SetActive(false);
+            convexCursor.SetActive(false);
             updateButtonsColor();
         }
 
@@ -275,6 +283,16 @@ namespace VRtist
             paintTool = PaintTools.FlatPencil;
             volumeCursor.SetActive(false);
             flatCursor.SetActive(true);
+            convexCursor.SetActive(false);
+            updateButtonsColor();
+        }
+
+        public void PaintSelectConvexHullPencil()
+        {
+            paintTool = PaintTools.ConvexHull;
+            volumeCursor.SetActive(false);
+            flatCursor.SetActive(false);
+            convexCursor.SetActive(true);
             updateButtonsColor();
         }
 
