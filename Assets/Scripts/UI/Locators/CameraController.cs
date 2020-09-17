@@ -14,6 +14,7 @@ namespace VRtist
         private UISlider focalSlider = null;
         private bool focalActionSelected;
         private CommandSetValue<float> focalValueCommand;
+        private UISpinner focalSpinner = null;
 
         private LineRenderer frustumRenderer = null;
 
@@ -50,10 +51,22 @@ namespace VRtist
                 focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
 
                 // Hack : forces font size min when component is enabled
-                foreach(TextMeshProUGUI text in focalSlider.GetComponentsInChildren<TextMeshProUGUI>())
+                foreach (TextMeshProUGUI text in focalSlider.GetComponentsInChildren<TextMeshProUGUI>())
                 {
                     text.fontSizeMin = 1f;
                 }
+
+                focalSpinner = gameObject.GetComponentInChildren<UISpinner>();
+                focalSpinner.onSpinEventInt.AddListener(OnFocalSliderChange);
+                focalSpinner.onClickEvent.AddListener(OnFocalClicked);
+                focalSpinner.onReleaseEvent.AddListener(OnFocalReleased);
+
+                // Hack : forces font size min when component is enabled
+                foreach (TextMeshProUGUI text in focalSpinner.GetComponentsInChildren<TextMeshProUGUI>())
+                {
+                    text.fontSizeMin = 1f;
+                }
+                focalSpinner.NeedsRebuild = true;
             }
         }
 
@@ -115,6 +128,10 @@ namespace VRtist
             if (null != focalSlider && focalSlider.Value != focal)
             {
                 focalSlider.Value = focal;
+                focalSpinner.FloatValue = focal;
+            }
+            if (null != focalSpinner && focalSpinner.FloatValue != focal)
+            {
             }
         }
 

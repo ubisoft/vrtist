@@ -14,6 +14,8 @@ namespace VRtist
         private UILabel contentLabel = null;
         private string textContent = "";
 
+        public bool autoClose = true;
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public CharChangedEvent onKeyStrokeEvent = new CharChangedEvent();
         public StringChangedEvent onValidateTextEvent = new StringChangedEvent();
@@ -31,7 +33,7 @@ namespace VRtist
                 symbolsButton = mainPanel.Find("SymbolsButton")?.GetComponent<UIButton>();
                 contentLabel = mainPanel.Find("TextContentLabel")?.GetComponent<UILabel>();
 
-                if (alphaLowerPanel == null 
+                if (alphaLowerPanel == null
                  || alphaUpperPanel == null
                  || digitsPanel == null
                  || symbolsPanel == null
@@ -52,7 +54,7 @@ namespace VRtist
                     shiftButton.Checked = false;
                     symbolsButton.Checked = false;
                 }
-                
+
                 // add listener
             }
         }
@@ -96,6 +98,10 @@ namespace VRtist
         public void OnValidateText()
         {
             onValidateTextEvent.Invoke(textContent);
+            if (autoClose)
+            {
+                ToolsUIManager.Instance.CloseKeyboard();
+            }
         }
 
         public void OnKeyFired(char character)
@@ -104,6 +110,12 @@ namespace VRtist
             contentLabel.Text = textContent;
 
             onKeyStrokeEvent.Invoke(character);
+        }
+
+        public void Clear()
+        {
+            textContent = "";
+            contentLabel.Text = textContent;
         }
     }
 }

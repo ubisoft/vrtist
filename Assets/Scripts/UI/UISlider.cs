@@ -81,6 +81,10 @@ namespace VRtist
         public string Text { get { return textContent; } set { SetText(value); } }
         public float Value { get { return GetValue(); } set { SetValue(value); UpdateValueText(); UpdateSliderPosition(); } }
 
+        public AnimationCurve DataCurve { get { return dataCurve; } set { dataCurve = value; UpdateMinMax(); BuildInverseCurve(); dataSource = SliderDataSource.Curve; } }
+
+        private bool keyboardOpen = false;
+
         public bool HasCurveData()
         {
             return (dataSource == SliderDataSource.Curve && dataCurve != null && dataCurve.keys.Length > 0);
@@ -168,6 +172,12 @@ namespace VRtist
                     rectTextValue.localPosition = new Vector3(textPosRight, -margin, -0.002f);
                 }
             }
+        }
+
+        public void UpdateMinMax()
+        {
+            minValue = dataCurve.Evaluate(0f);
+            maxValue = dataCurve.Evaluate(1f);
         }
 
         public override void ResetMaterial()
@@ -425,7 +435,7 @@ namespace VRtist
 
             // Rail, Knob, Text and TextValue
             MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>(true);
-            foreach(MeshRenderer r in renderers)
+            foreach (MeshRenderer r in renderers)
             {
                 r.renderingLayerMask = (1u << layerIndex);
             }
@@ -438,7 +448,27 @@ namespace VRtist
 
         private void SetValue(float floatValue)
         {
-            currentValue = floatValue;
+            currentValue = Mathf.Clamp(floatValue, minValue, maxValue);
+        }
+
+        public override bool IgnoreRayInteraction()
+        {
+            return base.IgnoreRayInteraction() || keyboardOpen;
+        }
+
+        private void OnValidateKeyboard(string value)
+        {
+            if (!float.TryParse(value, out float val)) { return; }
+            Value = val;
+            keyboardOpen = false;
+            onSlideEvent.Invoke(currentValue);
+            int intValue = Mathf.RoundToInt(currentValue);
+            onSlideEventInt.Invoke(intValue);
+        }
+
+        private void OnCloseKeyboard()
+        {
+            keyboardOpen = false;
         }
 
         #region ray
@@ -525,12 +555,22 @@ namespace VRtist
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
 
+            // SPAWN KEYBOARD
+
+            if (triggerJustClicked && localProjectedWidgetPosition.x > endX)
+            {
+                ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                // Position window
+                keyboardOpen = true;
+                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                return;
+            }
+
             float currentValuePct = (Value - minValue) / (maxValue - minValue);
             if (HasCurveData())
             {
                 currentValuePct = invDataCurve.Evaluate(Value);
             }
-            float currentKnobPositionX = startX + currentValuePct * (endX - startX);
 
             // DRAG
 
@@ -540,6 +580,7 @@ namespace VRtist
                 localProjectedWidgetPosition.x = Mathf.Lerp(lastProjected, localProjectedWidgetPosition.x, drag);
             }
             lastProjected = localProjectedWidgetPosition.x;
+
 
             // CLAMP
 

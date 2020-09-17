@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -46,7 +47,7 @@ namespace VRtist
         [SerializeField] private Transform tabButtonsContainer;
         [SerializeField] private Transform panelsContainer;
         [SerializeField] private float paletteScale = 0.5f;
-        [SerializeField] private Color defaultColor = new Color(114f/ 255f, 114f / 255f, 114f / 255f);
+        [SerializeField] private Color defaultColor = new Color(114f / 255f, 114f / 255f, 114f / 255f);
         [SerializeField] private Color selectionColor = new Color(0f, 167f / 255f, 1f);
         [SerializeField] private AudioSource audioOpenPalette = null;
         [SerializeField] private AudioSource audioClosePalette = null;
@@ -57,6 +58,8 @@ namespace VRtist
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
+
+        public Transform keyboardWindow;
 
         [Header("Debug tweaking")]
         public int palettePopNbFrames = 8;
@@ -126,7 +129,7 @@ namespace VRtist
 
 
             palettePinButton.Disabled = false;
-            paletteCloseButton.Disabled =  true;
+            paletteCloseButton.Disabled = true;
 
             string firstToolName = ToolsManager.CurrentTool().name;
             ChangeTab(firstToolName);
@@ -135,6 +138,8 @@ namespace VRtist
             paletteRoot.transform.localScale = Vector3.zero;
 
             colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
+
+            keyboardWindow.localScale = Vector3.zero;
         }
 
         public void ChangeTab(string tabName)
@@ -169,7 +174,7 @@ namespace VRtist
                 tool.IsInGui = !doShowTool;
             }
         }
-        
+
         public void ShowTools(bool doShowTools)
         {
             showTools = doShowTools;
@@ -224,7 +229,7 @@ namespace VRtist
 
         public void SetTabButtonActive(string toolName, bool active)
         {
-            if(toolName == null) { return; }
+            if (toolName == null) { return; }
 
             // TODO: make a map, a little bit too hardcoded.
             string buttonName = toolName + "ToolButton";
@@ -296,6 +301,42 @@ namespace VRtist
                 }
             }
         }
+
+        #region keyboard
+
+        public void OpenKeyboard(UnityAction<string> validateCallback, UnityAction cancelCallback, Transform anchor)
+        {
+            OpenWindow(keyboardWindow, 1f);
+            Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
+            keyboard.Clear();
+            keyboard.onValidateTextEvent.RemoveAllListeners();
+            keyboard.onValidateTextEvent.AddListener(validateCallback);
+            UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
+            if (null != cancelCallback)
+                closeButton.onReleaseEvent.AddListener(cancelCallback);
+            closeButton.onReleaseEvent.AddListener(CancelKeyboard);
+
+            Vector3 offset = new Vector3(0.35f, 0.0f, -0.01f);
+            keyboardWindow.position = anchor.TransformPoint(offset);
+            keyboardWindow.rotation = Camera.main.transform.rotation;
+        }
+
+        public void CloseKeyboard(bool cancel = false)
+        {
+            Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
+            keyboard.onValidateTextEvent.RemoveAllListeners();
+            UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
+            closeButton.onReleaseEvent.RemoveAllListeners();
+            CloseWindow(keyboardWindow, 1f);
+        }
+
+        public void CancelKeyboard()
+        {
+            CloseKeyboard(cancel: true);
+        }
+
+        #endregion
+
         public void OpenWindow(Transform window, float scaleFactor)
         {
             Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false));
@@ -337,7 +378,7 @@ namespace VRtist
             {
                 for (int i = 0; i < nbFrames; i++)
                 {
-                    float t = (float)i / (nbFrames - 1);
+                    float t = (float) i / (nbFrames - 1);
                     if (reverse) t = 1.0f - t;
                     float tx = scaleFactor * xCurve.Evaluate(t);
                     float ty = scaleFactor * yCurve.Evaluate(t);

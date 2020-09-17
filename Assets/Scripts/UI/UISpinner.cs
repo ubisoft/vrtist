@@ -214,7 +214,7 @@ namespace VRtist
                     UpdateValueText();
                     ResetColor();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.Log("Exception: " + e);
                 }
@@ -318,7 +318,7 @@ namespace VRtist
 
         private void SetFloatValue(float floatValue)
         {
-            currentValue = floatValue;
+            currentValue = Mathf.Clamp(floatValue, minValue, maxValue);
         }
 
         private int GetIntValue()
@@ -328,7 +328,7 @@ namespace VRtist
 
         private void SetIntValue(int intValue)
         {
-            currentValue = (float)intValue;
+            currentValue = (float) intValue;
         }
 
         #region ray
@@ -403,16 +403,19 @@ namespace VRtist
             }
 
             Vector2 localCenter = new Vector2(width / 2.0f, -height / 2.0f);
-            
+
             float currentDistX = localProjectedWidgetPosition.x - localCenter.x;
             FloatValue += Time.unscaledDeltaTime * valueRateRay * currentDistX;
 
             localProjectedWidgetPosition.x = localCenter.x;
             localProjectedWidgetPosition.y = localCenter.y;
 
-            if (spinnerValueType == SpinnerValueType.Float) {
+            if (spinnerValueType == SpinnerValueType.Float)
+            {
                 onSpinEvent.Invoke(FloatValue);
-            } else {
+            }
+            else
+            {
                 onSpinEventInt.Invoke(IntValue);
             }
 
@@ -528,7 +531,7 @@ namespace VRtist
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
-                
+
                 uiSpinner.SetColor(input.background_color.value);
             }
 
@@ -578,7 +581,7 @@ namespace VRtist
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(0, 1); // top left
                 trt.sizeDelta = new Vector2(
-                    (uiSpinner.width-2*uiSpinner.margin) * uiSpinner.separationPositionPct * 100.0f, 
+                    (uiSpinner.width - 2 * uiSpinner.margin) * uiSpinner.separationPositionPct * 100.0f,
                     (uiSpinner.height - 2 * uiSpinner.margin) * 100.0f);
                 float textPosLeft = uiSpinner.margin;
                 trt.localPosition = new Vector3(textPosLeft, -uiSpinner.margin, -0.002f);
@@ -609,16 +612,16 @@ namespace VRtist
                 trt.anchorMin = new Vector2(0, 1);
                 trt.anchorMax = new Vector2(0, 1);
                 trt.pivot = new Vector2(1, 1); // top right?
-                trt.sizeDelta = hasText ? 
+                trt.sizeDelta = hasText ?
                     new Vector2(
-                        (uiSpinner.width - 2 * uiSpinner.margin) * (1-uiSpinner.separationPositionPct) * 100.0f,
+                        (uiSpinner.width - 2 * uiSpinner.margin) * (1 - uiSpinner.separationPositionPct) * 100.0f,
                         (uiSpinner.height - 2 * uiSpinner.margin) * 100.0f)
                     : new Vector2(
                         (uiSpinner.width - 2 * uiSpinner.margin) * 100.0f,
                         (uiSpinner.height - 2 * uiSpinner.margin) * 100.0f);
                 float textPos = hasText ?
                       uiSpinner.width - uiSpinner.margin // right
-                    : uiSpinner.width - uiSpinner.margin ; // or middle
+                    : uiSpinner.width - uiSpinner.margin; // or middle
                 trt.localPosition = new Vector3(textPos, -uiSpinner.margin, -0.002f);
             }
 
