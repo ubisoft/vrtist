@@ -245,8 +245,8 @@ namespace VRtist
                 if (null == currentObject)
                 {
                     Clear();
-                    UpdateTrackName();
                 }
+                UpdateTrackName();
             }
         }
 

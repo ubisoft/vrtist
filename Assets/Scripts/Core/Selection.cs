@@ -195,19 +195,19 @@ namespace VRtist
         public static List<GameObject> GetSelectedObjects(SelectionType selectionType = SelectionType.Selection)
         {
             List<GameObject> gameObjects = new List<GameObject>();
+            if (0 != (selectionType & SelectionType.Selection))
+            {
+                gameObjects.InsertRange(0, selection.Values);
+            }
             if (0 != (selectionType & SelectionType.Gripped))
             {
-                if (null != grippedObject)
+                if (null != grippedObject && !gameObjects.Contains(grippedObject))
                     gameObjects.Add(grippedObject);
             }
             if (0 != (selectionType & SelectionType.Hovered))
             {
-                if (null != hoveredObject)
+                if (null != hoveredObject && !gameObjects.Contains(hoveredObject))
                     gameObjects.Add(hoveredObject);
-            }
-            if (0 != (selectionType & SelectionType.Selection))
-            {
-                gameObjects.InsertRange(gameObjects.Count, selection.Values);
             }
             return gameObjects;
         }
