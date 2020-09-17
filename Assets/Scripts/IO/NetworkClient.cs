@@ -2678,11 +2678,9 @@ namespace VRtist
             else
             {
                 Node prefabNode = SyncData.nodes[cameraName];
-                // We only have one instance of any camera in the scene
-                /*
+                // We only have one instance of any camera in the scene                
                 CameraController controller = prefabNode.instances[0].Item1.GetComponent<CameraController>();
-                if (null != controller) { Selection.SetActiveCamera(controller); }
-                */
+                if (null != controller) { Selection.SetActiveCamera(controller); }                
             }
         }
 
@@ -2855,7 +2853,7 @@ namespace VRtist
                         if (cameraName.Length > 0)
                             cam = SyncData.nodes[cameraName].instances[0].Item1;
                         Shot shot = new Shot { name = shotName, camera = cam, color = color, start = start, end = end };
-                        ShotManager.Instance.InsertShot(shotIndex + 1, shot);
+                        ShotManager.Instance.InsertShot(shotIndex, shot);
                         ShotManager.Instance.FireChanged();
                     }
                     break;

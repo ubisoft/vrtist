@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace VRtist
 {
     public class CameraFeedback : MonoBehaviour
     {
         public Transform targetCamera;
-        private Transform backgroundFeedback;
+        private GameObject cameraPlane;
+        private GameObject feedbackCamera = null;
+
         private void Awake()
         {
             Selection.OnActiveCameraChanged += OnCameraChanged;
@@ -13,39 +16,35 @@ namespace VRtist
 
         void Start()
         {
-            backgroundFeedback = transform.parent;
-        }
-
-        private void OnEnable()
-        {
-            SetActiveCamera(Selection.activeCamera);
+            Assert.IsTrue(transform.GetChild(0).name == "CameraFeedbackPlane");
+            cameraPlane = transform.GetChild(0).gameObject;
         }
 
         protected void Update()
         {
-            if (!backgroundFeedback.gameObject.activeSelf)
+            if (!gameObject.activeSelf)
                 return;
 
-            GameObject currentCamera = Selection.activeCamera;
+            if (null == feedbackCamera)
+                return;
+
             float far = 1000f * 0.7f; // 70% of far clip plane
             float fov = 36.3f;
             float aspect = 16f / 9f;
-            if (null != currentCamera)
-            {
-                far = Camera.main.farClipPlane * 0.7f;
-                fov = Camera.main.fieldOfView;
+            far = Camera.main.farClipPlane * 0.7f;
+            fov = Camera.main.fieldOfView;
 
-                Camera cam = currentCamera.GetComponentInChildren<Camera>();
-                aspect = cam.aspect;
-            }
+            Camera cam = feedbackCamera.GetComponentInChildren<Camera>();
+            aspect = cam.aspect;
+
             float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
-            backgroundFeedback.position = targetCamera.position + GlobalState.Instance.cameraPreviewDirection.normalized * far;
-            backgroundFeedback.rotation = Quaternion.LookRotation(-GlobalState.Instance.cameraPreviewDirection) * Quaternion.Euler(0, 180, 0);
-            backgroundFeedback.localScale = new Vector3(scale * aspect, scale, scale);
+            transform.position = targetCamera.position + GlobalState.Instance.cameraPreviewDirection.normalized * far;
+            transform.rotation = Quaternion.LookRotation(-GlobalState.Instance.cameraPreviewDirection) * Quaternion.Euler(0, 180, 0);
+            transform.localScale = new Vector3(scale * aspect, scale, scale);
 
-            GlobalState.Settings.cameraFeedbackPosition = backgroundFeedback.position;
-            GlobalState.Settings.cameraFeedbackRotation = backgroundFeedback.rotation;
-            GlobalState.Settings.cameraFeedbackScale = backgroundFeedback.localScale;
+            GlobalState.Settings.cameraFeedbackPosition = transform.position;
+            GlobalState.Settings.cameraFeedbackRotation = transform.rotation;
+            GlobalState.Settings.cameraFeedbackScale = transform.localScale;
         }
 
         void OnCameraChanged(object sender, ActiveCameraChangedArgs args)
@@ -55,15 +54,18 @@ namespace VRtist
 
         private void SetActiveCamera(GameObject activeCamera)
         {
-            if(null != activeCamera)
+            if (feedbackCamera == activeCamera)
+                return;
+            feedbackCamera = activeCamera;
+            if (null != feedbackCamera)
             {
-                Camera cam = activeCamera.GetComponentInChildren<Camera>();
-                gameObject.SetActive(true);
-                GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
+                Camera cam = feedbackCamera.GetComponentInChildren<Camera>();
+                cameraPlane.SetActive(true);
+                cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
             }
             else
             {
-                gameObject.SetActive(false);
+                //cameraPlane.SetActive(false);
             }
         }
     }

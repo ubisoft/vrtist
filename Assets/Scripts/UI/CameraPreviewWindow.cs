@@ -62,9 +62,13 @@ namespace VRtist
             if(args.activeCamera)
                 cameraController = args.activeCamera.GetComponent<CameraController>();
             if (null != cameraController)
+            {
                 UpdateFromController(cameraController);
+            }
             else
-                Clear();
+            {
+                //Clear();
+            }
         }
 
         public void UpdateFromController(CameraController cameraController)
