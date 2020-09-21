@@ -1475,23 +1475,59 @@ namespace VRtist
             byte[] baseMeshSize = IntToBytes(0);
 
             byte[] positions = Vector3ToBytes(mesh.vertices);
-            byte[] normals = Vector3ToBytes(mesh.normals);
-            byte[] uvs = Vector2ToBytes(mesh.uv);
 
-            byte[] materialIndices = new byte[sizeof(int) + mesh.subMeshCount * 2 * sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(mesh.subMeshCount), 0, materialIndices, 0, sizeof(int));
-            int offset = sizeof(int);
-
-            for (int i = 0; i < mesh.subMeshCount; i++)
+            int[] baseTriangles = mesh.triangles;
+            Vector3[] baseNormals = mesh.normals;
+            Vector3[] splittedNormals = new Vector3[baseTriangles.Length];
+            for (int i = 0; i < splittedNormals.Length; i++)
             {
-                SubMeshDescriptor subMesh = mesh.GetSubMesh(i);
-                int start = subMesh.indexStart / 3;
-                Buffer.BlockCopy(BitConverter.GetBytes(start), 0, materialIndices, offset, sizeof(int));
-                Buffer.BlockCopy(BitConverter.GetBytes(i), 0, materialIndices, offset + sizeof(int), sizeof(int));
-                offset += 2 * sizeof(int);
+                int id = baseTriangles[i];
+                splittedNormals[i] = baseNormals[id];
+                
+            }
+            byte[] normals = Vector3ToBytes(splittedNormals);
+
+            Vector2[] baseUVs = mesh.uv;
+            Vector2[] splittedUVs = null;
+            if (null != mesh.uv && mesh.uv.Length > 0)
+            {
+                splittedUVs = new Vector2[baseTriangles.Length];
+                for (int i = 0; i < splittedNormals.Length; i++)
+                {
+                    int id = baseTriangles[i];
+                    splittedUVs[i] = baseUVs[id];
+                }
+            }
+            else
+            {
+                splittedUVs = new Vector2[0];
+            }
+            byte[] uvs = Vector2ToBytes(splittedUVs);
+
+            int[] materialIndices = null;
+            if (mesh.subMeshCount <= 1)
+            {
+                materialIndices = new int[0];
+            }
+            else
+            {
+                materialIndices = new int[baseTriangles.Length / 3];
+                for (int i = 0; i < mesh.subMeshCount; i++)
+                {
+                    SubMeshDescriptor subMesh = mesh.GetSubMesh(i);
+                    for (int j = subMesh.indexStart / 3; j < (subMesh.indexStart + subMesh.indexCount) / 3; j++)
+                    {
+                        materialIndices[j] = i;
+                    }
+                }
+
             }
 
-            byte[] triangles = TriangleIndicesToBytes(mesh.triangles);
+            byte[] materialIndicesBuffer = new byte[materialIndices.Length * sizeof(int) + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(materialIndices.Length), 0, materialIndicesBuffer, 0, sizeof(int));
+            Buffer.BlockCopy(materialIndices, 0, materialIndicesBuffer, sizeof(int), materialIndices.Length * sizeof(int));
+
+            byte[] triangles = TriangleIndicesToBytes(baseTriangles);
 
             Material[] materials = meshInfos.meshRenderer.materials;
             string[] materialNames = new string[materials.Length];
@@ -1506,7 +1542,7 @@ namespace VRtist
             string path = GetPathName(root, transform);
             byte[] pathBuffer = StringToBytes(path);
 
-            byte[] bakedMeshSize = IntToBytes(positions.Length + normals.Length + uvs.Length + materialIndices.Length + triangles.Length);
+            byte[] bakedMeshSize = IntToBytes(positions.Length + normals.Length + uvs.Length + materialIndicesBuffer.Length + triangles.Length);
 
             // necessary to satisfy baked mesh server format
             //////////////////////////////////////////////////
@@ -1521,7 +1557,7 @@ namespace VRtist
             byte[] materialLinkNamesBuffer = StringsToBytes(materialNames, false);
             //////////////////////////////////////////////////
 
-            List<byte[]> buffers = new List<byte[]> { pathBuffer, name, baseMeshSize, bakedMeshSize, positions, normals, uvs, materialIndices, triangles, materialsBuffer, materialLinksBuffer, materialLinkNamesBuffer };
+            List<byte[]> buffers = new List<byte[]> { pathBuffer, name, baseMeshSize, bakedMeshSize, positions, normals, uvs, materialIndicesBuffer, triangles, materialsBuffer, materialLinksBuffer, materialLinkNamesBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Mesh);
             return command;
         }
@@ -1993,18 +2029,18 @@ namespace VRtist
             if (bakedMeshDataSize == 0)
                 return null;
 
-            int verticesCount = (int) BitConverter.ToUInt32(data, currentIndex);
+            int rawVerticesCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
-            int size = verticesCount * sizeof(float) * 3;
-            Vector3[] vertices = new Vector3[verticesCount];
-            float[] float3Values = new float[verticesCount * 3];
+            int size = rawVerticesCount * sizeof(float) * 3;
+            Vector3[] rawVertices = new Vector3[rawVerticesCount];
+            float[] float3Values = new float[rawVerticesCount * 3];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             int idx = 0;
-            for (int i = 0; i < verticesCount; i++)
+            for (int i = 0; i < rawVerticesCount; i++)
             {
-                vertices[i].x = float3Values[idx++];
-                vertices[i].y = float3Values[idx++];
-                vertices[i].z = float3Values[idx++];
+                rawVertices[i].x = float3Values[idx++];
+                rawVertices[i].y = float3Values[idx++];
+                rawVertices[i].z = float3Values[idx++];
             }
             currentIndex += size;
 
@@ -2012,9 +2048,10 @@ namespace VRtist
             currentIndex += 4;
             size = normalsCount * sizeof(float) * 3;
             Vector3[] normals = new Vector3[normalsCount];
+            float3Values = new float[normalsCount * 3];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             idx = 0;
-            for (int i = 0; i < verticesCount; i++)
+            for (int i = 0; i < normalsCount; i++)
             {
                 normals[i].x = float3Values[idx++];
                 normals[i].y = float3Values[idx++];
@@ -2038,18 +2075,23 @@ namespace VRtist
 
             int materialIndicesCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
-            int[] materialIndices = new int[materialIndicesCount * 2];
-            size = materialIndicesCount * 2 * sizeof(int);
+            int[] materialIndices = new int[materialIndicesCount];
+            size = materialIndicesCount * sizeof(int);
             Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
             currentIndex += size;
 
-            int indicesCount = (int) BitConverter.ToUInt32(data, currentIndex) * 3;
+            int rawIndicesCount = (int) BitConverter.ToUInt32(data, currentIndex) * 3;
             currentIndex += 4;
-            int[] indices = new int[indicesCount];
-            size = indicesCount * sizeof(int);
-            Buffer.BlockCopy(data, currentIndex, indices, 0, size);
+            int[] rawIndices = new int[rawIndicesCount];
+            size = rawIndicesCount * sizeof(int);
+            Buffer.BlockCopy(data, currentIndex, rawIndices, 0, size);
             currentIndex += size;
 
+            Vector3[] vertices = new Vector3[rawIndicesCount];
+            for (int i = 0; i < rawIndicesCount; i++)
+            {
+                vertices[i] = rawVertices[rawIndices[i]];
+            }
 
             int materialCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
@@ -2086,64 +2128,39 @@ namespace VRtist
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
             if (materialCount == 1) // only one submesh
+            {
+                int[] indices = new int[rawIndicesCount];
+                for (int i = 0; i < rawIndicesCount; i++)
+                {
+                    indices[i] = i;
+                }
+
                 mesh.triangles = indices;
+            }
             else
             {
-                int remainingTringles = indicesCount / 3;
-                int currentTriangleIndex = 0;
+                List<int>[] subIndicesArray = new List<int>[materialCount];
+                for (int i = 0; i < materialCount; i++)
+                {
+                    subIndicesArray[i] = new List<int>();
+                }
+
+                for (int i = 0; i < materialIndicesCount; i++)
+                {
+                    int materialIndex = materialIndices[i];
+                    List<int> subIndices = subIndicesArray[materialIndex];
+                    int index = 3 * i;
+                    subIndices.Add(index);
+                    subIndices.Add(index + 1);
+                    subIndices.Add(index + 2);
+                }
+
                 mesh.subMeshCount = materialCount;
-
-                int[][] subIndices = new int[materialCount][];
-                int[] trianglesPerMaterialCount = new int[materialCount];
-                int[] subIndicesIndices = new int[materialCount];
                 for (int i = 0; i < materialCount; i++)
                 {
-                    trianglesPerMaterialCount[i] = 0;
-                    subIndicesIndices[i] = 0;
+                    mesh.SetTriangles(subIndicesArray[i].ToArray(), i);
                 }
 
-                // count
-                for (int i = 0; i < materialIndicesCount; i++)
-                {
-                    int triangleCount = remainingTringles;
-                    if (i < (materialIndicesCount - 1))
-                    {
-                        triangleCount = materialIndices[(i + 1) * 2] - materialIndices[i * 2];
-                        remainingTringles -= triangleCount;
-                    }
-                    int materialIndex = materialIndices[i * 2 + 1];
-                    trianglesPerMaterialCount[materialIndex] += triangleCount;
-                }
-
-                //allocate
-                for (int i = 0; i < materialCount; i++)
-                {
-                    subIndices[i] = new int[trianglesPerMaterialCount[i] * 3];
-                }
-
-                // fill
-                remainingTringles = indicesCount / 3;
-                for (int i = 0; i < materialIndicesCount; i++)
-                {
-                    // allocate triangles
-                    int triangleCount = remainingTringles;
-                    if (i < (materialIndicesCount - 1))
-                    {
-                        triangleCount = materialIndices[(i + 1) * 2] - materialIndices[i * 2];
-                        remainingTringles -= triangleCount;
-                    }
-                    int materialIndex = materialIndices[i * 2 + 1];
-                    int dataSize = triangleCount * 3 * sizeof(int);
-                    Buffer.BlockCopy(indices, currentTriangleIndex, subIndices[materialIndex], subIndicesIndices[materialIndex], dataSize);
-                    subIndicesIndices[materialIndex] += dataSize;
-                    currentTriangleIndex += dataSize;
-                }
-
-                // set
-                for (int i = 0; i < materialCount; i++)
-                {
-                    mesh.SetTriangles(subIndices[i], i);
-                }
             }
 
             mesh.RecalculateBounds();
