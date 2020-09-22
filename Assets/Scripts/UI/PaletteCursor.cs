@@ -309,6 +309,7 @@ namespace VRtist
                         {
                             widget.OnRayClick();
                             audioClickIn.Play();
+                            UIElement.ClickHapticFeedback(); // TODO: voir si on le met individuellement dans chaque widget avec des exceptions.
                         }
 
                         widgetClicked = widget;
@@ -332,6 +333,7 @@ namespace VRtist
                                 {
                                     widget.OnRayReleaseInside();
                                     audioClickOut.Play();
+                                    UIElement.ClickHapticFeedback();
                                 }
                             }
                             else
@@ -341,6 +343,7 @@ namespace VRtist
                                 {
                                     widgetClicked.OnRayReleaseOutside();
                                     audioClickOut.Play();
+                                    UIElement.ClickHapticFeedback();
                                 }
 
                                 // give the new widget a chance to play some OnHover animation.
@@ -432,6 +435,7 @@ namespace VRtist
                     {
                         widgetClicked.OnRayReleaseOutside(); // just UN-push, no events triggered.
                         audioClickOut.Play();
+                        UIElement.ClickHapticFeedback();
                     }
 
                     widgetClicked = null;
