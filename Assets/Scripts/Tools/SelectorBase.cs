@@ -278,8 +278,8 @@ namespace VRtist
 
             enableToggleTool = false; // NO secondary button tool switch while gripping.
 
-            Selection.SetGrippedObject(Selection.GetHoveredObject());            
-            
+            Selection.SetGrippedObject(Selection.GetHoveredObject());
+
             InitControllerMatrix();
             InitTransforms();
             outOfDeadZone = false;
@@ -662,14 +662,15 @@ namespace VRtist
                         if (currentFocal > 300f)
                             currentFocal = 300f;
 
-                        cameraController.focal = Mathf.RoundToInt(currentFocal);
+                        // Don't RoundToInt here since currentFocal may stick to the lowest value 10
+                        cameraController.focal = currentFocal;
                         SendCameraFocal(cameraController);
                     }
 
-                    foreach(GameObject obj in Selection.selection.Values)
+                    foreach (GameObject obj in Selection.selection.Values)
                     {
                         ParametersController controller = obj.GetComponent<ParametersController>();
-                        if(null == controller)
+                        if (null == controller)
                         {
                             Vector3 currentScale = obj.transform.localScale;
                             float newScale = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
