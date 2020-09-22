@@ -205,7 +205,8 @@ namespace VRtist
                 if (prevLen > deadZoneIn)
                 {
                     // justReleased EXT -> Center
-                    joyJustReleased.Remove(prevPair);
+                    joyJustReleased.Add(currPair);
+                    joyJustPressed.Remove(prevPair); // if you go fast, pressing in one frame, releasing in the next.
                 }
                 else
                 {
