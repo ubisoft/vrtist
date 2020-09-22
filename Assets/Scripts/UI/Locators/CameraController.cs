@@ -17,6 +17,7 @@ namespace VRtist
         private UISpinner focalSpinner = null;
 
         private LineRenderer frustumRenderer = null;
+        private GameObject disabledLayer = null;
 
         private void Awake()
         {
@@ -40,6 +41,11 @@ namespace VRtist
                 GameObject frustum = transform.Find("Frustum").gameObject;
                 frustumRenderer = frustum.GetComponent<LineRenderer>();
                 frustumRenderer.enabled = false;
+            }
+            if (null == disabledLayer)
+            {
+                disabledLayer = transform.Find("Rotate/PreviewDisabledLayer").gameObject;
+                disabledLayer.SetActive(false);
             }
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
 
@@ -123,6 +129,11 @@ namespace VRtist
                 {
                     frustumRenderer.enabled = false;
                 }
+
+                // Show/Hide the "disabled camera layer"
+                bool isCameraActive = (gameObject.layer == LayerMask.NameToLayer("SelectionUI") || gameObject.layer == LayerMask.NameToLayer("HoverUI"));
+                if (null != disabledLayer)
+                    disabledLayer.SetActive(!isCameraActive);
             }
 
             if (null != focalSlider && focalSlider.Value != focal)
