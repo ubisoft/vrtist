@@ -487,6 +487,29 @@ namespace VRtist
         public override void OnRayHover()
         {
             base.OnRayHover();
+
+            bool joyRightJustClicked = false;
+            bool joyRightJustReleased = false;
+            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased);
+
+            bool joyLeftJustClicked = false;
+            bool joyLeftJustReleased = false;
+            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased);
+
+            if (joyRightJustClicked || joyLeftJustClicked)
+            {
+                if (joyRightJustClicked)
+                {
+                    Value = Mathf.Clamp(Value + 1.0f, minValue, maxValue);
+                }
+                else
+                {
+                    Value = Mathf.Clamp(Value - 1.0f, minValue, maxValue);
+                }
+                onSlideEvent.Invoke(currentValue);
+                int intValue = Mathf.RoundToInt(currentValue);
+                onSlideEventInt.Invoke(intValue);
+            }
         }
 
         public override void OnRayHoverClicked()

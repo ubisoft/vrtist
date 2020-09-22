@@ -11,7 +11,7 @@ using Node = UnityEngine.VR.VRNode;
 namespace VRtist
 {
     using InputPair = KeyValuePair<InputDevice, InputFeatureUsage<bool>>;
-
+    using JoyInputPair = KeyValuePair<InputDevice, VRInput.JoyDirection>;
 
     class ControllerValues
     {
@@ -46,7 +46,10 @@ namespace VRtist
 
         static HashSet<InputPair> justPressed = new HashSet<InputPair>();
         static HashSet<InputPair> justReleased = new HashSet<InputPair>();
-        // TODO: give public access to that information?
+
+        public enum JoyDirection { UP, DOWN, LEFT, RIGHT };
+        static HashSet<JoyInputPair> joyJustPressed = new HashSet<JoyInputPair>();
+        static HashSet<JoyInputPair> joyJustReleased = new HashSet<JoyInputPair>();
 
         public static void UpdateControllerValues()
         {
@@ -127,6 +130,89 @@ namespace VRtist
                 Vector2 vValue;
                 device.TryGetFeatureValue(CommonUsages.primary2DAxis, out vValue);
                 UpdateControllerValue(device, CommonUsages.primary2DAxis, vValue);
+                UpdateControllerDelta(device, CommonUsages.primary2DAxis);
+            }
+        }
+
+        public static JoyDirection GetQuadrant(Vector2 value)
+        {
+            if (value.x > 0.0f && value.x > value.y)
+            {
+                return JoyDirection.RIGHT;
+            }
+
+            if (value.y > 0.0f && value.y > value.x)
+            {
+                return JoyDirection.UP;
+            }
+
+            if (value.x <= 0.0f && value.x < value.y)
+            {
+                return JoyDirection.LEFT;
+            }
+
+            if (value.y <= 0.0f && value.y < value.x)
+            {
+                return JoyDirection.DOWN;
+            }
+
+            return JoyDirection.DOWN; // default?
+        }
+
+        static void UpdateControllerDelta(InputDevice controller, InputFeatureUsage<Vector2> usage)
+        {
+            Vector2 v2PrevValue;
+            Vector2 v2CurrValue;
+            remapLeftRightHandedDevices = false;
+            v2PrevValue = GetPrevValue(controller, usage);
+            v2CurrValue = GetValue(controller, usage);
+            remapLeftRightHandedDevices = true;
+
+            float prevLen = v2PrevValue.magnitude;
+            float currLen = v2CurrValue.magnitude;
+
+            JoyDirection prevQuadrant = GetQuadrant(v2PrevValue);
+            JoyDirection currQuadrant = GetQuadrant(v2CurrValue);
+
+            JoyInputPair prevPair = new JoyInputPair(controller, prevQuadrant);
+            JoyInputPair currPair = new JoyInputPair(controller, currQuadrant);
+
+            if (currLen > deadZoneIn)
+            {
+                if (prevLen <= deadZoneIn)
+                {
+                    // justPressed center -> exterior
+                    joyJustPressed.Add(currPair);
+                }
+                else
+                {
+                    // still in EXT zone
+                    if (prevQuadrant == currQuadrant)
+                    {
+                        // same zone, remove all "just" events.
+                        joyJustPressed.Remove(currPair);
+                    }
+                    else
+                    {
+                        // quadrant changed
+                        joyJustPressed.Add(currPair);
+                        joyJustReleased.Remove(prevPair);
+                    }
+                }
+            }
+            else
+            {
+                if (prevLen > deadZoneIn)
+                {
+                    // justReleased EXT -> Center
+                    joyJustReleased.Add(currPair);
+                    joyJustPressed.Remove(prevPair); // if you go fast, pressing in one frame, releasing in the next.
+                }
+                else
+                {
+                    // still in center
+                    // do nothing, whatever the quadrant.
+                }
             }
         }
 
@@ -362,6 +448,14 @@ namespace VRtist
             InputPair pair = new InputPair(c, usage);
             outJustPressed = justPressed.Contains(pair);
             outJustReleased = justReleased.Contains(pair);
+        }
+
+        public static void GetInstantJoyEvent(InputDevice controller, JoyDirection direction, ref bool outJustPressed, ref bool outJustReleased)
+        {
+            InputDevice c = GetLeftOrRightHandedController(controller);
+            JoyInputPair pair = new JoyInputPair(c, direction);
+            outJustPressed = joyJustPressed.Contains(pair);
+            outJustReleased = joyJustReleased.Contains(pair);
         }
 
         public static void InitInvertedControllers()
