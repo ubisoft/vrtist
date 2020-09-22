@@ -132,9 +132,14 @@ namespace VRtist
         public virtual void RebuildMesh() { }
         public virtual void ResetMaterial() { }
 
-        public void WidgetBorderHapticFeedback()
+        public static void WidgetBorderHapticFeedback()
         {
-            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.004f);
+        }
+
+        public static void ClickHapticFeedback()
+        {
+            VRInput.SendHaptic(VRInput.rightController, 0.01f, 0.05f);
         }
 
         #region ray

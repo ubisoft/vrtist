@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -52,7 +53,7 @@ namespace VRtist
             if (!Selection.IsSelected(gObject))
                 return;
 
-            if(null == channel || channel.name == "location[2]")
+            if(null == channel || (channel.name == "location" && channel.index == 2))
                 UpdateCurve(gObject);
         }
 
@@ -76,7 +77,7 @@ namespace VRtist
 
         void AddCurve(GameObject gObject)
         {
-            Dictionary<string, AnimationChannel> animations = GlobalState.Instance.GetAnimationChannels(gObject);
+            Dictionary<Tuple<string, int>, AnimationChannel> animations = GlobalState.Instance.GetAnimationChannels(gObject);
             if (null == animations)
                 return;
 
@@ -86,9 +87,9 @@ namespace VRtist
             AnimationChannel channelX = null;
             AnimationChannel channelY = null;
             AnimationChannel channelZ = null;
-            animations.TryGetValue("location[0]", out channelX);
-            animations.TryGetValue("location[1]", out channelY);
-            animations.TryGetValue("location[2]", out channelZ);
+            animations.TryGetValue(new Tuple<string, int>("location", 0), out channelX);
+            animations.TryGetValue(new Tuple<string, int>("location", 1), out channelY);
+            animations.TryGetValue(new Tuple<string, int>("location", 2), out channelZ);
             if (null == channelX || null == channelY || null == channelZ)
                 return;
             if (channelX.keys.Count != channelY.keys.Count)

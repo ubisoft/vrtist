@@ -1622,9 +1622,6 @@ namespace VRtist
             int keyChannelIndex = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
 
-            if (keyChannelIndex != -1)
-                animationChannel += $"[{keyChannelIndex}]";
-
             int keyCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
@@ -1644,13 +1641,13 @@ namespace VRtist
             }
 
             Node node = SyncData.nodes[objectName];
-            GlobalState.Instance.AddAnimationChannel(node.prefab, animationChannel, keys);
+            GlobalState.Instance.AddAnimationChannel(node.prefab, animationChannel, keyChannelIndex, keys);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                GlobalState.Instance.AddAnimationChannel(gobj, animationChannel, keys);
+                GlobalState.Instance.AddAnimationChannel(gobj, animationChannel, keyChannelIndex, keys);
             }
         }
 
@@ -2665,7 +2662,8 @@ namespace VRtist
             byte[] objectNameBuffer = StringToBytes(data.objectName);
             byte[] channelNameBuffer = StringToBytes(data.channelName);
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
-            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer };
+            byte[] frameBuffer = IntToBytes(data.frame);
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.RemoveKeyframe);
         }

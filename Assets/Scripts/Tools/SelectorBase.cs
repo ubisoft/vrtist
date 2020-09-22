@@ -347,7 +347,7 @@ namespace VRtist
                     continue;
                 if (initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
                     continue;
-                GlobalState.Instance.AddKeyframe(obj);
+                new CommandAddKeyframes(obj).Submit();
             }
         }
 

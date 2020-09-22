@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -198,44 +199,42 @@ namespace VRtist
             animationController.FireAnimationChanged(gameObject, channel);
         }
 
-        public void AddAnimationChannel(GameObject gameObject, string channelName, List<AnimationKey> keys)
+        public void AddAnimationChannel(GameObject gameObject, string channelName, int channelIndex, List<AnimationKey> keys)
         {
-            animationController.AddAnimationChannel(gameObject, channelName, keys);
+            animationController.AddAnimationChannel(gameObject, channelName, channelIndex, keys);
+        }
+        public void RemoveAnimationChannel(GameObject gameObject, string channelName, int channelIndex)
+        {
+            animationController.RemoveAnimationChannel(gameObject, channelName, channelIndex);
         }
         public bool HasAnimation(GameObject gameObject)
         {
             return animationController.HasAnimation(gameObject);
         }
 
-        public Dictionary<string, AnimationChannel> GetAnimationChannels(GameObject gameObject)
+        public void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
+        {
+            animationController.SendAnimationChannel(objectName, animationChannel);
+        }
+
+        public Dictionary<Tuple<string, int>, AnimationChannel> GetAnimationChannels(GameObject gameObject)
         {
             return animationController.GetAnimationChannels(gameObject);
         }
 
-        public void ClearAnimations()
+        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value)
         {
-            animationController.ClearAnimations();
+            animationController.AddKeyframe(gObject, channelName, channelIndex, frame, value);
         }
 
-        public void ApplyAutoKey()
+        public void RemoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame)
         {
-            if (autoKeyEnabled)
-                AddKeyframe();
+            animationController.RemoveKeyframe(gObject, channelName, channelIndex, frame);
         }
 
-        public void AddKeyframe(GameObject gObject)
+        public void RemoveKeyframes()
         {
-            animationController.AddKeyframe(gObject);
-        }
-
-        public void AddKeyframe()
-        {
-            animationController.AddKeyframe();
-        }
-
-        public void RemoveKeyframe()
-        {
-            animationController.RemoveKeyframe();
+            animationController.RemoveSelectionKeyframes();
         }
 
         public void Record()
