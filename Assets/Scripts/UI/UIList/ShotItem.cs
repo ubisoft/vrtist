@@ -14,8 +14,10 @@ namespace VRtist
         public UILabel shotNameLabel = null;
         public UILabel cameraNameLabel = null;
         public UISpinner startFrameSpinner = null;
+        public UIButton startFrameButton = null;
         public UILabel frameRangeLabel = null;
         public UISpinner endFrameSpinner = null;
+        public UIButton endFrameButton = null;
         public UIButton setCameraButton = null;
 
         private UnityAction<string> nameAction;
@@ -27,9 +29,15 @@ namespace VRtist
 
         private void OnEnable()
         {
-            foreach(TextMeshProUGUI text in GetComponentsInChildren<TextMeshProUGUI>())
-                text.fontSizeMin = 1;
+            // TMPro bug, some attributes are not taken into account while the widget is not enabled
+            // So force them here
+            foreach (TextMeshProUGUI text in GetComponentsInChildren<TextMeshProUGUI>())
+            {
+                text.fontSizeMin = 0.5f;
+                text.fontSizeMax = 1.5f;
+            }
         }
+
         public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
         {
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
@@ -48,6 +56,9 @@ namespace VRtist
             startFrameSpinner.onReleaseEvent.AddListener(OnEndEditStartSpinner);
             endFrameSpinner.onReleaseEvent.AddListener(OnEndEditEndSpinner);
 
+            startFrameButton.onReleaseEvent.AddListener(() => OnSetStartEndFromCurrentFrame(startAction, startFrameSpinner));
+            endFrameButton.onReleaseEvent.AddListener(() => OnSetStartEndFromCurrentFrame(endAction, endFrameSpinner));
+
             shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
 
             setCameraButton.onCheckEvent.AddListener(TogglePickCamera);
@@ -57,7 +68,7 @@ namespace VRtist
 
         private void TogglePickCamera(bool value)
         {
-            if(value)
+            if (value)
                 Selection.OnActiveCameraChanged += OnActiveCameraChanged;
             else
                 Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
@@ -70,15 +81,22 @@ namespace VRtist
             setCameraAction();
         }
 
+        private void OnSetStartEndFromCurrentFrame(UnityAction<float> action, UISpinner spinner)
+        {
+            spinner.IntValue = GlobalState.currentFrame;
+            action.Invoke(GlobalState.currentFrame);
+            UpdateShotRange(0);  // 0: unused
+        }
+
         private void OnEndEditStartSpinner()
         {
-            float fValue = (float)(startFrameSpinner.IntValue);
+            float fValue = startFrameSpinner.IntValue;
             startAction.Invoke(fValue);
         }
 
         private void OnEndEditEndSpinner()
         {
-            float fValue = (float)(endFrameSpinner.IntValue);
+            float fValue = endFrameSpinner.IntValue;
             endAction.Invoke(fValue);
         }
 
@@ -106,11 +124,13 @@ namespace VRtist
             cameraButton.Selected = value;
             shotEnabledCheckbox.Selected = value;
             startFrameSpinner.Selected = value;
+            startFrameButton.Selected = value;
             endFrameSpinner.Selected = value;
+            endFrameButton.Selected = value;
             setCameraButton.Selected = value;
             frameRangeLabel.Selected = value;
 
-            if(value)
+            if (value)
             {
                 CameraController camController = null;
                 if (null != shot.camera)
@@ -141,11 +161,17 @@ namespace VRtist
             startFrameSpinner.onClickEvent.RemoveAllListeners();
             startFrameSpinner.onReleaseEvent.RemoveAllListeners();
 
+            startFrameButton.onReleaseEvent.RemoveAllListeners();
+            startFrameButton.onClickEvent.RemoveAllListeners();
+
             frameRangeLabel.onClickEvent.RemoveAllListeners();
 
             endFrameSpinner.onSpinEventInt.RemoveAllListeners();
             endFrameSpinner.onClickEvent.RemoveAllListeners();
             endFrameSpinner.onReleaseEvent.RemoveAllListeners();
+
+            endFrameButton.onReleaseEvent.RemoveAllListeners();
+            endFrameButton.onClickEvent.RemoveAllListeners();
 
             setCameraButton.onCheckEvent.RemoveAllListeners();
             setCameraButton.onClickEvent.RemoveAllListeners();
@@ -232,9 +258,25 @@ namespace VRtist
             shotNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             cameraNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             startFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            startFrameButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             frameRangeLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             endFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            endFrameButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             setCameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+        }
+
+        private static void SetTMProStyle(GameObject gobject, TextAlignmentOptions alignment = TextAlignmentOptions.Left)
+        {
+            TextMeshProUGUI[] texts = gobject.GetComponentsInChildren<TextMeshProUGUI>();
+            foreach (var text in texts)
+            {
+                text.fontStyle = FontStyles.Normal;
+                text.enableAutoSizing = true;
+                text.fontSizeMin = 0.5f;
+                text.fontSizeMax = 1.5f;
+                text.alignment = alignment;
+            }
+
         }
 
         public static ShotItem GenerateShotItem(Shot shot)
@@ -257,18 +299,19 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "CameraButton",
                 relativeLocation = new Vector3(0, 0, -UIButton.default_thickness),
-                width = 0.03f,
+                width = 0.01f,
                 height = 0.03f,
-                icon = UIUtils.LoadIcon("icon-camera"),
-                buttonContent = UIButton.ButtonContent.ImageOnly
+                icon = UIUtils.LoadIcon("empty"),
+                buttonContent = UIButton.ButtonContent.ImageOnly,
+                margin = 0.001f,
             });
 
             cameraButton.isCheckable = true;
-            cameraButton.checkedSprite = UIUtils.LoadIcon("icon-camera");
+            cameraButton.checkedSprite = UIUtils.LoadIcon("empty");
             cameraButton.baseSprite = null;
             cameraButton.SetLightLayer(3);
 
-            cx += 0.03f;
+            cx += 0.01f;
 
             //
             // ENABLE Checkbox
@@ -280,9 +323,10 @@ namespace VRtist
                 relativeLocation = new Vector3(cx, 0, -UICheckbox.default_thickness),
                 width = 0.03f,
                 height = 0.03f,
-                content = UICheckbox.CheckboxContent.CheckboxOnly
+                content = UICheckbox.CheckboxContent.CheckboxOnly,
+                margin = 0.001f,
             });
-            
+
             shotEnabledCheckbox.SetLightLayer(3);
 
             cx += 0.03f;
@@ -295,26 +339,13 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "ShotNameLabel",
                 relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
-                width = 0.17f,
+                width = 0.15f,
                 height = 0.020f,
                 margin = 0.001f,
-                
             });
 
-            {
-                shotNameLabel.SetLightLayer(3);
-                Canvas canvas = shotNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
-                canvas.sortingOrder = 1;
-                TextMeshProUGUI text = shotNameLabel.GetComponentInChildren<TextMeshProUGUI>();
-                text.fontStyle = FontStyles.Normal;
-                text.enableAutoSizing = true;
-                text.fontSizeMin = 1;
-                text.fontSizeMax = 500;
-                /*
-                MeshRenderer r = text.GetComponent<MeshRenderer>();
-                r.sortingOrder = 1;
-                */
-            }
+            shotNameLabel.SetLightLayer(3);
+            SetTMProStyle(shotNameLabel.gameObject);
 
             //
             // CAMERA NAME Label
@@ -324,33 +355,36 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "CameraNameLabel",
                 relativeLocation = new Vector3(cx, -0.020f, -UIButton.default_thickness),
-                width = 0.17f,
+                width = 0.15f,
                 height = 0.01f,
                 margin = 0.001f,
                 fgcolor = UIOptions.Instance.attenuatedTextColor
             });
 
-            {
-                cameraNameLabel.SetLightLayer(3);
-                Canvas canvas = cameraNameLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
-                canvas.sortingOrder = 1;
-                TextMeshProUGUI text = cameraNameLabel.GetComponentInChildren<TextMeshProUGUI>();
-                /*
-                MeshRenderer r = text.GetComponent<MeshRenderer>();
-                r.sortingOrder = 1;
-                */
-                text.fontStyle = FontStyles.Normal;
-                text.alignment = TextAlignmentOptions.BottomRight;
-                text.fontStyle = FontStyles.Normal;
-                text.enableAutoSizing = true;
-                text.fontSizeMin = 1;
-                text.fontSizeMax = 500;
-            }
+            cameraNameLabel.SetLightLayer(3);
+            SetTMProStyle(cameraNameLabel.gameObject, TextAlignmentOptions.BottomRight);
 
-            cx += 0.17f;
+            cx += 0.15f;
+
+            // Start frame button
+            UIButton startFrameButton = UIButton.Create(new UIButton.CreateButtonParams
+            {
+                parent = root.transform,
+                widgetName = "StartFrameButton",
+                relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
+                width = 0.02f,
+                height = 0.03f,
+                icon = UIUtils.LoadIcon("next"),
+                buttonContent = UIButton.ButtonContent.ImageOnly,
+                margin = 0.001f,
+            });
+
+            startFrameButton.SetLightLayer(3);
+
+            cx += 0.02f;
 
             // START: Add UISpinner
-            UISpinner startFrameSpinner = UISpinner.Create( new UISpinner.CreateArgs
+            UISpinner startFrameSpinner = UISpinner.Create(new UISpinner.CreateArgs
             {
                 parent = root.transform,
                 widgetName = "StartFrame",
@@ -359,49 +393,22 @@ namespace VRtist
                 height = 0.03f,
                 visibility_type = UISpinner.TextAndValueVisibilityType.ShowValueOnly,
                 value_type = UISpinner.SpinnerValueType.Int,
-                min_spinner_value = 0, max_spinner_value = 10000, cur_spinner_value = shot.start, 
-                spinner_value_rate = 30, spinner_value_rate_ray = 30
+                min_spinner_value = 0,
+                max_spinner_value = 10000,
+                cur_spinner_value = shot.start,
+                spinner_value_rate = 30,
+                spinner_value_rate_ray = 30,
+                margin = 0.001f,
             });
 
             startFrameSpinner.baseColor.useConstant = true;
             startFrameSpinner.baseColor.constant = UIOptions.BackgroundColor;
             startFrameSpinner.selectedColor.useConstant = true;
             startFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
-
             startFrameSpinner.SetLightLayer(3);
+            SetTMProStyle(startFrameSpinner.gameObject);
 
             cx += 0.055f;
-
-            // RANGE: Add UILabel
-            UILabel frameRangeLabel = UILabel.Create(new UILabel.CreateLabelParams 
-            { 
-                parent = root.transform,
-                widgetName = "FrameRange",
-                relativeLocation = new Vector3(cx, 0, -UILabel.default_thickness),
-                width = 0.04f,
-                height = 0.03f
-            });
-
-            {
-                frameRangeLabel.baseColor.useConstant = true;
-                frameRangeLabel.baseColor.constant = UIOptions.BackgroundColor;
-                frameRangeLabel.selectedColor.useConstant = true;
-                frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
-
-                frameRangeLabel.SetLightLayer(3);
-                Canvas canvas = frameRangeLabel.transform.Find("Canvas").gameObject.GetComponent<Canvas>();
-                canvas.sortingOrder = 1;
-                TextMeshProUGUI text = frameRangeLabel.GetComponentInChildren<TextMeshProUGUI>();
-                /*
-                MeshRenderer r = text.GetComponent<MeshRenderer>();
-                r.sortingOrder = 1;
-                */
-                text.alignment = TextAlignmentOptions.Center;
-                text.enableAutoSizing = true;
-                text.fontSizeMin = 1;
-                text.fontSizeMax = 500;
-            }
-            cx += 0.04f;
 
             // END: Add UISpinner
             UISpinner endFrameSpinner = UISpinner.Create(new UISpinner.CreateArgs
@@ -417,7 +424,8 @@ namespace VRtist
                 max_spinner_value = 10000,
                 cur_spinner_value = shot.end,
                 spinner_value_rate = 30,
-                spinner_value_rate_ray = 30
+                spinner_value_rate_ray = 30,
+                margin = 0.001f,
             });
 
             endFrameSpinner.baseColor.useConstant = true;
@@ -425,9 +433,47 @@ namespace VRtist
             endFrameSpinner.selectedColor.useConstant = true;
             endFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
             endFrameSpinner.SetLightLayer(3);
+            SetTMProStyle(endFrameSpinner.gameObject);
 
             cx += 0.055f;
 
+            // End frame button
+            UIButton endFrameButton = UIButton.Create(new UIButton.CreateButtonParams
+            {
+                parent = root.transform,
+                widgetName = "EndFrameButton",
+                relativeLocation = new Vector3(cx, 0, -UIButton.default_thickness),
+                width = 0.02f,
+                height = 0.03f,
+                icon = UIUtils.LoadIcon("prev"),
+                buttonContent = UIButton.ButtonContent.ImageOnly,
+                margin = 0.001f,
+            });
+
+            endFrameButton.SetLightLayer(3);
+
+            cx += 0.02f;
+
+            // RANGE: Add UILabel
+            UILabel frameRangeLabel = UILabel.Create(new UILabel.CreateLabelParams
+            {
+                parent = root.transform,
+                widgetName = "FrameRange",
+                relativeLocation = new Vector3(cx, 0, -UILabel.default_thickness),
+                width = 0.04f,
+                height = 0.03f,
+                margin = 0.001f,
+            });
+
+            frameRangeLabel.baseColor.useConstant = true;
+            frameRangeLabel.baseColor.constant = UIOptions.BackgroundColor;
+            frameRangeLabel.selectedColor.useConstant = true;
+            frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
+            frameRangeLabel.SetLightLayer(3);
+            SetTMProStyle(frameRangeLabel.gameObject, TextAlignmentOptions.Center);
+            cx += 0.04f;
+
+            // Set camera
             UIButton setCameraButton = UIButton.Create(new UIButton.CreateButtonParams
             {
                 parent = root.transform,
@@ -436,7 +482,8 @@ namespace VRtist
                 width = 0.03f,
                 height = 0.03f,
                 icon = UIUtils.LoadIcon("icon-camera"),
-                buttonContent = UIButton.ButtonContent.ImageOnly
+                buttonContent = UIButton.ButtonContent.ImageOnly,
+                margin = 0.001f,
             });
 
             setCameraButton.isCheckable = true;
@@ -445,7 +492,6 @@ namespace VRtist
             setCameraButton.checkedColor.constant = UIOptions.FocusColor;
             setCameraButton.checkedColor.reference = UIOptions.FocusColorVar;
             setCameraButton.baseSprite = UIUtils.LoadIcon("icon-camera");
-            
             setCameraButton.SetLightLayer(3);
 
             // Link widgets to the item script.
@@ -454,8 +500,10 @@ namespace VRtist
             shotItem.shotNameLabel = shotNameLabel;
             shotItem.cameraNameLabel = cameraNameLabel;
             shotItem.startFrameSpinner = startFrameSpinner;
+            shotItem.startFrameButton = startFrameButton;
             shotItem.frameRangeLabel = frameRangeLabel;
             shotItem.endFrameSpinner = endFrameSpinner;
+            shotItem.endFrameButton = endFrameButton;
             shotItem.setCameraButton = setCameraButton;
 
             shotItem.SetShot(shot);
