@@ -137,6 +137,11 @@ namespace VRtist
             VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
         }
 
+        public void ClickHapticFeedback()
+        {
+            VRInput.SendHaptic(VRInput.rightController, 0.005f, 0.005f);
+        }
+
         #region ray
 
         // Most common code implemented here.

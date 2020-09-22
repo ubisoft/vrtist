@@ -13,7 +13,8 @@ namespace VRtist
 
         private UIElement widgetClicked = null;
 
-        private AudioSource audioClick = null;
+        private AudioSource audioClickIn = null;
+        private AudioSource audioClickOut = null;
 
         private IDisposable uiEnabledGuard = null;
 
@@ -22,7 +23,9 @@ namespace VRtist
 
         void Start()
         {
-            audioClick = GetComponentInChildren<AudioSource>(true);
+            audioClickIn = transform.Find("Audio_ClickIn").GetComponent<AudioSource>();
+            audioClickOut = transform.Find("Audio_ClickOut").GetComponent<AudioSource>();
+
             ray = GetComponentInChildren<UIRay>();
         }
 
@@ -303,7 +306,10 @@ namespace VRtist
                     if (triggerJustClicked)
                     {
                         if (!widget.IgnoreRayInteraction())
+                        {
                             widget.OnRayClick();
+                            audioClickIn.Play();
+                        }
 
                         widgetClicked = widget;
                         if (widgetClicked.OverridesRayEndPoint())
@@ -323,13 +329,19 @@ namespace VRtist
                             if (widgetClicked == widget)
                             {
                                 if (!widget.IgnoreRayInteraction())
+                                {
                                     widget.OnRayReleaseInside();
+                                    audioClickOut.Play();
+                                }
                             }
                             else
                             {
                                 // clear state of previously clicked widget
                                 if (!widgetClicked.IgnoreRayInteraction())
+                                {
                                     widgetClicked.OnRayReleaseOutside();
+                                    audioClickOut.Play();
+                                }
 
                                 // give the new widget a chance to play some OnHover animation.
                                 if (!widget.IgnoreRayInteraction())
@@ -417,7 +429,11 @@ namespace VRtist
                 if (triggerJustReleased)
                 {
                     if (!widgetClicked.IgnoreRayInteraction())
+                    {
                         widgetClicked.OnRayReleaseOutside(); // just UN-push, no events triggered.
+                        audioClickOut.Play();
+                    }
+
                     widgetClicked = null;
                 }
             }
