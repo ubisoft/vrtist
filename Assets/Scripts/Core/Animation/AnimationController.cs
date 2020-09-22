@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -22,33 +23,92 @@ namespace VRtist
 
     public class AnimationChannel
     {
-        public AnimationChannel(string name)
+        public AnimationChannel(string name, int index)
         {
             this.name = name;
+            this.index = index;
             keys = new List<AnimationKey>();
         }
-        public AnimationChannel(string name, List<AnimationKey> keys)
+        public AnimationChannel(string name, int index, List<AnimationKey> keys)
         {
             this.name = name;
+            this.index = index;
             this.keys = keys;
         }
-
-        public void GetChannelInfo(out string name, out int index)
+        public bool TryGetIndex(int time, out int index)
         {
-            int i = this.name.IndexOf('[');
-            if (-1 == i)
+            int count = keys.Count;
+            if (count == 0)
             {
-                name = this.name;
-                index = -1;
+                index = 0;
+                return false;
+            }
+            int id1 = 0, id2 = count - 1;
+            while (true)
+            {
+                if(keys[id1].time == time)
+                {
+                    index = id1;
+                    return true;
+                }
+                if (keys[id2].time == time)
+                {
+                    index = id2;
+                    return true;
+                }
+
+                int center = (id1 + id2) / 2;
+                if (time < keys[center].time)
+                {
+                    if (id2 == center)
+                    {
+                        index = id1;
+                        return false;
+                    }
+                    id2 = center;
+                }
+                else
+                {
+                    if (id1 == center)
+                    {
+                        index = id2;
+                        return false;
+                    }
+                    id1 = center;
+                }
+            }
+        }
+
+        public void AddKey(AnimationKey key)
+        {
+            if(TryGetIndex(key.time, out int index))
+            {
+                keys[index] = key;
             }
             else
             {
-                name = this.name.Substring(0, i);
-                index = int.Parse(this.name.Substring(i + 1, 1));
+                keys.Insert(index, key);
             }
         }
 
+        public AnimationKey GetKey(int index)
+        {
+            return keys[index];
+        }
+
+        public bool TyrFindKey(int time, out AnimationKey key)
+        {
+            if(TryGetIndex(time, out int index))
+            {
+                key = keys[index];
+                return true;
+            }
+            key = new AnimationKey(0, 0);
+            return false;
+        }
+
         public string name;
+        public int index;
         public List<AnimationKey> keys;
     }
 
@@ -80,7 +140,7 @@ namespace VRtist
     {
         private ParametersEvent onChangedEvent = null;
 
-        private Dictionary<GameObject, Dictionary<string, AnimationChannel>> animationChannels = new Dictionary<GameObject, Dictionary<string, AnimationChannel>>();
+        private Dictionary<GameObject, Dictionary<Tuple<string, int>, AnimationChannel>> animationChannels = new Dictionary<GameObject, Dictionary<Tuple<string, int>, AnimationChannel>>();
         private Dictionary<GameObject, AnimationSet> recordAnimationSets = new Dictionary<GameObject, AnimationSet>();
         private int recordCurrentFrame = 0;
 
@@ -119,14 +179,6 @@ namespace VRtist
                 onChangedEvent.Invoke(gameObject, channel);
         }
 
-        public void ClearAnimations()
-        {
-            foreach(GameObject gObject in Selection.selection.Values)
-            {
-                ClearAnimations(gObject);
-            }
-        }
-
         public void ClearAnimations(GameObject gameObject)
         {
             if (!animationChannels.ContainsKey(gameObject))
@@ -134,24 +186,31 @@ namespace VRtist
 
             animationChannels[gameObject].Clear();
 
-            ClearAnimationInfo info = new ClearAnimationInfo { gObject = gameObject };
-            NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
-
             FireAnimationChanged(gameObject, null);
         }
+        public void RemoveAnimationChannel(GameObject gameObject, string name, int index)
+        {
+            if(animationChannels.TryGetValue(gameObject, out Dictionary<Tuple<string, int>, AnimationChannel> channels))
+            {
+                Tuple<string, int> channel = new Tuple<string, int>(name, index);
+                if (channels.ContainsKey(channel))
+                    channels.Remove(channel);
+            }
+        }
 
-        public void AddAnimationChannel(GameObject gameObject, string name, List<AnimationKey> keys)
+        public void AddAnimationChannel(GameObject gameObject, string name, int channelIndex, List<AnimationKey> keys)
         {
             if (!animationChannels.ContainsKey(gameObject))
-                animationChannels[gameObject] = new Dictionary<string, AnimationChannel>();
+                animationChannels[gameObject] = new Dictionary<Tuple<string, int>, AnimationChannel>();
 
-            Dictionary<string, AnimationChannel> channels = animationChannels[gameObject];
+            Dictionary<Tuple<string, int>, AnimationChannel> channels = animationChannels[gameObject];
 
             AnimationChannel channel = null;
-            if (!channels.TryGetValue(name, out channel))
+            Tuple<string, int> c = new Tuple<string, int>(name, channelIndex);
+            if (!channels.TryGetValue(c, out channel))
             {
-                channel = new AnimationChannel(name, keys);
-                channels[name] = channel;
+                channel = new AnimationChannel(name, channelIndex, keys);
+                channels[c] = channel;
             }
             else
             {
@@ -165,15 +224,36 @@ namespace VRtist
         {
             if (!animationChannels.ContainsKey(gameObject))
                 return false;
-            Dictionary<string, AnimationChannel> channels = animationChannels[gameObject];
+            Dictionary<Tuple<string, int>, AnimationChannel> channels = animationChannels[gameObject];
             return channels.Count > 0;
         }
 
-        public Dictionary<string, AnimationChannel> GetAnimationChannels(GameObject gameObject)
+        public Dictionary<Tuple<string, int>, AnimationChannel> GetAnimationChannels(GameObject gameObject)
         {
             if (!animationChannels.ContainsKey(gameObject))
                 return null;
             return animationChannels[gameObject];
+        }
+
+        public void SendKeyInfo(string objectName, string channelName, int channelIndex, int frame, float value)
+        {
+            SetKeyInfo keyInfo = new SetKeyInfo()
+            {
+                objectName = objectName,
+                channelName = channelName,
+                channelIndex = channelIndex,
+                frame = frame,
+                value = value
+            };
+            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
+        }
+
+        public void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
+        {
+            foreach (AnimationKey key in animationChannel.keys)
+            {
+                SendKeyInfo(objectName, animationChannel.name, animationChannel.index, key.time, key.value);
+            }
         }
 
         public void HandleRecord()
@@ -231,37 +311,37 @@ namespace VRtist
             recordAnimationSets.Clear();
             foreach (GameObject item in Selection.selection.Values)
             {
-                GlobalState.Instance.ClearAnimations(item);
+                new CommandClearAnimations(item).Submit();
 
                 AnimationSet animationSet = new AnimationSet();
-                animationSet.xPosition = new AnimationChannel("location[0]");
-                animationSet.yPosition = new AnimationChannel("location[1]");
-                animationSet.zPosition = new AnimationChannel("location[2]");
-                animationSet.xRotation = new AnimationChannel("rotation_euler[0]");
-                animationSet.yRotation = new AnimationChannel("rotation_euler[1]");
-                animationSet.zRotation = new AnimationChannel("rotation_euler[2]");
+                animationSet.xPosition = new AnimationChannel("location", 0);
+                animationSet.yPosition = new AnimationChannel("location", 1);
+                animationSet.zPosition = new AnimationChannel("location", 2);
+                animationSet.xRotation = new AnimationChannel("rotation_euler", 0);
+                animationSet.yRotation = new AnimationChannel("rotation_euler", 1);
+                animationSet.zRotation = new AnimationChannel("rotation_euler", 2);
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
                 {
-                    animationSet.lens = new AnimationChannel("lens");
+                    animationSet.lens = new AnimationChannel("lens", -1);
                     animationSet.parametersController = cameraController;
                 }
 
                 LightController lcontroller = item.GetComponent<LightController>();
                 if (null != lcontroller)
                 {
-                    animationSet.energy = new AnimationChannel("energy");
-                    animationSet.RColor = new AnimationChannel("color[0]");
-                    animationSet.GColor = new AnimationChannel("color[1]");
-                    animationSet.BColor = new AnimationChannel("color[2]");
+                    animationSet.energy = new AnimationChannel("energy", -1);
+                    animationSet.RColor = new AnimationChannel("color", 0);
+                    animationSet.GColor = new AnimationChannel("color", 1);
+                    animationSet.BColor = new AnimationChannel("color", 2);
                     animationSet.parametersController = lcontroller;
                 }
 
                 if (null == item.GetComponent<ParametersController>())
                 {
-                    animationSet.xScale = new AnimationChannel("scale[0]");
-                    animationSet.yScale = new AnimationChannel("scale[1]");
-                    animationSet.zScale = new AnimationChannel("scale[2]");
+                    animationSet.xScale = new AnimationChannel("scale", 0);
+                    animationSet.yScale = new AnimationChannel("scale", 1);
+                    animationSet.zScale = new AnimationChannel("scale", 2);
                 }
 
                 recordAnimationSets[item] = animationSet;
@@ -270,7 +350,7 @@ namespace VRtist
             recordCurrentFrame = GlobalState.currentFrame - 1;
         }
 
-        public void SendKeyInfo(string objectName, string channelName, int channelIndex, int frame, float value)
+        private void SendDeleteKeyInfo(string objectName, string channelName, int channelIndex, int frame)
         {
             SetKeyInfo keyInfo = new SetKeyInfo()
             {
@@ -278,160 +358,72 @@ namespace VRtist
                 channelName = channelName,
                 channelIndex = channelIndex,
                 frame = frame,
-                value = value
-            };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
-        }
-
-        private void SendDeleteKeyInfo(string objectName, string channelName, int channelIndex)
-        {
-            SetKeyInfo keyInfo = new SetKeyInfo()
-            {
-                objectName = objectName,
-                channelName = channelName,
-                channelIndex = channelIndex,
                 value = 0.0f
             };
             NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
-        private void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
-        {
-            foreach (AnimationKey key in animationChannel.keys)
-            {
-                animationChannel.GetChannelInfo(out string channelName, out int channelIndex);
-                SendKeyInfo(objectName, channelName, channelIndex, key.time, key.value);
-            }
-        }
-
         public void ApplyAnimations()
         {
-            foreach (var item in recordAnimationSets)
+            CommandGroup group = new CommandGroup("Record Animation");
+            try
             {
-                GameObject gObject = item.Key;
-                string objectName = gObject.name;
-                SendAnimationChannel(objectName, item.Value.xPosition);
-                SendAnimationChannel(objectName, item.Value.yPosition);
-                SendAnimationChannel(objectName, item.Value.zPosition);
-                SendAnimationChannel(objectName, item.Value.xRotation);
-                SendAnimationChannel(objectName, item.Value.yRotation);
-                SendAnimationChannel(objectName, item.Value.zRotation);
-
-                System.Type controllerType = null;
-                if (item.Value.parametersController)
+                foreach (var item in recordAnimationSets)
                 {
-                    controllerType = item.Value.parametersController.GetType();
-
-                    if (controllerType == typeof(CameraController) || controllerType.IsSubclassOf(typeof(CameraController)))
-                    {
-                        SendAnimationChannel(objectName, item.Value.lens);
-                    }
-                    if (controllerType == typeof(LightController) || controllerType.IsSubclassOf(typeof(LightController)))
-                    {
-                        SendAnimationChannel(objectName, item.Value.energy);
-                        SendAnimationChannel(objectName, item.Value.RColor);
-                        SendAnimationChannel(objectName, item.Value.GColor);
-                        SendAnimationChannel(objectName, item.Value.BColor);
-                    }
+                    new CommandRecordAnimations(item.Key, item.Value).Submit();
                 }
-                else
-                {
-                    SendAnimationChannel(objectName, item.Value.xScale);
-                    SendAnimationChannel(objectName, item.Value.yScale);
-                    SendAnimationChannel(objectName, item.Value.zScale);
-                }
-                NetworkClient.GetInstance().SendQueryObjectData(objectName);
             }
-            recordAnimationSets.Clear();
+            finally
+            {
+                group.Submit();
+                recordAnimationSets.Clear();
+            }
+        }
+        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value)
+        {
+            SendKeyInfo(gObject.name, channelName, channelIndex, frame, value);
         }
 
-        public void AddKeyframe(GameObject gObject)
+        public void RemoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame)
         {
-            int frame = GlobalState.currentFrame;
-            string name = gObject.name;
-            SendKeyInfo(name, "location", 0, frame, gObject.transform.localPosition.x);
-            SendKeyInfo(name, "location", 1, frame, gObject.transform.localPosition.y);
-            SendKeyInfo(name, "location", 2, frame, gObject.transform.localPosition.z);
-            Quaternion q = gObject.transform.localRotation;
-            // convert to ZYX euler
-            Vector3 angles = Maths.ThreeAxisRotation(q);
-            SendKeyInfo(name, "rotation_euler", 0, frame, angles.x);
-            SendKeyInfo(name, "rotation_euler", 1, frame, angles.y);
-            SendKeyInfo(name, "rotation_euler", 2, frame, angles.z);
-
-            CameraController controller = gObject.GetComponent<CameraController>();
-            if (null != controller)
-            {
-                SendKeyInfo(name, "lens", -1, frame, controller.focal);
-            }
-
-            LightController lcontroller = gObject.GetComponent<LightController>();
-            if (null != lcontroller)
-            {
-                SendKeyInfo(name, "energy", -1, frame, lcontroller.GetPower());
-                SendKeyInfo(name, "color", 0, frame, lcontroller.color.r);
-                SendKeyInfo(name, "color", 1, frame, lcontroller.color.g);
-                SendKeyInfo(name, "color", 2, frame, lcontroller.color.b);
-            }
-
-            if(null == gObject.GetComponent<ParametersController>())
-            {
-                // Scale
-                Vector3 scale = gObject.transform.localScale;
-                SendKeyInfo(name, "scale", 0, frame, scale.x);
-                SendKeyInfo(name, "scale", 1, frame, scale.y);
-                SendKeyInfo(name, "scale", 2, frame, scale.z);
-                //bool visible = SyncData.nodes[gObject.name].visible;
-                //SendKeyInfo(name, "hide_viewport", -1, frame, visible ? 0 : 1f);
-            }
-
-            NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, name);
+            SendDeleteKeyInfo(gObject.name, channelName, channelIndex, frame);
         }
 
-        public void AddKeyframe()
+        public void RemoveSelectionKeyframes()
         {
+            int currentFrame = GlobalState.currentFrame;
             foreach (GameObject item in Selection.selection.Values)
             {
-                AddKeyframe(item);
-            }
-        }
-
-        public void RemoveKeyframe()
-        {
-            foreach (GameObject item in Selection.selection.Values)
-            {
-                string objectName = item.name;
-                
-                SendDeleteKeyInfo(objectName, "location", 0);
-                SendDeleteKeyInfo(objectName, "location", 1);
-                SendDeleteKeyInfo(objectName, "location", 2);
-                SendDeleteKeyInfo(objectName, "rotation_euler", 0);
-                SendDeleteKeyInfo(objectName, "rotation_euler", 1);
-                SendDeleteKeyInfo(objectName, "rotation_euler", 2);
+                RemoveKeyframe(item, "location", 0, currentFrame);
+                RemoveKeyframe(item, "location", 1, currentFrame);
+                RemoveKeyframe(item, "location", 2, currentFrame);
+                RemoveKeyframe(item, "rotation_euler", 0, currentFrame);
+                RemoveKeyframe(item, "rotation_euler", 1, currentFrame);
+                RemoveKeyframe(item, "rotation_euler", 2, currentFrame);
 
                 CameraController controller = item.GetComponent<CameraController>();
                 if (null != controller)
                 {
-                    SendDeleteKeyInfo(objectName, "lens", -1);
+                    RemoveKeyframe(item, "lens", -1, currentFrame);
                 }
 
                 LightController lcontroller = item.GetComponent<LightController>();
                 if (null != lcontroller)
                 {
-                    SendDeleteKeyInfo(objectName, "energy", -1);
-                    SendDeleteKeyInfo(objectName, "color", 0);
-                    SendDeleteKeyInfo(objectName, "color", 1);
-                    SendDeleteKeyInfo(objectName, "color", 2);
+                    RemoveKeyframe(item, "energy", -1, currentFrame);
+                    RemoveKeyframe(item, "color", 0, currentFrame);
+                    RemoveKeyframe(item, "color", 1, currentFrame);
+                    RemoveKeyframe(item, "color", 2, currentFrame);
                 }
 
                 ParametersController pController = item.GetComponent<ParametersController>();
                 if(null == pController)
                 {
-                    SendDeleteKeyInfo(objectName, "scale", 0);
-                    SendDeleteKeyInfo(objectName, "scale", 1);
-                    SendDeleteKeyInfo(objectName, "scale", 2);
+                    RemoveKeyframe(item, "scale", 0, currentFrame);
+                    RemoveKeyframe(item, "scale", 1, currentFrame);
+                    RemoveKeyframe(item, "scale", 2, currentFrame);
                 }
-                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, objectName);
+                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, item.name);
             }
         }
     }

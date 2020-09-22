@@ -190,7 +190,7 @@ namespace VRtist
             }
 
             // operates only on location.z
-            if (channel.name != "location[2]")
+            if (channel.name != "location" || channel.index != 2)
                 return;
 
             Clear();
@@ -330,17 +330,50 @@ namespace VRtist
 
         public void OnAddKeyFrame()
         {
-            GlobalState.Instance.AddKeyframe();
+            CommandGroup group = new CommandGroup("Add Keyframe");
+            try
+            {
+                foreach (GameObject item in Selection.selection.Values)
+                {
+                    new CommandAddKeyframes(item).Submit();
+                }
+            }
+            finally
+            {
+                group.Submit();
+            }
         }
 
         public void OnRemoveKeyFrame()
         {
-            GlobalState.Instance.RemoveKeyframe();
+            CommandGroup group = new CommandGroup("Remove Keyframe");
+            try
+            {
+                foreach (GameObject item in Selection.selection.Values)
+                {
+                    new CommandRemoveKeyframes(item).Submit();
+                }
+            }
+            finally
+            {
+                group.Submit();
+            }
         }
 
         public void OnClearAnimations()
         {
-            GlobalState.Instance.ClearAnimations();
+            CommandGroup group = new CommandGroup("Clear Animations");
+            try
+            {
+                foreach (GameObject gObject in Selection.selection.Values)
+                {
+                    new CommandClearAnimations(gObject).Submit();
+                }
+            }
+            finally
+            {
+                group.Submit();
+            }
         }
 
         public void OnEnableAutoKey(bool value)
