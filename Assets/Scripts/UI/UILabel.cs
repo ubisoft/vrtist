@@ -233,7 +233,8 @@ namespace VRtist
         public override void ResetColor()
         {
             SetColor(Disabled ? DisabledColor
-                   : BaseColor);
+                  : (Selected ? SelectedColor
+                  : BaseColor));
         }
 
         private void OnDrawGizmosSelected()
