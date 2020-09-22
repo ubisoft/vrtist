@@ -118,7 +118,7 @@ namespace VRtist
                 }
 
                 // Show/Hide the "disabled camera layer"
-                bool isCameraActive = (gameObject.layer == LayerMask.NameToLayer("SelectionUI") || gameObject.layer == LayerMask.NameToLayer("HoverUI"));
+                bool isCameraActive = cameraObject.gameObject.activeSelf;
                 if (null != disabledLayer)
                     disabledLayer.SetActive(!isCameraActive);
             }
