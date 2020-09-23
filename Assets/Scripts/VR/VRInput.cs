@@ -177,6 +177,9 @@ namespace VRtist
             JoyInputPair prevPair = new JoyInputPair(controller, prevQuadrant);
             JoyInputPair currPair = new JoyInputPair(controller, currQuadrant);
 
+            joyJustPressed.Clear();
+            joyJustReleased.Clear();
+
             if (currLen > deadZoneIn)
             {
                 if (prevLen <= deadZoneIn)
@@ -189,14 +192,13 @@ namespace VRtist
                     // still in EXT zone
                     if (prevQuadrant == currQuadrant)
                     {
-                        // same zone, remove all "just" events.
-                        joyJustPressed.Remove(currPair);
+                        // same zone, remove all "just" events (already cleared)
                     }
                     else
                     {
                         // quadrant changed
                         joyJustPressed.Add(currPair);
-                        joyJustReleased.Remove(prevPair);
+                        joyJustReleased.Add(prevPair);
                     }
                 }
             }
@@ -206,7 +208,7 @@ namespace VRtist
                 {
                     // justReleased EXT -> Center
                     joyJustReleased.Add(currPair);
-                    joyJustPressed.Remove(prevPair); // if you go fast, pressing in one frame, releasing in the next.
+                    //joyJustPressed.Remove(prevPair); // if you go fast, pressing in one frame, releasing in the next. (already cleared)
                 }
                 else
                 {
