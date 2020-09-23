@@ -33,7 +33,7 @@ namespace VRtist
             // So force them here
             foreach (TextMeshProUGUI text in GetComponentsInChildren<TextMeshProUGUI>())
             {
-                text.fontSizeMin = 0.5f;
+                text.fontSizeMin = 1f;
                 text.fontSizeMax = 1.5f;
             }
         }
@@ -68,10 +68,23 @@ namespace VRtist
 
         private void TogglePickCamera(bool value)
         {
-            if (value)
-                Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+            // If there is already a selected camera, pick it
+            CameraController controller = Selection.GetSelectedCamera();
+            if (null != controller)
+            {
+                Selection.SetActiveCamera(controller);
+                setCameraButton.Checked = false;
+                setCameraAction();
+            }
+
+            // Else set everything up to be able to pick a camera
             else
-                Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+            {
+                if (value)
+                    Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+                else
+                    Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+            }
         }
 
         private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
@@ -272,7 +285,7 @@ namespace VRtist
             {
                 text.fontStyle = FontStyles.Normal;
                 text.enableAutoSizing = true;
-                text.fontSizeMin = 0.5f;
+                text.fontSizeMin = 1f;
                 text.fontSizeMax = 1.5f;
                 text.alignment = alignment;
             }

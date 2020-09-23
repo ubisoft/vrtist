@@ -18,7 +18,7 @@ namespace VRtist
         void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
         {
             bool apply = false;
-            if(spinner.baseColor.constant != baseColor)
+            if (spinner.baseColor.constant != baseColor)
             {
                 spinner.baseColor.constant = baseColor;
                 apply = true;
@@ -28,7 +28,7 @@ namespace VRtist
                 spinner.selectedColor.constant = selectedColor;
                 apply = true;
             }
-            if(apply)
+            if (apply)
             {
                 spinner.ResetColor();
             }
@@ -60,7 +60,7 @@ namespace VRtist
                 {
                     SetUIElementColors(item.endFrameSpinner, focusColor, focusColor);
                 }
-                else 
+                else
                 {
                     SetUIElementColors(item.endFrameSpinner, defaultColor, defaultSelectedColor);
                 }
@@ -135,7 +135,7 @@ namespace VRtist
                 start = selectedShot.end + 1;
                 camera = Selection.activeCamera != null ? Selection.activeCamera : selectedShot.camera;
             }
-            else 
+            else
             {
                 camera = Selection.activeCamera;
             }
