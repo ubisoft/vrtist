@@ -15,6 +15,9 @@ namespace VRtist
         private bool focalActionSelected;
         private CommandSetValue<float> focalValueCommand;
 
+        private UIButton inFrontButton = null;
+        public bool inFront = false;
+
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
 
@@ -48,6 +51,7 @@ namespace VRtist
             }
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
 
+            // Init UI
             if (null == focalSlider)
             {
                 focalSlider = gameObject.GetComponentInChildren<UISlider>();
@@ -60,6 +64,29 @@ namespace VRtist
                 {
                     text.fontSizeMin = 1f;
                 }
+                focalSlider.NeedsRebuild = true;
+
+                inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>();
+                inFrontButton.onCheckEvent.AddListener(OnSetInFront);
+                inFrontButton.NeedsRebuild = true;
+            }
+        }
+
+        private void OnSetInFront(bool value)
+        {
+            inFront = value;
+            UpdateCameraPreviewInFront(Selection.activeCamera == gameObject);
+        }
+
+        public void UpdateCameraPreviewInFront(bool active)
+        {
+            if (inFront && active)
+            {
+                transform.Find("Rotate/CameraPreview").gameObject.layer = LayerMask.NameToLayer("InFront");
+            }
+            else
+            {
+                transform.Find("Rotate/CameraPreview").gameObject.layer = gameObject.layer;
             }
         }
 
@@ -107,20 +134,21 @@ namespace VRtist
                 cameraObject.nearClipPlane = near * scale;
                 cameraObject.focalLength = focal;
 
-                // Only draw frustum for selected camera
-                if (CameraTool.showCameraFrustum && (gameObject.layer == LayerMask.NameToLayer("SelectionUI") || gameObject.layer == LayerMask.NameToLayer("HoverUI")))
+                // Active camera
+                if (Selection.activeCamera == gameObject)
                 {
-                    DrawFrustum();
+                    if (CameraTool.showCameraFrustum)
+                        DrawFrustum();
+                    else
+                        frustumRenderer.enabled = false;
+                    disabledLayer.SetActive(false);
                 }
+                // Inactive camera
                 else
                 {
                     frustumRenderer.enabled = false;
+                    disabledLayer.SetActive(true);
                 }
-
-                // Show/Hide the "disabled camera layer"
-                bool isCameraActive = cameraObject.gameObject.activeSelf;
-                if (null != disabledLayer)
-                    disabledLayer.SetActive(!isCameraActive);
             }
 
             if (null != focalSlider && focalSlider.Value != focal)

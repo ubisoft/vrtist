@@ -35,7 +35,7 @@ namespace VRtist
         [CentimeterFloat] public float iconMargin = default_icon_margin;
         public ButtonContent content = default_content;
         public Sprite baseSprite = null;
-        public Sprite checkedSprite = null; 
+        public Sprite checkedSprite = null;
         public ColorReference checkedColor = new ColorReference();
         [TextArea] public string textContent = "";
         public Material source_material = null;
@@ -65,10 +65,10 @@ namespace VRtist
         {
             SetColor(Disabled ? DisabledColor
                   : (Pushed ? PushedColor
-                  : (Checked ? CheckedColor 
+                  : (Checked ? CheckedColor
                   : (Selected ? SelectedColor
                   : (Hovered ? HoveredColor
-                  :  BaseColor)))));
+                  : BaseColor)))));
 
             // Make the canvas pop front if Hovered.
             Canvas c = GetComponentInChildren<Canvas>();
@@ -150,7 +150,7 @@ namespace VRtist
                             float offsetx = content == ButtonContent.TextAndImage ? 0.0f : (width - minSide) / 2.0f;
                             float offsety = content == ButtonContent.TextAndImage ? 0.0f : (height - minSide) / 2.0f;
                             rt.sizeDelta = new Vector2(minSide - 2.0f * m, minSide - 2.0f * m);
-                            rt.localPosition = new Vector3(m + offsetx, -m-offsety, -0.001f);
+                            rt.localPosition = new Vector3(m + offsetx, -m - offsety, -0.001f);
                         }
                     }
                     else
@@ -223,7 +223,6 @@ namespace VRtist
 
         private void Update()
         {
-#if UNITY_EDITOR
             if (NeedsRebuild)
             {
                 RebuildMesh();
@@ -233,7 +232,6 @@ namespace VRtist
                 ResetColor();
                 NeedsRebuild = false;
             }
-#endif
         }
 
         private void OnDrawGizmosSelected()
@@ -390,7 +388,7 @@ namespace VRtist
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
-            
+
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
             if (input.parent)
@@ -543,7 +541,7 @@ namespace VRtist
             trt.anchorMin = new Vector2(0, 1);
             trt.anchorMax = new Vector2(0, 1);
             trt.pivot = new Vector2(0, 1); // top left
-            
+
             // TODO: option for V Margin.
 
             if (input.buttonContent == ButtonContent.TextAndImage)

@@ -86,9 +86,10 @@ namespace VRtist
             {
                 if (null != activeCamera)
                 {
-                    ResetCameraPreviewInFront();
-                    activeCamera.GetComponent<CameraController>().cameraObject.gameObject.SetActive(false);
+                    controller = activeCamera.GetComponent<CameraController>();
                     activeCamera = null;
+                    controller.UpdateCameraPreviewInFront(false);
+                    controller.cameraObject.gameObject.SetActive(false);
                     TriggerCurrentCameraChanged();
                 }
                 return;
@@ -108,25 +109,9 @@ namespace VRtist
             activeCamera = obj;
             cam.gameObject.SetActive(true);
 
-            SetCameraPreviewInFront();
+            controller.UpdateCameraPreviewInFront(true);
 
             TriggerCurrentCameraChanged();
-        }
-
-        static void SetCameraPreviewInFront()
-        {
-            if (null != activeCamera)
-            {
-                activeCamera.transform.Find("Rotate/CameraPreview").gameObject.layer = LayerMask.NameToLayer("InFront");
-            }
-        }
-
-        static void ResetCameraPreviewInFront()
-        {
-            if (null != activeCamera)
-            {
-                activeCamera.transform.Find("Rotate/CameraPreview").gameObject.layer = activeCamera.layer;
-            }
         }
 
         static void SetCameraEnabled(GameObject obj, bool value)

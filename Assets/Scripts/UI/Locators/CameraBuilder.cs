@@ -25,19 +25,44 @@ namespace VRtist
             // Add UI
             if (isPrefab)
             {
-                // Slider
+                Transform uiRoot = newCamera.transform.Find("Rotate/UI");
+
+                // Focal slider
                 UISlider focalSlider = UISlider.Create(new UISlider.CreateArgs
                 {
-                    parent = newCamera.transform.Find("Rotate/UI"),
+                    parent = uiRoot,
                     widgetName = "Focal",
                     caption = "Focal",
-                    currentValue = 35f
+                    currentValue = 35f,
+                    sliderBegin = 0.15f,
+                    sliderEnd = 0.86f,
+                    relativeLocation = new Vector3(-0.30f, -0.03f, -UISlider.default_thickness),
+                    width = 0.3f,
+                    height = 0.02f
                 });
                 focalSlider.DataCurve = GlobalState.Settings.focalCurve;
-                focalSlider.RelativeLocation = new Vector3(-0.30f, -0.0105f, -UISlider.default_thickness);
-                focalSlider.Width = 0.3f;
-                focalSlider.Height = 0.03f;
                 focalSlider.SetLightLayer(2);
+
+                // In front button
+                UIButton inFrontButton = UIButton.Create(new UIButton.CreateButtonParams
+                {
+                    parent = uiRoot,
+                    widgetName = "InFront",
+                    caption = "Always in Front",
+                    buttonContent = UIButton.ButtonContent.ImageOnly,
+                    icon = UIUtils.LoadIcon("back"),
+                    width = 0.02f,
+                    height = 0.02f,
+                    iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
+                    iconMargin = 0.002f,
+                    relativeLocation = new Vector3(-0.30f, -0.005f, -UIButton.default_thickness)
+                });
+                inFrontButton.isCheckable = true;
+                inFrontButton.baseSprite = UIUtils.LoadIcon("back");
+                inFrontButton.checkedSprite = UIUtils.LoadIcon("front");
+                inFrontButton.SetLightLayer(2);
+
+                // Lock button
             }
 
             return newCamera;
