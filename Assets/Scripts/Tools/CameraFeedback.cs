@@ -65,7 +65,7 @@ namespace VRtist
             }
             else
             {
-                //cameraPlane.SetActive(false);
+                cameraPlane.SetActive(false);
             }
         }
     }
