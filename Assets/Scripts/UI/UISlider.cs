@@ -490,19 +490,21 @@ namespace VRtist
 
             bool joyRightJustClicked = false;
             bool joyRightJustReleased = false;
-            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased);
+            bool joyRightLongPush = false;
+            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
 
             bool joyLeftJustClicked = false;
             bool joyLeftJustReleased = false;
-            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased);
+            bool joyLeftLongPush = false;
+            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
-            if (joyRightJustClicked || joyLeftJustClicked)
+            if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
-                if (joyRightJustClicked)
+                if (joyRightJustClicked || joyRightLongPush)
                 {
                     Value = Mathf.Clamp(Value + 1.0f, minValue, maxValue);
                 }
-                else
+                else if (joyLeftJustClicked || joyLeftLongPush)
                 {
                     Value = Mathf.Clamp(Value - 1.0f, minValue, maxValue);
                 }
