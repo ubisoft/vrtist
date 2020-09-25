@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -162,6 +163,8 @@ namespace VRtist
             if (null != leftController)
             {
                 displayTooltip = Tooltips.CreateTooltip(leftController, Tooltips.Anchors.Info, "- fps");
+                displayTooltip.transform.Find("Frame/Canvas/Panel").GetComponent<Image>().color = new Color(0, 0, 0, 0);
+                UIUtils.SetRecursiveLayer(displayTooltip, "Controllers");
             }
             if (null != cameraFeedback)
             {
