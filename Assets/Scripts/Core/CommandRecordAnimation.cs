@@ -73,8 +73,8 @@ namespace VRtist
             GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yPosition);
             GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zPosition);
             GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xRotation);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xRotation);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xRotation);
+            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yRotation);
+            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zRotation);
             if (null != animationSets.lens)
                 GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.lens);
             if (null != animationSets.energy)
