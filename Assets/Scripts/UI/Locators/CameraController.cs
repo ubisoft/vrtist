@@ -137,7 +137,7 @@ namespace VRtist
                 // Active camera
                 if (Selection.activeCamera == gameObject)
                 {
-                    if (CameraTool.showCameraFrustum)
+                    if (CameraTool.showCameraFrustum && GlobalState.Settings.displayGizmos)
                         DrawFrustum();
                     else
                         frustumRenderer.enabled = false;
@@ -147,7 +147,8 @@ namespace VRtist
                 else
                 {
                     frustumRenderer.enabled = false;
-                    disabledLayer.SetActive(true);
+                    if (GlobalState.Settings.displayGizmos)
+                        disabledLayer.SetActive(true);
                 }
             }
 
