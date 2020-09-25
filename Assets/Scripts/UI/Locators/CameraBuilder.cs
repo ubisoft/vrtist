@@ -38,7 +38,9 @@ namespace VRtist
                     sliderEnd = 0.86f,
                     relativeLocation = new Vector3(-0.30f, -0.03f, -UISlider.default_thickness),
                     width = 0.3f,
-                    height = 0.02f
+                    height = 0.02f,
+                    railMargin = 0.002f,
+                    knobRadius = 0.007f
                 });
                 focalSlider.DataCurve = GlobalState.Settings.focalCurve;
                 focalSlider.SetLightLayer(2);
