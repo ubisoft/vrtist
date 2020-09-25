@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -58,7 +58,7 @@ namespace VRtist
         private static int fpsFrameRange = 60;
         private static int[] fpsBuffer = null;
         private static int fpsBufferIndex = 0;
-        private GameObject displayTooltip = null;
+        private TextMeshProUGUI leftControllerDisplay = null;
 
         // World
         public Transform world = null;
@@ -162,9 +162,8 @@ namespace VRtist
         {
             if (null != leftController)
             {
-                displayTooltip = Tooltips.CreateTooltip(leftController, Tooltips.Anchors.Info, "- fps");
-                displayTooltip.transform.Find("Frame/Canvas/Panel").GetComponent<Image>().color = new Color(0, 0, 0, 0);
-                UIUtils.SetRecursiveLayer(displayTooltip, "Controllers");
+                leftControllerDisplay = leftController.transform.Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
+                leftControllerDisplay.text = "";
             }
             if (null != cameraFeedback)
             {
@@ -330,15 +329,15 @@ namespace VRtist
         {
             animationController.Update();
             // Info on the left controller
-            if (null != displayTooltip)
+            if (null != leftControllerDisplay)
             {
-                string infoText = worldScale < 1f ? $"Scale down: {1f / worldScale:F2}" : $"Scale up: {worldScale:F2}";
+                string infoText = worldScale < 1f ? $"Scale\n-{1f / worldScale:F2}" : $"Scale\n{worldScale:F2}";
                 if (settings.displayFPS)
                 {
                     UpdateFps();
-                    infoText += $"\n{fps} fps";
+                    infoText += $"\nfps\n{fps}";
                 }
-                Tooltips.SetTooltipText(displayTooltip, infoText);
+                leftControllerDisplay.text = infoText;
             }
         }
 
