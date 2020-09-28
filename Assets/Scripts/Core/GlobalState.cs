@@ -328,6 +328,7 @@ namespace VRtist
         private void Update()
         {
             animationController.Update();
+
             // Info on the left controller
             if (null != leftControllerDisplay)
             {
@@ -335,7 +336,7 @@ namespace VRtist
                 if (settings.displayFPS)
                 {
                     UpdateFps();
-                    infoText += $"\nfps\n{fps}";
+                    infoText += $"\n\nFPS\n{fps}";
                 }
                 leftControllerDisplay.text = infoText;
             }
