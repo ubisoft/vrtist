@@ -50,6 +50,9 @@ namespace VRtist
         public enum JoyDirection { UP, DOWN, LEFT, RIGHT };
         static HashSet<JoyInputPair> joyJustPressed = new HashSet<JoyInputPair>();
         static HashSet<JoyInputPair> joyJustReleased = new HashSet<JoyInputPair>();
+        static HashSet<JoyInputPair> joyLongPush = new HashSet<JoyInputPair>();
+
+        static float longPushTimer = 0.0f;
 
         public static void UpdateControllerValues()
         {
@@ -186,19 +189,26 @@ namespace VRtist
                 {
                     // justPressed center -> exterior
                     joyJustPressed.Add(currPair);
+                    longPushTimer = 0.0f;
                 }
                 else
                 {
                     // still in EXT zone
                     if (prevQuadrant == currQuadrant)
                     {
-                        // same zone, remove all "just" events (already cleared)
+                        longPushTimer += Time.unscaledDeltaTime;
+                        if (longPushTimer > 0.6f && !joyLongPush.Contains(currPair)) // TODO: put timer threshold in GlobalState.Settings
+                        {
+                            joyLongPush.Add(currPair);
+                        }
                     }
                     else
                     {
                         // quadrant changed
                         joyJustPressed.Add(currPair);
                         joyJustReleased.Add(prevPair);
+                        longPushTimer = 0.0f;
+                        joyLongPush.Clear();
                     }
                 }
             }
@@ -208,12 +218,12 @@ namespace VRtist
                 {
                     // justReleased EXT -> Center
                     joyJustReleased.Add(currPair);
-                    //joyJustPressed.Remove(prevPair); // if you go fast, pressing in one frame, releasing in the next. (already cleared)
+                    joyLongPush.Clear();
                 }
                 else
                 {
                     // still in center
-                    // do nothing, whatever the quadrant.
+                    joyLongPush.Clear();
                 }
             }
         }
@@ -452,12 +462,13 @@ namespace VRtist
             outJustReleased = justReleased.Contains(pair);
         }
 
-        public static void GetInstantJoyEvent(InputDevice controller, JoyDirection direction, ref bool outJustPressed, ref bool outJustReleased)
+        public static void GetInstantJoyEvent(InputDevice controller, JoyDirection direction, ref bool outJustPressed, ref bool outJustReleased, ref bool outLongPush)
         {
             InputDevice c = GetLeftOrRightHandedController(controller);
             JoyInputPair pair = new JoyInputPair(c, direction);
             outJustPressed = joyJustPressed.Contains(pair);
             outJustReleased = joyJustReleased.Contains(pair);
+            outLongPush = joyLongPush.Contains(pair);
         }
 
         public static void InitInvertedControllers()
