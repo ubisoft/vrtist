@@ -584,7 +584,7 @@ namespace VRtist
 
             if (triggerJustClicked && localProjectedWidgetPosition.x > endX)
             {
-                ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform, Value.ToString());
                 // Position window
                 keyboardOpen = true;
                 rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);

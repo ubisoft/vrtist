@@ -117,5 +117,11 @@ namespace VRtist
             textContent = "";
             contentLabel.Text = textContent;
         }
+
+        public void SetText(string text)
+        {
+            textContent = text;
+            contentLabel.Text = text;
+        }
     }
 }
