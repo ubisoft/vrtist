@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -38,11 +39,19 @@ namespace VRtist
 
         [SerializeField] private Transform knob = null;
 
-        public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); } }
-        public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); } }
+        public int MinValue { get { return GetMinValue(); } set { SetMinValue(value); UpdateTimeBarPosition(); UpdateTimeBarRange(); } }
+        public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); UpdateTimeBarRange(); } }
 
         bool lerp = false;
         public int Value { get { return GetValue(); } set { SetValue(value); lerp = true;  UpdateTimeBarPosition(); } }
+
+        Material rulerMaterial;
+        Transform planeTransform;
+        void Start()
+        {
+            planeTransform = transform.Find("TimeTicks/Plane");
+            rulerMaterial = planeTransform.GetComponent<MeshRenderer>().material;
+        }
 
         public override void RebuildMesh()
         {
@@ -116,6 +125,7 @@ namespace VRtist
                     UpdateAnchor();
                     UpdateChildren();
                     UpdateTimeBarPosition();
+                    UpdateTimeBarRange();
                     ResetColor();
                 }
                 catch(Exception e)
@@ -168,6 +178,13 @@ namespace VRtist
                 sharedMaterialInstance.name = "UIPanel_Instance_for_UITimebar";
                 sharedMaterialInstance.SetColor("_BaseColor", prevColor);
             }
+        }
+
+        private void UpdateTimeBarRange()
+        {
+            rulerMaterial.SetVector("_Range", new Vector4(MinValue, MaxValue, 0, 0));
+            // TODO
+            //rulerMaterial.SetFloat("_WidgetWidth", planeTransform.lossyScale.x * 10f);
         }
 
         private void UpdateTimeBarPosition()
