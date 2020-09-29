@@ -60,6 +60,7 @@ namespace VRtist
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
 
         public Transform keyboardWindow;
+        public Transform numericKeyboardWindow;
 
         [Header("Debug tweaking")]
         public int palettePopNbFrames = 8;
@@ -140,6 +141,7 @@ namespace VRtist
             colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
 
             keyboardWindow.localScale = Vector3.zero;
+            numericKeyboardWindow.localScale = Vector3.zero;
         }
 
         public void ChangeTab(string tabName)
@@ -312,9 +314,10 @@ namespace VRtist
             if (null != text)
             {
                 keyboard.SetText(text);
+                keyboard.Selected = true;
             }
-            keyboard.onValidateTextEvent.RemoveAllListeners();
-            keyboard.onValidateTextEvent.AddListener(validateCallback);
+            keyboard.onSubmitEvent.RemoveAllListeners();
+            keyboard.onSubmitEvent.AddListener(validateCallback);
             UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
             if (null != cancelCallback)
                 closeButton.onReleaseEvent.AddListener(cancelCallback);
@@ -328,7 +331,7 @@ namespace VRtist
         public void CloseKeyboard(bool cancel = false)
         {
             Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
-            keyboard.onValidateTextEvent.RemoveAllListeners();
+            keyboard.onSubmitEvent.RemoveAllListeners();
             UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
             closeButton.onReleaseEvent.RemoveAllListeners();
             CloseWindow(keyboardWindow, 1f);
@@ -339,40 +342,41 @@ namespace VRtist
             CloseKeyboard(cancel: true);
         }
 
-        //public void OpenNumericKeyboard(UnityAction<string> validateCallback, UnityAction cancelCallback, Transform anchor, float? value = null)
-        //{
-        //    OpenWindow(keyboardWindow, 1f);
-        //    Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
-        //    keyboard.Clear();
-        //    if (null != value)
-        //    {
-        //        keyboard.SetValue(value);
-        //    }
-        //    keyboard.onValidateTextEvent.RemoveAllListeners();
-        //    keyboard.onValidateTextEvent.AddListener(validateCallback);
-        //    UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
-        //    if (null != cancelCallback)
-        //        closeButton.onReleaseEvent.AddListener(cancelCallback);
-        //    closeButton.onReleaseEvent.AddListener(CancelKeyboard);
+        public void OpenNumericKeyboard(UnityAction<float> validateCallback, UnityAction cancelCallback, Transform anchor, float? value = null)
+        {
+            OpenWindow(numericKeyboardWindow, 1f);
+            NumericKeyboard keyboard = numericKeyboardWindow.GetComponentInChildren<NumericKeyboard>();
+            keyboard.Clear();
+            if (null != value)
+            {
+                keyboard.SetValue(value);
+                keyboard.Selected = true;
+            }
+            keyboard.onSubmitEvent.RemoveAllListeners();
+            keyboard.onSubmitEvent.AddListener(validateCallback);
+            UIButton closeButton = numericKeyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
+            if (null != cancelCallback)  // order of listeners is important here
+                closeButton.onReleaseEvent.AddListener(cancelCallback);
+            closeButton.onReleaseEvent.AddListener(CancelNumericKeyboard);
 
-        //    Vector3 offset = new Vector3(0.35f, 0.0f, -0.01f);
-        //    keyboardWindow.position = anchor.TransformPoint(offset);
-        //    keyboardWindow.rotation = Camera.main.transform.rotation;
-        //}
+            Vector3 offset = new Vector3(0.35f, 0.18f, -0.01f);
+            numericKeyboardWindow.position = anchor.TransformPoint(offset);
+            numericKeyboardWindow.rotation = Camera.main.transform.rotation;
+        }
 
-        //public void CloseNumericKeyboard(bool cancel = false)
-        //{
-        //    Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
-        //    keyboard.onValidateTextEvent.RemoveAllListeners();
-        //    UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
-        //    closeButton.onReleaseEvent.RemoveAllListeners();
-        //    CloseWindow(keyboardWindow, 1f);
-        //}
+        public void CloseNumericKeyboard(bool cancel = false)
+        {
+            NumericKeyboard keyboard = numericKeyboardWindow.GetComponentInChildren<NumericKeyboard>();
+            keyboard.onSubmitEvent.RemoveAllListeners();
+            UIButton closeButton = numericKeyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
+            closeButton.onReleaseEvent.RemoveAllListeners();
+            CloseWindow(numericKeyboardWindow, 1f);
+        }
 
-        //public void CancelNumericKeyboard()
-        //{
-        //    CloseNumericKeyboard(cancel: true);
-        //}
+        public void CancelNumericKeyboard()
+        {
+            CloseNumericKeyboard(cancel: true);
+        }
 
         #endregion
 

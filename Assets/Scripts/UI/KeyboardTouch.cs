@@ -6,7 +6,7 @@ namespace VRtist
     {
         public char keyValue = 'A';
         private UIButton touch = null;
-        private Keyboard kb = null;
+        private AbstractKeyboard kb = null;
 
         //public CharChangedEvent onKeyTouched = new CharChangedEvent();
 
@@ -20,8 +20,7 @@ namespace VRtist
                 //keyValue = touch.textContent[0]; // get key directly from the text component of the button? what if we use an icon?
             }
 
-            // TODO: pas tres future proof
-            kb = transform.parent.parent.parent.GetComponent<Keyboard>();
+            kb = GetComponentInParent<AbstractKeyboard>();
         }
 
         public void OnTouchPressed()

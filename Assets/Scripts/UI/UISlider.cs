@@ -456,10 +456,9 @@ namespace VRtist
             return base.IgnoreRayInteraction() || keyboardOpen;
         }
 
-        private void OnValidateKeyboard(string value)
+        private void OnValidateKeyboard(float value)
         {
-            if (!float.TryParse(value, out float val)) { return; }
-            Value = val;
+            Value = value;
             keyboardOpen = false;
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);
@@ -584,7 +583,7 @@ namespace VRtist
 
             if (triggerJustClicked && localProjectedWidgetPosition.x > endX)
             {
-                ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform, Value.ToString());
+                ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform, (float) Value);
                 // Position window
                 keyboardOpen = true;
                 rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
