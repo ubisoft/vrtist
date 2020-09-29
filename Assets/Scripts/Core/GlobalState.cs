@@ -19,6 +19,14 @@ namespace VRtist
         public Vector3[] corners = new Vector3[4];
     }
 
+    public enum Interpolation
+    {
+        Constant,
+        Linear,
+        Bezier,
+        Other,
+    }
+
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;
@@ -224,9 +232,9 @@ namespace VRtist
             return animationController.GetAnimationChannels(gameObject);
         }
 
-        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value)
+        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
         {
-            animationController.AddKeyframe(gObject, channelName, channelIndex, frame, value);
+            animationController.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
         }
 
         public void RemoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame)

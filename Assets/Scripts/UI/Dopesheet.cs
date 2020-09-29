@@ -11,6 +11,7 @@ namespace VRtist
         public int channelIndex;
         public int frame;
         public float value;
+        public Interpolation interpolation;
     };
 
     public class Dopesheet : MonoBehaviour
