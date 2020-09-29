@@ -42,7 +42,7 @@ namespace VRtist
             public Transform parent;
             public string widgetName;
             public Vector3 relativeLocation;
-            public float width;
+            public float width = 0.0f;
             public float radius;
             public float depth;
             public Material material;

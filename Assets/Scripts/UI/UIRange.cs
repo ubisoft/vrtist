@@ -34,8 +34,9 @@ namespace VRtist
         public static readonly float default_current_min_value = 102.2f;
         public static readonly float default_current_max_value = 153.7f;
         public static readonly string default_material_name = "UIBase";
-        public static readonly string default_rail_material_name = "UISliderRail";
-        public static readonly string default_knob_material_name = "UISliderKnob";
+        public static readonly string default_rail_material_name = "UIRangeRail";
+        public static readonly string default_knob_center_material_name = "UIRangeKnobCenter";
+        public static readonly string default_knob_end_material_name = "UIRangeKnobEnd";
         public static readonly string default_label = "Range";
         public static readonly RangeContent default_content = RangeContent.All;
         public static readonly UIRange.RangeValueType default_value_type = UIRange.RangeValueType.Int;
@@ -48,7 +49,8 @@ namespace VRtist
         public float sliderPositionEnd = default_slider_end;
         public Material sourceMaterial = null;
         public Material sourceRailMaterial = null;
-        public Material sourceKnobMaterial = null;
+        public Material sourceKnobCenterMaterial = null;
+        public Material sourceKnobEndMaterial = null;
         [TextArea] public string labelContent = "";
 
         [SpaceHeader("Subdivision Parameters", 6, 0.8f, 0.8f, 0.8f)]
@@ -65,24 +67,26 @@ namespace VRtist
         [SpaceHeader("Range Values", 6, 0.8f, 0.8f, 0.8f)]
         public RangeContent content = default_content;
         public RangeValueType valueType = default_value_type;
-        public Range<float> globalRange;
-        public Range<float> currentRange;
+        public Vector2 globalRange = new Vector2(10, 20);
+        public Vector2 currentRange = new Vector2(12, 15);
         
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public RangeChangedEvent<float> onSlideEvent = new RangeChangedEvent<float>();
-        public RangeChangedEvent<int> onSlideEventInt = new RangeChangedEvent<int>();
+        public RangeChangedEventFloat onSlideEvent = new RangeChangedEventFloat();
+        public RangeChangedEventInt onSlideEventInt = new RangeChangedEventInt();
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
         public UIRangeRail rail = null;
-        public UIRangeKnob knob = null;
+        public UIRangeKnob midKnob = null;
+        public UIRangeKnob minKnob = null;
+        public UIRangeKnob maxKnob = null;
 
         public float LabelPositionEnd { get { return labelPositionEnd; } set { labelPositionEnd = value; RebuildMesh(); } }
         public float RangePositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; RebuildMesh(); } }
         public float RangePositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
         public string Label { get { return labelContent; } set { SetLabel(value); } }
-        public Range<float> GlobalRange { get { return globalRange; } set { globalRange = value; SetGlobalRange(value); UpdateValueText(); UpdateRangePosition(); } }
-        public Range<float> CurrentRange { get { return currentRange; } set { globalRange = value; SetCurrentRange(value); UpdateValueText(); UpdateRangePosition(); } }
+        public Vector2 GlobalRange { get { return globalRange; } set { SetGlobalRange(value); RebuildMesh(); UpdateValueText(); } }
+        public Vector2 CurrentRange { get { return currentRange; } set { SetCurrentRange(value); RebuildMesh(); UpdateValueText(); } }
 
         private bool keyboardOpen = false;
 
@@ -96,13 +100,26 @@ namespace VRtist
             rail.RebuildMesh(railWidth, railHeight, railThickness, railMargin);
             rail.transform.localPosition = railPosition;
 
-            // KNOB
-            // TODO: compute new width
-            float newKnobwidth = 4.0f * knobRadius; // TMP
+            // KNOB(s)
             float newKnobRadius = knobRadius;
             float newKnobDepth = knobDepth;
 
-            knob.RebuildMesh(newKnobwidth, newKnobRadius, newKnobDepth);
+            float pctBegin = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+            float pctEnd = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
+
+            float widthWithoutMargins = width - 2.0f * margin;
+            float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
+            float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+            float posX = startX + pctBegin * (endX - startX);
+            float posXE = startX + pctEnd * (endX - startX);
+            float newKnobWidth = posXE - posX + 2.0f * knobRadius;
+
+            float smallRadius = newKnobRadius * 0.9f;// .8f; // smaller
+            float tallDepth = newKnobDepth * 1.2f;
+
+            minKnob.RebuildMesh(2.0f * smallRadius, smallRadius, tallDepth);
+            maxKnob.RebuildMesh(2.0f * smallRadius, smallRadius, tallDepth);
+            midKnob.RebuildMesh(newKnobWidth, newKnobRadius, newKnobDepth);
 
             // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
@@ -263,16 +280,56 @@ namespace VRtist
                 sharedMaterialInstance.SetColor("_BaseColor", prevColor);
             }
 
-            meshRenderer = knob.GetComponent<MeshRenderer>();
+            meshRenderer = minKnob.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = knob.Color;
+                Color prevColor = minKnob.Color;
                 if (meshRenderer.sharedMaterial != null)
                 {
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
                 }
 
-                Material materialInstance = Instantiate(sourceKnobMaterial);
+                Material materialInstance = Instantiate(sourceKnobEndMaterial);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UIRangeKnob_Material_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+
+            meshRenderer = maxKnob.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = maxKnob.Color;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
+
+                Material materialInstance = Instantiate(sourceKnobEndMaterial);
+
+                meshRenderer.sharedMaterial = materialInstance;
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+
+                Material sharedMaterialInstance = meshRenderer.sharedMaterial;
+                sharedMaterialInstance.name = "UIRangeKnob_Material_Instance";
+                sharedMaterialInstance.SetColor("_BaseColor", prevColor);
+            }
+
+            meshRenderer = midKnob.GetComponent<MeshRenderer>();
+            if (meshRenderer != null)
+            {
+                Color prevColor = midKnob.Color;
+                if (meshRenderer.sharedMaterial != null)
+                {
+                    prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
+                }
+
+                Material materialInstance = Instantiate(sourceKnobCenterMaterial);
 
                 meshRenderer.sharedMaterial = materialInstance;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -344,7 +401,9 @@ namespace VRtist
         {
             base.ResetColor(); // reset color of base mesh
             rail.ResetColor();
-            knob.ResetColor();
+            minKnob.ResetColor();
+            maxKnob.ResetColor();
+            midKnob.ResetColor();
 
             // Make the canvas pop front if Hovered.
             Canvas c = GetComponentInChildren<Canvas>();
@@ -367,20 +426,26 @@ namespace VRtist
             Vector3 posTopRight = transform.TransformPoint(new Vector3(width - margin, -margin, -0.001f));
             Vector3 posBottomLeft = transform.TransformPoint(new Vector3(margin, -height + margin, -0.001f));
             Vector3 posBottomRight = transform.TransformPoint(new Vector3(width - margin, -height + margin, -0.001f));
+            Vector3 posTopLabelEnd = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * labelPositionEnd, -margin, -0.001f));
+            Vector3 posBottomLabelEnd = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * labelPositionEnd, -height + margin, -0.001f));
             Vector3 posTopRangeBegin = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionBegin, -margin, -0.001f));
             Vector3 posTopRangeEnd = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionEnd, -margin, -0.001f));
             Vector3 posBottomRangeBegin = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionBegin, -height + margin, -0.001f));
             Vector3 posBottomRangeEnd = transform.TransformPoint(new Vector3(margin + widthWithoutMargins * sliderPositionEnd, -height + margin, -0.001f));
 
-             // TODO: faire le rect pour le minText plus tard....
-
             Vector3 eps = new Vector3(0.001f, 0, 0);
 
             Gizmos.color = Color.white;
-            Gizmos.DrawLine(posTopLeft, posTopRangeBegin);
-            Gizmos.DrawLine(posTopRangeBegin, posBottomRangeBegin);
-            Gizmos.DrawLine(posBottomRangeBegin, posBottomLeft);
+            Gizmos.DrawLine(posTopLeft, posTopLabelEnd);
+            Gizmos.DrawLine(posTopLabelEnd, posBottomLabelEnd);
+            Gizmos.DrawLine(posBottomLabelEnd, posBottomLeft);
             Gizmos.DrawLine(posBottomLeft, posTopLeft);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(posTopLabelEnd + eps, posTopRangeBegin);
+            Gizmos.DrawLine(posTopRangeBegin, posBottomRangeBegin);
+            Gizmos.DrawLine(posBottomRangeBegin, posBottomLabelEnd + eps);
+            Gizmos.DrawLine(posBottomLabelEnd + eps, posTopLabelEnd + eps);
 
             Gizmos.color = Color.green;
             Gizmos.DrawLine(posTopRangeBegin + eps, posTopRangeEnd);
@@ -410,8 +475,8 @@ namespace VRtist
                 if (minTxt != null)
                 {
                     minTxt.text = valueType == RangeValueType.Float
-                        ? GlobalRange.min.ToString("#0.00")
-                        : Mathf.RoundToInt(GlobalRange.min).ToString();
+                        ? GlobalRange.x.ToString("#0.00")
+                        : Mathf.RoundToInt(GlobalRange.x).ToString();
                 }
 
                 Transform maxTextValueTransform = canvas.transform.Find("MaxTextValue");
@@ -419,24 +484,29 @@ namespace VRtist
                 if (maxTxt != null)
                 {
                     maxTxt.text = valueType == RangeValueType.Float
-                        ? GlobalRange.max.ToString("#0.00")
-                        : Mathf.RoundToInt(GlobalRange.max).ToString();
+                        ? GlobalRange.y.ToString("#0.00")
+                        : Mathf.RoundToInt(GlobalRange.y).ToString();
                 }
             }
         }
 
         private void UpdateRangePosition()
         {
-            float pct = (currentRange.min - globalRange.min) / (globalRange.max - globalRange.min);
-            
+            float pctBegin = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+            float pctEnd = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
+
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
-            float posX = startX + pct * (endX - startX);
+            float posX = startX + pctBegin * (endX - startX);
+            float posXE = startX + pctEnd * (endX - startX);
 
-            Vector3 knobPosition = new Vector3(posX - knobRadius, knobRadius - (height / 2.0f), -knobDepth);
+            float smallRadius = knobRadius * 0.9f;// .8f; // smaller
+            float bigDepth = knobDepth * 1.2f;
 
-            knob.transform.localPosition = knobPosition;
+            minKnob.transform.localPosition = new Vector3(posX - smallRadius, smallRadius - (height / 2.0f), -bigDepth);
+            maxKnob.transform.localPosition = new Vector3(posXE- smallRadius, smallRadius - (height / 2.0f), -bigDepth);
+            midKnob.transform.localPosition = new Vector3(posX - knobRadius, knobRadius - (height / 2.0f), -knobDepth);
         }
 
         private void SetLabel(string textValue)
@@ -467,15 +537,29 @@ namespace VRtist
             }
         }
 
-        private void SetGlobalRange(Range<float> value)
+        private void SetGlobalRange(Vector2 value)
         {
-            globalRange = value;
+            if (value.x < value.y)
+            {
+                globalRange = value;
+            }
+            else
+            {
+                Debug.LogError($"Incoherent GlobalRange set {value.x} {value.y}");
+            }
         }
 
-        private void SetCurrentRange(Range<float> value)
+        private void SetCurrentRange(Vector2 value)
         {
-            currentRange.min = Mathf.Clamp(value.min, globalRange.min, globalRange.max);
-            currentRange.max = Mathf.Clamp(value.max, globalRange.min, globalRange.max);
+            if (value.y - value.x >= 1)
+            {
+                currentRange.x = Mathf.Clamp(value.x, globalRange.x, globalRange.y);
+                currentRange.y = Mathf.Clamp(value.y, globalRange.x, globalRange.y);
+            }
+            else
+            {
+                Debug.LogError($"Trying to set an incoherent CurrentRange {value.x} {value.y}");
+            }
         }
 
         public override bool IgnoreRayInteraction()
@@ -525,18 +609,20 @@ namespace VRtist
             bool joyLeftLongPush = false;
             VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
+            // TODO: move more than the min.
+
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
                 if (joyRightJustClicked || joyRightLongPush)
                 {
-                    CurrentRange = new Range<float> { min = Mathf.Clamp(CurrentRange.min + 1.0f, globalRange.min, globalRange.max), max = CurrentRange.max };
+                    CurrentRange = new Vector2(Mathf.Clamp(CurrentRange.x + 1.0f, globalRange.x, CurrentRange.y - 1), CurrentRange.y);
                 }
                 else if (joyLeftJustClicked || joyLeftLongPush)
                 {
-                    CurrentRange = new Range<float> { min = Mathf.Clamp(CurrentRange.min - 1.0f, globalRange.min, globalRange.max), max = CurrentRange.max };
+                    CurrentRange = new Vector2(Mathf.Clamp(CurrentRange.x - 1.0f, globalRange.x, CurrentRange.y - 1), CurrentRange.y);
                 }
-                onSlideEvent.Invoke(currentRange);
-                Range<int> intRange = new Range<int> { min = Mathf.RoundToInt(currentRange.min), max = Mathf.RoundToInt(currentRange.max) };
+                onSlideEvent.Invoke(CurrentRange);
+                Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
                 onSlideEventInt.Invoke(intRange);
             }
         }
@@ -619,7 +705,7 @@ namespace VRtist
             }
 
             // TMP min value
-            float currentValuePct = (currentRange.min - globalRange.min) / (globalRange.max - globalRange.min);
+            float currentValuePct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
 
             // DRAG
 
@@ -644,11 +730,11 @@ namespace VRtist
             // SET
 
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-            float v = globalRange.min + pct * (globalRange.max - globalRange.min);
-            CurrentRange = new Range<float>{ min = v, max = 10f }; // will replace the slider cursor.
+            float v = globalRange.x + pct * (globalRange.y - globalRange.x);
+            CurrentRange = new Vector2(v, 10f); // will replace the slider cursor.
             
             onSlideEvent.Invoke(CurrentRange);
-            Range<int> intRange = new Range<int> { min = Mathf.RoundToInt(currentRange.min), max = Mathf.RoundToInt(currentRange.max) };
+            Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
             onSlideEventInt.Invoke(intRange);
 
             // OUT ray end point
@@ -686,14 +772,16 @@ namespace VRtist
             
             public Material material = UIUtils.LoadMaterial(UIRange.default_material_name);
             public Material railMaterial = UIUtils.LoadMaterial(UIRange.default_rail_material_name);
-            public Material knobMaterial = UIUtils.LoadMaterial(UIRange.default_knob_material_name);
+            public Material knobCenterMaterial = UIUtils.LoadMaterial(UIRange.default_knob_center_material_name);
+            public Material knobEndMaterial = UIUtils.LoadMaterial(UIRange.default_knob_end_material_name);
 
             public ColorVar color = UIOptions.BackgroundColorVar;
             public ColorVar textColor = UIOptions.ForegroundColorVar;
             public ColorVar pushedColor = UIOptions.PushedColorVar;
             public ColorVar selectedColor = UIOptions.SelectedColorVar;
-            public ColorVar railColor = UIOptions.SliderRailColorVar; // UIRange.default_rail_color;
-            public ColorVar knobColor = UIOptions.SliderKnobColorVar; // UIRange.default_knob_color;
+            public ColorVar railColor = UIOptions.RangeRailColorVar;
+            public ColorVar knobCenterColor = UIOptions.RangeKnobCenterColorVar;
+            public ColorVar knobEndColor = UIOptions.RangeKnobEndColorVar;
 
             public string label = UIRange.default_label;
         }
@@ -733,12 +821,15 @@ namespace VRtist
             uiRange.knobDepth = input.knobDepth;
             uiRange.content = input.content;
             uiRange.valueType = input.valueType;
-            uiRange.globalRange = new Range<float> { min = input.minValue, max = input.maxValue };
-            uiRange.currentRange = new Range<float> { min = input.currentMinValue, max = input.currentMaxValue };
+            uiRange.globalRange.x = input.minValue;
+            uiRange.globalRange.y = input.maxValue;
+            uiRange.currentRange.x = input.currentMinValue;
+            uiRange.currentRange.y = input.currentMaxValue;
             uiRange.labelContent = input.label;
             uiRange.sourceMaterial = input.material;
             uiRange.sourceRailMaterial = input.railMaterial;
-            uiRange.sourceKnobMaterial = input.knobMaterial;
+            uiRange.sourceKnobCenterMaterial = input.knobCenterMaterial;
+            uiRange.sourceKnobEndMaterial = input.knobEndMaterial;
             uiRange.baseColor.useConstant = false;
             uiRange.baseColor.reference = input.color;
             uiRange.textColor.useConstant = false;
@@ -811,31 +902,95 @@ namespace VRtist
                 }
             );
 
-            // KNOB
-            float newKnobRadius = uiRange.knobRadius;
-            float newKnobDepth = uiRange.knobDepth;
+            // Left (min) KNOB
+            {
+                float newKnobRadius = uiRange.knobRadius * 0.9f;// .8f; // smaller
+                float newKnobDepth = uiRange.knobDepth * 1.2f; // taller
 
-            float pct = .5f;// (uiRange.currentValue - uiRange.minValue) / (uiRange.maxValue - uiRange.minValue);
+                float pct = (uiRange.currentRange.x - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
 
-            float widthWithoutMargins = input.width - 2.0f * input.margin;
-            float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;
-            float endX = input.margin + widthWithoutMargins * uiRange.sliderPositionEnd - railMargin;
-            float posX = startX + pct * (endX - startX);
+                float widthWithoutMargins = input.width - 2.0f * input.margin;
+                float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;
+                float endX = input.margin + widthWithoutMargins * uiRange.sliderPositionEnd - railMargin;
+                float posX = startX + pct * (endX - startX);
 
-            Vector3 knobPosition = new Vector3(posX - uiRange.knobRadius, uiRange.knobRadius - (uiRange.height / 2.0f), -uiRange.knobDepth);
+                Vector3 knobPosition = new Vector3(posX - newKnobRadius, newKnobRadius - (uiRange.height / 2.0f), -newKnobDepth);
 
-            uiRange.knob = UIRangeKnob.Create(
-                new UIRangeKnob.CreateArgs
-                {
-                    widgetName = "Knob",
-                    parent = go.transform,
-                    relativeLocation = knobPosition,
-                    radius = newKnobRadius,
-                    depth = newKnobDepth,
-                    material = input.knobMaterial,
-                    c = input.knobColor
-                }
-            );
+                uiRange.minKnob = UIRangeKnob.Create(
+                    new UIRangeKnob.CreateArgs
+                    {
+                        widgetName = "MinKnob",
+                        parent = go.transform,
+                        relativeLocation = knobPosition,
+                        width = 2.0f * newKnobRadius,
+                        radius = newKnobRadius,
+                        depth = newKnobDepth,
+                        material = input.knobEndMaterial,
+                        c = input.knobEndColor
+                    }
+                );
+            }
+
+            // Right (max) KNOB
+            {
+                float newKnobRadius = uiRange.knobRadius * 0.9f;// .8f; // smaller
+                float newKnobDepth = uiRange.knobDepth * 1.2f; // taller
+
+                float pct = (uiRange.currentRange.y - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+
+                float widthWithoutMargins = input.width - 2.0f * input.margin;
+                float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;
+                float endX = input.margin + widthWithoutMargins * uiRange.sliderPositionEnd - railMargin;
+                float posX = startX + pct * (endX - startX);
+
+                Vector3 knobPosition = new Vector3(posX - newKnobRadius, newKnobRadius - (uiRange.height / 2.0f), -newKnobDepth);
+
+                uiRange.maxKnob = UIRangeKnob.Create(
+                    new UIRangeKnob.CreateArgs
+                    {
+                        widgetName = "MaxKnob",
+                        parent = go.transform,
+                        relativeLocation = knobPosition,
+                        width = 2.0f * newKnobRadius,
+                        radius = newKnobRadius,
+                        depth = newKnobDepth,
+                        material = input.knobEndMaterial,
+                        c = input.knobEndColor
+                    }
+                );
+            }
+
+            // Middle KNOB
+            {
+                float newKnobRadius = uiRange.knobRadius;
+                float newKnobDepth = uiRange.knobDepth;
+
+                float pctBegin = (uiRange.currentRange.x - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+                float pctEnd = (uiRange.currentRange.y - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+
+                float widthWithoutMargins = input.width - 2.0f * input.margin;
+                float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;
+                float endX = input.margin + widthWithoutMargins * uiRange.sliderPositionEnd - railMargin;
+                float posX = startX + pctBegin * (endX - startX);
+                float posXE = startX + pctEnd * (endX - startX);
+                float newWidth = posXE - posX;
+                
+                Vector3 knobPosition = new Vector3(posX - newKnobRadius, newKnobRadius - (uiRange.height / 2.0f), -newKnobDepth);
+
+                uiRange.midKnob = UIRangeKnob.Create(
+                    new UIRangeKnob.CreateArgs
+                    {
+                        widgetName = "MidKnob",
+                        parent = go.transform,
+                        relativeLocation = knobPosition,
+                        width = newWidth,
+                        radius = newKnobRadius,
+                        depth = newKnobDepth,
+                        material = input.knobCenterMaterial,
+                        c = input.knobCenterColor
+                    }
+                );
+            }
 
             //
             // CANVAS (to hold the 2 texts)

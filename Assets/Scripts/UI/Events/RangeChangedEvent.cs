@@ -1,16 +1,17 @@
 ﻿using System;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
 {
-    public struct Range<T>
+    [Serializable]
+    public class RangeChangedEventFloat : UnityEvent<Vector2>
     {
-        public T min;
-        public T max;
+
     }
 
     [Serializable]
-    public class RangeChangedEvent<T> : UnityEvent<Range<T>>
+    public class RangeChangedEventInt : UnityEvent<Vector2Int>
     {
 
     }

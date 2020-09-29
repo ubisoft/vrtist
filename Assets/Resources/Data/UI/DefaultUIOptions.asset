@@ -38,7 +38,16 @@ MonoBehaviour:
     value: {r: 0.1, g: 0.1, b: 0.1, a: 1}
   sliderKnobColor:
     isHdr: 0
+    value: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 1}
+  rangeRailColor:
+    isHdr: 0
+    value: {r: 0.1, g: 0.1, b: 0.1, a: 1}
+  rangeKnobCenterColor:
+    isHdr: 0
     value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  rangeKnobEndColor:
+    isHdr: 0
+    value: {r: 0.3, g: 0.3, b: 0.3, a: 1}
   panelColor:
     isHdr: 0
     value: {r: 0.03773582, g: 0.03773582, b: 0.03773582, a: 0.90588236}
@@ -51,9 +60,15 @@ MonoBehaviour:
   grabberHoverColor:
     isHdr: 0
     value: {r: 0.1742, g: 0.5336, b: 0.723, a: 1}
+  invisibleColor:
+    isHdr: 0
+    value: {r: 0, g: 0, b: 0, a: 0}
   attenuatedTextColor:
     isHdr: 0
     value: {r: 0.7, g: 0.7, b: 0.7, a: 1}
+  sectionTextColor:
+    isHdr: 0
+    value: {r: 0, g: 0.4739, b: 1, a: 1}
   closeWindowButtonColor:
     isHdr: 0
     value: {r: 0.8584906, g: 0.29156283, b: 0.7239765, a: 1}

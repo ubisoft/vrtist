@@ -18,6 +18,9 @@ namespace VRtist
         [SpaceHeader("Specific Class Colors", 6, 0.3f, 0.3f, 0.3f)]
         public ColorVar sliderRailColor = new ColorVar { value = new Color(0.1f, 0.1f, 0.1f, 1.0f) };
         public ColorVar sliderKnobColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
+        public ColorVar rangeRailColor = new ColorVar { value = new Color(0.1f, 0.1f, 0.1f, 1.0f) };
+        public ColorVar rangeKnobCenterColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
+        public ColorVar rangeKnobEndColor = new ColorVar { value = new Color(0.8f, 0.8f, 0.9f, 1.0f) };
         public ColorVar panelColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar panelHoverColor = new ColorVar { value = new Color(0.4f, 0.4f, 0.4f, 1.0f) };
         public ColorVar grabberBaseColor = new ColorVar { value = new Color(0.9f, 0.9f, 0.9f, 1.0f) };
@@ -45,6 +48,9 @@ namespace VRtist
         public static Color HoveredColor { get { return Instance.hoveredColor.value; } }
         public static Color SliderRailColor { get { return Instance.sliderRailColor.value; } }
         public static Color SliderKnobColor { get { return Instance.sliderKnobColor.value; } }
+        public static Color RangeRailColor { get { return Instance.rangeRailColor.value; } }
+        public static Color RangeKnobCenterColor { get { return Instance.rangeKnobCenterColor.value; } }
+        public static Color RangeKnobEndColor { get { return Instance.rangeKnobEndColor.value; } }
         public static Color AttenuatedTextColor { get { return Instance.attenuatedTextColor.value; } }
         public static Color SectionTextColor { get { return Instance.sectionTextColor.value; } }
         public static Color PanelColor { get { return Instance.panelColor.value; } }
@@ -67,6 +73,9 @@ namespace VRtist
         public static ColorVar HoveredColorVar { get { return Instance.hoveredColor; } }
         public static ColorVar SliderRailColorVar { get { return Instance.sliderRailColor; } }
         public static ColorVar SliderKnobColorVar { get { return Instance.sliderKnobColor; } }
+        public static ColorVar RangeRailColorVar { get { return Instance.rangeRailColor; } }
+        public static ColorVar RangeKnobCenterColorVar { get { return Instance.rangeKnobCenterColor; } }
+        public static ColorVar RangeKnobEndColorVar { get { return Instance.rangeKnobEndColor; } }
         public static ColorVar AttenuatedTextColorVar { get { return Instance.attenuatedTextColor; } }
         public static ColorVar SectionTextColorVar { get { return Instance.sectionTextColor; } }
         public static ColorVar PanelColorVar { get { return Instance.panelColor; } }
