@@ -14,6 +14,7 @@ namespace VRtist
         AnimationKey animationKey = null;
         float value;
         int frame;
+        Interpolation interpolation;
 
         public CommandRemoveKeyframe(GameObject obj, string channelName, int channelIndex, int frame)
         {
@@ -32,6 +33,7 @@ namespace VRtist
                 {
                     animationKey = animationChannel.GetKey(index);
                     value = animationKey.value;
+                    interpolation = animationKey.interpolation;
                 }
             }
         }
@@ -39,7 +41,7 @@ namespace VRtist
         public override void Undo()
         {
             if(null != animationKey)
-                GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, value);
+                GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
         }
 
         public override void Redo()

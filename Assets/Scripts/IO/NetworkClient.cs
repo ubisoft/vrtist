@@ -1627,9 +1627,11 @@ namespace VRtist
 
             int[] intBuffer = new int[keyCount];
             float[] floatBuffer = new float[keyCount];
+            int[] interpolationBuffer = new int[keyCount];
 
             Buffer.BlockCopy(data, currentIndex, intBuffer, 0, keyCount * sizeof(int));
             Buffer.BlockCopy(data, currentIndex + keyCount * sizeof(int), floatBuffer, 0, keyCount * sizeof(float));
+            Buffer.BlockCopy(data, currentIndex + (keyCount * sizeof(int)) + (keyCount * sizeof(float)), interpolationBuffer, 0, keyCount * sizeof(int));
 
             //AnimationKey[] keys = new AnimationKey[keyCount];
             //Buffer.BlockCopy(data, currentIndex, keys, 0, (int)keyCount * 2 * sizeof(float));
@@ -1637,7 +1639,7 @@ namespace VRtist
             List<AnimationKey> keys = new List<AnimationKey>();
             for (int i = 0; i < keyCount; i++)
             {
-                keys.Add(new AnimationKey(intBuffer[i], floatBuffer[i]));
+                keys.Add(new AnimationKey(intBuffer[i], floatBuffer[i], (Interpolation)interpolationBuffer[i]));
             }
 
             Node node = SyncData.nodes[objectName];
@@ -2652,7 +2654,8 @@ namespace VRtist
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
             byte[] frameBuffer = IntToBytes(data.frame);
             byte[] valueBuffer = FloatToBytes(data.value);
-            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer };
+            byte[] interpolationBuffer = IntToBytes((int)data.interpolation);
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer, interpolationBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.AddKeyframe);
         }

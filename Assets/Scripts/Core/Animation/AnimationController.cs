@@ -12,13 +12,15 @@ namespace VRtist
 
     public class AnimationKey
     {
-        public AnimationKey(int time, float value)
+        public AnimationKey(int time, float value, Interpolation interpolation = Interpolation.Bezier)
         {
             this.time = time;
             this.value = value;
+            this.interpolation = interpolation;
         }
         public int time;
         public float value;
+        public Interpolation interpolation;
     }
 
     public class AnimationChannel
@@ -235,7 +237,7 @@ namespace VRtist
             return animationChannels[gameObject];
         }
 
-        public void SendKeyInfo(string objectName, string channelName, int channelIndex, int frame, float value)
+        public void SendKeyInfo(string objectName, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
         {
             SetKeyInfo keyInfo = new SetKeyInfo()
             {
@@ -243,7 +245,8 @@ namespace VRtist
                 channelName = channelName,
                 channelIndex = channelIndex,
                 frame = frame,
-                value = value
+                value = value,
+                interpolation = interpolation,
             };
             NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
         }
@@ -252,7 +255,7 @@ namespace VRtist
         {
             foreach (AnimationKey key in animationChannel.keys)
             {
-                SendKeyInfo(objectName, animationChannel.name, animationChannel.index, key.time, key.value);
+                SendKeyInfo(objectName, animationChannel.name, animationChannel.index, key.time, key.value, key.interpolation);
             }
         }
 
@@ -379,9 +382,9 @@ namespace VRtist
                 recordAnimationSets.Clear();
             }
         }
-        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value)
+        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
         {
-            SendKeyInfo(gObject.name, channelName, channelIndex, frame, value);
+            SendKeyInfo(gObject.name, channelName, channelIndex, frame, value, interpolation);
         }
 
         public void RemoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame)

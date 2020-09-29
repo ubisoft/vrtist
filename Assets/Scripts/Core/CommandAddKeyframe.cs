@@ -14,15 +14,18 @@ namespace VRtist
         AnimationKey animationKey = null;
         float oldValue;
         float newValue;
+        Interpolation oldInterpolation;
+        Interpolation newInterpolation;
         int frame;
 
-        public CommandAddKeyframe(GameObject obj, string channelName, int channelIndex, int frame, float value)
+        public CommandAddKeyframe(GameObject obj, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
         {
             gObject = obj;
             this.channelName = channelName;
             this.channelIndex = channelIndex;
             this.newValue = value;
             this.frame = frame;
+            this.newInterpolation = interpolation;
 
             Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
             if (null == channels)
@@ -34,6 +37,7 @@ namespace VRtist
                 {
                     animationKey = animationChannel.GetKey(index);
                     oldValue = animationKey.value;
+                    oldInterpolation = animationKey.interpolation;
                 }
             }
         }
@@ -46,12 +50,12 @@ namespace VRtist
                 return;
             }
 
-            GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, oldValue);
+            GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, oldValue, oldInterpolation);
         }
 
         public override void Redo()
         {
-            GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, newValue);
+            GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, newValue, newInterpolation);
 
         }
         public override void Submit()
