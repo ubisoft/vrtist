@@ -135,7 +135,8 @@ namespace VRtist
 
             if (null == selectionVFXPrefab)
             {
-                selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
+                //selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
+                selectionVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");                
             }
 
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
@@ -854,7 +855,10 @@ namespace VRtist
             if (withVFX)
             {
                 GameObject vfxInstance = Instantiate(selectionVFXPrefab);
-                vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(clone);
+                vfxInstance.transform.position = clone.transform.position;
+                float scale = clone.transform.lossyScale.y * 0.5f;
+                vfxInstance.transform.localScale = new Vector3(scale, scale, scale);
+                Destroy(vfxInstance, 1f);                
             }
 
             if (Selection.IsSelected(source))
