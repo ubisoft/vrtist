@@ -31,8 +31,6 @@ namespace VRtist
         Color linearInterpolationColor;
         Color bezierInterpolationColor;
 
-        UICheckbox montage = null;
-
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public IntChangedEvent onAddKeyframeEvent = new IntChangedEvent();
         public IntChangedEvent onRemoveKeyframeEvent = new IntChangedEvent();
@@ -84,9 +82,6 @@ namespace VRtist
                 ColorUtility.TryParseHtmlString("#5985FF", out constantInterpolationColor);
                 ColorUtility.TryParseHtmlString("#FFB600", out linearInterpolationColor);
                 ColorUtility.TryParseHtmlString("#FF2D5E", out bezierInterpolationColor);
-
-                montage = mainPanel.Find("Montage").GetComponent<UICheckbox>();
-                ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
 
                 GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
                 GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
@@ -210,11 +205,6 @@ namespace VRtist
             {
                 mainPanel.gameObject.SetActive(doShow);
             }
-        }
-
-        private void OnMontageModeChanged()
-        {
-            montage.Checked = ShotManager.Instance.MontageMode;
         }
 
         protected void UpdateCurrentObjectChannel(GameObject gObject, AnimationChannel channel)
