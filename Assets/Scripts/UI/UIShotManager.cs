@@ -8,11 +8,22 @@ namespace VRtist
         public UIDynamicList shotList;
         public UILabel activeShotCountLabel;
 
+        UICheckbox montage = null;
+
+
         void Start()
         {
             ShotManager.Instance.ShotsChangedEvent.AddListener(OnShotManagerChanged);
             ShotManager.Instance.CurrentShotChangedEvent.AddListener(OnCurrentShotChanged);
             shotList.ItemClickedEvent += OnListItemClicked;
+
+            montage = transform.Find("MainPanel/Montage").GetComponent<UICheckbox>();
+            ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
+        }
+
+        private void OnMontageModeChanged()
+        {
+            montage.Checked = ShotManager.Instance.MontageMode;
         }
 
         void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
@@ -105,7 +116,7 @@ namespace VRtist
                 shotItem.AddListeners(OnUpdateShotName, OnUpdateShotStart, OnUpdateShotEnd, OnUpdateShotColor, OnUpdateShotEnabled, OnSetCamera);
                 UIDynamicListItem dlItem = shotList.AddItem(shotItem.transform);
                 dlItem.UseColliderForUI = false; // dont use the default global collider, sub-widget will catch UI events and propagate them.
-                shotItem.gameObject.SetActive(true);// Items are hidden (non active) while they are not added into a list, so activate the item here.
+                shotItem.transform.localScale = Vector3.one; // Items are hidden (scale 0) while they are not added into a list, so activate the item here.
                 shotItem.SetListItem(dlItem); // link individual elements to their parent list in order to be able to send messages upwards.
 
                 if (shot.enabled)

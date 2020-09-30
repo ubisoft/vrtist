@@ -28,6 +28,10 @@ namespace VRtist
         public Quaternion dopeSheetRotation = Quaternion.identity;
         public bool dopeSheetVisible = false;
 
+        public Vector3 shotManagerPosition = Vector3.zero;
+        public Quaternion shotManagerRotation = Quaternion.identity;
+        public bool shotManagerVisible = false;
+
         public Vector3 cameraPreviewPosition = Vector3.zero;
         public Quaternion cameraPreviewRotation = Quaternion.identity;
         public bool cameraPreviewVisible = false;
@@ -76,6 +80,10 @@ namespace VRtist
             dopeSheetPosition = Vector3.zero;
             dopeSheetRotation = Quaternion.identity;
 
+            shotManagerVisible = false;
+            shotManagerPosition = Vector3.zero;
+            shotManagerRotation = Quaternion.identity;
+
             cameraPreviewVisible = false;
             cameraPreviewPosition = Vector3.zero;
             cameraPreviewRotation = Quaternion.identity;
@@ -104,6 +112,11 @@ namespace VRtist
             {
                 dopeSheetPosition = window.localPosition;
                 dopeSheetRotation = window.localRotation;
+            }
+            if (window.name == "ShotManagerHandle")
+            {
+                shotManagerPosition = window.localPosition;
+                shotManagerRotation = window.localRotation;
             }
             if (window.name == "CameraPreviewHandle")
             {
@@ -136,6 +149,11 @@ namespace VRtist
             {
                 window.localPosition = dopeSheetPosition;
                 window.localRotation = dopeSheetRotation;
+            }
+            if (window.name == "ShotManagerHandle")
+            {
+                window.localPosition = shotManagerPosition;
+                window.localRotation = shotManagerRotation;
             }
             if (window.name == "CameraPreviewHandle")
             {

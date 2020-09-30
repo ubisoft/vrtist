@@ -49,6 +49,7 @@ namespace VRtist
 
         public GameObject selectionVFXPrefab = null;
         protected Dopesheet dopesheet;
+        protected UIShotManager shotManager;
 
         protected SelectorTrigger selectorTrigger;
 
@@ -139,6 +140,9 @@ namespace VRtist
 
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
+
+            shotManager = GameObject.FindObjectOfType<UIShotManager>();
+            UnityEngine.Assertions.Assert.IsNotNull(shotManager);
 
             GlobalState.Instance.onRecordEvent.AddListener(OnRecord);
 
