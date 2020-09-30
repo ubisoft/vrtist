@@ -25,17 +25,22 @@ namespace VRtist
         public bool Pushed { get { return isPushed; } set { isPushed = value; ResetColor(); } }
         public bool Hovered { get { return isHovered; } set { isHovered = value; ResetColor(); } }
 
-        public void RebuildMesh(float newWidth, float newKnobRadius, float newKnobDepth)
+        public int nbSubdivCornerFixed = 3;
+        public int nbSubdivCornerPerUnit = 3;
+
+        public void RebuildMesh(float newWidth, float newKnobRadius, float newKnobDepth, int knobNbSubdivCornerFixed, int knobNbSubdivCornerPerUnit)
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
             // Make a cylinder using RoundedBox
-            Mesh theNewMesh = UIUtils.BuildRoundedBox(newWidth, 2.0f * newKnobRadius, newKnobRadius, newKnobDepth);
+            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(newWidth, 2.0f * newKnobRadius, newKnobRadius, newKnobDepth, knobNbSubdivCornerFixed, knobNbSubdivCornerPerUnit);
             theNewMesh.name = "UIRangeKnob_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
             width = newWidth;
             radius = newKnobRadius;
             depth = newKnobDepth;
+            nbSubdivCornerFixed = knobNbSubdivCornerFixed;
+            nbSubdivCornerPerUnit = knobNbSubdivCornerPerUnit;
         }
 
         public void ResetColor()
@@ -58,6 +63,8 @@ namespace VRtist
             public float width = 0.0f;
             public float radius;
             public float depth;
+            public int nbSubdivCornerFixed = 3;
+            public int nbSubdivCornerPerUnit = 3;
             public Material material;
             public ColorVar baseColor = UIOptions.SliderKnobColorVar;
             public ColorVar pushedColor = UIOptions.PushedColorVar;
@@ -89,6 +96,8 @@ namespace VRtist
             uiRangeKnob.width = input.width;
             uiRangeKnob.radius = input.radius;
             uiRangeKnob.depth = input.depth;
+            uiRangeKnob.nbSubdivCornerFixed = input.nbSubdivCornerFixed;
+            uiRangeKnob.nbSubdivCornerPerUnit = input.nbSubdivCornerPerUnit;
             uiRangeKnob.baseColor.useConstant = false;
             uiRangeKnob.baseColor.reference = input.baseColor;
             uiRangeKnob.pushedColor.useConstant = false;
@@ -100,7 +109,7 @@ namespace VRtist
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, 2.0f * input.radius, input.radius, input.depth);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBoxEx(input.width, 2.0f * input.radius, input.radius, input.depth, input.nbSubdivCornerFixed, input.nbSubdivCornerPerUnit);
             }
 
             // Setup the MeshRenderer

@@ -34,7 +34,7 @@ namespace VRtist
         public void RebuildMesh(float newWidth, float newHeight, float newThickness, float newMargin)
         {
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildRoundedBox(width, height, margin, thickness);
+            Mesh theNewMesh = UIUtils.BuildRoundedBoxEx(width, height, margin, thickness, 6, 3); // TODO: subdiv parametrable?
             theNewMesh.name = "UIRangeRail_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
@@ -98,7 +98,7 @@ namespace VRtist
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
-                meshFilter.sharedMesh = UIUtils.BuildRoundedBox(input.width, input.height, input.margin, input.thickness);
+                meshFilter.sharedMesh = UIUtils.BuildRoundedBoxEx(input.width, input.height, input.margin, input.thickness, 6, 3);
             }
 
             // Setup the MeshRenderer

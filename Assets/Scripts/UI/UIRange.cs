@@ -65,6 +65,9 @@ namespace VRtist
         [CentimeterFloat] public float knobRadius = default_knob_radius;
         [CentimeterFloat] public float knobDepth = default_knob_depth;
 
+        public int knobNbSubdivCornerFixed = 6;
+        public int knobNbSubdivCornerPerUnit = 3;
+
         [SpaceHeader("Range Values", 6, 0.8f, 0.8f, 0.8f)]
         public RangeContent content = default_content;
         public RangeValueType valueType = default_value_type;
@@ -91,6 +94,7 @@ namespace VRtist
 
         private bool keyboardOpen = false;
         private RangeWidgetPart keyboardSourcePart = RangeWidgetPart.Background;
+        private RangeWidgetPart grippedPart = RangeWidgetPart.Background;
 
         public override void RebuildMesh()
         {
@@ -119,9 +123,9 @@ namespace VRtist
             float smallRadius = newKnobRadius * 0.9f;// .8f; // smaller
             float tallDepth = newKnobDepth * 1.2f;
 
-            minKnob.RebuildMesh(2.0f * smallRadius, smallRadius, tallDepth);
-            maxKnob.RebuildMesh(2.0f * smallRadius, smallRadius, tallDepth);
-            midKnob.RebuildMesh(newKnobWidth, newKnobRadius, newKnobDepth);
+            minKnob.RebuildMesh(2.0f * smallRadius, smallRadius, tallDepth, knobNbSubdivCornerFixed, knobNbSubdivCornerPerUnit);
+            maxKnob.RebuildMesh(2.0f * smallRadius, smallRadius, tallDepth, knobNbSubdivCornerFixed, knobNbSubdivCornerPerUnit);
+            midKnob.RebuildMesh(newKnobWidth, newKnobRadius, newKnobDepth, knobNbSubdivCornerFixed, knobNbSubdivCornerPerUnit);
 
             // BASE
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
@@ -795,13 +799,22 @@ namespace VRtist
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+            float currentMinPct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+            float currentMinPosX = startX + currentMinPct * (endX - startX);
+            float currentMaxPct = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
+            float currentMaxPosX = startX + currentMaxPct * (endX - startX);
+            float halfRangeSizeX = (currentMaxPosX - currentMinPosX) / 2.0f;
 
             RangeWidgetPart hoveredPart = GetRangeWidgetPart(localProjectedWidgetPosition);
 
-            // Just triggered. On what?
+            //
+            // Just triggered? Grip range min/max/middle or spawn keyboard.
+            //
 
             if (triggerJustClicked)
             {
+                grippedPart = RangeWidgetPart.Background; // reset
+
                 switch (hoveredPart)
                 {
                     case RangeWidgetPart.NameLabel:
@@ -832,7 +845,14 @@ namespace VRtist
                             return;
                         }
 
-                    //case: Hov
+                    case RangeWidgetPart.LeftKnob:
+                    case RangeWidgetPart.MiddleKnob:
+                    case RangeWidgetPart.RightKnob:
+                        {
+                            grippedPart = hoveredPart;
+                            break;
+                        }
+
                     case RangeWidgetPart.Background:
                     case RangeWidgetPart.Rail:
                     default:
@@ -840,40 +860,88 @@ namespace VRtist
                 }
             }
 
-            // TMP min value
-            //float currentValuePct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+            //
+            // Is gripped on something? Compute value and ray end point (canne a peche).
+            //
 
-            // DRAG
-
-            if (!triggerJustClicked) // if trigger just clicked, use the actual projection, no interpolation.
+            if (grippedPart == RangeWidgetPart.LeftKnob
+             || grippedPart == RangeWidgetPart.MiddleKnob
+             || grippedPart == RangeWidgetPart.RightKnob)
             {
-                float drag = GlobalState.Settings.RaySliderDrag;
-                localProjectedWidgetPosition.x = Mathf.Lerp(lastProjected, localProjectedWidgetPosition.x, drag);
+                // DRAG
+
+                if (!triggerJustClicked) // if trigger just clicked, use the actual projection, no interpolation.
+                {
+                    float drag = GlobalState.Settings.RaySliderDrag;
+                    localProjectedWidgetPosition.x = Mathf.Lerp(lastProjected, localProjectedWidgetPosition.x, drag);
+                }
+                lastProjected = localProjectedWidgetPosition.x;
+
+                // CLAMP
+
+                switch (grippedPart)
+                {
+                    case RangeWidgetPart.LeftKnob:
+                        {
+                            if (localProjectedWidgetPosition.x < startX)
+                                localProjectedWidgetPosition.x = startX;
+
+                            if (localProjectedWidgetPosition.x > currentMaxPosX - 3.0f * knobRadius)
+                                localProjectedWidgetPosition.x = currentMaxPosX - 3.0f * knobRadius;
+
+                            // SET
+
+                            float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+                            float v = globalRange.x + pct * (globalRange.y - globalRange.x);
+
+                            CurrentRange = new Vector2(v, CurrentRange.y);
+                        }
+                        break;
+
+                    case RangeWidgetPart.MiddleKnob:
+                        {
+                            if (localProjectedWidgetPosition.x < startX + halfRangeSizeX)
+                                localProjectedWidgetPosition.x = startX + halfRangeSizeX;
+
+                            if (localProjectedWidgetPosition.x > endX - halfRangeSizeX)
+                                localProjectedWidgetPosition.x = endX - halfRangeSizeX;
+
+                            // SET
+
+                            float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+                            float halfRange = (currentRange.y - currentRange.x) / 2.0f;
+                            float v = globalRange.x + pct * (globalRange.y - globalRange.x);
+
+                            CurrentRange = new Vector2(v - halfRange, v + halfRange);
+                        }
+                        break;
+
+                    case RangeWidgetPart.RightKnob:
+                        {
+                            if (localProjectedWidgetPosition.x < currentMinPosX + 3.0f * knobRadius)
+                                localProjectedWidgetPosition.x = currentMinPosX + 3.0f * knobRadius;
+
+                            if (localProjectedWidgetPosition.x > endX)
+                                localProjectedWidgetPosition.x = endX;
+
+                            // SET
+
+                            float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
+                            float v = globalRange.x + pct * (globalRange.y - globalRange.x);
+
+                            CurrentRange = new Vector2(currentRange.x, v);
+                        }
+                        break;
+                }
+
+                localProjectedWidgetPosition.y = -height / 2.0f;
+
+                // SIGNAL
+
+                onSlideEvent.Invoke(CurrentRange);
+                Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
+                onSlideEventInt.Invoke(intRange);
             }
-            lastProjected = localProjectedWidgetPosition.x;
-
-
-            // CLAMP
-
-            if (localProjectedWidgetPosition.x < startX)
-                localProjectedWidgetPosition.x = startX;
-
-            if (localProjectedWidgetPosition.x > endX)
-                localProjectedWidgetPosition.x = endX;
-
-            localProjectedWidgetPosition.y = -height / 2.0f;
-
-            // SET
-
-            float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-            float v = globalRange.x + pct * (globalRange.y - globalRange.x);
-
-            // TMP: move min
-            CurrentRange = new Vector2(v, CurrentRange.y);
-            
-            onSlideEvent.Invoke(CurrentRange);
-            Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
-            onSlideEventInt.Invoke(intRange);
 
             // OUT ray end point
 
@@ -1073,7 +1141,7 @@ namespace VRtist
                 meshRenderer.sharedMaterial = Instantiate(input.material);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
+                //meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 
                 uiRange.SetColor(input.color.value);
             }
@@ -1298,6 +1366,7 @@ namespace VRtist
             }
 
             UIUtils.SetRecursiveLayer(go, "UI");
+            uiRange.SetLightLayer(2);
 
             return uiRange;
         }
