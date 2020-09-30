@@ -54,6 +54,7 @@ namespace VRtist
         {
             if (Selected)
             {
+                Clear();
                 Selected = false;
             }
             if (textContent.Length > 0)

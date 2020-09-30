@@ -74,19 +74,6 @@ namespace VRtist
             OnKeyFired(' ');
         }
 
-        public override void OnBackspace()
-        {
-            if (textContent.Length > 0)
-            {
-                if (textContent.Length > 1)
-                    textContent = textContent.Substring(0, textContent.Length - 1);
-                else
-                    textContent = "";
-            }
-
-            contentLabel.Text = textContent;
-        }
-
         public override void OnSubmit()
         {
             onSubmitEvent.Invoke(textContent);

@@ -61,6 +61,8 @@ namespace VRtist
 
         public Transform keyboardWindow;
         public Transform numericKeyboardWindow;
+        public bool keyboardOpen = false;
+        public bool numericKeyboardOpen = false;
 
         [Header("Debug tweaking")]
         public int palettePopNbFrames = 8;
@@ -306,8 +308,11 @@ namespace VRtist
 
         #region keyboard
 
-        public void OpenKeyboard(UnityAction<string> validateCallback, UnityAction cancelCallback, Transform anchor, string text = null)
+        public void OpenKeyboard(UnityAction<string> validateCallback, Transform anchor, string text = null)
         {
+            if (keyboardOpen) { return; }
+            keyboardOpen = true;
+
             OpenWindow(keyboardWindow, 1f);
             Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
             keyboard.Clear();
@@ -319,8 +324,6 @@ namespace VRtist
             keyboard.onSubmitEvent.RemoveAllListeners();
             keyboard.onSubmitEvent.AddListener(validateCallback);
             UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
-            if (null != cancelCallback)
-                closeButton.onReleaseEvent.AddListener(cancelCallback);
             closeButton.onReleaseEvent.AddListener(CancelKeyboard);
 
             Vector3 offset = new Vector3(0.35f, 0.0f, -0.01f);
@@ -335,6 +338,7 @@ namespace VRtist
             UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
             closeButton.onReleaseEvent.RemoveAllListeners();
             CloseWindow(keyboardWindow, 1f);
+            keyboardOpen = false;
         }
 
         public void CancelKeyboard()
@@ -342,8 +346,11 @@ namespace VRtist
             CloseKeyboard(cancel: true);
         }
 
-        public void OpenNumericKeyboard(UnityAction<float> validateCallback, UnityAction cancelCallback, Transform anchor, float? value = null)
+        public void OpenNumericKeyboard(UnityAction<float> validateCallback, Transform anchor, float? value = null)
         {
+            if (numericKeyboardOpen) { return; }
+            numericKeyboardOpen = true;
+
             OpenWindow(numericKeyboardWindow, 1f);
             NumericKeyboard keyboard = numericKeyboardWindow.GetComponentInChildren<NumericKeyboard>();
             keyboard.Clear();
@@ -355,8 +362,6 @@ namespace VRtist
             keyboard.onSubmitEvent.RemoveAllListeners();
             keyboard.onSubmitEvent.AddListener(validateCallback);
             UIButton closeButton = numericKeyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
-            if (null != cancelCallback)  // order of listeners is important here
-                closeButton.onReleaseEvent.AddListener(cancelCallback);
             closeButton.onReleaseEvent.AddListener(CancelNumericKeyboard);
 
             Vector3 offset = new Vector3(0.35f, 0.18f, -0.01f);
@@ -371,6 +376,7 @@ namespace VRtist
             UIButton closeButton = numericKeyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
             closeButton.onReleaseEvent.RemoveAllListeners();
             CloseWindow(numericKeyboardWindow, 1f);
+            numericKeyboardOpen = false;
         }
 
         public void CancelNumericKeyboard()

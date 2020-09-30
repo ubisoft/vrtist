@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 
 namespace VRtist
 {
@@ -25,7 +26,31 @@ namespace VRtist
             // Add UI
             if (isPrefab)
             {
-                Transform uiRoot = newCamera.transform.Find("Rotate/UI");
+                Transform uiRoot = newCamera.transform.Find("Rotate/Name");
+
+                UIButton nameButton = UIButton.Create(new UIButton.CreateButtonParams
+                {
+                    parent = uiRoot,
+                    widgetName = "Name",
+                    caption = "Camera",
+                    width = 1.4f,
+                    height = 0.25f,
+                    buttonContent = UIButton.ButtonContent.TextOnly,
+                });
+                {
+                    TextMeshProUGUI text = nameButton.gameObject.GetComponentInChildren<TextMeshProUGUI>();
+                    text.enableAutoSizing = true;
+                    text.fontSizeMin = 6f;
+                    text.fontSizeMax = 72f;
+                    text.alignment = TextAlignmentOptions.Center;
+                }
+                nameButton.baseColor.useConstant = true;
+                nameButton.baseColor.constant = new Color(72f / 255f, 72f / 255f, 72f / 255f);
+                nameButton.pushedColor.useConstant = true;
+                nameButton.pushedColor.constant = Color.black;
+                nameButton.SetLightLayer(2);
+
+                uiRoot = newCamera.transform.Find("Rotate/UI");
 
                 // Focal slider
                 UISlider focalSlider = UISlider.Create(new UISlider.CreateArgs

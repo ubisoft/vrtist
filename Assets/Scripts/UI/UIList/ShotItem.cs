@@ -278,20 +278,6 @@ namespace VRtist
             setCameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
         }
 
-        private static void SetTMProStyle(GameObject gobject, TextAlignmentOptions alignment = TextAlignmentOptions.Left)
-        {
-            TextMeshProUGUI[] texts = gobject.GetComponentsInChildren<TextMeshProUGUI>();
-            foreach (var text in texts)
-            {
-                text.fontStyle = FontStyles.Normal;
-                text.enableAutoSizing = true;
-                text.fontSizeMin = 1f;
-                text.fontSizeMax = 1.5f;
-                text.alignment = alignment;
-            }
-
-        }
-
         public static ShotItem GenerateShotItem(Shot shot)
         {
             GameObject root = new GameObject("shotItem");
@@ -358,7 +344,7 @@ namespace VRtist
             });
 
             shotNameLabel.SetLightLayer(3);
-            SetTMProStyle(shotNameLabel.gameObject);
+            UIUtils.SetTMProStyle(shotNameLabel.gameObject);
 
             //
             // CAMERA NAME Label
@@ -375,7 +361,7 @@ namespace VRtist
             });
 
             cameraNameLabel.SetLightLayer(3);
-            SetTMProStyle(cameraNameLabel.gameObject, TextAlignmentOptions.BottomRight);
+            UIUtils.SetTMProStyle(cameraNameLabel.gameObject, alignment: TextAlignmentOptions.BottomRight);
 
             cx += 0.15f;
 
@@ -419,7 +405,7 @@ namespace VRtist
             startFrameSpinner.selectedColor.useConstant = true;
             startFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
             startFrameSpinner.SetLightLayer(3);
-            SetTMProStyle(startFrameSpinner.gameObject);
+            UIUtils.SetTMProStyle(startFrameSpinner.gameObject);
 
             cx += 0.055f;
 
@@ -446,7 +432,7 @@ namespace VRtist
             endFrameSpinner.selectedColor.useConstant = true;
             endFrameSpinner.selectedColor.constant = UIOptions.SelectedColor;
             endFrameSpinner.SetLightLayer(3);
-            SetTMProStyle(endFrameSpinner.gameObject);
+            UIUtils.SetTMProStyle(endFrameSpinner.gameObject);
 
             cx += 0.055f;
 
@@ -483,7 +469,7 @@ namespace VRtist
             frameRangeLabel.selectedColor.useConstant = true;
             frameRangeLabel.selectedColor.constant = UIOptions.SelectedColor;
             frameRangeLabel.SetLightLayer(3);
-            SetTMProStyle(frameRangeLabel.gameObject, TextAlignmentOptions.Center);
+            UIUtils.SetTMProStyle(frameRangeLabel.gameObject, alignment: TextAlignmentOptions.Center);
             cx += 0.04f;
 
             // Set camera
