@@ -2,7 +2,7 @@
 
 namespace VRtist
 {
-    public class Keyboard : MonoBehaviour
+    public class Keyboard : AbstractKeyboard
     {
         private Transform mainPanel = null;
         private Transform alphaLowerPanel = null;
@@ -11,16 +11,10 @@ namespace VRtist
         private Transform symbolsPanel = null;
         private UIButton shiftButton = null;
         private UIButton symbolsButton = null;
-        private UILabel contentLabel = null;
-        private string textContent = "";
 
-        public bool autoClose = true;
+        public StringChangedEvent onSubmitEvent = new StringChangedEvent();
 
-        [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public CharChangedEvent onKeyStrokeEvent = new CharChangedEvent();
-        public StringChangedEvent onValidateTextEvent = new StringChangedEvent();
-
-        void Start()
+        protected override void Start()
         {
             mainPanel = transform.Find("MainPanel");
             if (mainPanel != null)
@@ -54,8 +48,6 @@ namespace VRtist
                     shiftButton.Checked = false;
                     symbolsButton.Checked = false;
                 }
-
-                // add listener
             }
         }
 
@@ -82,7 +74,7 @@ namespace VRtist
             OnKeyFired(' ');
         }
 
-        public void OnBackspace()
+        public override void OnBackspace()
         {
             if (textContent.Length > 0)
             {
@@ -95,27 +87,19 @@ namespace VRtist
             contentLabel.Text = textContent;
         }
 
-        public void OnValidateText()
+        public override void OnSubmit()
         {
-            onValidateTextEvent.Invoke(textContent);
+            onSubmitEvent.Invoke(textContent);
             if (autoClose)
             {
                 ToolsUIManager.Instance.CloseKeyboard();
             }
         }
 
-        public void OnKeyFired(char character)
+        public void SetText(string text)
         {
-            textContent += character;
-            contentLabel.Text = textContent;
-
-            onKeyStrokeEvent.Invoke(character);
-        }
-
-        public void Clear()
-        {
-            textContent = "";
-            contentLabel.Text = textContent;
+            textContent = text;
+            contentLabel.Text = text;
         }
     }
 }

@@ -18,7 +18,7 @@ MonoBehaviour:
   displayAvatars: 1
   displayFPS: 1
   display3DCurves: 1
-  masterVolume: -20.902514
+  masterVolume: -66.02739
   ambientVolume: 1
   uiVolume: 0
   rightHanded: 1
@@ -26,21 +26,21 @@ MonoBehaviour:
   palettePosition: {x: -0.02, y: 0.05, z: -0.05}
   paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   pinnedPalette: 0
-  dopeSheetPosition: {x: 0.37167427, y: 1.5881709, z: 0.069777936}
-  dopeSheetRotation: {x: 0.05244319, y: 0.4610862, z: -0.022301769, w: 0.8855235}
+  dopeSheetPosition: {x: 0.26482245, y: 1.7991798, z: 0.6969153}
+  dopeSheetRotation: {x: 0.060392503, y: 0.28432414, z: -0.035509072, w: 0.9561651}
   dopeSheetVisible: 1
-  cameraPreviewPosition: {x: 0.35908973, y: 1.535397, z: 0.4590031}
-  cameraPreviewRotation: {x: 0.06101212, y: 0.3917295, z: -0.11199341, w: 0.9111987}
-  cameraPreviewVisible: 0
-  cameraFeedbackPosition: {x: -0.06853569, y: 1.5546024, z: 699.7072}
-  cameraFeedbackRotation: {x: -0, y: -0.00000030597974, z: -0, w: -1}
-  cameraFeedbackScale: {x: 715.7847, y: 402.6289, z: 402.6289}
-  cameraFeedbackScaleValue: 1
+  cameraPreviewPosition: {x: -0.29936555, y: 1.578969, z: 0.7268612}
+  cameraPreviewRotation: {x: 0.14210296, y: -0.08969762, z: -0.013997878, w: 0.9856801}
+  cameraPreviewVisible: 1
+  cameraFeedbackPosition: {x: -0.41141704, y: 1.3676515, z: 700.15247}
+  cameraFeedbackRotation: {x: -0, y: -0.00000021855695, z: -0, w: -1}
+  cameraFeedbackScale: {x: 959.21985, y: 539.56116, z: 539.56116}
+  cameraFeedbackScaleValue: 1.3400954
   cameraFeedbackVisible: 1
-  cameraDamping: 33.733616
+  cameraDamping: 50
   consoleVisible: 0
-  consolePosition: {x: 0.9457, y: 1.7179871, z: -0.1891857}
-  consoleRotation: {x: -0.0010729734, y: 0.7981412, z: -0.050995618, w: 0.6003074}
+  consolePosition: {x: 0.0010661704, y: 1.7055624, z: 0.45872188}
+  consoleRotation: {x: -0.009885958, y: 0.31101325, z: -0.028803136, w: 0.9499176}
   castShadows: 0
   scaleSpeed: 50
   raySliderDrag: 99
@@ -77,3 +77,4 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  interpolation: 0

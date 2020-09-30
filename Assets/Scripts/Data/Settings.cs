@@ -54,6 +54,8 @@ namespace VRtist
 
         public AnimationCurve focalCurve;
 
+        public Interpolation interpolation = Interpolation.Linear;
+
         public void Reset()
         {
             displayGizmos = true;
@@ -87,6 +89,8 @@ namespace VRtist
             consoleVisible = false;
             consolePosition = Vector3.zero;
             consoleRotation = Quaternion.identity;
+
+            interpolation = Interpolation.Linear;
         }
 
         public void SaveWindowPosition(Transform window)

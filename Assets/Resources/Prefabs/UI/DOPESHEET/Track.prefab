@@ -109,7 +109,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2722570179325950576}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.12, y: 0, z: 0}
+  m_LocalPosition: {x: 0.12, y: 0, z: -0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 6878161843002385882}
@@ -139,7 +139,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
-  m_RenderingLayerMask: 2
+  m_RenderingLayerMask: 4
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 0}
@@ -188,13 +188,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a313013d1908c440b64fa3603896534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.12, y: 0, z: 0}
+  relativeLocation: {x: 0.12, y: 0, z: -0.001}
   width: 0.31
   height: 0.02
-  baseColor: {r: 0.754717, g: 0.754717, b: 0.754717, a: 1}
-  disabledColor: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
-  textColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  thickness: 0.001
+  content: 0
+  imagePosition: 0
+  iconMarginBehavior: 0
+  iconMargin: 0
+  source_material: {fileID: 0}
+  image: {fileID: 0}
+  textContent: 
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onHoverEvent:
@@ -234,7 +275,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5970878118641275211}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 5970878119456396718}
@@ -264,7 +305,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
-  m_RenderingLayerMask: 8
+  m_RenderingLayerMask: 4
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 0}
@@ -313,26 +354,73 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3c2b99db58ea5b499e1efd6f09a3cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0, y: 0, z: 0}
+  relativeLocation: {x: 0, y: 0, z: -0.001}
   width: 0.12
   height: 0.02
-  baseColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
-  iconMargin: 0
   iconMarginBehavior: 0
-  pushedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  checkedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  iconMargin: 0
+  content: 2
+  baseSprite: {fileID: 0}
+  checkedSprite: {fileID: 0}
+  checkedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textContent: 
+  source_material: {fileID: 0}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
-  onHoverEvent:
-    m_PersistentCalls:
-      m_Calls: []
   onClickEvent:
     m_PersistentCalls:
       m_Calls: []
   onReleaseEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  isCheckable: 0
+  onCheckEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onHoverEvent:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &5970878119009890376
@@ -552,7 +640,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:

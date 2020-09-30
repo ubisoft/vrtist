@@ -11,6 +11,7 @@ namespace VRtist
         public int channelIndex;
         public int frame;
         public float value;
+        public Interpolation interpolation;
     };
 
     public class Dopesheet : MonoBehaviour
@@ -22,6 +23,13 @@ namespace VRtist
         [SerializeField] private UILabel lastFrameLabel = null;
         [SerializeField] private UILabel currentFrameLabel = null;
         private UILabel titleBar = null;
+
+        UIButton constantInterpolationButton = null;
+        UIButton linearInterpolationButton = null;
+        UIButton bezierInterpolationButton = null;
+        Color constantInterpolationColor;
+        Color linearInterpolationColor;
+        Color bezierInterpolationColor;
 
         UICheckbox montage = null;
 
@@ -44,13 +52,15 @@ namespace VRtist
 
         public class AnimKey
         {
-            public AnimKey(string name, float value)
+            public AnimKey(string name, float value, Interpolation interpolation)
             {
                 this.name = name;
                 this.value = value;
+                this.interpolation = interpolation;
             }
             public string name;
             public float value;
+            public Interpolation interpolation;
         }
 
         private SortedList<int, List<AnimKey>> keys = new SortedList<int, List<AnimKey>>();
@@ -68,13 +78,45 @@ namespace VRtist
                 titleBar = transform.parent.Find("TitleBar").GetComponent<UILabel>();
                 keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
 
+                constantInterpolationButton = mainPanel.Find("Constant").GetComponent<UIButton>();
+                linearInterpolationButton = mainPanel.Find("Linear").GetComponent<UIButton>();
+                bezierInterpolationButton = mainPanel.Find("Bezier").GetComponent<UIButton>();
+                ColorUtility.TryParseHtmlString("#5985FF", out constantInterpolationColor);
+                ColorUtility.TryParseHtmlString("#FFB600", out linearInterpolationColor);
+                ColorUtility.TryParseHtmlString("#FF2D5E", out bezierInterpolationColor);
+
                 montage = mainPanel.Find("Montage").GetComponent<UICheckbox>();
                 ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
 
                 GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
                 GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
                 GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
+
+                UpdateInterpolation();
             }
+        }
+
+        private void UpdateInterpolation()
+        {
+            Interpolation interpolation = GlobalState.Settings.interpolation;
+            constantInterpolationButton.Checked = interpolation == Interpolation.Constant;
+            linearInterpolationButton.Checked = interpolation == Interpolation.Linear;
+            bezierInterpolationButton.Checked = interpolation == Interpolation.Bezier;
+        }
+        public void OnSetInterpolationConstant()
+        {
+            GlobalState.Settings.interpolation = Interpolation.Constant;
+            UpdateInterpolation();
+        }
+        public void OnSetInterpolationLinear()
+        {
+            GlobalState.Settings.interpolation = Interpolation.Linear;
+            UpdateInterpolation();
+        }
+        public void OnSetInterpolationBezier()
+        {
+            GlobalState.Settings.interpolation = Interpolation.Bezier;
+            UpdateInterpolation();
         }
 
         private void OnPlayingChanged(bool value)
@@ -203,17 +245,32 @@ namespace VRtist
                     keys[key.time] = keyList;
                 }
 
-                keyList.Add(new AnimKey(channel.name, key.value));
+                keyList.Add(new AnimKey(channel.name, key.value, key.interpolation));
             }
 
             UpdateTrackName();
 
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
             UILabel track = keyframes.gameObject.GetComponent<UILabel>();
-            foreach (int time in keys.Keys)
+            foreach(var key in keys)
             {
                 GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
+                List<AnimKey> animKeys = key.Value;
+                AnimKey firstKey = animKeys[0];
+                switch(firstKey.interpolation)
+                {
+                    case Interpolation.Constant:
+                        keyframe.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", constantInterpolationColor);
+                        break;
+                    case Interpolation.Linear:
+                        keyframe.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", linearInterpolationColor);
+                        break;
+                    case Interpolation.Bezier:
+                        keyframe.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", bezierInterpolationColor);
+                        break;
+                }
 
+                float time = key.Key;
                 float currentValue = (float)time;
                 float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
 
