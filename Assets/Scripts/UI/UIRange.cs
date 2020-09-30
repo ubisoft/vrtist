@@ -16,6 +16,7 @@ namespace VRtist
     {
         public enum RangeContent { All, LabelOnly, MinMaxOnly, BarOnly };
         public enum RangeValueType { Float, Int };
+        public enum RangeWidgetPart { Background, NameLabel, GlobalMinLabel, Rail, LeftKnob, MiddleKnob, RightKnob, GlobalMaxLabel };
 
         public static readonly string default_widget_name = "New Range";
         public static readonly float default_width = 0.3f;
@@ -89,6 +90,7 @@ namespace VRtist
         public Vector2 CurrentRange { get { return currentRange; } set { SetCurrentRange(value); RebuildMesh(); UpdateValueText(); } }
 
         private bool keyboardOpen = false;
+        private RangeWidgetPart keyboardSourcePart = RangeWidgetPart.Background;
 
         public override void RebuildMesh()
         {
@@ -283,7 +285,7 @@ namespace VRtist
             meshRenderer = minKnob.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = minKnob.Color;
+                Color prevColor = minKnob.BaseColor;
                 if (meshRenderer.sharedMaterial != null)
                 {
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
@@ -303,7 +305,7 @@ namespace VRtist
             meshRenderer = maxKnob.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = maxKnob.Color;
+                Color prevColor = maxKnob.BaseColor;
                 if (meshRenderer.sharedMaterial != null)
                 {
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
@@ -323,7 +325,7 @@ namespace VRtist
             meshRenderer = midKnob.GetComponent<MeshRenderer>();
             if (meshRenderer != null)
             {
-                Color prevColor = midKnob.Color;
+                Color prevColor = midKnob.BaseColor;
                 if (meshRenderer.sharedMaterial != null)
                 {
                     prevColor = meshRenderer.sharedMaterial.GetColor("_BaseColor");
@@ -569,18 +571,47 @@ namespace VRtist
 
         private void OnValidateKeyboard(string value)
         {
-            //if (!float.TryParse(value, out float val)) { return; }
-            //Value = val;
-            //keyboardOpen = false;
-            //onSlideEvent.Invoke(currentValue);
-            //int intValue = Mathf.RoundToInt(currentValue);
-            //onSlideEventInt.Invoke(intValue);
+            switch (keyboardSourcePart)
+            {
+                case RangeWidgetPart.NameLabel:
+                    {
+                        Label = value;
+                        // OnLabelNameChanged.Invoke();
+                        break;
+                    }
+                case RangeWidgetPart.GlobalMaxLabel:
+                    {
+                        float val;
+                        if (!float.TryParse(value, out val)) { break; }
+                        GlobalRange = new Vector2(GlobalRange.x, val);
+                        // OnGlobalRangeChanged.Invoke();
+                        break;
+                    }
+                case RangeWidgetPart.GlobalMinLabel:
+                    {
+                        float val;
+                        if (!float.TryParse(value, out val)) { break; }
+                        GlobalRange = new Vector2(val, GlobalRange.y);
+                        // OnGlobalRangeChanged.Invoke();
+                        break;
+                    }
+                default: break;
+            }
+
+            keyboardOpen = false;
         }
 
         private void OnCloseKeyboard()
         {
             keyboardOpen = false;
         }
+
+
+
+
+
+
+
 
         #region ray
 
@@ -595,9 +626,9 @@ namespace VRtist
             base.OnRayEnterClicked();
         }
 
-        public override void OnRayHover()
+        public override void OnRayHover(Ray ray)
         {
-            base.OnRayHover();
+            base.OnRayHover(ray);
 
             bool joyRightJustClicked = false;
             bool joyRightJustReleased = false;
@@ -609,21 +640,100 @@ namespace VRtist
             bool joyLeftLongPush = false;
             VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
-            // TODO: move more than the min.
+            Vector3 localProjectedWidgetPosition = GetLocalProjected(ray);
+            RangeWidgetPart hoveredPart = GetRangeWidgetPart(localProjectedWidgetPosition);
 
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
-                if (joyRightJustClicked || joyRightLongPush)
+                switch (hoveredPart)
                 {
-                    CurrentRange = new Vector2(Mathf.Clamp(CurrentRange.x + 1.0f, globalRange.x, CurrentRange.y - 1), CurrentRange.y);
+                    case RangeWidgetPart.LeftKnob:
+                        {
+                            if (joyRightJustClicked || joyRightLongPush)
+                            {
+                                float newMin = Mathf.Clamp(currentRange.x + 1.0f, globalRange.x, currentRange.y - 1.0f);
+                                CurrentRange = new Vector2(newMin, currentRange.y);
+                            }
+                            else if (joyLeftJustClicked || joyLeftLongPush)
+                            {
+                                float newMin = Mathf.Clamp(currentRange.x - 1.0f, globalRange.x, currentRange.y - 1.0f);
+                                CurrentRange = new Vector2(newMin, currentRange.y);
+                            }
+                            onSlideEvent.Invoke(CurrentRange);
+                            Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
+                            onSlideEventInt.Invoke(intRange);
+                        }
+                        break;
+
+                    case RangeWidgetPart.MiddleKnob:
+                        {
+                            if (joyRightJustClicked || joyRightLongPush)
+                            {
+                                bool hasReachedMax = currentRange.y + 1.0f > globalRange.y;
+                                float newMin = hasReachedMax ? currentRange.x : currentRange.x + 1.0f;
+                                float newMax = hasReachedMax ? currentRange.y : currentRange.y + 1.0f;
+                                CurrentRange = new Vector2(newMin, newMax);
+                            }
+                            else if (joyLeftJustClicked || joyLeftLongPush)
+                            {
+                                bool hasReachedMin = currentRange.x - 1.0f < globalRange.x;
+                                float newMin = hasReachedMin ? currentRange.x : currentRange.x - 1.0f;
+                                float newMax = hasReachedMin ? currentRange.y : currentRange.y - 1.0f;
+                                CurrentRange = new Vector2(newMin, newMax);
+                            }
+                            onSlideEvent.Invoke(CurrentRange);
+                            Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
+                            onSlideEventInt.Invoke(intRange);
+                        }
+                        break;
+
+                    case RangeWidgetPart.RightKnob:
+                        {
+                            if (joyRightJustClicked || joyRightLongPush)
+                            {
+                                float newMax = Mathf.Clamp(currentRange.y + 1.0f, currentRange.x + 1.0f, globalRange.y);
+                                CurrentRange = new Vector2(currentRange.x, newMax);
+                            }
+                            else if (joyLeftJustClicked || joyLeftLongPush)
+                            {
+                                float newMax = Mathf.Clamp(currentRange.y - 1.0f, currentRange.x + 1.0f, globalRange.y);
+                                CurrentRange = new Vector2(currentRange.x, newMax);
+                            }
+                            onSlideEvent.Invoke(CurrentRange);
+                            Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
+                            onSlideEventInt.Invoke(intRange);
+                        }
+                        break;
+                    default: break;
                 }
-                else if (joyLeftJustClicked || joyLeftLongPush)
-                {
-                    CurrentRange = new Vector2(Mathf.Clamp(CurrentRange.x - 1.0f, globalRange.x, CurrentRange.y - 1), CurrentRange.y);
-                }
-                onSlideEvent.Invoke(CurrentRange);
-                Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
-                onSlideEventInt.Invoke(intRange);
+            }
+
+            // Hovered State for sub elements
+            switch (hoveredPart)
+            {
+                case RangeWidgetPart.LeftKnob:
+                    minKnob.Hovered = true;
+                    maxKnob.Hovered = false;
+                    midKnob.Hovered = false;
+                    break;
+
+                case RangeWidgetPart.MiddleKnob:
+                    minKnob.Hovered = false;
+                    maxKnob.Hovered = false;
+                    midKnob.Hovered = true;
+                    break;
+
+                case RangeWidgetPart.RightKnob:
+                    minKnob.Hovered = false;
+                    maxKnob.Hovered = true;
+                    midKnob.Hovered = false;
+                    break;
+
+                default:
+                    minKnob.Hovered = false;
+                    maxKnob.Hovered = false;
+                    midKnob.Hovered = false;
+                    break;
             }
         }
 
@@ -673,14 +783,7 @@ namespace VRtist
             bool triggerJustReleased = false;
             VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
 
-            // Project ray on the widget plane.
-            Plane widgetPlane = new Plane(-transform.forward, transform.position);
-            float enter;
-            widgetPlane.Raycast(ray, out enter);
-            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
-
-            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
-            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+            Vector3 localProjectedWidgetPosition = GetLocalProjected(ray);
 
             if (IgnoreRayInteraction())
             {
@@ -693,19 +796,52 @@ namespace VRtist
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
 
-            // SPAWN KEYBOARD
+            RangeWidgetPart hoveredPart = GetRangeWidgetPart(localProjectedWidgetPosition);
 
-            if (triggerJustClicked && localProjectedWidgetPosition.x > endX)
+            // Just triggered. On what?
+
+            if (triggerJustClicked)
             {
-                ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
-                // Position window
-                keyboardOpen = true;
-                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
-                return;
+                switch (hoveredPart)
+                {
+                    case RangeWidgetPart.NameLabel:
+                        {
+                            // SPAWN KEYBOARD
+                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            keyboardSourcePart = hoveredPart;
+                            keyboardOpen = true;
+                            rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                            return;
+                        }
+                    case RangeWidgetPart.GlobalMaxLabel:
+                        {
+                            // SPAWN KEYBOARD
+                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            keyboardSourcePart = hoveredPart;
+                            keyboardOpen = true;
+                            rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                            return;
+                        }
+                    case RangeWidgetPart.GlobalMinLabel:
+                        {
+                            // SPAWN KEYBOARD
+                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            keyboardSourcePart = hoveredPart;
+                            keyboardOpen = true;
+                            rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                            return;
+                        }
+
+                    //case: Hov
+                    case RangeWidgetPart.Background:
+                    case RangeWidgetPart.Rail:
+                    default:
+                        break;
+                }
             }
 
             // TMP min value
-            float currentValuePct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+            //float currentValuePct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
 
             // DRAG
 
@@ -731,7 +867,9 @@ namespace VRtist
 
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
             float v = globalRange.x + pct * (globalRange.y - globalRange.x);
-            CurrentRange = new Vector2(v, 10f); // will replace the slider cursor.
+
+            // TMP: move min
+            CurrentRange = new Vector2(v, CurrentRange.y);
             
             onSlideEvent.Invoke(CurrentRange);
             Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
@@ -741,6 +879,69 @@ namespace VRtist
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             rayEndPoint = worldProjectedWidgetPosition;
+        }
+
+        public Vector3 GetLocalProjected(Ray ray)
+        {
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            return localProjectedWidgetPosition;
+        }
+
+        public RangeWidgetPart GetRangeWidgetPart(Vector3 pos)
+        {
+            float widthWithoutMargins = width - 2.0f * margin;
+            float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
+            float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+
+            if (pos.x < margin || pos.x > width - margin)
+            {
+                return RangeWidgetPart.Background;
+            }
+            else if (pos.x < margin + widthWithoutMargins * labelPositionEnd)
+            {
+                return RangeWidgetPart.NameLabel;
+            }
+            else if (pos.x < startX)
+            {
+                return RangeWidgetPart.GlobalMinLabel;
+            }
+            else if (pos.x < endX)
+            {
+                float currentMinPct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+                float currentMinPos = startX + currentMinPct * (endX - startX);
+
+                float currentMaxPct = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
+                float currentMaxPos = startX + currentMaxPct * (endX - startX);
+
+                if (pos.x < currentMinPos - knobRadius || pos.x > currentMaxPos + knobRadius)
+                {
+                    return RangeWidgetPart.Rail;
+                }
+                else if (pos.x < currentMinPos + knobRadius)
+                {
+                    return RangeWidgetPart.LeftKnob;
+                }
+                else if (pos.x < currentMaxPos - knobRadius)
+                {
+                    return RangeWidgetPart.MiddleKnob;
+                }
+                else
+                {
+                    return RangeWidgetPart.RightKnob;
+                }
+            }
+            else 
+            {
+                return RangeWidgetPart.GlobalMaxLabel;
+            }
         }
 
         #endregion
@@ -926,7 +1127,7 @@ namespace VRtist
                         radius = newKnobRadius,
                         depth = newKnobDepth,
                         material = input.knobEndMaterial,
-                        c = input.knobEndColor
+                        baseColor = input.knobEndColor
                     }
                 );
             }
@@ -955,7 +1156,7 @@ namespace VRtist
                         radius = newKnobRadius,
                         depth = newKnobDepth,
                         material = input.knobEndMaterial,
-                        c = input.knobEndColor
+                        baseColor = input.knobEndColor
                     }
                 );
             }
@@ -987,7 +1188,7 @@ namespace VRtist
                         radius = newKnobRadius,
                         depth = newKnobDepth,
                         material = input.knobCenterMaterial,
-                        c = input.knobCenterColor
+                        baseColor = input.knobCenterColor
                     }
                 );
             }

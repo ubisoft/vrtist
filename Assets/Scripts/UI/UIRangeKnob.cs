@@ -11,8 +11,19 @@ namespace VRtist
         public float radius;
         public float depth;
 
-        public ColorReference _color = new ColorReference();
-        public Color Color { get { return _color.Value; } set { _color.Value = value; ResetColor(); } }
+        public ColorReference baseColor = new ColorReference();
+        public ColorReference pushedColor = new ColorReference();
+        public ColorReference hoveredColor = new ColorReference();
+
+        private bool isPushed = false;
+        private bool isHovered = false;
+
+        public Color BaseColor { get { return baseColor.Value; } }
+        public Color PushedColor { get { return pushedColor.Value; } }
+        public Color HoveredColor { get { return hoveredColor.Value; } }
+
+        public bool Pushed { get { return isPushed; } set { isPushed = value; ResetColor(); } }
+        public bool Hovered { get { return isHovered; } set { isHovered = value; ResetColor(); } }
 
         public void RebuildMesh(float newWidth, float newKnobRadius, float newKnobDepth)
         {
@@ -29,7 +40,9 @@ namespace VRtist
 
         public void ResetColor()
         {
-            SetColor(Color);
+            SetColor( isPushed ? PushedColor
+                  : ( isHovered ? HoveredColor
+                  : BaseColor));
         }
 
         private void SetColor(Color c)
@@ -46,7 +59,9 @@ namespace VRtist
             public float radius;
             public float depth;
             public Material material;
-            public ColorVar c = UIOptions.SliderKnobColorVar;
+            public ColorVar baseColor = UIOptions.SliderKnobColorVar;
+            public ColorVar pushedColor = UIOptions.PushedColorVar;
+            public ColorVar hoveredColor = UIOptions.SelectedColorVar;
         }
 
         public static UIRangeKnob Create(CreateArgs input)
@@ -74,6 +89,12 @@ namespace VRtist
             uiRangeKnob.width = input.width;
             uiRangeKnob.radius = input.radius;
             uiRangeKnob.depth = input.depth;
+            uiRangeKnob.baseColor.useConstant = false;
+            uiRangeKnob.baseColor.reference = input.baseColor;
+            uiRangeKnob.pushedColor.useConstant = false;
+            uiRangeKnob.pushedColor.reference = input.pushedColor;
+            uiRangeKnob.hoveredColor.useConstant = false;
+            uiRangeKnob.hoveredColor.reference = input.hoveredColor;
 
             // Setup the Meshfilter
             MeshFilter meshFilter = go.GetComponent<MeshFilter>();
@@ -87,9 +108,7 @@ namespace VRtist
             if (meshRenderer != null && input.material != null)
             {
                 meshRenderer.sharedMaterial = Instantiate(input.material);
-                uiRangeKnob._color.useConstant = false;
-                uiRangeKnob._color.reference = input.c;
-                meshRenderer.sharedMaterial.SetColor("_BaseColor", uiRangeKnob.Color);
+                meshRenderer.sharedMaterial.SetColor("_BaseColor", uiRangeKnob.BaseColor);
 
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"

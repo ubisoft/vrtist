@@ -484,9 +484,9 @@ namespace VRtist
             base.OnRayEnterClicked();
         }
 
-        public override void OnRayHover()
+        public override void OnRayHover(Ray ray)
         {
-            base.OnRayHover();
+            base.OnRayHover(ray);
 
             bool joyRightJustClicked = false;
             bool joyRightJustReleased = false;
