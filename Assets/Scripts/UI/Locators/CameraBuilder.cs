@@ -28,27 +28,25 @@ namespace VRtist
             {
                 Transform uiRoot = newCamera.transform.Find("Rotate/Name");
 
-                UIButton nameButton = UIButton.Create(new UIButton.CreateButtonParams
+                UILabel nameLabel = UILabel.Create(new UILabel.CreateLabelParams
                 {
                     parent = uiRoot,
                     widgetName = "Name",
                     caption = "Camera",
                     width = 1.4f,
                     height = 0.25f,
-                    buttonContent = UIButton.ButtonContent.TextOnly,
+                    labelContent = UILabel.LabelContent.TextOnly,
                 });
                 {
-                    TextMeshProUGUI text = nameButton.gameObject.GetComponentInChildren<TextMeshProUGUI>();
+                    TextMeshProUGUI text = nameLabel.gameObject.GetComponentInChildren<TextMeshProUGUI>();
                     text.enableAutoSizing = true;
                     text.fontSizeMin = 6f;
                     text.fontSizeMax = 72f;
                     text.alignment = TextAlignmentOptions.Center;
                 }
-                nameButton.baseColor.useConstant = true;
-                nameButton.baseColor.constant = new Color(72f / 255f, 72f / 255f, 72f / 255f);
-                nameButton.pushedColor.useConstant = true;
-                nameButton.pushedColor.constant = Color.black;
-                nameButton.SetLightLayer(2);
+                nameLabel.baseColor.useConstant = true;
+                nameLabel.baseColor.constant = new Color(0, 0, 0, 0);
+                nameLabel.SetLightLayer(2);
 
                 uiRoot = newCamera.transform.Find("Rotate/UI");
 

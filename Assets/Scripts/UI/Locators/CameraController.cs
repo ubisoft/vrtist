@@ -18,7 +18,7 @@ namespace VRtist
         private UIButton inFrontButton = null;
         public bool inFront = false;
 
-        private UIButton nameButton = null;
+        private UILabel nameLabel = null;
 
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
@@ -56,12 +56,12 @@ namespace VRtist
             // Init UI
             if (null == focalSlider)
             {
-                nameButton = transform.Find("Rotate/Name/Name").GetComponent<UIButton>();
+                nameLabel = transform.Find("Rotate/Name/Name").GetComponent<UILabel>();
                 // Hack : force TMPro properties when component is enabled
-                UIUtils.SetTMProStyle(nameButton.gameObject, minSize: 6f, maxSize: 72f, alignment: TextAlignmentOptions.Center);
-                nameButton.Text = gameObject.name;
-                nameButton.onReleaseEvent.AddListener(OnNameClicked);
-                nameButton.NeedsRebuild = true;
+                UIUtils.SetTMProStyle(nameLabel.gameObject, minSize: 6f, maxSize: 72f, alignment: TextAlignmentOptions.Center);
+                nameLabel.Text = gameObject.name;
+                nameLabel.onReleaseEvent.AddListener(OnNameClicked);
+                nameLabel.NeedsRebuild = true;
 
                 focalSlider = gameObject.GetComponentInChildren<UISlider>();
                 focalSlider.onSlideEventInt.AddListener(OnFocalSliderChange);
@@ -80,13 +80,13 @@ namespace VRtist
 
         private void OnNameClicked()
         {
-            ToolsUIManager.Instance.OpenKeyboard(OnValidateCameraRename, nameButton.transform, gameObject.name);
+            ToolsUIManager.Instance.OpenKeyboard(OnValidateCameraRename, nameLabel.transform, gameObject.name);
         }
 
         private void OnValidateCameraRename(string newName)
         {
             new CommandRenameGameObject("Rename Camera", gameObject, newName).Submit();
-            nameButton.Text = newName;  // don't call SetName() here since we don't want to rename the gameObject before the command is really sent
+            nameLabel.Text = newName;
         }
 
         private void OnSetInFront(bool value)
@@ -194,8 +194,8 @@ namespace VRtist
         public override void SetName(string name)
         {
             base.SetName(name);
-            if (null != nameButton)
-                nameButton.Text = name;
+            if (null != nameLabel)
+                nameLabel.Text = name;
         }
 
         private void DrawFrustum()

@@ -75,5 +75,10 @@ namespace VRtist
             textContent = "";
             contentLabel.Text = textContent;
         }
+
+        public virtual void OnDeselect()
+        {
+            Selected = false;
+        }
     }
 }
