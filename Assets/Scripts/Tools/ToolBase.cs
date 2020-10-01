@@ -41,7 +41,7 @@ namespace VRtist
         protected void ActivateMouthpiece(Transform mouthPiece, bool activate)
         {
             Transform container = mouthPiece.parent;
-            for(int i = 0; i < container.childCount; i++)
+            for (int i = 0; i < container.childCount; i++)
             {
                 Transform child = container.GetChild(i);
                 child.gameObject.SetActive(activate && child == mouthPiece);
@@ -116,7 +116,7 @@ namespace VRtist
 
         protected virtual void OnDisable()
         {
-            if(hasListener && null != GlobalState.Instance)
+            if (hasListener && null != GlobalState.Instance)
                 GlobalState.Instance.RemoveAnimationListener(OnParametersChanged);
             hasListener = false;
         }
@@ -136,7 +136,7 @@ namespace VRtist
         }
         public void OnReleased()
         {
-            if(!gameObject.activeSelf) { return; }
+            if (!gameObject.activeSelf) { return; }
             if (null != parameterCommand)
             {
                 parameterCommand.Submit();
@@ -156,5 +156,10 @@ namespace VRtist
 
         public virtual void OnUIObjectEnter(int gohash) { }
         public virtual void OnUIObjectExit(int gohash) { }
+
+        public virtual bool SubToggleTool()
+        {
+            return false;
+        }
     }
 }

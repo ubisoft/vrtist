@@ -112,7 +112,9 @@ namespace VRtist
 
         private void RemoveCollidedObject(GameObject obj)
         {
-            collidedObjects.Remove(obj);
+            bool removed = collidedObjects.Remove(obj);
+            if (!removed) { return; }
+
             GameObject hoveredObject = Selection.GetHoveredObject();
             if (hoveredObject == obj)
             {
@@ -128,7 +130,6 @@ namespace VRtist
                 }
                 Selection.SetHoveredObject(hoveredObject);
             }
-
         }
 
         private void UpdateSelection()
@@ -163,29 +164,57 @@ namespace VRtist
         private void UpdateEraser()
         {
             GameObject hoveredObject = Selection.GetHoveredObject();
-            if (null == hoveredObject)
-                return;
-            // Don't delete UI handles
-            if (hoveredObject.GetComponent<UIHandle>())
+            if (null == hoveredObject && Selection.IsEmpty())
                 return;
 
-            if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
+            // If we have a hovered object, only destroy it
+            if (null != hoveredObject)
             {
-                CommandGroup group = new CommandGroup("Erase Selected Object");
-                try
+                // Don't delete UI handles
+                if (hoveredObject.GetComponent<UIHandle>())
+                    return;
+
+                if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
                 {
-                    RemoveCollidedObject(hoveredObject);
-                    selector.RemoveSiblingsFromSelection(hoveredObject, false);
+                    CommandGroup group = new CommandGroup("Erase Hovered Object");
+                    try
+                    {
+                        RemoveCollidedObject(hoveredObject);
+                        selector.RemoveSiblingsFromSelection(hoveredObject, false);
 
-                    // Add a selectionVFX instance on the deleted object
-                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(hoveredObject);
+                        ToolsUIManager.Instance.SpawnDeleteInstanceVFX(hoveredObject);
 
-                    VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
-                    new CommandRemoveGameObject(hoveredObject).Submit();
+                        new CommandRemoveGameObject(hoveredObject).Submit();
+                    }
+                    finally
+                    {
+                        group.Submit();
+                    }
                 }
-                finally
+            }
+
+            // If we don't have any hovered object but we collided with a selection, delete the whole selection
+            else if (collidedObjects.Count > 0 && Selection.IsSelected(collidedObjects[0]))
+            {
+                if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
                 {
-                    group.Submit();
+                    CommandGroup group = new CommandGroup("Erase Selected Objects");
+                    try
+                    {
+                        foreach (GameObject gobject in Selection.GetSelectedObjects())
+                        {
+                            RemoveCollidedObject(gobject);
+                            selector.RemoveSiblingsFromSelection(gobject, false);
+
+                            ToolsUIManager.Instance.SpawnDeleteInstanceVFX(gobject);
+
+                            new CommandRemoveGameObject(gobject).Submit();
+                        }
+                    }
+                    finally
+                    {
+                        group.Submit();
+                    }
                 }
             }
         }

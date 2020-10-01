@@ -166,7 +166,7 @@ namespace VRtist
                 else
                     bounds.Encapsulate(meshRenderer.bounds);
             }
-            
+
             return bounds;
         }
 
@@ -178,6 +178,7 @@ namespace VRtist
             float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
             vfxInstance.transform.localScale = Vector3.one * s;
             SoundManager.Instance.PlaySound(SoundManager.Sounds.Spawn);
+            VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.3f, 0.2f);
             Destroy(vfxInstance, 1f);
         }
 
@@ -186,9 +187,10 @@ namespace VRtist
             GameObject vfxInstance = Instantiate(deleteInstanceVFXPrefab);
             Bounds bounds = GetVFXBounds(source);
             vfxInstance.transform.localPosition = bounds.center;
-            float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) *2f;
+            float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
             vfxInstance.transform.localScale = Vector3.one * s;
             SoundManager.Instance.PlaySound(SoundManager.Sounds.Despawn);
+            VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.3f, 0.2f);
             Destroy(vfxInstance, 1f);
         }
 

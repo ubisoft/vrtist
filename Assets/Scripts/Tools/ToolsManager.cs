@@ -56,21 +56,24 @@ namespace VRtist
 
         public void _ToggleTool()
         {
-            if (currentToolRef.name == altTool.name && previousTool != null)
+            // Toggle to alt tool
+            if (currentToolRef.name != altTool.name)
             {
-                ToolsUIManager.Instance.ChangeTool(previousTool.name);
-                ToolsUIManager.Instance.ChangeTab(previousTool.name); // TODO: forcement?
-                previousTool = null;
-            }
-            // Go to selection mode
-            else
-            {
-                if (currentToolRef.name != altTool.name)
-                {
-                    previousTool = currentToolRef;
-                }
+                previousTool = previousTool = currentToolRef;
                 ToolsUIManager.Instance.ChangeTool(altTool.name);
                 ToolsUIManager.Instance.ChangeTab(altTool.name);
+            }
+            // Toggle to previous tool or sub toggle alt tool
+            else if (currentToolRef.name == altTool.name)
+            {
+                ToolBase toolBase = altTool.GetComponent<ToolBase>();
+                if (!toolBase.SubToggleTool())
+                {
+                    // Toggle to previous tool
+                    ToolsUIManager.Instance.ChangeTool(previousTool.name);
+                    ToolsUIManager.Instance.ChangeTab(previousTool.name);
+                    previousTool = null;
+                }
             }
         }
 

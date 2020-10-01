@@ -49,7 +49,7 @@ namespace VRtist
         public static void TriggerSelectionChanged()
         {
             SelectionChangedArgs args = new SelectionChangedArgs();
-            fillSelection(ref args.selectionBefore);
+            FillSelection(ref args.selectionBefore);
             OnSelectionChanged?.Invoke(null, args);
         }
 
@@ -66,7 +66,7 @@ namespace VRtist
             OnActiveCameraChanged?.Invoke(null, args);
         }
 
-        public static void fillSelection(ref Dictionary<int, GameObject> s)
+        public static void FillSelection(ref Dictionary<int, GameObject> s)
         {
             foreach (KeyValuePair<int, GameObject> data in selection)
                 s[data.Key] = data.Value;
@@ -308,7 +308,7 @@ namespace VRtist
                 return false;
 
             SelectionChangedArgs args = new SelectionChangedArgs();
-            fillSelection(ref args.selectionBefore);
+            FillSelection(ref args.selectionBefore);
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
@@ -333,7 +333,7 @@ namespace VRtist
                 return false;
 
             SelectionChangedArgs args = new SelectionChangedArgs();
-            fillSelection(ref args.selectionBefore);
+            FillSelection(ref args.selectionBefore);
 
             selection.Remove(gObject.GetInstanceID());
 
@@ -360,7 +360,7 @@ namespace VRtist
             }
 
             SelectionChangedArgs args = new SelectionChangedArgs();
-            fillSelection(ref args.selectionBefore);
+            FillSelection(ref args.selectionBefore);
 
             selection.Clear();
 
@@ -372,6 +372,16 @@ namespace VRtist
             {
                 handler(null, args);
             }
+        }
+
+        public static int Count()
+        {
+            return selection.Count;
+        }
+
+        public static bool IsEmpty()
+        {
+            return selection.Count == 0;
         }
     }
 }

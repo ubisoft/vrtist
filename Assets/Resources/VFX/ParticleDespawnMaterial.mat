@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: StartParticleMaterial
+  m_Name: ParticleDespawnMaterial
   m_Shader: {fileID: 4800000, guid: c4edd00ff2db5b24391a4fcb1762e459, type: 3}
   m_ShaderKeywords: _ALPHATEST_ON _BLENDMODE_ALPHA _EMISSION _SURFACE_TYPE_TRANSPARENT
   m_LightmapFlags: 2
