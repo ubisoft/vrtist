@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -115,6 +116,11 @@ namespace VRtist
             UpdateInterpolation();
         }
 
+        public void OnEditCurrentFrame()
+        {
+            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnChangeCurrentFrame((int) value), currentFrameLabel.transform, GlobalState.currentFrame);
+        }
+
         public void OnGlobalRangeChanged(Vector2Int globalBounds)
         {
             // TODO: send Network message to blender
@@ -149,7 +155,7 @@ namespace VRtist
         private void Update()
         {
             bool enable = transform.localScale.x != 0f;
-            if(enable)
+            if (enable)
             {
                 if (!listenerAdded)
                     GlobalState.Instance.AddAnimationListener(UpdateCurrentObjectChannel);
@@ -194,7 +200,10 @@ namespace VRtist
         {
             if (currentFrameLabel != null)
             {
-                currentFrameLabel.Text = GlobalState.currentFrame.ToString();
+                int frames = GlobalState.currentFrame % 24;
+                TimeSpan t = TimeSpan.FromSeconds(GlobalState.currentFrame / 24f);
+                currentFrameLabel.Text = $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{frames:D2} / {GlobalState.currentFrame}";
+
             }
             if (timeBar != null)
             {
@@ -245,12 +254,12 @@ namespace VRtist
 
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
             UILabel track = keyframes.gameObject.GetComponent<UILabel>();
-            foreach(var key in keys)
+            foreach (var key in keys)
             {
                 GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
                 List<AnimKey> animKeys = key.Value;
                 AnimKey firstKey = animKeys[0];
-                switch(firstKey.interpolation)
+                switch (firstKey.interpolation)
                 {
                     case Interpolation.Constant:
                         keyframe.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", constantInterpolationColor);
@@ -275,10 +284,10 @@ namespace VRtist
             foreach (var key in keys)
             {
                 GameObject keyframe = keyframes.GetChild(i++).gameObject;
-                
+
                 float time = key.Key;
-                float currentValue = (float)time;
-                float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
+                float currentValue = (float) time;
+                float pct = (float) (currentValue - firstFrame) / (float) (lastFrame - firstFrame);
 
                 float startX = 0.0f;
                 float endX = timeBar.width;
@@ -307,8 +316,8 @@ namespace VRtist
 
         public void OnSelectionChanged(GameObject gObject)
         {
-            if(currentObject != gObject)
-            { 
+            if (currentObject != gObject)
+            {
                 currentObject = gObject;
                 if (null == currentObject)
                 {
@@ -332,7 +341,7 @@ namespace VRtist
 
         public int GetPreviousKeyFrame()
         {
-            for(int i = keys.Keys.Count - 1; i >= 0; i--)
+            for (int i = keys.Keys.Count - 1; i >= 0; i--)
             {
                 // TODO: dichotomic search
                 int t = keys.Keys[i];
@@ -353,7 +362,7 @@ namespace VRtist
                 trackLabel.text = count.ToString() + " Objects";
                 return;
             }
-            foreach(GameObject obj in selectedObjects)
+            foreach (GameObject obj in selectedObjects)
             {
                 trackLabel.text = obj.name;
                 return;
@@ -364,7 +373,7 @@ namespace VRtist
         public void Clear()
         {
             Transform tracks = transform.Find("MainPanel/Tracks");
-            for(int i = 0; i < tracks.childCount; ++i)
+            for (int i = 0; i < tracks.childCount; ++i)
             {
                 Transform track = tracks.GetChild(i);
                 string channelName = track.name;
