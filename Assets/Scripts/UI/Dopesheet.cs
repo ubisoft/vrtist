@@ -123,7 +123,10 @@ namespace VRtist
 
         public void OnGlobalRangeChanged(Vector2Int globalBounds)
         {
-            // TODO: send Network message to blender
+            GlobalState.startFrame = globalBounds.x;
+            GlobalState.endFrame = globalBounds.y;
+            FrameStartEnd info = new FrameStartEnd() { start = globalBounds.x, end = globalBounds.y };
+            NetworkClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
         }
 
         public void OnLocalRangeChanged(Vector2Int bounds)
@@ -463,12 +466,6 @@ namespace VRtist
         public bool IsAutoKeyEnabled()
         {
             return GlobalState.autoKeyEnabled;
-        }
-
-        public void OnChangeStartEndRange()
-        {
-            FrameStartEnd info = new FrameStartEnd() { start = GlobalState.startFrame, end = GlobalState.endFrame };
-            NetworkClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
         }
 
     }
