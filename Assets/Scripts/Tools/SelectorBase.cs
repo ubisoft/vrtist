@@ -47,7 +47,6 @@ namespace VRtist
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
 
-        public GameObject selectionVFXPrefab = null;
         protected Dopesheet dopesheet;
         protected UIShotManager shotManager;
 
@@ -132,12 +131,6 @@ namespace VRtist
             updateButtonsColor();
 
             Selection.selectionMaterial = selectionMaterial;
-
-            if (null == selectionVFXPrefab)
-            {
-                //selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
-                selectionVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");                
-            }
 
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
@@ -854,11 +847,7 @@ namespace VRtist
             // Add a selectionVFX instance on the duplicated objects
             if (withVFX)
             {
-                GameObject vfxInstance = Instantiate(selectionVFXPrefab);
-                vfxInstance.transform.position = clone.transform.position;
-                float scale = clone.transform.lossyScale.y * 0.5f;
-                vfxInstance.transform.localScale = new Vector3(scale, scale, scale);
-                Destroy(vfxInstance, 1f);                
+                ToolsUIManager.Instance.SpawnCreateInstanceVFX(clone);
             }
 
             if (Selection.IsSelected(source))
@@ -904,9 +893,7 @@ namespace VRtist
                     //RemoveCollidedObject(o);
                     RemoveSiblingsFromSelection(o, false);
 
-                    // Add a selectionVFX instance on the deleted object
-                    GameObject vfxInstance = Instantiate(selectionVFXPrefab);
-                    vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(o);
+                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(o);
 
                     VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
                     new CommandRemoveGameObject(o).Submit();

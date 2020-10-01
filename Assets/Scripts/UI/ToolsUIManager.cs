@@ -64,6 +64,9 @@ namespace VRtist
         public bool keyboardOpen = false;
         public bool numericKeyboardOpen = false;
 
+        public GameObject createInstanceVFXPrefab = null;
+        public GameObject deleteInstanceVFXPrefab = null;
+
         [Header("Debug tweaking")]
         public int palettePopNbFrames = 8;
         public AnimationCurve paletteOpenAnimXCurve = new AnimationCurve(
@@ -144,6 +147,39 @@ namespace VRtist
 
             keyboardWindow.localScale = Vector3.zero;
             numericKeyboardWindow.localScale = Vector3.zero;
+
+            createInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");
+            deleteInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleDespawn");
+        }
+
+        public float GetVFXSize(GameObject source)
+        {
+            MeshRenderer[] meshRenderers = source.GetComponentsInChildren<MeshRenderer>();
+            float s = 0;
+            for (int i = 0; i < meshRenderers.Length; i++)
+            {
+                MeshRenderer meshRenderer = meshRenderers[i];
+                Vector3 boundSize = meshRenderer.bounds.size;
+                float boundSizeMax = Mathf.Max(Mathf.Max(boundSize.x, boundSize.y), boundSize.z);
+                s = Mathf.Max(boundSizeMax, s);
+            }
+            return s * 2f;
+        }
+
+        public void SpawnCreateInstanceVFX(GameObject source)
+        {            
+            GameObject vfxInstance = Instantiate(createInstanceVFXPrefab);
+            vfxInstance.transform.localPosition = source.transform.position;
+            vfxInstance.transform.localScale = Vector3.one * GetVFXSize(source);
+            Destroy(vfxInstance, 1f);
+        }
+
+        public void SpawnDeleteInstanceVFX(GameObject source)
+        {
+            GameObject vfxInstance = Instantiate(deleteInstanceVFXPrefab);
+            vfxInstance.transform.localPosition = source.transform.position;
+            vfxInstance.transform.localScale = Vector3.one * GetVFXSize(source);
+            Destroy(vfxInstance, 1f);
         }
 
         public void ChangeTab(string tabName)
