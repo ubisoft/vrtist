@@ -825,7 +825,7 @@ namespace VRtist
                     case RangeWidgetPart.NameLabel:
                         {
                             // SPAWN KEYBOARD
-                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            //ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
@@ -834,7 +834,7 @@ namespace VRtist
                     case RangeWidgetPart.GlobalMaxLabel:
                         {
                             // SPAWN KEYBOARD
-                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            //ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
@@ -843,7 +843,7 @@ namespace VRtist
                     case RangeWidgetPart.GlobalMinLabel:
                         {
                             // SPAWN KEYBOARD
-                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            //ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
