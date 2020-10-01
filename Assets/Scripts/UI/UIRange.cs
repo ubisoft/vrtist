@@ -575,52 +575,38 @@ namespace VRtist
 
         public override bool IgnoreRayInteraction()
         {
-            return base.IgnoreRayInteraction() || keyboardOpen;
+            return base.IgnoreRayInteraction() || ToolsUIManager.Instance.numericKeyboardOpen;
         }
 
         private void OnValidateKeyboard(string value)
+        {
+            Label = value;
+            // OnLabelNameChanged.Invoke();
+        }
+
+        private void OnValidateNumericKeyboard(float value)
         {
             switch (keyboardSourcePart)
             {
                 case RangeWidgetPart.NameLabel:
                     {
-                        Label = value;
-                        // OnLabelNameChanged.Invoke();
                         break;
                     }
                 case RangeWidgetPart.GlobalMaxLabel:
                     {
-                        float val;
-                        if (!float.TryParse(value, out val)) { break; }
-                        GlobalRange = new Vector2(GlobalRange.x, val);
+                        GlobalRange = new Vector2(GlobalRange.x, value);
                         // OnGlobalRangeChanged.Invoke();
                         break;
                     }
                 case RangeWidgetPart.GlobalMinLabel:
                     {
-                        float val;
-                        if (!float.TryParse(value, out val)) { break; }
-                        GlobalRange = new Vector2(val, GlobalRange.y);
+                        GlobalRange = new Vector2(value, GlobalRange.y);
                         // OnGlobalRangeChanged.Invoke();
                         break;
                     }
                 default: break;
             }
-
-            keyboardOpen = false;
         }
-
-        private void OnCloseKeyboard()
-        {
-            keyboardOpen = false;
-        }
-
-
-
-
-
-
-
 
         #region ray
 
@@ -825,7 +811,7 @@ namespace VRtist
                     case RangeWidgetPart.NameLabel:
                         {
                             // SPAWN KEYBOARD
-                            //ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, transform);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
@@ -834,7 +820,7 @@ namespace VRtist
                     case RangeWidgetPart.GlobalMaxLabel:
                         {
                             // SPAWN KEYBOARD
-                            //ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalRange.y);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
@@ -843,7 +829,7 @@ namespace VRtist
                     case RangeWidgetPart.GlobalMinLabel:
                         {
                             // SPAWN KEYBOARD
-                            //ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform);
+                            ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalRange.x);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
