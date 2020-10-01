@@ -79,6 +79,8 @@ namespace VRtist
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public RangeChangedEventFloat onSlideEvent = new RangeChangedEventFloat();
         public RangeChangedEventInt onSlideEventInt = new RangeChangedEventInt();
+        public RangeChangedEventFloat onChangeGlobalRangeEvent = new RangeChangedEventFloat();
+        public RangeChangedEventInt onChangeGlobalRangeEventInt = new RangeChangedEventInt();
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
@@ -553,6 +555,19 @@ namespace VRtist
             if (value.x < value.y)
             {
                 globalRange = value;
+
+                Vector2 newCurrentRange = new Vector2(
+                    Mathf.Max(globalRange.x, currentRange.x),
+                    Mathf.Min(globalRange.y, currentRange.y));
+
+                if (currentRange != newCurrentRange)
+                {
+                    currentRange = newCurrentRange;
+
+                    onSlideEvent.Invoke(CurrentRange);
+                    Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(currentRange.x), Mathf.RoundToInt(currentRange.y));
+                    onSlideEventInt.Invoke(intRange);
+                }
             }
             else
             {
@@ -595,13 +610,19 @@ namespace VRtist
                 case RangeWidgetPart.GlobalMaxLabel:
                     {
                         GlobalRange = new Vector2(GlobalRange.x, value);
-                        // OnGlobalRangeChanged.Invoke();
+
+                        onChangeGlobalRangeEvent.Invoke(globalRange);
+                        Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(globalRange.x), Mathf.RoundToInt(globalRange.y));
+                        onChangeGlobalRangeEventInt.Invoke(intRange);
                         break;
                     }
                 case RangeWidgetPart.GlobalMinLabel:
                     {
                         GlobalRange = new Vector2(value, GlobalRange.y);
-                        // OnGlobalRangeChanged.Invoke();
+
+                        onChangeGlobalRangeEvent.Invoke(globalRange);
+                        Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(globalRange.x), Mathf.RoundToInt(globalRange.y));
+                        onChangeGlobalRangeEventInt.Invoke(intRange);
                         break;
                     }
                 default: break;

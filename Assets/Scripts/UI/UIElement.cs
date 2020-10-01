@@ -102,8 +102,11 @@ namespace VRtist
 
         public virtual void SetColor(Color color)
         {
-            Material material = GetComponent<MeshRenderer>().sharedMaterial;
-            material.SetColor("_BaseColor", color);
+            Material material = GetComponent<MeshRenderer>()?.sharedMaterial;
+            if (null != material)
+            {
+                material.SetColor("_BaseColor", color);
+            }
         }
 
         public virtual Color GetColor()

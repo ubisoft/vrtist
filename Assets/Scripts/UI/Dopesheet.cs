@@ -19,9 +19,8 @@ namespace VRtist
         [SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
         [SerializeField] private Transform mainPanel = null;
         [SerializeField] private UITimeBar timeBar = null;
-        [SerializeField] private UILabel firstFrameLabel = null;
-        [SerializeField] private UILabel lastFrameLabel = null;
         [SerializeField] private UILabel currentFrameLabel = null;
+        [SerializeField] private UIRange currentRange = null;
         private UILabel titleBar = null;
 
         UIButton constantInterpolationButton = null;
@@ -70,8 +69,7 @@ namespace VRtist
             if (mainPanel != null)
             {
                 timeBar = mainPanel.Find("TimeBar").GetComponent<UITimeBar>();
-                firstFrameLabel = mainPanel.Find("FirstFrameLabel").GetComponent<UILabel>();
-                lastFrameLabel = mainPanel.Find("LastFrameLabel").GetComponent<UILabel>();
+                currentRange = mainPanel.Find("Range").GetComponent<UIRange>();
                 currentFrameLabel = mainPanel.Find("CurrentFrameLabel").GetComponent<UILabel>();
                 titleBar = transform.parent.Find("TitleBar").GetComponent<UILabel>();
                 keyframePrefab = Resources.Load<GameObject>("Prefabs/UI/DOPESHEET/Keyframe");
@@ -86,6 +84,9 @@ namespace VRtist
                 GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
                 GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
                 GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
+
+                currentRange.GlobalRange = new Vector2(GlobalState.startFrame, GlobalState.endFrame);
+                currentRange.CurrentRange = new Vector2(GlobalState.startFrame, GlobalState.endFrame);
 
                 UpdateInterpolation();
             }
@@ -112,6 +113,19 @@ namespace VRtist
         {
             GlobalState.Settings.interpolation = Interpolation.Bezier;
             UpdateInterpolation();
+        }
+
+        public void OnGlobalRangeChanged(Vector2Int globalBounds)
+        {
+            // TODO: send Network message to blender
+        }
+
+        public void OnLocalRangeChanged(Vector2Int bounds)
+        {
+            FirstFrame = bounds.x;
+            LastFrame = bounds.y;
+
+            UpdateKeyframes();
         }
 
         private void OnPlayingChanged(bool value)
@@ -147,14 +161,9 @@ namespace VRtist
             }
             listenerAdded = enable;
 
-            if (FirstFrame != GlobalState.startFrame)
+            if (currentRange.GlobalRange.x != GlobalState.startFrame || currentRange.GlobalRange.y != GlobalState.endFrame)
             {
-                FirstFrame = GlobalState.startFrame;
-            }
-
-            if (LastFrame != GlobalState.endFrame)
-            {
-                LastFrame = GlobalState.endFrame;
+                currentRange.GlobalRange = new Vector2(GlobalState.startFrame, GlobalState.endFrame);
             }
 
             if (CurrentFrame != GlobalState.currentFrame)
@@ -165,10 +174,8 @@ namespace VRtist
 
         private void UpdateFirstFrame()
         {
-            if (firstFrameLabel != null)
-            {
-                firstFrameLabel.Text = firstFrame.ToString();
-            }
+            //currentRange.GlobalRange = new Vector2();
+
             if (timeBar != null)
             {
                 timeBar.MinValue = firstFrame; // updates knob position
@@ -177,10 +184,6 @@ namespace VRtist
 
         private void UpdateLastFrame()
         {
-            if (lastFrameLabel != null)
-            {
-                lastFrameLabel.Text = lastFrame.ToString();
-            }
             if (timeBar != null)
             {
                 timeBar.MaxValue = lastFrame; // updates knob position
@@ -259,7 +262,20 @@ namespace VRtist
                         keyframe.GetComponent<MeshRenderer>().material.SetColor("_UnlitColor", bezierInterpolationColor);
                         break;
                 }
+            }
 
+            UpdateKeyframes();
+        }
+
+        void UpdateKeyframes()
+        {
+            Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
+            UILabel track = keyframes.gameObject.GetComponent<UILabel>();
+            int i = 0;
+            foreach (var key in keys)
+            {
+                GameObject keyframe = keyframes.GetChild(i++).gameObject;
+                
                 float time = key.Key;
                 float currentValue = (float)time;
                 float pct = (float)(currentValue - firstFrame) / (float)(lastFrame - firstFrame);
@@ -270,11 +286,16 @@ namespace VRtist
 
                 Vector3 knobPosition = new Vector3(posX, -0.5f * track.height, 0.0f);
 
-                keyframe.transform.localPosition = knobPosition;
                 if (time < FirstFrame || time > LastFrame)
                 {
                     keyframe.SetActive(false); // clip out of range keyframes
                 }
+                else
+                {
+                    keyframe.SetActive(true);
+                }
+
+                keyframe.transform.localPosition = knobPosition;
             }
         }
 
@@ -351,7 +372,9 @@ namespace VRtist
                 Transform keyframes = transform.Find(trackName);
                 for (int j = keyframes.childCount - 1; j >= 0; j--)
                 {
-                    Destroy(keyframes.GetChild(j).gameObject);
+                    GameObject kfo = keyframes.GetChild(j).gameObject;
+                    kfo.transform.parent = null;
+                    Destroy(kfo);
                 }
             }
 
