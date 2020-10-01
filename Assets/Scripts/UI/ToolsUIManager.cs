@@ -171,12 +171,13 @@ namespace VRtist
         }
 
         public void SpawnCreateInstanceVFX(GameObject source)
-        {            
+        {
             GameObject vfxInstance = Instantiate(createInstanceVFXPrefab);
             Bounds bounds = GetVFXBounds(source);
             vfxInstance.transform.localPosition = bounds.center;
             float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
             vfxInstance.transform.localScale = Vector3.one * s;
+            SoundManager.Instance.PlaySound(SoundManager.Sounds.Spawn);
             Destroy(vfxInstance, 1f);
         }
 
@@ -187,6 +188,7 @@ namespace VRtist
             vfxInstance.transform.localPosition = bounds.center;
             float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) *2f;
             vfxInstance.transform.localScale = Vector3.one * s;
+            SoundManager.Instance.PlaySound(SoundManager.Sounds.Despawn);
             Destroy(vfxInstance, 1f);
         }
 
