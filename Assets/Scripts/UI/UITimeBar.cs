@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -246,9 +245,9 @@ namespace VRtist
             base.OnRayEnterClicked();
         }
 
-        public override void OnRayHover()
+        public override void OnRayHover(Ray ray)
         {
-            base.OnRayHover();
+            base.OnRayHover(ray);
         }
 
         public override void OnRayHoverClicked()

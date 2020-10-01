@@ -290,7 +290,7 @@ namespace VRtist
                                 // TODO: should we add another state here? this is a FAKE hover.
                                 //       we want to show that this was the clicked widget but the ray is elsewhere.
                                 //if (!widgetClicked.IgnoreRayInteraction())
-                                //widgetClicked.OnRayHover(); // simple hover without the click effect.
+                                //widgetClicked.OnRayHover(r); // simple hover without the click effect.
 
                                 // do nothing for the new widget.
                             }
@@ -298,7 +298,7 @@ namespace VRtist
                         else
                         {
                             if (!widget.IgnoreRayInteraction())
-                                widget.OnRayHover();
+                                widget.OnRayHover(r);
                         }
                     }
 

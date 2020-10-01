@@ -101,9 +101,9 @@ namespace VRtist
             base.OnRayEnterClicked();
         }
 
-        public override void OnRayHover()
+        public override void OnRayHover(Ray ray)
         {
-            base.OnRayHover();
+            base.OnRayHover(ray);
         }
 
         public override void OnRayHoverClicked()

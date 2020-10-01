@@ -160,7 +160,7 @@ namespace VRtist
             ResetColor();
         }
 
-        public virtual void OnRayHover()
+        public virtual void OnRayHover(Ray ray)
         {
             Hovered = true;
             Pushed = false;
