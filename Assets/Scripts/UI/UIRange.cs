@@ -39,6 +39,7 @@ namespace VRtist
         public static readonly string default_knob_center_material_name = "UIRangeKnobCenter";
         public static readonly string default_knob_end_material_name = "UIRangeKnobEnd";
         public static readonly string default_label = "Range";
+        public static readonly UIRangeKnob.TextBehavior default_text_behavior = UIRangeKnob.TextBehavior.Center;
         public static readonly RangeContent default_content = RangeContent.All;
         public static readonly UIRange.RangeValueType default_value_type = UIRange.RangeValueType.Int;
 
@@ -69,6 +70,7 @@ namespace VRtist
         public int knobNbSubdivCornerPerUnit = 3;
 
         [SpaceHeader("Range Values", 6, 0.8f, 0.8f, 0.8f)]
+        public UIRangeKnob.TextBehavior textBehavior = default_text_behavior;
         public RangeContent content = default_content;
         public RangeValueType valueType = default_value_type;
         public Vector2 globalRange = new Vector2(10, 20);
@@ -161,7 +163,7 @@ namespace VRtist
 
         private void UpdateCanvasDimensions()
         {
-            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            Canvas canvas = transform.Find("Canvas").GetComponent<Canvas>();
             if (canvas != null)
             {
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
@@ -412,7 +414,7 @@ namespace VRtist
             midKnob.ResetColor();
 
             // Make the canvas pop front if Hovered.
-            Canvas c = GetComponentInChildren<Canvas>();
+            Canvas c = transform.Find("Canvas").GetComponent<Canvas>();
             if (c != null)
             {
                 RectTransform rt = c.GetComponent<RectTransform>();
@@ -473,7 +475,7 @@ namespace VRtist
 
         private void UpdateValueText()
         {
-            Canvas canvas = GetComponentInChildren<Canvas>();
+            Canvas canvas = transform.Find("Canvas").GetComponent<Canvas>();
             if (canvas != null)
             {
                 Transform minTextValueTransform = canvas.transform.Find("MinTextValue");
@@ -494,6 +496,9 @@ namespace VRtist
                         : Mathf.RoundToInt(GlobalRange.y).ToString();
                 }
             }
+
+            minKnob.UpdateText(currentRange.x, textBehavior);
+            maxKnob.UpdateText(currentRange.y, textBehavior);
         }
 
         private void UpdateRangePosition()
@@ -1195,7 +1200,10 @@ namespace VRtist
                         radius = newKnobRadius,
                         depth = newKnobDepth,
                         material = input.knobEndMaterial,
-                        baseColor = input.knobEndColor
+                        baseColor = input.knobEndColor,
+                        textColor = input.textColor,
+                        initialValue = input.currentMinValue,
+                        textBehavior = UIRangeKnob.TextBehavior.Center
                     }
                 );
             }
@@ -1224,7 +1232,10 @@ namespace VRtist
                         radius = newKnobRadius,
                         depth = newKnobDepth,
                         material = input.knobEndMaterial,
-                        baseColor = input.knobEndColor
+                        baseColor = input.knobEndColor,
+                        textColor = input.textColor,
+                        initialValue = input.currentMaxValue,
+                        textBehavior = UIRangeKnob.TextBehavior.Center
                     }
                 );
             }
@@ -1256,7 +1267,9 @@ namespace VRtist
                         radius = newKnobRadius,
                         depth = newKnobDepth,
                         material = input.knobCenterMaterial,
-                        baseColor = input.knobCenterColor
+                        baseColor = input.knobCenterColor,
+                        textColor = input.textColor,
+                        textBehavior = UIRangeKnob.TextBehavior.Hidden
                     }
                 );
             }
