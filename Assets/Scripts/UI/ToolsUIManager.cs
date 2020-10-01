@@ -152,33 +152,41 @@ namespace VRtist
             deleteInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleDespawn");
         }
 
-        public float GetVFXSize(GameObject source)
+        public Bounds GetVFXBounds(GameObject source)
         {
             MeshRenderer[] meshRenderers = source.GetComponentsInChildren<MeshRenderer>();
             float s = 0;
+            Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
+
             for (int i = 0; i < meshRenderers.Length; i++)
             {
                 MeshRenderer meshRenderer = meshRenderers[i];
-                Vector3 boundSize = meshRenderer.bounds.size;
-                float boundSizeMax = Mathf.Max(Mathf.Max(boundSize.x, boundSize.y), boundSize.z);
-                s = Mathf.Max(boundSizeMax, s);
+                if (i == 0)
+                    bounds = meshRenderer.bounds;
+                else
+                    bounds.Encapsulate(meshRenderer.bounds);
             }
-            return s * 2f;
+            
+            return bounds;
         }
 
         public void SpawnCreateInstanceVFX(GameObject source)
         {            
             GameObject vfxInstance = Instantiate(createInstanceVFXPrefab);
-            vfxInstance.transform.localPosition = source.transform.position;
-            vfxInstance.transform.localScale = Vector3.one * GetVFXSize(source);
+            Bounds bounds = GetVFXBounds(source);
+            vfxInstance.transform.localPosition = bounds.center;
+            float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
+            vfxInstance.transform.localScale = Vector3.one * s;
             Destroy(vfxInstance, 1f);
         }
 
         public void SpawnDeleteInstanceVFX(GameObject source)
         {
             GameObject vfxInstance = Instantiate(deleteInstanceVFXPrefab);
-            vfxInstance.transform.localPosition = source.transform.position;
-            vfxInstance.transform.localScale = Vector3.one * GetVFXSize(source);
+            Bounds bounds = GetVFXBounds(source);
+            vfxInstance.transform.localPosition = bounds.center;
+            float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) *2f;
+            vfxInstance.transform.localScale = Vector3.one * s;
             Destroy(vfxInstance, 1f);
         }
 
