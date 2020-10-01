@@ -27,6 +27,12 @@ namespace VRtist
         Other,
     }
 
+    public class FrameStartEnd
+    {
+        public int start;
+        public int end;
+    }
+
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;

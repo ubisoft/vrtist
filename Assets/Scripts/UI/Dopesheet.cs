@@ -464,5 +464,12 @@ namespace VRtist
         {
             return GlobalState.autoKeyEnabled;
         }
+
+        public void OnChangeStartEndRange()
+        {
+            FrameStartEnd info = new FrameStartEnd() { start = GlobalState.startFrame, end = GlobalState.endFrame };
+            NetworkClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
+        }
+
     }
 }

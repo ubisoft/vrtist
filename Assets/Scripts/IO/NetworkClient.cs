@@ -2649,6 +2649,15 @@ namespace VRtist
             return new NetCommand(buffer, MessageType.ClientIdWrapper);
         }
 
+        public static NetCommand BuildSendFrameStartEndCommand(int start, int end)
+        {
+            byte[] startBuffer = NetGeometry.IntToBytes((int)start);
+            byte[] endBuffer = NetGeometry.IntToBytes((int)end);
+            List<byte[]> buffers = new List<byte[]> { startBuffer, endBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.FrameStartEnd);
+        }
+
         public static NetCommand BuildSendSetKey(SetKeyInfo data)
         {
             byte[] objectNameBuffer = StringToBytes(data.objectName);
@@ -3193,6 +3202,12 @@ namespace VRtist
             //GlobalState.currentFrame = frame.frame;
         }
 
+        public void SendFrameStartEnd(FrameStartEnd range)
+        {
+            NetCommand command = NetGeometry.BuildSendFrameStartEndCommand(range.start, range.end);
+            AddCommand(command);
+        }
+
         public void SendPlay()
         {
             byte[] masterIdBuffer = NetGeometry.StringToBytes(GlobalState.networkUser.masterId);
@@ -3603,6 +3618,8 @@ namespace VRtist
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
                 case MessageType.Frame:
                     SendFrame(data as FrameInfo); break;
+                case MessageType.FrameStartEnd:
+                    SendFrameStartEnd(data as FrameStartEnd); break;
                 case MessageType.Play:
                     SendPlay(); break;
                 case MessageType.Pause:
