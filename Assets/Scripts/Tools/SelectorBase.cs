@@ -590,26 +590,6 @@ namespace VRtist
                 if (!outOfDeadZone)
                     return;
 
-                VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton,
-                    () => { },
-                    () =>
-                    {
-                        if (!Selection.IsHandleSelected())
-                        {
-                            List<GameObject> objects = Selection.GetGrippedOrSelection();
-
-                            if (objects.Count > 0)
-                            {
-                                EraseSelection();
-
-                                InitControllerMatrix();
-                                InitTransforms();
-                            }
-
-                        }
-                    }
-                );
-
                 // Joystick zoom only for non-handle objects
                 if (!Selection.IsHandleSelected())
                 {
@@ -892,10 +872,7 @@ namespace VRtist
                 {
                     //RemoveCollidedObject(o);
                     RemoveSiblingsFromSelection(o, false);
-
                     ToolsUIManager.Instance.SpawnDeleteInstanceVFX(o);
-
-                    VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
                     new CommandRemoveGameObject(o).Submit();
                 }
             }

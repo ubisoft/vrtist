@@ -114,8 +114,6 @@ namespace VRtist
                     ToolsUIManager.Instance.SpawnDeleteInstanceVFX(selected);
                     new CommandRemoveGameObject(selected).Submit();
                 }
-                VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
-
             }
             finally
             {
@@ -765,6 +763,20 @@ namespace VRtist
 
                 selectorTrigger.enabled = (plane == null);
             }
+        }
+
+        public override bool SubToggleTool()
+        {
+            // From selection to eraser
+            if (mode == SelectorModes.Select)
+            {
+                OnEraserMode();
+                return true;  // we toggled
+            }
+
+            // From eraser to selection
+            OnSelectMode();
+            return false;  // not a cyclic toggle, we reach the end
         }
     }
 }
