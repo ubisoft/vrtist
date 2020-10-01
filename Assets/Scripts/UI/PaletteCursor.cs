@@ -13,19 +13,16 @@ namespace VRtist
 
         private UIElement widgetClicked = null;
 
-        private AudioSource audioClickIn = null;
-        private AudioSource audioClickOut = null;
-
         private IDisposable uiEnabledGuard = null;
+
+        private AudioSource audioSource;
 
         UIElement prevWidget = null; // for RAY
         Vector3 prevWorldDirection = Vector3.zero;
 
         void Start()
         {
-            audioClickIn = transform.Find("Audio_ClickIn").GetComponent<AudioSource>();
-            audioClickOut = transform.Find("Audio_ClickOut").GetComponent<AudioSource>();
-
+            audioSource = transform.Find("AudioSource").GetComponent<AudioSource>();
             ray = GetComponentInChildren<UIRay>();
         }
 
@@ -308,7 +305,7 @@ namespace VRtist
                         if (!widget.IgnoreRayInteraction())
                         {
                             widget.OnRayClick();
-                            audioClickIn.Play();
+                            SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.ClickIn);
                             UIElement.ClickHapticFeedback(); // TODO: voir si on le met individuellement dans chaque widget avec des exceptions.
                         }
 
@@ -332,7 +329,7 @@ namespace VRtist
                                 if (!widget.IgnoreRayInteraction())
                                 {
                                     widget.OnRayReleaseInside();
-                                    audioClickOut.Play();
+                                    SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.ClickOut);
                                     UIElement.ClickHapticFeedback();
                                 }
                             }
@@ -342,7 +339,7 @@ namespace VRtist
                                 if (!widgetClicked.IgnoreRayInteraction())
                                 {
                                     widgetClicked.OnRayReleaseOutside();
-                                    //audioClickOut.Play();
+                                    //SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.ClickOut);
                                     //UIElement.ClickHapticFeedback();
                                 }
 

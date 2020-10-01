@@ -177,7 +177,7 @@ namespace VRtist
             vfxInstance.transform.localPosition = bounds.center;
             float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
             vfxInstance.transform.localScale = Vector3.one * s;
-            SoundManager.Instance.PlaySound(SoundManager.Sounds.Spawn);
+            SoundManager.Instance.PlayUISound(SoundManager.Sounds.Spawn);
             VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.3f, 0.2f);
             Destroy(vfxInstance, 1f);
         }
@@ -189,7 +189,7 @@ namespace VRtist
             vfxInstance.transform.localPosition = bounds.center;
             float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
             vfxInstance.transform.localScale = Vector3.one * s;
-            SoundManager.Instance.PlaySound(SoundManager.Sounds.Despawn);
+            SoundManager.Instance.PlayUISound(SoundManager.Sounds.Despawn);
             VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.3f, 0.2f);
             Destroy(vfxInstance, 1f);
         }
@@ -437,15 +437,29 @@ namespace VRtist
         public void OpenWindow(Transform window, float scaleFactor)
         {
             Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false));
-            if (audioOpenPalette != null)
-                audioOpenPalette.Play();
+            Transform audioTransform = window.Find("AudioSource");
+            if (null != audioTransform)
+            {
+                AudioSource audioSource = audioTransform.GetComponent<AudioSource>();
+                if (null != audioSource)
+                {
+                    SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.OpenWindow);
+                }
+            }
         }
 
         public void CloseWindow(Transform window, float scaleFactor)
         {
             Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteCloseAnimXCurve, paletteCloseAnimYCurve, paletteCloseAnimZCurve, scaleFactor, palettePopNbFrames, false));
-            if (audioClosePalette != null)
-                audioClosePalette.Play();
+            Transform audioTransform = window.Find("AudioSource");
+            if (null != audioTransform)
+            {
+                AudioSource audioSource = audioTransform.GetComponent<AudioSource>();
+                if (null != audioSource)
+                {
+                    SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.CloseWindow);
+                }
+            }
         }
 
         public void PopUpPalette(bool value)

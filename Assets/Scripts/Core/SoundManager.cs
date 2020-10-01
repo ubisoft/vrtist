@@ -9,7 +9,11 @@ namespace VRtist
         public enum Sounds
         {
             Spawn,
-            Despawn
+            Despawn,
+            OpenWindow,
+            CloseWindow,
+            ClickIn,
+            ClickOut
         }
 
         private AudioSource audioSource;
@@ -28,14 +32,23 @@ namespace VRtist
 
             clips[Sounds.Spawn] = Resources.Load<AudioClip>("Sounds/Spawn");
             clips[Sounds.Despawn] = Resources.Load<AudioClip>("Sounds/Despawn");
+            clips[Sounds.OpenWindow] = Resources.Load<AudioClip>("Sounds/ui_casual_open");
+            clips[Sounds.CloseWindow] = Resources.Load<AudioClip>("Sounds/ui_casual_pops_close");
+            clips[Sounds.ClickIn] = Resources.Load<AudioClip>("Sounds/click-in");
+            clips[Sounds.ClickOut] = Resources.Load<AudioClip>("Sounds/click-out");
         }
 
-        public void PlaySound(Sounds sound, bool force = false)
+        public void PlayUISound(Sounds sound, bool force = false)
         {
             if (force || !audioSource.isPlaying)
             {
                 audioSource.PlayOneShot(clips[sound]);
             }
+        }
+
+        public void Play3DSound(AudioSource source, Sounds sound)
+        {
+            source.PlayOneShot(clips[sound]);
         }
     }
 }
