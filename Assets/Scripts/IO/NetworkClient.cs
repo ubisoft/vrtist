@@ -177,7 +177,7 @@ namespace VRtist
 
         public static Dictionary<string, Mesh> meshes = new Dictionary<string, Mesh>();
         public static Dictionary<string, List<MaterialParameters>> meshesMaterials = new Dictionary<string, List<MaterialParameters>>();
-        
+
         public static Dictionary<MaterialType, Material> baseMaterials = new Dictionary<MaterialType, Material>();
         public static Dictionary<string, MaterialParameters> materialsParameters = new Dictionary<string, MaterialParameters>();
 
@@ -463,7 +463,7 @@ namespace VRtist
             string srcName = srcPath[srcPath.Length - 1];
             string dstName = dstPath[dstPath.Length - 1];
 
-            SyncData.Rename(srcName, dstName);            
+            SyncData.Rename(srcName, dstName);
         }
 
         public static void Delete(Transform prefab, byte[] data)
@@ -651,7 +651,7 @@ namespace VRtist
             materialParameters.roughness = 0.5f;
             materialParameters.roughnessTexturePath = "";
             materialParameters.normalTexturePath = "";
-            materialParameters.emissionColor = new Color(0,0,0);;
+            materialParameters.emissionColor = new Color(0, 0, 0); ;
             materialParameters.emissionColorTexturePath = "";
 
             return materialParameters;
@@ -986,7 +986,7 @@ namespace VRtist
                 material.SetColor("_UnlitColor", parameters.baseColor);
                 return;
             }
-            
+
             //
             // OPACITY
             //
@@ -1100,7 +1100,7 @@ namespace VRtist
             string objectName = GetString(data, ref currentIndex);
             string materialName = GetString(data, ref currentIndex);
 
-            if(!materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
+            if (!materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
             {
                 Debug.LogError("Could not assign material " + materialName + " to " + objectName);
                 return;
@@ -1188,7 +1188,7 @@ namespace VRtist
         public static Transform BuildPath(byte[] data, ref int bufferIndex, bool includeLeaf)
         {
             string path = GetString(data, ref bufferIndex);
-            if(!includeLeaf)
+            if (!includeLeaf)
             {
                 int index = path.LastIndexOf('/');
                 if (index == -1)
@@ -1425,8 +1425,10 @@ namespace VRtist
 
         public static NetCommand BuildRenameCommand(Transform root, RenameInfo rename)
         {
-            byte[] srcPath = StringToBytes(GetPathName(root, rename.srcTransform));
+            string src = GetPathName(root, rename.srcTransform);
+            byte[] srcPath = StringToBytes(src);
             byte[] dstName = StringToBytes(rename.newName);
+            Debug.Log($"{rename.srcTransform.name}: {src} --> {rename.newName}");
 
             List<byte[]> buffers = new List<byte[]> { srcPath, dstName };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Rename);
@@ -1483,7 +1485,7 @@ namespace VRtist
             {
                 int id = baseTriangles[i];
                 splittedNormals[i] = baseNormals[id];
-                
+
             }
             byte[] normals = Vector3ToBytes(splittedNormals);
 
@@ -1639,7 +1641,7 @@ namespace VRtist
             List<AnimationKey> keys = new List<AnimationKey>();
             for (int i = 0; i < keyCount; i++)
             {
-                keys.Add(new AnimationKey(intBuffer[i], floatBuffer[i], (Interpolation)interpolationBuffer[i]));
+                keys.Add(new AnimationKey(intBuffer[i], floatBuffer[i], (Interpolation) interpolationBuffer[i]));
             }
 
             Node node = SyncData.nodes[objectName];
@@ -2108,7 +2110,7 @@ namespace VRtist
                     string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
                     currentIndex += materialNameSize + 4;
 
-                    if(materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
+                    if (materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
                     {
                         meshMaterialParameters.Add(materialParameters);
                     }
@@ -2330,7 +2332,7 @@ namespace VRtist
 
         public static MaterialParameters BuildGreasePencilMaterial(string materialName, Color color)
         {
-            if (!materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))            
+            if (!materialsParameters.TryGetValue(materialName, out MaterialParameters materialParameters))
             {
                 materialParameters = new MaterialParameters();
                 materialParameters.materialType = MaterialType.GreasePencil;
@@ -2355,7 +2357,7 @@ namespace VRtist
             bool strokeOverlap = GetBool(data, ref currentIndex);
             bool fillEnabled = GetBool(data, ref currentIndex);
             string fillStyle = GetString(data, ref currentIndex);
-            Color fillColor = GetColor(data, ref currentIndex);           
+            Color fillColor = GetColor(data, ref currentIndex);
 
             string materialStrokeName = materialName + "_stroke";
             string materialFillName = materialName + "_fill";
@@ -2654,7 +2656,7 @@ namespace VRtist
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
             byte[] frameBuffer = IntToBytes(data.frame);
             byte[] valueBuffer = FloatToBytes(data.value);
-            byte[] interpolationBuffer = IntToBytes((int)data.interpolation);
+            byte[] interpolationBuffer = IntToBytes((int) data.interpolation);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer, interpolationBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.AddKeyframe);
@@ -2698,7 +2700,7 @@ namespace VRtist
                 Node prefabNode = SyncData.nodes[cameraName];
                 // We only have one instance of any camera in the scene                
                 CameraController controller = prefabNode.instances[0].Item1.GetComponent<CameraController>();
-                if (null != controller) { Selection.SetActiveCamera(controller); }                
+                if (null != controller) { Selection.SetActiveCamera(controller); }
             }
         }
 
@@ -3334,7 +3336,7 @@ namespace VRtist
                             else
                             {
                                 receivedCommands.Add(command);
-                            }                            
+                            }
                         }
                     }
                 }
@@ -3366,7 +3368,7 @@ namespace VRtist
                 return false;
 
             int remainingData = command.data.Length - index;
-            while(remainingData > 0)
+            while (remainingData > 0)
             {
                 int dataLength = NetGeometry.GetInt(command.data, ref index);
                 remainingData -= dataLength + sizeof(int);
@@ -3378,7 +3380,7 @@ namespace VRtist
                 Buffer.BlockCopy(command.data, index, newBuffer, 0, dataLength);
                 index += dataLength;
 
-                NetCommand newCommand = new NetCommand(newBuffer, (MessageType)messageType);
+                NetCommand newCommand = new NetCommand(newBuffer, (MessageType) messageType);
                 commands.Add(newCommand);
             }
 
@@ -3557,7 +3559,7 @@ namespace VRtist
                         break;
                     }
                 }
-                if(!prematuredExit)
+                if (!prematuredExit)
                     commands.Clear();
                 commandProcessedCount = 0;
                 yield return null;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace VRtist
@@ -1577,6 +1578,19 @@ namespace VRtist
             for (int i = 0; i < gObject.transform.childCount; i++)
             {
                 SetRecursiveLayerSmart(gObject.transform.GetChild(i).gameObject, layerType);
+            }
+        }
+
+        public static void SetTMProStyle(GameObject gobject, float minSize = 1f, float maxSize = 1.5f, bool autoSizing = true, TextAlignmentOptions alignment = TextAlignmentOptions.Left)
+        {
+            TextMeshProUGUI[] texts = gobject.GetComponentsInChildren<TextMeshProUGUI>();
+            foreach (var text in texts)
+            {
+                //text.fontStyle = FontStyles.Normal;
+                text.enableAutoSizing = autoSizing;
+                text.fontSizeMin = minSize;
+                text.fontSizeMax = maxSize;
+                text.alignment = alignment;
             }
         }
     }

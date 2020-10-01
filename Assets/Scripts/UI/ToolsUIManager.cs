@@ -61,6 +61,11 @@ namespace VRtist
 
         public Transform keyboardWindow;
         public Transform numericKeyboardWindow;
+        public bool keyboardOpen = false;
+        public bool numericKeyboardOpen = false;
+
+        public GameObject createInstanceVFXPrefab = null;
+        public GameObject deleteInstanceVFXPrefab = null;
 
         [Header("Debug tweaking")]
         public int palettePopNbFrames = 8;
@@ -142,6 +147,49 @@ namespace VRtist
 
             keyboardWindow.localScale = Vector3.zero;
             numericKeyboardWindow.localScale = Vector3.zero;
+
+            createInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");
+            deleteInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleDespawn");
+        }
+
+        public Bounds GetVFXBounds(GameObject source)
+        {
+            MeshRenderer[] meshRenderers = source.GetComponentsInChildren<MeshRenderer>();
+            float s = 0;
+            Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
+
+            for (int i = 0; i < meshRenderers.Length; i++)
+            {
+                MeshRenderer meshRenderer = meshRenderers[i];
+                if (i == 0)
+                    bounds = meshRenderer.bounds;
+                else
+                    bounds.Encapsulate(meshRenderer.bounds);
+            }
+            
+            return bounds;
+        }
+
+        public void SpawnCreateInstanceVFX(GameObject source)
+        {
+            GameObject vfxInstance = Instantiate(createInstanceVFXPrefab);
+            Bounds bounds = GetVFXBounds(source);
+            vfxInstance.transform.localPosition = bounds.center;
+            float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) * 2f;
+            vfxInstance.transform.localScale = Vector3.one * s;
+            SoundManager.Instance.PlaySound(SoundManager.Sounds.Spawn);
+            Destroy(vfxInstance, 1f);
+        }
+
+        public void SpawnDeleteInstanceVFX(GameObject source)
+        {
+            GameObject vfxInstance = Instantiate(deleteInstanceVFXPrefab);
+            Bounds bounds = GetVFXBounds(source);
+            vfxInstance.transform.localPosition = bounds.center;
+            float s = Mathf.Max(Mathf.Max(bounds.size.x, bounds.size.y), bounds.size.z) *2f;
+            vfxInstance.transform.localScale = Vector3.one * s;
+            SoundManager.Instance.PlaySound(SoundManager.Sounds.Despawn);
+            Destroy(vfxInstance, 1f);
         }
 
         public void ChangeTab(string tabName)
@@ -306,8 +354,11 @@ namespace VRtist
 
         #region keyboard
 
-        public void OpenKeyboard(UnityAction<string> validateCallback, UnityAction cancelCallback, Transform anchor, string text = null)
+        public void OpenKeyboard(UnityAction<string> validateCallback, Transform anchor, string text = null)
         {
+            if (keyboardOpen) { return; }
+            keyboardOpen = true;
+
             OpenWindow(keyboardWindow, 1f);
             Keyboard keyboard = keyboardWindow.GetComponentInChildren<Keyboard>();
             keyboard.Clear();
@@ -319,8 +370,6 @@ namespace VRtist
             keyboard.onSubmitEvent.RemoveAllListeners();
             keyboard.onSubmitEvent.AddListener(validateCallback);
             UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
-            if (null != cancelCallback)
-                closeButton.onReleaseEvent.AddListener(cancelCallback);
             closeButton.onReleaseEvent.AddListener(CancelKeyboard);
 
             Vector3 offset = new Vector3(0.35f, 0.0f, -0.01f);
@@ -335,6 +384,7 @@ namespace VRtist
             UIButton closeButton = keyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
             closeButton.onReleaseEvent.RemoveAllListeners();
             CloseWindow(keyboardWindow, 1f);
+            keyboardOpen = false;
         }
 
         public void CancelKeyboard()
@@ -342,8 +392,11 @@ namespace VRtist
             CloseKeyboard(cancel: true);
         }
 
-        public void OpenNumericKeyboard(UnityAction<float> validateCallback, UnityAction cancelCallback, Transform anchor, float? value = null)
+        public void OpenNumericKeyboard(UnityAction<float> validateCallback, Transform anchor, float? value = null)
         {
+            if (numericKeyboardOpen) { return; }
+            numericKeyboardOpen = true;
+
             OpenWindow(numericKeyboardWindow, 1f);
             NumericKeyboard keyboard = numericKeyboardWindow.GetComponentInChildren<NumericKeyboard>();
             keyboard.Clear();
@@ -355,8 +408,6 @@ namespace VRtist
             keyboard.onSubmitEvent.RemoveAllListeners();
             keyboard.onSubmitEvent.AddListener(validateCallback);
             UIButton closeButton = numericKeyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
-            if (null != cancelCallback)  // order of listeners is important here
-                closeButton.onReleaseEvent.AddListener(cancelCallback);
             closeButton.onReleaseEvent.AddListener(CancelNumericKeyboard);
 
             Vector3 offset = new Vector3(0.35f, 0.18f, -0.01f);
@@ -371,6 +422,7 @@ namespace VRtist
             UIButton closeButton = numericKeyboardWindow.Find("CloseButton/CloseWindowButton").GetComponent<UIButton>();
             closeButton.onReleaseEvent.RemoveAllListeners();
             CloseWindow(numericKeyboardWindow, 1f);
+            numericKeyboardOpen = false;
         }
 
         public void CancelNumericKeyboard()

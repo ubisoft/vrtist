@@ -18,6 +18,8 @@ namespace VRtist
         private UIButton inFrontButton = null;
         public bool inFront = false;
 
+        private UILabel nameLabel = null;
+
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
 
@@ -54,22 +56,37 @@ namespace VRtist
             // Init UI
             if (null == focalSlider)
             {
+                nameLabel = transform.Find("Rotate/Name/Name").GetComponent<UILabel>();
+                // Hack : force TMPro properties when component is enabled
+                UIUtils.SetTMProStyle(nameLabel.gameObject, minSize: 6f, maxSize: 72f, alignment: TextAlignmentOptions.Center);
+                nameLabel.Text = gameObject.name;
+                nameLabel.onReleaseEvent.AddListener(OnNameClicked);
+                nameLabel.NeedsRebuild = true;
+
                 focalSlider = gameObject.GetComponentInChildren<UISlider>();
                 focalSlider.onSlideEventInt.AddListener(OnFocalSliderChange);
                 focalSlider.onClickEvent.AddListener(OnFocalClicked);
                 focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
 
-                // Hack : forces font size min when component is enabled
-                foreach (TextMeshProUGUI text in focalSlider.GetComponentsInChildren<TextMeshProUGUI>())
-                {
-                    text.fontSizeMin = 1f;
-                }
+                // Hack : force TMPro properties when component is enabled
+                UIUtils.SetTMProStyle(focalSlider.gameObject, minSize: 1f, maxSize: 1.5f);
                 focalSlider.NeedsRebuild = true;
 
                 inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>();
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
                 inFrontButton.NeedsRebuild = true;
             }
+        }
+
+        private void OnNameClicked()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(OnValidateCameraRename, nameLabel.transform, gameObject.name);
+        }
+
+        private void OnValidateCameraRename(string newName)
+        {
+            new CommandRenameGameObject("Rename Camera", gameObject, newName).Submit();
+            nameLabel.Text = newName;
         }
 
         private void OnSetInFront(bool value)
@@ -177,8 +194,8 @@ namespace VRtist
         public override void SetName(string name)
         {
             base.SetName(name);
-            TextMeshProUGUI text = gameObject.GetComponentInChildren<TextMeshProUGUI>(true);
-            text.text = name;
+            if (null != nameLabel)
+                nameLabel.Text = name;
         }
 
         private void DrawFrustum()

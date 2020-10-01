@@ -111,6 +111,7 @@ namespace VRtist
             {
                 foreach (GameObject selected in allSelected)
                 {
+                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(selected);
                     new CommandRemoveGameObject(selected).Submit();
                 }
                 VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);

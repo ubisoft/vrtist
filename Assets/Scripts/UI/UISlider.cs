@@ -83,8 +83,6 @@ namespace VRtist
 
         public AnimationCurve DataCurve { get { return dataCurve; } set { dataCurve = value; UpdateMinMax(); BuildInverseCurve(); dataSource = SliderDataSource.Curve; } }
 
-        private bool keyboardOpen = false;
-
         public bool HasCurveData()
         {
             return (dataSource == SliderDataSource.Curve && dataCurve != null && dataCurve.keys.Length > 0);
@@ -453,21 +451,15 @@ namespace VRtist
 
         public override bool IgnoreRayInteraction()
         {
-            return base.IgnoreRayInteraction() || keyboardOpen;
+            return base.IgnoreRayInteraction() || ToolsUIManager.Instance.numericKeyboardOpen;
         }
 
         private void OnValidateKeyboard(float value)
         {
             Value = value;
-            keyboardOpen = false;
             onSlideEvent.Invoke(currentValue);
             int intValue = Mathf.RoundToInt(currentValue);
             onSlideEventInt.Invoke(intValue);
-        }
-
-        private void OnCloseKeyboard()
-        {
-            keyboardOpen = false;
         }
 
         #region ray
@@ -583,9 +575,7 @@ namespace VRtist
 
             if (triggerJustClicked && localProjectedWidgetPosition.x > endX)
             {
-                ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateKeyboard, OnCloseKeyboard, transform, (float) Value);
-                // Position window
-                keyboardOpen = true;
+                ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateKeyboard, transform, (float) Value);
                 rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
                 return;
             }

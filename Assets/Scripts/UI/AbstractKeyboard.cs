@@ -54,6 +54,7 @@ namespace VRtist
         {
             if (Selected)
             {
+                Clear();
                 Selected = false;
             }
             if (textContent.Length > 0)
@@ -73,6 +74,11 @@ namespace VRtist
         {
             textContent = "";
             contentLabel.Text = textContent;
+        }
+
+        public virtual void OnDeselect()
+        {
+            Selected = false;
         }
     }
 }

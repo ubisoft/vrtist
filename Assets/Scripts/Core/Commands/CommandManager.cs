@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
 {
-    public class RenameInfo
-    {
-        public Transform srcTransform;
-        public string newName;
-    }
     public abstract class ICommand
     {
         abstract public void Undo();
@@ -18,8 +12,8 @@ namespace VRtist
         abstract public void Serialize(SceneSerializer serializer);
         protected static void SplitPropertyPath(string propertyPath, out string gameObjectPath, out string componentName, out string fieldName)
         {
-            string [] values = propertyPath.Split('/');
-            if(values.Length < 2)
+            string[] values = propertyPath.Split('/');
+            if (values.Length < 2)
                 throw new ArgumentException("Bad argument number, expected componentName/fieldName");
 
             gameObjectPath = "";
@@ -29,7 +23,7 @@ namespace VRtist
                 gameObjectPath += values[i];
                 gameObjectPath += "/";
             }
-            if(count > 2)
+            if (count > 2)
                 gameObjectPath += values[count - 3];
 
             componentName = values[count - 2];

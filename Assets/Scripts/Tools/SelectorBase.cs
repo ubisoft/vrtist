@@ -47,8 +47,8 @@ namespace VRtist
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
 
-        public GameObject selectionVFXPrefab = null;
         protected Dopesheet dopesheet;
+        protected UIShotManager shotManager;
 
         protected SelectorTrigger selectorTrigger;
 
@@ -132,13 +132,11 @@ namespace VRtist
 
             Selection.selectionMaterial = selectionMaterial;
 
-            if (null == selectionVFXPrefab)
-            {
-                selectionVFXPrefab = Resources.Load<GameObject>("Prefabs/SelectionVFX");
-            }
-
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
+
+            shotManager = GameObject.FindObjectOfType<UIShotManager>();
+            UnityEngine.Assertions.Assert.IsNotNull(shotManager);
 
             GlobalState.Instance.onRecordEvent.AddListener(OnRecord);
 
@@ -849,8 +847,7 @@ namespace VRtist
             // Add a selectionVFX instance on the duplicated objects
             if (withVFX)
             {
-                GameObject vfxInstance = Instantiate(selectionVFXPrefab);
-                vfxInstance.GetComponent<SelectionVFX>().SpawnDuplicateVFX(clone);
+                ToolsUIManager.Instance.SpawnCreateInstanceVFX(clone);
             }
 
             if (Selection.IsSelected(source))
@@ -896,9 +893,7 @@ namespace VRtist
                     //RemoveCollidedObject(o);
                     RemoveSiblingsFromSelection(o, false);
 
-                    // Add a selectionVFX instance on the deleted object
-                    GameObject vfxInstance = Instantiate(selectionVFXPrefab);
-                    vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(o);
+                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(o);
 
                     VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
                     new CommandRemoveGameObject(o).Submit();

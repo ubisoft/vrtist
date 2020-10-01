@@ -1,13 +1,11 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
-using UnityEngine;
 
 namespace VRtist
 {
     public class NumericKeyboard : AbstractKeyboard
     {
         public FloatChangedEvent onSubmitEvent = new FloatChangedEvent();
-        private Transform mainPanel = null;
         private static Regex floatRegex = new Regex("[-+]?([0-9]*[.])?[0-9]*", RegexOptions.Compiled);
 
         public override void OnSubmit()

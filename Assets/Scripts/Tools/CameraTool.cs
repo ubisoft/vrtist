@@ -18,6 +18,7 @@ namespace VRtist
         public Material screenShotMaterial;
         public Transform backgroundFeedback;
         public Transform dopesheetHandle = null;
+        public Transform shotManagerHandle = null;
         public Transform cameraPreviewHandle = null;
         public Transform paletteHandle = null;
         public TextMeshProUGUI tm;
@@ -36,6 +37,9 @@ namespace VRtist
 
         private bool firstTimeShowDopesheet = true;
         private UICheckbox showDopesheetCheckbox = null;
+
+        private bool firstTimeShowShotManager = true;
+        private UICheckbox showShotManagerCheckbox = null;
 
         private bool firstTimeShowCameraPreview = true;
         private UICheckbox showCameraPreviewCheckbox = null;
@@ -101,6 +105,7 @@ namespace VRtist
                 showCameraFeedbackCheckbox = panel.Find("ShowFeedback")?.gameObject.GetComponent<UICheckbox>();
                 feedbackPositionningCheckbox = panel.Find("Feedback")?.gameObject.GetComponent<UICheckbox>();
                 showDopesheetCheckbox = panel.Find("ShowDopesheet")?.gameObject.GetComponent<UICheckbox>();
+                showShotManagerCheckbox = panel.Find("ShowShotManager")?.gameObject.GetComponent<UICheckbox>();
                 showCameraPreviewCheckbox = panel.Find("ShowCameraPreview")?.gameObject.GetComponent<UICheckbox>();
                 showCameraFrustumCheckbox = panel.Find("ShowFrustum")?.gameObject.GetComponent<UICheckbox>();
             }
@@ -114,6 +119,16 @@ namespace VRtist
                 //dopesheet = dopesheetHandle.GetComponentInChildren<Dopesheet>();
                 dopesheetHandle.localScale = Vector3.zero; // si tous les tools ont une ref sur la dopesheet, qui la cache au demarrage? ToolsUIManager?
                 dopesheetHandle.position = Vector3.zero;
+            }
+
+            if (!shotManagerHandle)
+            {
+                Debug.LogWarning("You forgot to give the Shot Manager to the Camera Tool.");
+            }
+            else
+            {
+                shotManagerHandle.localScale = Vector3.zero; // si tous les tools ont une ref sur le shot manager, qui la cache au demarrage? ToolsUIManager?
+                shotManagerHandle.position = Vector3.zero;
             }
 
             if (!cameraPreviewHandle)
@@ -259,6 +274,16 @@ namespace VRtist
                 showDopesheet.Checked = false;
             }
         }
+        public void OnCloseShotManager()
+        {
+            OnCheckShowShotManager(false);
+
+            UICheckbox showShotManager = showShotManagerCheckbox.GetComponent<UICheckbox>();
+            if (showShotManager != null)
+            {
+                showShotManager.Checked = false;
+            }
+        }
 
         public void OnCheckShowDopesheet(bool value)
         {
@@ -283,6 +308,28 @@ namespace VRtist
             }
         }
 
+        public void OnCheckShowShotManager(bool value)
+        {
+            GlobalState.Settings.shotManagerVisible = value;
+            if (shotManager != null && shotManagerHandle != null)
+            {
+                if (value)
+                {
+                    if (firstTimeShowShotManager && shotManagerHandle.position == Vector3.zero)
+                    {
+                        Vector3 offset = new Vector3(0.25f, 0.0f, 0.0f);
+                        shotManagerHandle.position = paletteHandle.TransformPoint(offset);
+                        shotManagerHandle.rotation = paletteHandle.rotation;
+                        firstTimeShowShotManager = false;
+                    }
+                    ToolsUIManager.Instance.OpenWindow(shotManagerHandle, 0.7f);
+                }
+                else
+                { 
+                    ToolsUIManager.Instance.CloseWindow(shotManagerHandle, 0.7f);
+                }
+            }
+        }
         public void OnCloseCameraPreview()
         {
             OnCheckShowCameraPreview(false);

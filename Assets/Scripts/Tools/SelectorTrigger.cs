@@ -178,8 +178,7 @@ namespace VRtist
                     selector.RemoveSiblingsFromSelection(hoveredObject, false);
 
                     // Add a selectionVFX instance on the deleted object
-                    GameObject vfxInstance = Instantiate(selector.selectionVFXPrefab);
-                    vfxInstance.GetComponent<SelectionVFX>().SpawnDeleteVFX(hoveredObject);
+                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(hoveredObject);
 
                     VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.2f);
                     new CommandRemoveGameObject(hoveredObject).Submit();
