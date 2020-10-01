@@ -167,10 +167,11 @@ namespace VRtist
         }
 
         public void SpawnCreateInstanceVFX(GameObject source)
-        {            
+        {
             GameObject vfxInstance = Instantiate(createInstanceVFXPrefab);
             vfxInstance.transform.localPosition = source.transform.position;
             vfxInstance.transform.localScale = Vector3.one * GetVFXSize(source);
+            SoundManager.Instance.PlaySound(SoundManager.Sounds.Spawn);
             Destroy(vfxInstance, 1f);
         }
 
@@ -179,6 +180,7 @@ namespace VRtist
             GameObject vfxInstance = Instantiate(deleteInstanceVFXPrefab);
             vfxInstance.transform.localPosition = source.transform.position;
             vfxInstance.transform.localScale = Vector3.one * GetVFXSize(source);
+            SoundManager.Instance.PlaySound(SoundManager.Sounds.Despawn);
             Destroy(vfxInstance, 1f);
         }
 
