@@ -18,11 +18,11 @@ namespace VRtist
         [SerializeField] private AnchorTypes anchorType;
 
         bool attached = false;
+        bool otherAttached = false;
         bool gripped = false;
         bool previouslyGripped = false;
         Transform window;
         Transform target;
-        MeshRenderer meshRenderer;
         GameObject anchorObject;
         GameObject anchoredObject;
 
@@ -36,8 +36,6 @@ namespace VRtist
             anchoredObject = transform.GetChild(1).gameObject;
 
             window = GetComponentInParent<UIHandle>().transform;
-            meshRenderer = GetComponent<MeshRenderer>();
-            meshRenderer.enabled = false;
         }
 
         private void Update()
@@ -47,7 +45,7 @@ namespace VRtist
             // Window hidden
             if (window.localScale == Vector3.zero)
             {
-                SetTarget(null);
+                SetTarget(null); 
             }
             // Window visible
             else
@@ -55,7 +53,7 @@ namespace VRtist
                 if (gripped != previouslyGripped)
                 {
                     ShowAllAnchors(gripped);
-                }
+                }                
 
                 // Attach when release grip
                 if (null != target && !gripped && !attached)
@@ -64,6 +62,7 @@ namespace VRtist
                     if (!targetAnchor.attached)
                     {
                         attached = true;
+                        targetAnchor.otherAttached = true;
                         anchoredObject.SetActive(true);
                     }
                 }
@@ -92,7 +91,11 @@ namespace VRtist
                 // We may have OnTriggerEnter from the other anchor
                 if (!gripped || attached) { return; }
 
-                AnchorTypes otherAnchorType = other.gameObject.GetComponent<WindowAnchor>().anchorType;
+                WindowAnchor otherAnchor = other.gameObject.GetComponent<WindowAnchor>();
+                if (otherAnchor.attached)
+                    return;
+
+                AnchorTypes otherAnchorType = otherAnchor.anchorType;
                 switch (anchorType)
                 {
                     case AnchorTypes.Left: if (otherAnchorType != AnchorTypes.Right) { return; } break;
@@ -101,8 +104,6 @@ namespace VRtist
                     case AnchorTypes.Top: if (otherAnchorType != AnchorTypes.Bottom) { return; } break;
                 }
                 SetTarget(other.transform);
-                anchorObject.SetActive(false);
-                anchoredObject.SetActive(true);
                 StartCoroutine(AnimAnchors());
             }
         }
@@ -114,15 +115,21 @@ namespace VRtist
                 // We may have OnTriggerEnter from the other anchor
                 if (!gripped) { return; }
                 SetTarget(null);
+                ShowAllAnchors(true);
             }
         }
 
         private void SetTarget(Transform target)
         {
+            if(null != this.target)
+            {
+                this.target.GetComponent<WindowAnchor>().otherAttached = false;
+            }
             this.target = target;
             attached = false;
-            anchorObject.SetActive(true);
-            anchoredObject.SetActive(false);
+
+            anchorObject.SetActive(null == target);
+            anchoredObject.SetActive(null != target);
         }
 
         private void SnapToAnchor()
@@ -133,10 +140,20 @@ namespace VRtist
         }
 
         private void ShowAllAnchors(bool show)
-        {
+        {            
             foreach (WindowAnchor anchor in allAnchors)
             {
-                anchor.anchorObject.SetActive(show);
+                if (!show)
+                {
+                    anchor.anchorObject.SetActive(false);
+                    anchor.anchoredObject.SetActive(anchor.attached);
+                }
+                else
+                {
+                    anchor.anchorObject.SetActive(!anchor.otherAttached && !anchor.attached);
+                    anchor.anchoredObject.SetActive(anchor.attached);
+                }
+                //anchor.anchorObject.SetActive(show && !otherAttached);
             }
         }
 
