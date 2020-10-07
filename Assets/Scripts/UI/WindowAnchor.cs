@@ -45,7 +45,7 @@ namespace VRtist
             // Window hidden
             if (window.localScale == Vector3.zero)
             {
-                SetTarget(null); 
+                SetTarget(null);
             }
             // Window visible
             else
@@ -53,7 +53,7 @@ namespace VRtist
                 if (gripped != previouslyGripped)
                 {
                     ShowAllAnchors(gripped);
-                }                
+                }
 
                 // Attach when release grip
                 if (null != target && !gripped && !attached)
@@ -121,7 +121,7 @@ namespace VRtist
 
         private void SetTarget(Transform target)
         {
-            if(null != this.target)
+            if (null != this.target)
             {
                 this.target.GetComponent<WindowAnchor>().otherAttached = false;
             }
@@ -140,7 +140,7 @@ namespace VRtist
         }
 
         private void ShowAllAnchors(bool show)
-        {            
+        {
             foreach (WindowAnchor anchor in allAnchors)
             {
                 if (!show)
@@ -167,6 +167,7 @@ namespace VRtist
             while (null != target && !attached)
             {
                 yield return null;
+                if (null == target || attached) { break; }
                 float offset = factor * step;
                 target.localScale += new Vector3(offset, offset, offset);
                 transform.localScale += new Vector3(offset, offset, offset);
