@@ -359,12 +359,15 @@ namespace VRtist
             grippedUnderThreshold = false;
         }
 
-        public override void OnRayReleaseOutside()
+        public override bool OnRayReleaseOutside()
         {
-            //base.OnRayReleaseOutside();
+            //return base.OnRayReleaseOutside();
+
+            bool validate = false;
 
             if (grippedUnderThreshold)
             {
+                validate = true;
                 onReleaseEvent.Invoke();
                 if (isCheckable)
                 {
@@ -378,6 +381,8 @@ namespace VRtist
             ResetColor();
 
             grippedUnderThreshold = false;
+
+            return validate;
         }
 
         public override bool OverridesRayEndPoint() { return true; }

@@ -205,11 +205,14 @@ namespace VRtist
             ResetColor();
         }
 
-        public virtual void OnRayReleaseOutside()
+        // @return true if the release is considered as a validation of the widget.
+        public virtual bool OnRayReleaseOutside()
         {
             Hovered = false;
             Pushed = false;
             ResetColor();
+
+            return false;
         }
 
         public virtual bool OverridesRayEndPoint() { return false; }

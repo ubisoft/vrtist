@@ -323,9 +323,9 @@ namespace VRtist
             onReleaseEvent.Invoke();
         }
 
-        public override void OnRayReleaseOutside()
+        public override bool OnRayReleaseOutside()
         {
-            base.OnRayReleaseOutside();
+            return base.OnRayReleaseOutside();
         }
 
         #endregion

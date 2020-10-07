@@ -338,9 +338,11 @@ namespace VRtist
                                 // clear state of previously clicked widget
                                 if (!widgetClicked.IgnoreRayInteraction())
                                 {
-                                    widgetClicked.OnRayReleaseOutside();
-                                    //SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.ClickOut);
-                                    //UIElement.ClickHapticFeedback();
+                                    if (widgetClicked.OnRayReleaseOutside())
+                                    {
+                                        SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.ClickOut);
+                                        UIElement.ClickHapticFeedback();
+                                    }
                                 }
 
                                 // give the new widget a chance to play some OnHover animation.
@@ -430,9 +432,11 @@ namespace VRtist
                 {
                     if (!widgetClicked.IgnoreRayInteraction())
                     {
-                        widgetClicked.OnRayReleaseOutside(); // just UN-push, no events triggered.
-                        //audioClickOut.Play();
-                        //UIElement.ClickHapticFeedback();
+                        if (widgetClicked.OnRayReleaseOutside())
+                        {
+                            SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.ClickOut);
+                            UIElement.ClickHapticFeedback();
+                        }
                     }
 
                     widgetClicked = null;
