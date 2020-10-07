@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using UnityEngine.XR;
 
 namespace VRtist
 {
@@ -60,6 +61,9 @@ namespace VRtist
             get { return isChecked; }
             set { isChecked = value; ResetColor(); UpdateCheckIcon(); }
         }
+
+        private bool grippedUnderThreshold = false;
+        private Vector2 grippedPos = Vector2.zero;
 
         public override void ResetColor()
         {
@@ -351,11 +355,75 @@ namespace VRtist
             }
 
             ResetColor();
+
+            grippedUnderThreshold = false;
         }
 
         public override void OnRayReleaseOutside()
         {
-            base.OnRayReleaseOutside();
+            //base.OnRayReleaseOutside();
+
+            if (grippedUnderThreshold)
+            {
+                onReleaseEvent.Invoke();
+                if (isCheckable)
+                {
+                    Checked = !Checked;
+                    onCheckEvent.Invoke(Checked);
+                }
+            }
+
+            Hovered = false;
+            Pushed = false;
+            ResetColor();
+
+            grippedUnderThreshold = false;
+        }
+
+        public override bool OverridesRayEndPoint() { return true; }
+
+        public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
+        {
+            bool triggerJustClicked = false;
+            bool triggerJustReleased = false;
+            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+
+            // Project ray on the widget plane.
+            Plane widgetPlane = new Plane(-transform.forward, transform.position);
+            float enter;
+            widgetPlane.Raycast(ray, out enter);
+            Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
+
+            Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+
+            if (IgnoreRayInteraction())
+            {
+                rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
+                return;
+            }
+
+            
+            //Vector2 localCenter = new Vector2(width / 2.0f, -height / 2.0f);
+            Vector2 project = new Vector3(localWidgetPosition.x, localWidgetPosition.y);
+            if (triggerJustClicked)
+            {
+                grippedPos = project;
+            }
+
+            if (Vector2.Distance(project, grippedPos) < 3.0f * height)
+            {
+                grippedUnderThreshold = true;
+                localProjectedWidgetPosition.x = grippedPos.x;
+                localProjectedWidgetPosition.y = grippedPos.y;
+            }
+            else
+            {
+                grippedUnderThreshold = false;
+            }
+
+            Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
+            rayEndPoint = worldProjectedWidgetPosition;
         }
 
         #endregion
