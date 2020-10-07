@@ -18,6 +18,7 @@ namespace VRtist
         private AudioSource audioSource;
 
         UIElement prevWidget = null; // for RAY
+        GameObject hoveredObject = null;
         Vector3 prevWorldDirection = Vector3.zero;
 
         void Start()
@@ -115,9 +116,11 @@ namespace VRtist
             if (!Physics.Raycast(r, out hitInfo, 3.0f, allLayersMask, QueryTriggerInteraction.Collide)
                 || (hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("UI")
                 && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("SelectionUI")
-                && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("HoverUI")))
+                && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("HoverUI")
+                && !hitInfo.transform.gameObject.CompareTag("PhysicObject")))
             {
                 // Nothing hit, or hit a non-UI object.
+                HandleHoverPhysicObject(null);
                 handleHitNothing();
                 return;
             }
@@ -130,6 +133,7 @@ namespace VRtist
                 bool raycastOK = Physics.Raycast(backRay, out hitInfo, hitInfo.distance, allLayersMask, QueryTriggerInteraction.Collide);
                 if (raycastOK && hitInfo.distance < d)
                 {
+                    HandleHoverPhysicObject(null);
                     handleHitNothing();
                     return;
                 }
@@ -140,6 +144,7 @@ namespace VRtist
             //
 
             RaycastHit[] hits;
+            //int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI", "Default" });
             int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI" });
             hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
             if (hits.Length > 0)
@@ -162,18 +167,22 @@ namespace VRtist
                 bool volumeIsHit = false;
                 bool widgetIsHit = false;
                 bool handleIsHit = false;
+                bool physicIsHit = false;
 
                 float closestVolumeDistance = Mathf.Infinity;
                 float closestWidgetDistance = Mathf.Infinity;
                 float closestHandleDistance = Mathf.Infinity;
+                float closestPhysicDistance = Mathf.Infinity;
 
                 Vector3 volumeCollisionPoint = Vector3.zero;
                 Vector3 widgetCollisionPoint = Vector3.zero;
                 Vector3 handleCollisionPoint = Vector3.zero;
+                Vector3 physicCollisionPoint = Vector3.zero;
 
                 UIElement widget = null;
                 UIHandle handle = null;
                 UIVolumeTag volume = null;
+                GameObject physic = null;
 
                 //
                 // Find if a volume/handle/widget has been hit, and compute the closest hit distance/point.
@@ -218,6 +227,18 @@ namespace VRtist
                             closestWidgetDistance = hits[i].distance;
                         }
                     }
+
+                    GameObject objectHit = hit.gameObject;
+                    if (objectHit.CompareTag("PhysicObject"))
+                    {
+                        physicIsHit = true;
+                        if (hits[i].distance < closestPhysicDistance)
+                        {
+                            physic = objectHit;
+                            physicCollisionPoint = hits[i].point; // world space
+                            closestPhysicDistance = hits[i].distance;
+                        }
+                    }
                 }
 
 
@@ -226,22 +247,26 @@ namespace VRtist
                 // Send messages and states to the widget hit, with priorities.
                 //
 
+                
+                //else if (handleIsHit)
+                //{
+                //    HandleHoverPhysicObject(null);
 
-                if (handleIsHit)
+                //    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                //    {
+                //        ActivateRay(true);
+                //        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                //    }
+                //    else
+                //    {
+                //        ActivateRay(false);
+                //    }
+                //    HandleRayOutOfWidget(triggerJustReleased);
+                //}
+                if (widgetIsHit)
                 {
-                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
-                    {
-                        ActivateRay(true);
-                        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
-                    }
-                    else
-                    {
-                        ActivateRay(false);
-                    }
-                    HandleRayOutOfWidget(triggerJustReleased);
-                }
-                else if (widgetIsHit)
-                {
+                    HandleHoverPhysicObject(null);
+
                     if (prevWidget != widget) // change widget
                     {
                         if (widgetClicked != null) // trigger is held pushed.
@@ -380,8 +405,26 @@ namespace VRtist
                         ray.SetParameters(worldStart, widgetCollisionPoint, newWorldDirection);
                     }
                 }
+                else if (physicIsHit)
+                {
+                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    {
+                        ActivateRay(true);
+                        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
+                        HandleHoverPhysicObject(null);
+                    }
+                    else
+                    {
+                        ActivateRay(true);
+                        ray.SetParameters(worldStart, physicCollisionPoint, newWorldDirection);
+                        HandleHoverPhysicObject(physic);
+                    }
+                    HandleRayOutOfWidget(triggerJustReleased);
+                }
                 else if (volumeIsHit)
                 {
+                    //HandleHoverPhysicObject(null);
+
                     ray.gameObject.SetActive(true);
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
@@ -397,6 +440,8 @@ namespace VRtist
                 }
                 else // Layer UI but neither UIVolumeTag nor UIElement ==> Grid or Tool Mouthpiece.
                 {
+                    HandleHoverPhysicObject(null);
+
                     if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
                     {
                         ActivateRay(true);
@@ -411,7 +456,30 @@ namespace VRtist
             }
             else // No collision, most common case.
             {
+                HandleHoverPhysicObject(null);
                 handleHitNothing();
+            }
+        }
+
+        private void HandleHoverPhysicObject(GameObject gObj)
+        {
+            //Selection.SetHoveredObject(gObj);
+
+            if (gObj == null) // REMOVE
+            {
+                if (hoveredObject != null) // Only if we had hovered an object with the cursor => Dont un-hover general objects.
+                {
+                    Selection.SetHoveredObject(null);
+                    hoveredObject = null;
+                }
+            }
+            else // ADD
+            {
+                if (hoveredObject != gObj) // Only once for gObj
+                {
+                    Selection.SetHoveredObject(gObj); // will automatically switch with previously hovered object (UI or other).
+                    hoveredObject = gObj;
+                }
             }
         }
 
