@@ -325,7 +325,7 @@ namespace VRtist
                     ToolsUIManager.Instance.OpenWindow(shotManagerHandle, 0.7f);
                 }
                 else
-                { 
+                {
                     ToolsUIManager.Instance.CloseWindow(shotManagerHandle, 0.7f);
                 }
             }
