@@ -355,11 +355,11 @@ namespace VRtist
                         cameraPreviewHandle.rotation = paletteHandle.rotation;
                         firstTimeShowCameraPreview = false;
                     }
-                    ToolsUIManager.Instance.OpenWindow(cameraPreviewHandle, 1.0f);
+                    ToolsUIManager.Instance.OpenWindow(cameraPreviewHandle, 0.7f);
                 }
                 else
                 {
-                    ToolsUIManager.Instance.CloseWindow(cameraPreviewHandle, 1.0f);
+                    ToolsUIManager.Instance.CloseWindow(cameraPreviewHandle, 0.7f);
                 }
             }
         }
