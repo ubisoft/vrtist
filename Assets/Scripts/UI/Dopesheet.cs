@@ -15,6 +15,15 @@ namespace VRtist
         public Interpolation interpolation;
     };
 
+    public class MoveKeyInfo
+    {
+        public string objectName;
+        public string channelName;
+        public int channelIndex;
+        public int frame;
+        public int newFrame;
+    }
+
     public class Dopesheet : MonoBehaviour
     {
         [SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]
@@ -310,10 +319,33 @@ namespace VRtist
             }
         }
 
+        int GetKeyAtFrame(int index)
+        {
+            if (index > keys.Count)
+                return -1;
+
+            return keys.Keys[index];
+        }
+
         // delta = +/- 1
         public void OnUpdateKeyframe(int i, int delta)
         {
-            Debug.Log($"Moving keyframe {i} by {delta}");
+            int frame = GetKeyAtFrame(i);
+            if (frame == -1)
+                return;
+
+            CommandGroup group = new CommandGroup("Add Keyframe");
+            try
+            {
+                foreach (GameObject item in Selection.selection.Values)
+                {
+                    new CommandMoveKeyframes(item, frame, frame+delta).Submit();
+                }
+            }
+            finally
+            {
+                group.Submit();
+            }
         }
 
         void OnCameraNameChanged(GameObject gObject)

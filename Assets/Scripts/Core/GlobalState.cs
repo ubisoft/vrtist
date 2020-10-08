@@ -238,6 +238,11 @@ namespace VRtist
             return animationController.GetAnimationChannels(gameObject);
         }
 
+        public void MoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
+        {
+            animationController.MoveKeyframe(gObject, channelName, channelIndex, frame, newFrame);
+        }
+
         public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
         {
             animationController.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
@@ -251,6 +256,16 @@ namespace VRtist
         public void RemoveKeyframes()
         {
             animationController.RemoveSelectionKeyframes();
+        }
+
+        public void MoveKeyframes(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
+        {
+            animationController.MoveKeyframe(gObject, channelName, channelIndex, frame, newFrame);
+        }
+
+        public void MoveKeyframes(int frame, int newFrame)
+        {
+            animationController.MoveSelectionKeyframes(frame, newFrame);
         }
 
         public void Record()

@@ -382,6 +382,58 @@ namespace VRtist
                 recordAnimationSets.Clear();
             }
         }
+
+        public void MoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
+        {
+            MoveKeyInfo keyInfo = new MoveKeyInfo()
+            {
+                objectName = gObject.name,
+                channelName = channelName,
+                channelIndex = channelIndex,
+                frame = frame,
+                newFrame = newFrame
+            };
+            NetworkClient.GetInstance().SendEvent<MoveKeyInfo>(MessageType.MoveKeyframe, keyInfo);
+        }
+
+        public void MoveSelectionKeyframes(int frame, int newFrame)
+        {
+            foreach (GameObject item in Selection.selection.Values)
+            {
+                MoveKeyframe(item, "location", 0, frame, newFrame);
+                MoveKeyframe(item, "location", 1, frame, newFrame);
+                MoveKeyframe(item, "location", 2, frame, newFrame);
+                MoveKeyframe(item, "rotation_euler", 0, frame, newFrame);
+                MoveKeyframe(item, "rotation_euler", 1, frame, newFrame);
+                MoveKeyframe(item, "rotation_euler", 2, frame, newFrame);
+
+                CameraController controller = item.GetComponent<CameraController>();
+                if (null != controller)
+                {
+                    MoveKeyframe(item, "lens", -1, frame, newFrame);
+                }
+
+                LightController lcontroller = item.GetComponent<LightController>();
+                if (null != lcontroller)
+                {
+                    MoveKeyframe(item, "energy", -1, frame, newFrame);
+                    MoveKeyframe(item, "color", 0, frame, newFrame);
+                    MoveKeyframe(item, "color", 1, frame, newFrame);
+                    MoveKeyframe(item, "color", 2, frame, newFrame);
+                }
+
+                ParametersController pController = item.GetComponent<ParametersController>();
+                if (null == pController)
+                {
+                    MoveKeyframe(item, "scale", 0, frame, newFrame);
+                    MoveKeyframe(item, "scale", 1, frame, newFrame);
+                    MoveKeyframe(item, "scale", 2, frame, newFrame);
+                }
+                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, item.name);
+            }
+        }
+
+
         public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
         {
             SendKeyInfo(gObject.name, channelName, channelIndex, frame, value, interpolation);

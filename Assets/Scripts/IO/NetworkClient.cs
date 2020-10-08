@@ -74,6 +74,7 @@ namespace VRtist
         _SceneRenamed,
         AddKeyframe,
         RemoveKeyframe,
+        MoveKeyframe,
         _QueryCurrentFrame,
         QueryAnimationData,
         _BlenderDataUpdate,
@@ -2682,6 +2683,18 @@ namespace VRtist
             return new NetCommand(buffer, MessageType.RemoveKeyframe);
         }
 
+        public static NetCommand BuildSendMoveKey(MoveKeyInfo data)
+        {
+            byte[] objectNameBuffer = StringToBytes(data.objectName);
+            byte[] channelNameBuffer = StringToBytes(data.channelName);
+            byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
+            byte[] frameBuffer = IntToBytes(data.frame);
+            byte[] newFrameBuffer = IntToBytes(data.newFrame);
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, newFrameBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.MoveKeyframe);
+        }
+
         public static NetCommand BuildSendQueryAnimationData(string name)
         {
             return new NetCommand(StringToBytes(name), MessageType.QueryAnimationData);
@@ -3240,6 +3253,12 @@ namespace VRtist
             AddCommand(command);
         }
 
+        public void SendMoveKeyframe(MoveKeyInfo data)
+        {
+            NetCommand command = NetGeometry.BuildSendMoveKey(data);
+            AddCommand(command);
+        }
+
         public void SendQueryObjectData(string name)
         {
             NetCommand command = NetGeometry.BuildSendQueryAnimationData(name);
@@ -3628,6 +3647,8 @@ namespace VRtist
                     SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
                     SendRemoveKeyframe(data as SetKeyInfo); break;
+                case MessageType.MoveKeyframe:
+                    SendMoveKeyframe(data as MoveKeyInfo); break;
                 case MessageType.QueryAnimationData:
                     SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
