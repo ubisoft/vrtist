@@ -207,6 +207,7 @@ namespace VRtist
         public override bool OverridesRayEndPoint() { return true; }
 
         int closestIndex = -1;
+        int deltaFrame = 0;
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
         {
             bool triggerJustClicked = false;
@@ -246,6 +247,7 @@ namespace VRtist
 
             if (triggerJustClicked)
             {
+                deltaFrame = 0;
                 float distThreshold = 0.31f / 20.0f;
                 closestIndex = -1;
                 float closestDistance = Mathf.Infinity;
@@ -268,6 +270,8 @@ namespace VRtist
             }
             else if (triggerJustReleased)
             {
+                dopesheet.OnUpdateKeyframe(closestIndex, deltaFrame);
+                deltaFrame = 0;
                 closestIndex = -1;
             }
             else
@@ -290,16 +294,22 @@ namespace VRtist
                     {
                         if (closestIndex != -1)
                         {
-                            dopesheet.OnUpdateKeyframe(closestIndex, +1);
-                            localProjectedWidgetPosition.x = transform.GetChild(closestIndex).localPosition.x + localDeltaOneFrame;
+                            deltaFrame++;
+                            Transform child = transform.GetChild(closestIndex);
+                            Vector3 newChildPosition = child.localPosition + new Vector3(+localDeltaOneFrame, 0, 0);
+                            localProjectedWidgetPosition.x = newChildPosition.x;
+                            child.localPosition = newChildPosition;
                         }
                     }
                     else if (joyLeftJustClicked || joyLeftLongPush)
                     {
                         if (closestIndex != -1)
                         {
-                            dopesheet.OnUpdateKeyframe(closestIndex, -1);
-                            localProjectedWidgetPosition.x = transform.GetChild(closestIndex).localPosition.x - localDeltaOneFrame;
+                            deltaFrame--;
+                            Transform child = transform.GetChild(closestIndex);
+                            Vector3 newChildPosition = child.localPosition + new Vector3(-localDeltaOneFrame, 0 , 0);
+                            localProjectedWidgetPosition.x = newChildPosition.x;
+                            child.localPosition = newChildPosition;
                         }
                     }
                 }

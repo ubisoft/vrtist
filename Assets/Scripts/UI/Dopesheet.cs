@@ -321,7 +321,7 @@ namespace VRtist
 
         int GetKeyAtFrame(int index)
         {
-            if (index > keys.Count)
+            if (index < 0 || index >= keys.Count)
                 return -1;
 
             return keys.Keys[index];
