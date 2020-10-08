@@ -256,7 +256,6 @@ namespace VRtist
             UpdateTrackName();
 
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
-            UILabel track = keyframes.gameObject.GetComponent<UILabel>();
             foreach (var key in keys)
             {
                 GameObject keyframe = GameObject.Instantiate(keyframePrefab, keyframes);
@@ -282,7 +281,7 @@ namespace VRtist
         void UpdateKeyframes()
         {
             Transform keyframes = transform.Find("MainPanel/Tracks/Summary/Keyframes");
-            UILabel track = keyframes.gameObject.GetComponent<UILabel>();
+            UIKeyView track = keyframes.gameObject.GetComponent<UIKeyView>();
             int i = 0;
             foreach (var key in keys)
             {
@@ -309,6 +308,12 @@ namespace VRtist
 
                 keyframe.transform.localPosition = knobPosition;
             }
+        }
+
+        // delta = +/- 1
+        public void OnUpdateKeyframe(int i, int delta)
+        {
+            Debug.Log($"Moving keyframe {i} by {delta}");
         }
 
         void OnCameraNameChanged(GameObject gObject)
