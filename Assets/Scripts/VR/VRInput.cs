@@ -83,6 +83,9 @@ namespace VRtist
         // get values from controllers and store them
         public static void FillCurrentControllerValues()
         {
+            joyJustPressed.Clear();
+            joyJustReleased.Clear();
+
             List<InputDevice> devices = new List<InputDevice>() { leftController, rightController };
             foreach (InputDevice device in devices)
             {
@@ -162,6 +165,17 @@ namespace VRtist
             return JoyDirection.DOWN; // default?
         }
 
+        static void ClearLongPush(InputDevice controller)
+        {
+            HashSet<JoyInputPair> longPush = new HashSet<JoyInputPair>();
+            foreach(JoyInputPair joyInput in joyLongPush)
+            {
+                if (joyInput.Key != controller)
+                    longPush.Add(joyInput);
+            }
+            joyLongPush = longPush;
+        }
+
         static void UpdateControllerDelta(InputDevice controller, InputFeatureUsage<Vector2> usage)
         {
             Vector2 v2PrevValue;
@@ -179,9 +193,6 @@ namespace VRtist
 
             JoyInputPair prevPair = new JoyInputPair(controller, prevQuadrant);
             JoyInputPair currPair = new JoyInputPair(controller, currQuadrant);
-
-            joyJustPressed.Clear();
-            joyJustReleased.Clear();
 
             if (currLen > deadZoneIn)
             {
@@ -208,7 +219,7 @@ namespace VRtist
                         joyJustPressed.Add(currPair);
                         joyJustReleased.Add(prevPair);
                         longPushTimer = 0.0f;
-                        joyLongPush.Clear();
+                        ClearLongPush(controller);
                     }
                 }
             }
@@ -218,12 +229,13 @@ namespace VRtist
                 {
                     // justReleased EXT -> Center
                     joyJustReleased.Add(currPair);
-                    joyLongPush.Clear();
+                    ClearLongPush(controller);
+
                 }
                 else
                 {
                     // still in center
-                    joyLongPush.Clear();
+                    ClearLongPush(controller);
                 }
             }
         }

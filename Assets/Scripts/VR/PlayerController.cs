@@ -110,7 +110,13 @@ namespace VRtist
                 if (IsCompatibleWithUndoRedo(options.currentNavigationMode))
                 {
                     HandleUndoRedo();
-                }                
+                }
+
+                // Time manipulation
+                if (IsCompatibleWithTimeManipulation(options.currentNavigationMode))
+                {
+                    HandleTimeManipulation();
+                }
             }
         }
 
@@ -313,6 +319,35 @@ namespace VRtist
             });
         }
 
+        private void HandleTimeManipulation()
+        {
+            bool joyRightJustClicked = false;
+            bool joyRightJustReleased = false;
+            bool joyRightLongPush = false;
+            VRInput.GetInstantJoyEvent(VRInput.leftController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
+
+            bool joyLeftJustClicked = false;
+            bool joyLeftJustReleased = false;
+            bool joyLeftLongPush = false;
+            VRInput.GetInstantJoyEvent(VRInput.leftController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
+
+            if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
+            {
+                int frame = GlobalState.currentFrame;
+                if (joyRightJustClicked || joyRightLongPush)
+                {
+                    frame = Mathf.Clamp(frame + 1, GlobalState.startFrame, GlobalState.endFrame);
+                }
+                else
+                {
+                    frame = Mathf.Clamp(frame - 1, GlobalState.startFrame, GlobalState.endFrame);
+                }
+
+                FrameInfo info = new FrameInfo() { frame = frame };
+                NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            }
+        }
+
         private void HandleCommonTooltipsVisibility()
         {
             if (options.currentNavigationMode == null)
@@ -500,5 +535,6 @@ namespace VRtist
         private bool IsCompatibleWithUndoRedo(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_PRIMARY | NavigationMode.UsedControls.LEFT_SECONDARY); }
         private bool IsCompatibleWithReset(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_JOYSTICK_CLICK); }
         private bool IsCompatibleWithResetScale(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK_CLICK); }
+        private bool IsCompatibleWithTimeManipulation(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_JOYSTICK); }
     }
 }

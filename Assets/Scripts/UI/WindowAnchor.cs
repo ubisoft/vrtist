@@ -38,6 +38,16 @@ namespace VRtist
             window = GetComponentInParent<UIHandle>().transform;
         }
 
+        private bool IsWindowAttached()
+        {
+            foreach(WindowAnchor anchor in window.GetComponentsInChildren<WindowAnchor>())
+            {
+                if (anchor.attached)
+                    return true;
+            }
+            return false;
+        }
+
         private void Update()
         {
             gripped = Selection.GetGrippedObject() == window.gameObject;
@@ -59,7 +69,7 @@ namespace VRtist
                 if (null != target && !gripped && !attached)
                 {
                     WindowAnchor targetAnchor = target.GetComponent<WindowAnchor>();
-                    if (!targetAnchor.attached)
+                    if (!targetAnchor.attached && !IsWindowAttached())
                     {
                         attached = true;
                         targetAnchor.otherAttached = true;
@@ -121,10 +131,16 @@ namespace VRtist
 
         private void SetTarget(Transform target)
         {
+            if (target == this.target)
+            {
+                return;
+            }
+
             if (null != this.target)
             {
                 this.target.GetComponent<WindowAnchor>().otherAttached = false;
             }
+
             this.target = target;
             attached = false;
 
