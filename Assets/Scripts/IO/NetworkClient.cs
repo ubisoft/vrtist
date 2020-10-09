@@ -1083,7 +1083,7 @@ namespace VRtist
             string emissionColorTexturePath = parameters.emissionColorTexturePath;
             if (emissionColorTexturePath.Length > 0)
             {
-                Texture2D tex = GetTexture(emissionColorTexturePath, true);
+                Texture2D tex = GetTexture(emissionColorTexturePath, false);
                 if (tex != null)
                 {
                     material.SetFloat("_UseEmissiveMap", 1f);
@@ -2652,8 +2652,8 @@ namespace VRtist
 
         public static NetCommand BuildSendFrameStartEndCommand(int start, int end)
         {
-            byte[] startBuffer = NetGeometry.IntToBytes((int)start);
-            byte[] endBuffer = NetGeometry.IntToBytes((int)end);
+            byte[] startBuffer = NetGeometry.IntToBytes((int) start);
+            byte[] endBuffer = NetGeometry.IntToBytes((int) end);
             List<byte[]> buffers = new List<byte[]> { startBuffer, endBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.FrameStartEnd);
