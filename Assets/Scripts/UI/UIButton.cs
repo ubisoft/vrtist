@@ -55,6 +55,20 @@ namespace VRtist
         public string Text { get { return textContent; } set { SetText(value); } }
         public Color CheckedColor { get { return checkedColor.Value; } }
 
+        public Color ImageColor
+        {
+            get
+            {
+                Image image = transform.GetComponentInChildren<Image>(true);
+                return image.color;
+            }
+            set
+            {
+                Image image = transform.GetComponentInChildren<Image>(true);
+                image.color = value;
+            }
+        }
+
         private bool isChecked = false;
         public bool Checked
         {
@@ -142,7 +156,6 @@ namespace VRtist
                 Image image = canvas.GetComponentInChildren<Image>(true);
                 if (image != null)
                 {
-                    image.color = TextColor;
                     if (content != ButtonContent.TextOnly)
                     {
                         image.gameObject.SetActive(true);
@@ -408,7 +421,7 @@ namespace VRtist
                 return;
             }
 
-            
+
             //Vector2 localCenter = new Vector2(width / 2.0f, -height / 2.0f);
             Vector2 project = new Vector3(localWidgetPosition.x, localWidgetPosition.y);
             if (triggerJustClicked)

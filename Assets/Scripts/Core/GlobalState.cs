@@ -157,6 +157,9 @@ namespace VRtist
             if (null == networkUser.name || networkUser.name.Length == 0)
                 networkUser.name = "VRtist";
 
+            // Sky
+            Sky.SetSkyColors(settings.sky.topColor, settings.sky.middleColor, settings.sky.bottomColor);
+
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);
             instance.colorPicker.CurrentColor = currentColor;

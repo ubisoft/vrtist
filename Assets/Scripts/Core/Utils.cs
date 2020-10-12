@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace VRtist
@@ -50,6 +51,20 @@ namespace VRtist
                 if (roots[i].name == "World")
                 {
                     return roots[i];
+                }
+            }
+            return null;
+        }
+
+        public static Volume FindVolume()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            GameObject[] roots = scene.GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                if (roots[i].name == "Volume")
+                {
+                    return roots[i].GetComponent<Volume>();
                 }
             }
             return null;
@@ -171,8 +186,8 @@ namespace VRtist
 
             // Get controller to set the name
             ParametersController controller = res.GetComponent<ParametersController>();
-            if (null != controller) 
-            { 
+            if (null != controller)
+            {
                 controller.SetName(appliedName);
                 controller.controllerName = appliedName;
             }

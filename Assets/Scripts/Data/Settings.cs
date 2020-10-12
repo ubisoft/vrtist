@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace VRtist
 {
+    [Serializable]
+    public class SkySettings
+    {
+        public Color topColor;
+        public Color middleColor;
+        public Color bottomColor;
+    }
 
     [CreateAssetMenu(menuName = "VRtist/Settings")]
     public class Settings : ScriptableObject
@@ -46,6 +53,13 @@ namespace VRtist
         public bool consoleVisible = false;
         public Vector3 consolePosition = Vector3.zero;
         public Quaternion consoleRotation = Quaternion.identity;
+
+        public SkySettings sky = new SkySettings
+        {
+            topColor = new Color(212f / 255f, 212f / 255f, 212f / 255f),
+            middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
+            bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
+        };
 
         public bool castShadows = false;
 
@@ -99,6 +113,13 @@ namespace VRtist
             consoleRotation = Quaternion.identity;
 
             interpolation = Interpolation.Linear;
+
+            sky = new SkySettings
+            {
+                topColor = new Color(212f / 255f, 212f / 255f, 212f / 255f),
+                middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
+                bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
+            };
         }
 
         public void SaveWindowPosition(Transform window)
