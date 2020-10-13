@@ -1428,11 +1428,12 @@ namespace VRtist
 
         public static NetCommand BuildSkyCommand(SkySettings skyInfo)
         {
+            byte[] skyNameBuffer = StringToBytes("Sky"); // optimized commands need a name
             byte[] topBuffer = ColorToBytes(skyInfo.topColor);
             byte[] middleBuffer = ColorToBytes(skyInfo.middleColor);
             byte[] bottomBuffer = ColorToBytes(skyInfo.bottomColor);
 
-            List<byte[]> buffers = new List<byte[]> { topBuffer, middleBuffer, bottomBuffer };
+            List<byte[]> buffers = new List<byte[]> { skyNameBuffer, topBuffer, middleBuffer, bottomBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Sky);
             return command;
         }
@@ -1885,6 +1886,7 @@ namespace VRtist
         public static void BuildSky(byte[] data)
         {
             int currentIndex = 0;
+            string skyName = GetString(data, ref currentIndex);
             Color topColor = GetColor(data, ref currentIndex);
             Color middleColor = GetColor(data, ref currentIndex);
             Color bottomColor = GetColor(data, ref currentIndex);
