@@ -216,7 +216,6 @@ namespace VRtist
 
         private void Update()
         {
-#if UNITY_EDITOR
             if (NeedsRebuild)
             {
                 RebuildMesh();
@@ -227,7 +226,6 @@ namespace VRtist
                 UpdateTextColor();
                 NeedsRebuild = false;
             }
-#endif
         }
 
         public override void ResetColor()
