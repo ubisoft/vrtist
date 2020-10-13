@@ -57,6 +57,7 @@ namespace VRtist
             else if (bottomButton.Checked) { bottomButton.ImageColor = color; }
 
             SetSkyColors(topButton.ImageColor, middleButton.ImageColor, bottomButton.ImageColor);
+            NetworkClient.GetInstance().SendEvent<SkySettings>(MessageType.Sky, new SkySettings { topColor = topButton.ImageColor, middleColor = middleButton.ImageColor, bottomColor = bottomButton.ImageColor });
         }
 
         public static void SetSkyColors(Color topColor, Color middleColor, Color bottomColor)

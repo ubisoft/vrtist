@@ -88,6 +88,7 @@ namespace VRtist
         ShotManagerContent,
         ShotManagerCurrentShot,
         ShotManagerAction,
+        _BlenderDataCreate,
 
         Optimized_Commands = 200,
         Transform,
@@ -97,6 +98,7 @@ namespace VRtist
         Frame,
         Play,
         Pause,
+        Sky,
 
         End_Optimized_Commands = 999,
         ClientIdWrapper = 1000
@@ -1424,6 +1426,17 @@ namespace VRtist
 
         }
 
+        public static NetCommand BuildSkyCommand(SkySettings skyInfo)
+        {
+            byte[] topBuffer = ColorToBytes(skyInfo.topColor);
+            byte[] middleBuffer = ColorToBytes(skyInfo.middleColor);
+            byte[] bottomBuffer = ColorToBytes(skyInfo.bottomColor);
+
+            List<byte[]> buffers = new List<byte[]> { topBuffer, middleBuffer, bottomBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Sky);
+            return command;
+        }
+
         public static NetCommand BuildRenameCommand(Transform root, RenameInfo rename)
         {
             string src = GetPathName(root, rename.srcTransform);
@@ -1867,6 +1880,16 @@ namespace VRtist
             }
 
             //GlobalState.Instance.FireAnimationChanged(lightGameObject);
+        }
+
+        public static void BuildSky(byte[] data)
+        {
+            int currentIndex = 0;
+            Color topColor = GetColor(data, ref currentIndex);
+            Color middleColor = GetColor(data, ref currentIndex);
+            Color bottomColor = GetColor(data, ref currentIndex);
+
+            Sky.SetSkyColors(topColor, middleColor, bottomColor);
         }
 
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
@@ -3202,6 +3225,11 @@ namespace VRtist
             NetCommand command = NetGeometry.BuildLightCommand(root, lightInfo);
             AddCommand(command);
         }
+        public void SendSky(SkySettings skyInfo)
+        {
+            NetCommand command = NetGeometry.BuildSkyCommand(skyInfo);
+            AddCommand(command);
+        }
         public void SendRename(RenameInfo rename)
         {
             NetCommand command = NetGeometry.BuildRenameCommand(root, rename);
@@ -3481,6 +3509,9 @@ namespace VRtist
                             case MessageType.Light:
                                 NetGeometry.BuildLight(prefab, command.data);
                                 break;
+                            case MessageType.Sky:
+                                NetGeometry.BuildSky(command.data);
+                                break;
                             case MessageType.Delete:
                                 NetGeometry.Delete(prefab, command.data);
                                 break;
@@ -3622,6 +3653,9 @@ namespace VRtist
                 case MessageType.Light:
                     SendLight(data as LightInfo);
                     SendTransform((data as LightInfo).transform);
+                    break;
+                case MessageType.Sky:
+                    SendSky(data as SkySettings);
                     break;
                 case MessageType.Rename:
                     SendRename(data as RenameInfo); break;
