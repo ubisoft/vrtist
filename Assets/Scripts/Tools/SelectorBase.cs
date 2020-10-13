@@ -207,7 +207,7 @@ namespace VRtist
             // So don't deactivate mouth pieces, but scale them to 0 instead to hide them
             //rightHandle.Find("mouthpieces").gameObject.SetActive(visible);
             Transform mouthPieces = rightHandle.Find("mouthpieces");
-            mouthPieces.localScale = visible ? Vector3.one : Vector3.zero;
+            mouthPieces.gameObject.SetActive(visible);
         }
 
         protected void InitControllerMatrix()
@@ -267,6 +267,8 @@ namespace VRtist
 
         protected virtual void OnStartGrip()
         {
+            //ActivateMouthpiece(selectorBrush, false);
+
             EndUndoGroup(); // secu
             if (GlobalState.IsGrippingWorld)
             {

@@ -266,6 +266,20 @@ namespace VRtist
             int frame = GlobalState.currentFrame;
             if (frame != recordCurrentFrame)
             {
+                if (frame >= GlobalState.endFrame)
+                {
+                    GlobalState.Instance.Pause();
+                    return;
+                }
+                /* Doesn't work in blender, blender will loop in previous range
+                if(frame >= GlobalState.endFrame - 20)
+                {
+                    GlobalState.endFrame += 100;
+                    FrameStartEnd info = new FrameStartEnd() { start = GlobalState.startFrame, end = GlobalState.endFrame };
+                    NetworkClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
+                }
+                */
+
                 foreach (var item in recordAnimationSets)
                 {
                     item.Value.xPosition.keys.Add(new AnimationKey(frame, item.Key.transform.localPosition.x));
