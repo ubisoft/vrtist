@@ -69,7 +69,7 @@ namespace VRtist
         void Start()
         {
             Init();
-            ActivateMouthpiece(selectorBrush, true);
+            ToggleMouthpiece(mouthpiece, true);
         }
 
         protected override void Init()
@@ -725,7 +725,7 @@ namespace VRtist
 
         protected override void ShowTool(bool show)
         {
-            ActivateMouthpiece(selectorBrush, show);
+            base.ShowTool(show);
             UpdateGrid();
         }
 

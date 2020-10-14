@@ -100,6 +100,13 @@ namespace VRtist
             return Instance.Tools[name];
         }
 
+        public static void ActivateCurrentTool(bool value)
+        {
+            // Activate/deactivate the tool and its mouthpiece
+            Instance.currentToolRef.SetActive(value);
+            Instance.currentToolRef.GetComponent<ToolBase>().ActivateMouthpiece(value);
+        }
+
         public static void OnChangeTool(object sender, ToolChangedArgs args)
         {
             Instance.currentToolRef.SetActive(false);

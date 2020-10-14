@@ -400,7 +400,7 @@ namespace VRtist
             {
                 if (UIObject)
                 {
-                    Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
+                    Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
                     GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
                     if (newCamera)
                     {
@@ -467,11 +467,6 @@ namespace VRtist
             {
                 base.DoUpdate();
             }
-        }
-
-        protected override void ShowTool(bool show)
-        {
-            ActivateMouthpiece(selectorBrush, show);
         }
 
         private float ComputeFocal(Camera cam)
