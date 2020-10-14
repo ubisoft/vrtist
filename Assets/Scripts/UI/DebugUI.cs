@@ -293,7 +293,14 @@ namespace VRtist
                     UILabel label = element.GetComponent<UILabel>();
                     if (label != null)
                     {
-                        label.source_material = UIUtils.LoadMaterial(UILabel.default_material_name);
+                        if (label.name == "TitleBar")
+                        {
+                            label.source_material = UIUtils.LoadMaterial("UIBase");
+                        }
+                        else
+                        {
+                            label.source_material = UIUtils.LoadMaterial(UILabel.default_material_name);
+                        }
                     }
 
                     UIPanel panel = element.GetComponent<UIPanel>();
