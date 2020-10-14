@@ -7,8 +7,6 @@ namespace VRtist
 {
     public class Colorize : ToolBase
     {
-        [SerializeField] private Transform colorizeTrigger;
-
         private UISlider roughnessSlider;
         private UISlider metallicSlider;
 
@@ -83,10 +81,10 @@ namespace VRtist
             });
 
             // Update UI
-            if(!uiInitialized)
+            if (!uiInitialized)
             {
                 uiInitialized = true;
-                switch(colorOp)
+                switch (colorOp)
                 {
                     case ColorOp.Colorize: OnSetColorize(); break;
                     case ColorOp.UpdateSelection: OnSetUpdateSelection(); break;
@@ -96,14 +94,14 @@ namespace VRtist
             }
 
             // Clear selection: only when triggering on nothing with the ColorOp.UpdateSelection
-            if(ColorOp.UpdateSelection == colorOp)
+            if (ColorOp.UpdateSelection == colorOp)
             {
                 VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton, () =>
                 {
                     selectionHasChanged = false;
                 }, () =>
                 {
-                    if(!selectionHasChanged && ColorOp.UpdateSelection == colorOp)
+                    if (!selectionHasChanged && ColorOp.UpdateSelection == colorOp)
                     {
                         CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.selection.Values.ToList());
                         command.Redo();
@@ -115,11 +113,11 @@ namespace VRtist
 
         private void UpdateMaterial()
         {
-            if(!gameObject.activeSelf) { return; }
+            if (!gameObject.activeSelf) { return; }
 
             UpdatePreview();
 
-            if(colorOp == ColorOp.UpdateSelection)
+            if (colorOp == ColorOp.UpdateSelection)
             {
                 ColorizeObjects(Selection.selection.Values.ToList());
             }
@@ -127,22 +125,17 @@ namespace VRtist
 
         private void UpdatePreview()
         {
-            if(!gameObject.activeSelf) { return; }
+            if (!gameObject.activeSelf) { return; }
 
             previewRenderer.material.SetColor("_BaseColor", GlobalState.CurrentColor);
             previewRenderer.material.SetFloat("_Smoothness", 1f - roughnessSlider.Value);
             previewRenderer.material.SetFloat("_Metallic", metallicSlider.Value);
         }
 
-        protected override void ShowTool(bool show)
-        {
-            ActivateMouthpiece(colorizeTrigger, show);
-        }
-
         // Called by ColorizeTrigger script
         public void ProcessObjects(List<GameObject> gobjects)
         {
-            switch(colorOp)
+            switch (colorOp)
             {
                 case ColorOp.Colorize: ColorizeObjects(gobjects); break;
                 case ColorOp.Pick: PickObjects(gobjects); break;
@@ -161,7 +154,7 @@ namespace VRtist
         {
             MeshRenderer renderer = gobjects[0].GetComponentInChildren<MeshRenderer>();
             GlobalState.CurrentColor = renderer.material.GetColor("_BaseColor");
-            if(renderer.material.HasProperty("_Smoothness")) { roughnessSlider.Value = 1f - renderer.material.GetFloat("_Smoothness"); }
+            if (renderer.material.HasProperty("_Smoothness")) { roughnessSlider.Value = 1f - renderer.material.GetFloat("_Smoothness"); }
             else { roughnessSlider.Value = renderer.material.GetFloat("_Roughness"); }
             metallicSlider.Value = renderer.material.GetFloat("_Metallic");
             UpdatePreview();
@@ -172,7 +165,7 @@ namespace VRtist
         {
             bool primaryState = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
             ICommand command;
-            if(!primaryState) { command = new CommandAddToSelection(gobjects); }
+            if (!primaryState) { command = new CommandAddToSelection(gobjects); }
             else { command = new CommandRemoveFromSelection(gobjects); }
             command.Redo();
             command.Submit();

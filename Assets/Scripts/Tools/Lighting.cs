@@ -106,7 +106,7 @@ namespace VRtist
 
             if (light)
             {
-                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * selectorBrush.localToWorldMatrix * Matrix4x4.Scale(new Vector3(10f, 10f, 10f));
+                Matrix4x4 matrix = parentContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(10f, 10f, 10f));
                 GameObject instance = SyncData.InstantiateUnityPrefab(light, matrix);
 
                 CommandGroup undoGroup = new CommandGroup("Instantiate Light");
@@ -135,11 +135,6 @@ namespace VRtist
                 }
                 OnStartGrip();
             }, OnEndGrip);
-        }
-
-        protected override void ShowTool(bool show)
-        {
-            ActivateMouthpiece(selectorBrush, show);
         }
 
         private void SetSliderValues(Transform slider, float value, float minValue, float maxValue)

@@ -163,6 +163,7 @@ namespace VRtist
 
             // Update left controller transform
             VRInput.UpdateTransformFromVRDevice(leftHandle, VRInput.leftController);
+            VRInput.UpdateTransformFromVRDevice(rightHandle, VRInput.rightController);
 
             if (null != options.currentNavigationMode)
                 options.currentNavigationMode.Update();

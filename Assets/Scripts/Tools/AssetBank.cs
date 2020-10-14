@@ -41,7 +41,7 @@ namespace VRtist
         public void OnPrevPage()
         {
             pages[current_page].gameObject.SetActive(false);
-            current_page = (current_page + maxPages - 1 ) % maxPages;
+            current_page = (current_page + maxPages - 1) % maxPages;
             pages[current_page].gameObject.SetActive(true);
         }
 
@@ -85,7 +85,7 @@ namespace VRtist
                     meshFilter.mesh.name = newObject.name;
                 }
 
-                Matrix4x4 matrix = container.worldToLocalMatrix * selectorBrush.localToWorldMatrix;
+                Matrix4x4 matrix = container.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
                 if (!useDefaultInstantiationScale)
                 {
                     SyncData.SetTransform(newObject.name, matrix * Matrix4x4.Scale(10f * UIObject.transform.localScale));

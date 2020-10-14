@@ -33,18 +33,24 @@ namespace VRtist
                 return;
 
             // Device rotation
-            Vector3 position;
-            Quaternion rotation;
-            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+            VRInput.GetControllerTransform(VRInput.rightController, out Vector3 position, out Quaternion rotation);
 
             // The main cursor object always follows the controller
             // so that the collider sticks to the actual hand position.
             transform.localPosition = position;
             transform.localRotation = rotation;
 
-            if (ray != null)
+            if (null != ray)
             {
-                HandleRaycast();
+                if (GlobalState.IsGrippingWorld)
+                {
+                    ray.gameObject.SetActive(false);
+                    widgetClicked = null;
+                }
+                else
+                {
+                    HandleRaycast();
+                }
             }
         }
 
@@ -247,7 +253,7 @@ namespace VRtist
                 // Send messages and states to the widget hit, with priorities.
                 //
 
-                
+
                 //else if (handleIsHit)
                 //{
                 //    HandleHoverPhysicObject(null);
@@ -377,7 +383,7 @@ namespace VRtist
                         }
                         else
                         {
-                            Debug.LogError("Just Released received without having clicked before on any widget!!");
+                            Debug.LogWarning("Just Released received without having clicked before on any widget!!");
                         }
 
                         widgetClicked = null;

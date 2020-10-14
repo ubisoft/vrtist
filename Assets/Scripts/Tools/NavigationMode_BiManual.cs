@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
-{ 
+{
     public class NavigationMode_BiManual : NavigationMode
     {
         private StretchUI lineUI = null;
@@ -29,8 +27,6 @@ namespace VRtist
         private Vector3 deltaFromLeftControllerCenter = new Vector3(0.0188f, 0, 0); // see "left_controller" since left controller mesh is not centered
         private Vector3 deltaFromRightControllerCenter = new Vector3(0, 0, 0);
 
-        private Transform mouthpieces = null;
-
         enum ResetType { LEFT_ONLY, LEFT_AND_RIGHT };
 
         public NavigationMode_BiManual(StretchUI line, float minScale, float maxScale)
@@ -43,7 +39,6 @@ namespace VRtist
         public override void Init(Transform rigTransform, Transform worldTransform, Transform leftHandleTransform, Transform rightHandleTransform, Transform pivotTransform, Transform cameraTransform, Transform parametersTransform)
         {
             base.Init(rigTransform, worldTransform, leftHandleTransform, rightHandleTransform, pivotTransform, cameraTransform, parametersTransform);
-            mouthpieces = rightHandleTransform.Find("mouthpieces");
 
             lineUI.Show(false);
 
@@ -75,18 +70,7 @@ namespace VRtist
 
                     lineUI.Show(true, StretchUI.LineMode.DOUBLE);
                     GlobalState.IsGrippingWorld = true;
-                    mouthpieces.gameObject.SetActive(false);
-                }
-                else // only left => reset left
-                {
-                    ResetInitControllerMatrices(ResetType.LEFT_ONLY);
-                    ResetInitWorldMatrix();
-
-                    SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL); // old hide
-
-                    //lineUI.Show(true, StretchUI.LineMode.SINGLE);
-                    GlobalState.IsGrippingWorld = true;
-                    mouthpieces.gameObject.SetActive(false);
+                    ToolsManager.ActivateCurrentTool(false);
                 }
 
                 isLeftGripped = true;
@@ -97,7 +81,7 @@ namespace VRtist
 
                 lineUI.Show(false);
                 GlobalState.IsGrippingWorld = false;
-                mouthpieces.gameObject.SetActive(true);
+                ToolsManager.ActivateCurrentTool(true);
 
                 isLeftGripped = false;
             });
@@ -124,7 +108,7 @@ namespace VRtist
                         SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
                         lineUI.Show(true, StretchUI.LineMode.DOUBLE);
                         GlobalState.IsGrippingWorld = true;
-                        mouthpieces.gameObject.SetActive(false);
+                        ToolsManager.ActivateCurrentTool(false);
                     }
 
                     // even if no left gripped, just flag the right as gripped for the next update
@@ -143,7 +127,7 @@ namespace VRtist
 
                     //lineUI.Show(true, StretchUI.LineMode.SINGLE);
                     GlobalState.IsGrippingWorld = false;
-                    mouthpieces.gameObject.SetActive(true);
+                    ToolsManager.ActivateCurrentTool(true);
                 }
 
                 isRightGripped = false;

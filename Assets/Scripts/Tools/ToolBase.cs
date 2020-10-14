@@ -17,8 +17,10 @@ namespace VRtist
 
         protected ICommand parameterCommand = null;
 
+        public Transform mouthpiece;
+
         protected Transform rightHandle;
-        protected Transform rightMouthpiece;
+        protected Transform rightMouthpieces;
         protected Transform rightController;
 
         private bool hasListener = false;
@@ -34,11 +36,11 @@ namespace VRtist
             UnityEngine.Assertions.Assert.IsNotNull(rightController);
             rightHandle = rightController.parent;
             UnityEngine.Assertions.Assert.IsNotNull(rightHandle);
-            rightMouthpiece = rightHandle.Find("mouthpieces");
-            UnityEngine.Assertions.Assert.IsNotNull(rightMouthpiece);
+            rightMouthpieces = rightHandle.Find("mouthpieces");
+            UnityEngine.Assertions.Assert.IsNotNull(rightMouthpieces);
         }
 
-        protected void ActivateMouthpiece(Transform mouthPiece, bool activate)
+        public static void ToggleMouthpiece(Transform mouthPiece, bool activate)
         {
             Transform container = mouthPiece.parent;
             for (int i = 0; i < container.childCount; i++)
@@ -46,6 +48,32 @@ namespace VRtist
                 Transform child = container.GetChild(i);
                 child.gameObject.SetActive(activate && child == mouthPiece);
             }
+        }
+
+        protected void SetControllerVisible(bool visible)
+        {
+            rightController.gameObject.SetActive(visible);
+
+            // Mouth piece have the selectorTrigger script attached to them which has to be always enabled
+            // So don't deactivate mouth piece, but hide it instead
+            ShowMouthpiece(visible);
+        }
+
+        protected void ShowMouthpiece(bool value)
+        {
+            foreach (var meshRenderer in mouthpiece.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                meshRenderer.enabled = value;
+            }
+            foreach (var collider in mouthpiece.GetComponentsInChildren<Collider>(true))
+            {
+                collider.enabled = value;
+            }
+        }
+
+        public void ActivateMouthpiece(bool value)
+        {
+            mouthpiece.gameObject.SetActive(value);
         }
 
         void Start()
@@ -57,20 +85,6 @@ namespace VRtist
         {
             if (VRInput.TryGetDevices())
             {
-                // Device rotation
-                Vector3 position;
-                Quaternion rotation;
-                VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
-                rightHandle.localPosition = position;
-                rightHandle.localRotation = rotation;
-                /*
-                rightController.localPosition = position;
-                rightController.localRotation = rotation;
-                transform.localPosition = position;
-                transform.localRotation = rotation;
-                */
-                Vector3 r = rotation.eulerAngles;
-
                 // Toggle selection
                 if (enableToggleTool)
                 {
@@ -145,7 +159,12 @@ namespace VRtist
         }
         protected abstract void DoUpdate();
         protected virtual void DoUpdateGui() { }
-        protected virtual void ShowTool(bool show) { }
+
+        protected virtual void ShowTool(bool show)
+        {
+            ToggleMouthpiece(mouthpiece, show);
+        }
+
         protected virtual void ShowController(bool show)
         {
             if (rightController != null)

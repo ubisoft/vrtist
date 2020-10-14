@@ -7,7 +7,6 @@ namespace VRtist
     {
         [Header("Paint Parameters")]
         [SerializeField] private Transform paintContainer;
-        [SerializeField] private Transform paintBrush;
         [SerializeField] private Material paintMaterial;
         [SerializeField] private NavigationOptions navigation;
 
@@ -40,12 +39,12 @@ namespace VRtist
             freeDraw = new FreeDraw();
             updateButtonsColor();
 
-            brushSize = paintBrush.localScale.x;
+            brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
 
-            volumeCursor = paintBrush.transform.Find("curve").gameObject;
-            flatCursor = paintBrush.transform.Find("flat_curve").gameObject;
-            convexCursor = paintBrush.transform.Find("convex").gameObject;
+            volumeCursor = mouthpiece.transform.Find("curve").gameObject;
+            flatCursor = mouthpiece.transform.Find("flat_curve").gameObject;
+            convexCursor = mouthpiece.transform.Find("convex").gameObject;
             volumeCursor.SetActive(paintTool == PaintTools.Pencil);
             flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
             convexCursor.SetActive(paintTool == PaintTools.ConvexHull);
@@ -78,18 +77,13 @@ namespace VRtist
             UpdateToolPaintPencil(position, rotation);
         }
 
-        protected override void ShowTool(bool show)
-        {
-            ActivateMouthpiece(paintBrush, show);
-        }
-
         private void TranslatePaintToItsCenter()
         {
             // determine center
             PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
             Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
-            foreach(Vector3 pos in freeDraw.controlPoints)
+            foreach (Vector3 pos in freeDraw.controlPoints)
             {
                 if (pos.x < min.x) min.x = pos.x;
                 if (pos.y < min.y) min.y = pos.y;
@@ -149,7 +143,7 @@ namespace VRtist
                 freeDraw.AddControlPoint(new Vector3(20, 10, 20), 1f);              
                 freeDraw.AddControlPoint(new Vector3(20, 0, 20), 1f);
                 */
-            },            
+            },
             () =>
             {
                 try
@@ -178,12 +172,12 @@ namespace VRtist
                     if (val.y > 0.3f) { brushSize += 0.001f; }
                     if (val.y < -0.3f) { brushSize -= 0.001f; }
                     brushSize = Mathf.Clamp(brushSize, 0.001f, 0.5f);
-                    paintBrush.localScale = new Vector3(brushSize, brushSize, brushSize);
+                    mouthpiece.localScale = new Vector3(brushSize, brushSize, brushSize);
                 }
             }
 
             paintLineRenderer.enabled = false;
-            Vector3 penPosition = paintBrush.position;
+            Vector3 penPosition = mouthpiece.position;
             if (paintOnSurface)
             {
                 paintLineRenderer.enabled = true;
@@ -211,7 +205,7 @@ namespace VRtist
                 //OVRInput.SetControllerVibration(1, ratio, OVRInput.Controller.RTouch);
                 //VRInput.rightController.SendHapticImpulse(0, ratio, 1f);                       
 
-                switch(paintTool)
+                switch (paintTool)
                 {
                     case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, brushSize * ratio); break;
                     case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, brushSize * ratio); break;
@@ -228,11 +222,11 @@ namespace VRtist
             }
 
             paintPrevPosition = position;
-        }        
+        }
 
         public void OnPaintColor(Color color)
         {
-            paintBrush.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", color);
+            mouthpiece.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", color);
         }
 
         public void OnCheckPaintOnSurface(bool value)
@@ -258,7 +252,7 @@ namespace VRtist
                         button.Checked = true;
                     }
                     if (child.name == "FlatPencilButton" && paintTool == PaintTools.FlatPencil)
-                    { 
+                    {
                         button.Checked = true;
                     }
                     if (child.name == "ConvexHullPencilButton" && paintTool == PaintTools.ConvexHull)
@@ -317,7 +311,7 @@ namespace VRtist
             float radius = 1.0f;
             for (int i = 0; i < nbSteps; ++i)
             {
-                float t = (float)i / (float)(nbSteps - 1);
+                float t = (float) i / (float) (nbSteps - 1);
                 float growingRadius = (0.1f + radius * t * t);
                 Vector3 pos = new Vector3(
                     growingRadius * Mathf.Cos(t * 5.0f * 2.0f * Mathf.PI),
@@ -325,7 +319,7 @@ namespace VRtist
                     t * 1.0f);
                 freeDraw.AddControlPoint(pos, 0.01f);
             }
-            
+
 
             // set mesh components
             MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();

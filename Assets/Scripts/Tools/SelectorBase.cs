@@ -8,7 +8,6 @@ namespace VRtist
     {
         [Header("Selector Parameters")]
         [SerializeField] protected Transform world;
-        [SerializeField] protected Transform selectorBrush;
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
         [SerializeField] private NavigationOptions navigation;
@@ -124,9 +123,9 @@ namespace VRtist
 
             CreateTooltips();
 
-            selectorRadius = selectorBrush.localScale.x;
-            selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
-            selectorTrigger = selectorBrush.GetComponent<SelectorTrigger>();
+            selectorRadius = mouthpiece.localScale.x;
+            mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
+            selectorTrigger = mouthpiece.GetComponent<SelectorTrigger>();
 
             updateButtonsColor();
 
@@ -182,7 +181,7 @@ namespace VRtist
                         if (val.y > deadZone) { selectorRadius *= scaleFactor; }
                         if (val.y < -deadZone) { selectorRadius /= scaleFactor; }
                         selectorRadius = Mathf.Clamp(selectorRadius, 0.001f, 0.5f);
-                        selectorBrush.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
+                        mouthpiece.localScale = new Vector3(selectorRadius, selectorRadius, selectorRadius);
                     }
                 }
             }
@@ -194,22 +193,6 @@ namespace VRtist
             }
         }
 
-        protected override void ShowTool(bool show)
-        {
-            ActivateMouthpiece(selectorBrush, show);
-        }
-
-        void SetControllerVisible(bool visible)
-        {
-            rightHandle.Find("right_controller").gameObject.SetActive(visible);
-
-            // Mouth pieces have the selectorTrigger script attached to them which has to be always enabled
-            // So don't deactivate mouth pieces, but scale them to 0 instead to hide them
-            //rightHandle.Find("mouthpieces").gameObject.SetActive(visible);
-            Transform mouthPieces = rightHandle.Find("mouthpieces");
-            mouthPieces.gameObject.SetActive(visible);
-        }
-
         protected void InitControllerMatrix()
         {
             VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
@@ -218,7 +201,7 @@ namespace VRtist
             //initControllerRotation = rightControllerRotation;
             // compute rightMouthpiece local to world matrix with initial controller position/rotation
             //initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one)).inverse;
-            initTransformation = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one);
+            initTransformation = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, Vector3.one);
             initTransformation = initTransformation.inverse;
         }
 
@@ -267,8 +250,6 @@ namespace VRtist
 
         protected virtual void OnStartGrip()
         {
-            //ActivateMouthpiece(selectorBrush, false);
-
             EndUndoGroup(); // secu
             if (GlobalState.IsGrippingWorld)
             {
@@ -279,6 +260,7 @@ namespace VRtist
             enableToggleTool = false; // NO secondary button tool switch while gripping.
 
             Selection.SetGrippedObject(Selection.GetHoveredObject());
+            SetControllerVisible(Selection.GetGrippedOrSelection().Count == 0);
 
             InitControllerMatrix();
             InitTransforms();
@@ -290,6 +272,7 @@ namespace VRtist
 
         protected virtual void OnEndGrip()
         {
+            SetControllerVisible(true);
             enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
 
             if (gripPrevented)
@@ -579,8 +562,6 @@ namespace VRtist
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 
-            SetControllerVisible(!Gripping || Selection.GetGrippedOrSelection().Count == 0);
-
             if (Gripping)
             {
                 Vector3 p = rightControllerPosition;
@@ -608,7 +589,7 @@ namespace VRtist
 
                 // compute rightMouthpiece local to world matrix with controller position/rotation
                 Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
-                    Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, new Vector3(scale, scale, scale));
+                    Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, new Vector3(scale, scale, scale));
 
                 TransformSelection(controllerMatrix);
             }
@@ -887,14 +868,14 @@ namespace VRtist
         public void OnSelectMode()
         {
             mode = SelectorModes.Select;
-            selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
+            mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
             updateButtonsColor();
         }
 
         public void OnEraserMode()
         {
             mode = SelectorModes.Eraser;
-            selectorBrush.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", eraseColor);
+            mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", eraseColor);
             updateButtonsColor();
         }
 
