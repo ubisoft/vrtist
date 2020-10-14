@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: controller_rough
-  m_Shader: {fileID: -6465566751694194690, guid: 234f00f8af33db749994f461577e2195,
+  m_Shader: {fileID: -6465566751694194690, guid: fccb767e9e630ec469d2714b7a9982f8,
     type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -149,8 +149,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Vector1_6D2F903D: 0.9
+    - Vector1_737BFC1B: 0
     - Vector1_974B2B18: 16
-    - Vector1_E1815855: 0.1
+    - Vector1_CAA38805: 0.6
+    - Vector1_E1815855: 0.04
     - _AORemapMax: 1
     - _AORemapMin: 0
     - _ATDistance: 1
@@ -291,8 +293,10 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
+    - Color_96C27873: {r: 1, g: 1, b: 1, a: 1}
     - Vector3_5937E033: {r: -1, g: -1, b: 1, a: 0}
-    - _BaseColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - Vector3_AD3558CA: {r: 0, g: 0, b: 1, a: 0}
+    - _BaseColor: {r: 0, g: 0, b: 0, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 0.01652589, g: 0.01652589, b: 0.01652589, a: 1}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
