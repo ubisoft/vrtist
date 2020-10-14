@@ -72,7 +72,7 @@ namespace VRtist
                 for (int e = 0; e < uiElements.Length; ++e)
                 {
                     UIElement element = uiElements[e];
-
+#if toto
                     element.baseColor.useConstant = false;
                     element.baseColor.constant = UIOptions.BackgroundColor;
                     element.baseColor.reference = UIOptions.BackgroundColorVar;
@@ -157,7 +157,7 @@ namespace VRtist
                             label.baseColor.reference = UIOptions.PanelColorVar;
                         }
                     }
-
+#endif
                     UIPanel panel = element.GetComponent<UIPanel>();
                     if (panel != null)
                     {
@@ -171,7 +171,7 @@ namespace VRtist
                         panel.hoveredColor.constant = UIOptions.PanelHoverColor;
                         panel.hoveredColor.reference = UIOptions.PanelHoverColorVar;
                     }
-
+#if toto
                     UIGrabber grabber = element.GetComponent<UIGrabber>();
                     if (grabber)
                     {
@@ -235,11 +235,12 @@ namespace VRtist
                     if (timebar)
                     {
                     }
-
+#endif
                     element.NeedsRebuild = true;
                     //element.ResetColor();
                 }
             }
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
 
         public void UIOPTIONS_HoveredColor()
@@ -566,7 +567,7 @@ namespace VRtist
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
 
-        #region UTILS
+                    #region UTILS
         static void PrintObjectProperties(Object o)
         {
             SerializedObject so = new SerializedObject(o);
@@ -576,9 +577,9 @@ namespace VRtist
                 Debug.Log($"n: {sp.name} dn: {sp.displayName} p: {sp.propertyPath}");
             } while (sp.Next(true));
         }
-        #endregion
+                    #endregion
 
-        #region TEMPLATE
+                    #region TEMPLATE
         public void TEMPLATE()
         {
             for (int w = 0; w < windows.Length; ++w)
@@ -660,9 +661,9 @@ namespace VRtist
             }
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
-        #endregion
+                    #endregion
 
-        #region DEPRECATED
+                    #region DEPRECATED
 
         //
         // Add Colliders to UIPanel
@@ -1176,8 +1177,8 @@ namespace VRtist
         }
 
 
-        #endregion
+                    #endregion
 
 #endif
-    }
+                }
 }

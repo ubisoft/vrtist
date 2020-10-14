@@ -50,7 +50,7 @@ MonoBehaviour:
     value: {r: 0.3, g: 0.3, b: 0.3, a: 1}
   panelColor:
     isHdr: 0
-    value: {r: 0.03773582, g: 0.03773582, b: 0.03773582, a: 0.90588236}
+    value: {r: 0.1, g: 0.1, b: 0.1, a: 0.90588236}
   panelHoverColor:
     isHdr: 0
     value: {r: 0.078431375, g: 0.078431375, b: 0.078431375, a: 0.90588236}
