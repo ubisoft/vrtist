@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: controller_rough
+  m_Name: controller_display
   m_Shader: {fileID: -6465566751694194690, guid: fccb767e9e630ec469d2714b7a9982f8,
     type: 3}
   m_ShaderKeywords: 
