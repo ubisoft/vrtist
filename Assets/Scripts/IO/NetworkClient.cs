@@ -121,6 +121,8 @@ namespace VRtist
         }
     }
 
+    // Grease Pencil related classes
+
     public class GPLayer
     {
         public GPLayer(string n)
@@ -147,6 +149,7 @@ namespace VRtist
         public MaterialParameters materialParameters;
     }
 
+    // Material classes
     public enum MaterialType
     {
         Opaque,
@@ -193,6 +196,7 @@ namespace VRtist
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static HashSet<string> texturesFlipY = new HashSet<string>();
 
+        // Converts string array to byte buffer
         public static byte[] StringsToBytes(string[] values, bool storeSize = true)
         {
             int size = sizeof(int);
@@ -221,6 +225,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Converts string to byte buffer
         public static byte[] StringToBytes(string value)
         {
             byte[] bytes = new byte[sizeof(int) + value.Length];
@@ -230,6 +235,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Converts triangle indice array to byte buffer
         public static byte[] TriangleIndicesToBytes(int[] vectors)
         {
             byte[] bytes = new byte[sizeof(int) * vectors.Length + sizeof(int)];
@@ -243,6 +249,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Converts Vector3 array to byte buffer
         public static byte[] Vector3ToBytes(Vector3[] vectors)
         {
             byte[] bytes = new byte[3 * sizeof(float) * vectors.Length + sizeof(int)];
@@ -259,6 +266,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Converts byte buffer to Color
         public static Color GetColor(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[4];
@@ -268,6 +276,7 @@ namespace VRtist
             return new Color(buffer[0], buffer[1], buffer[2], buffer[3]);
         }
 
+        // Converts Color to byte buffer
         public static byte[] ColorToBytes(Color color)
         {
             byte[] bytes = new byte[4 * sizeof(float)];
@@ -279,6 +288,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Convert byte buffer to Vector3
         public static Vector3 GetVector3(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[3];
@@ -288,6 +298,7 @@ namespace VRtist
             return new Vector3(buffer[0], buffer[1], buffer[2]);
         }
 
+        // Convert Vector3 to byte buffer
         public static byte[] Vector3ToBytes(Vector3 vector)
         {
             byte[] bytes = new byte[3 * sizeof(float)];
@@ -298,7 +309,8 @@ namespace VRtist
             return bytes;
         }
 
-        public static Vector3 GetVector4(byte[] data, ref int currentIndex)
+        // Convert byte buffer to Vector3
+        public static Vector4 GetVector4(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[4];
             int size = 4 * sizeof(float);
@@ -307,6 +319,7 @@ namespace VRtist
             return new Vector4(buffer[0], buffer[1], buffer[2], buffer[3]);
         }
 
+        // Convert Vector3 to byte buffer
         public static byte[] Vector4ToBytes(Vector4 vector)
         {
             byte[] bytes = new byte[4 * sizeof(float)];
@@ -318,6 +331,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Convert byte buffer to Vector2
         public static Vector2 GetVector2(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[2];
@@ -327,6 +341,7 @@ namespace VRtist
             return new Vector2(buffer[0], buffer[1]);
         }
 
+        // Convert Vector2 array to byte buffer
         public static byte[] Vector2ToBytes(Vector2[] vectors)
         {
             byte[] bytes = new byte[2 * sizeof(float) * vectors.Length + sizeof(int)];
@@ -342,6 +357,7 @@ namespace VRtist
             return bytes;
         }
 
+        // Convert byte buffer to Matrix4x4
         public static Matrix4x4 GetMatrix(byte[] data, ref int index)
         {
             float[] matrixBuffer = new float[16];
@@ -357,6 +373,7 @@ namespace VRtist
             return m;
         }
 
+        // Convert Matrix4x4 to byte buffer
         public static byte[] MatrixToBytes(Matrix4x4 matrix)
         {
             byte[] column0Buffer = Vector4ToBytes(matrix.GetColumn(0));
@@ -367,7 +384,7 @@ namespace VRtist
             return ConcatenateBuffers(buffers);
         }
 
-
+        // Convert byte buffer to Quaternion
         public static Quaternion GetQuaternion(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[4];
@@ -376,6 +393,8 @@ namespace VRtist
             currentIndex += size;
             return new Quaternion(buffer[0], buffer[1], buffer[2], buffer[3]);
         }
+
+        // Convert Quaternion to byte buffer
         public static byte[] QuaternionToBytes(Quaternion quaternion)
         {
             byte[] bytes = new byte[4 * sizeof(float)];
@@ -387,6 +406,7 @@ namespace VRtist
             return bytes;
         }
 
+        // convert byte buffer to bool
         public static bool GetBool(byte[] data, ref int currentIndex)
         {
             int[] buffer = new int[1];
@@ -395,6 +415,7 @@ namespace VRtist
             return buffer[0] == 1 ? true : false;
         }
 
+        // convert bool to byte buffer
         public static byte[] BoolToBytes(bool value)
         {
             byte[] bytes = new byte[sizeof(int)];
@@ -403,6 +424,7 @@ namespace VRtist
             return bytes;
         }
 
+        // convert byte buffer to int
         public static int GetInt(byte[] data, ref int currentIndex)
         {
             int[] buffer = new int[1];
@@ -411,6 +433,7 @@ namespace VRtist
             return buffer[0];
         }
 
+        // convert int to byte buffer
         public static byte[] IntToBytes(int value)
         {
             byte[] bytes = new byte[sizeof(int)];
@@ -418,6 +441,7 @@ namespace VRtist
             return bytes;
         }
 
+        // convert byte buffer to float
         public static float GetFloat(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[1];
@@ -426,6 +450,7 @@ namespace VRtist
             return buffer[0];
         }
 
+        // convert float to byte buffer
         public static byte[] FloatToBytes(float value)
         {
             byte[] bytes = new byte[sizeof(float)];
@@ -433,6 +458,7 @@ namespace VRtist
             return bytes;
         }
 
+        // concatenate byte buffers
         public static byte[] ConcatenateBuffers(List<byte[]> buffers)
         {
             int totalLength = 0;
@@ -872,8 +898,6 @@ namespace VRtist
 
             if (File.Exists(filePath))
             {
-                //byte[] bytes = System.IO.File.ReadAllBytes(filePath);
-                //Texture2D t = LoadTextureFromBuffer(bytes, isLinear);
                 Texture2D t = LoadTextureOIIO(filePath, isLinear);
                 if (null != t)
                 {
@@ -886,20 +910,7 @@ namespace VRtist
             Texture2D texture = LoadTextureFromBuffer(data, isLinear);
             if (null != texture)
                 textures[filePath] = texture;
-            /*
-            try
-            {
-                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-                {
-                    fs.Write(data, 0, data.Length);
-                }
-            }
-            catch
-            {
-                Debug.LogWarning("Could not write : " + filePath);
-            }
-            */
-
+            
             return texture;
         }
 
@@ -1679,9 +1690,6 @@ namespace VRtist
             CameraController cameraController = node.prefab.GetComponent<CameraController>();
             cameraController.focal = GetFloat(data, ref currentIndex);
 
-            //float aperture = GetFloat(data, ref currentIndex);
-            //float focus_distance = GetFloat(data, ref currentIndex);
-
             // Apply to instances
             bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
             foreach (Tuple<GameObject, string> t in node.instances)
@@ -1692,7 +1700,6 @@ namespace VRtist
 
                 CameraController controller = gobj.GetComponent<CameraController>();
                 controller.focal = cameraController.focal;
-                //GlobalState.Instance.FireAnimationChanged(gobj);
             }
         }
 
@@ -1787,8 +1794,6 @@ namespace VRtist
             cam.gateFit = gateFit;
             cam.focalLength = focal;
             cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
-
-            //GlobalState.Instance.FireAnimationChanged(camGameObject);
         }
 
         public static void BuildLight(Transform root, byte[] data)
@@ -3451,9 +3456,9 @@ namespace VRtist
             return true;
         }
 
-        public int i = 0;
         public List<NetCommand> commands = new List<NetCommand>();
         int commandProcessedCount = 0;
+        private int i = 0;
 
         IEnumerator ProcessIncomingCommands()
         {
