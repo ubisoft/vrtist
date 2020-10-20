@@ -146,6 +146,9 @@ namespace VRtist
                 cameraObject = gameObject.GetComponentInChildren<Camera>(true);
             if (null != cameraObject)
             {
+                if (gameObject.name != nameLabel.Text)
+                    nameLabel.Text = gameObject.name;
+
                 float scale = GlobalState.worldScale;
                 cameraObject.farClipPlane = far * scale;
                 cameraObject.nearClipPlane = near * scale;

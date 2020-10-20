@@ -5,25 +5,6 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class SetKeyInfo
-    {
-        public string objectName;
-        public string channelName;
-        public int channelIndex;
-        public int frame;
-        public float value;
-        public Interpolation interpolation;
-    };
-
-    public class MoveKeyInfo
-    {
-        public string objectName;
-        public string channelName;
-        public int channelIndex;
-        public int frame;
-        public int newFrame;
-    }
-
     public class Dopesheet : MonoBehaviour
     {
         [SpaceHeader("Sub Widget Refs", 6, 0.8f, 0.8f, 0.8f)]

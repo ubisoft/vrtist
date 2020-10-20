@@ -71,6 +71,7 @@ namespace VRtist
 
     public class Maths
     {
+        // decompose matrix like blender does
         public static void DecomposeMatrix(Matrix4x4 m, out Vector3 position, out Quaternion rotation, out Vector3 scale)
         {
             Matrix3x3 m3 = new Matrix3x3(m);

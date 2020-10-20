@@ -7,40 +7,10 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace VRtist
-{
-    public class PrefabInstantiatedArgs : EventArgs
-    {
-        public GameObject prefab;
-        public GameObject instance;
-    }
-
+{   
     public class Utils
     {
-        static GameObject trash = null;
-        static int gameObjectNameId = 0;
-        static long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
-        static string hostname = Dns.GetHostName();
         static Material paintMaterial = null;
-
-        public static event EventHandler<PrefabInstantiatedArgs> OnPrefabInstantiated;
-
-        public static GameObject GetTrash()
-        {
-            if (trash == null)
-            {
-                trash = new GameObject("__Trash__");
-                trash.SetActive(false);
-            }
-            return trash;
-        }
-
-        public static bool IsInTrash(GameObject obj)
-        {
-            GameObject trash = GetTrash();
-            if (obj.transform.parent.parent.gameObject == trash)
-                return true;
-            return false;
-        }
 
         public static GameObject FindWorld()
         {
@@ -111,15 +81,6 @@ namespace VRtist
             return res;
         }
 
-        public static string CreateUniqueName(GameObject gObject, string baseName)
-        {
-            if (baseName.Length > 48)
-                baseName = baseName.Substring(0, 48);
-            string name = baseName + "." + String.Format("{0:X}", (hostname + timestamp.ToString()).GetHashCode()) + "." + gameObjectNameId.ToString();
-            gameObjectNameId++;
-            return name;
-        }
-
         private static Regex readableNameRegex = new Regex(@"(?<basename>.+?)\.(?<hash>.+?)\.(?<number>\d+)", RegexOptions.Compiled);
         public static string GetReadableName(string name)
         {
@@ -135,74 +96,6 @@ namespace VRtist
             return readableName;
         }
 
-        public static void TriggerPrefabInstantiated(GameObject prefab, GameObject instance)
-        {
-            PrefabInstantiatedArgs args = new PrefabInstantiatedArgs();
-            args.prefab = prefab;
-            args.instance = instance;
-            EventHandler<PrefabInstantiatedArgs> handler = OnPrefabInstantiated;
-            if (handler != null)
-            {
-                handler(null, args);
-            }
-        }
-
-        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null, bool isPrefab = false)
-        {
-            GameObject intermediateParent = new GameObject();
-            intermediateParent.transform.parent = parent;
-            Transform srcParent = gObject.transform.parent;
-            if (null != srcParent)
-            {
-                intermediateParent.transform.localPosition = srcParent.localPosition;
-                intermediateParent.transform.localRotation = srcParent.localRotation;
-                intermediateParent.transform.localScale = srcParent.localScale;
-            }
-
-            GameObject res;
-            GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
-            if (builder)
-            {
-                res = builder.CreateInstance(gObject, intermediateParent.transform, isPrefab);
-            }
-            else
-            {
-                // duplicate object or subobject
-                res = GameObject.Instantiate(gObject, intermediateParent.transform);
-            }
-
-            string appliedName;
-            if (null == name)
-            {
-                string baseName = gObject.name.Split('.')[0];
-                appliedName = CreateUniqueName(res, baseName);
-            }
-            else
-            {
-                appliedName = name;
-            }
-            res.name = appliedName;
-            intermediateParent.name = appliedName + "_parent";
-
-            // Get controller to set the name
-            ParametersController controller = res.GetComponent<ParametersController>();
-            if (null != controller)
-            {
-                controller.SetName(appliedName);
-                controller.controllerName = appliedName;
-            }
-
-            // Name material too
-            MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>(true);
-            if (null != meshRenderer)
-            {
-                meshRenderer.material.name = GetMaterialName(res);
-            }
-
-            TriggerPrefabInstantiated(gObject, res);
-            return res;
-        }
-
         public static GameObject CreatePaint(Transform parent, Color color)
         {
             GameObject intermediateParent = new GameObject();
@@ -210,7 +103,7 @@ namespace VRtist
 
             GameObject paint = new GameObject();
             paint.transform.parent = intermediateParent.transform;
-            paint.name = CreateUniqueName(paint, "Paint");
+            paint.name = SyncData.CreateUniqueName(paint, "Paint");
             intermediateParent.name = paint.name + "_parent";
 
             paint.transform.localPosition = Vector3.zero;
@@ -229,7 +122,7 @@ namespace VRtist
             parameters.materialType = MaterialType.Paint;
             parameters.baseColor = color;
 
-            NetGeometry.materialsParameters[GetMaterialName(paint)] = parameters;
+            NetGeometry.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
             Material instanceMaterial = renderer.material;
             NetGeometry.ApplyMaterialParameters(instanceMaterial, parameters);
             renderer.material = instanceMaterial;
@@ -239,12 +132,6 @@ namespace VRtist
 
             return paint;
         }
-
-        public static string GetMaterialName(GameObject gobject)
-        {
-            return "Mat_" + gobject.name;
-        }
-
 
         public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite)
         {

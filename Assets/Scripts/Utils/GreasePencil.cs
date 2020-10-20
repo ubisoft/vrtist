@@ -16,20 +16,6 @@ namespace VRtist
         }
     }
 
-    public class GreasePencilData
-    {
-        public Dictionary<int, Tuple<Mesh, List<MaterialParameters>>> meshes = new Dictionary<int, Tuple<Mesh, List<MaterialParameters>>>();
-        public int frameOffset = 0;
-        public float frameScale = 1f;
-        public bool hasCustomRange = false;
-        public int rangeStartFrame;
-        public int rangeEndFrame;
-
-        public void AddMesh(int frame, Tuple<Mesh, List<MaterialParameters>> mesh)
-        {
-            meshes[frame] = mesh;
-        }
-    }
 
     public class GreasePencil : MonoBehaviour
     {

@@ -5,12 +5,6 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class AssignMaterialInfo
-    {
-        public string objectName;
-        public string materialName;
-    }
-
     public struct MaterialValue
     {
         public Color color;

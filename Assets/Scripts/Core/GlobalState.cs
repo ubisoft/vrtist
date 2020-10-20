@@ -19,20 +19,6 @@ namespace VRtist
         public Vector3[] corners = new Vector3[4];
     }
 
-    public enum Interpolation
-    {
-        Constant,
-        Linear,
-        Bezier,
-        Other,
-    }
-
-    public class FrameStartEnd
-    {
-        public int start;
-        public int end;
-    }
-
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;

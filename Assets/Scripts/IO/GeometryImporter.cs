@@ -49,7 +49,7 @@ namespace VRtist
             if(createLight)
             {
                 createLight = false;
-                GameObject light = Utils.CreateInstance(lightPrefab, Utils.FindGameObject("Lights").transform);
+                GameObject light = SyncData.CreateInstance(lightPrefab, Utils.FindGameObject("Lights").transform);
                 new CommandAddGameObject(light).Submit();
             }
 

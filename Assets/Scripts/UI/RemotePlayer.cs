@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class FrameInfo
-    {
-        public int frame;
-    }
-
     public class RemotePlayer : MonoBehaviour
     {
         public Dopesheet dopesheet = null;

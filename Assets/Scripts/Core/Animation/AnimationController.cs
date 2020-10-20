@@ -114,11 +114,6 @@ namespace VRtist
         public List<AnimationKey> keys;
     }
 
-    public class ClearAnimationInfo
-    {
-        public GameObject gObject;
-    }
-
     public class AnimationSet
     {
         public AnimationChannel xPosition;

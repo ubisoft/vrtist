@@ -77,7 +77,7 @@ namespace VRtist
         {
             if (null != UIObject)
             {
-                GameObject newObject = SyncData.InstantiatePrefab(Utils.CreateInstance(UIObject, SyncData.prefab));
+                GameObject newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(UIObject, SyncData.prefab));
 
                 MeshFilter meshFilter = newObject.GetComponentInChildren<MeshFilter>();
                 if (null != meshFilter)

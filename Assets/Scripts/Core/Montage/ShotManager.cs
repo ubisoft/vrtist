@@ -6,45 +6,6 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
-    public enum ShotManagerAction
-    {
-        AddShot = 0,
-        DeleteShot,
-        DuplicateShot,
-        MoveShot,
-        UpdateShot
-    }
-
-
-    public class ShotManagerActionInfo
-    {
-        public ShotManagerAction action;
-        public int shotIndex = 0;
-        public string shotName = "";
-        public int shotStart = -1;
-        public int shotEnd = -1;
-        public string cameraName = "";
-        public Color shotColor = Color.black;
-        public int moveOffset = 0;
-        public int shotEnabled = -1;
-
-        public ShotManagerActionInfo Copy()
-        {
-            return new ShotManagerActionInfo()
-            {
-                action = action,
-                shotIndex = shotIndex,
-                shotName = shotName,
-                shotStart = shotStart,
-                shotEnd = shotEnd,
-                cameraName = cameraName,
-                shotColor = shotColor,
-                moveOffset = moveOffset,
-                shotEnabled = shotEnabled
-            };
-        }
-    }
-
 
     public class ShotManager
     {
@@ -226,21 +187,6 @@ namespace VRtist
 
             return $"Sh{maxNumber + 10:D4}";
         }
-    }
-
-    public class Shot
-    {
-        public string name;
-        public GameObject camera = null; // TODO, manage game object destroy
-        public int start = -1;
-        public int end = -1;
-        public bool enabled = true;
-        public Color color = Color.black;
-
-        public Shot Copy()
-        {
-            return new Shot { name = name, camera = camera, start = start, end = end, enabled = enabled, color = color };
-        }
-    }
+    }    
 
 }

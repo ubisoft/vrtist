@@ -4,14 +4,6 @@ using UnityEngine;
 
 namespace VRtist
 {
-    [Serializable]
-    public class SkySettings
-    {
-        public Color topColor;
-        public Color middleColor;
-        public Color bottomColor;
-    }
-
     [CreateAssetMenu(menuName = "VRtist/Settings")]
     public class Settings : ScriptableObject
     {

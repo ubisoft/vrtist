@@ -2,12 +2,6 @@
 
 namespace VRtist
 {
-    public class RenameInfo
-    {
-        public Transform srcTransform;
-        public string newName;
-    }
-
     public class CommandRenameGameObject : ICommand
     {
         Transform transform;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 
 namespace VRtist
@@ -142,6 +143,11 @@ namespace VRtist
 
     public static class SyncData
     {
+        static int gameObjectNameId = 0;
+        static long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
+        static GameObject trash = null;
+
+
         public static Dictionary<GameObject, Node> instancesToNodes = new Dictionary<GameObject, Node>();
         public static Dictionary<string, Node> nodes = new Dictionary<string, Node>();
         public static Dictionary<string, CollectionNode> collectionNodes = new Dictionary<string, CollectionNode>();
@@ -169,6 +175,24 @@ namespace VRtist
             nodes.Add(root.name, rootNode);
 
             instanceRoot["/"] = root;
+        }
+
+        public static GameObject GetTrash()
+        {
+            if (trash == null)
+            {
+                trash = new GameObject("__Trash__");
+                trash.SetActive(false);
+            }
+            return trash;
+        }
+
+        public static bool IsInTrash(GameObject obj)
+        {
+            GameObject trash = GetTrash();
+            if (obj.transform.parent.parent.gameObject == trash)
+                return true;
+            return false;
         }
 
         public static CollectionNode CreateCollectionNode(CollectionNode parent, string name)
@@ -524,6 +548,68 @@ namespace VRtist
             }
         }
 
+        public static string CreateUniqueName(GameObject gObject, string baseName)
+        {
+            if (baseName.Length > 48)
+                baseName = baseName.Substring(0, 48);
+
+            string name = baseName + "." + String.Format("{0:X}", (Dns.GetHostName() + timestamp.ToString()).GetHashCode()) + "." + gameObjectNameId.ToString();
+            gameObjectNameId++;
+            return name;
+        }
+
+        public static string GetMaterialName(GameObject gobject)
+        {
+            return "Mat_" + gobject.name;
+        }
+
+        public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null, bool isPrefab = false)
+        {
+            GameObject intermediateParent = new GameObject();
+            intermediateParent.transform.parent = parent;
+            Transform srcParent = gObject.transform.parent;
+            if (null != srcParent)
+            {
+                intermediateParent.transform.localPosition = srcParent.localPosition;
+                intermediateParent.transform.localRotation = srcParent.localRotation;
+                intermediateParent.transform.localScale = srcParent.localScale;
+            }
+
+            GameObject res;
+            GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
+            if (builder)
+            {
+                res = builder.CreateInstance(gObject, intermediateParent.transform, isPrefab);
+            }
+            else
+            {
+                // duplicate object or subobject
+                res = GameObject.Instantiate(gObject, intermediateParent.transform);
+            }
+
+            string appliedName;
+            if (null == name)
+            {
+                string baseName = gObject.name.Split('.')[0];
+                appliedName = CreateUniqueName(res, baseName);
+            }
+            else
+            {
+                appliedName = name;
+            }
+            res.name = appliedName;
+            intermediateParent.name = appliedName + "_parent";
+
+            // Name material too
+            MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>(true);
+            if (null != meshRenderer)
+            {
+                meshRenderer.material.name = GetMaterialName(res);
+            }
+
+            return res;
+        }
+
 
         public static GameObject AddObjectToDocument(Transform transform, string objectName, string collectionInstanceName = "/")
         {
@@ -563,7 +649,7 @@ namespace VRtist
             }
 
 
-            GameObject instance = Utils.CreateInstance(objectNode.prefab, transform, objectName);
+            GameObject instance = SyncData.CreateInstance(objectNode.prefab, transform, objectName);
             AddInstanceToNode(instance, objectNode, collectionInstanceName);
 
             // Reparent to parent
@@ -791,6 +877,19 @@ namespace VRtist
                 ApplyCollectionVisibility(c, instanceName, collectionNode.visible && collectionNode.tempVisible && c.visible && inheritVisible);
             }
         }
+        public static void EnableComponents(GameObject obj, bool enable)
+        {
+            Component[] components = obj.GetComponents<Component>();
+            foreach (Component component in components)
+            {
+                Type componentType = component.GetType();
+                var prop = componentType.GetProperty("enabled");
+                if (null != prop)
+                {
+                    prop.SetValue(component, enable);
+                }
+            }
+        }
 
         public static void ApplyVisibility(GameObject obj, bool inheritVisible = true, string instanceName = "")
         {
@@ -811,17 +910,8 @@ namespace VRtist
                 ApplyCollectionVisibility(collectionNode, instanceName, collectionNode.visible && collectionNode.tempVisible && node.visible && node.tempVisible && inheritVisible);
                 obj = obj.transform.Find(OffsetTransformName).gameObject;
             }
-
-            Component[] components = obj.GetComponents<Component>();
-            foreach(Component component in components)
-            {
-                Type componentType = component.GetType();
-                var prop = componentType.GetProperty("enabled");
-                if(null != prop)
-                {
-                    prop.SetValue(component, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
-                }
-            }
+           
+            EnableComponents(obj, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
 
             // Enable/Disable light
             LightController lightController = obj.GetComponent<LightController>();
@@ -892,7 +982,7 @@ namespace VRtist
             Node srcNode = nodes[srcname];
             GameObject srcPrefab = srcNode.prefab;
 
-            GameObject prefabClone = Utils.CreateInstance(srcInstance, srcPrefab.transform.parent.parent, name);
+            GameObject prefabClone = SyncData.CreateInstance(srcInstance, srcPrefab.transform.parent.parent, name);
             Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
             prefabCloneNode.prefab = prefabClone;
             GameObject clone = AddObjectToDocument(root, prefabClone.name, "/");
@@ -931,7 +1021,7 @@ namespace VRtist
         /// <returns></returns>
         public static GameObject InstantiateUnityPrefab(GameObject unityPrefab, Matrix4x4 matrix)
         {
-            GameObject newPrefab = Utils.CreateInstance(unityPrefab, prefab, isPrefab: true);
+            GameObject newPrefab = SyncData.CreateInstance(unityPrefab, prefab, isPrefab: true);
 
             newPrefab.transform.localPosition = matrix.GetColumn(3);
             newPrefab.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));

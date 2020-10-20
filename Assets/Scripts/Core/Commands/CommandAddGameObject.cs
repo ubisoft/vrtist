@@ -14,7 +14,7 @@ namespace VRtist
         {
             if (null == gObject) { return; }
             SendToTrash(gObject);
-            gObject.transform.parent.parent = Utils.GetTrash().transform;
+            gObject.transform.parent.parent = SyncData.GetTrash().transform;
 
             Node node = SyncData.nodes[gObject.name];
             node.RemoveInstance(gObject);

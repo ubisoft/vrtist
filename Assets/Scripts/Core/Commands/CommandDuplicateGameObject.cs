@@ -4,11 +4,6 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class DuplicateInfos
-    {
-        public GameObject srcObject;
-        public GameObject dstObject;
-    }
     public class CommandDuplicateGameObject : ICommand
     {
         GameObject srcObject;
@@ -37,7 +32,7 @@ namespace VRtist
             if (null == gObject) { return; }
 
             SendToTrash(gObject);
-            gObject.transform.parent.parent = Utils.GetTrash().transform;
+            gObject.transform.parent.parent = SyncData.GetTrash().transform;
             Node node = SyncData.nodes[gObject.name];
             node.RemoveInstance(gObject);
         }

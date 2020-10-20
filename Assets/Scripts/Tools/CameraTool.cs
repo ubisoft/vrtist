@@ -5,11 +5,6 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
-    public class MontageModeInfo
-    {
-        public bool montage;
-    }
-
     public class CameraTool : SelectorBase
     {
         // Start is called before the first frame update

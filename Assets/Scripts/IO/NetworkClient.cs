@@ -121,6 +121,23 @@ namespace VRtist
         }
     }
 
+    public class FrameInfo
+    {
+        public int frame;
+    }
+
+    public class FrameStartEnd
+    {
+        public int start;
+        public int end;
+    }
+
+    public class MontageModeInfo
+    {
+        public bool montage;
+    }
+
+
     // Grease Pencil related classes
 
     public class GPLayer
@@ -149,6 +166,171 @@ namespace VRtist
         public MaterialParameters materialParameters;
     }
 
+    public class GreasePencilData
+    {
+        public Dictionary<int, Tuple<Mesh, List<MaterialParameters>>> meshes = new Dictionary<int, Tuple<Mesh, List<MaterialParameters>>>();
+        public int frameOffset = 0;
+        public float frameScale = 1f;
+        public bool hasCustomRange = false;
+        public int rangeStartFrame;
+        public int rangeEndFrame;
+
+        public void AddMesh(int frame, Tuple<Mesh, List<MaterialParameters>> mesh)
+        {
+            meshes[frame] = mesh;
+        }
+    }
+
+    public class AssignMaterialInfo
+    {
+        public string objectName;
+        public string materialName;
+    }
+
+    public class CameraInfo
+    {
+        public Transform transform;
+    }
+    public class LightInfo
+    {
+        public Transform transform;
+    }
+
+    public class AddToCollectionInfo
+    {
+        public string collectionName;
+        public Transform transform;
+    }
+
+    public class AddObjectToSceneInfo
+    {
+        public Transform transform;
+    }
+
+    [Serializable]
+    public class SkySettings
+    {
+        public Color topColor;
+        public Color middleColor;
+        public Color bottomColor;
+    }
+
+    public class RenameInfo
+    {
+        public Transform srcTransform;
+        public string newName;
+    }
+
+    public class DuplicateInfos
+    {
+        public GameObject srcObject;
+        public GameObject dstObject;
+    }
+
+    public class MeshInfos
+    {
+        public MeshFilter meshFilter;
+        public MeshRenderer meshRenderer;
+        public Transform meshTransform;
+    }
+
+    public class DeleteInfo
+    {
+        public Transform meshTransform;
+    }
+
+    public class SendToTrashInfo
+    {
+        public Transform transform;
+    }
+    public class RestoreFromTrashInfo
+    {
+        public Transform transform;
+        public Transform parent;
+    }
+    public class ClearAnimationInfo
+    {
+        public GameObject gObject;
+    }
+
+    public enum ShotManagerAction
+    {
+        AddShot = 0,
+        DeleteShot,
+        DuplicateShot,
+        MoveShot,
+        UpdateShot
+    }
+
+
+    public class ShotManagerActionInfo
+    {
+        public ShotManagerAction action;
+        public int shotIndex = 0;
+        public string shotName = "";
+        public int shotStart = -1;
+        public int shotEnd = -1;
+        public string cameraName = "";
+        public Color shotColor = Color.black;
+        public int moveOffset = 0;
+        public int shotEnabled = -1;
+
+        public ShotManagerActionInfo Copy()
+        {
+            return new ShotManagerActionInfo()
+            {
+                action = action,
+                shotIndex = shotIndex,
+                shotName = shotName,
+                shotStart = shotStart,
+                shotEnd = shotEnd,
+                cameraName = cameraName,
+                shotColor = shotColor,
+                moveOffset = moveOffset,
+                shotEnabled = shotEnabled
+            };
+        }
+    }
+    public class Shot
+    {
+        public string name;
+        public GameObject camera = null; // TODO, manage game object destroy
+        public int start = -1;
+        public int end = -1;
+        public bool enabled = true;
+        public Color color = Color.black;
+
+        public Shot Copy()
+        {
+            return new Shot { name = name, camera = camera, start = start, end = end, enabled = enabled, color = color };
+        }
+    }
+    public enum Interpolation
+    {
+        Constant,
+        Linear,
+        Bezier,
+        Other,
+    }
+
+    public class SetKeyInfo
+    {
+        public string objectName;
+        public string channelName;
+        public int channelIndex;
+        public int frame;
+        public float value;
+        public Interpolation interpolation;
+    };
+
+    public class MoveKeyInfo
+    {
+        public string objectName;
+        public string channelName;
+        public int channelIndex;
+        public int frame;
+        public int newFrame;
+    }
     // Material classes
     public enum MaterialType
     {
@@ -530,7 +712,7 @@ namespace VRtist
             Transform objectPath = FindPath(root, data, ref bufferIndex);
             if (null == objectPath)
                 return;
-            objectPath.parent.parent = Utils.GetTrash().transform;
+            objectPath.parent.parent = SyncData.GetTrash().transform;
 
             Node node = SyncData.nodes[objectPath.name];
             node.RemoveInstance(objectPath.gameObject);
@@ -540,7 +722,7 @@ namespace VRtist
             int bufferIndex = 0;
             string objectName = GetString(data, ref bufferIndex);
             Transform parent = FindPath(root, data, ref bufferIndex);
-            Transform trf = Utils.GetTrash().transform.Find(objectName + "_parent");
+            Transform trf = SyncData.GetTrash().transform.Find(objectName + "_parent");
             if (null != trf)
             {
                 trf.parent = parent;
@@ -686,184 +868,6 @@ namespace VRtist
             return materialParameters;
         }
 
-        public static Texture2D CreateSmallImage()
-        {
-            Texture2D smallImage = new Texture2D(1, 1, TextureFormat.RGBA32, false, true);
-            smallImage.LoadRawTextureData(new byte[] { 0, 0, 0, 255 });
-            return smallImage;
-        }
-
-        public static Texture2D LoadTextureOIIO(string filePath, bool isLinear)
-        {
-            // TODO: need to flip? Repere bottom left, Y-up
-            int ret = OIIOAPI.oiio_open_image(filePath);
-            if (ret == 0)
-            {
-                Debug.LogWarning("Could not open image " + filePath + " with OIIO.");
-                return null;
-            }
-
-            int width = -1;
-            int height = -1;
-            int nchannels = -1;
-            OIIOAPI.BASETYPE format = OIIOAPI.BASETYPE.NONE;
-            ret = OIIOAPI.oiio_get_image_info(ref width, ref height, ref nchannels, ref format);
-            if (ret == 0)
-            {
-                Debug.LogWarning("Could not get info about image " + filePath + " with OIIO");
-                return null;
-            }
-
-            TexConv conv = new TexConv();
-            bool canConvert = Format2Format(format, nchannels, ref conv);
-            if (!canConvert)
-            {
-                Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
-                return CreateSmallImage();
-            }
-            // TMP
-            else if (conv.options.HasFlag(TextureConversionOptions.SHORT_TO_FLOAT) || conv.options.HasFlag(TextureConversionOptions.SHORT_TO_INT))
-            {
-                Debug.LogWarning("Could not create image from format: " + conv.format + " with option: " + conv.options);
-                return CreateSmallImage();
-            }
-
-            Texture2D image = new Texture2D(width, height, conv.format, true, isLinear); // with mips
-
-            var pixels = image.GetRawTextureData();
-            GCHandle handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
-            ret = OIIOAPI.oiio_fill_image_data(handle.AddrOfPinnedObject(), conv.options.HasFlag(TextureConversionOptions.RGB_TO_RGBA) ? 1 : 0);
-            if (ret == 1)
-            {
-                image.LoadRawTextureData(pixels);
-                image.Apply();
-            }
-            else
-            {
-                Debug.LogWarning("Could not fill texture data of " + filePath + " with OIIO.");
-                return null;
-            }
-
-            return image;
-        }
-
-        enum TextureConversionOptions
-        {
-            NO_CONV = 0,
-            RGB_TO_RGBA = 1,
-            SHORT_TO_INT = 2,
-            SHORT_TO_FLOAT = 4,
-        }; // TODO: fill, enhance
-
-        class TexConv
-        {
-            public TextureFormat format;
-            public TextureConversionOptions options;
-        };
-
-        private static bool Format2Format(OIIOAPI.BASETYPE format, int nchannels, ref TexConv result)
-        {
-            // TODO: handle compressed formats.
-
-            result.format = TextureFormat.RGBA32;
-            result.options = TextureConversionOptions.NO_CONV;
-
-            switch (format)
-            {
-                case OIIOAPI.BASETYPE.UCHAR:
-                case OIIOAPI.BASETYPE.CHAR:
-                    switch (nchannels)
-                    {
-                        case 1: result.format = TextureFormat.R8; break;
-                        case 2: result.format = TextureFormat.RG16; break;
-                        case 3: result.format = TextureFormat.RGB24; break;
-                        case 4: result.format = TextureFormat.RGBA32; break;
-                        default: return false;
-                    }
-                    break;
-
-                case OIIOAPI.BASETYPE.USHORT:
-                    switch (nchannels)
-                    {
-                        case 1: result.format = TextureFormat.R16; break;
-                        case 2: result.format = TextureFormat.RGFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT; break;
-                        case 3: result.format = TextureFormat.RGBAFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT | TextureConversionOptions.RGB_TO_RGBA; break;
-                        case 4: result.format = TextureFormat.RGBAFloat; result.options = TextureConversionOptions.SHORT_TO_FLOAT; break;
-                        // R16_G16, R16_G16_B16 and R16_G16_B16_A16 do not exist
-                        default: return false;
-                    }
-                    break;
-
-                case OIIOAPI.BASETYPE.HALF:
-                    switch (nchannels)
-                    {
-                        case 1: result.format = TextureFormat.RHalf; break;
-                        case 2: result.format = TextureFormat.RGHalf; break;
-                        case 3: result.format = TextureFormat.RGBAHalf; result.options = TextureConversionOptions.NO_CONV | TextureConversionOptions.RGB_TO_RGBA; break; // RGBHalf is NOT SUPPORTED
-                        case 4: result.format = TextureFormat.RGBAHalf; break;
-                        default: return false;
-                    }
-                    break;
-
-                case OIIOAPI.BASETYPE.FLOAT:
-                    switch (nchannels)
-                    {
-                        case 1: result.format = TextureFormat.RFloat; break;
-                        case 2: result.format = TextureFormat.RGFloat; break;
-                        case 3: result.format = TextureFormat.RGBAFloat; result.options = TextureConversionOptions.NO_CONV | TextureConversionOptions.RGB_TO_RGBA; break;// RGBFloat is NOT SUPPORTED
-                        case 4: result.format = TextureFormat.RGBAFloat; break;
-                        default: return false;
-                    }
-                    break;
-
-                default: return false;
-            }
-
-            return true;
-        }
-
-        public static Texture2D LoadTextureDXT(string filePath, bool isLinear)
-        {
-            byte[] ddsBytes = System.IO.File.ReadAllBytes(filePath);
-
-            byte[] format = { ddsBytes[84], ddsBytes[85], ddsBytes[86], ddsBytes[87], 0 };
-            string sFormat = System.Text.Encoding.UTF8.GetString(format);
-            TextureFormat textureFormat;
-
-            if (sFormat != "DXT1")
-                textureFormat = TextureFormat.DXT1;
-            else if (sFormat != "DXT5")
-                textureFormat = TextureFormat.DXT5;
-            else return null;
-
-            byte ddsSizeCheck = ddsBytes[4];
-            if (ddsSizeCheck != 124)
-                throw new Exception("Invalid DDS DXTn texture. Unable to read");  //this header byte should be 124 for DDS image files
-
-            int height = ddsBytes[13] * 256 + ddsBytes[12];
-            int width = ddsBytes[17] * 256 + ddsBytes[16];
-
-            int DDS_HEADER_SIZE = 128;
-            byte[] dxtBytes = new byte[ddsBytes.Length - DDS_HEADER_SIZE];
-            Buffer.BlockCopy(ddsBytes, DDS_HEADER_SIZE, dxtBytes, 0, ddsBytes.Length - DDS_HEADER_SIZE);
-
-            Texture2D texture = new Texture2D(width, height, textureFormat, true, isLinear);
-            texture.LoadRawTextureData(dxtBytes);
-            texture.Apply();
-
-            return texture;
-        }
-
-        public static Texture2D LoadTextureFromBuffer(byte[] data, bool isLinear)
-        {
-            Texture2D tex = new Texture2D(2, 2, TextureFormat.ARGB32, true, isLinear);
-            bool res = tex.LoadImage(data);
-            if (!res)
-                return null;
-
-            return tex;
-        }
-
         public static Texture2D GetTexture(string filePath, bool isLinear)
         {
             if (textureData.ContainsKey(filePath))
@@ -887,7 +891,7 @@ namespace VRtist
 
             if (File.Exists(ddsFile))
             {
-                Texture2D t = LoadTextureDXT(ddsFile, isLinear);
+                Texture2D t = TextureUtils.LoadTextureDXT(ddsFile, isLinear);
                 if (null != t)
                 {
                     textures[filePath] = t;
@@ -898,7 +902,7 @@ namespace VRtist
 
             if (File.Exists(filePath))
             {
-                Texture2D t = LoadTextureOIIO(filePath, isLinear);
+                Texture2D t = TextureUtils.LoadTextureOIIO(filePath, isLinear);
                 if (null != t)
                 {
                     textures[filePath] = t;
@@ -907,7 +911,7 @@ namespace VRtist
                 }
             }
 
-            Texture2D texture = LoadTextureFromBuffer(data, isLinear);
+            Texture2D texture = TextureUtils.LoadTextureFromBuffer(data, isLinear);
             if (null != texture)
                 textures[filePath] = texture;
             
@@ -1092,7 +1096,7 @@ namespace VRtist
             // EMISSION
             //
             Color emissionColor = parameters.emissionColor;
-            material.SetColor("_EmissiveColor", baseColor);
+            material.SetColor("_EmissiveColor", emissionColor);
             string emissionColorTexturePath = parameters.emissionColorTexturePath;
             if (emissionColorTexturePath.Length > 0)
             {
@@ -1366,7 +1370,7 @@ namespace VRtist
             byte[] bpath = StringToBytes(path);
 
             CameraController cameraController = cameraInfo.transform.GetComponent<CameraController>();
-            byte[] bname = StringToBytes(cameraController.controllerName);
+            byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int) cam.gateFit;
@@ -1406,7 +1410,7 @@ namespace VRtist
             float worldScale = root.parent.localScale.x;
 
             LightController lightController = lightInfo.transform.GetComponentInChildren<LightController>();
-            byte[] bname = StringToBytes(lightController.controllerName);
+            byte[] bname = StringToBytes(lightInfo.transform.name);
 
             float power = lightController.GetPower();
 
@@ -1750,14 +1754,9 @@ namespace VRtist
             Node node = null;
             if (!SyncData.nodes.ContainsKey(leafName))
             {
-                camGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, leafName, isPrefab: true);
+                camGameObject = SyncData.CreateInstance(Resources.Load("Prefabs/Camera") as GameObject, transform, leafName, isPrefab: true);
                 node = SyncData.CreateNode(name);
                 node.prefab = camGameObject;
-                CameraController camera = camGameObject.GetComponentInChildren<CameraController>(true);
-                camera.controllerName = name;
-
-                //camGameObject.transform.GetChild(0).Rotate(0f, 180f, 0f);
-                //camGameObject.transform.GetChild(0).localScale = new Vector3(-1, 1, 1);
             }
             else // TODO: found a case where a camera was found (don't know when it was created???), but had no Camera child object.
             {
@@ -1822,21 +1821,19 @@ namespace VRtist
                 switch (lightType)
                 {
                     case LightType.Directional:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform, leafName);
+                        lightGameObject = SyncData.CreateInstance(Resources.Load("Prefabs/Sun") as GameObject, transform, leafName);
                         break;
                     case LightType.Point:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform, leafName);
+                        lightGameObject = SyncData.CreateInstance(Resources.Load("Prefabs/Point") as GameObject, transform, leafName);
                         break;
                     case LightType.Spot:
-                        lightGameObject = Utils.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform, leafName);
+                        lightGameObject = SyncData.CreateInstance(Resources.Load("Prefabs/Spot") as GameObject, transform, leafName);
                         break;
                     default:
                         return;
                 }
                 node = SyncData.CreateNode(leafName);
                 node.prefab = lightGameObject;
-                LightController light = lightGameObject.GetComponentInChildren<LightController>(true);
-                light.controllerName = name;
             }
             else
             {

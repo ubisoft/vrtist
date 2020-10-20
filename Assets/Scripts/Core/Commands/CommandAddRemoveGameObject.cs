@@ -4,49 +4,6 @@ using UnityEngine;
 
 namespace VRtist
 {
-    public class MeshInfos
-    {
-        public MeshFilter meshFilter;
-        public MeshRenderer meshRenderer;
-        public Transform meshTransform;
-    }
-
-    public class DeleteInfo
-    {
-        public Transform meshTransform;
-    }
-
-    public class SendToTrashInfo
-    {
-        public Transform transform;
-    }
-    public class RestoreFromTrashInfo
-    {
-        public Transform transform;
-        public Transform parent;
-    }
-
-    public class CameraInfo
-    {
-        public Transform transform;
-    }
-    public class LightInfo
-    {
-        public Transform transform;
-    }
-
-    public class AddToCollectionInfo
-    {
-        public string collectionName;
-        public Transform transform;
-    }
-
-    public class AddObjectToSceneInfo
-    {
-        public Transform transform;
-    }
-
-
     public class CommandAddRemoveGameObject : ICommand
     {
         protected GameObject gObject = null;

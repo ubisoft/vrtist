@@ -42,7 +42,7 @@ namespace VRtist
                     Debug.LogWarning("Can't find " + transform.name + "/" + clone.Item1);
                     continue;
                 }
-                var newInstance = Utils.CreateInstance(child.gameObject, child.parent, clone.Item2);
+                var newInstance = SyncData.CreateInstance(child.gameObject, child.parent, clone.Item2);
             }
 
             for (int i = 0; i < deleted.Count; i++)
