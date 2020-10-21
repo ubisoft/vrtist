@@ -1891,7 +1891,7 @@ namespace VRtist
             Color middleColor = GetColor(data, ref currentIndex);
             Color bottomColor = GetColor(data, ref currentIndex);
 
-            Sky.SetSkyColors(topColor, middleColor, bottomColor);
+            Sky.SetSkyColors(new SkySettings { topColor = topColor, middleColor = middleColor, bottomColor = bottomColor });
         }
 
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -60,7 +61,15 @@ namespace VRtist
             middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
             bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
         };
-
+        public List<SkySettings> skies = new List<SkySettings>() { 
+            new SkySettings
+            {
+                topColor = new Color(212f / 255f, 212f / 255f, 212f / 255f),
+                middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
+                bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
+            } 
+        };
+        
         public bool castShadows = false;
 
         [Range(1.0f, 100.0f)]
@@ -119,6 +128,14 @@ namespace VRtist
                 topColor = new Color(212f / 255f, 212f / 255f, 212f / 255f),
                 middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
                 bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
+            };
+            skies = new List<SkySettings>() {
+                new SkySettings
+                {
+                    topColor = new Color(212f / 255f, 212f / 255f, 212f / 255f),
+                    middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
+                    bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
+                }
             };
         }
 

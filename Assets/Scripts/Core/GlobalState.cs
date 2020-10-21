@@ -158,7 +158,7 @@ namespace VRtist
                 networkUser.name = "VRtist";
 
             // Sky
-            Sky.SetSkyColors(settings.sky.topColor, settings.sky.middleColor, settings.sky.bottomColor);
+            Sky.ApplySkyColors(settings.sky);
 
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);

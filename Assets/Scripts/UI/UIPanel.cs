@@ -234,7 +234,7 @@ namespace VRtist
         }
 
 
-        public static void Create(CreatePanelParams input)
+        public static UIPanel Create(CreatePanelParams input)
         {
             GameObject go = new GameObject(input.widgetName);
             go.tag = "UICollider";
@@ -300,6 +300,8 @@ namespace VRtist
             }
 
             UIUtils.SetRecursiveLayer(go, "UI");
+
+            return uiPanel;
         }
         #endregion
     }
