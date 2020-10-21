@@ -611,20 +611,7 @@ namespace VRtist
                     subCollectionInstanceName = collectionInstanceName + subCollectionInstanceName;
 
                 instanceRoot[subCollectionInstanceName] = offsetObject.transform;
-                AddCollectionToScene(collectionNode, offsetObject.transform, subCollectionInstanceName);
-                /*
-                foreach (Node collectionObject in collectionNode.objects)
-                {
-                    AddObjectToScene(offsetObject.transform, collectionObject.prefab.name, subCollectionInstanceName);
-                }
-                foreach (CollectionNode collectionChild in collectionNode.children)
-                {
-                    foreach (Node collectionObject in collectionChild.objects)
-                    {
-                        AddObjectToScene(offsetObject.transform, collectionObject.prefab.name, subCollectionInstanceName);
-                    }
-                }
-                */
+                AddCollectionToScene(collectionNode, offsetObject.transform, subCollectionInstanceName);                
             }
 
             ApplyVisibility(instance);
@@ -842,8 +829,6 @@ namespace VRtist
             {
                 lightController.SetLightEnable(node.containerVisible & node.visible & node.tempVisible & inheritVisible);
             }
-
-            //obj.SetActive(node.containerVisible & node.visible);
         }
 
         public static bool IsInstanceParentVisible(GameObject instance)
