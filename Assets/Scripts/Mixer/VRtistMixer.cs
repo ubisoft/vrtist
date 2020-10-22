@@ -289,7 +289,13 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetSkyColors");
 #else
-            Sky.SetSkyColors(topColor, middleColor, bottomColor);
+            SkySettings skySettings = new SkySettings
+            {
+                topColor = topColor,
+                middleColor = middleColor,
+                bottomColor = bottomColor
+            };
+            Sky.SetSkyColors(skySettings);
 #endif
         }
 
