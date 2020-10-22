@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace VRtist
 {
@@ -1461,6 +1462,226 @@ namespace VRtist
             mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
             mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+
+            return mesh;
+        }
+
+        public static Mesh BuildHSV(float width, float height, float thickness, float triangleRadiusPct, float innerRadiusPct, float outerRadiusPct, int nbSubdiv)
+        {
+            List<Vector3> vertices = new List<Vector3>();
+            List<Vector3> normals = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
+            List<int> indices = new List<int>();
+
+            float w2 = width / 2.0f;
+            float h2 = height / 2.0f;
+            float ir = innerRadiusPct * w2;
+            float or = outerRadiusPct * w2;
+
+            Vector3 mb = new Vector3(w2, -h2, 0.0f);
+
+            int indexOffset = 0;
+
+            #region FRONT/TOP FACE
+
+            for (int i = 0; i < nbSubdiv; ++i) // [0..nb-1]
+            {
+                float pct = (float)i / (float)(nbSubdiv - 1);
+                float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
+                float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
+                Vector3 innerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, -thickness);
+                Vector3 outerCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, -thickness);
+
+                vertices.Add(innerCirclePos);
+                vertices.Add(outerCirclePos);
+
+                normals.Add(Vector3.back);
+                normals.Add(Vector3.back);
+
+                uvs.Add(new Vector2(pct, 0.0f)); // inner
+                uvs.Add(new Vector2(pct, 1.0f)); // outer
+            }
+
+            for (int i = 0; i < nbSubdiv - 1; ++i) // [0..nb-2]
+            {
+                indices.Add(indexOffset + 2 * i + 0);
+                indices.Add(indexOffset + 2 * i + 1);
+                indices.Add(indexOffset + 2 * (i + 1) + 0);
+                indices.Add(indexOffset + 2 * (i + 1) + 1);
+                indices.Add(indexOffset + 2 * (i + 1) + 0);
+                indices.Add(indexOffset + 2 * i + 1);
+            }
+
+            indexOffset = vertices.Count;
+
+            #endregion
+
+            #region INNER BAND
+
+            for (int i = 0; i < nbSubdiv; ++i) // [0..nb-1]
+            {
+                float pct = (float)i / (float)(nbSubdiv - 1);
+                float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
+                float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
+                Vector3 bottomInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, 0);
+                Vector3 topInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, -thickness);
+
+                vertices.Add(bottomInnerCirclePos);
+                vertices.Add(topInnerCirclePos);
+
+                normals.Add(Vector3.Normalize(mb - bottomInnerCirclePos)); // inner band
+                normals.Add(Vector3.Normalize(mb - bottomInnerCirclePos)); // inner band
+
+                uvs.Add(new Vector2(pct, 0.0f));
+                uvs.Add(new Vector2(pct, 0.0f));
+            }
+
+            for (int i = 0; i < nbSubdiv - 1; ++i) // [0..nb-2]
+            {
+                indices.Add(indexOffset + 2 * i + 0);
+                indices.Add(indexOffset + 2 * i + 1);
+                indices.Add(indexOffset + 2 * (i + 1) + 0);
+                indices.Add(indexOffset + 2 * (i + 1) + 1);
+                indices.Add(indexOffset + 2 * (i + 1) + 0);
+                indices.Add(indexOffset + 2 * i + 1);
+            }
+
+            indexOffset = vertices.Count;
+
+            #endregion
+
+            #region OUTER BAND
+
+            for (int i = 0; i < nbSubdiv; ++i) // [0..nb-1]
+            {
+                float pct = (float)i / (float)(nbSubdiv - 1);
+                float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
+                float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
+                Vector3 bottomOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, 0);
+                Vector3 topOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, -thickness);
+
+                vertices.Add(topOuterCirclePos);
+                vertices.Add(bottomOuterCirclePos);
+
+                normals.Add(Vector3.Normalize(bottomOuterCirclePos - mb)); // inner band
+                normals.Add(Vector3.Normalize(bottomOuterCirclePos - mb)); // inner band
+
+                uvs.Add(new Vector2(pct, 1.0f));
+                uvs.Add(new Vector2(pct, 1.0f));
+            }
+
+            for (int i = 0; i < nbSubdiv - 1; ++i) // [0..nb-2]
+            {
+                indices.Add(indexOffset + 2 * i + 0);
+                indices.Add(indexOffset + 2 * i + 1);
+                indices.Add(indexOffset + 2 * (i + 1) + 0);
+                indices.Add(indexOffset + 2 * (i + 1) + 1);
+                indices.Add(indexOffset + 2 * (i + 1) + 0);
+                indices.Add(indexOffset + 2 * i + 1);
+            }
+
+            indexOffset = vertices.Count;
+
+            #endregion
+
+            int firstMeshIndexCount = 3 * 6 * (nbSubdiv - 1);
+
+            #region TRIANGLE
+
+            float tr = triangleRadiusPct * w2;
+
+            Vector3 top_front = new Vector3(w2, -h2 + tr, -thickness);
+            Vector3 top_back = new Vector3(w2, -h2 + tr, 0.0f);
+
+            Vector3 br_front = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            Vector3 br_back = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), 0.0f);
+
+            Vector3 bl_front = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            Vector3 bl_back = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), 0.0f);
+
+            Vector2 uvtop = new Vector2(0.5f, 1);
+            Vector2 uvbr = new Vector2(1, 0);
+            Vector2 uvbl = new Vector2(0, 0);
+
+            // FRONT
+            vertices.Add(top_front);
+            vertices.Add(br_front);
+            vertices.Add(bl_front);
+
+            uvs.Add(uvtop);
+            uvs.Add(uvbr);
+            uvs.Add(uvbl);
+
+            // UPPER RIGHT BORDER
+            vertices.Add(br_back);
+            vertices.Add(br_front);
+            vertices.Add(top_back);
+            vertices.Add(top_front);
+
+            uvs.Add(uvbr);
+            uvs.Add(uvbr);
+            uvs.Add(uvtop);
+            uvs.Add(uvtop);
+
+            // UPPER LEFT BORDER
+            vertices.Add(top_back);
+            vertices.Add(top_front);
+            vertices.Add(bl_back);
+            vertices.Add(bl_front);
+
+            uvs.Add(uvtop);
+            uvs.Add(uvtop);
+            uvs.Add(uvbl);
+            uvs.Add(uvbl);
+
+            // BOTTOM
+            vertices.Add(bl_back);
+            vertices.Add(bl_front);
+            vertices.Add(br_back);
+            vertices.Add(br_front);
+
+            uvs.Add(uvbl);
+            uvs.Add(uvbl);
+            uvs.Add(uvbr);
+            uvs.Add(uvbr);
+
+            for (int i = 0; i < 3; ++i) normals.Add(Vector3.back);
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.Normalize(mb - bl_back)); // upper right
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.Normalize(mb - br_back)); // upper left
+            for (int i = 0; i < 4; ++i) normals.Add(Vector3.down); // bottom
+
+            int[] face_indices = new int[]
+            {
+            0,1,2,
+            3,4,5,
+            5,4,6,
+            7,8,9,
+            9,8,10,
+            11,12,13,
+            12,11,14
+            };
+
+            for (int i = 0; i < face_indices.Length; ++i)
+            {
+                indices.Add(indexOffset + face_indices[i]);
+            }
+            #endregion
+
+            Mesh mesh = new Mesh();
+            mesh.SetVertices(vertices);
+            mesh.SetNormals(normals);
+            mesh.SetUVs(0, uvs);
+            mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+
+            int secondMeshIndexStart = firstMeshIndexCount;
+            int secondMeshIndexCount = vertices.Count;
+
+            mesh.subMeshCount = 2;
+
+            SubMeshDescriptor desc0 = new SubMeshDescriptor(0, firstMeshIndexCount);
+            mesh.SetSubMesh(0, desc0);
+            SubMeshDescriptor desc1 = new SubMeshDescriptor(secondMeshIndexStart, 21);
+            mesh.SetSubMesh(1, desc1);
 
             return mesh;
         }
