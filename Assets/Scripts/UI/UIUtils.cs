@@ -1503,6 +1503,7 @@ namespace VRtist
         static private Dictionary<string, Material> uiMaterials = new Dictionary<string, Material>();
         static private Dictionary<string, Sprite> uiSprites = new Dictionary<string, Sprite>();
         static private Dictionary<string, GameObject> uiPrefabs = new Dictionary<string, GameObject>();
+        static private Dictionary<string, Mesh> uiMeshes = new Dictionary<string, Mesh>();
 
         public static Material LoadMaterial(string materialName)
         {
@@ -1523,6 +1524,13 @@ namespace VRtist
             if (!uiPrefabs.ContainsKey(prefabName))
                 uiPrefabs[prefabName] = Resources.Load<GameObject>("Prefabs/UI/" + prefabName);
             return uiPrefabs[prefabName];
+        }
+
+        public static Mesh LoadMesh(string meshName)
+        {
+            if (!uiMeshes.ContainsKey(meshName))
+                uiMeshes[meshName] = Resources.Load<Mesh>("Models/" + meshName);
+            return uiMeshes[meshName];
         }
 
         #endregion
