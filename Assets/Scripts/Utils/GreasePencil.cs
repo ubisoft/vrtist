@@ -75,7 +75,7 @@ namespace VRtist
             if (null == meshRenderer)
                 meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
-            NetGeometry.ApplyMaterialParameters(meshRenderer, meshData.Item2);
+            MixerUtils.ApplyMaterialParameters(meshRenderer, meshData.Item2);
         }
 
         // Update is called once per frame

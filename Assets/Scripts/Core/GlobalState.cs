@@ -6,19 +6,6 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
-    public class ConnectedUser
-    {
-        public string id;  // clientId
-        public string viewId;
-        public string masterId;
-        public string name;
-        public string room;
-        public Vector3 eye;
-        public Vector3 target;
-        public Color color;
-        public Vector3[] corners = new Vector3[4];
-    }
-
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;
@@ -135,6 +122,7 @@ namespace VRtist
         void Awake()
         {
             instance = Instance;
+
             settings.Load();
             networkSettings.Load();
 
@@ -274,7 +262,7 @@ namespace VRtist
 
         public void Play()
         {
-            NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
+            MixerClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
             GlobalState.Instance.SetPlaying(true);
         }
 
@@ -294,7 +282,7 @@ namespace VRtist
                     break;
 
             }
-            NetworkClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
+            MixerClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
             GlobalState.Instance.SetPlaying(false);
         }
 
@@ -310,7 +298,7 @@ namespace VRtist
             recordState = RecordState.Recording;
             animationController.OnCountdownFinished();
             onRecordEvent.Invoke(true);
-            NetworkClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
+            MixerClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
             SetPlaying(true);
         }
 

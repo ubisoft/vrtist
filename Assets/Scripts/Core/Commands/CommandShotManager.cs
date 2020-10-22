@@ -116,7 +116,7 @@ namespace VRtist
                     break;
             }
             ShotManager.Instance.FireChanged();
-            NetworkClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public override void Undo()

@@ -34,14 +34,14 @@ namespace VRtist
             {
                 GlobalState.Instance.SendAnimationChannel(gObject.name, channel);
             }
-            NetworkClient.GetInstance().SendQueryObjectData(gObject.name);
+            MixerClient.GetInstance().SendQueryObjectData(gObject.name);
         }
         public override void Redo()
         {
             GlobalState.Instance.ClearAnimations(gObject);
 
             ClearAnimationInfo info = new ClearAnimationInfo { gObject = gObject };
-            NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
+            MixerClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
         }
         public override void Submit()
         {

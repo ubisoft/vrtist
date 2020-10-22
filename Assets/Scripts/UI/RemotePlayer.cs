@@ -28,42 +28,42 @@ namespace VRtist
         {
             int keyTime = dopesheet.GetNextKeyFrame();
             FrameInfo info = new FrameInfo() { frame = keyTime };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnPrevKey()
         {
             int keyTime = dopesheet.GetPreviousKeyFrame();
             FrameInfo info = new FrameInfo() { frame = keyTime };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnNextFrame()
         {
             int keyTime = Mathf.Min(dopesheet.LastFrame, dopesheet.CurrentFrame + 1);
             FrameInfo info = new FrameInfo() { frame = keyTime };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnPrevFrame()
         {
             int keyTime = Mathf.Max(dopesheet.FirstFrame, dopesheet.CurrentFrame - 1);
             FrameInfo info = new FrameInfo() { frame = keyTime };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnFirstFrame()
         {
             int keyTime = dopesheet.FirstFrame;
             FrameInfo info = new FrameInfo() { frame = keyTime };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnLastFrame()
         {
             int keyTime = dopesheet.LastFrame;
             FrameInfo info = new FrameInfo() { frame = keyTime };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         private void OnRecordingChanged(bool value)

@@ -116,7 +116,7 @@ namespace VRtist
             GlobalState.startFrame = globalBounds.x;
             GlobalState.endFrame = globalBounds.y;
             FrameStartEnd info = new FrameStartEnd() { start = globalBounds.x, end = globalBounds.y };
-            NetworkClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
+            MixerClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
         }
 
         public void OnLocalRangeChanged(Vector2Int bounds)
@@ -415,7 +415,7 @@ namespace VRtist
         public void OnChangeCurrentFrame(int i)
         {
             FrameInfo info = new FrameInfo() { frame = i };
-            NetworkClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
         public void OnPrevKeyFrame()

@@ -103,7 +103,7 @@ namespace VRtist
 
             GameObject paint = new GameObject();
             paint.transform.parent = intermediateParent.transform;
-            paint.name = SyncData.CreateUniqueName(paint, "Paint");
+            paint.name = SyncData.CreateUniqueName("Paint");
             intermediateParent.name = paint.name + "_parent";
 
             paint.transform.localPosition = Vector3.zero;
@@ -115,16 +115,16 @@ namespace VRtist
             MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = paint.AddComponent<MeshRenderer>();
-            Material paintMaterial = NetGeometry.GetMaterial(MaterialType.Paint);
+            Material paintMaterial = MixerUtils.GetMaterial(MaterialType.Paint);
             renderer.sharedMaterial = paintMaterial;
 
             MaterialParameters parameters = new MaterialParameters();
             parameters.materialType = MaterialType.Paint;
             parameters.baseColor = color;
 
-            NetGeometry.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
+            MixerUtils.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
             Material instanceMaterial = renderer.material;
-            NetGeometry.ApplyMaterialParameters(instanceMaterial, parameters);
+            MixerUtils.ApplyMaterialParameters(instanceMaterial, parameters);
             renderer.material = instanceMaterial;
 
             paint.AddComponent<MeshCollider>();

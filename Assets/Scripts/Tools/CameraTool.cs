@@ -604,7 +604,7 @@ namespace VRtist
         public void OnSetMontage(bool montage)
         {
             this.montage = montage;
-            NetworkClient.GetInstance().SendEvent<MontageModeInfo>(MessageType.ShotManagerMontageMode, new MontageModeInfo { montage = montage });
+            MixerClient.GetInstance().SendEvent<MontageModeInfo>(MessageType.ShotManagerMontageMode, new MontageModeInfo { montage = montage });
         }
     }
 }

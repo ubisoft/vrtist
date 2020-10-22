@@ -155,7 +155,7 @@ namespace VRtist
         {
             foreach(GameObject gObject in Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection))
             {
-                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
+                MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
             }
         }
 
@@ -243,7 +243,7 @@ namespace VRtist
                 value = value,
                 interpolation = interpolation,
             };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
+            MixerClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.AddKeyframe, keyInfo);
         }
 
         public void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
@@ -271,7 +271,7 @@ namespace VRtist
                 {
                     GlobalState.endFrame += 100;
                     FrameStartEnd info = new FrameStartEnd() { start = GlobalState.startFrame, end = GlobalState.endFrame };
-                    NetworkClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
+                    MixerClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
                 }
                 */
 
@@ -372,7 +372,7 @@ namespace VRtist
                 frame = frame,
                 value = 0.0f
             };
-            NetworkClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
+            MixerClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
         public void ApplyAnimations()
@@ -402,7 +402,7 @@ namespace VRtist
                 frame = frame,
                 newFrame = newFrame
             };
-            NetworkClient.GetInstance().SendEvent<MoveKeyInfo>(MessageType.MoveKeyframe, keyInfo);
+            MixerClient.GetInstance().SendEvent<MoveKeyInfo>(MessageType.MoveKeyframe, keyInfo);
         }
 
         public void MoveSelectionKeyframes(int frame, int newFrame)
@@ -438,7 +438,7 @@ namespace VRtist
                     MoveKeyframe(item, "scale", 1, frame, newFrame);
                     MoveKeyframe(item, "scale", 2, frame, newFrame);
                 }
-                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, item.name);
+                MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, item.name);
             }
         }
 
@@ -487,7 +487,7 @@ namespace VRtist
                     RemoveKeyframe(item, "scale", 1, currentFrame);
                     RemoveKeyframe(item, "scale", 2, currentFrame);
                 }
-                NetworkClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, item.name);
+                MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, item.name);
             }
         }
     }

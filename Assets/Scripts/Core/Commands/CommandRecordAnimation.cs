@@ -64,7 +64,7 @@ namespace VRtist
         {
             GlobalState.Instance.ClearAnimations(gObject);
             ClearAnimationInfo info = new ClearAnimationInfo { gObject = gObject };
-            NetworkClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
+            MixerClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
         }
 
         public override void Redo()
@@ -90,7 +90,7 @@ namespace VRtist
                 GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yScale);
                 GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zScale);
             }
-            NetworkClient.GetInstance().SendQueryObjectData(gObject.name);
+            MixerClient.GetInstance().SendQueryObjectData(gObject.name);
         }
         public override void Submit()
         {
