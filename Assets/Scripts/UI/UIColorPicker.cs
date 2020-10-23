@@ -11,7 +11,7 @@ namespace VRtist
 
         private static readonly string default_widget_name = "New ColorPicker";
         private static readonly float default_width = 0.20f;
-        private static readonly float default_height = 0.23f;
+        private static readonly float default_height = 0.25f;
         private static readonly float default_thickness = UIElement.default_element_thickness;
         private static readonly float default_padding = 0.01f;
         private static readonly float default_alphaToSaturationRatio = 0.14f;
@@ -173,14 +173,14 @@ namespace VRtist
             hsv.RebuildMesh(hsvWidth, hsvHeight, hsvThickness, trianglePct, innerCirclePct, outerCirclePct);
             hsv.relativeLocation = hsvPosition;
 
-            Vector3 alphaPosition = new Vector3(0.0f, (1.0f-alphaToSaturationRatio) * -(height - padding) - padding, 0.0f);
+            Vector3 alphaPosition = new Vector3(0.0f, -hsvHeight - padding, 0.0f);
             float alphaWidth = alphaToPreviewRatio * (width - padding);
             float alphaHeight = alphaToSaturationRatio * (height - padding);
             float alphaThickness = thickness;
             alpha.RebuildMesh(alphaWidth, alphaHeight, alphaThickness);
             alpha.relativeLocation = alphaPosition;
 
-            Vector3 previewPosition = new Vector3(alphaToPreviewRatio * (width - padding) + padding, (1.0f-alphaToSaturationRatio) * -(height - padding) - padding, 0.0f);
+            Vector3 previewPosition = new Vector3(alphaToPreviewRatio * (width - padding) + padding, -hsvHeight - padding, 0.0f);
             float previewWidth = (1.0f -alphaToPreviewRatio) * (width - padding);
             float previewHeight = alphaToSaturationRatio * (height - padding);
             float previewThickness = thickness;
@@ -320,7 +320,7 @@ namespace VRtist
             uiColorPicker.hsv = UIColorPickerHSV.Create( 
                 new UIColorPickerHSV.CreateParams {
                     parent = go.transform,
-                    widgetName = "Hue", 
+                    widgetName = "Hsv", 
                     relativeLocation = hsvPosition, 
                     width = hsvWidth, 
                     height = hsvHeight, 
@@ -336,7 +336,7 @@ namespace VRtist
             float alphaThickness = input.thickness;
 
             uiColorPicker.alpha = UIColorPickerAlpha.Create(
-                "Saturation", go.transform, 
+                "Alpha", go.transform, 
                 alphaPosition, alphaWidth, alphaHeight, alphaThickness,
                 input.alphaMaterial, input.alphaCursorPrefab);
             uiColorPicker.alpha.colorPicker = uiColorPicker;

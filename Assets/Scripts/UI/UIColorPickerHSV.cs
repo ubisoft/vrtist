@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -14,7 +13,7 @@ namespace VRtist
         public static readonly float default_width = 0.20f;
         public static readonly float default_height = 0.20f;
         public static readonly float default_thickness = 0.001f;
-        public static readonly float default_trianglePct = 0.7f;
+        public static readonly float default_trianglePct = 0.75f;
         public static readonly float default_innerCirclePct = 0.8f;
         public static readonly float default_outerCirclePct = 1.0f;
         public static readonly string default_sv_material_name = "SaturationMaterial";
@@ -29,33 +28,35 @@ namespace VRtist
         public Transform hueCursor;
         public Transform svCursor;
 
-        private float thickness = 1.0f;
-
-        private float hueCursorPosition = 0.0f; // normalized position
+        public float thickness = 1.0f;
+        public float hueCursorPosition = 0.0f; // normalized position
 
         // 3 points (A, B, C) = (HUE, WHITE, BLACK)
-        private Vector3 svCursorPosition = new Vector3(1.0f, 0.0f, 0.0f); // barycentric coordinates
-
-
-        void Awake()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                colorPicker = GetComponentInParent<UIColorPicker>();
-                //width = GetComponent<MeshFilter>().mesh.bounds.size.x;
-                //height = GetComponent<MeshFilter>().mesh.bounds.size.y;
-                //thickness = GetComponent<MeshFilter>().mesh.bounds.size.z;
-            }
-        }
+        //           C
+        //          / \
+        //         B---A
+        public Vector3 svCursorPosition = new Vector3(1.0f, 0.0f, 0.0f); // barycentric coordinates
 
         public override void ResetColor()
         {
 
         }
+
+        // TMP - REMOVE AFTER TESTS ------------------
+        private void OnValidate()
+        {
+            NeedsRebuild = true;
+        }
+
+        private void Update()
+        {
+            if (NeedsRebuild)
+            {
+                UpdateCursorPositions();
+                NeedsRebuild = false;
+            }
+        }
+        // TMP - REMOVE AFTER TESTS ------------------
 
         public float Hue { get { return hueCursorPosition; } }
         public float Saturation { get { return 1.0f - svCursorPosition.z; }}
@@ -74,15 +75,33 @@ namespace VRtist
         {
             float w2 = width / 2.0f;
             float h2 = height / 2.0f;
-            float ir = innerCirclePct * w2;
-            float or = outerCirclePct * w2;
+            float ir = innerCirclePct * w2; // circle inner radius
+            float or = outerCirclePct * w2; // circle outer radius
+            float mr = (ir + or) / 2.0f; // circle middle radius
+            float cw = (or - ir); // circle width
+            float tr = trianglePct * w2;
+            Vector3 cs = hueCursor.GetComponentInChildren<MeshFilter>().mesh.bounds.size;
 
             hueCursor.localPosition = new Vector3(
-                w2 - ir * -Mathf.Cos(hueCursorPosition * 2.0f * Mathf.PI),
-                -h2 - ir * Mathf.Sin(hueCursorPosition * 2.0f * Mathf.PI),
-                -thickness);
+                w2 + mr * -Mathf.Cos(hueCursorPosition * 2.0f * Mathf.PI),
+                -h2 - mr * Mathf.Sin(hueCursorPosition * 2.0f * Mathf.PI),
+                -cs.z / 2.0f); //-thickness - cs.z/2.0f);
+
+            hueCursor.transform.localRotation = Quaternion.Euler(0,0, 90.0f + hueCursorPosition * 360.0f); // tmp
+            hueCursor.localScale = new Vector3(1, cw / cs.y, 1);
 
             // TODO: cursor in triangle
+            // 3 points (A, B, C) = (HUE, WHITE, BLACK)
+            //           C
+            //          / \
+            //         / P \
+            //        B-----A
+            Vector3 pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
+
+            svCursor.localPosition = pt_A_HUE * svCursorPosition.x + pt_B_WHITE * svCursorPosition.y + pt_C_BLACK * svCursorPosition.z;
+            svCursor.transform.localRotation = Quaternion.identity; // tmp
         }
 
         private void UpdateSVColor()
@@ -94,13 +113,14 @@ namespace VRtist
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness, float newTrianglePct, float newInnerCirclePct, float newOuterCirclePct)
         {
+            float minSide = Mathf.Min(newWidth, newHeight);
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildHSV(newWidth, newHeight, newThickness, newTrianglePct, newInnerCirclePct, newOuterCirclePct, 72);
+            Mesh theNewMesh = UIUtils.BuildHSV(minSide, minSide, newThickness, newTrianglePct, newInnerCirclePct, newOuterCirclePct, 72);
             theNewMesh.name = "UIColorPickerHSV_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
-            width = newWidth;
-            height = newHeight;
+            width = minSide;// newWidth;
+            height = minSide;// newHeight;
             thickness = newThickness;
             trianglePct = newTrianglePct;
             innerCirclePct = newInnerCirclePct;
@@ -264,7 +284,7 @@ namespace VRtist
         {
             public Transform parent = null;
             public string widgetName = UIButton.default_widget_name;
-            public Vector3 relativeLocation = new Vector3(0, 0, -default_thickness);
+            public Vector3 relativeLocation = new Vector3(0, 0, 0);// -default_thickness);
             public float width = default_width;
             public float height = default_height;
             public float thickness = default_thickness;
@@ -346,11 +366,13 @@ namespace VRtist
             GameObject hueCursor = Instantiate<GameObject>(input.hueCursorPrefab);
             hueCursor.transform.parent = uiColorPickerHSV.transform;
             hueCursor.transform.localPosition = Vector3.zero;
+            hueCursor.transform.localRotation = Quaternion.identity;
             uiColorPickerHSV.hueCursor = hueCursor.transform;
 
             GameObject svCursor = Instantiate<GameObject>(input.svCursorPrefab);
             svCursor.transform.parent = uiColorPickerHSV.transform;
             svCursor.transform.localPosition = Vector3.zero;
+            svCursor.transform.localRotation = Quaternion.identity;
             uiColorPickerHSV.svCursor = svCursor.transform;
 
             UIUtils.SetRecursiveLayer(go, "UI");

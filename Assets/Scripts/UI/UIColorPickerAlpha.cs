@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -10,32 +9,33 @@ namespace VRtist
      RequireComponent(typeof(BoxCollider))]
     public class UIColorPickerAlpha : UIElement
     {
-        private float thickness = 1.0f;
-
         public UIColorPicker colorPicker = null;
-        float cursorPosition = 1.0f; // normalized position, full opaque
+
+        private float thickness = 1.0f;
+        public float cursorPosition = 1.0f; // normalized position, full opaque
 
         public Transform cursor;
-
-        void Awake()
-        {
-#if UNITY_EDITOR
-            if (EditorApplication.isPlaying)
-#else
-            if (Application.isPlaying)
-#endif
-            {
-                colorPicker = GetComponentInParent<UIColorPicker>();
-                //width = GetComponent<MeshFilter>().mesh.bounds.size.x;
-                //height = GetComponent<MeshFilter>().mesh.bounds.size.y;
-                //thickness = GetComponent<MeshFilter>().mesh.bounds.size.z;
-            }
-        }
 
         public override void ResetColor()
         {
 
         }
+
+        // TMP - REMOVE AFTER TESTS ------------------
+        private void OnValidate()
+        {
+            NeedsRebuild = true;
+        }
+
+        private void Update()
+        {
+            if (NeedsRebuild)
+            {
+                UpdateCursorPosition();
+                NeedsRebuild = false;
+            }
+        }
+        // TMP - REMOVE AFTER TESTS ------------------
 
         public float GetAlpha()
         {
@@ -46,7 +46,16 @@ namespace VRtist
         public void SetAlpha(float value)
         {
             cursorPosition = value;
-            cursor.localPosition = new Vector3(width * value, -height/2.0f, 0);
+            UpdateCursorPosition();
+        }
+
+        public void UpdateCursorPosition()
+        {
+            Vector3 cs = cursor.GetComponentInChildren<MeshFilter>().mesh.bounds.size;
+
+            cursor.localPosition = new Vector3(width * cursorPosition, -height / 2.0f, -cs.z / 2.0f); //-thickness - cs.z / 2.0f );
+            cursor.localRotation = Quaternion.identity; // tmp
+            cursor.localScale = new Vector3(1, height / cs.y, 1);
         }
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness)
@@ -267,6 +276,7 @@ namespace VRtist
             GameObject cursor = Instantiate<GameObject>(cursorPrefab);
             cursor.transform.parent = uiColorPickerAlpha.transform;
             cursor.transform.localPosition = Vector3.zero;
+            cursor.transform.localRotation = Quaternion.identity;
             uiColorPickerAlpha.cursor = cursor.transform;
 
             UIUtils.SetRecursiveLayer(go, "UI");

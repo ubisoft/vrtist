@@ -1489,8 +1489,8 @@ namespace VRtist
                 float pct = (float)i / (float)(nbSubdiv - 1);
                 float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
                 float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
-                Vector3 innerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, -thickness);
-                Vector3 outerCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, -thickness);
+                Vector3 innerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, 0);
+                Vector3 outerCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, 0);
 
                 vertices.Add(innerCirclePos);
                 vertices.Add(outerCirclePos);
@@ -1523,8 +1523,8 @@ namespace VRtist
                 float pct = (float)i / (float)(nbSubdiv - 1);
                 float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
                 float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
-                Vector3 bottomInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, 0);
-                Vector3 topInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, -thickness);
+                Vector3 bottomInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, thickness);
+                Vector3 topInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, 0);
 
                 vertices.Add(bottomInnerCirclePos);
                 vertices.Add(topInnerCirclePos);
@@ -1557,8 +1557,8 @@ namespace VRtist
                 float pct = (float)i / (float)(nbSubdiv - 1);
                 float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
                 float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
-                Vector3 bottomOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, 0);
-                Vector3 topOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, -thickness);
+                Vector3 bottomOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, thickness);
+                Vector3 topOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, 0);
 
                 vertices.Add(topOuterCirclePos);
                 vertices.Add(bottomOuterCirclePos);
@@ -1590,16 +1590,16 @@ namespace VRtist
 
             float tr = triangleRadiusPct * w2;
 
-            Vector3 top_front = new Vector3(w2, -h2 + tr, -thickness);
-            Vector3 top_back = new Vector3(w2, -h2 + tr, 0.0f);
+            Vector3 top_front = new Vector3(w2, -h2 + tr, 0);
+            Vector3 top_back = new Vector3(w2, -h2 + tr, thickness);
 
-            Vector3 br_front = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-            Vector3 br_back = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), 0.0f);
+            Vector3 br_front = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), 0);
+            Vector3 br_back = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), thickness);
 
-            Vector3 bl_front = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-            Vector3 bl_back = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), 0.0f);
+            Vector3 bl_front = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), 0);
+            Vector3 bl_back = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), thickness);
 
-            Vector2 uvtop = new Vector2(0.5f, 1);
+            Vector2 uvtop = new Vector2(.5f, 0.866f); // racine 3 / 2
             Vector2 uvbr = new Vector2(1, 0);
             Vector2 uvbl = new Vector2(0, 0);
 
