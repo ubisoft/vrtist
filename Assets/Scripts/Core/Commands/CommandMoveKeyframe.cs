@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -24,13 +21,13 @@ namespace VRtist
         }
 
         public override void Undo()
-        {           
-            GlobalState.Instance.MoveKeyframe(gObject, channelName, channelIndex, newFrame, oldFrame);
+        {
+            //GlobalState.Instance.MoveKeyframe(gObject, channelName, channelIndex, newFrame, oldFrame);
         }
 
         public override void Redo()
         {
-            GlobalState.Instance.MoveKeyframe(gObject, channelName, channelIndex, oldFrame, newFrame);
+            //GlobalState.Instance.MoveKeyframe(gObject, channelName, channelIndex, oldFrame, newFrame);
 
         }
         public override void Submit()

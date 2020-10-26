@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -13,15 +12,20 @@ namespace VRtist
         public void Start()
         {
             playButton = transform.Find("PlayButton").GetComponent<UIButton>();
-            GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
-
             recordButton = transform.Find("RecordButton").GetComponent<UIButton>();
-            GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
-        private void OnPlayingChanged(bool value)
+        private void OnAnimationStateChanged(AnimationState state)
         {
-            playButton.Checked = value;
+            playButton.Checked = false;
+            recordButton.Checked = false;
+
+            switch (state)
+            {
+                case AnimationState.Playing: playButton.Checked = true; break;
+                case AnimationState.Recording: recordButton.Checked = true; playButton.Checked = true; break;
+            }
         }
 
         public void OnNextKey()
@@ -66,25 +70,15 @@ namespace VRtist
             MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
         }
 
-        private void OnRecordingChanged(bool value)
-        {
-            recordButton.Checked = value;
-        }
-
-        public void Update()
-        {            
-        }
-
-
         public void OnRecordOrStop(bool record)
         {
             if (record)
             {
-                GlobalState.Instance.Record();
+                GlobalState.Animation.Record();
             }
             else
             {
-                GlobalState.Instance.Pause();
+                GlobalState.Animation.Pause();
             }
         }
 
@@ -92,11 +86,11 @@ namespace VRtist
         {
             if (play)
             {
-                GlobalState.Instance.Play();
+                GlobalState.Animation.Play();
             }
             else
             {
-                GlobalState.Instance.Pause();
+                GlobalState.Animation.Pause();
             }
         }
 

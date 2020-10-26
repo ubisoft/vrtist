@@ -20,38 +20,29 @@ namespace VRtist
             playImage = UIUtils.LoadIcon("player_play");
             recordImage = UIUtils.LoadIcon("player_record");
 
-            GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
-            GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
 
             gameObject.SetActive(false);
         }
 
         void Update()
         {
-            if (!GlobalState.Instance.isPlaying && GlobalState.Instance.recordState == GlobalState.RecordState.Stopped)
+            if (GlobalState.Animation.animationState != AnimationState.Recording && GlobalState.Animation.animationState != AnimationState.Playing)
             {
                 return;
             }
-
-            text.text = GlobalState.currentFrame.ToString();
+            text.text = GlobalState.Animation.currentFrame.ToString();
         }
 
-        private void OnPlayingChanged(bool value)
+        private void OnAnimationStateChanged(AnimationState state)
         {
-            gameObject.SetActive(value);
-            // We receive play true when we record
-            if (value && GlobalState.Instance.recordState == GlobalState.RecordState.Stopped)
-            {
-                image.sprite = playImage;
-            }
-        }
+            bool playOrRecord = GlobalState.Animation.animationState == AnimationState.Recording || GlobalState.Animation.animationState == AnimationState.Playing;
+            gameObject.SetActive(playOrRecord);
 
-        private void OnRecordingChanged(bool value)
-        {
-            gameObject.SetActive(value);
-            if (value)
+            switch (state)
             {
-                image.sprite = recordImage;
+                case AnimationState.Playing: image.sprite = playImage; break;
+                case AnimationState.Recording: image.sprite = recordImage; break;
             }
         }
     }

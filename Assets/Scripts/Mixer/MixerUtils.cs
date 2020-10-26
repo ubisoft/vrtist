@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -539,7 +537,7 @@ namespace VRtist
 
         public static Texture2D GetTexture(string filePath, bool isLinear)
         {
-            
+
             if (textureData.TryGetValue(filePath, out ImageData imageData))
             {
                 textureData.Remove(filePath);
@@ -818,7 +816,7 @@ namespace VRtist
 
         public static string GetString(byte[] data, ref int bufferIndex)
         {
-            int strLength = (int)BitConverter.ToUInt32(data, bufferIndex);
+            int strLength = (int) BitConverter.ToUInt32(data, bufferIndex);
             string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
             bufferIndex = bufferIndex + strLength + 4;
             return str;
@@ -1002,7 +1000,7 @@ namespace VRtist
             byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
-            int sensorFit = (int)cam.gateFit;
+            int sensorFit = (int) cam.gateFit;
 
             byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(focal), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
@@ -1033,7 +1031,7 @@ namespace VRtist
             SyncData.mixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float innerAngle, out float outerAngle);
 
             byte[] paramsBuffer = new byte[2 * sizeof(int) + 7 * sizeof(float)];
-            Buffer.BlockCopy(BitConverter.GetBytes((int)lightType), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes((int) lightType), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(castShadows ? 1 : 0), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
@@ -1261,7 +1259,7 @@ namespace VRtist
             int channelIndex = BitConverter.ToInt32(data, currentIndex);
             currentIndex += 4;
 
-            int keyCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int keyCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
             int[] intBuffer = new int[keyCount];
@@ -1347,7 +1345,7 @@ namespace VRtist
             BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
             currentIndex += 4 * sizeof(float);
 
-            Camera.GateFitMode gateFit = (Camera.GateFitMode)BitConverter.ToInt32(data, currentIndex);
+            Camera.GateFitMode gateFit = (Camera.GateFitMode) BitConverter.ToInt32(data, currentIndex);
             if (gateFit == Camera.GateFitMode.None)
                 gateFit = Camera.GateFitMode.Horizontal;
             currentIndex += sizeof(Int32);
@@ -1387,7 +1385,7 @@ namespace VRtist
             }
             GetString(data, ref currentIndex);
 
-            LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
+            LightType lightType = (LightType) BitConverter.ToInt32(data, currentIndex);
             currentIndex += sizeof(Int32);
 
             GameObject lightGameObject;
@@ -1480,7 +1478,7 @@ namespace VRtist
             byte[] color;
             byte[] enabled;
 
-            byte[] action = IntToBytes((int)info.action);
+            byte[] action = IntToBytes((int) info.action);
             byte[] shotIndex = IntToBytes(info.shotIndex);
 
             switch (info.action)
@@ -1613,15 +1611,15 @@ namespace VRtist
             Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = GetString(data, ref currentIndex);
 
-            int baseMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
+            int baseMeshDataSize = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4 + baseMeshDataSize;
 
-            int bakedMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
+            int bakedMeshDataSize = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             if (bakedMeshDataSize == 0)
                 return null;
 
-            int rawVerticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int rawVerticesCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int size = rawVerticesCount * sizeof(float) * 3;
             Vector3[] rawVertices = new Vector3[rawVerticesCount];
@@ -1636,7 +1634,7 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int normalsCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int normalsCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             size = normalsCount * sizeof(float) * 3;
             Vector3[] normals = new Vector3[normalsCount];
@@ -1654,7 +1652,7 @@ namespace VRtist
             UInt32 UVsCount = BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
 
-            size = (int)UVsCount * sizeof(float) * 2;
+            size = (int) UVsCount * sizeof(float) * 2;
             Vector2[] uvs = new Vector2[UVsCount];
             Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
             idx = 0;
@@ -1665,14 +1663,14 @@ namespace VRtist
             }
             currentIndex += size;
 
-            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int materialIndicesCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             int[] materialIndices = new int[materialIndicesCount];
             size = materialIndicesCount * sizeof(int);
             Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
             currentIndex += size;
 
-            int rawIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex) * 3;
+            int rawIndicesCount = (int) BitConverter.ToUInt32(data, currentIndex) * 3;
             currentIndex += 4;
             int[] rawIndices = new int[rawIndicesCount];
             size = rawIndicesCount * sizeof(int);
@@ -1685,7 +1683,7 @@ namespace VRtist
                 vertices[i] = rawVertices[rawIndices[i]];
             }
 
-            int materialCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            int materialCount = (int) BitConverter.ToUInt32(data, currentIndex);
             currentIndex += 4;
             List<MaterialParameters> meshMaterialParameters = new List<MaterialParameters>();
             if (materialCount == 0)
@@ -1697,7 +1695,7 @@ namespace VRtist
             {
                 for (int i = 0; i < materialCount; i++)
                 {
-                    int materialNameSize = (int)BitConverter.ToUInt32(data, currentIndex);
+                    int materialNameSize = (int) BitConverter.ToUInt32(data, currentIndex);
                     string materialName = System.Text.Encoding.UTF8.GetString(data, currentIndex + 4, materialNameSize);
                     currentIndex += materialNameSize + 4;
 
@@ -2100,7 +2098,7 @@ namespace VRtist
         public static NetCommand BuildSendFrameCommand(int frame)
         {
             byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int)MessageType.Frame);
+            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int) MessageType.Frame);
             byte[] frameBuffer = MixerUtils.IntToBytes(frame);
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, frameBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
@@ -2109,8 +2107,8 @@ namespace VRtist
 
         public static NetCommand BuildSendFrameStartEndCommand(int start, int end)
         {
-            byte[] startBuffer = MixerUtils.IntToBytes((int)start);
-            byte[] endBuffer = MixerUtils.IntToBytes((int)end);
+            byte[] startBuffer = MixerUtils.IntToBytes((int) start);
+            byte[] endBuffer = MixerUtils.IntToBytes((int) end);
             List<byte[]> buffers = new List<byte[]> { startBuffer, endBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.FrameStartEnd);
@@ -2123,7 +2121,7 @@ namespace VRtist
             byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
             byte[] frameBuffer = IntToBytes(data.frame);
             byte[] valueBuffer = FloatToBytes(data.value);
-            byte[] interpolationBuffer = IntToBytes((int)data.interpolation);
+            byte[] interpolationBuffer = IntToBytes((int) data.interpolation);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer, interpolationBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.AddKeyframe);
@@ -2217,7 +2215,7 @@ namespace VRtist
         public static void BuildShotManagerAction(byte[] data)
         {
             int index = 0;
-            ShotManagerAction action = (ShotManagerAction)GetInt(data, ref index);
+            ShotManagerAction action = (ShotManagerAction) GetInt(data, ref index);
             int shotIndex = GetInt(data, ref index);
 
             switch (action)
@@ -2278,5 +2276,4 @@ namespace VRtist
             SyncData.mixer.ListAllClients(json);
         }
     }
-
 }

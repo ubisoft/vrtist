@@ -137,14 +137,15 @@ namespace VRtist
             shotManager = GameObject.FindObjectOfType<UIShotManager>();
             UnityEngine.Assertions.Assert.IsNotNull(shotManager);
 
-            GlobalState.Instance.onRecordEvent.AddListener(OnRecord);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
 
         }
-        private void OnRecord(bool value)
+        private void OnAnimationStateChanged(AnimationState state)
         {
             if (null == ATooltip)
                 return;
-            if (value)
+
+            if (state == AnimationState.Recording)
             {
                 Tooltips.SetTooltipText(ATooltip, "Stop Record");
             }
@@ -322,7 +323,7 @@ namespace VRtist
 
         protected void ManageAutoKeyframe()
         {
-            if (!GlobalState.autoKeyEnabled)
+            if (!GlobalState.Animation.autoKeyEnabled)
                 return;
             foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
@@ -538,9 +539,9 @@ namespace VRtist
                 () => { },
                 () =>
                 {
-                    if (GlobalState.Instance.recordState == GlobalState.RecordState.Recording)
+                    if (GlobalState.Animation.animationState == AnimationState.Recording)
                     {
-                        GlobalState.Instance.Pause();
+                        GlobalState.Animation.Pause();
                         return;
                     }
 

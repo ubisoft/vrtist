@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -17,13 +15,13 @@ namespace VRtist
         void Start()
         {
             Selection.OnSelectionChanged += OnSelectionChanged;
-            GlobalState.Instance.AddAnimationListener(OnAnimationChanged);
+            //GlobalState.Animation.AddAnimationListener(OnAnimationChanged);
         }
 
         // Update is called once per frame
         void Update()
         {
-            if(displaySelectedCurves != GlobalState.Settings.display3DCurves)
+            if (displaySelectedCurves != GlobalState.Settings.display3DCurves)
             {
                 displaySelectedCurves = GlobalState.Settings.display3DCurves;
                 if (displaySelectedCurves)
@@ -35,7 +33,7 @@ namespace VRtist
 
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            if(GlobalState.Settings.display3DCurves)
+            if (GlobalState.Settings.display3DCurves)
                 UpdateFromSelection();
         }
 
@@ -53,7 +51,7 @@ namespace VRtist
             if (!Selection.IsSelected(gObject))
                 return;
 
-            if(null == channel || (channel.name == "location" && channel.index == 2))
+            if (null == channel || (channel.name == "location" && channel.index == 2))
                 UpdateCurve(gObject);
         }
 
@@ -77,34 +75,34 @@ namespace VRtist
 
         void AddCurve(GameObject gObject)
         {
-            Dictionary<Tuple<string, int>, AnimationChannel> animations = GlobalState.Instance.GetAnimationChannels(gObject);
-            if (null == animations)
-                return;
+            //Dictionary<Tuple<string, int>, AnimationChannel> animations = GlobalState.Instance.GetAnimationChannels(gObject);
+            //if (null == animations)
+            //    return;
 
-            GameObject curve = Instantiate(curvePrefab, curvesParent);
-            curves[gObject] = curve;
+            //GameObject curve = Instantiate(curvePrefab, curvesParent);
+            //curves[gObject] = curve;
 
-            AnimationChannel channelX = null;
-            AnimationChannel channelY = null;
-            AnimationChannel channelZ = null;
-            animations.TryGetValue(new Tuple<string, int>("location", 0), out channelX);
-            animations.TryGetValue(new Tuple<string, int>("location", 1), out channelY);
-            animations.TryGetValue(new Tuple<string, int>("location", 2), out channelZ);
-            if (null == channelX || null == channelY || null == channelZ)
-                return;
-            if (channelX.keys.Count != channelY.keys.Count)
-                return;
-            if (channelZ.keys.Count != channelY.keys.Count)
-                return;
+            //AnimationChannel channelX = null;
+            //AnimationChannel channelY = null;
+            //AnimationChannel channelZ = null;
+            //animations.TryGetValue(new Tuple<string, int>("location", 0), out channelX);
+            //animations.TryGetValue(new Tuple<string, int>("location", 1), out channelY);
+            //animations.TryGetValue(new Tuple<string, int>("location", 2), out channelZ);
+            //if (null == channelX || null == channelY || null == channelZ)
+            //    return;
+            //if (channelX.keys.Count != channelY.keys.Count)
+            //    return;
+            //if (channelZ.keys.Count != channelY.keys.Count)
+            //    return;
 
-            LineRenderer line = curve.GetComponent<LineRenderer>();
-            int count = channelX.keys.Count;
-            line.positionCount = count;
-            for (int index = 0; index < count; index++)
-            {
-                Vector3 position = new Vector3(channelX.keys[index].value, channelY.keys[index].value, channelZ.keys[index].value);
-                line.SetPosition(index, position );
-            }
+            //LineRenderer line = curve.GetComponent<LineRenderer>();
+            //int count = channelX.keys.Count;
+            //line.positionCount = count;
+            //for (int index = 0; index < count; index++)
+            //{
+            //    Vector3 position = new Vector3(channelX.keys[index].value, channelY.keys[index].value, channelZ.keys[index].value);
+            //    line.SetPosition(index, position );
+            //}
         }
     }
 

@@ -334,14 +334,14 @@ namespace VRtist
 
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
-                int frame = GlobalState.currentFrame;
+                int frame = GlobalState.Animation.currentFrame;
                 if (joyRightJustClicked || joyRightLongPush)
                 {
-                    frame = Mathf.Clamp(frame + 1, GlobalState.startFrame, GlobalState.endFrame);
+                    frame = Mathf.Clamp(frame + 1, GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
                 }
                 else
                 {
-                    frame = Mathf.Clamp(frame - 1, GlobalState.startFrame, GlobalState.endFrame);
+                    frame = Mathf.Clamp(frame - 1, GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
                 }
 
                 FrameInfo info = new FrameInfo() { frame = frame };

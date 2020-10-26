@@ -1,7 +1,6 @@
 ﻿#define VRTIST
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -168,7 +167,7 @@ namespace VRtist
             Debug.Log("IsObjectInUse " + obj.name);
             return false;
 #else
-            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             bool gripped = GlobalState.Instance.selectionGripped;
             return ((recording || gripped) && Selection.IsSelected(obj));
 #endif
@@ -192,7 +191,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetCameraInfo " + obj.name);
 #else
-            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             if (recording && Selection.IsSelected(obj))
                 return;
             CameraController cameraController = obj.GetComponent<CameraController>();
@@ -246,7 +245,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetLightInfo " + obj.name);
 #else
-            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             if (recording && Selection.IsSelected(obj))
                 return;
             LightController controller = obj.GetComponent<LightController>();
@@ -269,17 +268,17 @@ namespace VRtist
             List<AnimationKey> keys = new List<AnimationKey>();
             for (int i = 0; i < keyCount; i++)
             {
-                keys.Add(new AnimationKey(frames[i], values[i], (Interpolation)interpolations[i]));
+                keys.Add(new AnimationKey(frames[i], values[i], (Interpolation) interpolations[i]));
             }
 
             Node node = SyncData.nodes[objectName];
-            GlobalState.Instance.AddAnimationChannel(node.prefab, channel, channelIndex, keys);
+            //GlobalState.Instance.AddAnimationChannel(node.prefab, channel, channelIndex, keys);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                GlobalState.Instance.AddAnimationChannel(gobj, channel, channelIndex, keys);
+                //GlobalState.Instance.AddAnimationChannel(gobj, channel, channelIndex, keys);
             }
 #endif
         }
@@ -314,7 +313,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetPlaying " + playing.ToString());
 #else
-            GlobalState.Instance.SetPlaying(playing);
+            // Deprecated playing event
 #endif
         }
 
@@ -323,7 +322,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetCurrentFrame " + frame.ToString());
 #else
-            GlobalState.currentFrame = frame;
+            GlobalState.Animation.currentFrame = frame;
 #endif
         }
 
@@ -332,8 +331,8 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetFrameRange " + start.ToString() + " " + end.ToString());
 #else
-            GlobalState.startFrame = start;
-            GlobalState.endFrame = end;
+            GlobalState.Animation.startFrame = start;
+            GlobalState.Animation.endFrame = end;
 #endif
         }
 

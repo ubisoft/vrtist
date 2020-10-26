@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -48,7 +47,7 @@ namespace VRtist
             int id1 = 0, id2 = count - 1;
             while (true)
             {
-                if(keys[id1].time == time)
+                if (keys[id1].time == time)
                 {
                     index = id1;
                     return true;
@@ -83,7 +82,7 @@ namespace VRtist
 
         public void AddKey(AnimationKey key)
         {
-            if(TryGetIndex(key.time, out int index))
+            if (TryGetIndex(key.time, out int index))
             {
                 keys[index] = key;
             }
@@ -98,9 +97,9 @@ namespace VRtist
             return keys[index];
         }
 
-        public bool TyrFindKey(int time, out AnimationKey key)
+        public bool TryFindKey(int time, out AnimationKey key)
         {
-            if(TryGetIndex(time, out int index))
+            if (TryGetIndex(time, out int index))
             {
                 key = keys[index];
                 return true;
@@ -153,7 +152,7 @@ namespace VRtist
 
         private void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            foreach(GameObject gObject in Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection))
+            foreach (GameObject gObject in Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection))
             {
                 MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
             }
@@ -187,7 +186,7 @@ namespace VRtist
         }
         public void RemoveAnimationChannel(GameObject gameObject, string name, int index)
         {
-            if(animationChannels.TryGetValue(gameObject, out Dictionary<Tuple<string, int>, AnimationChannel> channels))
+            if (animationChannels.TryGetValue(gameObject, out Dictionary<Tuple<string, int>, AnimationChannel> channels))
             {
                 Tuple<string, int> channel = new Tuple<string, int>(name, index);
                 if (channels.ContainsKey(channel))
@@ -256,14 +255,14 @@ namespace VRtist
 
         public void HandleRecord()
         {
-            if (GlobalState.Instance.recordState != GlobalState.RecordState.Recording)
+            if (GlobalState.Animation.animationState != AnimationState.Recording)
                 return;
-            int frame = GlobalState.currentFrame;
+            int frame = GlobalState.Animation.currentFrame;
             if (frame != recordCurrentFrame)
             {
-                if (frame >= GlobalState.endFrame)
+                if (frame >= GlobalState.Animation.endFrame)
                 {
-                    GlobalState.Instance.Pause();
+                    GlobalState.Animation.Pause();
                     return;
                 }
                 /* Doesn't work in blender, blender will loop in previous range
@@ -318,7 +317,7 @@ namespace VRtist
             recordCurrentFrame = frame;
         }
 
-        public void OnCountdownFinished()
+        public void StartRecording()
         {
             recordAnimationSets.Clear();
             foreach (GameObject item in Selection.selection.Values)
@@ -359,7 +358,9 @@ namespace VRtist
                 recordAnimationSets[item] = animationSet;
             }
 
-            recordCurrentFrame = GlobalState.currentFrame - 1;
+            recordCurrentFrame = GlobalState.Animation.currentFrame - 1;
+
+            MixerClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
         }
 
         private void SendDeleteKeyInfo(string objectName, string channelName, int channelIndex, int frame)
@@ -375,7 +376,7 @@ namespace VRtist
             MixerClient.GetInstance().SendEvent<SetKeyInfo>(MessageType.RemoveKeyframe, keyInfo);
         }
 
-        public void ApplyAnimations()
+        public void StopRecording()
         {
             CommandGroup group = new CommandGroup("Record Animation");
             try
@@ -390,6 +391,11 @@ namespace VRtist
                 group.Submit();
                 recordAnimationSets.Clear();
             }
+        }
+
+        public void Pause()
+        {
+            MixerClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
         }
 
         public void MoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
@@ -455,7 +461,7 @@ namespace VRtist
 
         public void RemoveSelectionKeyframes()
         {
-            int currentFrame = GlobalState.currentFrame;
+            int currentFrame = GlobalState.Animation.currentFrame;
             foreach (GameObject item in Selection.selection.Values)
             {
                 RemoveKeyframe(item, "location", 0, currentFrame);
@@ -481,7 +487,7 @@ namespace VRtist
                 }
 
                 ParametersController pController = item.GetComponent<ParametersController>();
-                if(null == pController)
+                if (null == pController)
                 {
                     RemoveKeyframe(item, "scale", 0, currentFrame);
                     RemoveKeyframe(item, "scale", 1, currentFrame);

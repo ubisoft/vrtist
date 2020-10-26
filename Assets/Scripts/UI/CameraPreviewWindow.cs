@@ -25,27 +25,19 @@ namespace VRtist
             }
 
             Selection.OnActiveCameraChanged += OnActiveCameraChanged;
-
-            GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
-            GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
-        private void OnPlayingChanged(bool value)
-        {
-            if (GlobalState.Instance.recordState != GlobalState.RecordState.Recording)
-            {
-                titleBar.Pushed = value;
-            }
-            else
-            {
-                titleBar.Pushed = false;
-            }
-        }
-
-        private void OnRecordingChanged(bool value)
+        private void OnAnimationStateChanged(AnimationState state)
         {
             titleBar.Pushed = false;
-            titleBar.Hovered = value;
+            titleBar.Hovered = false;
+
+            switch (state)
+            {
+                case AnimationState.Playing: titleBar.Pushed = true; break;
+                case AnimationState.Recording: titleBar.Hovered = true; break;
+            }
         }
 
         public void Show(bool doShow)
@@ -59,7 +51,7 @@ namespace VRtist
         private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
         {
             CameraController cameraController = null;
-            if(args.activeCamera)
+            if (args.activeCamera)
                 cameraController = args.activeCamera.GetComponent<CameraController>();
             if (null != cameraController)
             {
@@ -85,7 +77,7 @@ namespace VRtist
 
         private void Update()
         {
-            if(null == activeCameraController)
+            if (null == activeCameraController)
             {
                 focalSlider.Disabled = true;
                 focusSlider.Disabled = true;

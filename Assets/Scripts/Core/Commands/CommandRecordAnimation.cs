@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -14,7 +11,7 @@ namespace VRtist
         {
             dst.name = src.name;
             dst.index = src.index;
-            foreach(AnimationKey srcKey in src.keys)
+            foreach (AnimationKey srcKey in src.keys)
             {
                 dst.keys.Add(new AnimationKey(srcKey.time, srcKey.value));
             }
@@ -62,34 +59,34 @@ namespace VRtist
         }
         public override void Undo()
         {
-            GlobalState.Instance.ClearAnimations(gObject);
+            //GlobalState.Instance.ClearAnimations(gObject);
             ClearAnimationInfo info = new ClearAnimationInfo { gObject = gObject };
             MixerClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
         }
 
         public override void Redo()
         {
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xPosition);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yPosition);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zPosition);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xRotation);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yRotation);
-            GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zRotation);
-            if (null != animationSets.lens)
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.lens);
-            if (null != animationSets.energy)
-            {
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.energy);
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.RColor);
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.GColor);
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.BColor);
-            }
-            if (null != animationSets.xScale)
-            {
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xScale);
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yScale);
-                GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zScale);
-            }
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xPosition);
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yPosition);
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zPosition);
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xRotation);
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yRotation);
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zRotation);
+            //if (null != animationSets.lens)
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.lens);
+            //if (null != animationSets.energy)
+            //{
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.energy);
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.RColor);
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.GColor);
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.BColor);
+            //}
+            //if (null != animationSets.xScale)
+            //{
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.xScale);
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.yScale);
+            //    GlobalState.Instance.SendAnimationChannel(gObject.name, animationSets.zScale);
+            //}
             MixerClient.GetInstance().SendQueryObjectData(gObject.name);
         }
         public override void Submit()

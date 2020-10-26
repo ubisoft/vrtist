@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -11,7 +8,7 @@ namespace VRtist
         public CommandRemoveKeyframes(GameObject obj) : base("Remove Keyframes")
         {
             gObject = obj;
-            int frame = GlobalState.currentFrame;
+            int frame = GlobalState.Animation.currentFrame;
 
             new CommandRemoveKeyframe(gObject, "location", 0, frame).Submit();
             new CommandRemoveKeyframe(gObject, "location", 1, frame).Submit();

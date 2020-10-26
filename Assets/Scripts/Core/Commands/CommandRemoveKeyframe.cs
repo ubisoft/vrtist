@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -23,31 +20,31 @@ namespace VRtist
             this.channelIndex = channelIndex;
             this.frame = frame;
 
-            Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
-            if (null == channels)
-                return;
-            Tuple<string, int> c = new Tuple<string, int>(channelName, channelIndex);
-            if (channels.TryGetValue(c, out animationChannel))
-            {
-                if (animationChannel.TryGetIndex(frame, out int index))
-                {
-                    animationKey = animationChannel.GetKey(index);
-                    value = animationKey.value;
-                    interpolation = animationKey.interpolation;
-                }
-            }
+            //Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
+            //if (null == channels)
+            //    return;
+            //Tuple<string, int> c = new Tuple<string, int>(channelName, channelIndex);
+            //if (channels.TryGetValue(c, out animationChannel))
+            //{
+            //    if (animationChannel.TryGetIndex(frame, out int index))
+            //    {
+            //        animationKey = animationChannel.GetKey(index);
+            //        value = animationKey.value;
+            //        interpolation = animationKey.interpolation;
+            //    }
+            //}
         }
 
         public override void Undo()
         {
-            if(null != animationKey)
-                GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
+            //if(null != animationKey)
+            //    GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
         }
 
         public override void Redo()
         {
-            if (null != animationKey)
-                GlobalState.Instance.RemoveKeyframe(gObject, channelName, channelIndex, frame);
+            //if (null != animationKey)
+            //    GlobalState.Instance.RemoveKeyframe(gObject, channelName, channelIndex, frame);
 
         }
         public override void Submit()

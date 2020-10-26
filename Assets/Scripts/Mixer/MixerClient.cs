@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace VRtist
 {
@@ -194,6 +191,9 @@ namespace VRtist
 
             SyncData.Init(prefab, root);
             StartCoroutine(ProcessIncomingCommands());
+
+            // Animation listeners
+            //GlobalState.Animation.onAnimationEvent.AddListener()
         }
 
         IPAddress GetIpAddressFromHostname(string hostname)
@@ -207,7 +207,7 @@ namespace VRtist
                 {
                     if (Int32.TryParse(splitted[i], out int val) && val >= 0 && val <= 255)
                     {
-                        baddr[i] = (byte)val;
+                        baddr[i] = (byte) val;
                     }
                     else
                     {
@@ -321,21 +321,21 @@ namespace VRtist
             long current = 0;
             while (remaining > 0)
             {
-                int sizeRead = socket.Receive(data, (int)current, (int)remaining, SocketFlags.None);
+                int sizeRead = socket.Receive(data, (int) current, (int) remaining, SocketFlags.None);
                 current += sizeRead;
                 remaining -= sizeRead;
             }
 
 
-            NetCommand command = new NetCommand(data, (MessageType)mtype);
+            NetCommand command = new NetCommand(data, (MessageType) mtype);
             return command;
         }
 
         void WriteMessage(NetCommand command)
         {
-            byte[] sizeBuffer = BitConverter.GetBytes((Int64)command.data.Length);
-            byte[] commandId = BitConverter.GetBytes((Int32)command.id);
-            byte[] typeBuffer = BitConverter.GetBytes((Int16)command.messageType);
+            byte[] sizeBuffer = BitConverter.GetBytes((Int64) command.data.Length);
+            byte[] commandId = BitConverter.GetBytes((Int32) command.id);
+            byte[] typeBuffer = BitConverter.GetBytes((Int16) command.messageType);
             List<byte[]> buffers = new List<byte[]> { sizeBuffer, commandId, typeBuffer, command.data };
 
             socket.Send(MixerUtils.ConcatenateBuffers(buffers));
@@ -410,7 +410,6 @@ namespace VRtist
         {
             NetCommand command = MixerUtils.BuildSendFrameCommand(frame.frame);
             AddCommand(command);
-            //GlobalState.currentFrame = frame.frame;
         }
 
         public void SendFrameStartEnd(FrameStartEnd range)
@@ -422,7 +421,7 @@ namespace VRtist
         public void SendPlay()
         {
             byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int)MessageType.Play);
+            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int) MessageType.Play);
             byte[] dataBuffer = new byte[0];
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
             byte[] buffer = MixerUtils.ConcatenateBuffers(buffers);
@@ -432,7 +431,7 @@ namespace VRtist
         public void SendPause()
         {
             byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int)MessageType.Pause);
+            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int) MessageType.Pause);
             byte[] dataBuffer = new byte[0];
             List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
             byte[] buffer = MixerUtils.ConcatenateBuffers(buffers);
@@ -607,7 +606,7 @@ namespace VRtist
                 Buffer.BlockCopy(command.data, index, newBuffer, 0, dataLength);
                 index += dataLength;
 
-                NetCommand newCommand = new NetCommand(newBuffer, (MessageType)messageType);
+                NetCommand newCommand = new NetCommand(newBuffer, (MessageType) messageType);
                 commands.Add(newCommand);
             }
 

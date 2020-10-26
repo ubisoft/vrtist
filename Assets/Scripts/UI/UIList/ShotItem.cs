@@ -96,8 +96,8 @@ namespace VRtist
 
         private void OnSetStartEndFromCurrentFrame(UnityAction<float> action, UISpinner spinner)
         {
-            spinner.IntValue = GlobalState.currentFrame;
-            action.Invoke(GlobalState.currentFrame);
+            spinner.IntValue = GlobalState.Animation.currentFrame;
+            action.Invoke(GlobalState.Animation.currentFrame);
             UpdateShotRange(0);  // 0: unused
         }
 

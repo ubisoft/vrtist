@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -27,35 +24,35 @@ namespace VRtist
             this.frame = frame;
             this.newInterpolation = interpolation;
 
-            Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
-            if (null == channels)
-                return;
-            Tuple<string, int> c = new Tuple<string, int>(channelName, channelIndex);
-            if (channels.TryGetValue(c, out animationChannel))
-            {
-                if (animationChannel.TryGetIndex(frame, out int index))
-                {
-                    animationKey = animationChannel.GetKey(index);
-                    oldValue = animationKey.value;
-                    oldInterpolation = animationKey.interpolation;
-                }
-            }
+            //Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
+            //if (null == channels)
+            //    return;
+            //Tuple<string, int> c = new Tuple<string, int>(channelName, channelIndex);
+            //if (channels.TryGetValue(c, out animationChannel))
+            //{
+            //    if (animationChannel.TryGetIndex(frame, out int index))
+            //    {
+            //        animationKey = animationChannel.GetKey(index);
+            //        oldValue = animationKey.value;
+            //        oldInterpolation = animationKey.interpolation;
+            //    }
+            //}
         }
 
         public override void Undo()
         {
-            if(null == animationKey)
+            if (null == animationKey)
             {
-                GlobalState.Instance.RemoveKeyframe(gObject, channelName, channelIndex, frame);
+                //GlobalState.Instance.RemoveKeyframe(gObject, channelName, channelIndex, frame);
                 return;
             }
 
-            GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, oldValue, oldInterpolation);
+            //GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, oldValue, oldInterpolation);
         }
 
         public override void Redo()
         {
-            GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, newValue, newInterpolation);
+            // GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, newValue, newInterpolation);
 
         }
         public override void Submit()

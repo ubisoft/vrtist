@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -12,7 +9,7 @@ namespace VRtist
         {
             gObject = obj;
             Interpolation interpolation = GlobalState.Instance.settings.interpolation;
-            int frame = GlobalState.currentFrame;
+            int frame = GlobalState.Animation.currentFrame;
 
             new CommandAddKeyframe(gObject, "location", 0, frame, gObject.transform.localPosition.x, interpolation).Submit();
             new CommandAddKeyframe(gObject, "location", 1, frame, gObject.transform.localPosition.y, interpolation).Submit();
