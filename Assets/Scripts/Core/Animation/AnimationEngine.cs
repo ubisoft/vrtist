@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Playables;
-using UnityEngine.Timeline;
 
 namespace VRtist
 {
@@ -15,49 +12,213 @@ namespace VRtist
         Playing
     };
 
-    struct KeyframeData
+    public enum AnimatableProperty
     {
-        // General data
-        public Vector3 position;
-        public Quaternion rotation;
-        public float time;
-
-        // Light data
-        public float intensity;
-        public Color color;
-
-        // Camera data
-        public float focal;
+        PositionX, PositionY, PositionZ,
+        RotationX, RotationY, RotationZ,
+        ScaleX, ScaleY, ScaleZ,
+        LightIntensity, ColorR, ColorG, ColorB,
+        CameraFocal
     }
 
-    struct TrackData
+    public class AnimationKey
     {
-        public TrackAsset trackAsset;
-        public Color baseColor;
+        public AnimationKey(int time, float value, Interpolation interpolation = Interpolation.Bezier)
+        {
+            this.time = time;
+            this.value = value;
+            this.interpolation = interpolation;
+        }
+        public int time;
+        public float value;
+        public Interpolation interpolation;
+    }
+
+    // TODO AnimationKey of Vector3 to optimize?????
+
+    public class Curve
+    {
+        public AnimatableProperty property;
+        public List<AnimationKey> keys;
+
+        // TODO: lastAccessedIndex to optimize researches
+
+        public Curve(AnimatableProperty property)
+        {
+            this.property = property;
+            keys = new List<AnimationKey>();
+        }
+        public Curve(AnimatableProperty property, List<AnimationKey> keys)
+        {
+            this.property = property;
+            this.keys = keys;
+        }
+
+        private bool TryGetIndex(int time, out int index)
+        {
+            int count = keys.Count;
+            if (count == 0)
+            {
+                index = 0;
+                return false;
+            }
+            int id1 = 0, id2 = count - 1;
+            while (true)
+            {
+                if (keys[id1].time == time)
+                {
+                    index = id1;
+                    return true;
+                }
+                if (keys[id2].time == time)
+                {
+                    index = id2;
+                    return true;
+                }
+
+                int center = (id1 + id2) / 2;
+                if (time < keys[center].time)
+                {
+                    if (id2 == center)
+                    {
+                        index = id1;
+                        return false;
+                    }
+                    id2 = center;
+                }
+                else
+                {
+                    if (id1 == center)
+                    {
+                        index = id2;
+                        return false;
+                    }
+                    id1 = center;
+                }
+            }
+        }
+
+        public void AddKey(AnimationKey key)
+        {
+            if (TryGetIndex(key.time, out int index))
+            {
+                keys[index] = key;
+            }
+            else
+            {
+                keys.Insert(index, key);
+            }
+        }
+
+        public AnimationKey GetKey(int index)
+        {
+            return keys[index];
+        }
+
+        public bool TryFindKey(int time, out AnimationKey key)
+        {
+            if (TryGetIndex(time, out int index))
+            {
+                key = keys[index];
+                return true;
+            }
+            key = new AnimationKey(0, 0);
+            return false;
+        }
+
+        public float Evaluate(int frame)
+        {
+            if (TryFindKey(frame, out AnimationKey key))
+            {
+                return key.value;
+            }
+            return 0f;
+        }
+    }
+
+    public class AnimationSet
+    {
+        public Transform transform;
+        public List<Curve> curves = new List<Curve>();
+
+        public AnimationSet(GameObject gobject)
+        {
+            transform = gobject.transform;
+            CreateTransformCurves();
+            LightController lightController = gobject.GetComponent<LightController>();
+            if (null != lightController) { CreateLightCurves(); }
+            CameraController cameraController = gobject.GetComponent<CameraController>();
+            if (null != cameraController) { CreateCameraCurves(); }
+        }
+
+        private void CreateTransformCurves()
+        {
+            curves.Add(new Curve(AnimatableProperty.PositionX));
+            curves.Add(new Curve(AnimatableProperty.PositionY));
+            curves.Add(new Curve(AnimatableProperty.PositionZ));
+
+            curves.Add(new Curve(AnimatableProperty.RotationX));
+            curves.Add(new Curve(AnimatableProperty.RotationY));
+            curves.Add(new Curve(AnimatableProperty.RotationZ));
+
+            curves.Add(new Curve(AnimatableProperty.ScaleX));
+            curves.Add(new Curve(AnimatableProperty.ScaleY));
+            curves.Add(new Curve(AnimatableProperty.ScaleZ));
+        }
+
+        private void CreateLightCurves()
+        {
+            curves.Add(new Curve(AnimatableProperty.LightIntensity));
+            curves.Add(new Curve(AnimatableProperty.ColorR));
+            curves.Add(new Curve(AnimatableProperty.ColorG));
+            curves.Add(new Curve(AnimatableProperty.ColorB));
+        }
+
+        private void CreateCameraCurves()
+        {
+            curves.Add(new Curve(AnimatableProperty.CameraFocal));
+        }
     }
 
     public class AnimationEngine : MonoBehaviour
     {
-        [Header("Timeline & Animations")]
-        [SerializeField] private PlayableDirector director;
-
-        public Transform picked;  // transform to animate
-
-        List<KeyframeData> keyframes = new List<KeyframeData>();
-        Dictionary<int, TrackData> trackMap = new Dictionary<int, TrackData>();
-        int currentAnimCount = 0;
+        // All animations
+        Dictionary<GameObject, AnimationSet> animations = new Dictionary<GameObject, AnimationSet>();
+        Dictionary<GameObject, AnimationSet> recordingObjects = new Dictionary<GameObject, AnimationSet>();
 
         public float fps = 24f;
         public int startFrame = 1;
+        float startTime;
+        public int StartFrame
+        {
+            get { return startFrame; }
+            set
+            {
+                startFrame = value;
+            }
+        }
+
         public int endFrame = 250;
+        public int EndFrame
+        {
+            get { return endFrame; }
+            set
+            {
+                endFrame = value;
+            }
+        }
+        public bool loop = true;
         public int currentFrame = 1;
+
         public bool autoKeyEnabled = false;
-        public float recordStartTime;
 
         public UIButton playButtonShortcut;
 
         public AnimationState animationState = AnimationState.Stopped;
         public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
+        public IntChangedEvent onFrameEvent = new IntChangedEvent();
+        public GameObjectChangedEvent onAddAnimation = new GameObjectChangedEvent();
+
         public Countdown countdown = null;
 
         // Singleton
@@ -81,35 +242,88 @@ namespace VRtist
 
         private void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;
             countdown.onCountdownFinished.AddListener(StartRecording);
         }
 
-        private void OnApplicationQuit()
+        private void Update()
         {
-            TimelineAsset timelineAsset = director.playableAsset as TimelineAsset;
-            foreach (TrackAsset track in timelineAsset.GetOutputTracks())
+            // Find current time and frame & Animate objects
+            if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
             {
-                timelineAsset.DeleteTrack(track);
+                // Compute new frame
+                float currentTime = Time.time - startTime;
+                int newFrame = TimeToFrame(currentTime);
+
+                if (currentFrame != newFrame)
+                {
+                    if (loop && newFrame > endFrame) { newFrame = startFrame; }
+
+                    currentFrame = newFrame;
+                    EvaluateAnimations();
+                    onFrameEvent.Invoke(currentFrame);
+
+                    // Record
+                    if (animationState == AnimationState.Recording)
+                    {
+                        RecordFrame();
+                    }
+                }
             }
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        private void EvaluateAnimations()
         {
-            picked = Selection.IsEmpty() ? null : Selection.GetSelectedObjects()[0].transform;
+            foreach (AnimationSet animationSet in animations.Values)
+            {
+                Transform trans = animationSet.transform;
+                Vector3 position = trans.localPosition;
+                Vector3 rotation = trans.localEulerAngles;
+                Vector3 scale = trans.localScale;
+
+                foreach (Curve curve in animationSet.curves)
+                {
+                    float value = curve.Evaluate(currentFrame);
+                    switch (curve.property)
+                    {
+                        case AnimatableProperty.PositionX: position.x = value; break;
+                        case AnimatableProperty.PositionY: position.y = value; break;
+                        case AnimatableProperty.PositionZ: position.z = value; break;
+
+                        case AnimatableProperty.RotationX: rotation.x = value; break;
+                        case AnimatableProperty.RotationY: rotation.y = value; break;
+                        case AnimatableProperty.RotationZ: rotation.z = value; break;
+
+                        case AnimatableProperty.ScaleX: scale.x = value; break;
+                        case AnimatableProperty.ScaleY: scale.y = value; break;
+                        case AnimatableProperty.ScaleZ: scale.z = value; break;
+                    }
+                }
+
+                trans.localPosition = position;
+                trans.localEulerAngles = rotation;
+                trans.localScale = scale;
+            }
         }
 
-        //public void AddAnimationListener(UnityAction<GameObject, AnimationChannel> callback)
-        //{
-        //    //timelineController.AddListener(callback);
-        //}
-        //public void RemoveAnimationListener(UnityAction<GameObject, AnimationChannel> callback)
-        //{
-        //    //timelineController.RemoveListener(callback);
-        //}
+        public int TimeToFrame(float time)
+        {
+            return (int) (fps * time);
+        }
+
+        public float FrameToTime(int frame)
+        {
+            return (float) frame / fps;
+        }
+
+        public AnimationSet GetObjectAnimation(GameObject gobject)
+        {
+            animations.TryGetValue(gobject, out AnimationSet animationSet);
+            return animationSet;
+        }
+
         public void ClearAnimations(GameObject gameObject)
         {
-            //timelineController.ClearAnimations(gameObject);
+            animations.Remove(gameObject);
         }
         //public void FireAnimationChanged(GameObject gameObject, AnimationChannel channel)
         //{
@@ -130,12 +344,12 @@ namespace VRtist
             //return timelineController.HasAnimation(gameObject);
         }
 
-        public void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
+        public void SendAnimationChannel(string objectName, Curve animationChannel)
         {
             //timelineController.SendAnimationChannel(objectName, animationChannel);
         }
 
-        public Dictionary<Tuple<string, int>, AnimationChannel> GetAnimationChannels(GameObject gameObject)
+        public Dictionary<Tuple<string, int>, Curve> GetAnimationChannels(GameObject gameObject)
         {
             return null;// return timelineController.GetAnimationChannels(gameObject);
         }
@@ -189,13 +403,11 @@ namespace VRtist
         {
             animationState = AnimationState.Playing;
             onAnimationStateEvent.Invoke(animationState);
-            director.Play();
+            startTime = Time.time;
         }
 
         public void Pause()
         {
-            director.Stop();
-
             switch (animationState)
             {
                 case AnimationState.Preroll:
@@ -216,167 +428,58 @@ namespace VRtist
 
         public void StartRecording()
         {
-            if (null == picked) { return; }
-
+            startTime = Time.time;
             animationState = AnimationState.Recording;
-            recordStartTime = Time.time;
-            keyframes.Clear();
-
-            int hash = picked.gameObject.GetHashCode();
-            if (trackMap.ContainsKey(hash))
-            {
-                trackMap[hash].trackAsset.muted = true;
-            }
-
             onAnimationStateEvent.Invoke(animationState);
-            StartCoroutine(RecordFrame());
         }
 
-        IEnumerator RecordFrame()
+        void RecordFrame()
         {
-            while (animationState == AnimationState.Recording)
+            foreach (var selected in Selection.GetSelectedObjects())
             {
-                float delta = Time.time - recordStartTime;
-
-                KeyframeData data = new KeyframeData();
-
-                // Always add position, rotation and time
-                data.position = picked.position;
-                data.rotation = picked.rotation;
-                data.time = delta;
-
-                // Add light specific data
-                LightController lightController = picked.GetComponent<LightController>();
-                if (null != lightController)
+                if (!recordingObjects.TryGetValue(selected, out AnimationSet animationSet))
                 {
-                    data.intensity = lightController.intensity;
-                    data.color = lightController.color;
+                    // Remove existing animation
+                    animations.Remove(selected);
+
+                    // Create new one
+                    animationSet = new AnimationSet(selected);
+                    recordingObjects.Add(selected, animationSet);
                 }
 
-                // Add camera specific data
-                CameraController cameraController = picked.GetComponent<CameraController>();
-                if (null != cameraController)
+                foreach (Curve curve in animationSet.curves)
                 {
-                    data.focal = cameraController.focal;
+                    Vector3 position = selected.transform.localPosition;
+                    Vector3 rotation = selected.transform.localEulerAngles;
+                    Vector3 scale = selected.transform.localScale;
+
+                    switch (curve.property)
+                    {
+                        case AnimatableProperty.PositionX: curve.AddKey(new AnimationKey(currentFrame, position.x)); break;
+                        case AnimatableProperty.PositionY: curve.AddKey(new AnimationKey(currentFrame, position.y)); break;
+                        case AnimatableProperty.PositionZ: curve.AddKey(new AnimationKey(currentFrame, position.z)); break;
+
+                        case AnimatableProperty.RotationX: curve.AddKey(new AnimationKey(currentFrame, rotation.x)); break;
+                        case AnimatableProperty.RotationY: curve.AddKey(new AnimationKey(currentFrame, rotation.y)); break;
+                        case AnimatableProperty.RotationZ: curve.AddKey(new AnimationKey(currentFrame, rotation.z)); break;
+
+                        case AnimatableProperty.ScaleX: curve.AddKey(new AnimationKey(currentFrame, scale.x)); break;
+                        case AnimatableProperty.ScaleY: curve.AddKey(new AnimationKey(currentFrame, scale.y)); break;
+                        case AnimatableProperty.ScaleZ: curve.AddKey(new AnimationKey(currentFrame, scale.z)); break;
+                    }
                 }
-
-                keyframes.Add(data);
-
-                yield return new WaitForSecondsRealtime(1f / fps);
             }
         }
 
         public void StopRecording()
         {
-            Animator animator = picked.gameObject.GetComponent<Animator>();
-            if (animator == null) { animator = picked.gameObject.AddComponent<Animator>(); }
-
-            AnimationClip clip = new AnimationClip();
-            clip.name = GetNewClipName(picked);
-
-            Keyframe[] posX = new Keyframe[keyframes.Count];
-            Keyframe[] posY = new Keyframe[keyframes.Count];
-            Keyframe[] posZ = new Keyframe[keyframes.Count];
-            Keyframe[] rotX = new Keyframe[keyframes.Count];
-            Keyframe[] rotY = new Keyframe[keyframes.Count];
-            Keyframe[] rotZ = new Keyframe[keyframes.Count];
-            Keyframe[] rotW = new Keyframe[keyframes.Count];
-
-            int i = 0;
-            foreach (KeyframeData key in keyframes)
+            foreach (var animationSet in recordingObjects.Values)
             {
-                posX[i] = new Keyframe(key.time, key.position.x);
-                posY[i] = new Keyframe(key.time, key.position.y);
-                posZ[i] = new Keyframe(key.time, key.position.z);
-                rotX[i] = new Keyframe(key.time, key.rotation.x);
-                rotY[i] = new Keyframe(key.time, key.rotation.y);
-                rotZ[i] = new Keyframe(key.time, key.rotation.z);
-                rotW[i] = new Keyframe(key.time, key.rotation.w);
-                ++i;
+                animations.Add(animationSet.transform.gameObject, animationSet);
+                onAddAnimation.Invoke(animationSet.transform.gameObject);
             }
 
-            float fps = GlobalState.Animation.fps;
-            AnimationCurve cx = CreateResampledCurve(posX, fps);
-            AnimationCurve cy = CreateResampledCurve(posY, fps);
-            AnimationCurve cz = CreateResampledCurve(posZ, fps);
-
-            clip.SetCurve("", typeof(Transform), "localPosition.x", cx);
-            clip.SetCurve("", typeof(Transform), "localPosition.y", cy);
-            clip.SetCurve("", typeof(Transform), "localPosition.z", cz);
-            clip.SetCurve("", typeof(Transform), "localRotation.x", CreateResampledCurve(rotX, fps));
-            clip.SetCurve("", typeof(Transform), "localRotation.y", CreateResampledCurve(rotY, fps));
-            clip.SetCurve("", typeof(Transform), "localRotation.z", CreateResampledCurve(rotZ, fps));
-            clip.SetCurve("", typeof(Transform), "localRotation.w", CreateResampledCurve(rotW, fps));
-            //clip.EnsureQuaternionContinuity();
-
-            // Save the anim on disk
-            //UnityEditor.AssetDatabase.CreateAsset(clip, "Assets/Resources/Anims/" + clip.name + ".anim");
-
-            // Create a track for each game object
-            // A track can contain one or more animation clips
-            int hash = picked.gameObject.GetHashCode();
-            TrackData trackData;
-            if (trackMap.ContainsKey(hash))
-            {
-                trackData = trackMap[hash];
-                trackData.trackAsset.muted = false;
-            }
-            else
-            {
-                TrackAsset track = (director.playableAsset as TimelineAsset).CreateTrack<AnimationTrack>(null, "Track_" + clip.name);
-                trackData = new TrackData() { trackAsset = track, baseColor = Color.green };
-                trackMap.Add(hash, trackData);
-                //trajectoryColorIndex = (trajectoryColorIndex + 1) % colors.Length;
-
-                // Bind the game object to the track
-                director.SetGenericBinding(track, animator);
-            }
-
-            // Create a line renderer for trajectory
-            //GameObject lineObject = CreateLine(pickedParent, clip.name, cx, cy, cz, 120f, trackData.baseColor);
-
-            // Create and append a default clip with a duration of 300 frames
-            TimelineClip timelineClip = trackData.trackAsset.CreateDefaultClip();
-            timelineClip.duration = clip.length;
-            AnimationPlayableAsset asset = timelineClip.asset as AnimationPlayableAsset;
-            asset.clip = clip;
-            asset.removeStartOffset = false;
-            //asset.name = clip.name;  // does nothing :(
-        }
-
-        public string GetNewClipName(Transform obj)
-        {
-            return $"Clip_{obj.name}_{currentAnimCount++}";
-        }
-
-        public AnimationCurve CreateResampledCurve(Keyframe[] keyframes, float fps)
-        {
-            Keyframe[] results = ResampleKeyframes(keyframes, fps);
-
-            AnimationCurve outputCurve = new AnimationCurve(results);
-            for (int i = 1; i < results.Length - 1; i++)
-            {
-                outputCurve.SmoothTangents(i, 0);
-            }
-
-            return outputCurve;
-        }
-
-        public Keyframe[] ResampleKeyframes(Keyframe[] keyframes, float fps)
-        {
-            AnimationCurve inputCurve = new AnimationCurve(keyframes);
-            float duration = keyframes[keyframes.Length - 1].time - keyframes[0].time;
-
-            float timeStep = 1f / fps;
-            int numKeys = (int) Mathf.Floor(duration * fps);
-            Keyframe[] results = new Keyframe[numKeys];
-            for (int i = 0; i < numKeys; i++)
-            {
-                float t = keyframes[0].time + i * timeStep;
-                results[i] = new Keyframe() { time = t, value = inputCurve.Evaluate(t) };
-            }
-
-            return results;
+            recordingObjects.Clear();
         }
     }
 }

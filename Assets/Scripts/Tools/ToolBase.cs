@@ -116,7 +116,7 @@ namespace VRtist
 
         }
 
-        protected virtual void OnParametersChanged(GameObject gObject, AnimationChannel animationChannel)
+        protected virtual void OnParametersChanged(GameObject gObject, Curve curve)
         {
             if (Selection.IsSelected(gObject))
                 UpdateUI();

@@ -5,7 +5,7 @@ namespace VRtist
     public class CommandMoveKeyframe : ICommand
     {
         GameObject gObject;
-        AnimationChannel animationChannel = null;
+        Curve curve = null;
         string channelName;
         int channelIndex;
         int oldFrame;

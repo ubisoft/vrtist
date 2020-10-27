@@ -7,7 +7,7 @@ namespace VRtist
     public class CommandClearAnimations : ICommand
     {
         GameObject gObject;
-        Dictionary<Tuple<string, int>, AnimationChannel> animations = new Dictionary<Tuple<string, int>, AnimationChannel>();
+        Dictionary<Tuple<string, int>, Curve> animations = new Dictionary<Tuple<string, int>, Curve>();
         public CommandClearAnimations(GameObject obj)
         {
             gObject = obj;
@@ -29,18 +29,18 @@ namespace VRtist
 
         public override void Undo()
         {
-            foreach (AnimationChannel channel in animations.Values)
-            {
-                //GlobalState.Instance.SendAnimationChannel(gObject.name, channel);
-            }
-            MixerClient.GetInstance().SendQueryObjectData(gObject.name);
+            //foreach (Curve channel in animations.Values)
+            //{
+            //GlobalState.Instance.SendAnimationChannel(gObject.name, channel);
+            //}
+            //MixerClient.GetInstance().SendQueryObjectData(gObject.name);
         }
         public override void Redo()
         {
             //GlobalState.Instance.ClearAnimations(gObject);
 
-            ClearAnimationInfo info = new ClearAnimationInfo { gObject = gObject };
-            MixerClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
+            //ClearAnimationInfo info = new ClearAnimationInfo { gObject = gObject };
+            //MixerClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
         }
         public override void Submit()
         {

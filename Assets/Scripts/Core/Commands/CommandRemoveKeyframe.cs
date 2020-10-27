@@ -5,7 +5,7 @@ namespace VRtist
     public class CommandRemoveKeyframe : ICommand
     {
         GameObject gObject;
-        AnimationChannel animationChannel = null;
+        Curve curve = null;
         string channelName;
         int channelIndex;
         AnimationKey animationKey = null;

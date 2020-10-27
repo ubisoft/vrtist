@@ -46,12 +46,12 @@ namespace VRtist
             }
         }
 
-        void OnAnimationChanged(GameObject gObject, AnimationChannel channel)
+        void OnAnimationChanged(GameObject gObject, Curve curve)
         {
             if (!Selection.IsSelected(gObject))
                 return;
 
-            if (null == channel || (channel.name == "location" && channel.index == 2))
+            if (null == curve || (curve.property == AnimatableProperty.PositionX))
                 UpdateCurve(gObject);
         }
 

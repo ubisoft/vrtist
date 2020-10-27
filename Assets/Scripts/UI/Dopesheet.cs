@@ -80,6 +80,13 @@ namespace VRtist
 
                 UpdateInterpolation();
             }
+
+            GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
+        }
+
+        private void OnFrameChanged(int frame)
+        {
+            CurrentFrame = frame;
         }
 
         private void UpdateInterpolation()
@@ -112,8 +119,8 @@ namespace VRtist
 
         public void OnGlobalRangeChanged(Vector2Int globalBounds)
         {
-            GlobalState.Animation.startFrame = globalBounds.x;
-            GlobalState.Animation.endFrame = globalBounds.y;
+            GlobalState.Animation.StartFrame = globalBounds.x;
+            GlobalState.Animation.EndFrame = globalBounds.y;
             FrameStartEnd info = new FrameStartEnd() { start = globalBounds.x, end = globalBounds.y };
             MixerClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
         }
@@ -145,14 +152,14 @@ namespace VRtist
             {
                 if (!listenerAdded)
                 {
-                    //GlobalState.Instance.AddAnimationListener(UpdateCurrentObjectChannel);
+                    GlobalState.Animation.onAddAnimation.AddListener(UpdateCurrentObjectAnimation);
                 }
             }
             else
             {
                 if (listenerAdded)
                 {
-                    //GlobalState.Instance.RemoveAnimationListener(UpdateCurrentObjectChannel);
+                    GlobalState.Animation.onAddAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                 }
             }
             listenerAdded = enable;
@@ -190,10 +197,9 @@ namespace VRtist
         {
             if (currentFrameLabel != null)
             {
-                int frames = GlobalState.Animation.currentFrame % 24;
-                TimeSpan t = TimeSpan.FromSeconds(GlobalState.Animation.currentFrame / 24f);
+                int frames = GlobalState.Animation.currentFrame % (int) GlobalState.Animation.fps;
+                TimeSpan t = TimeSpan.FromSeconds(GlobalState.Animation.currentFrame / GlobalState.Animation.fps);
                 currentFrameLabel.Text = $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{frames:D2} / {GlobalState.Animation.currentFrame}";
-
             }
             if (timeBar != null)
             {
@@ -209,26 +215,22 @@ namespace VRtist
             }
         }
 
-        /*protected void UpdateCurrentObjectChannel(GameObject gObject, AnimationChannel channel)
+        protected void UpdateCurrentObjectAnimation(GameObject gObject)
         {
-            if (null == currentObject)
-                return;
-            if (currentObject != gObject)
+            if (null == currentObject || currentObject != gObject)
                 return;
 
-            if (null == channel) // channel == null => remove animations
+            Clear();
+
+            AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(gObject);
+            if (null == animationSet)
             {
-                Clear();
                 UpdateTrackName();
                 return;
             }
 
-            // operates only on location.z
-            if (channel.name != "location" || channel.index != 2)
-                return;
-
-            Clear();
-            foreach (AnimationKey key in channel.keys)
+            // Take only one curve (the first one) to add keys
+            foreach (AnimationKey key in animationSet.curves[0].keys)
             {
                 List<AnimKey> keyList = null;
                 if (!keys.TryGetValue(key.time, out keyList))
@@ -237,7 +239,7 @@ namespace VRtist
                     keys[key.time] = keyList;
                 }
 
-                keyList.Add(new AnimKey(channel.name, key.value, key.interpolation));
+                //keyList.Add(new AnimKey(channel.name, key.value, key.interpolation));
             }
 
             UpdateTrackName();
@@ -263,7 +265,7 @@ namespace VRtist
             }
 
             UpdateKeyframes();
-        }*/
+        }
 
         void UpdateKeyframes()
         {
@@ -411,8 +413,7 @@ namespace VRtist
         // called by the slider when moved
         public void OnChangeCurrentFrame(int i)
         {
-            FrameInfo info = new FrameInfo() { frame = i };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.currentFrame = i;
         }
 
         public void OnPrevKeyFrame()

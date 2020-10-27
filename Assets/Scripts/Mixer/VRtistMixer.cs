@@ -322,7 +322,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetCurrentFrame " + frame.ToString());
 #else
-            GlobalState.Animation.currentFrame = frame;
+            // Deprecated event
 #endif
         }
 
@@ -331,8 +331,8 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetFrameRange " + start.ToString() + " " + end.ToString());
 #else
-            GlobalState.Animation.startFrame = start;
-            GlobalState.Animation.endFrame = end;
+            GlobalState.Animation.StartFrame = start;
+            GlobalState.Animation.EndFrame = end;
 #endif
         }
 
