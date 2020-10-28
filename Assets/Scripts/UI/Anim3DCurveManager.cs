@@ -15,7 +15,8 @@ namespace VRtist
         void Start()
         {
             Selection.OnSelectionChanged += OnSelectionChanged;
-            //GlobalState.Animation.AddAnimationListener(OnAnimationChanged);
+            GlobalState.Animation.onAddAnimation.AddListener(OnAnimationAdded);
+            GlobalState.Animation.onRemoveAnimation.AddListener(OnAnimationRemoved);
         }
 
         // Update is called once per frame
@@ -46,13 +47,17 @@ namespace VRtist
             }
         }
 
-        void OnAnimationChanged(GameObject gObject, Curve curve)
+        void OnAnimationAdded(GameObject gObject)
         {
             if (!Selection.IsSelected(gObject))
                 return;
 
-            if (null == curve || (curve.property == AnimatableProperty.PositionX))
-                UpdateCurve(gObject);
+            UpdateCurve(gObject);
+        }
+
+        void OnAnimationRemoved(GameObject gObject)
+        {
+            DeleteCurve(gObject);
         }
 
         void ClearCurves()
@@ -62,47 +67,43 @@ namespace VRtist
             curves.Clear();
         }
 
-        void UpdateCurve(GameObject gObject)
+        void DeleteCurve(GameObject gObject)
         {
             if (curves.ContainsKey(gObject))
             {
                 Destroy(curves[gObject]);
                 curves.Remove(gObject);
             }
+        }
 
+        void UpdateCurve(GameObject gObject)
+        {
+            DeleteCurve(gObject);
             AddCurve(gObject);
         }
 
         void AddCurve(GameObject gObject)
         {
-            //Dictionary<Tuple<string, int>, AnimationChannel> animations = GlobalState.Instance.GetAnimationChannels(gObject);
-            //if (null == animations)
-            //    return;
+            AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(gObject);
+            if (null == animationSet)
+                return;
 
-            //GameObject curve = Instantiate(curvePrefab, curvesParent);
-            //curves[gObject] = curve;
+            Curve positionX = animationSet.GetCurve(AnimatableProperty.PositionX);
+            Curve positionY = animationSet.GetCurve(AnimatableProperty.PositionY);
+            Curve positionZ = animationSet.GetCurve(AnimatableProperty.PositionZ);
+            
+            GameObject curve = Instantiate(curvePrefab, curvesParent);
+            
+            LineRenderer line = curve.GetComponent<LineRenderer>();
+            int count = positionX.keys.Count;
+            line.positionCount = count;
+            for (int index = 0; index < count; index++)
+            {
+                Vector3 position = new Vector3(positionX.keys[index].value, positionY.keys[index].value, positionZ.keys[index].value);
+                line.SetPosition(index, position);
+            }
 
-            //AnimationChannel channelX = null;
-            //AnimationChannel channelY = null;
-            //AnimationChannel channelZ = null;
-            //animations.TryGetValue(new Tuple<string, int>("location", 0), out channelX);
-            //animations.TryGetValue(new Tuple<string, int>("location", 1), out channelY);
-            //animations.TryGetValue(new Tuple<string, int>("location", 2), out channelZ);
-            //if (null == channelX || null == channelY || null == channelZ)
-            //    return;
-            //if (channelX.keys.Count != channelY.keys.Count)
-            //    return;
-            //if (channelZ.keys.Count != channelY.keys.Count)
-            //    return;
-
-            //LineRenderer line = curve.GetComponent<LineRenderer>();
-            //int count = channelX.keys.Count;
-            //line.positionCount = count;
-            //for (int index = 0; index < count; index++)
-            //{
-            //    Vector3 position = new Vector3(channelX.keys[index].value, channelY.keys[index].value, channelZ.keys[index].value);
-            //    line.SetPosition(index, position );
-            //}
+            curves.Add(gObject, curve);
         }
     }
 

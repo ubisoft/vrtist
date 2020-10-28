@@ -92,7 +92,7 @@ namespace VRtist
         Mesh,
         Material,
         AssignMaterial,
-        Frame,
+        _Frame, // deprecated
         Play,
         Pause,
         Sky,
@@ -403,12 +403,6 @@ namespace VRtist
         public void SendRename(RenameInfo rename)
         {
             NetCommand command = MixerUtils.BuildRenameCommand(root, rename);
-            AddCommand(command);
-        }
-
-        public void SendFrame(FrameInfo frame)
-        {
-            NetCommand command = MixerUtils.BuildSendFrameCommand(frame.frame);
             AddCommand(command);
         }
 
@@ -742,9 +736,6 @@ namespace VRtist
                             case MessageType.Pause:
                                 MixerUtils.BuildPause();
                                 break;
-                            case MessageType.Frame:
-                                MixerUtils.BuildFrame(command.data);
-                                break;
                             case MessageType.FrameStartEnd:
                                 MixerUtils.BuildFrameStartEnd(command.data);
                                 break;
@@ -833,8 +824,6 @@ namespace VRtist
                     SendAddObjectToColleciton(data as AddToCollectionInfo); break;
                 case MessageType.AddObjectToScene:
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
-                case MessageType.Frame:
-                    SendFrame(data as FrameInfo); break;
                 case MessageType.FrameStartEnd:
                     SendFrameStartEnd(data as FrameStartEnd); break;
                 case MessageType.Play:

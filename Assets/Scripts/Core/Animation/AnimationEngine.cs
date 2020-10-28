@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityScript.Steps;
 
 namespace VRtist
 {
@@ -139,7 +140,7 @@ namespace VRtist
     public class AnimationSet
     {
         public Transform transform;
-        public List<Curve> curves = new List<Curve>();
+        public readonly Dictionary<AnimatableProperty,Curve> curves = new Dictionary<AnimatableProperty, Curve>();
 
         public AnimationSet(GameObject gobject)
         {
@@ -151,32 +152,38 @@ namespace VRtist
             if (null != cameraController) { CreateCameraCurves(); }
         }
 
+        public Curve GetCurve(AnimatableProperty property)
+        {
+            curves.TryGetValue(property, out Curve result);
+            return result;
+        }
+
         private void CreateTransformCurves()
         {
-            curves.Add(new Curve(AnimatableProperty.PositionX));
-            curves.Add(new Curve(AnimatableProperty.PositionY));
-            curves.Add(new Curve(AnimatableProperty.PositionZ));
+            curves.Add(AnimatableProperty.PositionX, new Curve(AnimatableProperty.PositionX));
+            curves.Add(AnimatableProperty.PositionY, new Curve(AnimatableProperty.PositionY));
+            curves.Add(AnimatableProperty.PositionZ, new Curve(AnimatableProperty.PositionZ));
 
-            curves.Add(new Curve(AnimatableProperty.RotationX));
-            curves.Add(new Curve(AnimatableProperty.RotationY));
-            curves.Add(new Curve(AnimatableProperty.RotationZ));
+            curves.Add(AnimatableProperty.RotationX, new Curve(AnimatableProperty.RotationX));
+            curves.Add(AnimatableProperty.RotationY, new Curve(AnimatableProperty.RotationY));
+            curves.Add(AnimatableProperty.RotationZ, new Curve(AnimatableProperty.RotationZ));
 
-            curves.Add(new Curve(AnimatableProperty.ScaleX));
-            curves.Add(new Curve(AnimatableProperty.ScaleY));
-            curves.Add(new Curve(AnimatableProperty.ScaleZ));
+            curves.Add(AnimatableProperty.ScaleX, new Curve(AnimatableProperty.ScaleX));
+            curves.Add(AnimatableProperty.ScaleY, new Curve(AnimatableProperty.ScaleY));
+            curves.Add(AnimatableProperty.ScaleZ, new Curve(AnimatableProperty.ScaleZ));
         }
 
         private void CreateLightCurves()
         {
-            curves.Add(new Curve(AnimatableProperty.LightIntensity));
-            curves.Add(new Curve(AnimatableProperty.ColorR));
-            curves.Add(new Curve(AnimatableProperty.ColorG));
-            curves.Add(new Curve(AnimatableProperty.ColorB));
+            curves.Add(AnimatableProperty.LightIntensity, new Curve(AnimatableProperty.LightIntensity));
+            curves.Add(AnimatableProperty.ColorR, new Curve(AnimatableProperty.ColorR));
+            curves.Add(AnimatableProperty.ColorG, new Curve(AnimatableProperty.ColorG));
+            curves.Add(AnimatableProperty.ColorB, new Curve(AnimatableProperty.ColorB));
         }
 
         private void CreateCameraCurves()
         {
-            curves.Add(new Curve(AnimatableProperty.CameraFocal));
+            curves.Add(AnimatableProperty.CameraFocal, new Curve(AnimatableProperty.CameraFocal));
         }
     }
 
@@ -187,28 +194,52 @@ namespace VRtist
         Dictionary<GameObject, AnimationSet> recordingObjects = new Dictionary<GameObject, AnimationSet>();
 
         public float fps = 24f;
-        public int startFrame = 1;
         float startTime;
+
+        private int startFrame = 1;
         public int StartFrame
         {
             get { return startFrame; }
             set
             {
                 startFrame = value;
+                if (startFrame >= endFrame - 1)
+                    startFrame = endFrame - 1;
+                if (startFrame < 0)
+                    startFrame = 0;
+                onRangeEvent.Invoke(new Vector2Int(startFrame, endFrame));
             }
         }
 
-        public int endFrame = 250;
+        private int endFrame = 250;
         public int EndFrame
         {
             get { return endFrame; }
             set
             {
                 endFrame = value;
+                if (endFrame <= (startFrame + 1))
+                    endFrame = startFrame + 1;
+                if (endFrame < 1)
+                    endFrame = 1;
+                onRangeEvent.Invoke(new Vector2Int(startFrame, endFrame));
             }
         }
         public bool loop = true;
-        public int currentFrame = 1;
+        private int currentFrame = 1;
+        public int CurrentFrame
+        {
+            get { return currentFrame; }
+            set
+            {
+                currentFrame = value;
+                if(animationState != AnimationState.Playing && animationState != AnimationState.Recording)
+                {
+                    EvaluateAnimations();
+                    onFrameEvent.Invoke(value);
+                }
+            }
+        }
 
         public bool autoKeyEnabled = false;
 
@@ -218,6 +249,10 @@ namespace VRtist
         public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
         public IntChangedEvent onFrameEvent = new IntChangedEvent();
         public GameObjectChangedEvent onAddAnimation = new GameObjectChangedEvent();
+        public GameObjectChangedEvent onRemoveAnimation = new GameObjectChangedEvent();
+
+        public RangeChangedEventInt onRangeEvent = new RangeChangedEventInt();
+
 
         public Countdown countdown = null;
 
@@ -280,7 +315,7 @@ namespace VRtist
                 Vector3 rotation = trans.localEulerAngles;
                 Vector3 scale = trans.localScale;
 
-                foreach (Curve curve in animationSet.curves)
+                foreach (Curve curve in animationSet.curves.Values)
                 {
                     float value = curve.Evaluate(currentFrame);
                     switch (curve.property)
@@ -403,7 +438,7 @@ namespace VRtist
         {
             animationState = AnimationState.Playing;
             onAnimationStateEvent.Invoke(animationState);
-            startTime = Time.time;
+            startTime = Time.time - FrameToTime(currentFrame);
         }
 
         public void Pause()
@@ -428,7 +463,7 @@ namespace VRtist
 
         public void StartRecording()
         {
-            startTime = Time.time;
+            startTime = Time.time - FrameToTime(currentFrame);
             animationState = AnimationState.Recording;
             onAnimationStateEvent.Invoke(animationState);
         }
@@ -441,13 +476,14 @@ namespace VRtist
                 {
                     // Remove existing animation
                     animations.Remove(selected);
+                    onRemoveAnimation.Invoke(selected);
 
                     // Create new one
                     animationSet = new AnimationSet(selected);
                     recordingObjects.Add(selected, animationSet);
                 }
 
-                foreach (Curve curve in animationSet.curves)
+                foreach (Curve curve in animationSet.curves.Values)
                 {
                     Vector3 position = selected.transform.localPosition;
                     Vector3 rotation = selected.transform.localEulerAngles;

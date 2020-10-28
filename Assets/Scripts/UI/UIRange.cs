@@ -73,14 +73,11 @@ namespace VRtist
         public UIRangeKnob.TextBehavior textBehavior = default_text_behavior;
         public RangeContent content = default_content;
         public RangeValueType valueType = default_value_type;
-        public Vector2 globalRange = new Vector2(10, 20);
         public Vector2 currentRange = new Vector2(12, 15);
         
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public RangeChangedEventFloat onSlideEvent = new RangeChangedEventFloat();
         public RangeChangedEventInt onSlideEventInt = new RangeChangedEventInt();
-        public RangeChangedEventFloat onChangeGlobalRangeEvent = new RangeChangedEventFloat();
-        public RangeChangedEventInt onChangeGlobalRangeEventInt = new RangeChangedEventInt();
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
@@ -93,12 +90,19 @@ namespace VRtist
         public float RangePositionBegin { get { return sliderPositionBegin; } set { sliderPositionBegin = value; RebuildMesh(); } }
         public float RangePositionEnd { get { return sliderPositionEnd; } set { sliderPositionEnd = value; RebuildMesh(); } }
         public string Label { get { return labelContent; } set { SetLabel(value); } }
-        public Vector2 GlobalRange { get { return globalRange; } set { SetGlobalRange(value); RebuildMesh(); UpdateValueText(); } }
         public Vector2 CurrentRange { get { return currentRange; } set { SetCurrentRange(value); RebuildMesh(); UpdateValueText(); } }
 
         private bool keyboardOpen = false;
         private RangeWidgetPart keyboardSourcePart = RangeWidgetPart.Background;
         private RangeWidgetPart grippedPart = RangeWidgetPart.Background;
+
+        public void UpdateGlobalRange()
+        {
+            Vector2 range = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+            SetGlobalRange(range); 
+            RebuildMesh();
+            UpdateValueText();
+        }
 
         public override void RebuildMesh()
         {
@@ -114,6 +118,7 @@ namespace VRtist
             float newKnobRadius = knobRadius;
             float newKnobDepth = knobDepth;
 
+            Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
             float pctBegin = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
             float pctEnd = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
 
@@ -485,8 +490,8 @@ namespace VRtist
                 if (minTxt != null)
                 {
                     minTxt.text = valueType == RangeValueType.Float
-                        ? GlobalRange.x.ToString("#0.00")
-                        : Mathf.RoundToInt(GlobalRange.x).ToString();
+                        ? GlobalState.Animation.StartFrame.ToString("#0.00")
+                        : Mathf.RoundToInt(GlobalState.Animation.StartFrame).ToString();
                 }
 
                 Transform maxTextValueTransform = canvas.transform.Find("MaxTextValue");
@@ -494,8 +499,8 @@ namespace VRtist
                 if (maxTxt != null)
                 {
                     maxTxt.text = valueType == RangeValueType.Float
-                        ? GlobalRange.y.ToString("#0.00")
-                        : Mathf.RoundToInt(GlobalRange.y).ToString();
+                        ? GlobalState.Animation.EndFrame.ToString("#0.00")
+                        : Mathf.RoundToInt(GlobalState.Animation.EndFrame).ToString();
                 }
             }
 
@@ -505,6 +510,7 @@ namespace VRtist
 
         private void UpdateRangePosition()
         {
+            Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
             float pctBegin = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
             float pctEnd = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
 
@@ -550,12 +556,10 @@ namespace VRtist
             }
         }
 
-        private void SetGlobalRange(Vector2 value)
+        private void SetGlobalRange(Vector2 globalRange)
         {
-            if (value.x < value.y)
+            if (globalRange.x < globalRange.y)
             {
-                globalRange = value;
-
                 Vector2 newCurrentRange = new Vector2(
                     Mathf.Max(globalRange.x, currentRange.x),
                     Mathf.Min(globalRange.y, currentRange.y));
@@ -571,7 +575,7 @@ namespace VRtist
             }
             else
             {
-                Debug.LogError($"Incoherent GlobalRange set {value.x} {value.y}");
+                Debug.LogError($"Incoherent GlobalRange set {globalRange.x} {globalRange.y}");
             }
         }
 
@@ -579,6 +583,7 @@ namespace VRtist
         {
             if (value.y - value.x >= 1)
             {
+                Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
                 currentRange.x = Mathf.Clamp(value.x, globalRange.x, globalRange.y);
                 currentRange.y = Mathf.Clamp(value.y, globalRange.x, globalRange.y);
             }
@@ -609,20 +614,12 @@ namespace VRtist
                     }
                 case RangeWidgetPart.GlobalMaxLabel:
                     {
-                        GlobalRange = new Vector2(GlobalRange.x, value);
-
-                        onChangeGlobalRangeEvent.Invoke(globalRange);
-                        Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(globalRange.x), Mathf.RoundToInt(globalRange.y));
-                        onChangeGlobalRangeEventInt.Invoke(intRange);
+                        GlobalState.Animation.EndFrame = (int)value;
                         break;
                     }
                 case RangeWidgetPart.GlobalMinLabel:
                     {
-                        GlobalRange = new Vector2(value, GlobalRange.y);
-
-                        onChangeGlobalRangeEvent.Invoke(globalRange);
-                        Vector2Int intRange = new Vector2Int(Mathf.RoundToInt(globalRange.x), Mathf.RoundToInt(globalRange.y));
-                        onChangeGlobalRangeEventInt.Invoke(intRange);
+                        GlobalState.Animation.StartFrame = (int)value;
                         break;
                     }
                 default: break;
@@ -666,13 +663,13 @@ namespace VRtist
                     case RangeWidgetPart.LeftKnob:
                         {
                             if (joyRightJustClicked || joyRightLongPush)
-                            {
-                                float newMin = Mathf.Clamp(currentRange.x + 1.0f, globalRange.x, currentRange.y - 1.0f);
+                            {                                
+                                float newMin = Mathf.Clamp(currentRange.x + 1.0f, GlobalState.Animation.StartFrame, currentRange.y - 1.0f);
                                 CurrentRange = new Vector2(newMin, currentRange.y);
                             }
                             else if (joyLeftJustClicked || joyLeftLongPush)
                             {
-                                float newMin = Mathf.Clamp(currentRange.x - 1.0f, globalRange.x, currentRange.y - 1.0f);
+                                float newMin = Mathf.Clamp(currentRange.x - 1.0f, GlobalState.Animation.StartFrame, currentRange.y - 1.0f);
                                 CurrentRange = new Vector2(newMin, currentRange.y);
                             }
                             onSlideEvent.Invoke(CurrentRange);
@@ -685,14 +682,15 @@ namespace VRtist
                         {
                             if (joyRightJustClicked || joyRightLongPush)
                             {
-                                bool hasReachedMax = currentRange.y + 1.0f > globalRange.y;
+
+                                bool hasReachedMax = currentRange.y + 1.0f > GlobalState.Animation.EndFrame;
                                 float newMin = hasReachedMax ? currentRange.x : currentRange.x + 1.0f;
                                 float newMax = hasReachedMax ? currentRange.y : currentRange.y + 1.0f;
                                 CurrentRange = new Vector2(newMin, newMax);
                             }
                             else if (joyLeftJustClicked || joyLeftLongPush)
                             {
-                                bool hasReachedMin = currentRange.x - 1.0f < globalRange.x;
+                                bool hasReachedMin = currentRange.x - 1.0f < GlobalState.Animation.StartFrame;
                                 float newMin = hasReachedMin ? currentRange.x : currentRange.x - 1.0f;
                                 float newMax = hasReachedMin ? currentRange.y : currentRange.y - 1.0f;
                                 CurrentRange = new Vector2(newMin, newMax);
@@ -707,12 +705,12 @@ namespace VRtist
                         {
                             if (joyRightJustClicked || joyRightLongPush)
                             {
-                                float newMax = Mathf.Clamp(currentRange.y + 1.0f, currentRange.x + 1.0f, globalRange.y);
+                                float newMax = Mathf.Clamp(currentRange.y + 1.0f, currentRange.x + 1.0f, GlobalState.Animation.EndFrame);
                                 CurrentRange = new Vector2(currentRange.x, newMax);
                             }
                             else if (joyLeftJustClicked || joyLeftLongPush)
                             {
-                                float newMax = Mathf.Clamp(currentRange.y - 1.0f, currentRange.x + 1.0f, globalRange.y);
+                                float newMax = Mathf.Clamp(currentRange.y - 1.0f, currentRange.x + 1.0f, GlobalState.Animation.EndFrame);
                                 CurrentRange = new Vector2(currentRange.x, newMax);
                             }
                             onSlideEvent.Invoke(CurrentRange);
@@ -811,6 +809,7 @@ namespace VRtist
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
+            Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
             float currentMinPct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
             float currentMinPosX = startX + currentMinPct * (endX - startX);
             float currentMaxPct = (currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
@@ -841,7 +840,7 @@ namespace VRtist
                     case RangeWidgetPart.GlobalMaxLabel:
                         {
                             // SPAWN KEYBOARD
-                            ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalRange.y);
+                            ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalState.Animation.EndFrame);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
@@ -850,7 +849,7 @@ namespace VRtist
                     case RangeWidgetPart.GlobalMinLabel:
                         {
                             // SPAWN KEYBOARD
-                            ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalRange.x);
+                            ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalState.Animation.StartFrame);
                             keyboardSourcePart = hoveredPart;
                             keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
@@ -995,6 +994,7 @@ namespace VRtist
             }
             else if (pos.x < endX)
             {
+                Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
                 float currentMinPct = (currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
                 float currentMinPos = startX + currentMinPct * (endX - startX);
 
@@ -1046,8 +1046,6 @@ namespace VRtist
             public float knobDepth = UIRange.default_knob_depth;
             public RangeContent content = UIRange.default_content;
             public RangeValueType valueType = UIRange.default_value_type;
-            public float minValue = UIRange.default_min_value;
-            public float maxValue = UIRange.default_max_value;
             public float currentMinValue = UIRange.default_current_min_value;
             public float currentMaxValue = UIRange.default_current_max_value;
             
@@ -1102,8 +1100,6 @@ namespace VRtist
             uiRange.knobDepth = input.knobDepth;
             uiRange.content = input.content;
             uiRange.valueType = input.valueType;
-            uiRange.globalRange.x = input.minValue;
-            uiRange.globalRange.y = input.maxValue;
             uiRange.currentRange.x = input.currentMinValue;
             uiRange.currentRange.y = input.currentMaxValue;
             uiRange.labelContent = input.label;
@@ -1183,12 +1179,14 @@ namespace VRtist
                 }
             );
 
+            Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+
             // Left (min) KNOB
             {
                 float newKnobRadius = uiRange.knobRadius * 0.9f;// .8f; // smaller
                 float newKnobDepth = uiRange.knobDepth * 1.2f; // taller
 
-                float pct = (uiRange.currentRange.x - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+                float pct = (uiRange.currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
 
                 float widthWithoutMargins = input.width - 2.0f * input.margin;
                 float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;
@@ -1220,7 +1218,7 @@ namespace VRtist
                 float newKnobRadius = uiRange.knobRadius * 0.9f;// .8f; // smaller
                 float newKnobDepth = uiRange.knobDepth * 1.2f; // taller
 
-                float pct = (uiRange.currentRange.y - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+                float pct = (uiRange.currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
 
                 float widthWithoutMargins = input.width - 2.0f * input.margin;
                 float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;
@@ -1252,8 +1250,8 @@ namespace VRtist
                 float newKnobRadius = uiRange.knobRadius;
                 float newKnobDepth = uiRange.knobDepth;
 
-                float pctBegin = (uiRange.currentRange.x - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
-                float pctEnd = (uiRange.currentRange.y - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+                float pctBegin = (uiRange.currentRange.x - globalRange.x) / (globalRange.y - globalRange.x);
+                float pctEnd = (uiRange.currentRange.y - globalRange.x) / (globalRange.y - globalRange.x);
 
                 float widthWithoutMargins = input.width - 2.0f * input.margin;
                 float startX = input.margin + widthWithoutMargins * uiRange.sliderPositionBegin + railMargin;

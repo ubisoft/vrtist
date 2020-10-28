@@ -47,7 +47,7 @@ namespace VRtist
         void Update()
         {
             ShotManager sm = ShotManager.Instance;
-            int currentFrame = GlobalState.Animation.currentFrame;
+            int currentFrame = GlobalState.Animation.CurrentFrame;
 
             Color focusColor = UIOptions.FocusColor;
 

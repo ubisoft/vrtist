@@ -9,7 +9,7 @@ namespace VRtist
         {
             gObject = obj;
             Interpolation interpolation = GlobalState.Instance.settings.interpolation;
-            int frame = GlobalState.Animation.currentFrame;
+            int frame = GlobalState.Animation.CurrentFrame;
 
             new CommandAddKeyframe(gObject, "location", 0, frame, gObject.transform.localPosition.x, interpolation).Submit();
             new CommandAddKeyframe(gObject, "location", 1, frame, gObject.transform.localPosition.y, interpolation).Submit();

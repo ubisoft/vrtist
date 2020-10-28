@@ -289,7 +289,7 @@ namespace VRtist
 
                 if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
                 {
-                    float localDeltaOneFrame = dopesheet != null ? 0.31f / (dopesheet.LastFrame - dopesheet.FirstFrame) : 0.0f;
+                    float localDeltaOneFrame = dopesheet != null ? 0.31f / (dopesheet.LocalLastFrame - dopesheet.LocalFirstFrame) : 0.0f;
                     if (joyRightJustClicked || joyRightLongPush)
                     {
                         if (closestIndex != -1)

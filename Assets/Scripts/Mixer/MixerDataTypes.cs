@@ -5,10 +5,6 @@ using UnityEngine;
 namespace VRtist
 {
     // Commands data types
-    public class FrameInfo
-    {
-        public int frame;
-    }
     public class FrameStartEnd
     {
         public int start;

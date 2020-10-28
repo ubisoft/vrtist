@@ -30,44 +30,32 @@ namespace VRtist
 
         public void OnNextKey()
         {
-            int keyTime = dopesheet.GetNextKeyFrame();
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.GetNextKeyFrame();
         }
 
         public void OnPrevKey()
         {
-            int keyTime = dopesheet.GetPreviousKeyFrame();
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.GetPreviousKeyFrame();
         }
 
         public void OnNextFrame()
         {
-            int keyTime = Mathf.Min(dopesheet.LastFrame, dopesheet.CurrentFrame + 1);
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = Mathf.Min(dopesheet.LocalLastFrame, GlobalState.Animation.CurrentFrame + 1);
         }
 
         public void OnPrevFrame()
         {
-            int keyTime = Mathf.Max(dopesheet.FirstFrame, dopesheet.CurrentFrame - 1);
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = Mathf.Max(dopesheet.LocalFirstFrame, GlobalState.Animation.CurrentFrame - 1);
         }
 
         public void OnFirstFrame()
         {
-            int keyTime = dopesheet.FirstFrame;
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.LocalFirstFrame;
         }
 
         public void OnLastFrame()
         {
-            int keyTime = dopesheet.LastFrame;
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.LocalLastFrame;
         }
 
         public void OnRecordOrStop(bool record)

@@ -27,26 +27,22 @@ namespace VRtist
         public IntChangedEvent onPreviousKeyframeEvent = new IntChangedEvent();
         public IntChangedEvent onNextKeyframeEvent = new IntChangedEvent();
 
-        private int firstFrame = 0;
-        private int lastFrame = 250;
-        private int currentFrame = 0;
+        private int localFirstFrame = 0;
+        private int localLastFrame = 250;
 
-        public int FirstFrame { get { return firstFrame; } set { firstFrame = value; UpdateFirstFrame(); } }
-        public int LastFrame { get { return lastFrame; } set { lastFrame = value; UpdateLastFrame(); } }
-        public int CurrentFrame { get { return currentFrame; } set { currentFrame = value; UpdateCurrentFrame(); } }
+        public int LocalFirstFrame { get { return localFirstFrame; } set { localFirstFrame = value; UpdateFirstFrame(); } }
+        public int LocalLastFrame { get { return localLastFrame; } set { localLastFrame = value; UpdateLastFrame(); } }
 
         private GameObject keyframePrefab;
         private GameObject currentObject = null;
 
         public class AnimKey
         {
-            public AnimKey(string name, float value, Interpolation interpolation)
+            public AnimKey(float value, Interpolation interpolation)
             {
-                this.name = name;
                 this.value = value;
                 this.interpolation = interpolation;
             }
-            public string name;
             public float value;
             public Interpolation interpolation;
         }
@@ -75,18 +71,27 @@ namespace VRtist
                 GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
                 GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
 
-                currentRange.GlobalRange = new Vector2(GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
-                currentRange.CurrentRange = new Vector2(GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
+                currentRange.CurrentRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
 
                 UpdateInterpolation();
             }
 
             GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
+            GlobalState.Animation.onRangeEvent.AddListener(OnRangeChanged);
+            Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
         private void OnFrameChanged(int frame)
         {
-            CurrentFrame = frame;
+            UpdateCurrentFrame();
+        }
+
+        private void OnRangeChanged(Vector2Int range)
+        {
+            UpdateFirstFrame();
+            UpdateLastFrame();
+            UpdateKeyframes();
+            currentRange.UpdateGlobalRange();
         }
 
         private void UpdateInterpolation()
@@ -114,7 +119,7 @@ namespace VRtist
 
         public void OnEditCurrentFrame()
         {
-            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnChangeCurrentFrame((int) value), currentFrameLabel.transform, GlobalState.Animation.currentFrame);
+            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnChangeCurrentFrame((int) value), currentFrameLabel.transform, GlobalState.Animation.CurrentFrame);
         }
 
         public void OnGlobalRangeChanged(Vector2Int globalBounds)
@@ -127,8 +132,8 @@ namespace VRtist
 
         public void OnLocalRangeChanged(Vector2Int bounds)
         {
-            FirstFrame = bounds.x;
-            LastFrame = bounds.y;
+            LocalFirstFrame = bounds.x;
+            LocalLastFrame = bounds.y;
 
             UpdateKeyframes();
         }
@@ -163,16 +168,6 @@ namespace VRtist
                 }
             }
             listenerAdded = enable;
-
-            if (currentRange.GlobalRange.x != GlobalState.Animation.startFrame || currentRange.GlobalRange.y != GlobalState.Animation.endFrame)
-            {
-                currentRange.GlobalRange = new Vector2(GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
-            }
-
-            if (CurrentFrame != GlobalState.Animation.currentFrame)
-            {
-                CurrentFrame = GlobalState.Animation.currentFrame;
-            }
         }
 
         private void UpdateFirstFrame()
@@ -181,7 +176,7 @@ namespace VRtist
 
             if (timeBar != null)
             {
-                timeBar.MinValue = firstFrame; // updates knob position
+                timeBar.MinValue = localFirstFrame; // updates knob position
             }
         }
 
@@ -189,7 +184,7 @@ namespace VRtist
         {
             if (timeBar != null)
             {
-                timeBar.MaxValue = lastFrame; // updates knob position
+                timeBar.MaxValue = localLastFrame; // updates knob position
             }
         }
 
@@ -197,13 +192,13 @@ namespace VRtist
         {
             if (currentFrameLabel != null)
             {
-                int frames = GlobalState.Animation.currentFrame % (int) GlobalState.Animation.fps;
-                TimeSpan t = TimeSpan.FromSeconds(GlobalState.Animation.currentFrame / GlobalState.Animation.fps);
-                currentFrameLabel.Text = $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{frames:D2} / {GlobalState.Animation.currentFrame}";
+                int frames = GlobalState.Animation.CurrentFrame % (int) GlobalState.Animation.fps;
+                TimeSpan t = TimeSpan.FromSeconds(GlobalState.Animation.CurrentFrame / GlobalState.Animation.fps);
+                currentFrameLabel.Text = $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{frames:D2} / {GlobalState.Animation.CurrentFrame}";
             }
             if (timeBar != null)
             {
-                timeBar.Value = GlobalState.Animation.currentFrame; // changes the knob's position
+                timeBar.Value = GlobalState.Animation.CurrentFrame; // changes the knob's position
             }
         }
 
@@ -239,7 +234,7 @@ namespace VRtist
                     keys[key.time] = keyList;
                 }
 
-                //keyList.Add(new AnimKey(channel.name, key.value, key.interpolation));
+                keyList.Add(new AnimKey(key.value, key.interpolation));
             }
 
             UpdateTrackName();
@@ -278,7 +273,7 @@ namespace VRtist
 
                 float time = key.Key;
                 float currentValue = (float) time;
-                float pct = (float) (currentValue - firstFrame) / (float) (lastFrame - firstFrame);
+                float pct = (float) (currentValue - localFirstFrame) / (float) (localLastFrame - localFirstFrame);
 
                 float startX = 0.0f;
                 float endX = timeBar.width;
@@ -286,7 +281,7 @@ namespace VRtist
 
                 Vector3 knobPosition = new Vector3(posX, -0.5f * track.height, 0.0f);
 
-                if (time < FirstFrame || time > LastFrame)
+                if (time < LocalFirstFrame || time > LocalLastFrame)
                 {
                     keyframe.SetActive(false); // clip out of range keyframes
                 }
@@ -330,21 +325,24 @@ namespace VRtist
 
         void OnCameraNameChanged(GameObject gObject)
         {
-            if (Selection.IsSelected(gObject) || Selection.GetHoveredObject() == gObject)
-                OnSelectionChanged(gObject);
+            if (currentObject == gObject)
+            {
+                UpdateTrackName();
+            }                
         }
 
-        public void OnSelectionChanged(GameObject gObject)
+        protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            if (currentObject != gObject)
+            if(Selection.IsEmpty())
             {
-                currentObject = gObject;
-                if (null == currentObject)
-                {
-                    Clear();
-                }
+                Clear();
                 UpdateTrackName();
+                return;
             }
+
+            GameObject gObject = Selection.GetGrippedOrSelection()[0];
+            currentObject = gObject;           
+            UpdateCurrentObjectAnimation(gObject);
         }
 
         public int GetNextKeyFrame()
@@ -352,11 +350,11 @@ namespace VRtist
             foreach (int t in keys.Keys)
             {
                 // TODO: dichotomic search
-                if (t > CurrentFrame)
+                if (t > GlobalState.Animation.CurrentFrame)
                     return t;
             }
 
-            return FirstFrame;
+            return LocalFirstFrame;
         }
 
         public int GetPreviousKeyFrame()
@@ -365,11 +363,11 @@ namespace VRtist
             {
                 // TODO: dichotomic search
                 int t = keys.Keys[i];
-                if (t < CurrentFrame)
+                if (t < GlobalState.Animation.CurrentFrame)
                     return t;
             }
 
-            return LastFrame;
+            return LocalLastFrame;
         }
 
         public void UpdateTrackName()
@@ -413,17 +411,17 @@ namespace VRtist
         // called by the slider when moved
         public void OnChangeCurrentFrame(int i)
         {
-            GlobalState.Animation.currentFrame = i;
+            GlobalState.Animation.CurrentFrame = i;
         }
 
         public void OnPrevKeyFrame()
         {
-            onPreviousKeyframeEvent.Invoke(CurrentFrame);
+            onPreviousKeyframeEvent.Invoke(GlobalState.Animation.CurrentFrame);
         }
 
         public void OnNextKeyFrame()
         {
-            onNextKeyframeEvent.Invoke(CurrentFrame);
+            onNextKeyframeEvent.Invoke(GlobalState.Animation.CurrentFrame);
         }
 
         public void OnAddKeyFrame()

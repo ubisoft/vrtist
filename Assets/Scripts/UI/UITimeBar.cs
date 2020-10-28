@@ -196,7 +196,7 @@ namespace VRtist
 
             Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
 
-            bool visibile = GlobalState.Animation.currentFrame >= minValue && GlobalState.Animation.currentFrame <= maxValue;
+            bool visibile = GlobalState.Animation.CurrentFrame >= minValue && GlobalState.Animation.CurrentFrame <= maxValue;
             knob.gameObject.SetActive(visibile);
 
             knob.localPosition = knobPosition;
@@ -342,7 +342,7 @@ namespace VRtist
             localProjectedWidgetPosition.z = -0.005f;
 
             // SET
-            if (roundedValue != GlobalState.Animation.currentFrame)
+            if (roundedValue != GlobalState.Animation.CurrentFrame)
             {
                 onSlideEvent.Invoke(roundedValue);
                 if (triggerJustClicked)

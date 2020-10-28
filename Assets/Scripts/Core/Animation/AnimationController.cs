@@ -136,10 +136,10 @@ namespace VRtist
         {
             if (GlobalState.Animation.animationState != AnimationState.Recording)
                 return;
-            int frame = GlobalState.Animation.currentFrame;
+            int frame = GlobalState.Animation.CurrentFrame;
             if (frame != recordCurrentFrame)
             {
-                if (frame >= GlobalState.Animation.endFrame)
+                if (frame >= GlobalState.Animation.EndFrame)
                 {
                     GlobalState.Animation.Pause();
                     return;
@@ -237,7 +237,7 @@ namespace VRtist
             //    recordAnimationSets[item] = animationSet;
             //}
 
-            recordCurrentFrame = GlobalState.Animation.currentFrame - 1;
+            recordCurrentFrame = GlobalState.Animation.CurrentFrame - 1;
 
             MixerClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
         }
@@ -340,7 +340,7 @@ namespace VRtist
 
         public void RemoveSelectionKeyframes()
         {
-            int currentFrame = GlobalState.Animation.currentFrame;
+            int currentFrame = GlobalState.Animation.CurrentFrame;
             foreach (GameObject item in Selection.selection.Values)
             {
                 RemoveKeyframe(item, "location", 0, currentFrame);

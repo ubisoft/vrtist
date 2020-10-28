@@ -67,8 +67,9 @@ namespace VRtist
 
             float localRangeWidth = localRangePositionEndX - localRangePositionBeginX;
 
-            float pctRangeMin = (uiRange.currentRange.x - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
-            float pctRangeMax = (uiRange.currentRange.y - uiRange.globalRange.x) / (uiRange.globalRange.y - uiRange.globalRange.x);
+            Vector2 globalRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+            float pctRangeMin = (uiRange.currentRange.x -globalRange.x) / (globalRange.y - globalRange.x);
+            float pctRangeMax = (uiRange.currentRange.y -globalRange.x) / (globalRange.y - globalRange.x);
             float pctRangeMid = (pctRangeMin + pctRangeMax) / 2.0f;
 
             float localPosRangeMinX = localRangePositionBeginX + localRangeWidth * pctRangeMin;
@@ -150,7 +151,7 @@ namespace VRtist
                     Vector3 localDeltaRangeMin = T.InverseTransformVector(deltaRangeMin);
                     float newLocalPosRangeMinX = localPosRangeMinX + localDeltaRangeMin.x;
                     float newPctRangeMin = (newLocalPosRangeMinX - localRangePositionBeginX) / localRangeWidth;
-                    float newValueRangeMin = uiRange.globalRange.x + newPctRangeMin * (uiRange.globalRange.y - uiRange.globalRange.x);
+                    float newValueRangeMin = globalRange.x + newPctRangeMin * (globalRange.y - globalRange.x);
 
                     uiRange.CurrentRange = new Vector2(newValueRangeMin, uiRange.CurrentRange.y);
                 }
@@ -159,7 +160,7 @@ namespace VRtist
                     Vector3 localDeltaRangeMax = T.InverseTransformVector(deltaRangeMax);
                     float newLocalPosRangeMaxX = localPosRangeMaxX + localDeltaRangeMax.x;
                     float newPctRangeMax = (newLocalPosRangeMaxX - localRangePositionBeginX) / localRangeWidth;
-                    float newValueRangeMax = uiRange.globalRange.x + newPctRangeMax * (uiRange.globalRange.y - uiRange.globalRange.x);
+                    float newValueRangeMax = globalRange.x + newPctRangeMax * (globalRange.y - globalRange.x);
 
                     uiRange.CurrentRange = new Vector2(uiRange.CurrentRange.x, newValueRangeMax);
                 }
@@ -169,11 +170,11 @@ namespace VRtist
 
                     float newLocalPosRangeMinX = localPosRangeMinX + localDeltaRangeMid.x;
                     float newPctRangeMin = (newLocalPosRangeMinX - localRangePositionBeginX) / localRangeWidth;
-                    float newValueRangeMin = uiRange.globalRange.x + newPctRangeMin * (uiRange.globalRange.y - uiRange.globalRange.x);
+                    float newValueRangeMin = globalRange.x + newPctRangeMin * (globalRange.y - globalRange.x);
 
                     float newLocalPosRangeMaxX = localPosRangeMaxX + localDeltaRangeMid.x;
                     float newPctRangeMax = (newLocalPosRangeMaxX - localRangePositionBeginX) / localRangeWidth;
-                    float newValueRangeMax = uiRange.globalRange.x + newPctRangeMax * (uiRange.globalRange.y - uiRange.globalRange.x);
+                    float newValueRangeMax = globalRange.x + newPctRangeMax * (globalRange.y - globalRange.x);
 
                     uiRange.CurrentRange = new Vector2(newValueRangeMin, newValueRangeMax);
                 }

@@ -335,16 +335,16 @@ namespace VRtist
             // Manage time with joystick
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
-                int frame = GlobalState.Animation.currentFrame;
+                int frame = GlobalState.Animation.CurrentFrame;
                 if (joyRightJustClicked || joyRightLongPush)
                 {
-                    frame = Mathf.Clamp(frame + 1, GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
+                    frame = Mathf.Clamp(frame + 1, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
                 }
                 else
                 {
-                    frame = Mathf.Clamp(frame - 1, GlobalState.Animation.startFrame, GlobalState.Animation.endFrame);
+                    frame = Mathf.Clamp(frame - 1, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
                 }
-                GlobalState.Animation.currentFrame = frame;
+                GlobalState.Animation.CurrentFrame = frame;
             }
         }
 

@@ -401,8 +401,6 @@ namespace VRtist
 
             int numSelected = Selection.selection.Count;
             Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
-            GameObject gObject = GetFirstSelectedObject();
-            dopesheet.OnSelectionChanged(gObject);
 
             // Update locked checkbox if anyone
             if (null != lockedCheckbox)

@@ -31,7 +31,7 @@ namespace VRtist
             {
                 return;
             }
-            text.text = GlobalState.Animation.currentFrame.ToString();
+            text.text = GlobalState.Animation.CurrentFrame.ToString();
         }
 
         private void OnAnimationStateChanged(AnimationState state)

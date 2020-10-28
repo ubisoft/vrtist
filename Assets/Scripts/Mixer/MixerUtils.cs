@@ -2088,23 +2088,6 @@ namespace VRtist
             SyncData.mixer.SetPlaying(false);
         }
 
-        public static void BuildFrame(byte[] data)
-        {
-            int index = 0;
-            int frame = GetInt(data, ref index);
-            SyncData.mixer.SetCurrentFrame(frame);
-        }
-
-        public static NetCommand BuildSendFrameCommand(int frame)
-        {
-            byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int) MessageType.Frame);
-            byte[] frameBuffer = MixerUtils.IntToBytes(frame);
-            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, frameBuffer };
-            byte[] buffer = ConcatenateBuffers(buffers);
-            return new NetCommand(buffer, MessageType.ClientIdWrapper);
-        }
-
         public static NetCommand BuildSendFrameStartEndCommand(int start, int end)
         {
             byte[] startBuffer = MixerUtils.IntToBytes((int) start);

@@ -80,9 +80,9 @@ namespace VRtist
         // Update is called once per frame
         void Update()
         {
-            if (GlobalState.Animation.currentFrame == frame)
+            if (GlobalState.Animation.CurrentFrame == frame)
                 return;
-            frame = GlobalState.Animation.currentFrame;
+            frame = GlobalState.Animation.CurrentFrame;
 
             ForceUpdate();
         }
