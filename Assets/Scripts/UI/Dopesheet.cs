@@ -69,6 +69,8 @@ namespace VRtist
                 ColorUtility.TryParseHtmlString("#FF2D5E", out bezierInterpolationColor);
 
                 currentRange.CurrentRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+                localFirstFrame = GlobalState.Animation.StartFrame;
+                localLastFrame = GlobalState.Animation.EndFrame;
 
                 UpdateInterpolation();
             }
