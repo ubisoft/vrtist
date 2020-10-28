@@ -8,42 +8,40 @@ namespace VRtist
         public CommandAddKeyframes(GameObject obj) : base("Add Keyframes")
         {
             gObject = obj;
-            Interpolation interpolation = GlobalState.Instance.settings.interpolation;
+            Interpolation interpolation = GlobalState.Settings.interpolation;
             int frame = GlobalState.Animation.CurrentFrame;
 
-            new CommandAddKeyframe(gObject, "location", 0, frame, gObject.transform.localPosition.x, interpolation).Submit();
-            new CommandAddKeyframe(gObject, "location", 1, frame, gObject.transform.localPosition.y, interpolation).Submit();
-            new CommandAddKeyframe(gObject, "location", 2, frame, gObject.transform.localPosition.z, interpolation).Submit();
-            Quaternion q = gObject.transform.localRotation;
+            new CommandAddKeyframe(gObject, AnimatableProperty.PositionX, frame, gObject.transform.localPosition.x, interpolation).Submit();
+            new CommandAddKeyframe(gObject, AnimatableProperty.PositionY, frame, gObject.transform.localPosition.y, interpolation).Submit();
+            new CommandAddKeyframe(gObject, AnimatableProperty.PositionZ, frame, gObject.transform.localPosition.z, interpolation).Submit();
+
             // convert to ZYX euler
-            Vector3 angles = Maths.ThreeAxisRotation(q);
-            new CommandAddKeyframe(gObject, "rotation_euler", 0, frame, angles.x, interpolation).Submit();
-            new CommandAddKeyframe(gObject, "rotation_euler", 1, frame, angles.y, interpolation).Submit();
-            new CommandAddKeyframe(gObject, "rotation_euler", 2, frame, angles.z, interpolation).Submit();
+            Vector3 angles = gObject.transform.localEulerAngles;
+            new CommandAddKeyframe(gObject, AnimatableProperty.RotationX, frame, angles.x, interpolation).Submit();
+            new CommandAddKeyframe(gObject, AnimatableProperty.RotationY, frame, angles.y, interpolation).Submit();
+            new CommandAddKeyframe(gObject, AnimatableProperty.RotationZ, frame, angles.z, interpolation).Submit();
+
+            // Scale
+            Vector3 scale = gObject.transform.localScale;
+            new CommandAddKeyframe(gObject, AnimatableProperty.ScaleX, frame, scale.x, interpolation).Submit();
+            new CommandAddKeyframe(gObject, AnimatableProperty.ScaleY, frame, scale.y, interpolation).Submit();
+            new CommandAddKeyframe(gObject, AnimatableProperty.ScaleZ, frame, scale.z, interpolation).Submit();
 
             CameraController controller = gObject.GetComponent<CameraController>();
             if (null != controller)
             {
-                new CommandAddKeyframe(gObject, "lens", -1, frame, controller.focal, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.CameraFocal, frame, controller.focal, interpolation).Submit();
             }
 
             LightController lcontroller = gObject.GetComponent<LightController>();
             if (null != lcontroller)
             {
-                new CommandAddKeyframe(gObject, "energy", -1, frame, lcontroller.GetPower(), interpolation).Submit();
-                new CommandAddKeyframe(gObject, "color", 0, frame, lcontroller.color.r, interpolation).Submit();
-                new CommandAddKeyframe(gObject, "color", 1, frame, lcontroller.color.g, interpolation).Submit();
-                new CommandAddKeyframe(gObject, "color", 2, frame, lcontroller.color.b, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.LightIntensity, frame, lcontroller.GetPower(), interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.ColorR, frame, lcontroller.color.r, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.ColorG, frame, lcontroller.color.g, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.ColorB, frame, lcontroller.color.b, interpolation).Submit();
             }
-
-            if (null == gObject.GetComponent<ParametersController>())
-            {
-                // Scale
-                Vector3 scale = gObject.transform.localScale;
-                new CommandAddKeyframe(gObject, "scale", 0, frame, scale.x, interpolation).Submit();
-                new CommandAddKeyframe(gObject, "scale", 1, frame, scale.y, interpolation).Submit();
-                new CommandAddKeyframe(gObject, "scale", 2, frame, scale.z, interpolation).Submit();
-            }
+            
         }
 
         public override void Undo()

@@ -5,55 +5,41 @@ namespace VRtist
     public class CommandAddKeyframe : ICommand
     {
         GameObject gObject;
-        Curve curve = null;
-        string channelName;
-        int channelIndex;
-        AnimationKey animationKey = null;
-        float oldValue;
-        float newValue;
-        Interpolation oldInterpolation;
-        Interpolation newInterpolation;
-        int frame;
+        AnimatableProperty property;
+        AnimationKey oldAnimationKey = null;
+        AnimationKey newAnimationKey = null;
 
-        public CommandAddKeyframe(GameObject obj, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
+        public CommandAddKeyframe(GameObject obj, AnimatableProperty property, int frame, float value, Interpolation interpolation)
         {
             gObject = obj;
-            this.channelName = channelName;
-            this.channelIndex = channelIndex;
-            this.newValue = value;
-            this.frame = frame;
-            this.newInterpolation = interpolation;
+            this.property = property;
+            newAnimationKey = new AnimationKey(frame, value, interpolation);
 
-            //Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
-            //if (null == channels)
-            //    return;
-            //Tuple<string, int> c = new Tuple<string, int>(channelName, channelIndex);
-            //if (channels.TryGetValue(c, out animationChannel))
-            //{
-            //    if (animationChannel.TryGetIndex(frame, out int index))
-            //    {
-            //        animationKey = animationChannel.GetKey(index);
-            //        oldValue = animationKey.value;
-            //        oldInterpolation = animationKey.interpolation;
-            //    }
-            //}
+            AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(obj);
+            if (null == animationSet)
+                return;
+
+            Curve curve = animationSet.GetCurve(property);
+            if (null == curve)
+                return;
+
+            curve.TryFindKey(frame, out oldAnimationKey);
         }
 
         public override void Undo()
         {
-            if (null == animationKey)
+            GlobalState.Animation.RemoveKeyframe(gObject, property, newAnimationKey.time);
+
+            if (null != oldAnimationKey)
             {
-                //GlobalState.Instance.RemoveKeyframe(gObject, channelName, channelIndex, frame);
+                GlobalState.Animation.AddKeyframe(gObject, property, oldAnimationKey);
                 return;
             }
-
-            //GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, oldValue, oldInterpolation);
         }
 
         public override void Redo()
         {
-            // GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, newValue, newInterpolation);
-
+            GlobalState.Animation.AddKeyframe(gObject, property, newAnimationKey);
         }
         public override void Submit()
         {

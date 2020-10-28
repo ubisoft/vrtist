@@ -5,29 +5,26 @@ namespace VRtist
     public class CommandMoveKeyframe : ICommand
     {
         GameObject gObject;
-        Curve curve = null;
-        string channelName;
-        int channelIndex;
+        AnimatableProperty property;
         int oldFrame;
         int newFrame;
 
-        public CommandMoveKeyframe(GameObject obj, string channelName, int channelIndex, int frame, int newFrame)
+        public CommandMoveKeyframe(GameObject obj, AnimatableProperty property, int frame, int newFrame)
         {
             gObject = obj;
-            this.channelName = channelName;
-            this.channelIndex = channelIndex;
+            this.property = property;
             this.oldFrame = frame;
             this.newFrame = newFrame;
         }
 
         public override void Undo()
         {
-            //GlobalState.Instance.MoveKeyframe(gObject, channelName, channelIndex, newFrame, oldFrame);
+            GlobalState.Animation.MoveKeyframe(gObject, property, newFrame, oldFrame);
         }
 
         public override void Redo()
         {
-            //GlobalState.Instance.MoveKeyframe(gObject, channelName, channelIndex, oldFrame, newFrame);
+            GlobalState.Animation.MoveKeyframe(gObject, property, oldFrame, newFrame);
 
         }
         public override void Submit()

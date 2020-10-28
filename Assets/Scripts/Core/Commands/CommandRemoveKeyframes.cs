@@ -10,36 +10,9 @@ namespace VRtist
             gObject = obj;
             int frame = GlobalState.Animation.CurrentFrame;
 
-            new CommandRemoveKeyframe(gObject, "location", 0, frame).Submit();
-            new CommandRemoveKeyframe(gObject, "location", 1, frame).Submit();
-            new CommandRemoveKeyframe(gObject, "location", 2, frame).Submit();
-
-            new CommandRemoveKeyframe(gObject, "rotation_euler", 0, frame).Submit();
-            new CommandRemoveKeyframe(gObject, "rotation_euler", 1, frame).Submit();
-            new CommandRemoveKeyframe(gObject, "rotation_euler", 2, frame).Submit();
-
-            CameraController controller = gObject.GetComponent<CameraController>();
-            if (null != controller)
+            foreach (Curve curve in GlobalState.Animation.GetObjectAnimation(obj).curves.Values)
             {
-                new CommandRemoveKeyframe(gObject, "lens", -1, frame).Submit();
-            }
-
-            LightController lcontroller = gObject.GetComponent<LightController>();
-            if (null != lcontroller)
-            {
-                new CommandRemoveKeyframe(gObject, "energy", -1, frame).Submit();
-                new CommandRemoveKeyframe(gObject, "color", 0, frame).Submit();
-                new CommandRemoveKeyframe(gObject, "color", 1, frame).Submit();
-                new CommandRemoveKeyframe(gObject, "color", 2, frame).Submit();
-            }
-
-            if (null == gObject.GetComponent<ParametersController>())
-            {
-                // Scale
-                Vector3 scale = gObject.transform.localScale;
-                new CommandRemoveKeyframe(gObject, "scale", 0, frame).Submit();
-                new CommandRemoveKeyframe(gObject, "scale", 1, frame).Submit();
-                new CommandRemoveKeyframe(gObject, "scale", 2, frame).Submit();
+                new CommandRemoveKeyframe(gObject, curve.property, frame).Submit();
             }
         }
 

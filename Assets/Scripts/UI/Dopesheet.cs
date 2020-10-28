@@ -68,17 +68,10 @@ namespace VRtist
                 ColorUtility.TryParseHtmlString("#FFB600", out linearInterpolationColor);
                 ColorUtility.TryParseHtmlString("#FF2D5E", out bezierInterpolationColor);
 
-                GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
-                GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
-
                 currentRange.CurrentRange = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
 
                 UpdateInterpolation();
             }
-
-            GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
-            GlobalState.Animation.onRangeEvent.AddListener(OnRangeChanged);
-            Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
         private void OnFrameChanged(int frame)
@@ -157,14 +150,29 @@ namespace VRtist
             {
                 if (!listenerAdded)
                 {
+                    GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
+                    GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
+                    GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
+                    GlobalState.Animation.onRangeEvent.AddListener(OnRangeChanged);
+                    Selection.OnSelectionChanged += OnSelectionChanged;
                     GlobalState.Animation.onAddAnimation.AddListener(UpdateCurrentObjectAnimation);
+                    GlobalState.Animation.onRemoveAnimation.AddListener(UpdateCurrentObjectAnimation);
+                    GlobalState.Animation.onChangeAnimation.AddListener(UpdateCurrentObjectAnimation);
+                    OnSelectionChanged(null, null);
                 }
             }
             else
             {
                 if (listenerAdded)
                 {
+                    GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
+                    GlobalState.ObjectRenamedEvent.RemoveListener(OnCameraNameChanged);
+                    GlobalState.Animation.onFrameEvent.RemoveListener(OnFrameChanged);
+                    GlobalState.Animation.onRangeEvent.RemoveListener(OnRangeChanged);
+                    Selection.OnSelectionChanged -= OnSelectionChanged;
                     GlobalState.Animation.onAddAnimation.RemoveListener(UpdateCurrentObjectAnimation);
+                    GlobalState.Animation.onRemoveAnimation.RemoveListener(UpdateCurrentObjectAnimation);
+                    GlobalState.Animation.onChangeAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                 }
             }
             listenerAdded = enable;

@@ -98,6 +98,13 @@ namespace VRtist
                 }
             }
         }
+        public void RemoveKey(int frame)
+        {
+            if (TryGetIndex(frame, out int index))
+            {
+                keys.RemoveAt(index);
+            }
+        }
 
         public void AddKey(AnimationKey key)
         {
@@ -108,6 +115,17 @@ namespace VRtist
             else
             {
                 keys.Insert(index, key);
+            }
+        }
+
+        public void MoveKey(int oldFrame, int newFrame)
+        {
+            if (TryGetIndex(oldFrame, out int index))
+            {
+                AnimationKey key = keys[index];
+                key.time = newFrame;
+                keys.RemoveAt(index);
+                AddKey(key);
             }
         }
 
@@ -123,7 +141,7 @@ namespace VRtist
                 key = keys[index];
                 return true;
             }
-            key = new AnimationKey(0, 0);
+            key = null;
             return false;
         }
 
@@ -192,6 +210,7 @@ namespace VRtist
         // All animations
         Dictionary<GameObject, AnimationSet> animations = new Dictionary<GameObject, AnimationSet>();
         Dictionary<GameObject, AnimationSet> recordingObjects = new Dictionary<GameObject, AnimationSet>();
+        Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
 
         public float fps = 24f;
         float startTime;
@@ -250,6 +269,7 @@ namespace VRtist
         public IntChangedEvent onFrameEvent = new IntChangedEvent();
         public GameObjectChangedEvent onAddAnimation = new GameObjectChangedEvent();
         public GameObjectChangedEvent onRemoveAnimation = new GameObjectChangedEvent();
+        public GameObjectChangedEvent onChangeAnimation = new GameObjectChangedEvent();
 
         public RangeChangedEventInt onRangeEvent = new RangeChangedEventInt();
 
@@ -305,7 +325,10 @@ namespace VRtist
                 }
             }
         }
-
+        public bool IsAnimating()
+        {
+            return animationState == AnimationState.Playing || animationState == AnimationState.Recording;
+        }
         private void EvaluateAnimations()
         {
             foreach (AnimationSet animationSet in animations.Values)
@@ -356,67 +379,49 @@ namespace VRtist
             return animationSet;
         }
 
-        public void ClearAnimations(GameObject gameObject)
+        public void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
         {
-            animations.Remove(gameObject);
-        }
-        //public void FireAnimationChanged(GameObject gameObject, AnimationChannel channel)
-        //{
-        //    //timelineController.FireAnimationChanged(gameObject, channel);
-        //}
-
-        public void AddAnimationChannel(GameObject gameObject, string channelName, int channelIndex, List<AnimationKey> keys)
-        {
-            //timelineController.AddAnimationChannel(gameObject, channelName, channelIndex, keys);
-        }
-        public void RemoveAnimationChannel(GameObject gameObject, string channelName, int channelIndex)
-        {
-            //timelineController.RemoveAnimationChannel(gameObject, channelName, channelIndex);
-        }
-        public bool HasAnimation(GameObject gameObject)
-        {
-            return false;
-            //return timelineController.HasAnimation(gameObject);
+            animations[gobject] = animationSet;
+            onAddAnimation.Invoke(gobject);
         }
 
-        public void SendAnimationChannel(string objectName, Curve animationChannel)
+        public void ClearAnimations(GameObject gobject)
         {
-            //timelineController.SendAnimationChannel(objectName, animationChannel);
+            if(animations.Remove(gobject))
+                onRemoveAnimation.Invoke(gobject);
         }
 
-        public Dictionary<Tuple<string, int>, Curve> GetAnimationChannels(GameObject gameObject)
+        public void MoveKeyframe(GameObject gobject, AnimatableProperty property, int frame, int newFrame)
         {
-            return null;// return timelineController.GetAnimationChannels(gameObject);
+            AnimationSet animationSet = GetObjectAnimation(gobject);
+            if (null == animationSet)
+                return;
+
+            animationSet.GetCurve(property).MoveKey(frame, newFrame);
+            onChangeAnimation.Invoke(gobject);
         }
 
-        public void MoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
+        public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
-            // timelineController.MoveKeyframe(gObject, channelName, channelIndex, frame, newFrame);
+            AnimationSet animationSet = GetObjectAnimation(gobject);
+            if(null == animationSet)
+            {
+                animationSet = new AnimationSet(gobject);
+                animations.Add(gobject, animationSet);
+            }
+            Curve curve = animationSet.GetCurve(property);
+            curve.AddKey(key);
+            onChangeAnimation.Invoke(gobject);
         }
 
-        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
+        public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, int frame)
         {
-            //timelineController.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
-        }
-
-        public void RemoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame)
-        {
-            //timelineController.RemoveKeyframe(gObject, channelName, channelIndex, frame);
-        }
-
-        public void RemoveKeyframes()
-        {
-            //timelineController.RemoveSelectionKeyframes();
-        }
-
-        public void MoveKeyframes(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
-        {
-            //timelineController.MoveKeyframe(gObject, channelName, channelIndex, frame, newFrame);
-        }
-
-        public void MoveKeyframes(int frame, int newFrame)
-        {
-            //timelineController.MoveSelectionKeyframes(frame, newFrame);
+            AnimationSet animationSet = GetObjectAnimation(gobject);
+            if (null == animationSet)
+                return;
+            Curve curve = animationSet.GetCurve(property);
+            curve.RemoveKey(frame);
+            onChangeAnimation.Invoke(gobject);
         }
 
         public void Record()
@@ -474,6 +479,8 @@ namespace VRtist
             {
                 if (!recordingObjects.TryGetValue(selected, out AnimationSet animationSet))
                 {
+                    oldAnimations.Add(selected, GetObjectAnimation(selected));
+
                     // Remove existing animation
                     animations.Remove(selected);
                     onRemoveAnimation.Invoke(selected);
@@ -509,13 +516,19 @@ namespace VRtist
 
         public void StopRecording()
         {
+            CommandGroup recordGroup = new CommandGroup("Record");
+
             foreach (var animationSet in recordingObjects.Values)
             {
-                animations.Add(animationSet.transform.gameObject, animationSet);
-                onAddAnimation.Invoke(animationSet.transform.gameObject);
+                GameObject gobject = animationSet.transform.gameObject;
+                new CommandRecordAnimations(gobject, oldAnimations[gobject], animationSet).Submit();                
             }
 
+            recordGroup.Submit();
+            recordGroup = null;
+
             recordingObjects.Clear();
+            oldAnimations.Clear();
         }
     }
 }
