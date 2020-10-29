@@ -50,6 +50,7 @@ namespace VRtist
         {
             planeTransform = transform.Find("TimeTicks/Plane");
             rulerMaterial = planeTransform.GetComponent<MeshRenderer>().material;
+            rulerMaterial.SetFloat("_SubTickCount", GlobalState.Animation.fps);
         }
 
         public override void RebuildMesh()
