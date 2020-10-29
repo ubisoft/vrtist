@@ -159,7 +159,7 @@ namespace VRtist
                     Selection.OnSelectionChanged += OnSelectionChanged;
                     GlobalState.Animation.onAddAnimation.AddListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onRemoveAnimation.AddListener(UpdateCurrentObjectAnimation);
-                    GlobalState.Animation.onChangeAnimation.AddListener(UpdateCurrentObjectAnimation);
+                    GlobalState.Animation.onChangeCurve.AddListener(OnCurveUpdated);
                     OnSelectionChanged(null, null);
                 }
             }
@@ -174,7 +174,7 @@ namespace VRtist
                     Selection.OnSelectionChanged -= OnSelectionChanged;
                     GlobalState.Animation.onAddAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onRemoveAnimation.RemoveListener(UpdateCurrentObjectAnimation);
-                    GlobalState.Animation.onChangeAnimation.RemoveListener(UpdateCurrentObjectAnimation);
+                    GlobalState.Animation.onChangeCurve.RemoveListener(OnCurveUpdated);
                 }
             }
             listenerAdded = enable;
@@ -220,7 +220,14 @@ namespace VRtist
             }
         }
 
-        protected void UpdateCurrentObjectAnimation(GameObject gObject)
+        void OnCurveUpdated(GameObject gobject, AnimatableProperty property)
+        {
+            if (property == AnimatableProperty.PositionX)
+            {
+                UpdateCurrentObjectAnimation(gobject);
+            }
+        }
+        void UpdateCurrentObjectAnimation(GameObject gObject)
         {
             if (null == currentObject || currentObject != gObject)
                 return;

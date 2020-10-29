@@ -17,6 +17,7 @@ namespace VRtist
             Selection.OnSelectionChanged += OnSelectionChanged;
             GlobalState.Animation.onAddAnimation.AddListener(OnAnimationAdded);
             GlobalState.Animation.onRemoveAnimation.AddListener(OnAnimationRemoved);
+            GlobalState.Animation.onChangeCurve.AddListener(OnCurveChanged);
         }
 
         // Update is called once per frame
@@ -45,6 +46,17 @@ namespace VRtist
             {
                 AddCurve(gObject);
             }
+        }
+
+        void OnCurveChanged(GameObject gObject, AnimatableProperty property)
+        {
+            if (property != AnimatableProperty.PositionX && property != AnimatableProperty.PositionY && property != AnimatableProperty.PositionZ)
+                return;
+
+            if (!Selection.IsSelected(gObject))
+                return;
+
+            UpdateCurve(gObject);
         }
 
         void OnAnimationAdded(GameObject gObject)
@@ -91,11 +103,13 @@ namespace VRtist
             Curve positionX = animationSet.GetCurve(AnimatableProperty.PositionX);
             Curve positionY = animationSet.GetCurve(AnimatableProperty.PositionY);
             Curve positionZ = animationSet.GetCurve(AnimatableProperty.PositionZ);
-            
+            int count = positionX.keys.Count;
+            if (count != positionY.keys.Count || count != positionZ.keys.Count)
+                return;
+
             GameObject curve = Instantiate(curvePrefab, curvesParent);
             
             LineRenderer line = curve.GetComponent<LineRenderer>();
-            int count = positionX.keys.Count;
             line.positionCount = count;
             for (int index = 0; index < count; index++)
             {

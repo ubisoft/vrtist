@@ -52,6 +52,17 @@ namespace VRtist
                 framedKeys[i] = -1;
         }
 
+        public void ClearCache()
+        {
+            framedKeys = null;
+        }
+
+        public void RecomputeCache()
+        {
+            framedKeys = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
+            ComputeCache();
+        }
+
         public void ComputeCache()
         {
             if(keys.Count == 0)
@@ -62,21 +73,48 @@ namespace VRtist
                 return;
             }
 
-            for(int j = 0; j < keys[0].time - GlobalState.Animation.StartFrame; j++)
-            {
-                framedKeys[j] = -1;
-            }
-
+            bool firstKeyFoundInRange = false;
+            int lastKeyIndex = 0;
             for (int i = 0; i < keys.Count - 1; i++)
             {
+                float keyTime = keys[i].time;
+                if (keyTime < GlobalState.Animation.StartFrame || keyTime > GlobalState.Animation.EndFrame)
+                    continue;
+
                 int b1 = keys[i].time - GlobalState.Animation.StartFrame;
                 int b2 = keys[i + 1].time - GlobalState.Animation.StartFrame;
+                b2 = Mathf.Clamp(b2, b1, framedKeys.Length);
+
+                if (!firstKeyFoundInRange) // Fill framedKeys from 0 to first key
+                {
+                    for (int j = 0; j < b1; j++)
+                    {
+                        framedKeys[j] = i-1;
+                    }
+                    firstKeyFoundInRange = true;
+                }
+
                 for (int j = b1; j < b2; j++)
                     framedKeys[j] = i;
+                lastKeyIndex = i;
             }
 
-            int lastKeyIndex = keys.Count - 1;
-            for (int j = keys[keys.Count - 1].time; j < framedKeys.Length; j++)
+            // found no key in range
+            if(!firstKeyFoundInRange)
+            {
+                int index = -1;
+                if (keys[keys.Count - 1].time < GlobalState.Animation.StartFrame)
+                    index = keys.Count - 1;
+                for (int i = 0; i < framedKeys.Length; i++)
+                    framedKeys[i] = index;
+                return;
+            }
+
+            // fill framedKey from last key found to end
+            lastKeyIndex++;
+            lastKeyIndex = Math.Min(lastKeyIndex, keys.Count - 1);
+            int jmin = Math.Max(0, keys[lastKeyIndex].time - GlobalState.Animation.StartFrame);
+            for (int j = jmin; j < framedKeys.Length; j++)
             {
                 framedKeys[j] = lastKeyIndex;
             }
@@ -121,10 +159,15 @@ namespace VRtist
                 index++;
                 keys.Insert(index, key);
                 
-                int start = key.time - GlobalState.Animation.StartFrame;
                 int end = framedKeys.Length - 1;
                 if (index + 1 < keys.Count)
+                {
                     end = keys[index + 1].time - GlobalState.Animation.StartFrame - 1;
+                    end = Mathf.Clamp(end, 0, framedKeys.Length - 1);
+                }
+
+                int start = key.time - GlobalState.Animation.StartFrame;
+                start = Mathf.Clamp(start, 0, end);
                 for (int i = start; i <= end; i++)
                     framedKeys[i] = index;
                 for (int i = end + 1; i < framedKeys.Length; i++)
@@ -159,6 +202,19 @@ namespace VRtist
             return false;
         }
 
+        private Vector2 CubicBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, float t)
+        {
+            float invT1 = 1 - t;
+            float invT2 = invT1 * invT1;
+            float invT3 = invT2 * invT1;
+
+            float t2 = t * t;
+            float t3 = t2 * t;
+
+            return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
+        }
+
+
         public float Evaluate(int frame)
         {
             if (keys.Count == 0)
@@ -176,7 +232,6 @@ namespace VRtist
                 case Interpolation.Constant:
                     return prevKey.value;
 
-                case Interpolation.Bezier:
                 case Interpolation.Linear:
                 {
                     AnimationKey nextKey = keys[prevIndex + 1];
@@ -184,6 +239,44 @@ namespace VRtist
                     float oneMinusDt = 1f - dt;
                     return prevKey.value * oneMinusDt + nextKey.value * dt;
                 }
+
+                case Interpolation.Bezier:
+                    {
+                        AnimationKey nextKey = keys[prevIndex + 1];
+                        float rangeDt = (float)(nextKey.time - prevKey.time);
+
+                        Vector2 A = new Vector2(prevKey.time, prevKey.value);
+                        Vector2 B, C;
+                        Vector2 D = new Vector2(nextKey.time, nextKey.value);
+                        
+                        if (prevIndex == 0)
+                        {
+                            B = A + (D - A) / 3f;
+                        }
+                        else
+                        {
+                            AnimationKey prevPrevKey = keys[prevIndex - 1];
+                            Vector2 V = (D - new Vector2(prevPrevKey.time, prevPrevKey.value)).normalized;
+                            Vector2 AD = D - A;
+                            B = A + V * AD.magnitude / 3f;
+                        }
+
+                        if (prevIndex + 2 >= keys.Count)
+                        {
+                            C = D - (D - A) / 3f;
+                        }
+                        else
+                        {
+                            AnimationKey nextNextKey = keys[prevIndex + 2];
+                            Vector2 V = (new Vector2(nextNextKey.time, nextNextKey.value) - A).normalized;
+                            Vector2 AD = D - A;
+                            C = D - V * AD.magnitude / 3f;
+                        }
+
+                        float dt = (float)(frame - prevKey.time) / rangeDt;
+                        return CubicBezier(A, B, C, D, dt).y;
+                    }
+
             }
             return 0f;
         }        
@@ -237,17 +330,31 @@ namespace VRtist
         {
             curves.Add(AnimatableProperty.CameraFocal, new Curve(AnimatableProperty.CameraFocal));
         }
+
+        public void RecomputeCache()
+        {
+            foreach (Curve curve in curves.Values)
+                curve.RecomputeCache();
+        }
+
+        public void ClearCache()
+        {
+            foreach (Curve curve in curves.Values)
+                curve.ClearCache();
+        }
     }
 
     public class AnimationEngine : MonoBehaviour
     {
         // All animations
         Dictionary<GameObject, AnimationSet> animations = new Dictionary<GameObject, AnimationSet>();
+        Dictionary<GameObject, AnimationSet> disabledAnimations = new Dictionary<GameObject, AnimationSet>();
         Dictionary<GameObject, AnimationSet> recordingObjects = new Dictionary<GameObject, AnimationSet>();
         Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
 
         public float fps = 24f;
-        float startTime;
+        float playStartTime;
+        int playStartFrame;
 
         private int startFrame = 1;
         public int StartFrame
@@ -304,7 +411,7 @@ namespace VRtist
         public IntChangedEvent onFrameEvent = new IntChangedEvent();
         public GameObjectChangedEvent onAddAnimation = new GameObjectChangedEvent();
         public GameObjectChangedEvent onRemoveAnimation = new GameObjectChangedEvent();
-        public GameObjectChangedEvent onChangeAnimation = new GameObjectChangedEvent();
+        public CurveChangedEvent onChangeCurve = new CurveChangedEvent();
 
         public RangeChangedEventInt onRangeEvent = new RangeChangedEventInt();
 
@@ -333,6 +440,10 @@ namespace VRtist
         private void Start()
         {
             countdown.onCountdownFinished.AddListener(StartRecording);
+            onRangeEvent.AddListener(RecomputeCurvesCache);
+
+            GlobalState.ObjectAddedEvent.AddListener(OnObjectAdded);
+            GlobalState.ObjectRemovedEvent.AddListener(OnObjectRemoved);
         }
 
         private void Update()
@@ -341,12 +452,17 @@ namespace VRtist
             if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
             {
                 // Compute new frame
-                float currentTime = Time.time - startTime;
-                int newFrame = TimeToFrame(currentTime) + StartFrame;
+                float deltaTime = Time.time - playStartTime;
+                int newFrame = TimeToFrame(deltaTime) + playStartFrame;
 
                 if (currentFrame != newFrame)
                 {
-                    if (loop && newFrame > endFrame) { newFrame = startFrame; }
+                    if (loop && newFrame > endFrame) 
+                    { 
+                        newFrame = startFrame;
+                        playStartFrame = startFrame;
+                        playStartTime = Time.time;
+                    }
 
                     currentFrame = newFrame;
                     EvaluateAnimations();
@@ -358,6 +474,33 @@ namespace VRtist
                         RecordFrame();
                     }
                 }
+            }
+        }
+
+        void OnObjectAdded(GameObject gobject)
+        {
+            if(disabledAnimations.TryGetValue(gobject, out AnimationSet animationSet))
+            {
+                disabledAnimations.Remove(gobject);
+                animations.Add(gobject, animationSet);
+                animationSet.RecomputeCache();
+            }
+        }
+        void OnObjectRemoved(GameObject gobject)
+        {
+            if (animations.TryGetValue(gobject, out AnimationSet animationSet))
+            {
+                animations.Remove(gobject);
+                disabledAnimations.Add(gobject, animationSet);
+                animationSet.ClearCache();
+            }
+        }
+
+        private void RecomputeCurvesCache(Vector2Int _)
+        {
+            foreach(AnimationSet animationSet in animations.Values)
+            {
+                animationSet.RecomputeCache();
             }
         }
         public bool IsAnimating()
@@ -435,7 +578,7 @@ namespace VRtist
             animationSet.GetCurve(property).MoveKey(frame, newFrame);
             if(!IsAnimating())
                 EvaluateAnimations();
-            onChangeAnimation.Invoke(gobject);
+            onChangeCurve.Invoke(gobject, property);
         }
 
         public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
@@ -448,7 +591,7 @@ namespace VRtist
             }
             Curve curve = animationSet.GetCurve(property);
             curve.AddKey(key);
-            onChangeAnimation.Invoke(gobject);
+            onChangeCurve.Invoke(gobject, property);
         }
 
         public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, int frame)
@@ -460,7 +603,7 @@ namespace VRtist
             curve.RemoveKey(frame);
             if (!IsAnimating())
                 EvaluateAnimations();
-            onChangeAnimation.Invoke(gobject);
+            onChangeCurve.Invoke(gobject, property);
         }
 
         public void Record()
@@ -482,7 +625,9 @@ namespace VRtist
         {
             animationState = AnimationState.Playing;
             onAnimationStateEvent.Invoke(animationState);
-            startTime = Time.time - FrameToTime(currentFrame);
+
+            playStartFrame = currentFrame;
+            playStartTime = Time.time;
         }
 
         public void Pause()
@@ -507,7 +652,8 @@ namespace VRtist
 
         public void StartRecording()
         {
-            startTime = Time.time - FrameToTime(currentFrame);
+            playStartFrame = currentFrame;
+            playStartTime = Time.time;
             animationState = AnimationState.Recording;
             onAnimationStateEvent.Invoke(animationState);
         }

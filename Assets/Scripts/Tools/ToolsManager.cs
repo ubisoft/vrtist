@@ -70,9 +70,12 @@ namespace VRtist
                 if (!toolBase.SubToggleTool())
                 {
                     // Toggle to previous tool
-                    ToolsUIManager.Instance.ChangeTool(previousTool.name);
-                    ToolsUIManager.Instance.ChangeTab(previousTool.name);
-                    previousTool = null;
+                    if (null != previousTool)
+                    {
+                        ToolsUIManager.Instance.ChangeTool(previousTool.name);
+                        ToolsUIManager.Instance.ChangeTab(previousTool.name);
+                        previousTool = null;
+                    }
                 }
             }
         }
