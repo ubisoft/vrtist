@@ -19,7 +19,8 @@ namespace VRtist
         RotationX, RotationY, RotationZ,
         ScaleX, ScaleY, ScaleZ,
         LightIntensity, ColorR, ColorG, ColorB,
-        CameraFocal
+        CameraFocal,
+        Unknown
     }
 
     public class AnimationKey
@@ -57,15 +58,12 @@ namespace VRtist
             framedKeys = null;
         }
 
-        public void RecomputeCache()
-        {
-            framedKeys = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
-            ComputeCache();
-        }
-
         public void ComputeCache()
         {
-            if(keys.Count == 0)
+            if(framedKeys.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
+                framedKeys = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
+
+            if (keys.Count == 0)
             {
                 for (int i = 0; i < framedKeys.Length; i++)
                     framedKeys[i] = -1;
@@ -129,6 +127,13 @@ namespace VRtist
             AnimationKey key = keys[index];
             return key.time == time;            
         }
+
+        public void SetKeys(List<AnimationKey> k)
+        {
+            keys = k;
+            ComputeCache();
+        }
+
         public void RemoveKey(int frame)
         {
             if (GetKeyIndex(frame, out int index))
@@ -303,6 +308,18 @@ namespace VRtist
             return result;
         }
 
+        public void SetCurve(AnimatableProperty property, List<AnimationKey> keys)
+        {
+            if(!curves.TryGetValue(property, out Curve curve))
+            {
+                Debug.LogError("Curve not found : " + transform.name + " " + property.ToString());
+                return;
+            }
+
+            curve.SetKeys(keys);
+        }
+
+
         private void CreateTransformCurves()
         {
             curves.Add(AnimatableProperty.PositionX, new Curve(AnimatableProperty.PositionX));
@@ -331,10 +348,10 @@ namespace VRtist
             curves.Add(AnimatableProperty.CameraFocal, new Curve(AnimatableProperty.CameraFocal));
         }
 
-        public void RecomputeCache()
+        public void ComputeCache()
         {
             foreach (Curve curve in curves.Values)
-                curve.RecomputeCache();
+                curve.ComputeCache();
         }
 
         public void ClearCache()
@@ -457,11 +474,19 @@ namespace VRtist
 
                 if (currentFrame != newFrame)
                 {
-                    if (loop && newFrame > endFrame) 
-                    { 
-                        newFrame = startFrame;
-                        playStartFrame = startFrame;
-                        playStartTime = Time.time;
+                    if (newFrame > endFrame)
+                    {
+                        if (animationState == AnimationState.Recording)
+                        {
+                            newFrame = endFrame;
+                            Pause();
+                        }
+                        else if (loop )
+                        {
+                            newFrame = startFrame;
+                            playStartFrame = startFrame;
+                            playStartTime = Time.time;
+                        }
                     }
 
                     currentFrame = newFrame;
@@ -483,7 +508,7 @@ namespace VRtist
             {
                 disabledAnimations.Remove(gobject);
                 animations.Add(gobject, animationSet);
-                animationSet.RecomputeCache();
+                animationSet.ComputeCache();
             }
         }
         void OnObjectRemoved(GameObject gobject)
@@ -500,7 +525,7 @@ namespace VRtist
         {
             foreach(AnimationSet animationSet in animations.Values)
             {
-                animationSet.RecomputeCache();
+                animationSet.ComputeCache();
             }
         }
         public bool IsAnimating()
@@ -579,6 +604,17 @@ namespace VRtist
             if(!IsAnimating())
                 EvaluateAnimations();
             onChangeCurve.Invoke(gobject, property);
+        }
+
+        public AnimationSet GetOrCreateObjectAnimation(GameObject gobject)
+        {
+            AnimationSet animationSet = GetObjectAnimation(gobject);
+            if (null == animationSet)
+            {
+                animationSet = new AnimationSet(gobject);
+                animations.Add(gobject, animationSet);
+            }
+            return animationSet;
         }
 
         public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)

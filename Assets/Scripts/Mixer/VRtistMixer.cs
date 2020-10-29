@@ -259,26 +259,127 @@ namespace VRtist
 #endif
         }
 
+        private AnimatableProperty BlenderToVRtistAnimationProperty(string channelName, int channelIndex)
+        {
+            AnimatableProperty property = AnimatableProperty.Unknown;
+
+            switch (channelName + channelIndex)
+            {
+                case "location0": property = AnimatableProperty.PositionX; break;
+                case "location1": property = AnimatableProperty.PositionY; break;
+                case "location2": property = AnimatableProperty.PositionZ; break;
+
+                case "rotation_euler0": property = AnimatableProperty.RotationX; break;
+                case "rotation_euler1": property = AnimatableProperty.RotationY; break;
+                case "rotation_euler2": property = AnimatableProperty.RotationZ; break;
+
+                case "scale0": property = AnimatableProperty.ScaleX; break;
+                case "scale1": property = AnimatableProperty.ScaleY; break;
+                case "scale2": property = AnimatableProperty.ScaleZ; break;
+
+                case "lens-1": property = AnimatableProperty.CameraFocal; break;
+
+                case "energy-1": property = AnimatableProperty.LightIntensity; break;
+                case "color0": property = AnimatableProperty.ColorR; break;
+                case "color1": property = AnimatableProperty.ColorG; break;
+                case "color2": property = AnimatableProperty.ColorB; break;
+            }
+            return property;
+        }
+        public override void CreateAnimationKey(string objectName, string channel, int channelIndex, int frame, float value, int interpolation)
+        {
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+            if(property == AnimatableProperty.Unknown)
+            {
+                Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
+                return;
+            }
+
+            Node node = SyncData.nodes[objectName];
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                Curve curve = animationSet.GetCurve(property);
+
+                if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+                {
+                    value = Mathf.Rad2Deg * value;
+                }
+
+                curve.AddKey(new AnimationKey ( frame,  value, (Interpolation)interpolation ));
+            }
+        }
+
+        public override void RemoveAnimationKey(string objectName, string channel, int channelIndex, int frame)
+        {
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+            if (property == AnimatableProperty.Unknown)
+            {
+                Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
+                return;
+            }
+
+            Node node = SyncData.nodes[objectName];
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                Curve curve = animationSet.GetCurve(property);
+                curve.RemoveKey(frame);
+            }
+        }
+
+        public override void MoveAnimationKey(string objectName, string channel, int channelIndex, int frame, int newFrame)
+        {
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+            if (property == AnimatableProperty.Unknown)
+            {
+                Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
+                return;
+            }
+
+            Node node = SyncData.nodes[objectName];
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                Curve curve = animationSet.GetCurve(property);
+                curve.MoveKey(frame, newFrame);
+            }
+        }
+
         public override void CreateAnimationCurve(string objectName, string channel, int channelIndex, int[] frames, float[] values, int[] interpolations)
         {
 #if !VRTIST
             Debug.Log("CreateAnimationCurve " + objectName + " Channel " + channel + " channel index " + channelIndex.ToString());
 #else
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+
             int keyCount = frames.Length;
             List<AnimationKey> keys = new List<AnimationKey>();
             for (int i = 0; i < keyCount; i++)
             {
-                keys.Add(new AnimationKey(frames[i], values[i], (Interpolation) interpolations[i]));
+                float value = values[i];
+                if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+                {
+                    value = Mathf.Rad2Deg * value;
+                }
+
+                keys.Add(new AnimationKey(frames[i], value, (Interpolation) interpolations[i]));
             }
 
-            Node node = SyncData.nodes[objectName];
-            //GlobalState.Instance.AddAnimationChannel(node.prefab, channel, channelIndex, keys);
 
+            Node node = SyncData.nodes[objectName];
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                //GlobalState.Instance.AddAnimationChannel(gobj, channel, channelIndex, keys);
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                animationSet.SetCurve(property, keys);
             }
 #endif
         }

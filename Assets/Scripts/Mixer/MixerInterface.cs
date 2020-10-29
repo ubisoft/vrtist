@@ -25,6 +25,9 @@ namespace VRtist
         public abstract void SetActiveCamera(GameObject cameraObject);
         public abstract void GetLightInfo(GameObject obj, out LightType lightType, out bool castShadows, out float power, out Color color, out float range, out float innerAngle, out float outerAngle);
         public abstract void SetLightInfo(GameObject obj, LightType lightType, bool castShadows, float power, Color color, float range, float innerAngle, float outerAngle);
+        public abstract void CreateAnimationKey(string objectName, string channel, int channelIndex, int frame, float value, int interpolation);
+        public abstract void RemoveAnimationKey(string objectName, string channel, int channelIndex, int frame);
+        public abstract void MoveAnimationKey(string objectName, string channel, int channelIndex, int frame, int newFrame);
         public abstract void CreateAnimationCurve(string objectName, string channel, int channelIndex, int[] frames, float[] values, int[] interpolations);
         public abstract void SetSkyColors(Color topColor, Color middleColor, Color bottomColor);
         public abstract string CreateJsonPlayerInfo(ConnectedUser playerInfo);

@@ -47,19 +47,15 @@ namespace VRtist
         public override void Undo()
         {
             base.Undo();
-            MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
         }
 
         public override void Redo()
         {
             base.Redo();
-            MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
-
         }
         public override void Submit()
         {
             base.Submit();
-            MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
         }
 
         public override void Serialize(SceneSerializer serializer)

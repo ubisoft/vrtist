@@ -658,6 +658,15 @@ namespace VRtist
                             case MessageType.Animation:
                                 MixerUtils.BuildAnimation(command.data);
                                 break;
+                            case MessageType.AddKeyframe:
+                                MixerUtils.BuildAddKeyframe(command.data);
+                                break;
+                            case MessageType.RemoveKeyframe:
+                                MixerUtils.BuildRemoveKeyframe(command.data);
+                                break;
+                            case MessageType.MoveKeyframe:
+                                MixerUtils.BuildMoveKeyframe(command.data);
+                                break;
                             case MessageType.CameraAttributes:
                                 MixerUtils.BuildCameraAttributes(command.data);
                                 break;

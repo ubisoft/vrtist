@@ -1273,6 +1273,42 @@ namespace VRtist
             SyncData.mixer.CreateAnimationCurve(objectName, animationChannel, channelIndex, intBuffer, floatBuffer, interpolationBuffer);
         }
 
+        public static void BuildAddKeyframe(byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            string channelName = GetString(data, ref currentIndex);
+            int channelIndex = GetInt(data, ref currentIndex);
+            int frame = GetInt(data, ref currentIndex);
+            float value = GetFloat(data, ref currentIndex);
+            int interpolation = GetInt(data, ref currentIndex);
+
+            SyncData.mixer.CreateAnimationKey(objectName, channelName, channelIndex, frame, value, interpolation);
+        }
+
+        public static void BuildRemoveKeyframe(byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            string channelName = GetString(data, ref currentIndex);
+            int channelIndex = GetInt(data, ref currentIndex);
+            int frame = GetInt(data, ref currentIndex);
+
+            SyncData.mixer.RemoveAnimationKey(objectName, channelName, channelIndex, frame);
+        }
+
+        public static void BuildMoveKeyframe(byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            string channelName = GetString(data, ref currentIndex);
+            int channelIndex = GetInt(data, ref currentIndex);
+            int frame = GetInt(data, ref currentIndex);
+            int newFrame = GetInt(data, ref currentIndex);
+
+            SyncData.mixer.MoveAnimationKey(objectName, channelName, channelIndex, frame, newFrame);
+        }
+
         public static void BuildCameraAttributes(byte[] data)
         {
             int currentIndex = 0;
@@ -2097,14 +2133,49 @@ namespace VRtist
             return new NetCommand(buffer, MessageType.FrameStartEnd);
         }
 
+        private static void VRtistToBlenderAnimation(AnimatableProperty property, out string channelName, out int channelIndex)
+        {
+            channelName = "";
+            channelIndex = -1;
+            switch (property)
+            {
+                case AnimatableProperty.PositionX: channelName = "location"; channelIndex = 0; break;
+                case AnimatableProperty.PositionY: channelName = "location"; channelIndex = 1; break;
+                case AnimatableProperty.PositionZ: channelName = "location"; channelIndex = 2; break;
+
+                case AnimatableProperty.RotationX: channelName = "rotation_euler"; channelIndex = 0; break;
+                case AnimatableProperty.RotationY: channelName = "rotation_euler"; channelIndex = 1; break;
+                case AnimatableProperty.RotationZ: channelName = "rotation_euler"; channelIndex = 2; break;
+
+                case AnimatableProperty.ScaleX: channelName = "scale"; channelIndex = 0; break;
+                case AnimatableProperty.ScaleY: channelName = "scale"; channelIndex = 1; break;
+                case AnimatableProperty.ScaleZ: channelName = "scale"; channelIndex = 2; break;
+
+                case AnimatableProperty.CameraFocal: channelName = "lens"; channelIndex = -1; break;
+
+                case AnimatableProperty.LightIntensity: channelName = "energy"; channelIndex = -1; break;
+                case AnimatableProperty.ColorR: channelName = "color"; channelIndex = 0; break;
+                case AnimatableProperty.ColorG: channelName = "color"; channelIndex = 1; break;
+                case AnimatableProperty.ColorB: channelName = "color"; channelIndex = 2; break;
+            }
+        }
+
         public static NetCommand BuildSendSetKey(SetKeyInfo data)
         {
             byte[] objectNameBuffer = StringToBytes(data.objectName);
-            byte[] channelNameBuffer = StringToBytes(data.channelName);
-            byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
-            byte[] frameBuffer = IntToBytes(data.frame);
-            byte[] valueBuffer = FloatToBytes(data.value);
-            byte[] interpolationBuffer = IntToBytes((int) data.interpolation);
+            VRtistToBlenderAnimation(data.property, out string channelName, out int channelIndex);
+            
+            byte[] channelNameBuffer = StringToBytes(channelName);
+            byte[] channelIndexBuffer = IntToBytes(channelIndex);
+            byte[] frameBuffer = IntToBytes(data.key.time);
+
+            float value = data.key.value;
+            if (data.property== AnimatableProperty.RotationX || data.property == AnimatableProperty.RotationY || data.property == AnimatableProperty.RotationZ)
+            {
+                value = Mathf.Deg2Rad * value;
+            }
+            byte[] valueBuffer = FloatToBytes(value);
+            byte[] interpolationBuffer = IntToBytes((int)data.key.interpolation);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer, interpolationBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.AddKeyframe);
@@ -2113,9 +2184,10 @@ namespace VRtist
         public static NetCommand BuildSendRemoveKey(SetKeyInfo data)
         {
             byte[] objectNameBuffer = StringToBytes(data.objectName);
-            byte[] channelNameBuffer = StringToBytes(data.channelName);
-            byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
-            byte[] frameBuffer = IntToBytes(data.frame);
+            VRtistToBlenderAnimation(data.property, out string channelName, out int channelIndex);
+            byte[] channelNameBuffer = StringToBytes(channelName);
+            byte[] channelIndexBuffer = IntToBytes(channelIndex);
+            byte[] frameBuffer = IntToBytes(data.key.time);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.RemoveKeyframe);
@@ -2124,8 +2196,9 @@ namespace VRtist
         public static NetCommand BuildSendMoveKey(MoveKeyInfo data)
         {
             byte[] objectNameBuffer = StringToBytes(data.objectName);
-            byte[] channelNameBuffer = StringToBytes(data.channelName);
-            byte[] channelIndexBuffer = IntToBytes(data.channelIndex);
+            VRtistToBlenderAnimation(data.property, out string channelName, out int channelIndex);
+            byte[] channelNameBuffer = StringToBytes(channelName);
+            byte[] channelIndexBuffer = IntToBytes(channelIndex);
             byte[] frameBuffer = IntToBytes(data.frame);
             byte[] newFrameBuffer = IntToBytes(data.newFrame);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, newFrameBuffer };

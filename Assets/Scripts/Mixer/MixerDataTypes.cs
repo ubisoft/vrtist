@@ -192,18 +192,14 @@ namespace VRtist
     public class SetKeyInfo
     {
         public string objectName;
-        public string channelName;
-        public int channelIndex;
-        public int frame;
-        public float value;
-        public Interpolation interpolation;
+        public AnimatableProperty property;
+        public AnimationKey key;
     };
 
     public class MoveKeyInfo
     {
         public string objectName;
-        public string channelName;
-        public int channelIndex;
+        public AnimatableProperty property;
         public int frame;
         public int newFrame;
     }
