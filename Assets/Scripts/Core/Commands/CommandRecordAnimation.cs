@@ -2,6 +2,13 @@
 
 namespace VRtist
 {
+
+    public class CurveInfo
+    {
+        public string objectName;
+        public Curve curve;
+    }
+
     public class CommandRecordAnimations : ICommand
     {
         GameObject gObject;
@@ -15,17 +22,25 @@ namespace VRtist
         }
         public override void Undo()
         {
-            if(null == oldAnimationSet)
+            if (null == oldAnimationSet)
             {
                 GlobalState.Animation.ClearAnimations(gObject);
                 return;
             }
             GlobalState.Animation.SetObjectAnimation(gObject, oldAnimationSet);
+            foreach (Curve curve in oldAnimationSet.curves.Values)
+            {
+                MixerClient.GetInstance().SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
+            }
         }
 
         public override void Redo()
         {
             GlobalState.Animation.SetObjectAnimation(gObject, newAnimationSet);
+            foreach (Curve curve in newAnimationSet.curves.Values)
+            {
+                MixerClient.GetInstance().SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
+            }
         }
         public override void Submit()
         {

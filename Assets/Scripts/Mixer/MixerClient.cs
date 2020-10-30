@@ -412,29 +412,15 @@ namespace VRtist
             AddCommand(command);
         }
 
-        public void SendPlay()
-        {
-            byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int) MessageType.Play);
-            byte[] dataBuffer = new byte[0];
-            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
-            byte[] buffer = MixerUtils.ConcatenateBuffers(buffers);
-            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
-        }
-
-        public void SendPause()
-        {
-            byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int) MessageType.Pause);
-            byte[] dataBuffer = new byte[0];
-            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
-            byte[] buffer = MixerUtils.ConcatenateBuffers(buffers);
-            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
-        }
-
         public void SendAddKeyframe(SetKeyInfo data)
         {
             NetCommand command = MixerUtils.BuildSendSetKey(data);
+            AddCommand(command);
+        }
+
+        public void SendAnimationCurve(CurveInfo data)
+        {
+            NetCommand command = MixerUtils.BuildSendAnimationCurve(data);
             AddCommand(command);
         }
 
@@ -835,18 +821,12 @@ namespace VRtist
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
                 case MessageType.FrameStartEnd:
                     SendFrameStartEnd(data as FrameStartEnd); break;
-                case MessageType.Play:
-                    SendPlay(); break;
-                case MessageType.Pause:
-                    SendPause(); break;
                 case MessageType.AddKeyframe:
                     SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
                     SendRemoveKeyframe(data as SetKeyInfo); break;
                 case MessageType.MoveKeyframe:
                     SendMoveKeyframe(data as MoveKeyInfo); break;
-                case MessageType.QueryAnimationData:
-                    SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
                     SendClearAnimations(data as ClearAnimationInfo); break;
                 case MessageType.ShotManagerMontageMode:

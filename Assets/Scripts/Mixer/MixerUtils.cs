@@ -276,6 +276,19 @@ namespace VRtist
             return bytes;
         }
 
+        public static byte[] IntsToBytes(int[] values)
+        {
+            byte[] bytes = new byte[sizeof(int) * values.Length + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < values.Length; i++)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(values[i]), 0, bytes, index, sizeof(int));
+                index += sizeof(int);
+            }
+            return bytes;
+        }
+
         // convert byte buffer to float
         public static float GetFloat(byte[] data, ref int currentIndex)
         {
@@ -290,6 +303,19 @@ namespace VRtist
         {
             byte[] bytes = new byte[sizeof(float)];
             Buffer.BlockCopy(BitConverter.GetBytes(value), 0, bytes, 0, sizeof(float));
+            return bytes;
+        }
+
+        public static byte[] FloatsToBytes(float[] values)
+        {
+            byte[] bytes = new byte[sizeof(float) * values.Length + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(values.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < values.Length; i++)
+            {
+                Buffer.BlockCopy(BitConverter.GetBytes(values[i]), 0, bytes, index, sizeof(float));
+                index += sizeof(float);
+            }
             return bytes;
         }
 
@@ -2126,8 +2152,8 @@ namespace VRtist
 
         public static NetCommand BuildSendFrameStartEndCommand(int start, int end)
         {
-            byte[] startBuffer = MixerUtils.IntToBytes((int) start);
-            byte[] endBuffer = MixerUtils.IntToBytes((int) end);
+            byte[] startBuffer = IntToBytes((int) start);
+            byte[] endBuffer = IntToBytes((int) end);
             List<byte[]> buffers = new List<byte[]> { startBuffer, endBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.FrameStartEnd);
@@ -2164,18 +2190,18 @@ namespace VRtist
         {
             byte[] objectNameBuffer = StringToBytes(data.objectName);
             VRtistToBlenderAnimation(data.property, out string channelName, out int channelIndex);
-            
+
             byte[] channelNameBuffer = StringToBytes(channelName);
             byte[] channelIndexBuffer = IntToBytes(channelIndex);
             byte[] frameBuffer = IntToBytes(data.key.frame);
 
             float value = data.key.value;
-            if (data.property== AnimatableProperty.RotationX || data.property == AnimatableProperty.RotationY || data.property == AnimatableProperty.RotationZ)
+            if (data.property == AnimatableProperty.RotationX || data.property == AnimatableProperty.RotationY || data.property == AnimatableProperty.RotationZ)
             {
                 value = Mathf.Deg2Rad * value;
             }
             byte[] valueBuffer = FloatToBytes(value);
-            byte[] interpolationBuffer = IntToBytes((int)data.key.interpolation);
+            byte[] interpolationBuffer = IntToBytes((int) data.key.interpolation);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, valueBuffer, interpolationBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.AddKeyframe);
@@ -2204,6 +2230,40 @@ namespace VRtist
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer, newFrameBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.MoveKeyframe);
+        }
+
+        public static NetCommand BuildSendAnimationCurve(CurveInfo data)
+        {
+            byte[] objectNameBuffer = StringToBytes(data.objectName);
+            VRtistToBlenderAnimation(data.curve.property, out string channelName, out int channelIndex);
+            byte[] channelNameBuffer = StringToBytes(channelName);
+            byte[] channelIndexBuffer = IntToBytes(channelIndex);
+
+            int count = data.curve.keys.Count;
+            int[] frames = new int[count];
+            for (int i = 0; i < count; ++i)
+            {
+                frames[i] = data.curve.keys[i].frame;
+            }
+            byte[] framesBuffer = IntsToBytes(frames);
+
+            float[] values = new float[count];
+            for (int i = 0; i < count; ++i)
+            {
+                values[i] = data.curve.keys[i].value;
+            }
+            byte[] valuesBuffer = FloatsToBytes(values);
+
+            int[] interpolations = new int[count];
+            for (int i = 0; i < count; ++i)
+            {
+                interpolations[i] = (int) data.curve.keys[i].interpolation;
+            }
+            byte[] interpolationsBuffer = IntsToBytes(interpolations);
+
+            List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, framesBuffer, valuesBuffer, interpolationsBuffer };
+            byte[] buffer = ConcatenateBuffers(buffers);
+            return new NetCommand(buffer, MessageType.Animation);
         }
 
         public static NetCommand BuildSendQueryAnimationData(string name)
