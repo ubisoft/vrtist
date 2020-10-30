@@ -2248,9 +2248,14 @@ namespace VRtist
             byte[] framesBuffer = IntsToBytes(frames);
 
             float[] values = new float[count];
+            float coef = 1f;
+            if (data.curve.property == AnimatableProperty.RotationX ||
+                data.curve.property == AnimatableProperty.RotationY ||
+                data.curve.property == AnimatableProperty.RotationZ)
+                coef = Mathf.Deg2Rad;
             for (int i = 0; i < count; ++i)
             {
-                values[i] = data.curve.keys[i].value;
+                values[i] = data.curve.keys[i].value * coef;
             }
             byte[] valuesBuffer = FloatsToBytes(values);
 

@@ -725,12 +725,6 @@ namespace VRtist
                             case MessageType.GreasePencilTimeOffset:
                                 MixerUtils.BuildGreasePencilTimeOffset(command.data);
                                 break;
-                            case MessageType.Play:
-                                MixerUtils.BuildPlay();
-                                break;
-                            case MessageType.Pause:
-                                MixerUtils.BuildPause();
-                                break;
                             case MessageType.FrameStartEnd:
                                 MixerUtils.BuildFrameStartEnd(command.data);
                                 break;

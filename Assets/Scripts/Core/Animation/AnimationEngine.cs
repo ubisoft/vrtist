@@ -234,29 +234,40 @@ namespace VRtist
         }
 
 
-        public float Evaluate(int frame)
+        public bool Evaluate(int frame, out float value)
         {
             if (keys.Count == 0)
-                return 0;
+            {
+                value = 0;
+                return false;
+            }
 
             int prevIndex = framedKeys[frame - GlobalState.Animation.StartFrame];
             if (prevIndex == -1)
-                return keys[0].value;
+            {
+                value = keys[0].value;
+                return true;
+            }
             if (prevIndex == keys.Count - 1)
-                return keys[keys.Count - 1].value;
+            {
+                value = keys[keys.Count - 1].value;
+                return true;
+            }
 
             AnimationKey prevKey = keys[prevIndex];
             switch (prevKey.interpolation)
             {
                 case Interpolation.Constant:
-                    return prevKey.value;
+                    value = prevKey.value;
+                    return true;
 
                 case Interpolation.Linear:
                     {
                         AnimationKey nextKey = keys[prevIndex + 1];
                         float dt = (float) (frame - prevKey.frame) / (float) (nextKey.frame - prevKey.frame);
                         float oneMinusDt = 1f - dt;
-                        return prevKey.value * oneMinusDt + nextKey.value * dt;
+                        value = prevKey.value * oneMinusDt + nextKey.value * dt;
+                        return true;
                     }
 
                 case Interpolation.Bezier:
@@ -293,11 +304,13 @@ namespace VRtist
                         }
 
                         float dt = (float) (frame - prevKey.frame) / rangeDt;
-                        return CubicBezier(A, B, C, D, dt).y;
+                        value = CubicBezier(A, B, C, D, dt).y;
+                        return true;
                     }
 
             }
-            return 0f;
+            value = 0f;
+            return false;
         }
     }
 
@@ -566,7 +579,8 @@ namespace VRtist
 
                 foreach (Curve curve in animationSet.curves.Values)
                 {
-                    float value = curve.Evaluate(currentFrame);
+                    if (!curve.Evaluate(currentFrame, out float value))
+                        continue;
                     switch (curve.property)
                     {
                         case AnimatableProperty.PositionX: position.x = value; break;
