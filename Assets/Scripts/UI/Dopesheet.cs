@@ -345,12 +345,12 @@ namespace VRtist
             if (currentObject == gObject)
             {
                 UpdateTrackName();
-            }                
+            }
         }
 
         protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            if(Selection.IsEmpty())
+            if (Selection.IsEmpty())
             {
                 Clear();
                 UpdateTrackName();
@@ -358,7 +358,7 @@ namespace VRtist
             }
 
             GameObject gObject = Selection.GetGrippedOrSelection()[0];
-            currentObject = gObject;           
+            currentObject = gObject;
             UpdateCurrentObjectAnimation(gObject);
         }
 
@@ -462,9 +462,12 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Remove Keyframe");
             try
             {
-                foreach (GameObject item in Selection.selection.Values)
+                foreach (GameObject gObject in Selection.selection.Values)
                 {
-                    new CommandRemoveKeyframes(item).Submit();
+                    if (GlobalState.Animation.ObjectHasKeyframeAt(gObject, GlobalState.Animation.CurrentFrame))
+                    {
+                        new CommandRemoveKeyframes(gObject).Submit();
+                    }
                 }
             }
             finally

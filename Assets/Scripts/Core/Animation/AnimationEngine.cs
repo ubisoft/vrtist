@@ -147,6 +147,8 @@ namespace VRtist
             }
         }
 
+        // Don't compute cache. Should be called when adding a lot of keys in a row.
+        // And then don't forget to call ComputeCache().
         public void AppendKey(AnimationKey key)
         {
             keys.Add(key);
@@ -208,6 +210,15 @@ namespace VRtist
                 }
             }
             return null;
+        }
+
+        public bool HasKeyAt(int frame)
+        {
+            foreach (var key in keys)
+            {
+                if (key.frame == frame) { return true; }
+            }
+            return false;
         }
 
         public bool TryFindKey(int frame, out AnimationKey key)
@@ -322,11 +333,11 @@ namespace VRtist
         public AnimationSet(GameObject gobject)
         {
             transform = gobject.transform;
-            CreateTransformCurves();
             LightController lightController = gobject.GetComponent<LightController>();
-            if (null != lightController) { CreateLightCurves(); }
             CameraController cameraController = gobject.GetComponent<CameraController>();
-            if (null != cameraController) { CreateCameraCurves(); }
+            if (null != lightController) { CreateLightCurves(); }
+            else if (null != cameraController) { CreateCameraCurves(); }
+            else { CreateTransformCurves(); }
         }
 
         public Curve GetCurve(AnimatableProperty property)
@@ -342,12 +353,10 @@ namespace VRtist
                 Debug.LogError("Curve not found : " + transform.name + " " + property.ToString());
                 return;
             }
-
             curve.SetKeys(keys);
         }
 
-
-        private void CreateTransformCurves()
+        private void CreatePositionRotationCurves()
         {
             curves.Add(AnimatableProperty.PositionX, new Curve(AnimatableProperty.PositionX));
             curves.Add(AnimatableProperty.PositionY, new Curve(AnimatableProperty.PositionY));
@@ -356,7 +365,11 @@ namespace VRtist
             curves.Add(AnimatableProperty.RotationX, new Curve(AnimatableProperty.RotationX));
             curves.Add(AnimatableProperty.RotationY, new Curve(AnimatableProperty.RotationY));
             curves.Add(AnimatableProperty.RotationZ, new Curve(AnimatableProperty.RotationZ));
+        }
 
+        private void CreateTransformCurves()
+        {
+            CreatePositionRotationCurves();
             curves.Add(AnimatableProperty.ScaleX, new Curve(AnimatableProperty.ScaleX));
             curves.Add(AnimatableProperty.ScaleY, new Curve(AnimatableProperty.ScaleY));
             curves.Add(AnimatableProperty.ScaleZ, new Curve(AnimatableProperty.ScaleZ));
@@ -364,6 +377,7 @@ namespace VRtist
 
         private void CreateLightCurves()
         {
+            CreatePositionRotationCurves();
             curves.Add(AnimatableProperty.LightIntensity, new Curve(AnimatableProperty.LightIntensity));
             curves.Add(AnimatableProperty.ColorR, new Curve(AnimatableProperty.ColorR));
             curves.Add(AnimatableProperty.ColorG, new Curve(AnimatableProperty.ColorG));
@@ -372,6 +386,7 @@ namespace VRtist
 
         private void CreateCameraCurves()
         {
+            CreatePositionRotationCurves();
             curves.Add(AnimatableProperty.CameraFocal, new Curve(AnimatableProperty.CameraFocal));
         }
 
@@ -645,6 +660,23 @@ namespace VRtist
             onAddAnimation.Invoke(gobject);
         }
 
+        public bool ObjectHasAnimation(GameObject gobject)
+        {
+            return animations.ContainsKey(gobject);
+        }
+
+        public bool ObjectHasKeyframeAt(GameObject gobject, int frame)
+        {
+            AnimationSet animationSet = GetObjectAnimation(gobject);
+            if (null == animationSet) { return false; }
+
+            foreach (var curve in animationSet.curves.Values)
+            {
+                if (curve.HasKeyAt(frame)) { return true; }
+            }
+            return false;
+        }
+
         public void ClearAnimations(GameObject gobject)
         {
             if (animations.Remove(gobject))
@@ -687,7 +719,7 @@ namespace VRtist
             onChangeCurve.Invoke(gobject, property);
         }
 
-        // To only be used by in-app add key (not from networked keys)
+        // To be used by in-app add key (not from networked keys)
         public void AddFilteredKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
             AnimationSet animationSet = GetObjectAnimation(gobject);
@@ -763,7 +795,6 @@ namespace VRtist
                 case AnimationState.Playing:
                     playButtonShortcut.Checked = false;  // A déplacer !!!!
                     break;
-
             }
             animationState = AnimationState.Stopped;
             onAnimationStateEvent.Invoke(animationState);
