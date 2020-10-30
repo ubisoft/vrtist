@@ -245,10 +245,10 @@ namespace VRtist
             foreach (AnimationKey key in animationSet.curves[0].keys)
             {
                 List<AnimKey> keyList = null;
-                if (!keys.TryGetValue(key.time, out keyList))
+                if (!keys.TryGetValue(key.frame, out keyList))
                 {
                     keyList = new List<AnimKey>();
-                    keys[key.time] = keyList;
+                    keys[key.frame] = keyList;
                 }
 
                 keyList.Add(new AnimKey(key.value, key.interpolation));

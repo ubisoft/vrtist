@@ -2167,7 +2167,7 @@ namespace VRtist
             
             byte[] channelNameBuffer = StringToBytes(channelName);
             byte[] channelIndexBuffer = IntToBytes(channelIndex);
-            byte[] frameBuffer = IntToBytes(data.key.time);
+            byte[] frameBuffer = IntToBytes(data.key.frame);
 
             float value = data.key.value;
             if (data.property== AnimatableProperty.RotationX || data.property == AnimatableProperty.RotationY || data.property == AnimatableProperty.RotationZ)
@@ -2187,7 +2187,7 @@ namespace VRtist
             VRtistToBlenderAnimation(data.property, out string channelName, out int channelIndex);
             byte[] channelNameBuffer = StringToBytes(channelName);
             byte[] channelIndexBuffer = IntToBytes(channelIndex);
-            byte[] frameBuffer = IntToBytes(data.key.time);
+            byte[] frameBuffer = IntToBytes(data.key.frame);
             List<byte[]> buffers = new List<byte[]> { objectNameBuffer, channelNameBuffer, channelIndexBuffer, frameBuffer };
             byte[] buffer = ConcatenateBuffers(buffers);
             return new NetCommand(buffer, MessageType.RemoveKeyframe);

@@ -41,7 +41,6 @@ namespace VRtist
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorG, frame, lcontroller.color.g, interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorB, frame, lcontroller.color.b, interpolation).Submit();
             }
-            
         }
 
         public override void Undo()

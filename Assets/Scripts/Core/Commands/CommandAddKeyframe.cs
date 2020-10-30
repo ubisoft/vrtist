@@ -28,12 +28,12 @@ namespace VRtist
 
         public override void Undo()
         {
-            GlobalState.Animation.RemoveKeyframe(gObject, property, newAnimationKey.time);
+            GlobalState.Animation.RemoveKeyframe(gObject, property, newAnimationKey.frame);
             MixerClient.GetInstance().SendRemoveKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = newAnimationKey });
 
             if (null != oldAnimationKey)
             {
-                GlobalState.Animation.AddKeyframe(gObject, property, oldAnimationKey);
+                GlobalState.Animation.AddFilteredKeyframe(gObject, property, oldAnimationKey);
                 MixerClient.GetInstance().SendAddKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
                 return;
             }
@@ -41,7 +41,7 @@ namespace VRtist
 
         public override void Redo()
         {
-            GlobalState.Animation.AddKeyframe(gObject, property, newAnimationKey);
+            GlobalState.Animation.AddFilteredKeyframe(gObject, property, newAnimationKey);
             MixerClient.GetInstance().SendAddKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = newAnimationKey });
         }
         public override void Submit()

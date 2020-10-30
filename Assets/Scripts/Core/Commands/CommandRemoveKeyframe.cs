@@ -32,7 +32,7 @@ namespace VRtist
 
         public override void Redo()
         {
-            GlobalState.Animation.RemoveKeyframe(gObject, property, oldAnimationKey.time);
+            GlobalState.Animation.RemoveKeyframe(gObject, property, oldAnimationKey.frame);
             MixerClient.GetInstance().SendRemoveKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
         }
         public override void Submit()
