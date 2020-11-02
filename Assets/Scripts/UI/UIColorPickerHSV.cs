@@ -29,13 +29,19 @@ namespace VRtist
         public Transform svCursor;
 
         public float thickness = 1.0f;
-        public float hueCursorPosition = 0.0f; // normalized position
+        public float hue = 0.0f; // [0..1]
+
+        // TMP
+        public Color tmpRGBColor = Color.green;
+        public float tmpSaturation = 0;
+        public float tmpValue = 0;
+        // TMP
 
         // 3 points (A, B, C) = (HUE, WHITE, BLACK)
         //           C
         //          / \
         //         B---A
-        public Vector3 svCursorPosition = new Vector3(1.0f, 0.0f, 0.0f); // barycentric coordinates
+        public Vector3 barycentric = new Vector3(1.0f, 0.0f, 0.0f); // barycentric coordinates
 
         public override void ResetColor()
         {
@@ -52,20 +58,41 @@ namespace VRtist
         {
             if (NeedsRebuild)
             {
+                RebuildMesh(width, height, thickness, trianglePct, innerCirclePct, outerCirclePct);
+                tmpSaturation = Saturation;
+                tmpValue = Value;
                 UpdateCursorPositions();
                 NeedsRebuild = false;
             }
         }
         // TMP - REMOVE AFTER TESTS ------------------
 
-        public float Hue { get { return hueCursorPosition; } }
-        public float Saturation { get { return 1.0f - svCursorPosition.z; }}
-        public float Value { get { return 1.0f - svCursorPosition.y; } }
+        public float Hue { get { return hue; } }
+        public float Saturation { 
+            get { 
+                Color rgb = BarycentricToRGB();
+                float H, S, V;
+                Color.RGBToHSV(rgb, out H, out S, out V);
+                return S;
+                //return 1.0f - barycentric.z;  // FAUX
+            }
+        } 
+        public float Value {
+            get
+            {
+                Color rgb = BarycentricToRGB();
+                float H, S, V;
+                Color.RGBToHSV(rgb, out H, out S, out V);
+                return V;
+                //return 1.0f - barycentric.y;  // FAUX
+            }
+        }
+
         public Vector3 HSV { set { 
-                hueCursorPosition = value.x; 
-                svCursorPosition.y = value.y; 
-                svCursorPosition.z = value.z; 
-                svCursorPosition.x = 1.0f - value.y - value.z;
+                hue = value.x; 
+                barycentric.y = 1 - value.y; // 1 - SAT = white // FAUX
+                barycentric.z = 1 - value.z; // 1 - VALUE = black // FAUX
+                barycentric.x = 1.0f - barycentric.y - barycentric.z;
                 UpdateCursorPositions();
                 UpdateSVColor();
             } 
@@ -83,11 +110,11 @@ namespace VRtist
             Vector3 cs = hueCursor.GetComponentInChildren<MeshFilter>().mesh.bounds.size;
 
             hueCursor.localPosition = new Vector3(
-                w2 + mr * -Mathf.Cos(hueCursorPosition * 2.0f * Mathf.PI),
-                -h2 - mr * Mathf.Sin(hueCursorPosition * 2.0f * Mathf.PI),
+                w2 + mr * -Mathf.Cos(hue * 2.0f * Mathf.PI),
+                -h2 + mr * Mathf.Sin(hue * 2.0f * Mathf.PI),
                 -cs.z / 2.0f); //-thickness - cs.z/2.0f);
 
-            hueCursor.transform.localRotation = Quaternion.Euler(0,0, 90.0f + hueCursorPosition * 360.0f); // tmp
+            hueCursor.transform.localRotation = Quaternion.Euler(0,0, 90.0f - hue * 360.0f); // tmp
             hueCursor.localScale = new Vector3(1, cw / cs.y, 1);
 
             // TODO: cursor in triangle
@@ -100,22 +127,24 @@ namespace VRtist
             Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
             Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
 
-            svCursor.localPosition = pt_A_HUE * svCursorPosition.x + pt_B_WHITE * svCursorPosition.y + pt_C_BLACK * svCursorPosition.z;
+            svCursor.localPosition = pt_A_HUE * barycentric.x + pt_B_WHITE * barycentric.y + pt_C_BLACK * barycentric.z;
             svCursor.transform.localRotation = Quaternion.identity; // tmp
         }
 
         private void UpdateSVColor()
         {
-            Color baseColor = Color.HSVToRGB(svCursorPosition.x, 1f, 1f); // pure hue color
+            Color baseColor = Color.HSVToRGB(hue, 1f, 1f); // pure hue color
             var renderer = GetComponent<MeshRenderer>();
             renderer.sharedMaterials[1].SetColor("_Color", baseColor);
         }
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness, float newTrianglePct, float newInnerCirclePct, float newOuterCirclePct)
         {
+            Color baseColor = Color.HSVToRGB(hue, 1f, 1f); // pure hue color
+
             float minSide = Mathf.Min(newWidth, newHeight);
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
-            Mesh theNewMesh = UIUtils.BuildHSV(minSide, minSide, newThickness, newTrianglePct, newInnerCirclePct, newOuterCirclePct, 72);
+            Mesh theNewMesh = UIUtils.BuildHSV(minSide, minSide, newThickness, newTrianglePct, newInnerCirclePct, newOuterCirclePct, 72, baseColor);
             theNewMesh.name = "UIColorPickerHSV_GeneratedMesh";
             meshFilter.sharedMesh = theNewMesh;
 
@@ -227,7 +256,7 @@ namespace VRtist
             float startX = 0;
             float endX = width;
 
-            float currentKnobPositionX = hueCursorPosition * width;
+            float currentKnobPositionX = hue * width;
 
             // DRAG
 
@@ -274,6 +303,18 @@ namespace VRtist
             float w = (v0.x * v2.y - v2.x * v0.y) / den;
             float u = 1.0f - v - w;
             return new Vector3(u, v, w);
+        }
+        
+        Color BarycentricToRGB()
+        {
+            Color baseColor = Color.HSVToRGB(hue, 1f, 1f); // pure hue color
+            Vector3 rgb = barycentric.x * Vector3.zero + barycentric.y * Vector3.one + barycentric.z * new Vector3(baseColor.r, baseColor.g, baseColor.b);
+            rgb = new Vector3(
+                Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.x, 1 - barycentric.x)),
+                Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.y, 1 - barycentric.x)),
+                Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.z, 1 - barycentric.x))
+            );
+            return new Color(rgb.x, rgb.y, rgb.z);
         }
 
         #endregion
@@ -332,7 +373,7 @@ namespace VRtist
             {
                 meshFilter.sharedMesh = UIUtils.BuildHSV(
                     input.width, input.height, input.thickness, 
-                    input.trianglePct, input.innerCirclePct, input.outerCirclePct, 72);
+                    input.trianglePct, input.innerCirclePct, input.outerCirclePct, 72, Color.red);
                 uiColorPickerHSV.Anchor = Vector3.zero;
                 BoxCollider coll = go.GetComponent<BoxCollider>();
                 if (coll != null)

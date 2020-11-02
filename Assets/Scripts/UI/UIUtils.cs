@@ -1466,11 +1466,12 @@ namespace VRtist
             return mesh;
         }
 
-        public static Mesh BuildHSV(float width, float height, float thickness, float triangleRadiusPct, float innerRadiusPct, float outerRadiusPct, int nbSubdiv)
+        public static Mesh BuildHSV(float width, float height, float thickness, float triangleRadiusPct, float innerRadiusPct, float outerRadiusPct, int nbSubdiv, Color hue)
         {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
+            List<Color> colors = new List<Color>();
             List<int> indices = new List<int>();
 
             float w2 = width / 2.0f;
@@ -1500,6 +1501,9 @@ namespace VRtist
 
                 uvs.Add(new Vector2(pct, 0.0f)); // inner
                 uvs.Add(new Vector2(pct, 1.0f)); // outer
+
+                colors.Add(Color.white);
+                colors.Add(Color.white);
             }
 
             for (int i = 0; i < nbSubdiv - 1; ++i) // [0..nb-2]
@@ -1534,6 +1538,9 @@ namespace VRtist
 
                 uvs.Add(new Vector2(pct, 0.0f));
                 uvs.Add(new Vector2(pct, 0.0f));
+
+                colors.Add(Color.white);
+                colors.Add(Color.white);
             }
 
             for (int i = 0; i < nbSubdiv - 1; ++i) // [0..nb-2]
@@ -1568,6 +1575,9 @@ namespace VRtist
 
                 uvs.Add(new Vector2(pct, 1.0f));
                 uvs.Add(new Vector2(pct, 1.0f));
+
+                colors.Add(Color.white);
+                colors.Add(Color.white);
             }
 
             for (int i = 0; i < nbSubdiv - 1; ++i) // [0..nb-2]
@@ -1612,6 +1622,10 @@ namespace VRtist
             uvs.Add(uvbr);
             uvs.Add(uvbl);
 
+            colors.Add(Color.black);
+            colors.Add(hue);
+            colors.Add(Color.white);
+
             // UPPER RIGHT BORDER
             vertices.Add(br_back);
             vertices.Add(br_front);
@@ -1622,6 +1636,11 @@ namespace VRtist
             uvs.Add(uvbr);
             uvs.Add(uvtop);
             uvs.Add(uvtop);
+
+            colors.Add(hue);
+            colors.Add(hue);
+            colors.Add(Color.black);
+            colors.Add(Color.black);
 
             // UPPER LEFT BORDER
             vertices.Add(top_back);
@@ -1634,6 +1653,11 @@ namespace VRtist
             uvs.Add(uvbl);
             uvs.Add(uvbl);
 
+            colors.Add(Color.black);
+            colors.Add(Color.black);
+            colors.Add(Color.white);
+            colors.Add(Color.white);
+
             // BOTTOM
             vertices.Add(bl_back);
             vertices.Add(bl_front);
@@ -1644,6 +1668,11 @@ namespace VRtist
             uvs.Add(uvbl);
             uvs.Add(uvbr);
             uvs.Add(uvbr);
+
+            colors.Add(Color.white);
+            colors.Add(Color.white);
+            colors.Add(hue);
+            colors.Add(hue);
 
             for (int i = 0; i < 3; ++i) normals.Add(Vector3.back);
             for (int i = 0; i < 4; ++i) normals.Add(Vector3.Normalize(mb - bl_back)); // upper right
@@ -1672,6 +1701,7 @@ namespace VRtist
             mesh.SetNormals(normals);
             mesh.SetUVs(0, uvs);
             mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+            mesh.SetColors(colors);
 
             int secondMeshIndexStart = firstMeshIndexCount;
             int secondMeshIndexCount = vertices.Count;
