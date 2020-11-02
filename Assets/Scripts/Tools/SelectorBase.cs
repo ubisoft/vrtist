@@ -656,10 +656,11 @@ namespace VRtist
                 else
                 {
                     SubmitCameraFocalCommand();
-                    if(joystickScaling)
+                    if (joystickScaling)
                     {
                         joystickScaling = false;
                         ManageMoveObjectsUndo();
+                        ManageAutoKeyframe();
                     }
                 }
             }
