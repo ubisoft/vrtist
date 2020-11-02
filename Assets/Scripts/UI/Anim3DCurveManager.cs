@@ -103,18 +103,33 @@ namespace VRtist
             Curve positionX = animationSet.GetCurve(AnimatableProperty.PositionX);
             Curve positionY = animationSet.GetCurve(AnimatableProperty.PositionY);
             Curve positionZ = animationSet.GetCurve(AnimatableProperty.PositionZ);
-            int count = positionX.keys.Count;
-            if (count != positionY.keys.Count || count != positionZ.keys.Count)
-                return;
 
+            int frameStart = Mathf.Clamp(positionX.keys[0].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+            int frameEnd = Mathf.Clamp(positionX.keys[positionX.keys.Count - 1].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+
+            List<Vector3> positions = new List<Vector3>();
+            Vector3 previousPosition = Vector3.positiveInfinity;
+            for (int i = frameStart; i <= frameEnd; i++)
+            {
+                positionX.Evaluate(i, out float x);
+                positionY.Evaluate(i, out float y);
+                positionZ.Evaluate(i, out float z);
+                Vector3 position = new Vector3(x, y, z);
+                if (previousPosition != position)
+                {
+                    positions.Add(position);
+                    previousPosition = position;
+                }
+            }
+
+            int count = positions.Count;
             GameObject curve = Instantiate(curvePrefab, curvesParent);
             
             LineRenderer line = curve.GetComponent<LineRenderer>();
             line.positionCount = count;
             for (int index = 0; index < count; index++)
             {
-                Vector3 position = new Vector3(positionX.keys[index].value, positionY.keys[index].value, positionZ.keys[index].value);
-                line.SetPosition(index, position);
+                line.SetPosition(index, positions[index]);
             }
 
             curves.Add(gObject, curve);

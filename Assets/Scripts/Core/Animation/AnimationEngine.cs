@@ -41,31 +41,74 @@ namespace VRtist
     {
         public AnimatableProperty property;
         public List<AnimationKey> keys;
-        private int[] framedKeys;
+        private int[] cachedKeysIndices;
+        private float[] cachedValues;
 
         public Curve(AnimatableProperty property)
         {
             this.property = property;
             keys = new List<AnimationKey>();
-            framedKeys = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
-            for (int i = 0; i < framedKeys.Length; i++)
-                framedKeys[i] = -1;
+            cachedKeysIndices = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
+            for (int i = 0; i < cachedKeysIndices.Length; i++)
+                cachedKeysIndices[i] = -1;
+            cachedValues = new float[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
         }
 
         public void ClearCache()
         {
-            framedKeys = null;
+            cachedKeysIndices = null;
+            cachedValues = null;
         }
 
         public void ComputeCache()
         {
-            if (framedKeys.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
-                framedKeys = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
+            ComputeCacheIndices();
+            ComputeCacheValues(0, cachedValues.Length - 1);
+        }
+
+        private void ComputeCacheValues(int startIndex, int endIndex)
+        {
+            if (cachedValues.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
+            {
+                cachedValues = new float[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
+                startIndex = 0;
+                endIndex = cachedValues.Length - 1;
+            }
+
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                _Evaluate(i + GlobalState.Animation.StartFrame, out cachedValues[i]);
+            }
+        }
+
+        private void ComputeCacheValuesAt(int keyIndex)
+        {
+            // recompute value cache in range [index - 2 ; index + 2] (for bezier curves)            
+            int startKeyIndex = keyIndex - 2;
+            int endKeyIndex = keyIndex + 2;
+
+            int start = 0;
+            if (startKeyIndex >= 0 && startKeyIndex <= keys.Count - 1)
+                start = Mathf.Clamp( keys[startKeyIndex].frame - GlobalState.Animation.StartFrame, 0, cachedValues.Length - 1);
+
+            int end = cachedValues.Length - 1;
+            if (endKeyIndex >= 0 && endKeyIndex <= keys.Count - 1)
+                end = Mathf.Clamp(keys[endKeyIndex].frame - GlobalState.Animation.StartFrame, 0, cachedValues.Length - 1);
+
+            ComputeCacheValues(start, end);
+        }
+
+        private void ComputeCacheIndices()
+        {
+            if (cachedKeysIndices.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
+            {
+                cachedKeysIndices = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
+            }
 
             if (keys.Count == 0)
             {
-                for (int i = 0; i < framedKeys.Length; i++)
-                    framedKeys[i] = -1;
+                for (int i = 0; i < cachedKeysIndices.Length; i++)
+                    cachedKeysIndices[i] = -1;
 
                 return;
             }
@@ -80,19 +123,19 @@ namespace VRtist
 
                 int b1 = keys[i].frame - GlobalState.Animation.StartFrame;
                 int b2 = keys[i + 1].frame - GlobalState.Animation.StartFrame;
-                b2 = Mathf.Clamp(b2, b1, framedKeys.Length);
+                b2 = Mathf.Clamp(b2, b1, cachedKeysIndices.Length);
 
                 if (!firstKeyFoundInRange) // Fill framedKeys from 0 to first key
                 {
                     for (int j = 0; j < b1; j++)
                     {
-                        framedKeys[j] = i - 1;
+                        cachedKeysIndices[j] = i - 1;
                     }
                     firstKeyFoundInRange = true;
                 }
 
                 for (int j = b1; j < b2; j++)
-                    framedKeys[j] = i;
+                    cachedKeysIndices[j] = i;
                 lastKeyIndex = i;
             }
 
@@ -102,8 +145,8 @@ namespace VRtist
                 int index = -1;
                 if (keys[keys.Count - 1].frame < GlobalState.Animation.StartFrame)
                     index = keys.Count - 1;
-                for (int i = 0; i < framedKeys.Length; i++)
-                    framedKeys[i] = index;
+                for (int i = 0; i < cachedKeysIndices.Length; i++)
+                    cachedKeysIndices[i] = index;
                 return;
             }
 
@@ -111,15 +154,15 @@ namespace VRtist
             lastKeyIndex++;
             lastKeyIndex = Math.Min(lastKeyIndex, keys.Count - 1);
             int jmin = Math.Max(0, keys[lastKeyIndex].frame - GlobalState.Animation.StartFrame);
-            for (int j = jmin; j < framedKeys.Length; j++)
+            for (int j = jmin; j < cachedKeysIndices.Length; j++)
             {
-                framedKeys[j] = lastKeyIndex;
+                cachedKeysIndices[j] = lastKeyIndex;
             }
         }
 
         private bool GetKeyIndex(int frame, out int index)
         {
-            index = framedKeys[frame - GlobalState.Animation.StartFrame];
+            index = cachedKeysIndices[frame - GlobalState.Animation.StartFrame];
             if (index == -1)
                 return false;
 
@@ -139,11 +182,13 @@ namespace VRtist
             {
                 AnimationKey key = keys[index];
                 int start = key.frame - GlobalState.Animation.StartFrame;
-                int end = framedKeys.Length - 1;
+                int end = cachedKeysIndices.Length - 1;
                 for (int i = start; i <= end; i++)
-                    framedKeys[i]--;
+                    cachedKeysIndices[i]--;
 
                 keys.RemoveAt(index);
+
+                ComputeCacheValuesAt(index);
             }
         }
 
@@ -159,25 +204,28 @@ namespace VRtist
             if (GetKeyIndex(key.frame, out int index))
             {
                 keys[index] = key;
+                ComputeCacheValuesAt(index);
             }
             else
             {
                 index++;
                 keys.Insert(index, key);
 
-                int end = framedKeys.Length - 1;
+                int end = cachedKeysIndices.Length - 1;
                 if (index + 1 < keys.Count)
                 {
                     end = keys[index + 1].frame - GlobalState.Animation.StartFrame - 1;
-                    end = Mathf.Clamp(end, 0, framedKeys.Length - 1);
+                    end = Mathf.Clamp(end, 0, cachedKeysIndices.Length - 1);
                 }
 
                 int start = key.frame - GlobalState.Animation.StartFrame;
                 start = Mathf.Clamp(start, 0, end);
                 for (int i = start; i <= end; i++)
-                    framedKeys[i] = index;
-                for (int i = end + 1; i < framedKeys.Length; i++)
-                    framedKeys[i]++;
+                    cachedKeysIndices[i] = index;
+                for (int i = end + 1; i < cachedKeysIndices.Length; i++)
+                    cachedKeysIndices[i]++;
+
+                ComputeCacheValuesAt(index);
             }
         }
 
@@ -201,9 +249,9 @@ namespace VRtist
         {
             --frame;
             frame -= GlobalState.Animation.StartFrame;
-            if (frame >= 0 && frame < framedKeys.Length)
+            if (frame >= 0 && frame < cachedKeysIndices.Length)
             {
-                int index = framedKeys[frame];
+                int index = cachedKeysIndices[frame];
                 if (index != -1)
                 {
                     return keys[index];
@@ -244,16 +292,28 @@ namespace VRtist
             return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
         }
 
-
         public bool Evaluate(int frame, out float value)
         {
             if (keys.Count == 0)
             {
-                value = 0;
+                value = float.NaN;
                 return false;
             }
 
-            int prevIndex = framedKeys[frame - GlobalState.Animation.StartFrame];
+            value = cachedValues[frame - GlobalState.Animation.StartFrame];            
+            return value != float.NaN;
+        }
+
+
+        public bool _Evaluate(int frame, out float value)
+        {
+            if (keys.Count == 0)
+            {
+                value = float.NaN;
+                return false;
+            }
+
+            int prevIndex = cachedKeysIndices[frame - GlobalState.Animation.StartFrame];
             if (prevIndex == -1)
             {
                 value = keys[0].value;
@@ -320,7 +380,7 @@ namespace VRtist
                     }
 
             }
-            value = 0f;
+            value = float.NaN;
             return false;
         }
     }
