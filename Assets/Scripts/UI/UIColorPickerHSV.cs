@@ -29,12 +29,15 @@ namespace VRtist
         public Transform svCursor;
 
         public float thickness = 1.0f;
-        public float hue = 0.0f; // [0..1]
+        public Vector3 hsv = new Vector3(1,0,0);
+
+        bool lockedOnCircle = false;
+        bool lockedOnTriangle = false;
 
         // TMP
-        public Color tmpRGBColor = Color.green;
-        public float tmpSaturation = 0;
-        public float tmpValue = 0;
+        //public Color tmpRGBColor = Color.green;
+        //public float tmpSaturation = 0;
+        //public float tmpValue = 0;
         // TMP
 
         // 3 points (A, B, C) = (HUE, WHITE, BLACK)
@@ -49,53 +52,86 @@ namespace VRtist
         }
 
         // TMP - REMOVE AFTER TESTS ------------------
-        private void OnValidate()
-        {
-            NeedsRebuild = true;
-        }
+        //private void OnValidate()
+        //{
+        //    NeedsRebuild = true;
+        //}
 
-        private void Update()
-        {
-            if (NeedsRebuild)
-            {
-                RebuildMesh(width, height, thickness, trianglePct, innerCirclePct, outerCirclePct);
-                tmpSaturation = Saturation;
-                tmpValue = Value;
-                UpdateCursorPositions();
-                NeedsRebuild = false;
-            }
-        }
+        //private void Update()
+        //{
+        //    if (NeedsRebuild)
+        //    {
+        //        float H, S, V;
+        //        Color.RGBToHSV(tmpRGBColor, out H, out S, out V);
+        //        HSV = new Vector3(H, S, V);
+        //        tmpSaturation = S;
+        //        tmpValue = V;
+        //        RebuildMesh(width, height, thickness, trianglePct, innerCirclePct, outerCirclePct);
+        //        UpdateCursorPositions();
+        //        NeedsRebuild = false;
+        //    }
+        //}
         // TMP - REMOVE AFTER TESTS ------------------
 
-        public float Hue { get { return hue; } }
-        public float Saturation { 
-            get { 
-                Color rgb = BarycentricToRGB();
-                float H, S, V;
-                Color.RGBToHSV(rgb, out H, out S, out V);
-                return S;
-                //return 1.0f - barycentric.z;  // FAUX
-            }
-        } 
-        public float Value {
-            get
-            {
-                Color rgb = BarycentricToRGB();
-                float H, S, V;
-                Color.RGBToHSV(rgb, out H, out S, out V);
-                return V;
-                //return 1.0f - barycentric.y;  // FAUX
-            }
-        }
+        public float Hue { get { return hsv.x; } }
+        public float Saturation { get { return hsv.y; } }
+        public float Value { get { return hsv.z; } }
+
+        //public float Saturation { 
+        //    get { 
+        //        Color rgb = BarycentricToRGB();
+        //        float H, S, V;
+        //        Color.RGBToHSV(rgb, out H, out S, out V);
+        //        return S;
+        //    }
+        //} 
+        //public float Value {
+        //    get
+        //    {
+        //        Color rgb = BarycentricToRGB();
+        //        float H, S, V;
+        //        Color.RGBToHSV(rgb, out H, out S, out V);
+        //        return V;
+        //    }
+        //}
 
         public Vector3 HSV { set { 
-                hue = value.x; 
-                barycentric.y = 1 - value.y; // 1 - SAT = white // FAUX
-                barycentric.z = 1 - value.z; // 1 - VALUE = black // FAUX
-                barycentric.x = 1.0f - barycentric.y - barycentric.z;
+                hsv = value;
+                barycentric = HSVtoBarycentric(value);
+
+                // inject the hue into vertex colors of the mesh
+                RebuildMesh(width, height, thickness, trianglePct, innerCirclePct, outerCirclePct);
                 UpdateCursorPositions();
-                UpdateSVColor();
+                //UpdateSVColor();
             } 
+        }
+
+        private Vector3 HSVtoBarycentric(Vector3 hsv)
+        {
+            float w2 = width / 2.0f;
+            float h2 = height / 2.0f;
+            float tr = trianglePct * w2;
+
+            // 3 points (A, B, C) = (HUE, WHITE, BLACK)
+            //           C
+            //          / \
+            //         / P \
+            //        B-----A
+            Vector3 pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
+
+            // Point on CA at Value position
+            Vector3 pt_CA = Vector3.Lerp(pt_C_BLACK, pt_A_HUE, hsv.z);
+
+            // Point on CB at Value position
+            Vector3 pt_CB = Vector3.Lerp(pt_C_BLACK, pt_B_WHITE , hsv.z);
+
+            // Point on CB_CA at Saturation position
+            Vector3 pt_P = Vector3.Lerp(pt_CB, pt_CA, hsv.y);
+
+            // From P and A, B C, find the barycentric coordinates.
+            return GetBarycentricCoordinates(pt_P, pt_A_HUE, pt_B_WHITE, pt_C_BLACK);
         }
 
         private void UpdateCursorPositions()
@@ -110,11 +146,11 @@ namespace VRtist
             Vector3 cs = hueCursor.GetComponentInChildren<MeshFilter>().mesh.bounds.size;
 
             hueCursor.localPosition = new Vector3(
-                w2 + mr * -Mathf.Cos(hue * 2.0f * Mathf.PI),
-                -h2 + mr * Mathf.Sin(hue * 2.0f * Mathf.PI),
+                w2 + mr * -Mathf.Cos(hsv.x * 2.0f * Mathf.PI),
+                -h2 + mr * Mathf.Sin(hsv.x * 2.0f * Mathf.PI),
                 -cs.z / 2.0f); //-thickness - cs.z/2.0f);
 
-            hueCursor.transform.localRotation = Quaternion.Euler(0,0, 90.0f - hue * 360.0f); // tmp
+            hueCursor.transform.localRotation = Quaternion.Euler(0,0, 90.0f - hsv.x * 360.0f); // tmp
             hueCursor.localScale = new Vector3(1, cw / cs.y, 1);
 
             // TODO: cursor in triangle
@@ -131,16 +167,16 @@ namespace VRtist
             svCursor.transform.localRotation = Quaternion.identity; // tmp
         }
 
-        private void UpdateSVColor()
-        {
-            Color baseColor = Color.HSVToRGB(hue, 1f, 1f); // pure hue color
-            var renderer = GetComponent<MeshRenderer>();
-            renderer.sharedMaterials[1].SetColor("_Color", baseColor);
-        }
+        //private void UpdateSVColor()
+        //{
+        //    Color baseColor = Color.HSVToRGB(hsv.x, 1f, 1f); // pure hue color
+        //    var renderer = GetComponent<MeshRenderer>();
+        //    renderer.sharedMaterials[1].SetColor("_Color", baseColor);
+        //}
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness, float newTrianglePct, float newInnerCirclePct, float newOuterCirclePct)
         {
-            Color baseColor = Color.HSVToRGB(hue, 1f, 1f); // pure hue color
+            Color baseColor = Color.HSVToRGB(hsv.x, 1f, 1f); // pure hue color
 
             float minSide = Mathf.Min(newWidth, newHeight);
             MeshFilter meshFilter = gameObject.GetComponent<MeshFilter>();
@@ -221,12 +257,18 @@ namespace VRtist
 
         public override void OnRayReleaseInside()
         {
+            lockedOnCircle = false;
+            lockedOnTriangle = false;
+
             base.OnRayReleaseInside();
             colorPicker.OnRelease();
         }
 
         public override bool OnRayReleaseOutside()
         {
+            lockedOnCircle = false;
+            lockedOnTriangle = false;
+
             return base.OnRayReleaseOutside();
         }
 
@@ -244,7 +286,7 @@ namespace VRtist
             Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
 
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
-            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, 0.0f);
+            Vector3 localProjectedWidgetPosition = new Vector3(localWidgetPosition.x, localWidgetPosition.y, -thickness);
 
             if (IgnoreRayInteraction())
             {
@@ -253,42 +295,97 @@ namespace VRtist
                 return;
             }
 
-            float startX = 0;
-            float endX = width;
-
-            float currentKnobPositionX = hue * width;
-
-            // DRAG
-
-            if (!triggerJustClicked) // if trigger just clicked, use the actual projection, no interpolation.
+            // Just clicked, find out which subpart to lock on
+            if (triggerJustClicked)
             {
-                localProjectedWidgetPosition.x = Mathf.Lerp(currentKnobPositionX, localProjectedWidgetPosition.x, GlobalState.Settings.RaySliderDrag);
+                // TODO....
+
+                lockedOnCircle = true; // TMP
             }
+
+            if (lockedOnCircle)
+            {
+                float w2 = width / 2.0f;
+                float h2 = height / 2.0f;
+                float ir = innerCirclePct * w2; // circle inner radius
+                float or = outerCirclePct * w2; // circle outer radius
+                float mr = (ir + or) / 2.0f; // circle middle radius
+                float cw = (or - ir); // circle width
+                float tr = trianglePct * w2;
+
+                Vector2 circleCenter_L = new Vector2(w2, -h2);
+                Vector2 cursor_L = new Vector2(localProjectedWidgetPosition.x, localProjectedWidgetPosition.y);
+                Vector2 cursor_C = cursor_L - circleCenter_L;
+                float angle = Mathf.Rad2Deg * (Mathf.PI - Mathf.Atan2(cursor_C.y, cursor_C.x));
+                Debug.Log($"Angle: {angle}");
+                float newHue = angle / 360.0f;
+
+                // DRAG
+                if (!triggerJustClicked)
+                {
+                    float oldHue = hsv.x;
+                    if (newHue - oldHue < -0.5f) // ex: 0.9 -> 0.1 ==> 0.9 -> 1.1
+                    {
+                        newHue = Mathf.Lerp(oldHue, newHue + 1.0f, GlobalState.Settings.RayHueDrag);
+                        if (newHue >= 1.0f)
+                        {
+                            newHue -= 1.0f;
+                        }
+                    }
+                    else if (newHue - oldHue > 0.5f) // ex: 0.1 -> 0.9 ==> 1.1 -> 0.9
+                    {
+                        newHue = Mathf.Lerp(oldHue + 1.0f, newHue, GlobalState.Settings.RayHueDrag);
+                        if (newHue >= 1.0f)
+                        {
+                            newHue -= 1.0f;
+                        }
+                    }
+                    else // ex: 0.1 -> 0.2
+                    {
+                        newHue = Mathf.Lerp(oldHue, newHue, GlobalState.Settings.RayHueDrag);
+                    }
+                }
+
+                HSV = new Vector3(newHue, hsv.y, hsv.z); // NOTE: also re-position the cursors.
+
+                colorPicker.OnColorChanged();
+
+                localProjectedWidgetPosition = new Vector3(
+                    w2 + mr * -Mathf.Cos(hsv.x * 2.0f * Mathf.PI),
+                    -h2 + mr * Mathf.Sin(hsv.x * 2.0f * Mathf.PI),
+                    -thickness);
+            }
+            else if (lockedOnTriangle)
+            {
+
+            }
+
+
+
+            //float startX = 0;
+            //float endX = width;
+
+            //float currentKnobPositionX = hsv.x * width;
+
+            
 
             // CLAMP
 
-            if (localProjectedWidgetPosition.x < startX)
-                localProjectedWidgetPosition.x = startX;
+            //if (localProjectedWidgetPosition.x < startX)
+            //    localProjectedWidgetPosition.x = startX;
 
-            if (localProjectedWidgetPosition.x > endX)
-                localProjectedWidgetPosition.x = endX;
+            //if (localProjectedWidgetPosition.x > endX)
+            //    localProjectedWidgetPosition.x = endX;
 
-            localProjectedWidgetPosition.y = -height / 2.0f;
+            //localProjectedWidgetPosition.y = -height / 2.0f;
 
             // SET
 
-            float pct = localProjectedWidgetPosition.x / width;
+            //float pct = localProjectedWidgetPosition.x / width;
             //SetHue(Mathf.Clamp(pct, 0, 1));
-            colorPicker.OnColorChanged();
-
-            // Haptic intensity as we go deeper into the widget.
-            //float intensity = Mathf.Clamp01(0.001f + 0.999f * localWidgetPosition.z / UIElement.collider_min_depth_deep);
-            //intensity *= intensity; // ease-in
-
-            //VRInput.SendHaptic(VRInput.rightController, 0.005f, intensity);
+            //colorPicker.OnColorChanged();
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
-            //cursorShapeTransform.position = worldProjectedWidgetPosition;
             rayEndPoint = worldProjectedWidgetPosition;
         }
 
@@ -307,7 +404,7 @@ namespace VRtist
         
         Color BarycentricToRGB()
         {
-            Color baseColor = Color.HSVToRGB(hue, 1f, 1f); // pure hue color
+            Color baseColor = Color.HSVToRGB(hsv.x, 1f, 1f); // pure hue color
             Vector3 rgb = barycentric.x * Vector3.zero + barycentric.y * Vector3.one + barycentric.z * new Vector3(baseColor.r, baseColor.g, baseColor.b);
             rgb = new Vector3(
                 Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.x, 1 - barycentric.x)),

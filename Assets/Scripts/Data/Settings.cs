@@ -71,6 +71,10 @@ namespace VRtist
         public float raySliderDrag = 97.0f;
         public float RaySliderDrag { get { return 1.0f - (raySliderDrag / 100.0f); } }
 
+        [Range(1f, 100f)]
+        public float rayHueDrag = 85.0f;
+        public float RayHueDrag { get { return 1.0f - (rayHueDrag / 100.0f); } }
+
         public AnimationCurve focalCurve;
 
         public Interpolation interpolation = Interpolation.Linear;
