@@ -24,11 +24,11 @@ namespace VRtist
 
     public class AnimationKey
     {
-        public AnimationKey(int frame, float value, Interpolation interpolation = Interpolation.Bezier)
+        public AnimationKey(int frame, float value, Interpolation? interpolation = null)
         {
             this.frame = frame;
             this.value = value;
-            this.interpolation = interpolation;
+            this.interpolation = interpolation ?? GlobalState.Settings.interpolation;
         }
         public int frame;
         public float value;
