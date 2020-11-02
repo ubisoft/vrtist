@@ -608,7 +608,15 @@ namespace VRtist
                 }
 
                 if (commands.Count == 0)
+                {
                     yield return null;
+                }
+
+                // don't process commands on play/record
+                if (GlobalState.Animation.IsAnimating())
+                {
+                    yield return null;
+                }
 
                 DateTime before = DateTime.Now;
                 bool prematuredExit = false;

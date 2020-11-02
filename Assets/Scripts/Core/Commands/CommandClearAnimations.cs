@@ -16,14 +16,19 @@ namespace VRtist
 
         public override void Undo()
         {
-            if(null != animationSet)
+            if (null != animationSet)
+            {
                 GlobalState.Animation.SetObjectAnimation(gObject, animationSet);
-            // TODO mixer
+                foreach (Curve curve in animationSet.curves.Values)
+                {
+                    MixerClient.GetInstance().SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
+                }
+            }
         }
         public override void Redo()
         {
             GlobalState.Animation.ClearAnimations(gObject);
-            // TODO mixer
+            MixerClient.GetInstance().SendClearAnimations(new ClearAnimationInfo { gObject = gObject }); 
         }
         public override void Submit()
         {

@@ -40,8 +40,6 @@ namespace VRtist
         protected bool gripPrevented = false;
         protected bool gripInterrupted = false;
 
-        int groupId = 0;
-
         protected GameObject triggerTooltip;
         protected GameObject gripTooltip;
         protected GameObject joystickTooltip;
@@ -52,6 +50,7 @@ namespace VRtist
         protected SelectorTrigger selectorTrigger;
 
         private CommandSetValue<float> cameraFocalCommand = null;
+        private bool joystickScaling = false;
 
         private GameObject ATooltip = null;
         private string prevATooltipText;
@@ -537,7 +536,7 @@ namespace VRtist
                 () => { },
                 () =>
                 {
-                    if (GlobalState.Animation.animationState == AnimationState.Recording)
+                    if (GlobalState.Animation.animationState == AnimationState.Recording || GlobalState.Animation.animationState == AnimationState.Preroll)
                     {
                         GlobalState.Animation.Pause();
                         return;
@@ -643,13 +642,25 @@ namespace VRtist
                                 continue;
                             if (currentScale.x > 1000f)
                                 continue;
+
                             obj.transform.localScale = currentScale;
+                        }
+
+                        if (!joystickScaling && !Gripping)
+                        {
+                            InitTransforms();
+                            joystickScaling = true;
                         }
                     }
                 }
                 else
                 {
                     SubmitCameraFocalCommand();
+                    if(joystickScaling)
+                    {
+                        joystickScaling = false;
+                        ManageMoveObjectsUndo();
+                    }
                 }
             }
 

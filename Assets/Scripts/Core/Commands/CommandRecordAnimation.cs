@@ -25,6 +25,7 @@ namespace VRtist
             if (null == oldAnimationSet)
             {
                 GlobalState.Animation.ClearAnimations(gObject);
+                MixerClient.GetInstance().SendClearAnimations(new ClearAnimationInfo { gObject = gObject });
                 return;
             }
             GlobalState.Animation.SetObjectAnimation(gObject, oldAnimationSet);
