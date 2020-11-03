@@ -144,7 +144,7 @@ namespace VRtist
 
             //saturation.SetBaseColor(baseColor);
 
-            //preview.SetPreviewColor(currentColor.gamma); // back to sRGB
+            
 
             float h = hsv.Hue;
             float s = hsv.Saturation;
@@ -156,6 +156,8 @@ namespace VRtist
             {
                 currentColor *= hdrIntensity;
             }
+
+            preview.SetPreviewColor(currentColor.gamma); // back to sRGB
 
             currentColor.a = alpha.GetAlpha();
 

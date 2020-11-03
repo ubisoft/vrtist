@@ -131,7 +131,7 @@ namespace VRtist
             Vector3 pt_P = Vector3.Lerp(pt_CB, pt_CA, hsv.y);
 
             // From P and A, B C, find the barycentric coordinates.
-            return GetBarycentricCoordinates(pt_P, pt_A_HUE, pt_B_WHITE, pt_C_BLACK);
+            return GetBarycentricCoordinates2D(pt_P, pt_A_HUE, pt_B_WHITE, pt_C_BLACK);
         }
 
         private void UpdateCursorPositions()
@@ -272,6 +272,7 @@ namespace VRtist
             return base.OnRayReleaseOutside();
         }
 
+        Vector3 lastProjected;
         public override bool OverridesRayEndPoint() { return true; }
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
         {
@@ -295,29 +296,39 @@ namespace VRtist
                 return;
             }
 
+            float w2 = width / 2.0f;
+            float h2 = height / 2.0f;
+            float ir = innerCirclePct * w2; // circle inner radius
+            float or = outerCirclePct * w2; // circle outer radius
+            float mr = (ir + or) / 2.0f; // circle middle radius
+            float cw = (or - ir); // circle width
+            float tr = trianglePct * w2;
+
+            Vector2 circleCenter_L = new Vector2(w2, -h2);
+            Vector2 cursor_L = new Vector2(localProjectedWidgetPosition.x, localProjectedWidgetPosition.y);
+
             // Just clicked, find out which subpart to lock on
             if (triggerJustClicked)
             {
-                // TODO....
-
-                lockedOnCircle = true; // TMP
+                float cursorDistanceFromCenter = Vector2.Distance(cursor_L, circleCenter_L);
+                if (cursorDistanceFromCenter >= ir && cursorDistanceFromCenter <= or)
+                {
+                    lockedOnCircle = true;
+                }
+                else
+                {
+                    // TODO: really check for triangle bounds, not only bounding circle.
+                    if (cursorDistanceFromCenter <= tr)
+                    {
+                        lockedOnTriangle = true;
+                    }
+                }
             }
 
             if (lockedOnCircle)
             {
-                float w2 = width / 2.0f;
-                float h2 = height / 2.0f;
-                float ir = innerCirclePct * w2; // circle inner radius
-                float or = outerCirclePct * w2; // circle outer radius
-                float mr = (ir + or) / 2.0f; // circle middle radius
-                float cw = (or - ir); // circle width
-                float tr = trianglePct * w2;
-
-                Vector2 circleCenter_L = new Vector2(w2, -h2);
-                Vector2 cursor_L = new Vector2(localProjectedWidgetPosition.x, localProjectedWidgetPosition.y);
                 Vector2 cursor_C = cursor_L - circleCenter_L;
                 float angle = Mathf.Rad2Deg * (Mathf.PI - Mathf.Atan2(cursor_C.y, cursor_C.x));
-                Debug.Log($"Angle: {angle}");
                 float newHue = angle / 360.0f;
 
                 // DRAG
@@ -357,33 +368,34 @@ namespace VRtist
             }
             else if (lockedOnTriangle)
             {
+                Vector3 pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+                Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+                Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
 
+                Vector3 closest;
+                Vector3 baryOfClosest;
+                ClosestPointToTriangle2D(localProjectedWidgetPosition, pt_A_HUE, pt_B_WHITE, pt_C_BLACK, out closest, out baryOfClosest);
+                localProjectedWidgetPosition = new Vector3(closest.x, closest.y, -thickness);
+
+                // DRAG
+                if (!triggerJustClicked)
+                {
+                    // TODO: apply drag to the barycentric coords as well, otherwise it does not work.
+                    //float drag = GlobalState.Settings.RaySliderDrag;
+                    //localProjectedWidgetPosition = Vector3.Lerp(lastProjected, localProjectedWidgetPosition, GlobalState.Settings.RaySliderDrag);
+                }
+                lastProjected = localProjectedWidgetPosition;
+
+                barycentric = baryOfClosest;
+                float H, S, V;
+                Color.RGBToHSV(BarycentricToRGB(), out H, out S, out V);
+                // TODO: make a funciton PointInTriangleToRGB(closest, a, b, c), using the resterizer algo to find color instead of barycentric.
+                hsv = new Vector3(hsv.x, S, V);
+
+                UpdateCursorPositions();
+
+                colorPicker.OnColorChanged();
             }
-
-
-
-            //float startX = 0;
-            //float endX = width;
-
-            //float currentKnobPositionX = hsv.x * width;
-
-            
-
-            // CLAMP
-
-            //if (localProjectedWidgetPosition.x < startX)
-            //    localProjectedWidgetPosition.x = startX;
-
-            //if (localProjectedWidgetPosition.x > endX)
-            //    localProjectedWidgetPosition.x = endX;
-
-            //localProjectedWidgetPosition.y = -height / 2.0f;
-
-            // SET
-
-            //float pct = localProjectedWidgetPosition.x / width;
-            //SetHue(Mathf.Clamp(pct, 0, 1));
-            //colorPicker.OnColorChanged();
 
             Vector3 worldProjectedWidgetPosition = transform.TransformPoint(localProjectedWidgetPosition);
             rayEndPoint = worldProjectedWidgetPosition;
@@ -391,8 +403,8 @@ namespace VRtist
 
         // Compute barycentric coordinates (u, v, w) for
         // point p with respect to triangle (a, b, c)
-        // BEWARE: X is ignored, it is a 2D implementation!!!
-        Vector3 GetBarycentricCoordinates(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
+        // BEWARE: Z is ignored, it is a 2D implementation!!!
+        Vector3 GetBarycentricCoordinates2D(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
         {
             Vector3 v0 = b - a, v1 = c - a, v2 = p - a;
             float den = v0.x * v1.y - v1.x * v0.y;
@@ -402,17 +414,115 @@ namespace VRtist
             return new Vector3(u, v, w);
         }
         
+        // NOTE: it is not the same color as the one displayed by the shader on the triangle.
+        // TODO: use the same algo as in the shadergraph.
         Color BarycentricToRGB()
         {
-            Color baseColor = Color.HSVToRGB(hsv.x, 1f, 1f); // pure hue color
-            Vector3 rgb = barycentric.x * Vector3.zero + barycentric.y * Vector3.one + barycentric.z * new Vector3(baseColor.r, baseColor.g, baseColor.b);
-            rgb = new Vector3(
-                Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.x, 1 - barycentric.x)),
-                Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.y, 1 - barycentric.x)),
-                Mathf.GammaToLinearSpace(Mathf.Lerp(0, rgb.z, 1 - barycentric.x))
-            );
+            // Base pure hue color
+            Color baseColor = Color.HSVToRGB(hsv.x, 1f, 1f);
+            // Add saturation
+            Vector3 rgb = barycentric.x * new Vector3(baseColor.r, baseColor.g, baseColor.b) + barycentric.y * Vector3.one;
+            // Add value
+            rgb = Vector3.Lerp(Vector3.zero, rgb, 1 - barycentric.z);
+
             return new Color(rgb.x, rgb.y, rgb.z);
         }
+
+        // From Realtime Collision Detection p.141
+        void ClosestPointToTriangle2D(Vector3 p, Vector3 a, Vector3 b, Vector3 c, out Vector3 outClosest, out Vector3 outBary)
+        {
+            // Check voronoi region outside A
+            Vector3 ab = b - a;
+            Vector3 ac = c - a;
+            Vector3 ap = p - a;
+            float d1 = Vector3.Dot(ab, ap);
+            float d2 = Vector3.Dot(ac, ap);
+            if (d1 <= 0.0f && d2 <= 0.0f)
+            {
+                outClosest = a;
+                outBary = new Vector3(1,0,0);
+                return;
+            }
+
+            // Check voronoi region outside B
+            Vector3 bp = p - b;
+            float d3 = Vector3.Dot(ab, bp);
+            float d4 = Vector3.Dot(ac, bp);
+            if (d3 >= 0.0f && d4 <= d3)
+            {
+                outClosest = b;
+                outBary = new Vector3(0, 1, 0);
+                return;
+            }
+
+            // Check edge region of AB
+            float vc = d1 * d4 - d3 * d2;
+            if (vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f)
+            {
+                float v = d1 / (d1 - d3);
+                outClosest = a + v * ab;
+                outBary = new Vector3(1-v,v,0);
+                return;
+            }
+
+            // Check voronoi region outside C
+            Vector3 cp = p - c;
+            float d5 = Vector3.Dot(ab, cp);
+            float d6 = Vector3.Dot(ac, cp);
+            if (d6 >= 0.0f && d5 <= d6)
+            {
+                outClosest = c;
+                outBary = new Vector3(0, 0, 1);
+                return;
+            }
+
+            // Check edge region of AC
+            float vb = d5 * d2 - d1 * d6;
+            if (vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f)
+            {
+                float w = d2 / (d2 - d6);
+                outClosest = a + w * ac;
+                outBary = new Vector3(1 - w, 0, w);
+                return;
+            }
+
+            // Check edge region of BC
+            float va = d3 * d6 - d5 * d4;
+            if (va <= 0.0f && (d4 - d3) >= 0.0f && (d5 - d6) >= 0.0f)
+            {
+                float w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+                outClosest = b + w * (c - b);
+                outBary = new Vector3(0, 1 - w, w);
+                return;
+            }
+
+            // P inside the triangle
+            {
+                float denom = 1.0f / (va + vb + vc);
+                float v = vb * denom;
+                float w = vc * denom;
+                outClosest = a + ab * v + ac * w;
+                outBary = new Vector3(1-v-w, v, w);
+                return;
+            }
+        }
+
+        //void ClosestPointToTriangle2D(Vector3 p, Vector3 a, Vector3 b, Vector3 c, out Vector3 closest, out Vector3 baryOfClosest)
+        //{
+        //    baryOfClosest = GetBarycentricCoordinates2D(p, a, b, c);
+        //    float u = baryOfClosest.x;
+        //    float v = baryOfClosest.y;
+        //    float w = baryOfClosest.z;
+        //    if (v >= 0.0f && w >= 0.0f && (v + w) <= 1.0f)
+        //    {
+        //        closest = p;
+        //    }
+        //    else
+        //    {
+        //        // project on edges
+        //        closest = p;
+        //    }
+        //}
 
         #endregion
 
