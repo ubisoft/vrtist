@@ -280,18 +280,6 @@ namespace VRtist
             return false;
         }
 
-        private Vector2 CubicBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, float t)
-        {
-            float invT1 = 1 - t;
-            float invT2 = invT1 * invT1;
-            float invT3 = invT2 * invT1;
-
-            float t2 = t * t;
-            float t3 = t2 * t;
-
-            return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
-        }
-
         public bool Evaluate(int frame, out float value)
         {
             if (keys.Count == 0)
@@ -304,6 +292,46 @@ namespace VRtist
             return value != float.NaN;
         }
 
+        private Vector2 CubicBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, float t)
+        {
+            float invT1 = 1 - t;
+            float invT2 = invT1 * invT1;
+            float invT3 = invT2 * invT1;
+
+            float t2 = t * t;
+            float t3 = t2 * t;
+
+            return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
+        }
+
+        private float EvaluateBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, int frame)
+        {
+            if ((float)frame == A.x)
+                return A.y;
+
+            if ((float)frame == D.x)
+                return D.y;
+
+            float pmin = 0;
+            float pmax = 1;
+            Vector2 avg = A;
+            float dt = D.x - A.x;
+            while (dt > 0.1f)
+            {
+                float param = (pmin + pmax) * 0.5f;
+                avg = CubicBezier(A, B, C, D, param);
+                if (avg.x < frame)
+                {
+                    pmin = param;
+                }
+                else
+                {
+                    pmax = param;
+                }
+                dt = Math.Abs(avg.x - (float)frame);
+            }
+            return avg.y;
+        }
 
         public bool _Evaluate(int frame, out float value)
         {
@@ -374,8 +402,8 @@ namespace VRtist
                             C = D - V * AD.magnitude / 3f;
                         }
 
-                        float dt = (float) (frame - prevKey.frame) / rangeDt;
-                        value = CubicBezier(A, B, C, D, dt).y;
+                        //float dt = (float) (frame - prevKey.frame) / rangeDt;
+                        value = EvaluateBezier(A, B, C, D, frame);
                         return true;
                     }
 
