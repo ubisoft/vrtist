@@ -43,7 +43,7 @@ namespace VRtist
         public abstract void ShotManagerInsertShot(Shot shot, int shotIndex);
         public abstract void ShotManagerDeleteShot(int shotIndex);
         public abstract void ShotManagerDuplicateShot(int shotIndex);
-        public abstract void ShotManagerMoveShot(int offset);
+        public abstract void ShotManagerMoveShot(int shotIndex, int offset);
         public abstract void ShotManagerUpdateShot(int shotIndex, int start, int end, string cameraName, Color color, int enabled);
     }
 }

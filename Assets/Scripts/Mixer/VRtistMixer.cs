@@ -548,7 +548,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetShotManagerCurrentShot " + shotIndex.ToString());
 #else
-            ShotManager.Instance.CurrentShot = shotIndex;
+            ShotManager.Instance.ActiveShotIndex = shotIndex;
 #endif
         }
         public override void EnableShotManagerMontage(bool enable)
@@ -556,7 +556,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("EnableShotManagerMontage " + enable.ToString());
 #else
-            ShotManager.Instance.MontageMode = enable;
+            ShotManager.Instance.MontageEnabled = enable;
 #endif
         }
         public override void UpdateShotManager(List<Shot> shots)
@@ -599,12 +599,12 @@ namespace VRtist
             ShotManager.Instance.FireChanged();
 #endif
         }
-        public override void ShotManagerMoveShot(int offset)
+        public override void ShotManagerMoveShot(int shotIndex, int offset)
         {
 #if !VRTIST
             Debug.Log("ShotManagerDuplicateShot");
 #else
-            ShotManager.Instance.MoveCurrentShot(offset);
+            ShotManager.Instance.MoveShot(shotIndex, offset);
             ShotManager.Instance.FireChanged();
 #endif
         }

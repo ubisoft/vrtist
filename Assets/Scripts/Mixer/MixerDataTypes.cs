@@ -181,14 +181,6 @@ namespace VRtist
     }
 
     // Animation
-    public enum Interpolation
-    {
-        Constant,
-        Linear,
-        Bezier,
-        Other,
-    }
-
     public class SetKeyInfo
     {
         public string objectName;

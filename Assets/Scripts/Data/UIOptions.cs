@@ -34,6 +34,7 @@ namespace VRtist
         public ColorVar pinWindowButtonColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
         public ColorVar exitButtonColor = new ColorVar { value = new Color(.7f, .1f, .1f) };
         public ColorVar focusColor = new ColorVar { value = new Color(.7f, .7f, .7f) };
+        public ColorVar errorColor = new ColorVar() { value = new Color(1.0f, 0.0f, 0.0f, 1.0f) };
         [Space(30)]
         public ColorVar sceneHoverColor = new ColorVar() { isHdr = true, value = new Color(2.0f, 0.8f, 0.0f, 1.0f) }; // hdr yellow
 
@@ -63,6 +64,8 @@ namespace VRtist
         public static Color GrabberHoverColor { get { return Instance.grabberHoverColor.value; } }
         public static Color InvisibleColor { get { return Instance.invisibleColor.value; } }
         public static Color SceneHoverColor { get { return Instance.sceneHoverColor.value; } }
+        public static Color ErrorColor { get { return Instance.errorColor.value; } }
+
 
         public static ColorVar ForegroundColorVar { get { return Instance.foregroundColor; } }
         public static ColorVar BackgroundColorVar { get { return Instance.backgroundColor; } }
@@ -88,6 +91,7 @@ namespace VRtist
         public static ColorVar GrabberHoverColorVar { get { return Instance.grabberHoverColor; } }
         public static ColorVar InvisibleColorVar { get { return Instance.invisibleColor; } }
         public static ColorVar SceneHoverColorVar { get { return Instance.sceneHoverColor; } }
+        public static ColorVar ErrorColorVar { get { return Instance.errorColor; } }
 
         private static UIOptions instance = null;
         public static UIOptions Instance

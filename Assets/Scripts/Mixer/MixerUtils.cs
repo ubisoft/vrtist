@@ -1282,18 +1282,18 @@ namespace VRtist
             int currentIndex = 0;
             string objectName = GetString(data, ref currentIndex);
             string animationChannel = GetString(data, ref currentIndex);
-            int channelIndex = BitConverter.ToInt32(data, currentIndex);
-            currentIndex += 4;
+            int channelIndex = GetInt(data, ref currentIndex);
 
-            int keyCount = (int) BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
+            int keyCount = GetInt(data, ref currentIndex);
 
             int[] intBuffer = new int[keyCount];
             float[] floatBuffer = new float[keyCount];
             int[] interpolationBuffer = new int[keyCount];
 
             Buffer.BlockCopy(data, currentIndex, intBuffer, 0, keyCount * sizeof(int));
+            GetInt(data, ref currentIndex);
             Buffer.BlockCopy(data, currentIndex + keyCount * sizeof(int), floatBuffer, 0, keyCount * sizeof(float));
+            GetInt(data, ref currentIndex);
             Buffer.BlockCopy(data, currentIndex + (keyCount * sizeof(int)) + (keyCount * sizeof(float)), interpolationBuffer, 0, keyCount * sizeof(int));
 
             SyncData.mixer.CreateAnimationCurve(objectName, animationChannel, channelIndex, intBuffer, floatBuffer, interpolationBuffer);
@@ -2367,7 +2367,7 @@ namespace VRtist
                 case ShotManagerAction.MoveShot:
                     {
                         int offset = GetInt(data, ref index);
-                        SyncData.mixer.ShotManagerMoveShot(offset);
+                        SyncData.mixer.ShotManagerMoveShot(shotIndex, offset);
                     }
                     break;
                 case ShotManagerAction.UpdateShot:
