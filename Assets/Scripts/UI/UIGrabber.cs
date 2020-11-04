@@ -8,7 +8,8 @@ namespace VRtist
     public class UIGrabber : UIElement
     {
         public GameObject prefab = null;
-        
+        public int uid;
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = null;
         public GameObjectHashChangedEvent onExitUI3DObject = null;
@@ -16,20 +17,26 @@ namespace VRtist
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
 
-        void Start()
+        //void Start()
+        //{
+        //    if (prefab == null)
+        //    {
+        //        Debug.LogWarning("No Prefab set for 3d Object.");
+        //    }
+        //    else
+        //    {
+        //        // TODO: remove? est-ce qu'on utilise encore des UnityEvent<hash>
+        //        if (ToolsUIManager.Instance != null)
+        //        {
+        //            ToolsUIManager.Instance.RegisterUI3DObject(prefab);
+        //        }
+        //    }
+        //}
+
+        public void SetAssetBankLinks(int uid, GameObject prefab = null)
         {
-            if (prefab == null)
-            {
-                Debug.LogWarning("No Prefab set for 3d Object.");
-            }
-            else
-            {
-                // TODO: remove? est-ce qu'on utilise encore des UnityEvent<hash>
-                if (ToolsUIManager.Instance != null)
-                {
-                    ToolsUIManager.Instance.RegisterUI3DObject(prefab);
-                }
-            }
+            this.uid = uid;
+            this.prefab = prefab;
         }
 
         private void OnValidate()
@@ -39,7 +46,7 @@ namespace VRtist
 
         private void Update()
         {
-#if UNITY_EDITOR
+            //#if UNITY_EDITOR
             if (NeedsRebuild)
             {
                 //RebuildMesh();
@@ -49,7 +56,7 @@ namespace VRtist
                 ResetColor();
                 NeedsRebuild = false;
             }
-#endif
+            //#endif
         }
 
         public override void ResetColor()
@@ -68,28 +75,29 @@ namespace VRtist
             //}
         }
 
-        public void OnPush3DObject()
-        {
-            Pushed = true;
-            ResetColor();
+        // Deprecated: was used with old UI Engine interactions (push instead of ray)
+        //public void OnPush3DObject()
+        //{
+        //    Pushed = true;
+        //    ResetColor();
 
-            transform.localPosition += new Vector3(0f, 0f, -0.02f); // avance vers nous, dnas le repere de la page (local -Z)
-            transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-        }
+        //    transform.localPosition += new Vector3(0f, 0f, -0.02f); // avance vers nous, dnas le repere de la page (local -Z)
+        //    transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+        //}
 
-        public void OnRelease3DObject()
-        {
-            Pushed = false;
-            ResetColor();
+        //public void OnRelease3DObject()
+        //{
+        //    Pushed = false;
+        //    ResetColor();
 
-            transform.localPosition += new Vector3(0f, 0f, +0.02f); // recule, dnas le repere de la page (local +Z)
-            transform.localScale = Vector3.one;
-        }
+        //    transform.localPosition += new Vector3(0f, 0f, +0.02f); // recule, dnas le repere de la page (local +Z)
+        //    transform.localScale = Vector3.one;
+        //}
 
-        public void OnStayOn3DObject()
-        {
-            transform.localRotation *= Quaternion.Euler(0f, -3f, 0f); // rotate autour du Y du repere du parent (penche a 25, -35, 0)
-        }
+        //public void OnStayOn3DObject()
+        //{
+        //    transform.localRotation *= Quaternion.Euler(0f, -3f, 0f); // rotate autour du Y du repere du parent (penche a 25, -35, 0)
+        //}
 
         // Handles multi-mesh and multi-material per mesh.
         public override void SetColor(Color color)
@@ -149,7 +157,7 @@ namespace VRtist
         public override void OnRayHoverClicked()
         {
             base.OnRayHoverClicked();
-            
+
             onHoverEvent.Invoke();
 
             RotateAnimation();
@@ -200,8 +208,8 @@ namespace VRtist
 
         public override bool OnRayReleaseOutside()
         {
-            return base.OnRayReleaseOutside();
             ResetRotation();
+            return base.OnRayReleaseOutside();
         }
 
         public void GoFrontAnimation()
