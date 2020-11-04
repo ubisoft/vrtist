@@ -71,6 +71,8 @@ namespace VRtist
             float h, s, v;
             Color.RGBToHSV(color, out h, out s, out v);
 
+            IsHdr = (v > 1.0f);
+
             // try to infer original value from hdr value
             while (v > 1.0f)
             {
@@ -113,6 +115,14 @@ namespace VRtist
             }
         }
 
+        public void OnCheckHDR(bool value)
+        {
+            isHdr = value;
+            hdrIntensity = 1.0f;
+
+            OnColorChanged(); // we want to update the preview and signal all listeners.
+        }
+
         private void UpdateIsHdr(bool value)
         {
             hdrCheckbox.Checked = value;
@@ -135,17 +145,6 @@ namespace VRtist
         // Read every value, build a color and fire the global public event.
         public void OnColorChanged()
         {
-            //float h = hue.GetHue(); // get linear position on rainbow
-            //Vector2 sat = saturation.GetSaturation(); // get linear vec2, cursor position on square
-
-            //Color baseColor = Color.HSVToRGB(h, 1f, 1f);
-            //currentColor = Color.Lerp(Color.white, baseColor.linear, sat.x); // linear computations on the linear version of the color
-            //currentColor = Color.Lerp(Color.black, currentColor, sat.y);
-
-            //saturation.SetBaseColor(baseColor);
-
-            
-
             float h = hsv.Hue;
             float s = hsv.Saturation;
             float v = hsv.Value;

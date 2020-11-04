@@ -34,6 +34,10 @@ namespace VRtist
         bool lockedOnCircle = false;
         bool lockedOnTriangle = false;
 
+        Vector3 pt_A_HUE = new Vector3(1, 0, 0);
+        Vector3 pt_B_WHITE = new Vector3(-1, 0, 0);
+        Vector3 pt_C_BLACK = new Vector3(0, 1, 0);
+
         // TMP
         //public Color tmpRGBColor = Color.green;
         //public float tmpSaturation = 0;
@@ -77,24 +81,6 @@ namespace VRtist
         public float Saturation { get { return hsv.y; } }
         public float Value { get { return hsv.z; } }
 
-        //public float Saturation { 
-        //    get { 
-        //        Color rgb = BarycentricToRGB();
-        //        float H, S, V;
-        //        Color.RGBToHSV(rgb, out H, out S, out V);
-        //        return S;
-        //    }
-        //} 
-        //public float Value {
-        //    get
-        //    {
-        //        Color rgb = BarycentricToRGB();
-        //        float H, S, V;
-        //        Color.RGBToHSV(rgb, out H, out S, out V);
-        //        return V;
-        //    }
-        //}
-
         public Vector3 HSV { set { 
                 hsv = value;
                 barycentric = HSVtoBarycentric(value);
@@ -108,18 +94,11 @@ namespace VRtist
 
         private Vector3 HSVtoBarycentric(Vector3 hsv)
         {
-            float w2 = width / 2.0f;
-            float h2 = height / 2.0f;
-            float tr = trianglePct * w2;
-
             // 3 points (A, B, C) = (HUE, WHITE, BLACK)
             //           C
             //          / \
             //         / P \
             //        B-----A
-            Vector3 pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-            Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-            Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
 
             // Point on CA at Value position
             Vector3 pt_CA = Vector3.Lerp(pt_C_BLACK, pt_A_HUE, hsv.z);
@@ -153,26 +132,9 @@ namespace VRtist
             hueCursor.transform.localRotation = Quaternion.Euler(0,0, 90.0f - hsv.x * 360.0f); // tmp
             hueCursor.localScale = new Vector3(1, cw / cs.y, 1);
 
-            // TODO: cursor in triangle
-            // 3 points (A, B, C) = (HUE, WHITE, BLACK)
-            //           C
-            //          / \
-            //         / P \
-            //        B-----A
-            Vector3 pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-            Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-            Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
-
             svCursor.localPosition = pt_A_HUE * barycentric.x + pt_B_WHITE * barycentric.y + pt_C_BLACK * barycentric.z;
             svCursor.transform.localRotation = Quaternion.identity; // tmp
         }
-
-        //private void UpdateSVColor()
-        //{
-        //    Color baseColor = Color.HSVToRGB(hsv.x, 1f, 1f); // pure hue color
-        //    var renderer = GetComponent<MeshRenderer>();
-        //    renderer.sharedMaterials[1].SetColor("_Color", baseColor);
-        //}
 
         public void RebuildMesh(float newWidth, float newHeight, float newThickness, float newTrianglePct, float newInnerCirclePct, float newOuterCirclePct)
         {
@@ -190,6 +152,19 @@ namespace VRtist
             trianglePct = newTrianglePct;
             innerCirclePct = newInnerCirclePct;
             outerCirclePct = newOuterCirclePct;
+
+            float w2 = width / 2.0f;
+            float h2 = height / 2.0f;
+            float tr = trianglePct * w2;
+
+            // 3 points (A, B, C) = (HUE, WHITE, BLACK)
+            //           C
+            //          / \
+            //         / P \
+            //        B-----A
+            pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
+            pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
 
             UpdateColliderDimensions();
         }
@@ -368,29 +343,27 @@ namespace VRtist
             }
             else if (lockedOnTriangle)
             {
-                Vector3 pt_A_HUE = new Vector3(w2 + tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-                Vector3 pt_B_WHITE = new Vector3(w2 - tr * Mathf.Cos(-Mathf.PI / 6.0f), -h2 + tr * Mathf.Sin(-Mathf.PI / 6.0f), -thickness);
-                Vector3 pt_C_BLACK = new Vector3(w2, -h2 + tr, -thickness);
-
                 Vector3 closest;
                 Vector3 baryOfClosest;
                 ClosestPointToTriangle2D(localProjectedWidgetPosition, pt_A_HUE, pt_B_WHITE, pt_C_BLACK, out closest, out baryOfClosest);
                 localProjectedWidgetPosition = new Vector3(closest.x, closest.y, -thickness);
+                barycentric = baryOfClosest;
 
                 // DRAG
-                if (!triggerJustClicked)
-                {
-                    // TODO: apply drag to the barycentric coords as well, otherwise it does not work.
-                    //float drag = GlobalState.Settings.RaySliderDrag;
-                    //localProjectedWidgetPosition = Vector3.Lerp(lastProjected, localProjectedWidgetPosition, GlobalState.Settings.RaySliderDrag);
-                }
-                lastProjected = localProjectedWidgetPosition;
+                //if (!triggerJustClicked)
+                //{
+                //    localProjectedWidgetPosition = Vector3.Lerp(lastProjected, localProjectedWidgetPosition, GlobalState.Settings.RaySliderDrag);
+                //    barycentric = GetBarycentricCoordinates2D(localProjectedWidgetPosition, pt_A_HUE, pt_B_WHITE, pt_C_BLACK);
+                //}
+                //lastProjected = localProjectedWidgetPosition;
 
-                barycentric = baryOfClosest;
-                float H, S, V;
-                Color.RGBToHSV(BarycentricToRGB(), out H, out S, out V);
-                // TODO: make a funciton PointInTriangleToRGB(closest, a, b, c), using the resterizer algo to find color instead of barycentric.
-                hsv = new Vector3(hsv.x, S, V);
+                //float H, S, V;
+                //Color.RGBToHSV(BarycentricToRGB(), out H, out S, out V);
+                //// TODO: make a function PointInTriangleToRGB(closest, a, b, c), using the resterizer algo to find color instead of barycentric.
+                //hsv = new Vector3(hsv.x, S, V);
+
+                Vector3 _sv = PointInTriangleToHSV(closest);
+                hsv = new Vector3(hsv.x, _sv.y, _sv.z);
 
                 UpdateCursorPositions();
 
@@ -426,6 +399,34 @@ namespace VRtist
             rgb = Vector3.Lerp(Vector3.zero, rgb, 1 - barycentric.z);
 
             return new Color(rgb.x, rgb.y, rgb.z);
+        }
+
+        Vector3 PointInTriangleToHSV(Vector3 p)
+        {
+            // 3 points (A, B, C) = (HUE, WHITE, BLACK)
+            //
+            //           C (BLACK)
+            // -         *
+            // |        / \
+            // |       /   \
+            // V   CB *-P---* CA
+            // |     /       \
+            // -  B *---------* A (HUE)
+            //                 
+            //      |---S-----|
+
+            // Point on CA at P.alue position
+            float v = (p.y - pt_C_BLACK.y) / (pt_A_HUE.y - pt_C_BLACK.y);
+            Vector3 pt_CA = Vector3.Lerp(pt_C_BLACK, pt_A_HUE, v);
+
+            // Point on CB at Value position
+            Vector3 pt_CB = Vector3.Lerp(pt_C_BLACK, pt_B_WHITE, v);
+
+            // Point on CB_CA at Saturation position
+            float s = (p.x - pt_CB.x) / (pt_CA.x - pt_CB.x);
+            Vector3 pt_P = Vector3.Lerp(pt_CB, pt_CA, s);
+
+            return new Vector3(0,s,v);
         }
 
         // From Realtime Collision Detection p.141
