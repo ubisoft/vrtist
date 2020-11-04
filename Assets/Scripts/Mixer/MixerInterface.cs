@@ -29,6 +29,7 @@ namespace VRtist
         public abstract void RemoveAnimationKey(string objectName, string channel, int channelIndex, int frame);
         public abstract void MoveAnimationKey(string objectName, string channel, int channelIndex, int frame, int newFrame);
         public abstract void CreateAnimationCurve(string objectName, string channel, int channelIndex, int[] frames, float[] values, int[] interpolations);
+        public abstract void ClearAnimations(GameObject obj);
         public abstract void SetSkyColors(Color topColor, Color middleColor, Color bottomColor);
         public abstract string CreateJsonPlayerInfo(ConnectedUser playerInfo);
         public abstract void SetPlaying(bool playing);

@@ -352,6 +352,13 @@ namespace VRtist
             }
         }
 
+        public override void ClearAnimations(GameObject obj)
+        {
+#if VRTIST
+            GlobalState.Animation.ClearAnimations(obj);
+#endif
+        }
+
         public override void CreateAnimationCurve(string objectName, string channel, int channelIndex, int[] frames, float[] values, int[] interpolations)
         {
 #if !VRTIST

@@ -21,25 +21,27 @@ namespace VRtist
             new CommandAddKeyframe(gObject, AnimatableProperty.RotationY, frame, angles.y, interpolation).Submit();
             new CommandAddKeyframe(gObject, AnimatableProperty.RotationZ, frame, angles.z, interpolation).Submit();
 
-            // Scale
-            Vector3 scale = gObject.transform.localScale;
-            new CommandAddKeyframe(gObject, AnimatableProperty.ScaleX, frame, scale.x, interpolation).Submit();
-            new CommandAddKeyframe(gObject, AnimatableProperty.ScaleY, frame, scale.y, interpolation).Submit();
-            new CommandAddKeyframe(gObject, AnimatableProperty.ScaleZ, frame, scale.z, interpolation).Submit();
-
             CameraController controller = gObject.GetComponent<CameraController>();
+            LightController lcontroller = gObject.GetComponent<LightController>();
+
             if (null != controller)
             {
                 new CommandAddKeyframe(gObject, AnimatableProperty.CameraFocal, frame, controller.focal, interpolation).Submit();
             }
-
-            LightController lcontroller = gObject.GetComponent<LightController>();
-            if (null != lcontroller)
+            else if (null != lcontroller)
             {
                 new CommandAddKeyframe(gObject, AnimatableProperty.LightIntensity, frame, lcontroller.GetPower(), interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorR, frame, lcontroller.color.r, interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorG, frame, lcontroller.color.g, interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorB, frame, lcontroller.color.b, interpolation).Submit();
+            }
+            else
+            {
+                // Scale
+                Vector3 scale = gObject.transform.localScale;
+                new CommandAddKeyframe(gObject, AnimatableProperty.ScaleX, frame, scale.x, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.ScaleY, frame, scale.y, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.ScaleZ, frame, scale.z, interpolation).Submit();
             }
         }
 

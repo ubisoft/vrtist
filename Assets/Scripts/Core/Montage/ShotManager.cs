@@ -32,7 +32,11 @@ namespace VRtist
             set
             {
                 activeShotIndex = value;
+                ActiveShotChangedEvent.Invoke();
 
+                if (!montageEnabled && GlobalState.Animation.IsAnimating())
+                    return;
+                
                 if (activeShotIndex >= 0 && activeShotIndex < shots.Count)
                 {
                     Shot shot = shots[activeShotIndex];
@@ -42,8 +46,6 @@ namespace VRtist
                         if (null != controller) { Selection.SetActiveCamera(controller); }
                     }
                 }
-
-                ActiveShotChangedEvent.Invoke();
             }
         }
 

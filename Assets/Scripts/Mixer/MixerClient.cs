@@ -610,12 +610,14 @@ namespace VRtist
                 if (commands.Count == 0)
                 {
                     yield return null;
+                    continue;
                 }
 
                 // don't process commands on play/record
                 if (GlobalState.Animation.IsAnimating())
                 {
                     yield return null;
+                    continue;
                 }
 
                 DateTime before = DateTime.Now;
@@ -660,6 +662,9 @@ namespace VRtist
                                 break;
                             case MessageType.MoveKeyframe:
                                 MixerUtils.BuildMoveKeyframe(command.data);
+                                break;
+                            case MessageType.ClearAnimations:
+                                MixerUtils.BuildClearAnimations(command.data);
                                 break;
                             case MessageType.CameraAttributes:
                                 MixerUtils.BuildCameraAttributes(command.data);

@@ -842,7 +842,7 @@ namespace VRtist
 
         public static string GetString(byte[] data, ref int bufferIndex)
         {
-            int strLength = (int) BitConverter.ToUInt32(data, bufferIndex);
+            int strLength = (int)BitConverter.ToUInt32(data, bufferIndex);
             string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
             bufferIndex = bufferIndex + strLength + 4;
             return str;
@@ -1026,7 +1026,7 @@ namespace VRtist
             byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
-            int sensorFit = (int) cam.gateFit;
+            int sensorFit = (int)cam.gateFit;
 
             byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(focal), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
@@ -1057,7 +1057,7 @@ namespace VRtist
             SyncData.mixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float innerAngle, out float outerAngle);
 
             byte[] paramsBuffer = new byte[2 * sizeof(int) + 7 * sizeof(float)];
-            Buffer.BlockCopy(BitConverter.GetBytes((int) lightType), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
+            Buffer.BlockCopy(BitConverter.GetBytes((int)lightType), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(castShadows ? 1 : 0), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
             Buffer.BlockCopy(BitConverter.GetBytes(color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
             Buffer.BlockCopy(BitConverter.GetBytes(color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
@@ -1335,6 +1335,17 @@ namespace VRtist
             SyncData.mixer.MoveAnimationKey(objectName, channelName, channelIndex, frame, newFrame);
         }
 
+        public static void BuildClearAnimations(byte[] data)
+        {
+            int currentIndex = 0;
+            string objectName = GetString(data, ref currentIndex);
+            // Apply to instances
+            Node node = SyncData.nodes[objectName];
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                SyncData.mixer.ClearAnimations(t.Item1);
+            }
+        }
         public static void BuildCameraAttributes(byte[] data)
         {
             int currentIndex = 0;

@@ -167,7 +167,7 @@ namespace VRtist
         private void Update()
         {
             // Find current time and frame & Animate objects
-            if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
+          if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
             {
                 // Compute new frame
                 float deltaTime = Time.time - playStartTime;
