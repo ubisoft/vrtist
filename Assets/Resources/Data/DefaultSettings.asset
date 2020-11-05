@@ -14,55 +14,75 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   displayGizmos: 1
-  displayWorldGrid: 1
+  displayWorldGrid: 0
   displayAvatars: 1
-  displayFPS: 0
+  displayFPS: 1
   display3DCurves: 1
-  masterVolume: -8.2081785
-  ambientVolume: -63.891243
+  masterVolume: 0
+  ambientVolume: -35
   uiVolume: 0
   rightHanded: 1
   forcePaletteOpen: 0
-  palettePosition: {x: -0.02, y: 0.05, z: -0.05}
-  paletteRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
+  palettePosition: {x: -0.02, y: 0.016750338, z: 0.053792}
+  paletteRotation: {x: 0.4281768, y: 0.009521683, z: 0.01821588, w: 0.9034612}
   pinnedPalette: 0
-  dopeSheetPosition: {x: 0.4238096, y: 1.5818465, z: 0.09590514}
-  dopeSheetRotation: {x: 0.10035927, y: 0.4688504, z: -0.04431844, w: 0.87643784}
+  dopeSheetPosition: {x: -0.48887116, y: 1.5217022, z: 0.0748036}
+  dopeSheetRotation: {x: -0.059394382, y: -0.22518401, z: 0.013301857, w: 0.97241324}
   dopeSheetVisible: 1
-  shotManagerPosition: {x: 0.08539236, y: 1.4689257, z: 0.26494142}
-  shotManagerRotation: {x: 0.1472885, y: 0.09881599, z: -0.022670312, w: 0.9838839}
-  shotManagerVisible: 1
-  cameraPreviewPosition: {x: 0.10938741, y: 1.7907015, z: 0.36186588}
-  cameraPreviewRotation: {x: 0.1472885, y: 0.09881599, z: -0.022670312, w: 0.9838839}
+  shotManagerPosition: {x: 0.1493543, y: 2.9080708, z: 0.4831197}
+  shotManagerRotation: {x: 0.035545044, y: 0.23626928, z: 0.034407094, w: 0.9704275}
+  shotManagerVisible: 0
+  cameraPreviewPosition: {x: -0.09009044, y: 1.678386, z: 0.39938742}
+  cameraPreviewRotation: {x: -0.07349521, y: 0.07878647, z: 0.019899333, w: 0.99397945}
   cameraPreviewVisible: 1
   cameraFeedbackPosition: {x: 0, y: 0, z: 0}
   cameraFeedbackRotation: {x: 0, y: 0, z: 0, w: 1}
   cameraFeedbackScale: {x: 1, y: 1, z: 1}
   cameraFeedbackScaleValue: 1
-  cameraFeedbackVisible: 1
+  cameraFeedbackVisible: 0
   cameraDamping: 50
   consoleVisible: 0
-  consolePosition: {x: 0.516192, y: 1.6527272, z: 0.026209299}
-  consoleRotation: {x: 0.08905364, y: 0.65752494, z: -0.12512602, w: 0.7376136}
+  consolePosition: {x: 0.62264585, y: 1.7848988, z: 0.43596914}
+  consoleRotation: {x: -0.012895771, y: 0.65850115, z: 0.034442224, w: 0.7516806}
   sky:
-    topColor: {r: 0, g: 0.3438402, b: 1, a: 1}
-    middleColor: {r: 0.4433962, g: 0.4433962, b: 0.4433962, a: 1}
+    topColor: {r: 0.5741745, g: 0.75322753, b: 0.9207303, a: 1}
+    middleColor: {r: 0.5485764, g: 0.71073836, b: 0.93094903, a: 1}
+    bottomColor: {r: 0, g: 0, b: 0, a: 1}
+  skies:
+  - topColor: {r: 0.89388996, g: 0.015620309, b: 0.015620309, a: 1}
+    middleColor: {r: 0.3180453, g: 0.6299438, b: 0.28462422, a: 1}
+    bottomColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
+  - topColor: {r: 0, g: 0, b: 0, a: 1}
+    middleColor: {r: 0.5684078, g: 0.5684078, b: 0.5684078, a: 1}
+    bottomColor: {r: 0, g: 0, b: 0, a: 1}
+  - topColor: {r: 0.83137256, g: 0.83137256, b: 0.83137256, a: 1}
+    middleColor: {r: 0.28140992, g: 0.27854866, b: 0.6693852, a: 1}
+    bottomColor: {r: 0.09825037, g: 0.09933037, b: 0.12166265, a: 1}
+  - topColor: {r: 0.83137256, g: 0.83137256, b: 0.83137256, a: 1}
+    middleColor: {r: 0.7116439, g: 0.2461798, b: 0.6170331, a: 1}
+    bottomColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
+  - topColor: {r: 0.83137256, g: 0.83137256, b: 0.83137256, a: 1}
+    middleColor: {r: 0.41003504, g: 0.07102837, b: 0.27386117, a: 1}
+    bottomColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
+  - topColor: {r: 0.7551063, g: 0.18995884, b: 0.18995884, a: 1}
+    middleColor: {r: 0.12682034, g: 0.26316723, b: 0.12550834, a: 1}
     bottomColor: {r: 0, g: 0, b: 0, a: 1}
   castShadows: 1
   scaleSpeed: 50
   raySliderDrag: 95
+  rayHueDrag: 85
   focalCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 10
-      inSlope: 0
+      inSlope: 85.71429
       outSlope: 85.71429
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.7
       value: 70
@@ -76,12 +96,12 @@ MonoBehaviour:
       time: 1
       value: 300
       inSlope: 766.6666
-      outSlope: 2
+      outSlope: 766.6666
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.33333334
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  interpolation: 1
+  interpolation: 0
