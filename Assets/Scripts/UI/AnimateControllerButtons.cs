@@ -29,84 +29,155 @@ namespace VRtist
         public float systemTranslationAmplitude = -0.001f;
         private Vector3 initSystemTranslation = Vector3.zero;
 
+        private InputDevice device;
+        private Transform controllerTransform = null;
+
         // Start is called before the first frame update
         void Start()
         {
-            if (gripTransform)
+            CaptureControllers();
+            CaptureInitialTransforms();
+        }
+
+        private void CaptureControllers()
+        {
+            for(int i = 0; i < transform.childCount; ++i)
             {
-                initGripRotation = gripTransform.localRotation;
+                string childName = transform.GetChild(i).gameObject.name;
+                if (childName == "left_controller")
+                {
+                    device = VRInput.leftController;
+                    controllerTransform = transform.GetChild(i);
+                    break;
+                }
+                else if (childName == "right_controller")
+                {
+                    device = VRInput.rightController;
+                    controllerTransform = transform.GetChild(i);
+                    break;
+                }
             }
 
-            if (triggerTransform)
+            if (!device.isValid || controllerTransform == null)
             {
-                initTriggerRotation = triggerTransform.localRotation;
+                Debug.LogError("AnimateControllerButtons could not find the controller.");
             }
+        }
 
-            if (joystickTransform)
+        private void CaptureInitialTransforms()
+        {
+            if (null != controllerTransform)
             {
-                initJoystickRotation = joystickTransform.localRotation;
-            }
+                gripTransform = controllerTransform.Find("GripButtonPivot/GripButton");
+                if (null != gripTransform)
+                {
+                    initGripRotation = gripTransform.localRotation;
+                }
 
-            if (primaryTransform)
-            {
-                initPrimaryTranslation = primaryTransform.localPosition;
-            }
+                triggerTransform = controllerTransform.Find("TriggerButtonPivot/TriggerButton");
+                if (null != triggerTransform)
+                {
+                    initTriggerRotation = triggerTransform.localRotation;
+                }
 
-            if (secondaryTransform)
-            {
-                initSecondaryTranslation = secondaryTransform.localPosition;
-            }
+                joystickTransform = controllerTransform.Find("JoystickPivot/Joystick");
+                if (null != joystickTransform)
+                {
+                    initJoystickRotation = joystickTransform.localRotation;
+                    // FIX: for an unknown reason, the jostick obect is disabled at start.
+                    joystickTransform.gameObject.SetActive(true);
+                }
 
-            if (systemTransform)
-            {
-                initSystemTranslation = systemTransform.localPosition;
+                primaryTransform = controllerTransform.Find("PrimaryButtonPivot/PrimaryButton");
+                if (null != primaryTransform)
+                {
+                    initPrimaryTranslation = primaryTransform.localPosition;
+                }
+
+                secondaryTransform = controllerTransform.Find("SecondaryButtonPivot/SecondaryButton");
+                if (null != secondaryTransform)
+                {
+                    initSecondaryTranslation = secondaryTransform.localPosition;
+                }
+
+                systemTransform = controllerTransform.Find("SystemButtonPivot/SystemButton");
+                if (null != systemTransform)
+                {
+                    initSystemTranslation = systemTransform.localPosition;
+                }
             }
+        }
+
+        public void OnRightHanded()
+        {
+            // TODO: handle what needs to be handled when we change hands.
+
+            CaptureControllers();
+            CaptureInitialTransforms();
         }
 
         // Update is called once per frame
         void Update()
         {
             // GRIP
-            float gripAmount = VRInput.GetValue(VRInput.leftController, CommonUsages.grip);
-            gripTransform.localRotation = initGripRotation * Quaternion.Euler(0,gripAmount * gripRotationAmplitude, 0);
-            gripTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", gripAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
+            if (null != gripTransform)
+            {
+                float gripAmount = VRInput.GetValue(device, CommonUsages.grip);
+                gripTransform.localRotation = initGripRotation * Quaternion.Euler(0, gripAmount * gripRotationAmplitude, 0);
+                gripTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", gripAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
+            }
 
             // TRIGGER
-            float triggerAmount = VRInput.GetValue(VRInput.leftController, CommonUsages.trigger);
-            triggerTransform.localRotation = initTriggerRotation * Quaternion.Euler(triggerAmount * gripRotationAmplitude, 0, 0);
-            triggerTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", triggerAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
+            if (null != triggerTransform)
+            {
+                float triggerAmount = VRInput.GetValue(device, CommonUsages.trigger);
+                triggerTransform.localRotation = initTriggerRotation * Quaternion.Euler(triggerAmount * gripRotationAmplitude, 0, 0);
+                triggerTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", triggerAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
+            }
 
             // JOYSTICK
-            Vector2 joystick = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
-            joystickTransform.localRotation = initJoystickRotation * Quaternion.Euler(joystick.y * joystickRotationAmplitude, 0, joystick.x * -joystickRotationAmplitude);
-            joystickTransform.gameObject.GetComponent<MeshRenderer>().materials[1].SetColor("_BaseColor", joystick.magnitude > 0.05f ? UIOptions.SelectedColor : Color.black);
+            if (null != joystickTransform)
+            {
+                Vector2 joystick = VRInput.GetValue(device, CommonUsages.primary2DAxis);
+                joystickTransform.localRotation = initJoystickRotation * Quaternion.Euler(joystick.y * joystickRotationAmplitude, 0, joystick.x * -joystickRotationAmplitude);
+                joystickTransform.gameObject.GetComponent<MeshRenderer>().materials[1].SetColor("_BaseColor", joystick.magnitude > 0.05f ? UIOptions.SelectedColor : Color.black);
+            }
 
             // PRIMARY
-            bool primaryState = VRInput.GetValue(VRInput.leftController, CommonUsages.primaryButton);
-            primaryTransform.localPosition = initPrimaryTranslation;
-            primaryTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", primaryState ? UIOptions.SelectedColor : Color.black);
-            if (primaryState)
+            if (null != primaryTransform)
             {
-                primaryTransform.localPosition += new Vector3(0, 0, primaryTranslationAmplitude); // TODO: quick anim? CoRoutine.
+                bool primaryState = VRInput.GetValue(device, CommonUsages.primaryButton);
+                primaryTransform.localPosition = initPrimaryTranslation;
+                primaryTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", primaryState ? UIOptions.SelectedColor : Color.black);
+                if (primaryState)
+                {
+                    primaryTransform.localPosition += new Vector3(0, 0, primaryTranslationAmplitude); // TODO: quick anim? CoRoutine.
+                }
             }
 
             // SECONDARY
-            bool secondaryState = VRInput.GetValue(VRInput.leftController, CommonUsages.secondaryButton);
-            secondaryTransform.localPosition = initSecondaryTranslation;
-            secondaryTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", secondaryState ? UIOptions.SelectedColor : Color.black);
-            if (secondaryState)
+            if (null != secondaryTransform)
             {
-                secondaryTransform.localPosition += new Vector3(0, 0, secondaryTranslationAmplitude); // TODO: quick anim? CoRoutine.
+                bool secondaryState = VRInput.GetValue(device, CommonUsages.secondaryButton);
+                secondaryTransform.localPosition = initSecondaryTranslation;
+                secondaryTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", secondaryState ? UIOptions.SelectedColor : Color.black);
+                if (secondaryState)
+                {
+                    secondaryTransform.localPosition += new Vector3(0, 0, secondaryTranslationAmplitude); // TODO: quick anim? CoRoutine.
+                }
             }
 
             // SYSTEM
-            ////bool systemState = VRInput.GetValue(VRInput.leftController, CommonUsages.menuButton);
-            ////systemTransform.localPosition = initSystemTranslation;
-            ////systemTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", systemState ? UIOptions.SelectedColor : Color.black);
-            ////if (systemState)
-            ////{
-            ////    systemTransform.localPosition += new Vector3(0, 0, systemTranslationAmplitude); // TODO: quick anim? CoRoutine.
-            ////}
+            if (null != systemTransform)
+            {
+                ////bool systemState = VRInput.GetValue(device, CommonUsages.menuButton);
+                ////systemTransform.localPosition = initSystemTranslation;
+                ////systemTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", systemState ? UIOptions.SelectedColor : Color.black);
+                ////if (systemState)
+                ////{
+                ////    systemTransform.localPosition += new Vector3(0, 0, systemTranslationAmplitude); // TODO: quick anim? CoRoutine.
+                ////}
+            }
 
         }
     }
