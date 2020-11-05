@@ -51,7 +51,7 @@ namespace VRtist
 
         public void UpdateCursorPosition()
         {
-            Vector3 cs = cursor.GetComponentInChildren<MeshFilter>().mesh.bounds.size;
+            Vector3 cs = cursor.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.size;
 
             cursor.localPosition = new Vector3(width * cursorPosition, -height / 2.0f, -cs.z / 2.0f); //-thickness - cs.z / 2.0f );
             cursor.localRotation = Quaternion.identity; // tmp

@@ -122,7 +122,7 @@ namespace VRtist
             float mr = (ir + or) / 2.0f; // circle middle radius
             float cw = (or - ir); // circle width
             float tr = trianglePct * w2;
-            Vector3 cs = hueCursor.GetComponentInChildren<MeshFilter>().mesh.bounds.size;
+            Vector3 cs = hueCursor.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.size;
 
             hueCursor.localPosition = new Vector3(
                 w2 + mr * -Mathf.Cos(hsv.x * 2.0f * Mathf.PI),
