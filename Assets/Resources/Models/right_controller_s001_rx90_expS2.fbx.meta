@@ -3,7 +3,27 @@ guid: a6fb5bb57c14ba9479f4062bf490c49b
 ModelImporter:
   serializedVersion: 19300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: controller display.002
+    second: {fileID: 2100000, guid: eaf5b85be395c2b4d8966923bd28ca1d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: controller_rough.002
+    second: {fileID: 2100000, guid: 04cedb8ae5bf4044e9b9dbd1e118d581, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: controller_rough.003
+    second: {fileID: 2100000, guid: 04cedb8ae5bf4044e9b9dbd1e118d581, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: controller_smooth.002
+    second: {fileID: 2100000, guid: 32c347b0ede4a314aa0374d682cb9881, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
