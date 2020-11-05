@@ -234,6 +234,9 @@ namespace VRtist
             Transform leftControllerInstance = leftHandle.Find("left_controller");
             Transform rightControllerInstance = rightHandle.Find("right_controller");
 
+            // TODO: - Handle the many meshes of a controller.
+            //       - Reset the initXXXPosition/Rotation in AnimateControllerButtons
+
             Mesh leftControllerMesh = leftController.GetComponent<MeshFilter>().sharedMesh;
             Mesh rightControllerMesh = rightController.GetComponent<MeshFilter>().sharedMesh;
 
@@ -254,18 +257,23 @@ namespace VRtist
                 rightControllerInstance.localPosition = leftController.transform.localPosition;
             }
 
-            // switch anchors positions            
+            // TODO: anchors are no longer the only children of controllers, change the logic of this code.
+            // switch anchors positions
             for (int i = 0; i < leftControllerInstance.childCount; i++)
             {
-                Transform leftChild = leftControllerInstance.GetChild(i);
-                Transform rightChild = rightControllerInstance.GetChild(i);
+                // TMP test: I have only handled the left controller movable parts for the moments, childCount is not the same.
+                if (rightControllerInstance.childCount > i)
+                {
+                    Transform leftChild = leftControllerInstance.GetChild(i);
+                    Transform rightChild = rightControllerInstance.GetChild(i);
 
-                InvertTooltip(leftChild);
-                InvertTooltip(rightChild);
+                    InvertTooltip(leftChild);
+                    InvertTooltip(rightChild);
 
-                Vector3 tmpPos = leftChild.localPosition;
-                leftChild.localPosition = rightChild.localPosition;
-                rightChild.localPosition = tmpPos;
+                    Vector3 tmpPos = leftChild.localPosition;
+                    leftChild.localPosition = rightChild.localPosition;
+                    rightChild.localPosition = tmpPos;
+                }
             }
 
             // Move Palette

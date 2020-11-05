@@ -89,8 +89,8 @@ namespace VRtist
                     break;
                 case ShotManagerAction.MoveShot:
                     {
-                        ShotManager.Instance.SetCurrentShot(info.shotIndex);
-                        ShotManager.Instance.MoveCurrentShot(info.moveOffset);
+                        ShotManager.Instance.SetCurrentShotIndex(info.shotIndex);
+                        ShotManager.Instance.MoveShot(info.shotIndex, info.moveOffset);
                     }
                     break;
                 case ShotManagerAction.UpdateShot:

@@ -1,54 +1,39 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
     public class CommandRemoveKeyframe : ICommand
     {
         GameObject gObject;
-        AnimationChannel animationChannel = null;
-        string channelName;
-        int channelIndex;
-        AnimationKey animationKey = null;
-        float value;
-        int frame;
-        Interpolation interpolation;
+        AnimatableProperty property;
+        AnimationKey oldAnimationKey = null;
 
-        public CommandRemoveKeyframe(GameObject obj, string channelName, int channelIndex, int frame)
+        public CommandRemoveKeyframe(GameObject obj, AnimatableProperty property, int frame)
         {
             gObject = obj;
-            this.channelName = channelName;
-            this.channelIndex = channelIndex;
-            this.frame = frame;
+            this.property = property;
 
-            Dictionary<Tuple<string, int>, AnimationChannel> channels = GlobalState.Instance.GetAnimationChannels(obj);
-            if (null == channels)
+            AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(obj);
+            if (null == animationSet)
                 return;
-            Tuple<string, int> c = new Tuple<string, int>(channelName, channelIndex);
-            if (channels.TryGetValue(c, out animationChannel))
-            {
-                if (animationChannel.TryGetIndex(frame, out int index))
-                {
-                    animationKey = animationChannel.GetKey(index);
-                    value = animationKey.value;
-                    interpolation = animationKey.interpolation;
-                }
-            }
+
+            Curve curve = animationSet.GetCurve(property);
+            if (null == curve)
+                return;
+
+            curve.TryFindKey(frame, out oldAnimationKey);
         }
 
         public override void Undo()
         {
-            if(null != animationKey)
-                GlobalState.Instance.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
+            GlobalState.Animation.AddKeyframe(gObject, property, oldAnimationKey);
+            MixerClient.GetInstance().SendAddKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
         }
 
         public override void Redo()
         {
-            if (null != animationKey)
-                GlobalState.Instance.RemoveKeyframe(gObject, channelName, channelIndex, frame);
-
+            GlobalState.Animation.RemoveKeyframe(gObject, property, oldAnimationKey.frame);
+            MixerClient.GetInstance().SendRemoveKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
         }
         public override void Submit()
         {

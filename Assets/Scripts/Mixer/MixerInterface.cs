@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -26,7 +25,11 @@ namespace VRtist
         public abstract void SetActiveCamera(GameObject cameraObject);
         public abstract void GetLightInfo(GameObject obj, out LightType lightType, out bool castShadows, out float power, out Color color, out float range, out float innerAngle, out float outerAngle);
         public abstract void SetLightInfo(GameObject obj, LightType lightType, bool castShadows, float power, Color color, float range, float innerAngle, float outerAngle);
+        public abstract void CreateAnimationKey(string objectName, string channel, int channelIndex, int frame, float value, int interpolation);
+        public abstract void RemoveAnimationKey(string objectName, string channel, int channelIndex, int frame);
+        public abstract void MoveAnimationKey(string objectName, string channel, int channelIndex, int frame, int newFrame);
         public abstract void CreateAnimationCurve(string objectName, string channel, int channelIndex, int[] frames, float[] values, int[] interpolations);
+        public abstract void ClearAnimations(GameObject obj);
         public abstract void SetSkyColors(Color topColor, Color middleColor, Color bottomColor);
         public abstract string CreateJsonPlayerInfo(ConnectedUser playerInfo);
         public abstract void SetPlaying(bool playing);
@@ -41,7 +44,7 @@ namespace VRtist
         public abstract void ShotManagerInsertShot(Shot shot, int shotIndex);
         public abstract void ShotManagerDeleteShot(int shotIndex);
         public abstract void ShotManagerDuplicateShot(int shotIndex);
-        public abstract void ShotManagerMoveShot(int offset);
+        public abstract void ShotManagerMoveShot(int shotIndex, int offset);
         public abstract void ShotManagerUpdateShot(int shotIndex, int start, int end, string cameraName, Color color, int enabled);
     }
 }

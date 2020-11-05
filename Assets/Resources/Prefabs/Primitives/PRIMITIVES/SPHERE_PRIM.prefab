@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3560812006106310810}
   - component: {fileID: 5490324556455776940}
   - component: {fileID: 2237449482208636501}
-  - component: {fileID: 711608020955074036}
+  - component: {fileID: 7649446853929742788}
   m_Layer: 0
   m_Name: SPHERE_PRIM
   m_TagString: PhysicObject
@@ -80,8 +80,8 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!64 &711608020955074036
-MeshCollider:
+--- !u!135 &7649446853929742788
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -90,7 +90,6 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1863342110861661360, guid: 4307775d85e869d4a8fd2cb293ec6a9d, type: 3}
+  serializedVersion: 2
+  m_Radius: 0.10000001
+  m_Center: {x: 0.0000000037252903, y: 0, z: 0}

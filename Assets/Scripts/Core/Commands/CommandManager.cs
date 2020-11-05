@@ -64,6 +64,8 @@ namespace VRtist
 
         public static void Undo()
         {
+            if (GlobalState.Animation.IsAnimating())
+                return;
             if (null != currentGroup)
                 return;
             int count = undoStack.Count;
@@ -77,6 +79,9 @@ namespace VRtist
 
         public static void Redo()
         {
+            if (GlobalState.Animation.IsAnimating())
+                return;
+
             if (null != currentGroup)
                 return;
             int count = redoStack.Count;

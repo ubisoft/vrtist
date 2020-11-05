@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -17,13 +15,15 @@ namespace VRtist
         void Start()
         {
             Selection.OnSelectionChanged += OnSelectionChanged;
-            GlobalState.Instance.AddAnimationListener(OnAnimationChanged);
+            GlobalState.Animation.onAddAnimation.AddListener(OnAnimationAdded);
+            GlobalState.Animation.onRemoveAnimation.AddListener(OnAnimationRemoved);
+            GlobalState.Animation.onChangeCurve.AddListener(OnCurveChanged);
         }
 
         // Update is called once per frame
         void Update()
         {
-            if(displaySelectedCurves != GlobalState.Settings.display3DCurves)
+            if (displaySelectedCurves != GlobalState.Settings.display3DCurves)
             {
                 displaySelectedCurves = GlobalState.Settings.display3DCurves;
                 if (displaySelectedCurves)
@@ -35,7 +35,7 @@ namespace VRtist
 
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            if(GlobalState.Settings.display3DCurves)
+            if (GlobalState.Settings.display3DCurves)
                 UpdateFromSelection();
         }
 
@@ -48,13 +48,28 @@ namespace VRtist
             }
         }
 
-        void OnAnimationChanged(GameObject gObject, AnimationChannel channel)
+        void OnCurveChanged(GameObject gObject, AnimatableProperty property)
+        {
+            if (property != AnimatableProperty.PositionX && property != AnimatableProperty.PositionY && property != AnimatableProperty.PositionZ)
+                return;
+
+            if (!Selection.IsSelected(gObject))
+                return;
+
+            UpdateCurve(gObject);
+        }
+
+        void OnAnimationAdded(GameObject gObject)
         {
             if (!Selection.IsSelected(gObject))
                 return;
 
-            if(null == channel || (channel.name == "location" && channel.index == 2))
-                UpdateCurve(gObject);
+            UpdateCurve(gObject);
+        }
+
+        void OnAnimationRemoved(GameObject gObject)
+        {
+            DeleteCurve(gObject);
         }
 
         void ClearCurves()
@@ -64,47 +79,60 @@ namespace VRtist
             curves.Clear();
         }
 
-        void UpdateCurve(GameObject gObject)
+        void DeleteCurve(GameObject gObject)
         {
             if (curves.ContainsKey(gObject))
             {
                 Destroy(curves[gObject]);
                 curves.Remove(gObject);
             }
+        }
 
+        void UpdateCurve(GameObject gObject)
+        {
+            DeleteCurve(gObject);
             AddCurve(gObject);
         }
 
         void AddCurve(GameObject gObject)
         {
-            Dictionary<Tuple<string, int>, AnimationChannel> animations = GlobalState.Instance.GetAnimationChannels(gObject);
-            if (null == animations)
+            AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(gObject);
+            if (null == animationSet)
                 return;
 
+            Curve positionX = animationSet.GetCurve(AnimatableProperty.PositionX);
+            Curve positionY = animationSet.GetCurve(AnimatableProperty.PositionY);
+            Curve positionZ = animationSet.GetCurve(AnimatableProperty.PositionZ);
+
+            int frameStart = Mathf.Clamp(positionX.keys[0].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+            int frameEnd = Mathf.Clamp(positionX.keys[positionX.keys.Count - 1].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
+
+            List<Vector3> positions = new List<Vector3>();
+            Vector3 previousPosition = Vector3.positiveInfinity;
+            for (int i = frameStart; i <= frameEnd; i++)
+            {
+                positionX.Evaluate(i, out float x);
+                positionY.Evaluate(i, out float y);
+                positionZ.Evaluate(i, out float z);
+                Vector3 position = new Vector3(x, y, z);
+                if (previousPosition != position)
+                {
+                    positions.Add(position);
+                    previousPosition = position;
+                }
+            }
+
+            int count = positions.Count;
             GameObject curve = Instantiate(curvePrefab, curvesParent);
-            curves[gObject] = curve;
-
-            AnimationChannel channelX = null;
-            AnimationChannel channelY = null;
-            AnimationChannel channelZ = null;
-            animations.TryGetValue(new Tuple<string, int>("location", 0), out channelX);
-            animations.TryGetValue(new Tuple<string, int>("location", 1), out channelY);
-            animations.TryGetValue(new Tuple<string, int>("location", 2), out channelZ);
-            if (null == channelX || null == channelY || null == channelZ)
-                return;
-            if (channelX.keys.Count != channelY.keys.Count)
-                return;
-            if (channelZ.keys.Count != channelY.keys.Count)
-                return;
-
+            
             LineRenderer line = curve.GetComponent<LineRenderer>();
-            int count = channelX.keys.Count;
             line.positionCount = count;
             for (int index = 0; index < count; index++)
             {
-                Vector3 position = new Vector3(channelX.keys[index].value, channelY.keys[index].value, channelZ.keys[index].value);
-                line.SetPosition(index, position );
+                line.SetPosition(index, positions[index]);
             }
+
+            curves.Add(gObject, curve);
         }
     }
 

@@ -1,7 +1,6 @@
 ﻿#define VRTIST
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -168,7 +167,7 @@ namespace VRtist
             Debug.Log("IsObjectInUse " + obj.name);
             return false;
 #else
-            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             bool gripped = GlobalState.Instance.selectionGripped;
             return ((recording || gripped) && Selection.IsSelected(obj));
 #endif
@@ -192,7 +191,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetCameraInfo " + obj.name);
 #else
-            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             if (recording && Selection.IsSelected(obj))
                 return;
             CameraController cameraController = obj.GetComponent<CameraController>();
@@ -246,7 +245,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetLightInfo " + obj.name);
 #else
-            bool recording = GlobalState.Instance.recordState == GlobalState.RecordState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             if (recording && Selection.IsSelected(obj))
                 return;
             LightController controller = obj.GetComponent<LightController>();
@@ -260,26 +259,134 @@ namespace VRtist
 #endif
         }
 
+        private AnimatableProperty BlenderToVRtistAnimationProperty(string channelName, int channelIndex)
+        {
+            AnimatableProperty property = AnimatableProperty.Unknown;
+
+            switch (channelName + channelIndex)
+            {
+                case "location0": property = AnimatableProperty.PositionX; break;
+                case "location1": property = AnimatableProperty.PositionY; break;
+                case "location2": property = AnimatableProperty.PositionZ; break;
+
+                case "rotation_euler0": property = AnimatableProperty.RotationX; break;
+                case "rotation_euler1": property = AnimatableProperty.RotationY; break;
+                case "rotation_euler2": property = AnimatableProperty.RotationZ; break;
+
+                case "scale0": property = AnimatableProperty.ScaleX; break;
+                case "scale1": property = AnimatableProperty.ScaleY; break;
+                case "scale2": property = AnimatableProperty.ScaleZ; break;
+
+                case "lens-1": property = AnimatableProperty.CameraFocal; break;
+
+                case "energy-1": property = AnimatableProperty.LightIntensity; break;
+                case "color0": property = AnimatableProperty.ColorR; break;
+                case "color1": property = AnimatableProperty.ColorG; break;
+                case "color2": property = AnimatableProperty.ColorB; break;
+            }
+            return property;
+        }
+        public override void CreateAnimationKey(string objectName, string channel, int channelIndex, int frame, float value, int interpolation)
+        {
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+            if(property == AnimatableProperty.Unknown)
+            {
+                Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
+                return;
+            }
+
+            Node node = SyncData.nodes[objectName];
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                Curve curve = animationSet.GetCurve(property);
+
+                if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+                {
+                    value = Mathf.Rad2Deg * value;
+                }
+
+                curve.AddKey(new AnimationKey ( frame,  value, (Interpolation)interpolation ));
+            }
+        }
+
+        public override void RemoveAnimationKey(string objectName, string channel, int channelIndex, int frame)
+        {
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+            if (property == AnimatableProperty.Unknown)
+            {
+                Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
+                return;
+            }
+
+            Node node = SyncData.nodes[objectName];
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                Curve curve = animationSet.GetCurve(property);
+                curve.RemoveKey(frame);
+            }
+        }
+
+        public override void MoveAnimationKey(string objectName, string channel, int channelIndex, int frame, int newFrame)
+        {
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+            if (property == AnimatableProperty.Unknown)
+            {
+                Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
+                return;
+            }
+
+            Node node = SyncData.nodes[objectName];
+            // Apply to instances
+            foreach (Tuple<GameObject, string> t in node.instances)
+            {
+                GameObject gobj = t.Item1;
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                Curve curve = animationSet.GetCurve(property);
+                curve.MoveKey(frame, newFrame);
+            }
+        }
+
+        public override void ClearAnimations(GameObject obj)
+        {
+#if VRTIST
+            GlobalState.Animation.ClearAnimations(obj);
+#endif
+        }
+
         public override void CreateAnimationCurve(string objectName, string channel, int channelIndex, int[] frames, float[] values, int[] interpolations)
         {
 #if !VRTIST
             Debug.Log("CreateAnimationCurve " + objectName + " Channel " + channel + " channel index " + channelIndex.ToString());
 #else
+            AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
+
             int keyCount = frames.Length;
             List<AnimationKey> keys = new List<AnimationKey>();
             for (int i = 0; i < keyCount; i++)
             {
-                keys.Add(new AnimationKey(frames[i], values[i], (Interpolation)interpolations[i]));
+                float value = values[i];
+                if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+                {
+                    value = Mathf.Rad2Deg * value;
+                }
+
+                keys.Add(new AnimationKey(frames[i], value, (Interpolation) interpolations[i]));
             }
 
-            Node node = SyncData.nodes[objectName];
-            GlobalState.Instance.AddAnimationChannel(node.prefab, channel, channelIndex, keys);
 
+            Node node = SyncData.nodes[objectName];
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
                 GameObject gobj = t.Item1;
-                GlobalState.Instance.AddAnimationChannel(gobj, channel, channelIndex, keys);
+                AnimationSet animationSet = GlobalState.Animation.GetOrCreateObjectAnimation(gobj);
+                animationSet.SetCurve(property, keys);
             }
 #endif
         }
@@ -314,7 +421,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetPlaying " + playing.ToString());
 #else
-            GlobalState.Instance.SetPlaying(playing);
+            // Deprecated playing event
 #endif
         }
 
@@ -323,7 +430,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetCurrentFrame " + frame.ToString());
 #else
-            GlobalState.currentFrame = frame;
+            // Deprecated event
 #endif
         }
 
@@ -332,8 +439,8 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetFrameRange " + start.ToString() + " " + end.ToString());
 #else
-            GlobalState.startFrame = start;
-            GlobalState.endFrame = end;
+            GlobalState.Animation.StartFrame = start;
+            GlobalState.Animation.EndFrame = end;
 #endif
         }
 
@@ -448,7 +555,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("SetShotManagerCurrentShot " + shotIndex.ToString());
 #else
-            ShotManager.Instance.CurrentShot = shotIndex;
+            ShotManager.Instance.ActiveShotIndex = shotIndex;
 #endif
         }
         public override void EnableShotManagerMontage(bool enable)
@@ -456,7 +563,7 @@ namespace VRtist
 #if !VRTIST
             Debug.Log("EnableShotManagerMontage " + enable.ToString());
 #else
-            ShotManager.Instance.MontageMode = enable;
+            ShotManager.Instance.MontageEnabled = enable;
 #endif
         }
         public override void UpdateShotManager(List<Shot> shots)
@@ -499,12 +606,12 @@ namespace VRtist
             ShotManager.Instance.FireChanged();
 #endif
         }
-        public override void ShotManagerMoveShot(int offset)
+        public override void ShotManagerMoveShot(int shotIndex, int offset)
         {
 #if !VRTIST
             Debug.Log("ShotManagerDuplicateShot");
 #else
-            ShotManager.Instance.MoveCurrentShot(offset);
+            ShotManager.Instance.MoveShot(shotIndex, offset);
             ShotManager.Instance.FireChanged();
 #endif
         }

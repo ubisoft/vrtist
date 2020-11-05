@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,40 +7,28 @@ namespace VRtist
     public class CommandClearAnimations : ICommand
     {
         GameObject gObject;
-        Dictionary<Tuple<string, int>, AnimationChannel> animations = new Dictionary<Tuple<string, int>, AnimationChannel>();
+        AnimationSet animationSet;
         public CommandClearAnimations(GameObject obj)
         {
             gObject = obj;
-            Dictionary<Tuple<string, int>, AnimationChannel> currentAnimations = GlobalState.Instance.GetAnimationChannels(obj);
-            if (null == currentAnimations)
-                return;
-            foreach(var item in currentAnimations)
-            {
-                AnimationChannel channel = item.Value;
-                AnimationChannel channelCopy = new AnimationChannel(channel.name, channel.index);
-                foreach (AnimationKey key in channel.keys)
-                {
-                    AnimationKey newKey = new AnimationKey(key.time, key.value);
-                    channelCopy.keys.Add(newKey);
-                }
-                animations[item.Key] = channelCopy;
-            }
+            animationSet = GlobalState.Animation.GetObjectAnimation(obj);
         }
-        
+
         public override void Undo()
         {
-            foreach (AnimationChannel channel in animations.Values)
+            if (null != animationSet)
             {
-                GlobalState.Instance.SendAnimationChannel(gObject.name, channel);
+                GlobalState.Animation.SetObjectAnimation(gObject, animationSet);
+                foreach (Curve curve in animationSet.curves.Values)
+                {
+                    MixerClient.GetInstance().SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
+                }
             }
-            MixerClient.GetInstance().SendQueryObjectData(gObject.name);
         }
         public override void Redo()
         {
-            GlobalState.Instance.ClearAnimations(gObject);
-
-            ClearAnimationInfo info = new ClearAnimationInfo { gObject = gObject };
-            MixerClient.GetInstance().SendEvent<ClearAnimationInfo>(MessageType.ClearAnimations, info);
+            GlobalState.Animation.ClearAnimations(gObject);
+            MixerClient.GetInstance().SendClearAnimations(new ClearAnimationInfo { gObject = gObject }); 
         }
         public override void Submit()
         {

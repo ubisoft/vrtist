@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,27 +8,44 @@ using UnityEngine.Events;
 namespace VRtist
 {
 
-    public class ShotManager
+    public class ShotManager : TimeHook
     {
         public static ShotManager Instance
         {
             get
             {
                 if (null == instance)
+                {
                     instance = new ShotManager();
+                    GlobalState.Animation.RegisterTimeHook(instance);
+                    GlobalState.Animation.onFrameEvent.AddListener(instance.OnFrameChanged);
+                }
                 return instance;
             }
         }
 
-        private int currentShotIndex = -1;
-        public UnityEvent CurrentShotChangedEvent = new UnityEvent();
-        public int CurrentShot
+        private int activeShotIndex = -1;
+        public UnityEvent ActiveShotChangedEvent = new UnityEvent();
+        public int ActiveShotIndex
         {
-            get { return currentShotIndex; }
+            get { return activeShotIndex; }
             set
             {
-                currentShotIndex = value;
-                CurrentShotChangedEvent.Invoke();
+                activeShotIndex = value;
+                ActiveShotChangedEvent.Invoke();
+
+                if (!montageEnabled && GlobalState.Animation.IsAnimating())
+                    return;
+                
+                if (activeShotIndex >= 0 && activeShotIndex < shots.Count)
+                {
+                    Shot shot = shots[activeShotIndex];
+                    if (null != shot.camera)
+                    {
+                        CameraController controller = shot.camera.GetComponent<CameraController>();
+                        if (null != controller) { Selection.SetActiveCamera(controller); }
+                    }
+                }
             }
         }
 
@@ -35,10 +53,98 @@ namespace VRtist
         public UnityEvent ShotsChangedEvent = new UnityEvent();
         private static ShotManager instance = null;
 
-        // Update current shot without invoking any event
-        public void SetCurrentShot(int index)
+        public int GetShotIndex(Shot shot)
         {
-            currentShotIndex = index;
+            for (int i = 0; i < shots.Count; i++)
+            {
+                if (shot == shots[i])
+                    return i;
+            }
+            return -1;
+        }
+
+        int FindFirstShotIndexAt(int frame)
+        {
+            for(int i = 0; i < shots.Count; i++)
+            {
+                Shot shot = shots[i];
+                if (frame >= shot.start && frame <= shot.end)
+                    return i;
+            }
+            return -1;
+        }
+
+        void OnFrameChanged(int frame)
+        {
+            if (ActiveShotIndex != -1)
+            {
+                Shot shot = shots[ActiveShotIndex];
+                if (frame < shot.start || frame > shot.end)
+                {
+                    ActiveShotIndex = FindFirstShotIndexAt(frame);
+                }
+            }
+            else
+            {
+                ActiveShotIndex = FindFirstShotIndexAt(frame);
+            }
+        }
+
+        public override int hookTime(int frame)
+        {
+            if(!montageEnabled || shots.Count == 0)
+                return frame;
+
+            int shotIndex;
+            if (ActiveShotIndex < 0 || ActiveShotIndex >= shots.Count)
+            {
+                shotIndex = FindFirstShotIndexAt(frame);
+                if(-1 != shotIndex)
+                {
+                    ActiveShotIndex = shotIndex;
+                }
+                return frame;
+            }
+
+            shotIndex = ActiveShotIndex;
+            Shot shot = shots[shotIndex];
+            if(frame > shot.end)
+            {
+                shotIndex++;
+                while (shotIndex < shots.Count && !shots[shotIndex].enabled)
+                    shotIndex++;
+                if (shotIndex >= shots.Count)
+                    shotIndex = 0;
+                while (shotIndex < shots.Count && !shots[shotIndex].enabled)
+                    shotIndex++;
+
+                if(shotIndex >= shots.Count)
+                {
+                    ActiveShotIndex = -1;
+                    return frame;
+                }
+                ActiveShotIndex = shotIndex;
+                return shots[ActiveShotIndex].start;
+            }
+            return frame;
+        }
+
+        // Update current shot without invoking any event
+        public void SetCurrentShotIndex(int index)
+        {
+            activeShotIndex = index;
+        }
+
+        public void SetCurrentShot(Shot shot)
+        {
+            for (int i = 0; i < shots.Count; i++)
+            {
+                if (shot == shots[i])
+                {
+                    ActiveShotIndex = i;
+                    return;
+                }
+            }
         }
 
         public void AddShot(Shot shot)
@@ -60,9 +166,9 @@ namespace VRtist
         public void RemoveShot(Shot shot)
         {
             shots.Remove(shot);
-            if (currentShotIndex >= shots.Count)
+            if (activeShotIndex >= shots.Count)
             {
-                currentShotIndex = -1;
+                activeShotIndex = -1;
             }
         }
 
@@ -71,8 +177,8 @@ namespace VRtist
             try
             {
                 shots.RemoveAt(index);
-                currentShotIndex = index - 1;
-                if (currentShotIndex < 0 && shots.Count > 0) { currentShotIndex = 0; }
+                activeShotIndex = index - 1;
+                if (activeShotIndex < 0 && shots.Count > 0) { activeShotIndex = 0; }
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -80,38 +186,21 @@ namespace VRtist
             }
         }
 
-        public void MoveCurrentShot(int offset)
+        public void MoveShot(int shotIndex, int offset)
         {
-            int newIndex = currentShotIndex + offset;
+            int newIndex = shotIndex + offset;
             if (newIndex < 0)
                 newIndex = 0;
             if (newIndex >= shots.Count)
                 newIndex = shots.Count - 1;
 
-            Shot shot = shots[currentShotIndex];
-            shots.RemoveAt(currentShotIndex);
+            Shot shot = shots[shotIndex];
+            shots.RemoveAt(shotIndex);
             shots.Insert(newIndex, shot);
-            currentShotIndex = newIndex;
         }
 
-        public void SetCurrentShotStart(int value)
+        public void SetShotCamera(Shot shot, string value)
         {
-            Shot shot = shots[currentShotIndex];
-            shot.start = value;
-        }
-        public void SetCurrentShotEnd(int value)
-        {
-            Shot shot = shots[currentShotIndex];
-            shot.end = value;
-        }
-        public void SetCurrentShotName(string value)
-        {
-            Shot shot = shots[currentShotIndex];
-            shot.name = value;
-        }
-        public void SetCurrentShotCamera(string value)
-        {
-            Shot shot = shots[currentShotIndex];
             GameObject cam = null;
             if (SyncData.nodes.ContainsKey(value))
             {
@@ -120,18 +209,6 @@ namespace VRtist
                     cam = node.instances[0].Item1;
             }
             shot.camera = cam;
-        }
-
-        public void SetCurrentShotColor(Color color)
-        {
-            Shot shot = shots[currentShotIndex];
-            shot.color = color;
-        }
-
-        public void SetCurrentShotEnabled(bool value)
-        {
-            Shot shot = shots[currentShotIndex];
-            shot.enabled = value;
         }
 
         public void UpdateShot(int index, Shot shot)
@@ -156,14 +233,14 @@ namespace VRtist
             ShotsChangedEvent.Invoke();
         }
 
-        private bool montageMode = false;
+        private bool montageEnabled = false;
         public UnityEvent MontageModeChangedEvent = new UnityEvent();
-        public bool MontageMode
+        public bool MontageEnabled
         {
-            get { return montageMode; }
+            get { return montageEnabled; }
             set
             {
-                montageMode = value;
+                montageEnabled = value;
                 MontageModeChangedEvent.Invoke();
             }
         }

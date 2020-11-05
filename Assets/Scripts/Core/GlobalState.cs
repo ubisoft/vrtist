@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,6 +16,7 @@ namespace VRtist
         public GameObject cameraFeedback = null;
 
         public static Settings Settings { get { return Instance.settings; } }
+        public static AnimationEngine Animation { get { return AnimationEngine.Instance; } }
 
         // Connected users
         public UnityEvent onConnected = new UnityEvent();
@@ -25,17 +25,6 @@ namespace VRtist
         private Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
         private GameObject avatarPrefab;
         private Transform avatarsContainer;
-
-        // Play / Pause
-        public bool isPlaying = false;
-        public BoolChangedEvent onPlayingEvent = new BoolChangedEvent();
-        public UIButton playButtonShortcut;
-
-        // Record
-        public enum RecordState { Stopped, Preroll, Recording };
-        public RecordState recordState = RecordState.Stopped;
-        public BoolChangedEvent onRecordEvent = new BoolChangedEvent();
-        public Countdown countdown = null;
 
         // Selection gripped
         public bool selectionGripped = false;
@@ -53,12 +42,6 @@ namespace VRtist
         private static bool isGrippingWorld = false;
         public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
         public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
-
-        // Animation
-        public static int startFrame = 1;
-        public static int endFrame = 250;
-        public static int currentFrame = 1;
-        public static bool autoKeyEnabled = false;
 
         // Cursor
         public PaletteCursor cursor = null;
@@ -94,7 +77,7 @@ namespace VRtist
         }
 
         // Animation
-        private AnimationController animationController = new AnimationController();
+        //private AnimationController animationController = new AnimationController();
 
         public Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
 
@@ -176,138 +159,6 @@ namespace VRtist
 
             avatarPrefab = Resources.Load<GameObject>("Prefabs/VR Avatar");
             avatarsContainer = world.Find("Avatars");
-            countdown.onCountdownFinished.AddListener(OnCountdownFinished);
-
-            animationController.Start();
-        }
-
-        // Animation helpers
-        ///////////////////////////
-        public void AddAnimationListener(UnityAction<GameObject, AnimationChannel> callback)
-        {
-            animationController.AddListener(callback);
-        }
-        public void RemoveAnimationListener(UnityAction<GameObject, AnimationChannel> callback)
-        {
-            animationController.RemoveListener(callback);
-        }
-        public void ClearAnimations(GameObject gameObject)
-        {
-            animationController.ClearAnimations(gameObject);
-        }
-        public void FireAnimationChanged(GameObject gameObject, AnimationChannel channel)
-        {
-            animationController.FireAnimationChanged(gameObject, channel);
-        }
-
-        public void AddAnimationChannel(GameObject gameObject, string channelName, int channelIndex, List<AnimationKey> keys)
-        {
-            animationController.AddAnimationChannel(gameObject, channelName, channelIndex, keys);
-        }
-        public void RemoveAnimationChannel(GameObject gameObject, string channelName, int channelIndex)
-        {
-            animationController.RemoveAnimationChannel(gameObject, channelName, channelIndex);
-        }
-        public bool HasAnimation(GameObject gameObject)
-        {
-            return animationController.HasAnimation(gameObject);
-        }
-
-        public void SendAnimationChannel(string objectName, AnimationChannel animationChannel)
-        {
-            animationController.SendAnimationChannel(objectName, animationChannel);
-        }
-
-        public Dictionary<Tuple<string, int>, AnimationChannel> GetAnimationChannels(GameObject gameObject)
-        {
-            return animationController.GetAnimationChannels(gameObject);
-        }
-
-        public void MoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
-        {
-            animationController.MoveKeyframe(gObject, channelName, channelIndex, frame, newFrame);
-        }
-
-        public void AddKeyframe(GameObject gObject, string channelName, int channelIndex, int frame, float value, Interpolation interpolation)
-        {
-            animationController.AddKeyframe(gObject, channelName, channelIndex, frame, value, interpolation);
-        }
-
-        public void RemoveKeyframe(GameObject gObject, string channelName, int channelIndex, int frame)
-        {
-            animationController.RemoveKeyframe(gObject, channelName, channelIndex, frame);
-        }
-
-        public void RemoveKeyframes()
-        {
-            animationController.RemoveSelectionKeyframes();
-        }
-
-        public void MoveKeyframes(GameObject gObject, string channelName, int channelIndex, int frame, int newFrame)
-        {
-            animationController.MoveKeyframe(gObject, channelName, channelIndex, frame, newFrame);
-        }
-
-        public void MoveKeyframes(int frame, int newFrame)
-        {
-            animationController.MoveSelectionKeyframes(frame, newFrame);
-        }
-
-        public void Record()
-        {
-            if (recordState != RecordState.Stopped)
-                return;
-
-            recordState = RecordState.Preroll;
-            countdown.gameObject.SetActive(true);
-        }
-
-        public void OnTogglePlayPause(bool play)
-        {
-            if (play) { Play(); }
-            else { Pause(); }
-        }
-
-        public void Play()
-        {
-            MixerClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
-            GlobalState.Instance.SetPlaying(true);
-        }
-
-        public void Pause()
-        {
-            switch (recordState)
-            {
-                case RecordState.Preroll:
-                    recordState = RecordState.Stopped;
-                    countdown.gameObject.SetActive(false);
-                    break;
-                case RecordState.Recording:
-                    recordState = RecordState.Stopped;
-                    animationController.ApplyAnimations();
-                    countdown.gameObject.SetActive(false);
-                    onRecordEvent.Invoke(false);
-                    break;
-
-            }
-            MixerClient.GetInstance().SendEvent<int>(MessageType.Pause, 0);
-            GlobalState.Instance.SetPlaying(false);
-        }
-
-        public void SetPlaying(bool value)
-        {
-            isPlaying = value;
-            onPlayingEvent.Invoke(value);
-            playButtonShortcut.Checked = value;
-        }
-
-        public void OnCountdownFinished()
-        {
-            recordState = RecordState.Recording;
-            animationController.OnCountdownFinished();
-            onRecordEvent.Invoke(true);
-            MixerClient.GetInstance().SendEvent<int>(MessageType.Play, 0);
-            SetPlaying(true);
         }
 
         private void UpdateFps()
@@ -341,8 +192,6 @@ namespace VRtist
 
         private void Update()
         {
-            animationController.Update();
-
             // Info on the left controller
             if (null != leftControllerDisplay)
             {

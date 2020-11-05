@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -13,78 +12,61 @@ namespace VRtist
         public void Start()
         {
             playButton = transform.Find("PlayButton").GetComponent<UIButton>();
-            GlobalState.Instance.onPlayingEvent.AddListener(OnPlayingChanged);
-
             recordButton = transform.Find("RecordButton").GetComponent<UIButton>();
-            GlobalState.Instance.onRecordEvent.AddListener(OnRecordingChanged);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
-        private void OnPlayingChanged(bool value)
+        private void OnAnimationStateChanged(AnimationState state)
         {
-            playButton.Checked = value;
+            playButton.Checked = false;
+            recordButton.Checked = false;
+
+            switch (state)
+            {
+                case AnimationState.Playing: playButton.Checked = true; break;
+                case AnimationState.Recording: recordButton.Checked = true; playButton.Checked = true; break;
+            }
         }
 
         public void OnNextKey()
         {
-            int keyTime = dopesheet.GetNextKeyFrame();
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.GetNextKeyFrame();
         }
 
         public void OnPrevKey()
         {
-            int keyTime = dopesheet.GetPreviousKeyFrame();
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.GetPreviousKeyFrame();
         }
 
         public void OnNextFrame()
         {
-            int keyTime = Mathf.Min(dopesheet.LastFrame, dopesheet.CurrentFrame + 1);
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = Mathf.Min(dopesheet.LocalLastFrame, GlobalState.Animation.CurrentFrame + 1);
         }
 
         public void OnPrevFrame()
         {
-            int keyTime = Mathf.Max(dopesheet.FirstFrame, dopesheet.CurrentFrame - 1);
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = Mathf.Max(dopesheet.LocalFirstFrame, GlobalState.Animation.CurrentFrame - 1);
         }
 
         public void OnFirstFrame()
         {
-            int keyTime = dopesheet.FirstFrame;
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.LocalFirstFrame;
         }
 
         public void OnLastFrame()
         {
-            int keyTime = dopesheet.LastFrame;
-            FrameInfo info = new FrameInfo() { frame = keyTime };
-            MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+            GlobalState.Animation.CurrentFrame = dopesheet.LocalLastFrame;
         }
-
-        private void OnRecordingChanged(bool value)
-        {
-            recordButton.Checked = value;
-        }
-
-        public void Update()
-        {            
-        }
-
 
         public void OnRecordOrStop(bool record)
         {
             if (record)
             {
-                GlobalState.Instance.Record();
+                GlobalState.Animation.Record();
             }
             else
             {
-                GlobalState.Instance.Pause();
+                GlobalState.Animation.Pause();
             }
         }
 
@@ -92,11 +74,11 @@ namespace VRtist
         {
             if (play)
             {
-                GlobalState.Instance.Play();
+                GlobalState.Animation.Play();
             }
             else
             {
-                GlobalState.Instance.Pause();
+                GlobalState.Animation.Pause();
             }
         }
 

@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
 {
     // Commands data types
-    public class FrameInfo
-    {
-        public int frame;
-    }
     public class FrameStartEnd
     {
         public int start;
@@ -186,29 +181,17 @@ namespace VRtist
     }
 
     // Animation
-    public enum Interpolation
-    {
-        Constant,
-        Linear,
-        Bezier,
-        Other,
-    }
-
     public class SetKeyInfo
     {
         public string objectName;
-        public string channelName;
-        public int channelIndex;
-        public int frame;
-        public float value;
-        public Interpolation interpolation;
+        public AnimatableProperty property;
+        public AnimationKey key;
     };
 
     public class MoveKeyInfo
     {
         public string objectName;
-        public string channelName;
-        public int channelIndex;
+        public AnimatableProperty property;
         public int frame;
         public int newFrame;
     }

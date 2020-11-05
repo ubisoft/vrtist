@@ -25,12 +25,12 @@ namespace VRtist
 
         [SpaceHeader("TimeBar Base Shape Parmeters", 6, 0.8f, 0.8f, 0.8f)]
         [CentimeterFloat] public float thickness = 0.001f;
-        
+
         [SpaceHeader("TimeBar Values", 6, 0.8f, 0.8f, 0.8f)]
         public int minValue = 0;
         public int maxValue = 250;
         public int currentValue = 0;
-        
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public IntChangedEvent onSlideEvent = new IntChangedEvent();
         public UnityEvent onClickEvent = null;
@@ -42,7 +42,7 @@ namespace VRtist
         public int MaxValue { get { return GetMaxValue(); } set { SetMaxValue(value); UpdateTimeBarPosition(); UpdateTimeBarRange(); } }
 
         bool lerp = false;
-        public int Value { get { return GetValue(); } set { SetValue(value); lerp = true;  UpdateTimeBarPosition(); } }
+        public int Value { get { return GetValue(); } set { SetValue(value); lerp = true; UpdateTimeBarPosition(); } }
 
         Material rulerMaterial;
         Transform planeTransform;
@@ -50,6 +50,7 @@ namespace VRtist
         {
             planeTransform = transform.Find("TimeTicks/Plane");
             rulerMaterial = planeTransform.GetComponent<MeshRenderer>().material;
+            rulerMaterial.SetFloat("_SubTickCount", GlobalState.Animation.fps);
         }
 
         public override void RebuildMesh()
@@ -127,7 +128,7 @@ namespace VRtist
                     UpdateTimeBarRange();
                     ResetColor();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.Log("Exception: " + e);
                 }
@@ -188,7 +189,7 @@ namespace VRtist
 
         private void UpdateTimeBarPosition()
         {
-            float pct = (float)(currentValue - minValue) / (float)(maxValue - minValue);
+            float pct = (float) (currentValue - minValue) / (float) (maxValue - minValue);
 
             float startX = 0.0f;
             float endX = width;
@@ -196,7 +197,7 @@ namespace VRtist
 
             Vector3 knobPosition = new Vector3(posX, 0.0f, 0.0f);
 
-            bool visibile = GlobalState.currentFrame >= minValue && GlobalState.currentFrame <= maxValue;
+            bool visibile = GlobalState.Animation.CurrentFrame >= minValue && GlobalState.Animation.CurrentFrame <= maxValue;
             knob.gameObject.SetActive(visibile);
 
             knob.localPosition = knobPosition;
@@ -309,7 +310,7 @@ namespace VRtist
             float startX = 0;
             float endX = width;
 
-            float currentValuePct = (float)(Value - minValue) / (float)(maxValue - minValue);
+            float currentValuePct = (float) (Value - minValue) / (float) (maxValue - minValue);
             float currentKnobPositionX = startX + currentValuePct * (endX - startX);
 
             // TODO: apply drag directly on the Value and previous Value.
@@ -331,21 +332,21 @@ namespace VRtist
 
             // Compute closest int for snapping.
             float pct = (localProjectedWidgetPosition.x - startX) / (endX - startX);
-            float fValue = (float)minValue + pct * (float)(maxValue - minValue);
+            float fValue = (float) minValue + pct * (float) (maxValue - minValue);
             int roundedValue = Mathf.RoundToInt(fValue);
 
             // SNAP X to closest int
-            localProjectedWidgetPosition.x = startX + ((float)roundedValue - minValue) * (endX - startX) / (float)(maxValue - minValue);
+            localProjectedWidgetPosition.x = startX + ((float) roundedValue - minValue) * (endX - startX) / (float) (maxValue - minValue);
             // SNAP Y to middle of knob object. TODO: use actual knob dimensions
             localProjectedWidgetPosition.y = -height + 0.02f;
             // SNAP Z to the thickness of the knob
             localProjectedWidgetPosition.z = -0.005f;
 
             // SET
-            if(roundedValue != GlobalState.currentFrame)
+            if (roundedValue != GlobalState.Animation.CurrentFrame)
             {
                 onSlideEvent.Invoke(roundedValue);
-                if(triggerJustClicked)
+                if (triggerJustClicked)
                     lerp = false;
             }
 

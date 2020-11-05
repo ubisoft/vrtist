@@ -9,7 +9,7 @@ namespace VRtist
         public Shot shot = null;
         public UIDynamicListItem item;
 
-        public UIButton cameraButton = null;
+        public UILabel currentShotLabel = null;
         public UICheckbox shotEnabledCheckbox = null;
         public UILabel shotNameLabel = null;
         public UILabel cameraNameLabel = null;
@@ -20,12 +20,12 @@ namespace VRtist
         public UIButton endFrameButton = null;
         public UIButton setCameraButton = null;
 
-        private UnityAction<string> nameAction;
-        private UnityAction<float> startAction;
-        private UnityAction<float> endAction;
-        private UnityAction<Color> colorAction;
-        private UnityAction<bool> enabledAction;
-        private UnityAction setCameraAction;
+        private UnityAction<Shot, string> nameAction;
+        private UnityAction<Shot, float> startAction;
+        private UnityAction<Shot, float> endAction;
+        private UnityAction<Shot, Color> colorAction;
+        private UnityAction<Shot, bool> enabledAction;
+        private UnityAction<Shot> setCameraAction;
 
         private void OnEnable()
         {
@@ -38,7 +38,7 @@ namespace VRtist
             }
         }
 
-        public void AddListeners(UnityAction<string> nameAction, UnityAction<float> startAction, UnityAction<float> endAction, UnityAction<Color> colorAction, UnityAction<bool> enabledAction, UnityAction setCameraAction)
+        public void AddListeners(UnityAction<Shot, string> nameAction, UnityAction<Shot, float> startAction, UnityAction<Shot, float> endAction, UnityAction<Shot, Color> colorAction, UnityAction<Shot, bool> enabledAction, UnityAction<Shot> setCameraAction)
         {
             startFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
             endFrameSpinner.onSpinEventInt.AddListener(UpdateShotRange);
@@ -59,7 +59,7 @@ namespace VRtist
             startFrameButton.onReleaseEvent.AddListener(() => OnSetStartEndFromCurrentFrame(startAction, startFrameSpinner));
             endFrameButton.onReleaseEvent.AddListener(() => OnSetStartEndFromCurrentFrame(endAction, endFrameSpinner));
 
-            shotEnabledCheckbox.onCheckEvent.AddListener(enabledAction);
+            shotEnabledCheckbox.onCheckEvent.AddListener((bool state) => enabledAction(shot, state));
 
             setCameraButton.onCheckEvent.AddListener(TogglePickCamera);
 
@@ -74,7 +74,7 @@ namespace VRtist
             {
                 Selection.SetActiveCamera(controller);
                 setCameraButton.Checked = false;
-                setCameraAction();
+                setCameraAction(shot);
             }
 
             // Else set everything up to be able to pick a camera
@@ -91,26 +91,26 @@ namespace VRtist
         {
             Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
             setCameraButton.Checked = false;
-            setCameraAction();
+            setCameraAction(shot);
         }
 
-        private void OnSetStartEndFromCurrentFrame(UnityAction<float> action, UISpinner spinner)
+        private void OnSetStartEndFromCurrentFrame(UnityAction<Shot, float> action, UISpinner spinner)
         {
-            spinner.IntValue = GlobalState.currentFrame;
-            action.Invoke(GlobalState.currentFrame);
+            spinner.IntValue = GlobalState.Animation.CurrentFrame;
+            action.Invoke(shot, GlobalState.Animation.CurrentFrame);
             UpdateShotRange(0);  // 0: unused
         }
 
         private void OnEndEditStartSpinner()
         {
             float fValue = startFrameSpinner.IntValue;
-            startAction.Invoke(fValue);
+            startAction.Invoke(shot, fValue);
         }
 
         private void OnEndEditEndSpinner()
         {
             float fValue = endFrameSpinner.IntValue;
-            endAction.Invoke(fValue);
+            endAction.Invoke(shot, fValue);
         }
 
         private void InitSpinnerMinMax()
@@ -132,9 +132,11 @@ namespace VRtist
 
         public override void SetSelected(bool value)
         {
+            if (shotNameLabel.Selected == value)
+                return;
+
             shotNameLabel.Selected = value;
             cameraNameLabel.Selected = value;
-            cameraButton.Selected = value;
             shotEnabledCheckbox.Selected = value;
             startFrameSpinner.Selected = value;
             startFrameButton.Selected = value;
@@ -149,6 +151,12 @@ namespace VRtist
                 if (null != shot.camera)
                     camController = shot.camera.GetComponent<CameraController>();
                 Selection.SetActiveCamera(camController);
+
+                int currentFrame = GlobalState.Animation.CurrentFrame;
+                if(currentFrame < shot.start || currentFrame > shot.end)
+                    GlobalState.Animation.CurrentFrame = shot.start;
+
+                ShotManager.Instance.SetCurrentShot(shot);
             }
         }
 
@@ -161,7 +169,7 @@ namespace VRtist
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
 
-            cameraButton.onClickEvent.RemoveAllListeners();
+            currentShotLabel.onClickEvent.RemoveAllListeners();
 
             shotEnabledCheckbox.onCheckEvent.RemoveAllListeners();
             shotEnabledCheckbox.onClickEvent.RemoveAllListeners();
@@ -266,16 +274,16 @@ namespace VRtist
         {
             item = dlItem;
 
-            cameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            shotEnabledCheckbox.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            shotNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            cameraNameLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            startFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            startFrameButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            frameRangeLabel.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            endFrameSpinner.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            endFrameButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
-            setCameraButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
+            currentShotLabel.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            shotEnabledCheckbox.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            shotNameLabel.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            cameraNameLabel.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            startFrameSpinner.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            startFrameButton.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            frameRangeLabel.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            endFrameSpinner.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            endFrameButton.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
+            setCameraButton.onReleaseEvent.AddListener(dlItem.OnAnySubItemClicked);
         }
 
         public static ShotItem GenerateShotItem(Shot shot)
@@ -293,22 +301,20 @@ namespace VRtist
             //
             // ACTIVE CAMERA Button
             //
-            UIButton cameraButton = UIButton.Create(new UIButton.CreateButtonParams
+            UILabel currentShotLabel = UILabel.Create(new UILabel.CreateLabelParams
             {
                 parent = root.transform,
-                widgetName = "CameraButton",
+                widgetName = "CurrentShotLabel",
                 relativeLocation = new Vector3(0, 0, -UIButton.default_thickness),
                 width = 0.01f,
                 height = 0.03f,
-                icon = UIUtils.LoadIcon("empty"),
-                buttonContent = UIButton.ButtonContent.ImageOnly,
                 margin = 0.001f,
+                material = UIUtils.LoadMaterial("UIBase"),
+                selectedColor = UIOptions.FocusColorVar,
+                caption = "",
             });
 
-            cameraButton.isCheckable = true;
-            cameraButton.checkedSprite = UIUtils.LoadIcon("empty");
-            cameraButton.baseSprite = null;
-            cameraButton.SetLightLayer(3);
+            currentShotLabel.SetLightLayer(3);
 
             cx += 0.01f;
 
@@ -324,6 +330,7 @@ namespace VRtist
                 height = 0.03f,
                 content = UICheckbox.CheckboxContent.CheckboxOnly,
                 margin = 0.001f,
+                material = UIUtils.LoadMaterial("UIBase"),
             });
 
             shotEnabledCheckbox.SetLightLayer(3);
@@ -341,6 +348,7 @@ namespace VRtist
                 width = 0.15f,
                 height = 0.020f,
                 margin = 0.001f,
+                material = UIUtils.LoadMaterial("UIBase"),
             });
 
             shotNameLabel.SetLightLayer(3);
@@ -357,7 +365,8 @@ namespace VRtist
                 width = 0.15f,
                 height = 0.01f,
                 margin = 0.001f,
-                fgcolor = UIOptions.Instance.attenuatedTextColor
+                fgcolor = UIOptions.Instance.attenuatedTextColor,
+                material = UIUtils.LoadMaterial("UIBase"),
             });
 
             cameraNameLabel.SetLightLayer(3);
@@ -462,6 +471,7 @@ namespace VRtist
                 width = 0.04f,
                 height = 0.03f,
                 margin = 0.001f,
+                material = UIUtils.LoadMaterial("UIBase"),
             });
 
             frameRangeLabel.baseColor.useConstant = true;
@@ -494,7 +504,7 @@ namespace VRtist
             setCameraButton.SetLightLayer(3);
 
             // Link widgets to the item script.
-            shotItem.cameraButton = cameraButton;
+            shotItem.currentShotLabel = currentShotLabel;
             shotItem.shotEnabledCheckbox = shotEnabledCheckbox;
             shotItem.shotNameLabel = shotNameLabel;
             shotItem.cameraNameLabel = cameraNameLabel;

@@ -560,7 +560,7 @@ namespace VRtist
             if (dopesheet != null)
             {
                 int f = the_next_keyframe++;
-                dopesheet.CurrentFrame = f;
+                GlobalState.Animation.CurrentFrame = f;
             }
         }
 
@@ -574,7 +574,7 @@ namespace VRtist
             if (dopesheet != null)
             {
                 int f = the_previous_keyframe--;
-                dopesheet.CurrentFrame = f;
+                GlobalState.Animation.CurrentFrame = f;
             }
         }
 
@@ -604,7 +604,7 @@ namespace VRtist
         public void OnSetMontage(bool montage)
         {
             this.montage = montage;
-            MixerClient.GetInstance().SendEvent<MontageModeInfo>(MessageType.ShotManagerMontageMode, new MontageModeInfo { montage = montage });
+            ShotManager.Instance.MontageEnabled = montage;
         }
     }
 }

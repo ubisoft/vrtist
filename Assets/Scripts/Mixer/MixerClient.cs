@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace VRtist
 {
@@ -95,7 +92,7 @@ namespace VRtist
         Mesh,
         Material,
         AssignMaterial,
-        Frame,
+        _Frame, // deprecated
         Play,
         Pause,
         Sky,
@@ -194,6 +191,9 @@ namespace VRtist
 
             SyncData.Init(prefab, root);
             StartCoroutine(ProcessIncomingCommands());
+
+            // Animation listeners
+            //GlobalState.Animation.onAnimationEvent.AddListener()
         }
 
         IPAddress GetIpAddressFromHostname(string hostname)
@@ -207,7 +207,7 @@ namespace VRtist
                 {
                     if (Int32.TryParse(splitted[i], out int val) && val >= 0 && val <= 255)
                     {
-                        baddr[i] = (byte)val;
+                        baddr[i] = (byte) val;
                     }
                     else
                     {
@@ -321,21 +321,21 @@ namespace VRtist
             long current = 0;
             while (remaining > 0)
             {
-                int sizeRead = socket.Receive(data, (int)current, (int)remaining, SocketFlags.None);
+                int sizeRead = socket.Receive(data, (int) current, (int) remaining, SocketFlags.None);
                 current += sizeRead;
                 remaining -= sizeRead;
             }
 
 
-            NetCommand command = new NetCommand(data, (MessageType)mtype);
+            NetCommand command = new NetCommand(data, (MessageType) mtype);
             return command;
         }
 
         void WriteMessage(NetCommand command)
         {
-            byte[] sizeBuffer = BitConverter.GetBytes((Int64)command.data.Length);
-            byte[] commandId = BitConverter.GetBytes((Int32)command.id);
-            byte[] typeBuffer = BitConverter.GetBytes((Int16)command.messageType);
+            byte[] sizeBuffer = BitConverter.GetBytes((Int64) command.data.Length);
+            byte[] commandId = BitConverter.GetBytes((Int32) command.id);
+            byte[] typeBuffer = BitConverter.GetBytes((Int16) command.messageType);
             List<byte[]> buffers = new List<byte[]> { sizeBuffer, commandId, typeBuffer, command.data };
 
             socket.Send(MixerUtils.ConcatenateBuffers(buffers));
@@ -406,42 +406,21 @@ namespace VRtist
             AddCommand(command);
         }
 
-        public void SendFrame(FrameInfo frame)
-        {
-            NetCommand command = MixerUtils.BuildSendFrameCommand(frame.frame);
-            AddCommand(command);
-            //GlobalState.currentFrame = frame.frame;
-        }
-
         public void SendFrameStartEnd(FrameStartEnd range)
         {
             NetCommand command = MixerUtils.BuildSendFrameStartEndCommand(range.start, range.end);
             AddCommand(command);
         }
 
-        public void SendPlay()
-        {
-            byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int)MessageType.Play);
-            byte[] dataBuffer = new byte[0];
-            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
-            byte[] buffer = MixerUtils.ConcatenateBuffers(buffers);
-            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
-        }
-
-        public void SendPause()
-        {
-            byte[] masterIdBuffer = MixerUtils.StringToBytes(SyncData.mixer.GetMasterId());
-            byte[] messageTypeBuffer = MixerUtils.IntToBytes((int)MessageType.Pause);
-            byte[] dataBuffer = new byte[0];
-            List<byte[]> buffers = new List<byte[]> { masterIdBuffer, messageTypeBuffer, dataBuffer };
-            byte[] buffer = MixerUtils.ConcatenateBuffers(buffers);
-            AddCommand(new NetCommand(buffer, MessageType.ClientIdWrapper));
-        }
-
         public void SendAddKeyframe(SetKeyInfo data)
         {
             NetCommand command = MixerUtils.BuildSendSetKey(data);
+            AddCommand(command);
+        }
+
+        public void SendAnimationCurve(CurveInfo data)
+        {
+            NetCommand command = MixerUtils.BuildSendAnimationCurve(data);
             AddCommand(command);
         }
 
@@ -607,7 +586,7 @@ namespace VRtist
                 Buffer.BlockCopy(command.data, index, newBuffer, 0, dataLength);
                 index += dataLength;
 
-                NetCommand newCommand = new NetCommand(newBuffer, (MessageType)messageType);
+                NetCommand newCommand = new NetCommand(newBuffer, (MessageType) messageType);
                 commands.Add(newCommand);
             }
 
@@ -629,7 +608,17 @@ namespace VRtist
                 }
 
                 if (commands.Count == 0)
+                {
                     yield return null;
+                    continue;
+                }
+
+                // don't process commands on play/record
+                if (GlobalState.Animation.IsAnimating())
+                {
+                    yield return null;
+                    continue;
+                }
 
                 DateTime before = DateTime.Now;
                 bool prematuredExit = false;
@@ -664,6 +653,18 @@ namespace VRtist
                                 break;
                             case MessageType.Animation:
                                 MixerUtils.BuildAnimation(command.data);
+                                break;
+                            case MessageType.AddKeyframe:
+                                MixerUtils.BuildAddKeyframe(command.data);
+                                break;
+                            case MessageType.RemoveKeyframe:
+                                MixerUtils.BuildRemoveKeyframe(command.data);
+                                break;
+                            case MessageType.MoveKeyframe:
+                                MixerUtils.BuildMoveKeyframe(command.data);
+                                break;
+                            case MessageType.ClearAnimations:
+                                MixerUtils.BuildClearAnimations(command.data);
                                 break;
                             case MessageType.CameraAttributes:
                                 MixerUtils.BuildCameraAttributes(command.data);
@@ -736,15 +737,6 @@ namespace VRtist
                                 break;
                             case MessageType.GreasePencilTimeOffset:
                                 MixerUtils.BuildGreasePencilTimeOffset(command.data);
-                                break;
-                            case MessageType.Play:
-                                MixerUtils.BuildPlay();
-                                break;
-                            case MessageType.Pause:
-                                MixerUtils.BuildPause();
-                                break;
-                            case MessageType.Frame:
-                                MixerUtils.BuildFrame(command.data);
                                 break;
                             case MessageType.FrameStartEnd:
                                 MixerUtils.BuildFrameStartEnd(command.data);
@@ -834,22 +826,14 @@ namespace VRtist
                     SendAddObjectToColleciton(data as AddToCollectionInfo); break;
                 case MessageType.AddObjectToScene:
                     SendAddObjectToScene(data as AddObjectToSceneInfo); break;
-                case MessageType.Frame:
-                    SendFrame(data as FrameInfo); break;
                 case MessageType.FrameStartEnd:
                     SendFrameStartEnd(data as FrameStartEnd); break;
-                case MessageType.Play:
-                    SendPlay(); break;
-                case MessageType.Pause:
-                    SendPause(); break;
                 case MessageType.AddKeyframe:
                     SendAddKeyframe(data as SetKeyInfo); break;
                 case MessageType.RemoveKeyframe:
                     SendRemoveKeyframe(data as SetKeyInfo); break;
                 case MessageType.MoveKeyframe:
                     SendMoveKeyframe(data as MoveKeyInfo); break;
-                case MessageType.QueryAnimationData:
-                    SendQueryObjectData(data as string); break;
                 case MessageType.ClearAnimations:
                     SendClearAnimations(data as ClearAnimationInfo); break;
                 case MessageType.ShotManagerMontageMode:

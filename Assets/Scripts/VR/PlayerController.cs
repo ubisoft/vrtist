@@ -332,20 +332,19 @@ namespace VRtist
             bool joyLeftLongPush = false;
             VRInput.GetInstantJoyEvent(VRInput.leftController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
+            // Manage time with joystick
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
-                int frame = GlobalState.currentFrame;
+                int frame = GlobalState.Animation.CurrentFrame;
                 if (joyRightJustClicked || joyRightLongPush)
                 {
-                    frame = Mathf.Clamp(frame + 1, GlobalState.startFrame, GlobalState.endFrame);
+                    frame = Mathf.Clamp(frame + 1, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
                 }
                 else
                 {
-                    frame = Mathf.Clamp(frame - 1, GlobalState.startFrame, GlobalState.endFrame);
+                    frame = Mathf.Clamp(frame - 1, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
                 }
-
-                FrameInfo info = new FrameInfo() { frame = frame };
-                MixerClient.GetInstance().SendEvent<FrameInfo>(MessageType.Frame, info);
+                GlobalState.Animation.CurrentFrame = frame;
             }
         }
 

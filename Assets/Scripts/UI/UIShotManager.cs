@@ -14,16 +14,19 @@ namespace VRtist
         void Start()
         {
             ShotManager.Instance.ShotsChangedEvent.AddListener(OnShotManagerChanged);
-            ShotManager.Instance.CurrentShotChangedEvent.AddListener(OnCurrentShotChanged);
+            ShotManager.Instance.ActiveShotChangedEvent.AddListener(OnActiveShotChanged);
             shotList.ItemClickedEvent += OnListItemClicked;
 
             montage = transform.Find("MainPanel/Montage").GetComponent<UICheckbox>();
             ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
+
+            GlobalState.Animation.onFrameEvent.AddListener(OnCurrentFrameChanged);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
         private void OnMontageModeChanged()
         {
-            montage.Checked = ShotManager.Instance.MontageMode;
+            montage.Checked = ShotManager.Instance.MontageEnabled;
         }
 
         void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
@@ -44,10 +47,10 @@ namespace VRtist
                 spinner.ResetColor();
             }
         }
-        void Update()
+
+        public void UpdateShotItemsColors(int currentFrame)
         {
             ShotManager sm = ShotManager.Instance;
-            int currentFrame = GlobalState.currentFrame;
 
             Color focusColor = UIOptions.FocusColor;
 
@@ -76,15 +79,36 @@ namespace VRtist
                     SetUIElementColors(item.endFrameSpinner, defaultColor, defaultSelectedColor);
                 }
 
-                if (currentFrame > shot.start && currentFrame < shot.end)
+                if (shot.end <= shot.start)
                 {
-                    SetUIElementColors(item.frameRangeLabel, focusColor, focusColor);
+                    SetUIElementColors(item.frameRangeLabel, defaultColor, UIOptions.ErrorColor);
                 }
                 else
                 {
-                    SetUIElementColors(item.frameRangeLabel, defaultColor, defaultSelectedColor);
+                    if (currentFrame > shot.start && currentFrame < shot.end)
+                    {
+                        SetUIElementColors(item.frameRangeLabel, focusColor, focusColor);
+                    }
+                    else
+                    {
+                        SetUIElementColors(item.frameRangeLabel, defaultColor, defaultSelectedColor);
+                    }
                 }
             }
+        }
+
+        private void OnAnimationStateChanged(AnimationState state)
+        {
+            if(state == AnimationState.Playing && null == Selection.activeCamera)
+            {
+                // Set Camera Active on Play/Record
+                ShotManager.Instance.ActiveShotIndex = ShotManager.Instance.ActiveShotIndex;
+            }
+        }
+
+        private void OnCurrentFrameChanged(int currentFrame)
+        {
+            UpdateShotItemsColors(currentFrame);
         }
 
         public ShotItem GetShotItem(int index)
@@ -93,14 +117,14 @@ namespace VRtist
         }
 
         // Update UI: set current shot
-        void OnCurrentShotChanged()
+        void OnActiveShotChanged()
         {
             int itemIndex = 0;
-            int currentShotIndex = ShotManager.Instance.CurrentShot;
+            int currentShotIndex = ShotManager.Instance.ActiveShotIndex;
             foreach (UIDynamicListItem item in shotList.GetItems())
             {
                 ShotItem shotItem = item.Content.GetComponent<ShotItem>();
-                shotItem.cameraButton.Checked = (itemIndex++ == currentShotIndex);
+                shotItem.currentShotLabel.Selected = (itemIndex++ == currentShotIndex);
             }
         }
 
@@ -122,13 +146,13 @@ namespace VRtist
                 if (shot.enabled)
                     activeShotCount++;
             }
-            shotList.CurrentIndex = sm.CurrentShot;
+            shotList.CurrentIndex = sm.ActiveShotIndex;
             activeShotCountLabel.Text = activeShotCount.ToString() + "/" + sm.shots.Count.ToString();
         }
 
         void OnListItemClicked(object sender, IndexedGameObjectArgs args)
         {
-            ShotManager.Instance.SetCurrentShot(args.index);
+            ShotManager.Instance.SetCurrentShotIndex(args.index);
         }
 
         // Update data: add a shot
@@ -138,11 +162,11 @@ namespace VRtist
 
             // Take the current shot to find the start frame of the new shot
             // Keep same camera as the current shot if anyone
-            int start = 0;
-            GameObject camera = null;
-            if (sm.CurrentShot != -1)
+            int start = GlobalState.Animation.CurrentFrame;
+            GameObject camera;
+            if (shotList.CurrentIndex != -1)
             {
-                Shot selectedShot = sm.shots[sm.CurrentShot];
+                Shot selectedShot = sm.shots[shotList.CurrentIndex];
                 start = selectedShot.end + 1;
                 camera = Selection.activeCamera != null ? Selection.activeCamera : selectedShot.camera;
             }
@@ -151,12 +175,13 @@ namespace VRtist
                 camera = Selection.activeCamera;
             }
             int end = start + 50;  // arbitrary duration
+            end = Mathf.Min(end, GlobalState.Animation.EndFrame);
 
             // Look at all the shots to find a name for the new shot
             string name = sm.GetUniqueShotName();
 
             Shot shot = new Shot { name = name, camera = camera, enabled = true, end = end, start = start };
-            int shotIndex = sm.CurrentShot;
+            int shotIndex = shotList.CurrentIndex;
 
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
@@ -176,7 +201,7 @@ namespace VRtist
             // Add the shot to ShotManager singleton
             shotIndex++;
             sm.InsertShot(shotIndex, shot);
-            sm.SetCurrentShot(shotIndex);
+            sm.SetCurrentShotIndex(shotIndex);
 
             // Rebuild UI
             OnShotManagerChanged();
@@ -187,10 +212,10 @@ namespace VRtist
         {
             ShotManager sm = ShotManager.Instance;
 
-            if (sm.CurrentShot == -1) { return; }
+            if (shotList.CurrentIndex == -1) { return; }
 
             // Delete the current shot
-            int shotIndex = sm.CurrentShot;
+            int shotIndex = shotList.CurrentIndex;
             Shot shot = sm.shots[shotIndex];
 
             // Send network message
@@ -222,12 +247,12 @@ namespace VRtist
 
             // Take the current shot to find the start frame of the new shot
             // Keep same camera as the current shot if anyone
-            if (sm.CurrentShot == -1)
+            if (shotList.CurrentIndex == -1)
                 return;
 
-            Shot shot = sm.shots[sm.CurrentShot].Copy();
+            Shot shot = sm.shots[shotList.CurrentIndex].Copy();
             shot.name = sm.GetUniqueShotName();
-            int shotIndex = sm.CurrentShot;
+            int shotIndex = shotList.CurrentIndex;
 
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
@@ -247,7 +272,7 @@ namespace VRtist
             // Add the shot to ShotManager singleton
             shotIndex++;
             sm.InsertShot(shotIndex, shot);
-            sm.SetCurrentShot(shotIndex);
+            sm.SetCurrentShotIndex(shotIndex);
 
             // Rebuild UI
             OnShotManagerChanged();
@@ -259,12 +284,12 @@ namespace VRtist
         {
             ShotManager sm = ShotManager.Instance;
 
-            int shotIndex = sm.CurrentShot;
+            int shotIndex = shotList.CurrentIndex;
             if (offset < 0 && shotIndex <= 0)
                 return;
             if (offset > 0 && shotIndex >= (sm.shots.Count - 1))
                 return;
-            sm.MoveCurrentShot(offset);
+            sm.MoveShot(shotIndex, offset);
 
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
@@ -280,12 +305,11 @@ namespace VRtist
             OnShotManagerChanged();
         }
 
-        public void OnUpdateShotStart(float value)
+        public void OnUpdateShotStart(Shot shot, float value)
         {
             ShotManager sm = ShotManager.Instance;
 
             int intValue = Mathf.FloorToInt(value);
-            Shot shot = sm.shots[sm.CurrentShot];
             int endValue = shot.end;
             if (intValue > endValue)
                 intValue = endValue;
@@ -294,23 +318,24 @@ namespace VRtist
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
+                shotIndex = sm.GetShotIndex(shot),
                 shotStart = shot.start
             };
             ShotManagerActionInfo info = oldInfo.Copy();
             info.shotStart = intValue;
-            sm.SetCurrentShotStart(intValue);
+            shot.start = intValue;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+
+            UpdateShotItemsColors(GlobalState.Animation.CurrentFrame);
         }
 
-        public void OnUpdateShotEnd(float value)
+        public void OnUpdateShotEnd(Shot shot, float value)
         {
             ShotManager sm = ShotManager.Instance;
 
             int intValue = Mathf.FloorToInt(value);
-            Shot shot = sm.shots[sm.CurrentShot];
             int startValue = shot.start;
             if (intValue < startValue)
                 intValue = startValue;
@@ -319,106 +344,104 @@ namespace VRtist
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
+                shotIndex = sm.GetShotIndex(shot),
                 shotEnd = shot.end,
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
             info.shotEnd = intValue;
-            sm.SetCurrentShotEnd(intValue);
+            shot.end = intValue;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+
+            UpdateShotItemsColors(GlobalState.Animation.CurrentFrame);
         }
 
-        public void OnUpdateShotName(string value)
+        public void OnUpdateShotName(Shot shot, string value)
         {
             ShotManager sm = ShotManager.Instance;
-            Shot shot = sm.shots[sm.CurrentShot];
 
             // Send network message
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
+                shotIndex = sm.GetShotIndex(shot),
                 shotName = shot.name
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
             info.shotName = value;
-            sm.SetCurrentShotName(value);
+            shot.name = value;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
             OnShotManagerChanged();
         }
 
-        public void OnUpdateShotColor(Color value)
+        public void OnUpdateShotColor(Shot shot, Color value)
         {
             ShotManager sm = ShotManager.Instance;
-            Shot shot = sm.shots[sm.CurrentShot];
 
             // Send network message
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
+                shotIndex = sm.GetShotIndex(shot),
                 shotColor = shot.color
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
             info.shotColor = value;
-            sm.SetCurrentShotColor(value);
+            shot.color = value;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
         }
 
-        public void OnUpdateShotEnabled(bool value)
+        public void OnUpdateShotEnabled(Shot shot, bool value)
         {
-            Assert.IsTrue(ShotManager.Instance.CurrentShot >= 0); // TODO: voir si le probleme persiste une fois que le rayon fonctionne.
+            Assert.IsTrue(ShotManager.Instance.ActiveShotIndex >= 0); // TODO: voir si le probleme persiste une fois que le rayon fonctionne.
 
             ShotManager sm = ShotManager.Instance;
-            Shot shot = sm.shots[sm.CurrentShot];
 
             // Send network message
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
+                shotIndex = sm.GetShotIndex(shot),
                 shotEnabled = shot.enabled ? 1 : 0
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
             info.shotEnabled = value ? 1 : 0;
-            sm.SetCurrentShotEnabled(value);
+            shot.enabled = value;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
-        public void OnSetCamera()
+        public void OnSetCamera(Shot shot)
         {
             ShotManager sm = ShotManager.Instance;
-            Shot currentShot = sm.shots[sm.CurrentShot];
-
+            int shotIndex = sm.GetShotIndex(shot);
             ShotManagerActionInfo oldInfo = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.UpdateShot,
-                shotIndex = sm.CurrentShot,
-                cameraName = currentShot.camera == null ? "" : currentShot.camera.name
+                shotIndex = shotIndex,
+                cameraName = shot.camera == null ? "" : shot.camera.name
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
             info.cameraName = Selection.activeCamera == null ? "" : Selection.activeCamera.name;
-            currentShot.camera = Selection.activeCamera;
+            shot.camera = Selection.activeCamera;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Update Camera UI Button
-            ShotItem uiItem = GetShotItem(sm.CurrentShot);
+            ShotItem uiItem = GetShotItem(shotIndex);
             uiItem.cameraNameLabel.Text = info.cameraName;
         }
     }
