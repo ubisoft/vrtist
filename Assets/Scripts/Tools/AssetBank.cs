@@ -6,23 +6,24 @@ using UnityEngine.XR;
 
 namespace VRtist
 {
-    public class AssetBankItem
+    public class AssetBankItem : ListItemContent
     {
         public int uid;               // uid
-        public string name;           // item name or filename
+        public string assetName;      // item name or filename
+        public HashSet<string> tags = new HashSet<string>();  // list of tags for filtering
         public GameObject original;   // original object (loaded from disk or Unity.Resources)
         public GameObject prefab;     // the prefab to instantiate (in the __Prefabs__)
         public GameObject thumbnail;  // may be an image or 3D thumbnail
-    }
 
-    public class Category
-    {
-        public string name;
-        List<AssetBankItem> items = new List<AssetBankItem>();
+        public UIDynamicListItem uiItem;
 
-        public void AddItem(AssetBankItem item)
+        public void AddTags(string path)
         {
-            items.Add(item);
+            path = path.Replace("\\", "/");
+            foreach (var tag in path.Split(new char[] { '/', '-', '_', ' ' }))
+            {
+                tags.Add(tag.ToLower());
+            }
         }
     }
 
@@ -30,16 +31,14 @@ namespace VRtist
     {
         [Header("Parameters")]
         public Transform container;
-        public int maxPages = 3;
         private bool useDefaultInstantiationScale = false;
-        private Transform[] pages = null;
-        private int current_page = 0;
 
         private string rootDirectory;
-        private Dictionary<string, Category> categories = new Dictionary<string, Category>();  // category's name -> category
         private Dictionary<int, AssetBankItem> items = new Dictionary<int, AssetBankItem>();   // uid -> asset bank item
         private GameObject bank;  // contains all prefabs from the asset bank
         private int selectedItem = -1;
+
+        private UIDynamicList uiList;
 
         private static int nextObjectId = 0;
 
@@ -47,12 +46,14 @@ namespace VRtist
         {
             Init();
 
+            uiList = panel.GetComponentInChildren<UIDynamicList>();
+
             // Create our storage for loaded objects
             bank = new GameObject("__VRtist_Asset_Bank__");
             bank.SetActive(false);
 
             // Add our predifined objects
-            // TODO: parse them from Resources folder at editor time then create a db of those resources (scriptableObject)
+            // TODO? parse them from Resources folder at editor time then create a db of those resources (scriptableObject)
             // available at runtime to finally parse that db
             AddBuiltinObject("Rocks", "Rock A", "Prefabs/UI/ROCKS/Rock_A", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_A_PRIM");
             AddBuiltinObject("Rocks", "Rock B", "Prefabs/UI/ROCKS/Rock_B", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_B_PRIM");
@@ -67,82 +68,56 @@ namespace VRtist
             // Add user defined objects
             GlobalState.GeometryImporter.objectLoaded.AddListener(InstantiateObject);
             rootDirectory = GlobalState.Settings.assetBankDirectory;
-            ScanUserObjectDirectory();
+            ScanUserObjectDirectory(rootDirectory);
         }
 
-        private void ScanUserObjectDirectory()
+        private void ScanUserObjectDirectory(string path)
         {
-            // Manage only one sub-folder level, each sub-folder defining a category of assets
-            if (Directory.Exists(rootDirectory))
+            if (Directory.Exists(path))
             {
-                string[] directories = Directory.GetDirectories(rootDirectory);
-                foreach (var path in directories)
+                string[] directories = Directory.GetDirectories(path);
+                foreach (var directory in directories)
                 {
-                    ScanUserSubDirectory(path, path);
+                    ScanUserObjectDirectory(directory);
                 }
-                // Put all objects in the root directory into an "Other" section
-                ScanUserSubDirectory(rootDirectory, "Other");
+
+                string[] filenames = Directory.GetFiles(path, "*.fbx");
+                foreach (var filename in filenames)
+                {
+                    AddUserObject(filename);
+                }
             }
         }
 
-        private void ScanUserSubDirectory(string directory, string categoryName)
-        {
-            categoryName = Path.GetFileName(categoryName);
-
-            // Search for FBX only in the directory
-            string[] filenames = Directory.GetFiles(directory, "*.fbx");
-            foreach (string filename in filenames)
-            {
-                AddUserObject(categoryName, filename);
-            }
-        }
-
-        private void AddBuiltinObject(string categoryName, string name, string uiPath, string originalPath)
+        private void AddBuiltinObject(string tags, string name, string uiPath, string originalPath)
         {
             GameObject original = Resources.Load<GameObject>(originalPath);
             GameObject thumbnail = Resources.Load<GameObject>(uiPath);
-            AddObject(categoryName, name, thumbnail, original);
+            AddObject(tags, name, thumbnail, original);
         }
 
-        private void AddUserObject(string categoryName, string filename)
+        private void AddUserObject(string filename)
         {
             GameObject thumbnail = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
-            filename = Path.GetFileName(filename);
-            filename = filename.Replace('_', ' ');
-            thumbnail.transform.Find("Canvas/Name").GetComponent<TextMeshProUGUI>().text = filename;
-            AddObject(categoryName, filename, thumbnail, null);
+            string name = Path.GetFileNameWithoutExtension(filename).Replace('_', ' ');
+            thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = name;
+            thumbnail.transform.Find("Canvas/Panel/Type").GetComponent<TextMeshProUGUI>().text = Path.GetExtension(filename).Substring(1);
+            string tags = filename.Substring(rootDirectory.Length);
+            tags = tags.Substring(0, tags.LastIndexOf('.'));
+            AddObject(tags, filename, thumbnail, null);
         }
 
-        private void AddObject(string categoryName, string name, GameObject thumbnail, GameObject original)
+        private void AddObject(string tags, string name, GameObject thumbnail, GameObject original)
         {
-            if (!categories.TryGetValue(categoryName, out Category category))
-            {
-                category = new Category { name = categoryName };
-                categories.Add(categoryName, category);
-            }
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
-            uiGrabber.prefab = original;
             uiGrabber.SetAssetBankLinks(nextObjectId, original);
             uiGrabber.onEnterUI3DObject.AddListener(OnUIObjectEnter);
             uiGrabber.onExitUI3DObject.AddListener(OnUIObjectExit);
-            AssetBankItem item = new AssetBankItem { uid = nextObjectId, name = name, thumbnail = thumbnail, original = original };
-            category.AddItem(item);
+            AssetBankItem item = new AssetBankItem { uid = nextObjectId, assetName = name, thumbnail = thumbnail, original = original };
+            item.AddTags(tags);
+            item.uiItem = uiList.AddItem(item.transform);
             items.Add(nextObjectId, item);
             ++nextObjectId;
-        }
-
-        public void OnPrevPage()
-        {
-            pages[current_page].gameObject.SetActive(false);
-            current_page = (current_page + maxPages - 1) % maxPages;
-            pages[current_page].gameObject.SetActive(true);
-        }
-
-        public void OnNextPage()
-        {
-            pages[current_page].gameObject.SetActive(false);
-            current_page = (current_page + 1) % maxPages;
-            pages[current_page].gameObject.SetActive(true);
         }
 
         //public void SetGrabbedObject(GameObject gObject)
@@ -175,7 +150,7 @@ namespace VRtist
             GameObject original = item.original;
             if (null == original)
             {
-                GlobalState.GeometryImporter.ImportObject(item.name, bank.transform);
+                GlobalState.GeometryImporter.ImportObject(item.assetName, bank.transform);
             }
             else
             {
