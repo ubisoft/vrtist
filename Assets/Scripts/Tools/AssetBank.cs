@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -106,7 +107,9 @@ namespace VRtist
         private void AddUserObject(string categoryName, string filename)
         {
             GameObject thumbnail = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
-            // TODO: thumbnail.Find("Name").GetComponent<TextMeshProUGUI>().text = Path.GetFileName(filename);
+            filename = Path.GetFileName(filename);
+            filename = filename.Replace('_', ' ');
+            thumbnail.transform.Find("Canvas/Name").GetComponent<TextMeshProUGUI>().text = filename;
             AddObject(categoryName, filename, thumbnail, null);
         }
 
