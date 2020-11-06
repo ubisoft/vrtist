@@ -562,6 +562,27 @@ namespace VRtist
             return "Mat_" + gobject.name;
         }
 
+        public static GameObject CreateFullHierarchyPrefab(GameObject original)
+        {
+            string rootPath = "__VRtist_Asset_Bank__";
+            GameObject root = null;
+            foreach (var trans in original.GetComponentsInChildren<Transform>())
+            {
+                string path = trans.parent != null ? trans.parent.name + "/" + trans.name : trans.name;
+                if (path.StartsWith(rootPath))
+                {
+                    path = path.Substring(rootPath.Length + 1);
+                }
+                Transform res = GetOrCreatePrefabPath(path);
+                if (trans.gameObject == original) { root = res.gameObject; }
+                MeshFilter meshFilter = trans.GetComponent<MeshFilter>();
+                if (null != meshFilter && null != meshFilter.mesh)
+                {
+                    MixerUtils.ConnectMesh(trans, meshFilter.mesh);
+                }
+            }
+            return root;
+        }
 
         public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null, bool isPrefab = false)
         {
@@ -994,6 +1015,16 @@ namespace VRtist
             nodes.Remove(objectName);
         }
 
+        public static Node GetOrCreateNode(GameObject newPrefab)
+        {
+            if (!nodes.TryGetValue(newPrefab.name, out Node node))
+            {
+                node = CreateNode(newPrefab.name);
+                node.prefab = newPrefab;
+            }
+            return node;
+        }
+
         /// <summary>
         /// Create a new prefab node using the given GameObject as the prefab then instantiate it into the scene.
         /// Note that this function does not put the given prefab game object into the prefabs.
@@ -1002,10 +1033,20 @@ namespace VRtist
         /// <returns>Instantiated prefab</returns>
         public static GameObject InstantiatePrefab(GameObject newPrefab)
         {
-            Node node = CreateNode(newPrefab.name);
-            node.prefab = newPrefab;
+            GetOrCreateNode(newPrefab);
             GameObject instance = AddObjectToDocument(root, newPrefab.name);
             return instance;
+        }
+
+        public static GameObject InstantiateFullHierarchyPrefab(GameObject prefab)
+        {
+            GameObject res = InstantiatePrefab(prefab);
+            Node node = nodes[prefab.name];
+            foreach (var child in node.children)
+            {
+                InstantiateFullHierarchyPrefab(child.prefab);
+            }
+            return res;
         }
 
         /// <summary>

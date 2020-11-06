@@ -142,6 +142,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4391902614583328958}
   - component: {fileID: 1767787357060451112}
+  - component: {fileID: 909019844667975200}
   m_Layer: 5
   m_Name: AssetBankGenericItem
   m_TagString: Untagged
@@ -215,8 +216,6 @@ MonoBehaviour:
     reference:
       isHdr: 0
       value: {r: 0, g: 0, b: 0, a: 0}
-  prefab: {fileID: 0}
-  uid: 0
   onEnterUI3DObject:
     m_PersistentCalls:
       m_Calls: []
@@ -232,6 +231,19 @@ MonoBehaviour:
   onReleaseEvent:
     m_PersistentCalls:
       m_Calls: []
+--- !u!65 &909019844667975200
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962707222348470326}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.09065343, y: 0.08038923, z: 0.009375309}
+  m_Center: {x: 0.04487333, y: -0.03983952, z: -0.0010527452}
 --- !u!1 &4765677344244977380
 GameObject:
   m_ObjectHideFlags: 0

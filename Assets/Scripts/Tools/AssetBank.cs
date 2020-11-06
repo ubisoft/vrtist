@@ -89,8 +89,9 @@ namespace VRtist
         private void AddBuiltinObject(string tags, string name, string uiPath, string originalPath)
         {
             GameObject original = Instantiate(Resources.Load<GameObject>(originalPath));
+            original.transform.parent = bank.transform;
             GameObject thumbnail = Instantiate(Resources.Load<GameObject>(uiPath));
-            AddObject(tags, name, thumbnail, original);
+            AddObject(tags, name, thumbnail, original, true);
         }
 
         private void AddUserObject(string filename)
@@ -101,31 +102,33 @@ namespace VRtist
             thumbnail.transform.Find("Canvas/Panel/Type").GetComponent<TextMeshProUGUI>().text = Path.GetExtension(filename).Substring(1);
             string tags = filename.Substring(rootDirectory.Length);
             tags = tags.Substring(0, tags.LastIndexOf('.'));
-            AddObject(tags, filename, thumbnail, null);
+            AddObject(tags, filename, thumbnail, null, false);
         }
 
-        private void AddObject(string tags, string name, GameObject thumbnail, GameObject original)
+        private void AddObject(string tags, string name, GameObject thumbnail, GameObject original, bool hasRotation)
         {
+            int uid = thumbnail.GetHashCode();
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
-            uiGrabber.SetAssetBankLinks(nextObjectId, original);
+            uiGrabber.uid = uid;
+            uiGrabber.rotateOnHover = hasRotation;
             uiGrabber.onEnterUI3DObject.AddListener(OnUIObjectEnter);
             uiGrabber.onExitUI3DObject.AddListener(OnUIObjectExit);
             GameObject root = new GameObject("AssetBankItem");
             root.layer = LayerMask.NameToLayer("UI");
             AssetBankItem item = root.AddComponent<AssetBankItem>();
-            item.uid = nextObjectId;
+            item.uid = uid;
             item.assetName = name;
             item.thumbnail = thumbnail;
             item.original = original;
             item.thumbnail.transform.parent = root.transform;
+            item.thumbnail.transform.localPosition += new Vector3(0, 0, -0.001f);
             item.AddTags(tags);
             foreach (var tag in item.tags)
             {
                 this.tags.Add(tag);
             }
             item.uiItem = uiList.AddItem(item.transform);
-            items.Add(nextObjectId, item);
-            ++nextObjectId;
+            items.Add(uid, item);
         }
 
         //public void SetGrabbedObject(GameObject gObject)
@@ -169,21 +172,32 @@ namespace VRtist
         private void InstantiateObject(GameObject gobject)
         {
             AssetBankItem item = items[selectedItem];
+            GameObject newObject;
 
             // Coming from an imported object, set the original
             if (null == item.original)
             {
+                gobject.tag = "PhysicObject";
+                foreach (var collider in gobject.GetComponentsInChildren<Collider>())
+                {
+                    collider.gameObject.tag = "PhysicObject";
+                }
                 item.original = gobject;
+                if (null == item.prefab)
+                {
+                    item.prefab = SyncData.CreateFullHierarchyPrefab(gobject);
+                }
+                newObject = SyncData.InstantiateFullHierarchyPrefab(item.prefab);
             }
-
-            // If it's the first time we instantiate it, first create a runtime prefab
-            if (null == item.prefab)
+            else
             {
-                item.prefab = SyncData.CreateInstance(gobject, SyncData.prefab);
+                // If it's the first time we instantiate it, first create a runtime prefab
+                if (null == item.prefab)
+                {
+                    item.prefab = SyncData.CreateInstance(gobject, SyncData.prefab);
+                }
+                newObject = SyncData.InstantiatePrefab(item.prefab);
             }
-
-            // Instantiate the runtime prefab
-            GameObject newObject = SyncData.InstantiatePrefab(item.prefab);
 
             MeshFilter meshFilter = newObject.GetComponentInChildren<MeshFilter>();
             if (null != meshFilter)

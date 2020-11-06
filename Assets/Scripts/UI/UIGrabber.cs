@@ -7,8 +7,8 @@ namespace VRtist
     [SelectionBase]
     public class UIGrabber : UIElement
     {
-        public GameObject prefab = null;
-        public int uid;
+        public int? uid;
+        public bool rotateOnHover = true;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = null;
@@ -32,12 +32,6 @@ namespace VRtist
         //        }
         //    }
         //}
-
-        public void SetAssetBankLinks(int uid, GameObject prefab = null)
-        {
-            this.uid = uid;
-            this.prefab = prefab;
-        }
 
         private void OnValidate()
         {
@@ -121,10 +115,9 @@ namespace VRtist
 
             GoFrontAnimation();
 
-            if (prefab != null)
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onEnterUI3DObject.Invoke(hash);
+                onEnterUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -136,10 +129,9 @@ namespace VRtist
 
             GoFrontAnimation();
 
-            if (prefab != null)
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onEnterUI3DObject.Invoke(hash);
+                onEnterUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -151,7 +143,7 @@ namespace VRtist
 
             onHoverEvent.Invoke();
 
-            RotateAnimation();
+            if (rotateOnHover) { RotateAnimation(); }
         }
 
         public override void OnRayHoverClicked()
@@ -160,7 +152,7 @@ namespace VRtist
 
             onHoverEvent.Invoke();
 
-            RotateAnimation();
+            if (rotateOnHover) { RotateAnimation(); }
         }
 
         public override void OnRayExit()
@@ -168,12 +160,12 @@ namespace VRtist
             base.OnRayExit();
 
             GoBackAnimation();
-            ResetRotation();
 
-            if (prefab != null)
+            if (rotateOnHover) { ResetRotation(); }
+
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onExitUI3DObject.Invoke(hash);
+                onExitUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -185,10 +177,9 @@ namespace VRtist
 
             GoBackAnimation();
 
-            if (prefab != null)
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onExitUI3DObject.Invoke(hash);
+                onExitUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -208,7 +199,7 @@ namespace VRtist
 
         public override bool OnRayReleaseOutside()
         {
-            ResetRotation();
+            if (rotateOnHover) { ResetRotation(); }
             return base.OnRayReleaseOutside();
         }
 
