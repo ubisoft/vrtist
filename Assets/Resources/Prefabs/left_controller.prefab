@@ -532,7 +532,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7002796128890821805}
   m_Layer: 13
-  m_Name: JoystickPivot
+  m_Name: PrimaryAxisPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -565,7 +565,7 @@ GameObject:
   - component: {fileID: 5674805842314552641}
   - component: {fileID: 205251537642295825}
   m_Layer: 13
-  m_Name: Joystick
+  m_Name: PrimaryAxis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

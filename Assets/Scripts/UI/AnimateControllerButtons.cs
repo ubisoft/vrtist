@@ -80,12 +80,10 @@ namespace VRtist
                     initTriggerRotation = triggerTransform.localRotation;
                 }
 
-                joystickTransform = controllerTransform.Find("JoystickPivot/Joystick");
+                joystickTransform = controllerTransform.Find("PrimaryAxisPivot/PrimaryAxis");
                 if (null != joystickTransform)
                 {
                     initJoystickRotation = joystickTransform.localRotation;
-                    // FIX: for an unknown reason, the jostick obect is disabled at start.
-                    joystickTransform.gameObject.SetActive(true);
                 }
 
                 primaryTransform = controllerTransform.Find("PrimaryButtonPivot/PrimaryButton");
@@ -137,7 +135,7 @@ namespace VRtist
             if (null != triggerTransform)
             {
                 float triggerAmount = VRInput.GetValue(device, CommonUsages.trigger);
-                triggerTransform.localRotation = initTriggerRotation * Quaternion.Euler(triggerAmount * gripRotationAmplitude, 0, 0);
+                triggerTransform.localRotation = initTriggerRotation * Quaternion.Euler(triggerAmount * triggerRotationAmplitude, 0, 0);
                 triggerTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", triggerAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
             }
 
