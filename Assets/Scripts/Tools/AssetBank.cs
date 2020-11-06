@@ -35,6 +35,7 @@ namespace VRtist
 
         private string rootDirectory;
         private Dictionary<int, AssetBankItem> items = new Dictionary<int, AssetBankItem>();   // uid -> asset bank item
+        private HashSet<string> tags = new HashSet<string>();
         private GameObject bank;  // contains all prefabs from the asset bank
         private int selectedItem = -1;
 
@@ -60,10 +61,6 @@ namespace VRtist
             AddBuiltinObject("Rocks", "Rock C", "Prefabs/UI/ROCKS/Rock_C", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_C_PRIM");
             AddBuiltinObject("Rocks", "Rock D", "Prefabs/UI/ROCKS/Rock_D", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_D_PRIM");
             AddBuiltinObject("Rocks", "Rock E", "Prefabs/UI/ROCKS/Rock_E", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_E_PRIM");
-            AddBuiltinObject("Rocks", "Rock F", "Prefabs/UI/ROCKS/Rock_F", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_F_PRIM");
-            AddBuiltinObject("Rocks", "Rock G", "Prefabs/UI/ROCKS/Rock_G", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_G_PRIM");
-            AddBuiltinObject("Rocks", "Rock J", "Prefabs/UI/ROCKS/Rock_J", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_J_PRIM");
-            AddBuiltinObject("Rocks", "Rock K", "Prefabs/UI/ROCKS/Rock_K", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_K_PRIM");
 
             // Add user defined objects
             GlobalState.GeometryImporter.objectLoaded.AddListener(InstantiateObject);
@@ -91,14 +88,14 @@ namespace VRtist
 
         private void AddBuiltinObject(string tags, string name, string uiPath, string originalPath)
         {
-            GameObject original = Resources.Load<GameObject>(originalPath);
-            GameObject thumbnail = Resources.Load<GameObject>(uiPath);
+            GameObject original = Instantiate(Resources.Load<GameObject>(originalPath));
+            GameObject thumbnail = Instantiate(Resources.Load<GameObject>(uiPath));
             AddObject(tags, name, thumbnail, original);
         }
 
         private void AddUserObject(string filename)
         {
-            GameObject thumbnail = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
+            GameObject thumbnail = Instantiate(Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem"));
             string name = Path.GetFileNameWithoutExtension(filename).Replace('_', ' ');
             thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = name;
             thumbnail.transform.Find("Canvas/Panel/Type").GetComponent<TextMeshProUGUI>().text = Path.GetExtension(filename).Substring(1);
@@ -113,8 +110,19 @@ namespace VRtist
             uiGrabber.SetAssetBankLinks(nextObjectId, original);
             uiGrabber.onEnterUI3DObject.AddListener(OnUIObjectEnter);
             uiGrabber.onExitUI3DObject.AddListener(OnUIObjectExit);
-            AssetBankItem item = new AssetBankItem { uid = nextObjectId, assetName = name, thumbnail = thumbnail, original = original };
+            GameObject root = new GameObject("AssetBankItem");
+            root.layer = LayerMask.NameToLayer("UI");
+            AssetBankItem item = root.AddComponent<AssetBankItem>();
+            item.uid = nextObjectId;
+            item.assetName = name;
+            item.thumbnail = thumbnail;
+            item.original = original;
+            item.thumbnail.transform.parent = root.transform;
             item.AddTags(tags);
+            foreach (var tag in item.tags)
+            {
+                this.tags.Add(tag);
+            }
             item.uiItem = uiList.AddItem(item.transform);
             items.Add(nextObjectId, item);
             ++nextObjectId;

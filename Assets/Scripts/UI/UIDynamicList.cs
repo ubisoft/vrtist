@@ -113,6 +113,8 @@ namespace VRtist
             gObj.tag = "UICollider";
             gObj.layer = LayerMask.NameToLayer("UI");
             item.list = this;
+            item.autoResizeContent = autoResizeContent;
+            item.autoCenterContent = autoCenterContent;
             item.Width = itemWidth;
             item.Height = itemHeight;
             item.Depth = itemDepth;
@@ -121,8 +123,6 @@ namespace VRtist
             gObj.transform.localPosition = Vector3.zero;
             gObj.transform.localRotation = Quaternion.identity;
             gObj.transform.localScale = Vector3.one;
-            item.autoResizeContent = autoResizeContent;
-            item.autoCenterContent = autoCenterContent;
             items.Add(item);
 
             NeedsRebuild = true;
