@@ -12,8 +12,8 @@ namespace VRtist
         public string assetName;      // item name or filename
         public HashSet<string> tags = new HashSet<string>();  // list of tags for filtering
         public GameObject original;   // original object (loaded from disk or Unity.Resources)
-        public GameObject prefab;     // the prefab to instantiate (in the __Prefabs__)
         public GameObject thumbnail;  // may be an image or 3D thumbnail
+        public bool imported = false;
 
         public UIDynamicListItem uiItem;
 
@@ -41,8 +41,6 @@ namespace VRtist
 
         private UIDynamicList uiList;
 
-        private static int nextObjectId = 0;
-
         void Start()
         {
             Init();
@@ -63,7 +61,7 @@ namespace VRtist
             AddBuiltinObject("Rocks", "Rock E", "Prefabs/UI/ROCKS/Rock_E", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_E_PRIM");
 
             // Add user defined objects
-            GlobalState.GeometryImporter.objectLoaded.AddListener(InstantiateObject);
+            GlobalState.GeometryImporter.objectLoaded.AddListener((GameObject gobject) => InstantiateObject(gobject));
             rootDirectory = GlobalState.Settings.assetBankDirectory;
             ScanUserObjectDirectory(rootDirectory);
         }
@@ -131,11 +129,6 @@ namespace VRtist
             items.Add(uid, item);
         }
 
-        //public void SetGrabbedObject(GameObject gObject)
-        //{
-        //    UIObject = gObject;
-        //}
-
         public override void OnUIObjectEnter(int uid)
         {
             selectedItem = uid;
@@ -151,52 +144,47 @@ namespace VRtist
             useDefaultInstantiationScale = value;
         }
 
-        public void OnInstantiateUIObject()
+        public bool OnInstantiateUIObject()
         {
-            if (selectedItem == -1) { return; }
+            if (selectedItem == -1) { return false; }
 
-            if (!items.TryGetValue(selectedItem, out AssetBankItem item)) { return; }
+            if (!items.TryGetValue(selectedItem, out AssetBankItem item)) { return false; }
 
             // If the original doesn't exist, load it
             GameObject original = item.original;
             if (null == original)
             {
+                Selection.ClearSelection();
+                item.imported = true;
                 GlobalState.GeometryImporter.ImportObject(item.assetName, bank.transform);
+                return true;
             }
             else
             {
-                InstantiateObject(original);
+                return InstantiateObject(original);
             }
         }
 
-        private void InstantiateObject(GameObject gobject)
+        private bool InstantiateObject(GameObject gobject)
         {
-            AssetBankItem item = items[selectedItem];
+            if (!items.TryGetValue(selectedItem, out AssetBankItem item))
+            {
+                Debug.LogWarning($"Item {gobject.name} not found in Asset Bank (id: {selectedItem})");
+                return false;
+            }
+
             GameObject newObject;
 
-            // Coming from an imported object, set the original
-            if (null == item.original)
+            // Coming from an imported object
+            if (item.imported)
             {
-                gobject.tag = "PhysicObject";
-                foreach (var collider in gobject.GetComponentsInChildren<Collider>())
-                {
-                    collider.gameObject.tag = "PhysicObject";
-                }
                 item.original = gobject;
-                if (null == item.prefab)
-                {
-                    item.prefab = SyncData.CreateFullHierarchyPrefab(gobject);
-                }
-                newObject = SyncData.InstantiateFullHierarchyPrefab(item.prefab);
+                newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject));
             }
+            // Coming from a built-in object
             else
             {
-                // If it's the first time we instantiate it, first create a runtime prefab
-                if (null == item.prefab)
-                {
-                    item.prefab = SyncData.CreateInstance(gobject, SyncData.prefab);
-                }
-                newObject = SyncData.InstantiatePrefab(item.prefab);
+                newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
             }
 
             MeshFilter meshFilter = newObject.GetComponentInChildren<MeshFilter>();
@@ -208,14 +196,14 @@ namespace VRtist
             Matrix4x4 matrix = container.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
             if (!useDefaultInstantiationScale)
             {
-                SyncData.SetTransform(newObject.name, matrix * Matrix4x4.Scale(10f * gobject.transform.localScale));
+                SyncData.SetTransform(newObject.name, matrix * Matrix4x4.Scale(gobject.transform.localScale));
             }
             else
             {
                 Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
                 // Cancel scale
                 Quaternion quarterRotation = Quaternion.Euler(new Vector3(-90f, 180f, 0));
-                SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, new Vector3(10, 10, 10)) * Matrix4x4.Rotate(quarterRotation));
+                SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, Vector3.one) * Matrix4x4.Rotate(quarterRotation));
             }
 
             CommandGroup group = new CommandGroup("Instantiate Bank Object");
@@ -231,14 +219,24 @@ namespace VRtist
                 group.Submit();
                 selectedItem = -1;
             }
+
+            // OnStartGrip must be called after object instantiation 
+            if (item.imported)
+            {
+                OnStartGrip();
+                return true;
+            }
+            return false;
         }
 
         protected override void DoUpdateGui()
         {
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
             {
-                OnInstantiateUIObject();
-                OnStartGrip();
+                if (!OnInstantiateUIObject())
+                {
+                    OnStartGrip();
+                }
             }, OnEndGrip);
         }
     }

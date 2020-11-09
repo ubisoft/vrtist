@@ -97,8 +97,8 @@ MonoBehaviour:
     reference:
       isHdr: 0
       value: {r: 0, g: 0, b: 0, a: 0}
-  prefab: {fileID: 7482158306222557980, guid: ab691ce2217d4204d8b74bcb74172436, type: 3}
-  uid: 0
+  rotateOnHover: 1
+  prefab: {fileID: 0}
   onEnterUI3DObject:
     m_PersistentCalls:
       m_Calls:

@@ -566,31 +566,35 @@ namespace VRtist
         {
             string rootPath = "__VRtist_Asset_Bank__";
             GameObject root = null;
-            foreach (var trans in original.GetComponentsInChildren<Transform>())
+            foreach (var originalTransform in original.GetComponentsInChildren<Transform>())
             {
-                string path = trans.parent != null ? trans.parent.name + "/" + trans.name : trans.name;
+                originalTransform.gameObject.name = CreateUniqueName(originalTransform.gameObject.name);
+                string path = originalTransform.parent != null ? originalTransform.parent.name + "/" + originalTransform.name : originalTransform.name;
                 if (path.StartsWith(rootPath))
                 {
                     path = path.Substring(rootPath.Length + 1);
                 }
-                Transform res = GetOrCreatePrefabPath(path);
-                res.localPosition = trans.localPosition;
-                res.localRotation = trans.localRotation;
-                res.localScale = trans.localScale;
+                Transform prefabTransform = GetOrCreatePrefabPath(path);
+                prefabTransform.localPosition = originalTransform.localPosition;
+                prefabTransform.localRotation = originalTransform.localRotation;
+                prefabTransform.localScale = originalTransform.localScale;
 
-                if (trans.gameObject == original) { root = res.gameObject; }
-                MeshFilter meshFilter = trans.GetComponent<MeshFilter>();
+                if (originalTransform.gameObject == original) { root = prefabTransform.gameObject; }
+                MeshFilter meshFilter = originalTransform.GetComponent<MeshFilter>();
                 if (null != meshFilter && null != meshFilter.sharedMesh)
                 {
-                    MixerUtils.ConnectMesh(res, meshFilter.sharedMesh);
+                    MixerUtils.ConnectMesh(prefabTransform, meshFilter.sharedMesh);
                 }
 
-                MeshRenderer meshRenderer = trans.GetComponent<MeshRenderer>();
+                MeshRenderer meshRenderer = originalTransform.GetComponent<MeshRenderer>();
                 if (null != meshRenderer && null != meshRenderer.sharedMaterials)
                 {
-                    MeshRenderer dstMeshRenderer = res.GetComponent<MeshRenderer>();
-                    if(null != dstMeshRenderer)
+                    MeshRenderer dstMeshRenderer = prefabTransform.GetComponent<MeshRenderer>();
+                    if (null != dstMeshRenderer)
+                    {
                         dstMeshRenderer.sharedMaterials = meshRenderer.sharedMaterials;
+                        dstMeshRenderer.material.name = GetMaterialName(prefabTransform.gameObject);
+                    }
                 }
             }
             return root;
@@ -1086,6 +1090,11 @@ namespace VRtist
         public static void SetTransform(string objectName, Matrix4x4 matrix)
         {
             Node node = nodes[objectName];
+            if (null == node)
+            {
+                Debug.LogError($"Object not in nodes: {objectName}");
+                return;
+            }
             node.prefab.transform.localPosition = new Vector3(matrix.GetColumn(3).x, matrix.GetColumn(3).y, matrix.GetColumn(3).z);
             node.prefab.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
             node.prefab.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);

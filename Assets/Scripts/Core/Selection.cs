@@ -167,6 +167,17 @@ namespace VRtist
                 return;
             }
 
+            // Be sure to hover a collider
+            Collider collider = obj.GetComponent<Collider>();
+            if (null == collider)
+            {
+                foreach (Transform child in obj.transform)
+                {
+                    SetHoveredObject(child.gameObject);
+                }
+                return;
+            }
+
             // obj is selected => reset hoveredObject
             if (hoveredObject != null && IsSelected(obj))
             {
@@ -303,6 +314,17 @@ namespace VRtist
         {
             if (gObject.GetComponent<UIHandle>())
                 return false;
+
+            // Be sure to to have a collider, if not, select all first children
+            Collider collider = gObject.GetComponent<Collider>();
+            if (null == collider)
+            {
+                foreach (Transform child in gObject.transform)
+                {
+                    AddToSelection(child.gameObject);
+                }
+                return true;
+            }
 
             if (selection.ContainsKey(gObject.GetInstanceID()))
                 return false;
