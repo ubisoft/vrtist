@@ -574,11 +574,23 @@ namespace VRtist
                     path = path.Substring(rootPath.Length + 1);
                 }
                 Transform res = GetOrCreatePrefabPath(path);
+                res.localPosition = trans.localPosition;
+                res.localRotation = trans.localRotation;
+                res.localScale = trans.localScale;
+
                 if (trans.gameObject == original) { root = res.gameObject; }
                 MeshFilter meshFilter = trans.GetComponent<MeshFilter>();
-                if (null != meshFilter && null != meshFilter.mesh)
+                if (null != meshFilter && null != meshFilter.sharedMesh)
                 {
-                    MixerUtils.ConnectMesh(trans, meshFilter.mesh);
+                    MixerUtils.ConnectMesh(res, meshFilter.sharedMesh);
+                }
+
+                MeshRenderer meshRenderer = trans.GetComponent<MeshRenderer>();
+                if (null != meshRenderer && null != meshRenderer.sharedMaterials)
+                {
+                    MeshRenderer dstMeshRenderer = res.GetComponent<MeshRenderer>();
+                    if(null != dstMeshRenderer)
+                        dstMeshRenderer.sharedMaterials = meshRenderer.sharedMaterials;
                 }
             }
             return root;
