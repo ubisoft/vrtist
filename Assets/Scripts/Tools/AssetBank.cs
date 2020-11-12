@@ -38,6 +38,7 @@ namespace VRtist
         private HashSet<string> tags = new HashSet<string>();
         private GameObject bank;  // contains all prefabs from the asset bank
         private int selectedItem = -1;
+        private bool loadingAsset = false;
 
         private UIDynamicList uiList;
 
@@ -131,12 +132,18 @@ namespace VRtist
 
         public override void OnUIObjectEnter(int uid)
         {
-            selectedItem = uid;
+            if (!loadingAsset)
+            {
+                selectedItem = uid;
+            }
         }
 
         public override void OnUIObjectExit(int uid)
         {
-            selectedItem = -1;
+            if (!loadingAsset)
+            {
+                selectedItem = -1;
+            }
         }
 
         public void OnUseDefaultScale(bool value)
@@ -146,14 +153,15 @@ namespace VRtist
 
         public bool OnInstantiateUIObject()
         {
+            if (loadingAsset) { return true; }
             if (selectedItem == -1) { return false; }
-
             if (!items.TryGetValue(selectedItem, out AssetBankItem item)) { return false; }
 
             // If the original doesn't exist, load it
             GameObject original = item.original;
             if (null == original)
             {
+                loadingAsset = true;
                 Selection.ClearSelection();
                 item.imported = true;
                 GlobalState.GeometryImporter.ImportObject(item.assetName, bank.transform);
@@ -210,7 +218,15 @@ namespace VRtist
             try
             {
                 ClearSelection();
-                new CommandAddGameObject(newObject).Submit();
+                if (null == newObject.GetComponent<MeshFilter>())
+                {
+                    // Send transform
+                    new CommandAddGameObject(newObject).Submit();
+                }
+                foreach (var subMeshFilter in newObject.GetComponentsInChildren<MeshFilter>())
+                {
+                    new CommandAddGameObject(subMeshFilter.gameObject).Submit();
+                }
                 AddToSelection(newObject);
                 Selection.SetHoveredObject(newObject);
             }
@@ -224,6 +240,7 @@ namespace VRtist
             if (item.imported)
             {
                 OnStartGrip();
+                loadingAsset = false;
                 return true;
             }
             return false;

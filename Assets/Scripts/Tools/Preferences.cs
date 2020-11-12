@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
 using UnityEngine.Audio;
 
 namespace VRtist
@@ -39,6 +40,7 @@ namespace VRtist
         private UISlider masterVolume;
         private UISlider ambientVolume;
         private UISlider uiVolume;
+        private UILabel assetBankDirectory;
         private UICheckbox rightHanded;
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
@@ -69,6 +71,7 @@ namespace VRtist
             masterVolume = soundsSubPanel.transform.Find("Master Volume").GetComponent<UISlider>();
             ambientVolume = soundsSubPanel.transform.Find("Ambient Volume").GetComponent<UISlider>();
             uiVolume = soundsSubPanel.transform.Find("UI Volume").GetComponent<UISlider>();
+            assetBankDirectory = advancedSubPanel.transform.Find("AssetBankDirectory").GetComponent<UILabel>();
             rightHanded = advancedSubPanel.transform.Find("RightHanded").GetComponent<UICheckbox>();
             forcePaletteOpen = advancedSubPanel.transform.Find("ForcePaletteOpened").GetComponent<UICheckbox>();
             displayFPS = advancedSubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
@@ -108,10 +111,10 @@ namespace VRtist
             uiVolume.Value = GlobalState.Settings.uiVolume;
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
 
+            SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
             rightHanded.Checked = GlobalState.Settings.rightHanded;
             if (!onStart || !GlobalState.Settings.rightHanded)
                 OnRightHanded(GlobalState.Settings.rightHanded);
-
             forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
             showConsoleWindow.Checked = GlobalState.Settings.consoleVisible;
 
@@ -159,6 +162,18 @@ namespace VRtist
         {
             worldGrid.SetActive(show);
             GlobalState.Settings.displayWorldGrid = show;
+        }
+
+        public void OnEditAssetBankDirectory()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(SetAssetBankDirectory, assetBankDirectory.transform, assetBankDirectory.Text);
+        }
+
+        private void SetAssetBankDirectory(string value)
+        {
+            assetBankDirectory.Text = value;
+            assetBankDirectory.Image = UIUtils.LoadIcon(Directory.Exists(value) ? "validate-icon" : "error");
+            GlobalState.Settings.assetBankDirectory = value;
         }
 
         private void ResetSubPanels()

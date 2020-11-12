@@ -60,7 +60,7 @@ namespace VRtist
 
             if (!device.isValid || controllerTransform == null)
             {
-                Debug.LogError("AnimateControllerButtons could not find the controller.");
+                Debug.LogWarning("AnimateControllerButtons could not find the controller.");
             }
         }
 
