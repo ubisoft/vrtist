@@ -339,6 +339,8 @@ namespace VRtist
             List<byte[]> buffers = new List<byte[]> { sizeBuffer, commandId, typeBuffer, command.data };
 
             socket.Send(MixerUtils.ConcatenateBuffers(buffers));
+
+            //Debug.Log($"Sending command: {command.messageType}");
         }
 
         void AddCommand(NetCommand command)
@@ -625,6 +627,8 @@ namespace VRtist
                 foreach (NetCommand command in commands)
                 {
                     commandProcessedCount++;
+
+                    //Debug.Log($"Receiving command: {command.messageType}");
 
                     try
                     {

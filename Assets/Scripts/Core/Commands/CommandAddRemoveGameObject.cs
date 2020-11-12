@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -21,7 +19,7 @@ namespace VRtist
         {
             gObject = o;
             parent = o.transform.parent.parent;
-        }        
+        }
 
         protected void AddObjectToScene()
         {
@@ -67,6 +65,12 @@ namespace VRtist
             CommandManager.SendEvent(MessageType.Mesh, meshInfos);
             CommandManager.SendEvent(MessageType.Transform, gObject.transform);
 
+            AddObjectToScene();
+        }
+
+        protected void SendEmpty()
+        {
+            MixerClient.GetInstance().SendTransform(gObject.transform);
             AddObjectToScene();
         }
     }

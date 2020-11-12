@@ -562,6 +562,43 @@ namespace VRtist
             return "Mat_" + gobject.name;
         }
 
+        public static GameObject CreateFullHierarchyPrefab(GameObject original)
+        {
+            string rootPath = "__VRtist_Asset_Bank__";
+            GameObject root = null;
+            foreach (var originalTransform in original.GetComponentsInChildren<Transform>())
+            {
+                originalTransform.gameObject.name = CreateUniqueName(originalTransform.gameObject.name);
+                string path = originalTransform.parent != null ? originalTransform.parent.name + "/" + originalTransform.name : originalTransform.name;
+                if (path.StartsWith(rootPath))
+                {
+                    path = path.Substring(rootPath.Length + 1);
+                }
+                Transform prefabTransform = GetOrCreatePrefabPath(path);
+                prefabTransform.localPosition = originalTransform.localPosition;
+                prefabTransform.localRotation = originalTransform.localRotation;
+                prefabTransform.localScale = originalTransform.localScale;
+
+                if (originalTransform.gameObject == original) { root = prefabTransform.gameObject; }
+                MeshFilter meshFilter = originalTransform.GetComponent<MeshFilter>();
+                if (null != meshFilter && null != meshFilter.sharedMesh)
+                {
+                    MixerUtils.ConnectMesh(prefabTransform, meshFilter.sharedMesh);
+                }
+
+                MeshRenderer meshRenderer = originalTransform.GetComponent<MeshRenderer>();
+                if (null != meshRenderer && null != meshRenderer.sharedMaterials)
+                {
+                    MeshRenderer dstMeshRenderer = prefabTransform.GetComponent<MeshRenderer>();
+                    if (null != dstMeshRenderer)
+                    {
+                        dstMeshRenderer.sharedMaterials = meshRenderer.sharedMaterials;
+                        dstMeshRenderer.material.name = GetMaterialName(prefabTransform.gameObject);
+                    }
+                }
+            }
+            return root;
+        }
 
         public static GameObject CreateInstance(GameObject gObject, Transform parent, string name = null, bool isPrefab = false)
         {
@@ -994,6 +1031,16 @@ namespace VRtist
             nodes.Remove(objectName);
         }
 
+        public static Node GetOrCreateNode(GameObject newPrefab)
+        {
+            if (!nodes.TryGetValue(newPrefab.name, out Node node))
+            {
+                node = CreateNode(newPrefab.name);
+                node.prefab = newPrefab;
+            }
+            return node;
+        }
+
         /// <summary>
         /// Create a new prefab node using the given GameObject as the prefab then instantiate it into the scene.
         /// Note that this function does not put the given prefab game object into the prefabs.
@@ -1002,10 +1049,20 @@ namespace VRtist
         /// <returns>Instantiated prefab</returns>
         public static GameObject InstantiatePrefab(GameObject newPrefab)
         {
-            Node node = CreateNode(newPrefab.name);
-            node.prefab = newPrefab;
+            GetOrCreateNode(newPrefab);
             GameObject instance = AddObjectToDocument(root, newPrefab.name);
             return instance;
+        }
+
+        public static GameObject InstantiateFullHierarchyPrefab(GameObject prefab)
+        {
+            GameObject res = InstantiatePrefab(prefab);
+            Node node = nodes[prefab.name];
+            foreach (var child in node.children)
+            {
+                InstantiateFullHierarchyPrefab(child.prefab);
+            }
+            return res;
         }
 
         /// <summary>
@@ -1033,6 +1090,11 @@ namespace VRtist
         public static void SetTransform(string objectName, Matrix4x4 matrix)
         {
             Node node = nodes[objectName];
+            if (null == node)
+            {
+                Debug.LogError($"Object not in nodes: {objectName}");
+                return;
+            }
             node.prefab.transform.localPosition = new Vector3(matrix.GetColumn(3).x, matrix.GetColumn(3).y, matrix.GetColumn(3).z);
             node.prefab.transform.localRotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
             node.prefab.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -50,12 +48,16 @@ namespace VRtist
             {
                 SendMesh();
             }
+            else
+            {
+                SendEmpty();
+            }
         }
 
         public override void Serialize(SceneSerializer serializer)
         {
             ParametersController parametersController = gObject.GetComponent<ParametersController>();
-            if(parametersController)
+            if (parametersController)
             {
                 serializer.AddAsset(parametersController);
             }

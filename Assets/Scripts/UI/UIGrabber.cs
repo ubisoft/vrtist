@@ -7,8 +7,10 @@ namespace VRtist
     [SelectionBase]
     public class UIGrabber : UIElement
     {
-        public GameObject prefab = null;
-        
+        [HideInInspector] public int? uid;
+        public bool rotateOnHover = true;
+        public GameObject prefab;
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = null;
         public GameObjectHashChangedEvent onExitUI3DObject = null;
@@ -18,16 +20,12 @@ namespace VRtist
 
         void Start()
         {
-            if (prefab == null)
+            if (prefab)
             {
-                Debug.LogWarning("No Prefab set for 3d Object.");
-            }
-            else
-            {
-                // TODO: remove? est-ce qu'on utilise encore des UnityEvent<hash>
                 if (ToolsUIManager.Instance != null)
                 {
                     ToolsUIManager.Instance.RegisterUI3DObject(prefab);
+                    uid = prefab.GetHashCode();
                 }
             }
         }
@@ -39,56 +37,17 @@ namespace VRtist
 
         private void Update()
         {
-#if UNITY_EDITOR
             if (NeedsRebuild)
             {
-                //RebuildMesh();
                 UpdateLocalPosition();
-                //UpdateAnchor();
-                //UpdateChildren();
                 ResetColor();
                 NeedsRebuild = false;
             }
-#endif
         }
 
         public override void ResetColor()
         {
             base.ResetColor();
-
-            // Make the canvas pop front if Hovered.
-            //Canvas c = GetComponentInChildren<Canvas>();
-            //if (c != null)
-            //{
-            //    RectTransform rt = c.GetComponent<RectTransform>();
-            //    if (rt != null)
-            //    {
-            //        rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
-            //    }
-            //}
-        }
-
-        public void OnPush3DObject()
-        {
-            Pushed = true;
-            ResetColor();
-
-            transform.localPosition += new Vector3(0f, 0f, -0.02f); // avance vers nous, dnas le repere de la page (local -Z)
-            transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-        }
-
-        public void OnRelease3DObject()
-        {
-            Pushed = false;
-            ResetColor();
-
-            transform.localPosition += new Vector3(0f, 0f, +0.02f); // recule, dnas le repere de la page (local +Z)
-            transform.localScale = Vector3.one;
-        }
-
-        public void OnStayOn3DObject()
-        {
-            transform.localRotation *= Quaternion.Euler(0f, -3f, 0f); // rotate autour du Y du repere du parent (penche a 25, -35, 0)
         }
 
         // Handles multi-mesh and multi-material per mesh.
@@ -113,10 +72,9 @@ namespace VRtist
 
             GoFrontAnimation();
 
-            if (prefab != null)
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onEnterUI3DObject.Invoke(hash);
+                onEnterUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -128,10 +86,9 @@ namespace VRtist
 
             GoFrontAnimation();
 
-            if (prefab != null)
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onEnterUI3DObject.Invoke(hash);
+                onEnterUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -143,16 +100,16 @@ namespace VRtist
 
             onHoverEvent.Invoke();
 
-            RotateAnimation();
+            if (rotateOnHover) { RotateAnimation(); }
         }
 
         public override void OnRayHoverClicked()
         {
             base.OnRayHoverClicked();
-            
+
             onHoverEvent.Invoke();
 
-            RotateAnimation();
+            if (rotateOnHover) { RotateAnimation(); }
         }
 
         public override void OnRayExit()
@@ -160,12 +117,12 @@ namespace VRtist
             base.OnRayExit();
 
             GoBackAnimation();
-            ResetRotation();
 
-            if (prefab != null)
+            if (rotateOnHover) { ResetRotation(); }
+
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onExitUI3DObject.Invoke(hash);
+                onExitUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -177,10 +134,9 @@ namespace VRtist
 
             GoBackAnimation();
 
-            if (prefab != null)
+            if (uid != null)
             {
-                int hash = prefab.GetHashCode();
-                onExitUI3DObject.Invoke(hash);
+                onExitUI3DObject.Invoke((int) uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -200,8 +156,8 @@ namespace VRtist
 
         public override bool OnRayReleaseOutside()
         {
+            if (rotateOnHover) { ResetRotation(); }
             return base.OnRayReleaseOutside();
-            ResetRotation();
         }
 
         public void GoFrontAnimation()

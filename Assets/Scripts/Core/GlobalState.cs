@@ -69,6 +69,12 @@ namespace VRtist
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRenamedEvent = new GameObjectChangedEvent();
 
+        // Geometry Importer
+        private GeometryImporter geometryImporter;
+        public static GeometryImporter GeometryImporter
+        {
+            get { return Instance.geometryImporter; }
+        }
 
         // Animation
         //private AnimationController animationController = new AnimationController();
@@ -125,6 +131,8 @@ namespace VRtist
             colorReleasedEvent = new ColorChangedEvent();
             instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
             colorClickedEvent = colorPicker.onClickEvent;
+
+            geometryImporter = GetComponent<GeometryImporter>();
         }
 
         private void OnDestroy()

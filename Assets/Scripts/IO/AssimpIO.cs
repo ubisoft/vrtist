@@ -53,7 +53,7 @@ namespace VRtist
             }
             public bool Error
             {
-                get { return error;  }
+                get { return error; }
             }
 
             public string Filename
@@ -80,18 +80,6 @@ namespace VRtist
 
         ImporterState importerState = ImporterState.Ready;
 
-        void ApplyParameters(Transform importedGeometries, string filename)
-        {
-            Transform root = null;
-            if (importedGeometries.childCount > 0)
-            {
-                // Get last child
-                root = importedGeometries.GetChild(importedGeometries.childCount - 1);
-                GeometryController geometryController = root.gameObject.AddComponent<GeometryController>();
-                GeometryParameters geometryParameters = geometryController.GetParameters() as GeometryParameters;
-                geometryParameters.filename = filename;
-            }
-        }
         public void Import(string fileName, Transform root, bool synchronous = false)
         {
             blocking = synchronous;
@@ -103,7 +91,6 @@ namespace VRtist
                     Assimp.PostProcessSteps.GenerateNormals |
                     Assimp.PostProcessSteps.GenerateUVCoords);
                 CreateUnityDataFromAssimp(fileName, aScene, root).MoveNext();
-                ApplyParameters(root, fileName);
                 Clear();
                 progress = 1.0f;
             }
@@ -115,13 +102,13 @@ namespace VRtist
                 taskData.Add(d);
             }
         }
-        
+
         void Update()
-        {         
-            switch(importerState)
+        {
+            switch (importerState)
             {
                 case ImporterState.Ready:
-                    if(taskData.Count > 0)
+                    if (taskData.Count > 0)
                     {
                         // Assimp loading
                         ImportTaskData d = taskData[0];
@@ -132,7 +119,7 @@ namespace VRtist
                     break;
 
                 case ImporterState.Initialized:
-                    if(currentTask.IsCompleted)
+                    if (currentTask.IsCompleted)
                     {
                         // Convert assimp structures into unity
                         var scene = currentTask.Result;
@@ -172,8 +159,6 @@ namespace VRtist
                         Clear();
                         importerState = ImporterState.Ready;
 
-                        ApplyParameters(tdata.root.transform, tdata.fileName);
-
                         Transform root = tdata.root.transform.GetChild(tdata.root.transform.childCount - 1);
                         ImportTaskEventArgs args = new ImportTaskEventArgs(root, tdata.fileName, false);
                         progress = 1f;
@@ -197,7 +182,7 @@ namespace VRtist
 
             Vector3[] vertices = new Vector3[assimpMesh.VertexCount];
             Vector2[][] uv = new Vector2[assimpMesh.TextureCoordinateChannelCount][];
-            for( i = 0; i < assimpMesh.TextureCoordinateChannelCount; i++ )
+            for (i = 0; i < assimpMesh.TextureCoordinateChannelCount; i++)
             {
                 uv[i] = new Vector2[assimpMesh.VertexCount];
             }
@@ -269,14 +254,14 @@ namespace VRtist
                 triangles[i + 0] = face.Indices[0];
                 triangles[i + 1] = face.Indices[1];
                 triangles[i + 2] = face.Indices[2];
-                i+=3;
+                i += 3;
             }
 
             SubMeshComponent subMeshComponent = new SubMeshComponent();
             Mesh mesh = new Mesh();
             mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.vertices = vertices;
-            if(assimpMesh.TextureCoordinateChannelCount > 0)
+            if (assimpMesh.TextureCoordinateChannelCount > 0)
                 mesh.uv = uv[0];
             if (assimpMesh.TextureCoordinateChannelCount > 1)
                 mesh.uv2 = uv[1];
@@ -310,7 +295,7 @@ namespace VRtist
         private IEnumerator ImportMeshes()
         {
             int i = 0;
-            foreach(Assimp.Mesh assimpMesh in scene.Meshes)
+            foreach (Assimp.Mesh assimpMesh in scene.Meshes)
             {
                 SubMeshComponent subMeshComponent = ImportMesh(assimpMesh);
                 meshes.Add(subMeshComponent);
@@ -318,7 +303,7 @@ namespace VRtist
 
                 progress += 0.25f / scene.MeshCount;
 
-                if(!blocking)
+                if (!blocking)
                     yield return null;
             }
         }
@@ -326,9 +311,9 @@ namespace VRtist
         private Texture2D GetOrCreateTextureFromFile(string filename)
         {
             CultureInfo ci = new CultureInfo("en-US");
-            if (!filename.EndsWith(".jpg", false, ci) && 
-                !filename.EndsWith(".png", false, ci) && 
-                !filename.EndsWith(".exr", false, ci) && 
+            if (!filename.EndsWith(".jpg", false, ci) &&
+                !filename.EndsWith(".png", false, ci) &&
+                !filename.EndsWith(".exr", false, ci) &&
                 !filename.EndsWith(".tga", false, ci))
                 return null;
 
@@ -337,14 +322,14 @@ namespace VRtist
                 return texture;
 
             byte[] bytes = System.IO.File.ReadAllBytes(filename);
-            texture = new Texture2D(1,1);
+            texture = new Texture2D(1, 1);
             texture.LoadImage(bytes);
             textures[filename] = texture;
             return texture;
         }
 
         private IEnumerator ImportMaterials()
-        {            
+        {
             int i = 0;
             Shader hdrplit = Shader.Find("HDRP/Lit");
             foreach (Assimp.Material assimpMaterial in scene.Materials)
@@ -387,7 +372,7 @@ namespace VRtist
 
                 if (!blocking)
                     yield return null;
-            }            
+            }
         }
 
         private void AssignMeshes(Assimp.Node node, GameObject parent)
@@ -416,12 +401,12 @@ namespace VRtist
             meshFilter.name = meshes[node.MeshIndices[0]].name;
             meshRenderer.sharedMaterials = mats;
             MeshCollider collider = parent.AddComponent<MeshCollider>();
-            
+
             progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
-        }        
+        }
 
         private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
-        {            
+        {
             if (parent != null && parent != go.transform)
                 go.transform.parent = parent;
 
@@ -472,7 +457,7 @@ namespace VRtist
                 yield return StartCoroutine(ImportMeshes());
 
             GameObject objectRoot = root.gameObject;
-            
+
             objectRoot = new GameObject();
             // Right handed to Left Handed
             objectRoot.name = Path.GetFileNameWithoutExtension(fileName);
@@ -480,7 +465,7 @@ namespace VRtist
             objectRoot.transform.localPosition = Vector3.zero;
             objectRoot.transform.localScale = new Vector3(-1, 1, 1);
             objectRoot.transform.localRotation = Quaternion.Euler(0, 180, 0);
-        
+
             if (blocking)
                 ImportHierarchy(scene.RootNode, root, objectRoot).MoveNext();
             else
@@ -500,7 +485,7 @@ namespace VRtist
                         Assimp.PostProcessSteps.GenerateNormals |
                         Assimp.PostProcessSteps.GenerateUVCoords);
                 }
-                catch(Assimp.AssimpException e)
+                catch (Assimp.AssimpException e)
                 {
                     Debug.LogError(e.Message);
                     aScene = null;

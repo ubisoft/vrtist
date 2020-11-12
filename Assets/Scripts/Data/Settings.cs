@@ -53,15 +53,15 @@ namespace VRtist
             middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
             bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
         };
-        public List<SkySettings> skies = new List<SkySettings>() { 
+        public List<SkySettings> skies = new List<SkySettings>() {
             new SkySettings
             {
                 topColor = new Color(212f / 255f, 212f / 255f, 212f / 255f),
                 middleColor = new Color(195f / 255f, 195f / 255f, 195f / 255f),
                 bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
-            } 
+            }
         };
-        
+
         public bool castShadows = false;
 
         [Range(1.0f, 100.0f)]
@@ -78,6 +78,8 @@ namespace VRtist
         public AnimationCurve focalCurve;
 
         public Interpolation interpolation = Interpolation.Linear;
+
+        public string assetBankDirectory = "D:/VRtistData/";
 
         public void Reset()
         {
@@ -133,6 +135,8 @@ namespace VRtist
                     bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
                 }
             };
+
+            assetBankDirectory = "D:/VRtistData/";
         }
 
         public void SaveWindowPosition(Transform window)
@@ -241,5 +245,4 @@ namespace VRtist
             }
         }
     }
-
 }

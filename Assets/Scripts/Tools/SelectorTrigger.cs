@@ -86,7 +86,9 @@ namespace VRtist
                 GameObject gObject = GetRootIfCollectionInstance(other.gameObject);
 
                 if (!collidedObjects.Contains(gObject))
+                {
                     collidedObjects.Add(gObject);
+                }
                 if (Selection.GetHoveredObject() != gObject)
                 {
                     Selection.SetHoveredObject(gObject);
@@ -142,7 +144,11 @@ namespace VRtist
             GameObject hoveredObject = Selection.GetHoveredObject();
 
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip,
-                 () => { Selection.SetGrippedObject(hoveredObject); },
+                 () =>
+                 {
+                     Selection.SetGrippedObject(hoveredObject);
+                     if (null != hoveredObject) { collidedObjects.Clear(); }
+                 },
                  () => { Selection.SetGrippedObject(null); });
 
             // Mono-selection using the grip button

@@ -41,7 +41,7 @@ namespace VRtist
 
         private void CaptureControllers()
         {
-            for(int i = 0; i < transform.childCount; ++i)
+            for (int i = 0; i < transform.childCount; ++i)
             {
                 string childName = transform.GetChild(i).gameObject.name;
                 if (childName == "left_controller")
@@ -60,7 +60,7 @@ namespace VRtist
 
             if (!device.isValid || controllerTransform == null)
             {
-                Debug.LogError("AnimateControllerButtons could not find the controller.");
+                Debug.LogWarning("AnimateControllerButtons could not find the controller.");
             }
         }
 
@@ -117,6 +117,12 @@ namespace VRtist
         // Update is called once per frame
         void Update()
         {
+            if (!device.isValid || controllerTransform == null)
+            {
+                CaptureControllers();
+                CaptureInitialTransforms();
+            }
+
             // GRIP
             if (null != gripTransform)
             {

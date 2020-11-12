@@ -1487,7 +1487,7 @@ namespace VRtist
 
             for (int i = 0; i < nbSubdiv; ++i) // [0..nb-1]
             {
-                float pct = (float)i / (float)(nbSubdiv - 1);
+                float pct = (float) i / (float) (nbSubdiv - 1);
                 float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
                 float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
                 Vector3 innerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, 0);
@@ -1524,7 +1524,7 @@ namespace VRtist
 
             for (int i = 0; i < nbSubdiv; ++i) // [0..nb-1]
             {
-                float pct = (float)i / (float)(nbSubdiv - 1);
+                float pct = (float) i / (float) (nbSubdiv - 1);
                 float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
                 float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
                 Vector3 bottomInnerCirclePos = new Vector3(w2 - ir * cos, -h2 + ir * sin, thickness);
@@ -1561,7 +1561,7 @@ namespace VRtist
 
             for (int i = 0; i < nbSubdiv; ++i) // [0..nb-1]
             {
-                float pct = (float)i / (float)(nbSubdiv - 1);
+                float pct = (float) i / (float) (nbSubdiv - 1);
                 float cos = Mathf.Cos(2.0f * Mathf.PI * pct); // [1..0..-1..0..1]
                 float sin = Mathf.Sin(2.0f * Mathf.PI * pct); // [0..1..0..-1..0]
                 Vector3 bottomOuterCirclePos = new Vector3(w2 - or * cos, -h2 + or * sin, thickness);
