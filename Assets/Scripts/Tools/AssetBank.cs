@@ -289,7 +289,10 @@ namespace VRtist
             // OnStartGrip must be called after object instantiation 
             if (item.imported)
             {
-                OnStartGrip();
+                if (VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
+                {
+                    OnStartGrip();
+                }
                 loadingAsset = false;
                 GlobalState.Instance.messageBox.SetVisible(false);
                 return true;
