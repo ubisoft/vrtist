@@ -94,6 +94,8 @@ namespace VRtist
             ObjectRenamedEvent.Invoke(gObject);
         }
 
+        public MessageBox messageBox = null;
+
         // Singleton
         private static GlobalState instance = null;
         public static GlobalState Instance

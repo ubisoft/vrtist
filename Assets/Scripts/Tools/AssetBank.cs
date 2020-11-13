@@ -210,6 +210,7 @@ namespace VRtist
             GameObject original = item.original;
             if (null == original)
             {
+                GlobalState.Instance.messageBox.ShowMessage("Loading asset, please wait...");
                 loadingAsset = true;
                 Selection.ClearSelection();
                 item.imported = true;
@@ -290,6 +291,7 @@ namespace VRtist
             {
                 OnStartGrip();
                 loadingAsset = false;
+                GlobalState.Instance.messageBox.SetVisible(false);
                 return true;
             }
             return false;
