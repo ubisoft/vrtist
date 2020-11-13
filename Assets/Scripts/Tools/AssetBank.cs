@@ -139,6 +139,7 @@ namespace VRtist
             GameObject original = Instantiate(Resources.Load<GameObject>(originalPath));
             original.transform.parent = bank.transform;
             GameObject thumbnail = Instantiate(Resources.Load<GameObject>(uiPath));
+            thumbnail.transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
             AddObject(tags, name, thumbnail, original, true);
         }
 

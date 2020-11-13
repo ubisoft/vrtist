@@ -50,7 +50,7 @@ MonoBehaviour:
   height: 1
   baseColor:
     useConstant: 1
-    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    constant: {r: 0.8584906, g: 0.8584906, b: 0.8584906, a: 1}
     reference:
       isHdr: 0
       value: {r: 0, g: 0, b: 0, a: 0}
@@ -80,7 +80,7 @@ MonoBehaviour:
       value: {r: 0, g: 0, b: 0, a: 0}
   hoveredColor:
     useConstant: 1
-    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    constant: {r: 0, g: 0.65, b: 1, a: 1}
     reference:
       isHdr: 0
       value: {r: 0, g: 0, b: 0, a: 0}

@@ -262,6 +262,7 @@ Material:
     - _UseOpacityMap: 0
     - _UseRoughnessMap: 0
     - _UseShadowThreshold: 0
+    - _WrapDiffuse: 1
     - _ZTestDepthEqualForOpaque: 3
     - _ZTestGBuffer: 4
     - _ZTestModeDistortion: 8

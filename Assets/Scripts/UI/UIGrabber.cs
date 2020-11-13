@@ -26,6 +26,7 @@ namespace VRtist
                 {
                     ToolsUIManager.Instance.RegisterUI3DObject(prefab);
                     uid = prefab.GetHashCode();
+                    transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
                 }
             }
         }
