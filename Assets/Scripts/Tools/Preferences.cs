@@ -46,6 +46,7 @@ namespace VRtist
         private UILabel versionLabel;
 
         private bool firstTimeShowConsole = true;
+        private bool previousRightHandedValue = true;
 
         private void Start()
         {
@@ -77,6 +78,8 @@ namespace VRtist
             displayFPS = advancedSubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
             showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
+
+            previousRightHandedValue = GlobalState.Settings.rightHanded;
 
             Apply(onStart: true);
 
@@ -113,7 +116,7 @@ namespace VRtist
 
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
             rightHanded.Checked = GlobalState.Settings.rightHanded;
-            if (!onStart || !GlobalState.Settings.rightHanded)
+            if (!(onStart && GlobalState.Settings.rightHanded))
                 OnRightHanded(GlobalState.Settings.rightHanded);
             forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
             showConsoleWindow.Checked = GlobalState.Settings.consoleVisible;
@@ -245,7 +248,12 @@ namespace VRtist
 
         public void OnRightHanded(bool value)
         {
+            if (previousRightHandedValue == value)
+                return;
+
+            previousRightHandedValue = value;
             GlobalState.Settings.rightHanded = value;
+
             GameObject leftPrefab = Resources.Load("Prefabs/left_controller") as GameObject;
             GameObject rightPrefab = Resources.Load("Prefabs/right_controller") as GameObject;
 
