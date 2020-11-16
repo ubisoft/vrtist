@@ -843,11 +843,10 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Duplicate Selection");
             try
             {
-                ManageMoveObjectsUndo();
-
                 List<GameObject> objectsToBeDuplicated = Selection.GetGrippedOrSelection();
                 foreach (GameObject obj in objectsToBeDuplicated)
                     DuplicateObject(obj);
+                ManageMoveObjectsUndo();
             }
             finally
             {

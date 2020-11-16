@@ -368,16 +368,22 @@ namespace VRtist
         public static void Duplicate(Transform prefab, byte[] data)
         {
             int bufferIndex = 0;
-            Transform srcPath = FindPath(prefab, data, ref bufferIndex);
-            if (srcPath == null)
+
+            // find source prefab
+            string path = MixerUtils.GetString(data, ref bufferIndex);
+            if (path == "")
                 return;
+            char[] separator = { '/' };
+            string[] splitted = path.Split(separator);
+            string srcPrefabName = splitted[splitted.Length - 1];
+            GameObject srcPrefab = SyncData.nodes[srcPrefabName].prefab;
 
+            // duplicata name
             string name = GetString(data, ref bufferIndex);
-
             Matrix4x4 mat = GetMatrix(data, ref bufferIndex);
             Maths.DecomposeMatrix(mat, out Vector3 position, out Quaternion rotation, out Vector3 scale);
 
-            GameObject newGameObject = SyncData.Duplicate(srcPath.gameObject, name);
+            GameObject newGameObject = SyncData.Duplicate(srcPrefab, name);
             newGameObject.transform.localPosition = position;
             newGameObject.transform.localRotation = rotation;
             newGameObject.transform.localScale = scale;

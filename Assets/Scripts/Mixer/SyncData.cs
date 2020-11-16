@@ -1015,7 +1015,14 @@ namespace VRtist
             GameObject srcPrefab = srcNode.prefab;
 
             GameObject prefabClone = SyncData.CreateInstance(srcInstance, srcPrefab.transform.parent.parent, name);
-            Node prefabCloneNode = CreateNode(prefabClone.name, srcNode.parent);
+            
+            Matrix4x4 matrix = root.worldToLocalMatrix * srcInstance.transform.localToWorldMatrix;
+            Maths.DecomposeMatrix(matrix, out Vector3 position, out Quaternion quaternion, out Vector3 scale);
+            prefabClone.transform.localPosition = position;
+            prefabClone.transform.localRotation = quaternion;
+            prefabClone.transform.localScale = scale;
+            
+            Node prefabCloneNode = CreateNode(prefabClone.name, null);
             prefabCloneNode.prefab = prefabClone;
             GameObject clone = AddObjectToDocument(root, prefabClone.name, "/");
 
