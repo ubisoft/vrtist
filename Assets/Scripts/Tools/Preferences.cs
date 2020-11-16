@@ -231,57 +231,124 @@ namespace VRtist
             {
                 Transform lineTooltip = anchor.GetChild(i);
                 LineRenderer line = lineTooltip.GetComponent<LineRenderer>();
-                Vector3 currentPosition = line.GetPosition(1);
-                line.SetPosition(1, new Vector3(-currentPosition.x, currentPosition.y, currentPosition.z));
+                if (null != line)
+                {
+                    Vector3 currentPosition = line.GetPosition(1);
+                    line.SetPosition(1, new Vector3(-currentPosition.x, currentPosition.y, currentPosition.z));
 
-                Transform tooltip = lineTooltip.Find("Frame");
-                Vector3 tooltipPosition = tooltip.localPosition;
-                tooltip.localPosition = new Vector3(-tooltipPosition.x, tooltipPosition.y, tooltipPosition.z);
+                    Transform tooltip = lineTooltip.Find("Frame");
+                    Vector3 tooltipPosition = tooltip.localPosition;
+                    tooltip.localPosition = new Vector3(-tooltipPosition.x, tooltipPosition.y, tooltipPosition.z);
+                }
             }
         }
 
         public void OnRightHanded(bool value)
         {
             GlobalState.Settings.rightHanded = value;
-            GameObject leftController = Resources.Load("Prefabs/left_controller") as GameObject;
-            GameObject rightController = Resources.Load("Prefabs/right_controller") as GameObject;
+            GameObject leftPrefab = Resources.Load("Prefabs/left_controller") as GameObject;
+            GameObject rightPrefab = Resources.Load("Prefabs/right_controller") as GameObject;
 
-            Transform leftControllerInstance = leftHandle.Find("left_controller");
-            Transform rightControllerInstance = rightHandle.Find("right_controller");
+            Transform leftInstance = leftHandle.Find("left_controller");
+            Transform rightInstance = rightHandle.Find("right_controller");
 
-            // TODO: - Handle the many meshes of a controller.
-            //       - Reset the initXXXPosition/Rotation in AnimateControllerButtons
+            // Get the prefab and instance controller meshes/parts
+            MeshFilter[] leftPrefabMeshFilters = leftPrefab.GetComponentsInChildren<MeshFilter>();
+            MeshFilter[] rightPrefabMeshFilters = rightPrefab.GetComponentsInChildren<MeshFilter>();
+            MeshFilter[] leftInstanceMeshFilters = leftInstance.GetComponentsInChildren<MeshFilter>();
+            MeshFilter[] rightInstanceMeshFilters = rightInstance.GetComponentsInChildren<MeshFilter>();
 
-            Mesh leftControllerMesh = leftController.GetComponent<MeshFilter>().sharedMesh;
-            Mesh rightControllerMesh = rightController.GetComponent<MeshFilter>().sharedMesh;
-
+            // Copy prefab/default (right handed) transforms and meshes to the corresponding controller.
             if (value)
             {
-                leftControllerInstance.GetComponent<MeshFilter>().mesh = leftControllerMesh;
-                leftControllerInstance.localPosition = leftController.transform.localPosition;
+                Canvas fpsPrefabCanvas = leftPrefab.transform.Find("Canvas").GetComponent<Canvas>();
+                Canvas fpsInstanceCanvas = leftInstance.Find("Canvas").GetComponent<Canvas>();
+                fpsInstanceCanvas.transform.localPosition = fpsPrefabCanvas.transform.localPosition;
 
-                rightControllerInstance.GetComponent<MeshFilter>().mesh = rightControllerMesh;
-                rightControllerInstance.localPosition = rightController.transform.localPosition;
+                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
+                {
+                    leftInstanceMeshFilters[i].mesh = leftPrefabMeshFilters[i].sharedMesh;
+                }
+
+                leftInstance.localPosition = leftPrefab.transform.localPosition;
+                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
+                {
+                    if (leftInstanceMeshFilters[i].gameObject.name != "left_controller")
+                    {
+                        // copy the translations/rotations of the pivots of mesh objects (parents)
+                        leftInstanceMeshFilters[i].transform.parent.localPosition = leftPrefabMeshFilters[i].transform.parent.localPosition;
+                        leftInstanceMeshFilters[i].transform.parent.localRotation = leftPrefabMeshFilters[i].transform.parent.localRotation;
+                    }
+                }
+
+                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
+                {
+                    rightInstanceMeshFilters[i].mesh = rightPrefabMeshFilters[i].sharedMesh;
+                }
+
+                rightInstance.localPosition = rightPrefab.transform.localPosition;
+                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
+                {
+                    if (rightInstanceMeshFilters[i].gameObject.name != "right_controller")
+                    {
+                        // copy the translations/rotations of the pivots of mesh objects (parents)
+                        rightInstanceMeshFilters[i].transform.parent.localPosition = rightPrefabMeshFilters[i].transform.parent.localPosition;
+                        rightInstanceMeshFilters[i].transform.parent.localRotation = rightPrefabMeshFilters[i].transform.parent.localRotation;
+                    }
+                }
             }
             else
             {
-                leftControllerInstance.GetComponent<MeshFilter>().mesh = rightControllerMesh;
-                leftControllerInstance.localPosition = rightController.transform.localPosition;
+                Canvas fpsPrefabCanvas = leftPrefab.transform.Find("Canvas").GetComponent<Canvas>();
+                Canvas fpsInstanceCanvas = leftInstance.Find("Canvas").GetComponent<Canvas>();
+                fpsInstanceCanvas.transform.localPosition = Vector3.Scale(fpsPrefabCanvas.transform.localPosition, new Vector3(-1,1,1));
 
-                rightControllerInstance.GetComponent<MeshFilter>().mesh = leftControllerMesh;
-                rightControllerInstance.localPosition = leftController.transform.localPosition;
+                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
+                {
+                    leftInstanceMeshFilters[i].mesh = rightPrefabMeshFilters[i].sharedMesh;
+                }
+
+                leftInstance.localPosition = rightPrefab.transform.localPosition;
+                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
+                {
+                    if (leftInstanceMeshFilters[i].gameObject.name != "left_controller")
+                    {
+                        // copy the translations/rotations of the pivots of mesh objects (parents)
+                        leftInstanceMeshFilters[i].transform.parent.localPosition = rightPrefabMeshFilters[i].transform.parent.localPosition;
+                        leftInstanceMeshFilters[i].transform.parent.localRotation = rightPrefabMeshFilters[i].transform.parent.localRotation;
+                    }
+                }
+
+                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
+                {
+                    rightInstanceMeshFilters[i].mesh = leftPrefabMeshFilters[i].sharedMesh;
+                }
+
+                rightInstance.localPosition = leftPrefab.transform.localPosition;
+                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
+                {
+                    if (rightInstanceMeshFilters[i].gameObject.name != "right_controller")
+                    {
+                        // copy the translations/rotations of the pivots of mesh objects (parents)
+                        rightInstanceMeshFilters[i].transform.parent.localPosition = leftPrefabMeshFilters[i].transform.parent.localPosition;
+                        rightInstanceMeshFilters[i].transform.parent.localRotation = leftPrefabMeshFilters[i].transform.parent.localRotation;
+                    }
+                }
             }
 
-            // TODO: anchors are no longer the only children of controllers, change the logic of this code.
-            // switch anchors positions
-            for (int i = 0; i < leftControllerInstance.childCount; i++)
-            {
-                // TMP test: I have only handled the left controller movable parts for the moments, childCount is not the same.
-                if (rightControllerInstance.childCount > i)
-                {
-                    Transform leftChild = leftControllerInstance.GetChild(i);
-                    Transform rightChild = rightControllerInstance.GetChild(i);
+            AnimateControllerButtons acmLeft = leftInstance.parent.GetComponent<AnimateControllerButtons>();
+            AnimateControllerButtons acmRight = rightInstance.parent.GetComponent<AnimateControllerButtons>();
 
+            acmLeft.OnRightHanded(value);
+            acmRight.OnRightHanded(value);
+
+            // Swap tooltips anchors            
+            for (int i = 0; i < leftInstance.childCount; i++)
+            {
+                Transform leftChild = leftInstance.GetChild(i);
+                if (leftChild.name.EndsWith("Anchor"))
+                {
+                    Transform rightChild = rightInstance.GetChild(i);
                     InvertTooltip(leftChild);
                     InvertTooltip(rightChild);
 

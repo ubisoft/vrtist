@@ -32,6 +32,8 @@ namespace VRtist
         private InputDevice device;
         private Transform controllerTransform = null;
 
+        private float gripDirection = 1.0f;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -106,12 +108,14 @@ namespace VRtist
             }
         }
 
-        public void OnRightHanded()
+        public void OnRightHanded(bool isRightHanded)
         {
             // TODO: handle what needs to be handled when we change hands.
 
             CaptureControllers();
             CaptureInitialTransforms();
+
+            gripDirection = isRightHanded ? 1.0f : -1.0f;
         }
 
         // Update is called once per frame
@@ -127,7 +131,7 @@ namespace VRtist
             if (null != gripTransform)
             {
                 float gripAmount = VRInput.GetValue(device, CommonUsages.grip);
-                gripTransform.localRotation = initGripRotation * Quaternion.Euler(0, gripAmount * gripRotationAmplitude, 0);
+                gripTransform.localRotation = initGripRotation * Quaternion.Euler(0, gripAmount * gripRotationAmplitude * gripDirection, 0);
                 gripTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", gripAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
             }
 
