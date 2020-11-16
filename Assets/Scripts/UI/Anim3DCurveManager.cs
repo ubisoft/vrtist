@@ -107,6 +107,9 @@ namespace VRtist
             int frameStart = Mathf.Clamp(positionX.keys[0].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
             int frameEnd = Mathf.Clamp(positionX.keys[positionX.keys.Count - 1].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
 
+            Transform curves3DTransform = GlobalState.Instance.world.Find("Curves3D");
+            Matrix4x4 matrix = curves3DTransform.worldToLocalMatrix * gObject.transform.parent.localToWorldMatrix;
+
             List<Vector3> positions = new List<Vector3>();
             Vector3 previousPosition = Vector3.positiveInfinity;
             for (int i = frameStart; i <= frameEnd; i++)
@@ -117,6 +120,8 @@ namespace VRtist
                 Vector3 position = new Vector3(x, y, z);
                 if (previousPosition != position)
                 {
+                    position = matrix.MultiplyPoint(position);
+
                     positions.Add(position);
                     previousPosition = position;
                 }
