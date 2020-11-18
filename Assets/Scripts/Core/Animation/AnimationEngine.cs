@@ -417,6 +417,20 @@ namespace VRtist
             onChangeCurve.Invoke(gobject, property);
         }
 
+        private void RemoveEmptyAnimationSet(GameObject gobject)
+        {
+            AnimationSet animationSet = GetObjectAnimation(gobject);
+            if (null == animationSet)
+                return;
+            foreach (Curve curve in animationSet.curves.Values)
+            {
+                if (curve.keys.Count != 0)
+                    return;
+            }
+
+            animations.Remove(gobject);
+        }
+
         public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, int frame)
         {
             AnimationSet animationSet = GetObjectAnimation(gobject);
@@ -424,6 +438,9 @@ namespace VRtist
                 return;
             Curve curve = animationSet.GetCurve(property);
             curve.RemoveKey(frame);
+
+            RemoveEmptyAnimationSet(gobject);
+
             if (!IsAnimating())
                 EvaluateAnimations();
             onChangeCurve.Invoke(gobject, property);
