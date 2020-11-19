@@ -8,6 +8,7 @@ namespace VRtist
     public class SelectionHelper : MonoBehaviour
     {
         private TextMeshProUGUI text;
+        private TextMeshProUGUI rightControllerText;
         private Image image;
 
         private Sprite selectImage;
@@ -27,6 +28,7 @@ namespace VRtist
             //hidden = new bool[6];
 
             text = GetComponentInChildren<TextMeshProUGUI>();
+            rightControllerText = transform.parent.Find("right_controller/Canvas/Text").GetComponent<TextMeshProUGUI>();
             image = transform.Find("Canvas/Panel/Image").GetComponent<Image>();
 
             selectImage = UIUtils.LoadIcon("select");
@@ -130,6 +132,7 @@ namespace VRtist
         {
             int count = Selection.selection.Count;
             text.text = count.ToString();
+            rightControllerText.text = "Sel " + count.ToString();
             hasSelection = count > 0;
             gameObject.SetActive(hasSelection);
         }
@@ -140,6 +143,7 @@ namespace VRtist
             {
                 image.sprite = grabImage;
                 text.text = "1";  // we can grab only one object outside of the selection
+                rightControllerText.text = "Grab 1";
             }
             else
             {
