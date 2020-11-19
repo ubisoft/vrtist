@@ -32,7 +32,7 @@ namespace VRtist
             GameObject[] roots = scene.GetRootGameObjects();
             for (int i = 0; i < roots.Length; i++)
             {
-                if (roots[i].name == "Volume")
+                if (roots[i].name == "VolumePostProcess")
                 {
                     return roots[i].GetComponent<Volume>();
                 }
