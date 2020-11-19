@@ -312,7 +312,7 @@ namespace VRtist
 
             selection.Add(gObject.GetInstanceID(), gObject);
 
-            CameraController controller = gObject.GetComponent<CameraController>();
+            CameraController controller = gObject.GetComponentInChildren<CameraController>(true);
             if (null != controller)
                 SetActiveCamera(controller);
 

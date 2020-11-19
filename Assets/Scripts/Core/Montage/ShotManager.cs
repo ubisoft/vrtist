@@ -34,7 +34,7 @@ namespace VRtist
                 activeShotIndex = value;
                 ActiveShotChangedEvent.Invoke();
 
-                if (!montageEnabled && GlobalState.Animation.IsAnimating())
+                if (!montageEnabled || !GlobalState.Animation.IsAnimating())
                     return;
                 
                 if (activeShotIndex >= 0 && activeShotIndex < shots.Count)
