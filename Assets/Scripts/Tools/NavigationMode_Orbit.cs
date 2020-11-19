@@ -121,7 +121,7 @@ namespace VRtist
                     ray.SetActiveColor();
                     if(target)
                     {
-                        Selection.AddToHover(target.gameObject);
+                        Selection.AddToHoverLayer(target.gameObject);
                     }
                 }
                 else
