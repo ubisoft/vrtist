@@ -331,6 +331,7 @@ namespace VRtist
                     value = prevKey.value;
                     return true;
 
+                case Interpolation.Other:
                 case Interpolation.Linear:
                     {
                         AnimationKey nextKey = keys[prevIndex + 1];

@@ -441,7 +441,7 @@ MonoBehaviour:
   clearDepth: 1
   volumeLayerMask:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 256
   volumeAnchorOverride: {fileID: 0}
   antialiasing: 1
   SMAAQuality: 2

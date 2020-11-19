@@ -1291,6 +1291,8 @@ namespace VRtist
             int channelIndex = GetInt(data, ref currentIndex);
 
             int keyCount = GetInt(data, ref currentIndex);
+            if (0 == keyCount)
+                return;
 
             int[] intBuffer = new int[keyCount];
             float[] floatBuffer = new float[keyCount];
