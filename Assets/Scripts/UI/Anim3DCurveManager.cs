@@ -104,6 +104,15 @@ namespace VRtist
             Curve positionY = animationSet.GetCurve(AnimatableProperty.PositionY);
             Curve positionZ = animationSet.GetCurve(AnimatableProperty.PositionZ);
 
+            if (null == positionX || null == positionY || null == positionZ)
+                return;
+
+            if (positionX.keys.Count == 0)
+                return;
+
+            if (positionX.keys.Count != positionY.keys.Count || positionX.keys.Count != positionZ.keys.Count)
+                return;
+
             int frameStart = Mathf.Clamp(positionX.keys[0].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
             int frameEnd = Mathf.Clamp(positionX.keys[positionX.keys.Count - 1].frame, GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
 

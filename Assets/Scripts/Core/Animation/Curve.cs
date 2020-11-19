@@ -31,12 +31,15 @@ namespace VRtist
         public void ComputeCache()
         {
             ComputeCacheIndices();
-            ComputeCacheValues(0, cachedValues.Length - 1);
+            int length = -1;
+            if (null != cachedValues)
+                length = cachedValues.Length - 1;
+            ComputeCacheValues(0, length);
         }
 
         private void ComputeCacheValues(int startIndex, int endIndex)
         {
-            if (cachedValues.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
+            if (null == cachedValues || cachedValues.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
             {
                 cachedValues = new float[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
                 startIndex = 0;
@@ -68,7 +71,7 @@ namespace VRtist
 
         private void ComputeCacheIndices()
         {
-            if (cachedKeysIndices.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
+            if (null == cachedKeysIndices || cachedKeysIndices.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
             {
                 cachedKeysIndices = new int[GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1];
             }

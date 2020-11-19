@@ -80,8 +80,8 @@ namespace VRtist
                 SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
 
                 lineUI.Show(false);
-                GlobalState.IsGrippingWorld = false;
                 ToolsManager.ActivateCurrentTool(true);
+                GlobalState.IsGrippingWorld = false;
 
                 isLeftGripped = false;
             });
@@ -124,11 +124,10 @@ namespace VRtist
                     ResetInitWorldMatrix();
 
                     SetLeftControllerVisibility(ControllerVisibility.SHOW_NORMAL);
-
-                    //lineUI.Show(true, StretchUI.LineMode.SINGLE);
-                    GlobalState.IsGrippingWorld = false;
-                    ToolsManager.ActivateCurrentTool(true);
                 }
+                //lineUI.Show(true, StretchUI.LineMode.SINGLE);
+                ToolsManager.ActivateCurrentTool(true);
+                GlobalState.IsGrippingWorld = false;
 
                 isRightGripped = false;
             });

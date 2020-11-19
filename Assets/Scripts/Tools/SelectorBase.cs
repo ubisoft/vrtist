@@ -228,6 +228,9 @@ namespace VRtist
 
         public void OnGripWorld(bool value)
         {
+            if (!gameObject.activeSelf)
+                return;
+
             if (value)
             {
                 if (!gripPrevented && Gripping) // no need to interrupt if the grip was prevented
@@ -235,6 +238,11 @@ namespace VRtist
                     OnEndGrip(); // prematurely end the grip action
                     gripInterrupted = true; // set bool to return immediately in the "real" OnEndGrip called when ungripping the controller.
                 }
+            }
+            else
+            {
+                gripInterrupted = false;
+                gripPrevented = false;
             }
         }
 
@@ -835,6 +843,8 @@ namespace VRtist
             {
                 Selection.SetGrippedObject(clone);
             }
+
+            selectorTrigger.ClearCollidedObjects();
             return clone;
         }
 

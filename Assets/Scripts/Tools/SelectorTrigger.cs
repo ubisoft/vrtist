@@ -112,6 +112,11 @@ namespace VRtist
             }
         }
 
+        public void ClearCollidedObjects()
+        {
+            collidedObjects.Clear();
+        }
+
         private void RemoveCollidedObject(GameObject obj)
         {
             bool removed = collidedObjects.Remove(obj);
@@ -139,7 +144,6 @@ namespace VRtist
             // Get right controller buttons states
             bool primaryButtonState = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
             bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
-            bool gripState = VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton);
 
             GameObject hoveredObject = Selection.GetHoveredObject();
 
@@ -151,18 +155,14 @@ namespace VRtist
                  },
                  () => { Selection.SetGrippedObject(null); });
 
-            // Mono-selection using the grip button
-            if (triggerState && null != hoveredObject)  // Multi-selection using the trigger button
+            // Multi-selection using the trigger button
+            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject)  
             {
                 selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
                     foreach (GameObject obj in collidedObjects)
                         selector.AddSiblingsToSelection(obj);
-                }
-                else
-                {
-                    //selector.RemoveSiblingsFromSelection(hoveredObject);
                 }
             }
         }
