@@ -1048,6 +1048,17 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildCameraAttributesCommand(Transform root, CameraInfo cameraInfo)
+        {
+            Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
+
+            byte[] nameBuffer = StringToBytes(cameraInfo.transform.name);
+            byte[] focalBuffer = FloatToBytes(cam.focalLength);
+
+            List<byte[]> buffers = new List<byte[]> { nameBuffer, focalBuffer };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.CameraAttributes);
+            return command;
+        }
         public static NetCommand BuildLightCommand(Transform root, LightInfo lightInfo)
         {
             Transform current = lightInfo.transform;

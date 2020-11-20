@@ -392,6 +392,12 @@ namespace VRtist
             NetCommand command = MixerUtils.BuildCameraCommand(root, cameraInfo);
             AddCommand(command);
         }
+
+        public void SendCameraAttributes(CameraInfo cameraInfo)
+        {
+            NetCommand command = MixerUtils.BuildCameraAttributesCommand(root, cameraInfo);
+            AddCommand(command);
+        }
         public void SendLight(LightInfo lightInfo)
         {
             NetCommand command = MixerUtils.BuildLightCommand(root, lightInfo);
@@ -810,6 +816,9 @@ namespace VRtist
                 case MessageType.Camera:
                     SendCamera(data as CameraInfo);
                     SendTransform((data as CameraInfo).transform);
+                    break;
+                case MessageType.CameraAttributes:
+                    SendCameraAttributes(data as CameraInfo);
                     break;
                 case MessageType.Light:
                     SendLight(data as LightInfo);
