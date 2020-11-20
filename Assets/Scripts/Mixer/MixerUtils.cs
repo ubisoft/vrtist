@@ -1421,8 +1421,8 @@ namespace VRtist
             Node node;
             if (!SyncData.nodes.ContainsKey(leafName))
             {
-                camGameObject = SyncData.CreateInstance(cameraPrefab, transform, leafName, isPrefab: true);
-                node = SyncData.CreateNode(name);
+                camGameObject = SyncData.CreateInstance(cameraPrefab, root, leafName, isPrefab: true);
+                node = SyncData.CreateNode(name, SyncData.nodes[transform.name]);
                 node.prefab = camGameObject;
             }
             else // TODO: found a case where a camera was found (don't know when it was created???), but had no Camera child object.
@@ -1487,18 +1487,18 @@ namespace VRtist
                 switch (lightType)
                 {
                     case LightType.Directional:
-                        lightGameObject = SyncData.CreateInstance(sunPrefab, transform, leafName);
+                        lightGameObject = SyncData.CreateInstance(sunPrefab, root, leafName);
                         break;
                     case LightType.Point:
-                        lightGameObject = SyncData.CreateInstance(pointPrefab, transform, leafName);
+                        lightGameObject = SyncData.CreateInstance(pointPrefab, root, leafName);
                         break;
                     case LightType.Spot:
-                        lightGameObject = SyncData.CreateInstance(spotPrefab, transform, leafName);
+                        lightGameObject = SyncData.CreateInstance(spotPrefab, root, leafName);
                         break;
                     default:
                         return;
                 }
-                node = SyncData.CreateNode(leafName);
+                node = SyncData.CreateNode(leafName, SyncData.nodes[transform.name]);
                 node.prefab = lightGameObject;
             }
             else

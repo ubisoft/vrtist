@@ -27,35 +27,7 @@ namespace VRtist
 
         public Transform Deserialize(Transform parent)
         {
-            AssimpIO geometryImporter = new AssimpIO();
-            geometryImporter.Import(IOUtilities.GetAbsoluteFilename(filename), parent, true);
-
-            Transform transform = parent.GetChild(parent.childCount - 1);
-            transform.GetComponent<GeometryController>().parameters = this;
-
-            for (int i = 0; i < clones.Count; i++)
-            {
-                Tuple<string, string> clone = clones[i];
-                Transform child = transform.Find(clone.Item1);
-                if (child == null)
-                {
-                    Debug.LogWarning("Can't find " + transform.name + "/" + clone.Item1);
-                    continue;
-                }
-                var newInstance = SyncData.CreateInstance(child.gameObject, child.parent, clone.Item2);
-            }
-
-            for (int i = 0; i < deleted.Count; i++)
-            {
-                string deletedPath = deleted[i];
-                Transform child = transform.Find(deletedPath);
-                if (child)
-                {
-                    GameObject.Destroy(child.gameObject);
-                }
-            }
-
-            return transform;
+            return null;
         }
     }
 }

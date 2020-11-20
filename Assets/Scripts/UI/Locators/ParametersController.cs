@@ -6,7 +6,7 @@ namespace VRtist
 {
     [System.Serializable]
     
-    public class ParametersController : MonoBehaviour
+    public class ParametersController : MonoBehaviour, IGizmo
     {
         protected Transform world = null;
 
@@ -34,11 +34,31 @@ namespace VRtist
             }
             return world;
         }
-
-        protected virtual void Start()
-        {
-        }
         
         public virtual Parameters GetParameters() { return null; }
+
+        public virtual void SetGizmoVisible(bool value)
+        {
+            // Disable colliders
+            Collider[] colliders = gameObject.GetComponentsInChildren<Collider>(true);
+            foreach (Collider collider in colliders)
+            {
+                collider.enabled = value;
+            }
+
+            // Hide geometry
+            MeshFilter[] meshFilters = gameObject.GetComponentsInChildren<MeshFilter>(true);
+            foreach (MeshFilter meshFilter in meshFilters)
+            {
+                meshFilter.gameObject.SetActive(value);
+            }
+
+            // Hide UI
+            Canvas[] canvases = gameObject.GetComponentsInChildren<Canvas>(true);
+            foreach (Canvas canvas in canvases)
+            {
+                canvas.gameObject.SetActive(value);
+            }
+        }
     }
 }

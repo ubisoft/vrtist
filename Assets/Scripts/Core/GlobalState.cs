@@ -250,11 +250,11 @@ namespace VRtist
             }
         }
 
-        public static void SetGizmosVisible(Component[] components, bool value)
+        public static void SetGizmosVisible(IGizmo[] gizmos, bool value)
         {
-            foreach (var component in components)
+            foreach (var gizmo in gizmos)
             {
-                SetGizmoVisible(component.gameObject, value);
+                gizmo.SetGizmoVisible(value);
             }
         }
 
