@@ -119,30 +119,36 @@ namespace VRtist
 
             RaycastHit hitInfo;
             int allLayersMask = -1; // ~0
-            if (!Physics.Raycast(r, out hitInfo, 3.0f, allLayersMask, QueryTriggerInteraction.Collide)
-                || (hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("UI")
-                && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("SelectionUI")
-                && hitInfo.transform.gameObject.layer != LayerMask.NameToLayer("HoverUI")
-                && !hitInfo.transform.gameObject.CompareTag("PhysicObject")))
+
+            if(!Physics.Raycast(r, out hitInfo, 3.0f, allLayersMask, QueryTriggerInteraction.Collide))
             {
-                // Nothing hit, or hit a non-UI object.
+                // Nothing hit
                 HandleHoverPhysicObject(null);
                 handleHitNothing();
                 return;
             }
-            else
-            {
-                // detect if the first ray was shoot from inside an object
 
-                Ray backRay = new Ray(hitInfo.point - 0.01f * worldDirection, -worldDirection);
-                float d = hitInfo.distance - 0.01f;
-                bool raycastOK = Physics.Raycast(backRay, out hitInfo, hitInfo.distance, allLayersMask, QueryTriggerInteraction.Collide);
-                if (raycastOK && hitInfo.distance < d)
-                {
-                    HandleHoverPhysicObject(null);
-                    handleHitNothing();
-                    return;
-                }
+            bool UIHit = hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("UI") ||
+                hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("SelectionUI") ||
+                hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("HoverUI");
+
+            if(!UIHit)
+            {
+                // hit a non-UI object.
+                HandleHoverPhysicObject(null);
+                handleHitNothing();
+                return;
+            }
+
+            // detect if the first ray was shoot from inside an object
+            Ray backRay = new Ray(hitInfo.point - 0.01f * worldDirection, -worldDirection);
+            float d = hitInfo.distance - 0.01f;
+            bool raycastOK = Physics.Raycast(backRay, out hitInfo, hitInfo.distance, allLayersMask, QueryTriggerInteraction.Collide);
+            if (raycastOK && hitInfo.distance < d)
+            {
+                HandleHoverPhysicObject(null);
+                handleHitNothing();
+                return;
             }
 
             //

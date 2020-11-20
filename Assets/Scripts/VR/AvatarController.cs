@@ -4,8 +4,7 @@ using UnityEngine;
 
 namespace VRtist
 {
-
-    public class AvatarController : MonoBehaviour
+    public class AvatarController : MonoBehaviour, IGizmo
     {
         RectTransform canvas;
         TextMeshProUGUI text;
@@ -26,6 +25,23 @@ namespace VRtist
             // Constant scale
             //float scale = 1f / GlobalState.worldScale;
             //transform.localScale = new Vector3(scale, scale, scale);
+        }
+
+        public void SetGizmoVisible(bool value)
+        {
+            // Hide geometry
+            MeshFilter[] meshFilters = gameObject.GetComponentsInChildren<MeshFilter>(true);
+            foreach (MeshFilter meshFilter in meshFilters)
+            {
+                meshFilter.gameObject.SetActive(value);
+            }
+
+            // Hide UI
+            Canvas[] canvases = gameObject.GetComponentsInChildren<Canvas>(true);
+            foreach (Canvas canvas in canvases)
+            {
+                canvas.gameObject.SetActive(value);
+            }
         }
 
         private void FetchMaterials()

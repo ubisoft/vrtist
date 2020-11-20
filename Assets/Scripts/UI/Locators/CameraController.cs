@@ -28,9 +28,8 @@ namespace VRtist
             Init();
         }
 
-        protected override void Start()
+        void Start()
         {
-            base.Start();
             Init();
         }
 
@@ -76,6 +75,15 @@ namespace VRtist
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
                 inFrontButton.NeedsRebuild = true;
             }
+        }
+
+        public override void SetGizmoVisible(bool value)
+        {
+            bool isDisabledLayerActive = disabledLayer.activeSelf;
+
+            base.SetGizmoVisible(value);
+
+            disabledLayer.SetActive(value);
         }
 
         private void OnNameClicked()
