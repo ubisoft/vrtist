@@ -429,7 +429,7 @@ namespace VRtist
         {
             CameraInfo cameraInfo = new CameraInfo();
             cameraInfo.transform = camera.transform;
-            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+            CommandManager.SendEvent(MessageType.CameraAttributes, cameraInfo);
         }
 
         protected override void DoUpdate()
