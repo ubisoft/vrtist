@@ -22,6 +22,12 @@ namespace VRtist
 
             GlobalState.Animation.onFrameEvent.AddListener(OnCurrentFrameChanged);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
+            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
+        }
+
+        void OnPaletteOpened()
+        {
+            shotList.NeedsRebuild = true;
         }
 
         private void OnMontageModeChanged()

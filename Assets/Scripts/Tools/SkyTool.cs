@@ -16,6 +16,7 @@ namespace VRtist
         void Start()
         {
             Init();
+            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
         }
 
         protected override void OnEnable()
@@ -62,7 +63,10 @@ namespace VRtist
                 // Nothing
             }
         }
-
+        void OnPaletteOpened()
+        {
+            gradientList.NeedsRebuild = true;
+        }
         private void OnListItemClicked(object sender, IndexedGameObjectArgs args)
         {
             GameObject item = args.gobject;
