@@ -58,6 +58,7 @@ namespace VRtist
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
+        public UnityEvent onPaletteOpened = new UnityEvent();
 
         public Transform keyboardWindow;
         public Transform numericKeyboardWindow;
@@ -434,9 +435,9 @@ namespace VRtist
 
         #endregion
 
-        public void OpenWindow(Transform window, float scaleFactor)
+        public void OpenWindow(Transform window, float scaleFactor, Action onOpened = null)
         {
-            Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false));
+            StartCoroutine(AnimateWindowOpen(window, paletteOpenAnimXCurve, paletteOpenAnimYCurve, paletteOpenAnimZCurve, scaleFactor, palettePopNbFrames, false, onOpened));
             Transform audioTransform = window.Find("AudioSource");
             if (null != audioTransform)
             {
@@ -448,9 +449,9 @@ namespace VRtist
             }
         }
 
-        public void CloseWindow(Transform window, float scaleFactor)
+        public void CloseWindow(Transform window, float scaleFactor, Action onClosed = null)
         {
-            Coroutine co = StartCoroutine(AnimateWindowOpen(window, paletteCloseAnimXCurve, paletteCloseAnimYCurve, paletteCloseAnimZCurve, scaleFactor, palettePopNbFrames, false));
+            StartCoroutine(AnimateWindowOpen(window, paletteCloseAnimXCurve, paletteCloseAnimYCurve, paletteCloseAnimZCurve, scaleFactor, palettePopNbFrames, false, onClosed));
             Transform audioTransform = window.Find("AudioSource");
             if (null != audioTransform)
             {
@@ -475,7 +476,7 @@ namespace VRtist
 
             if (value)
             {
-                OpenWindow(paletteRoot.transform, paletteScale);
+                OpenWindow(paletteRoot.transform, paletteScale, () => onPaletteOpened.Invoke());
             }
             else
             {
@@ -483,7 +484,7 @@ namespace VRtist
             }
         }
 
-        private IEnumerator AnimateWindowOpen(Transform window, AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve, float scaleFactor, int nbFrames, bool reverse = false)
+        private IEnumerator AnimateWindowOpen(Transform window, AnimationCurve xCurve, AnimationCurve yCurve, AnimationCurve zCurve, float scaleFactor, int nbFrames, bool reverse = false, Action onFinished = null)
         {
             using (var guard = UIElement.UIEnabled.SetValue(false))
             {
@@ -498,6 +499,8 @@ namespace VRtist
                     window.localScale = s;
                     yield return new WaitForEndOfFrame();
                 }
+                if (null != onFinished)
+                    onFinished();
             }
         }
     }

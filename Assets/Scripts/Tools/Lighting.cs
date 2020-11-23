@@ -75,6 +75,11 @@ namespace VRtist
             GlobalState.colorChangedEvent.AddListener(OnLightColor);
             GlobalState.colorClickedEvent.AddListener(OnColorPickerPressed);
             GlobalState.colorReleasedEvent.AddListener((Color color) => OnReleased());
+            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
+        }
+        void OnPaletteOpened()
+        {
+            lightList.NeedsRebuild = true;
         }
 
         public override void OnUIObjectEnter(int gohash)

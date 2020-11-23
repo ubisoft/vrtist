@@ -158,6 +158,7 @@ namespace VRtist
         void Start()
         {
             GlobalState.Instance.cameraPreviewDirection = backgroundFeedback.forward;
+            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
         }
 
         protected override void Init()
@@ -166,6 +167,11 @@ namespace VRtist
             focalSlider.gameObject.SetActive(false);
 
             InitUIPanel();
+        }
+
+        void OnPaletteOpened()
+        {
+            cameraList.NeedsRebuild = true;
         }
 
         protected void InitUIPanel()
