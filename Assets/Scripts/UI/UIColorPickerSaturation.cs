@@ -139,6 +139,7 @@ namespace VRtist
 
         public override bool OnRayReleaseOutside()
         {
+            colorPicker.OnRelease();
             return base.OnRayReleaseOutside();
         }
 
