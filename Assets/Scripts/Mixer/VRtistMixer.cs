@@ -402,7 +402,7 @@ namespace VRtist
                 middleColor = middleColor,
                 bottomColor = bottomColor
             };
-            Sky.SetSkyColors(skySettings);
+            GlobalState.Instance.SkySettings = skySettings;
 #endif
         }
 

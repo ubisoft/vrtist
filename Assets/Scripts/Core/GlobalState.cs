@@ -2,6 +2,8 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
@@ -43,26 +45,50 @@ namespace VRtist
         public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
         public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
 
+        // Sky
+        private GradientSky volumeSky;
+        public SkyChangedEvent skyChangedEvent = new SkyChangedEvent();
+        public SkySettings SkySettings
+        {
+            get 
+            {
+                if (null == volumeSky) Utils.FindVolume().profile.TryGet(out volumeSky);
+                return new SkySettings { topColor = volumeSky.top.value, middleColor = volumeSky.middle.value, bottomColor = volumeSky.bottom.value };
+            }
+            set 
+            {
+                if (null == volumeSky) Utils.FindVolume().profile.TryGet(out volumeSky);
+                value.topColor.a = 1f;
+                value.middleColor.a = 1f;
+                value.bottomColor.a = 1f;
+                volumeSky.top.value = value.topColor;
+                volumeSky.middle.value = value.middleColor;
+                volumeSky.bottom.value = value.bottomColor;
+                skyChangedEvent.Invoke(new SkySettings { topColor = volumeSky.top.value, middleColor = volumeSky.middle.value, bottomColor = volumeSky.bottom.value });
+            }
+        }
+
         // Cursor
         public PaletteCursor cursor = null;
         public bool useRayColliders = false; // DEBUG. Remove once the UI ray collision is good.
 
         // Color
-        private static Color currentColor = Color.blue;
         public static Color CurrentColor
         {
-            get { return currentColor; }
+            get { return Instance.colorPicker.CurrentColor; }
             set
             {
-                Instance.colorPicker.CurrentColor = value;
-                Instance.OnChangeColor(value);
-                colorChangedEvent.Invoke(value);
+                if (value != Instance.colorPicker.CurrentColor)
+                {
+                    Instance.colorPicker.CurrentColor = value;
+                    colorChangedEvent.Invoke(value);
+                }
             }
         }
         private UIColorPicker colorPicker;
-        public static ColorChangedEvent colorChangedEvent;   // realtime change
-        public static ColorChangedEvent colorReleasedEvent;  // on release change
-        public static UnityEvent colorClickedEvent;          // on click
+        public static ColorChangedEvent colorChangedEvent = new ColorChangedEvent();    // realtime change
+        public static ColorChangedEvent colorReleasedEvent = new ColorChangedEvent();   // on release change
+        public static UnityEvent colorClickedEvent = new UnityEvent();                  // on click
 
 
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
@@ -123,13 +149,12 @@ namespace VRtist
                 networkUser.name = "VRtist";
 
             // Sky
-            Sky.ApplySkyColors(settings.sky);
+            GlobalState.Instance.SkySettings = settings.sky;
 
             // Color
             instance.colorPicker = colorPanel.GetComponentInChildren<UIColorPicker>(true);
-            instance.colorPicker.CurrentColor = currentColor;
+            CurrentColor = Color.blue;
             colorChangedEvent = colorPicker.onColorChangedEvent;
-            instance.colorPicker.onColorChangedEvent.AddListener(OnChangeColor);
             colorReleasedEvent = new ColorChangedEvent();
             instance.colorPicker.onReleaseEvent.AddListener(OnReleaseColor);
             colorClickedEvent = colorPicker.onClickEvent;
@@ -263,14 +288,10 @@ namespace VRtist
             settings.castShadows = value;
         }
 
-        public void OnChangeColor(Color color)
-        {
-            currentColor = color;
-        }
 
         public void OnReleaseColor()
         {
-            colorReleasedEvent.Invoke(currentColor);
+            colorReleasedEvent.Invoke(CurrentColor);
         }
 
         public void OnCameraDamping(float value)

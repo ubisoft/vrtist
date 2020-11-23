@@ -149,7 +149,7 @@ namespace VRtist
             float s = hsv.Saturation;
             float v = hsv.Value;
 
-            Color currentColor = Color.HSVToRGB(h, s, v);
+            currentColor = Color.HSVToRGB(h, s, v);
 
             if (IsHdr)
             {

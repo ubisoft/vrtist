@@ -157,6 +157,12 @@ namespace VRtist
             }
         }
 
+        protected override void DoUpdate()
+        {
+            UpdateUI();
+            base.DoUpdate();
+        }
+
         protected override void UpdateUI()
         {
             foreach (var item in Selection.selection)

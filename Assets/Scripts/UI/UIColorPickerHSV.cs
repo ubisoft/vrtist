@@ -244,6 +244,7 @@ namespace VRtist
             lockedOnCircle = false;
             lockedOnTriangle = false;
 
+            colorPicker.OnRelease();
             return base.OnRayReleaseOutside();
         }
 
