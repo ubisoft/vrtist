@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Events;
@@ -36,7 +35,7 @@ namespace VRtist
 
                 if (!montageEnabled || !GlobalState.Animation.IsAnimating())
                     return;
-                
+
                 if (activeShotIndex >= 0 && activeShotIndex < shots.Count)
                 {
                     Shot shot = shots[activeShotIndex];
@@ -65,7 +64,7 @@ namespace VRtist
 
         int FindFirstShotIndexAt(int frame)
         {
-            for(int i = 0; i < shots.Count; i++)
+            for (int i = 0; i < shots.Count; i++)
             {
                 Shot shot = shots[i];
                 if (frame >= shot.start && frame <= shot.end)
@@ -92,14 +91,14 @@ namespace VRtist
 
         public override int hookTime(int frame)
         {
-            if(!montageEnabled || shots.Count == 0)
+            if (!montageEnabled || shots.Count == 0)
                 return frame;
 
             int shotIndex;
             if (ActiveShotIndex < 0 || ActiveShotIndex >= shots.Count)
             {
                 shotIndex = FindFirstShotIndexAt(frame);
-                if(-1 != shotIndex)
+                if (-1 != shotIndex)
                 {
                     ActiveShotIndex = shotIndex;
                 }
@@ -108,7 +107,7 @@ namespace VRtist
 
             shotIndex = ActiveShotIndex;
             Shot shot = shots[shotIndex];
-            if(frame > shot.end)
+            if (frame > shot.end)
             {
                 shotIndex++;
                 while (shotIndex < shots.Count && !shots[shotIndex].enabled)
@@ -118,7 +117,7 @@ namespace VRtist
                 while (shotIndex < shots.Count && !shots[shotIndex].enabled)
                     shotIndex++;
 
-                if(shotIndex >= shots.Count)
+                if (shotIndex >= shots.Count)
                 {
                     ActiveShotIndex = -1;
                     return frame;
@@ -264,6 +263,6 @@ namespace VRtist
 
             return $"Sh{maxNumber + 10:D4}";
         }
-    }    
+    }
 
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Net;
+using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace VRtist
-{   
+{
     public class Utils
     {
         static Material paintMaterial = null;
@@ -181,7 +181,34 @@ namespace VRtist
         public static void SavePNG(Texture2D texture, string path)
         {
             byte[] data = texture.EncodeToPNG();
-            System.IO.File.WriteAllBytes(path, data);
+            File.WriteAllBytes(path, data);
+        }
+
+        public static Texture2D LoadTexture(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Debug.LogWarning("Invalid path: path is empty or null");
+                return null;
+            }
+            if (!File.Exists(path))
+            {
+                Debug.LogWarning($"Invalid path: {path} does not exist");
+                return null;
+            }
+
+            byte[] bytes = File.ReadAllBytes(path);
+            Texture2D texture = new Texture2D(1, 1);
+            texture.LoadImage(bytes);
+            return texture;
+        }
+
+        public static Sprite LoadSprite(string path)
+        {
+            Texture2D texture = LoadTexture(path);
+            if (null == texture) { return null; }
+            Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            return sprite;
         }
     }
 }

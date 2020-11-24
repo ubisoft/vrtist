@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using TMPro;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -173,35 +172,29 @@ namespace VRtist
         {
             GameObject original = Instantiate(Resources.Load<GameObject>(originalPath));
             original.transform.parent = bank.transform;
-            GameObject thumbnail = Instantiate(Resources.Load<GameObject>(uiPath));
-            thumbnail.transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
-            AddAsset(name, thumbnail, original, tags, is3DThumbnail: true, isBuiltin: true);
+            GameObject thumbnail = UIGrabber.Create3DThumbnail(Resources.Load<GameObject>(uiPath), OnUIObjectEnter, OnUIObjectExit);
+            AssetBankItem item = AddAsset(name, thumbnail, original, tags);
+            item.builtin = true;
         }
 
         private void AddFileAsset(string filename)
         {
-            GameObject thumbnail = Instantiate(Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem"));
             string name = Path.GetFileNameWithoutExtension(filename).Replace('_', ' ');
-            thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = name;
-            thumbnail.transform.Find("Canvas/Panel/Type").GetComponent<TextMeshProUGUI>().text = Path.GetExtension(filename).Substring(1);
+            GameObject thumbnail = UIGrabber.CreateTextThumbnail(name, OnUIObjectEnter, OnUIObjectExit);
             string tags = filename.Substring(GlobalState.Settings.assetBankDirectory.Length);
-            tags = tags.Substring(0, tags.LastIndexOf('.'));
+            tags = tags.Substring(0, tags.LastIndexOf('.'));  // remove file extension
             AddAsset(filename, thumbnail, null, tags, importFunction: ImportObjectAsync);
         }
 
-        public void AddAsset(string name, GameObject thumbnail, GameObject original, string tags, bool is3DThumbnail = false, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool isBuiltin = false, bool skipInstantiation = false)
+        public AssetBankItem AddAsset(string name, GameObject thumbnail, GameObject original, string tags, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool skipInstantiation = false)
         {
-            int uid = thumbnail.GetHashCode();
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
             if (null == uiGrabber)
             {
-                Debug.LogWarning("Unable to add asset bank object: thumbnail game object must have a UIGrabber component");
-                return;
+                Debug.LogError("Thumbnail game object must have a UIGrabber component. Use the UIGrabber.CreateXXXThumbnail helper functions to create such a thumbnail");
+                return null;
             }
-            uiGrabber.uid = uid;
-            uiGrabber.rotateOnHover = is3DThumbnail;
-            uiGrabber.onEnterUI3DObject.AddListener(OnUIObjectEnter);
-            uiGrabber.onExitUI3DObject.AddListener(OnUIObjectExit);
+            int uid = thumbnail.GetHashCode();
             GameObject root = new GameObject("AssetBankItem");
             root.layer = LayerMask.NameToLayer("UI");
             AssetBankItem item = root.AddComponent<AssetBankItem>();
@@ -211,7 +204,7 @@ namespace VRtist
             item.original = original;
             item.thumbnail.transform.parent = root.transform;
             item.thumbnail.transform.localPosition += new Vector3(0, 0, -0.001f);
-            item.builtin = isBuiltin;
+            item.builtin = false;
             item.importFunction = importFunction;
             item.skipInstantiation = skipInstantiation;
             item.AddTags(tags);
@@ -221,6 +214,7 @@ namespace VRtist
             }
             item.uiItem = uiList.AddItem(item.transform);
             items.Add(uid, item);
+            return item;
         }
 
         public override void OnUIObjectEnter(int uid)

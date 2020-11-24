@@ -180,6 +180,19 @@ namespace VRtist
         }
     }
 
+    // Blender Asset Bank
+    public enum BlenderBankAction
+    {
+        List,
+        Import
+    }
+
+    public class BlenderBankInfo
+    {
+        public BlenderBankAction action;
+        public int index;
+    }
+
     // Animation
     public class SetKeyInfo
     {
