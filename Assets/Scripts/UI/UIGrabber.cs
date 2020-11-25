@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -11,12 +13,20 @@ namespace VRtist
         public bool rotateOnHover = true;
         public GameObject prefab;
 
+        bool lazyLoaded = false;
+        string lazyImagePath = null;
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = null;
         public GameObjectHashChangedEvent onExitUI3DObject = null;
         public UnityEvent onHoverEvent = null;
         public UnityEvent onClickEvent = null;
         public UnityEvent onReleaseEvent = null;
+
+        private static GameObject textThumbnailPrefab;
+        private static GameObject imageThumbnailPrefab;
+
+        private static Quaternion thumbnailRotation = Quaternion.Euler(25f, -35f, 0f);
 
         void Start()
         {
@@ -26,7 +36,27 @@ namespace VRtist
                 {
                     ToolsUIManager.Instance.RegisterUI3DObject(prefab);
                     uid = prefab.GetHashCode();
-                    transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
+                    transform.localRotation = thumbnailRotation;
+                }
+            }
+
+            // Load thumbnail prefabs
+            if (null == textThumbnailPrefab)
+            {
+                textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
+                imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (!lazyLoaded && null != lazyImagePath)
+            {
+                Sprite sprite = Utils.LoadSprite(lazyImagePath);
+                if (null != sprite)
+                {
+                    transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
+                    lazyLoaded = true;
                 }
             }
         }
@@ -65,8 +95,74 @@ namespace VRtist
             }
         }
 
-        #region ray
+        #region Create Thumbnail helpers
+        static void LoadPrefabs()
+        {
+            // Load thumbnail prefabs
+            if (null == textThumbnailPrefab)
+            {
+                textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
+                imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
+            }
+        }
 
+        public static GameObject CreateTextThumbnail(string text, UnityAction<int> onEnter, UnityAction<int> onExit)
+        {
+            LoadPrefabs();
+            GameObject thumbnail = Instantiate(textThumbnailPrefab);
+            thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = text;
+            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.rotateOnHover = false;
+            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
+            uiGrabber.onExitUI3DObject.AddListener(onExit);
+            return thumbnail;
+        }
+
+        public static GameObject CreateImageThumbnail(Sprite image, UnityAction<int> onEnter, UnityAction<int> onExit)
+        {
+            LoadPrefabs();
+            GameObject thumbnail = Instantiate(imageThumbnailPrefab);
+            thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = image;
+            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.rotateOnHover = false;
+            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
+            uiGrabber.onExitUI3DObject.AddListener(onExit);
+            return thumbnail;
+        }
+
+        public static GameObject CreateLazyImageThumbnail(string path, UnityAction<int> onEnter, UnityAction<int> onExit)
+        {
+            LoadPrefabs();
+            GameObject thumbnail = Instantiate(imageThumbnailPrefab);
+            UIGrabber uiGrabber = thumbnail.AddComponent<UIGrabber>();
+            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.rotateOnHover = false;
+            uiGrabber.lazyImagePath = path;
+            uiGrabber.lazyLoaded = false;
+            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
+            uiGrabber.onExitUI3DObject.AddListener(onExit);
+            return thumbnail;
+        }
+
+        public static GameObject Create3DThumbnail(GameObject thumbnail, UnityAction<int> onEnter, UnityAction<int> onExit)
+        {
+            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            if (null == uiGrabber)
+            {
+                uiGrabber = thumbnail.AddComponent<UIGrabber>();
+            }
+            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.rotateOnHover = true;
+            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
+            uiGrabber.onExitUI3DObject.AddListener(onExit);
+            thumbnail.transform.localRotation = thumbnailRotation;
+            return thumbnail;
+        }
+        #endregion
+
+        #region ray
         public override void OnRayEnter()
         {
             base.OnRayEnter();
@@ -180,7 +276,10 @@ namespace VRtist
 
         public void ResetRotation()
         {
-            transform.localRotation = Quaternion.Euler(25f, -35f, 0f);
+            if (rotateOnHover)
+            {
+                transform.localRotation = thumbnailRotation;
+            }
         }
 
         #endregion

@@ -86,6 +86,7 @@ namespace VRtist
         ShotManagerCurrentShot,
         ShotManagerAction,
         _BlenderDataCreate,
+        BlenderBank,
 
         Optimized_Commands = 200,
         Transform,
@@ -509,6 +510,12 @@ namespace VRtist
             AddCommand(command);
         }
 
+        public void SendBlenderBank(BlenderBankInfo info)
+        {
+            NetCommand command = MixerUtils.BuildSendBlenderBank(info);
+            AddCommand(command);
+        }
+
         public void SendPlayerTransform(ConnectedUser info)
         {
             NetCommand command = MixerUtils.BuildSendPlayerTransform(info);
@@ -853,6 +860,8 @@ namespace VRtist
                     SendMontageMode(data as MontageModeInfo); break;
                 case MessageType.ShotManagerAction:
                     SendShotManagerAction(data as ShotManagerActionInfo); break;
+                case MessageType.BlenderBank:
+                    SendBlenderBank(data as BlenderBankInfo); break;
             }
         }
     }

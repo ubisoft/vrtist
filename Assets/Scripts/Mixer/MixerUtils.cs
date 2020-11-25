@@ -1614,6 +1614,25 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildSendBlenderBank(BlenderBankInfo info)
+        {
+            NetCommand command = null;
+            byte[] actionBuffer = IntToBytes((int) BlenderBankAction.Import);
+
+            switch (info.action)
+            {
+                case BlenderBankAction.Import:
+                    byte[] indexBuffer = IntToBytes(info.index);
+                    List<byte[]> buffers = new List<byte[]> { actionBuffer, indexBuffer };
+                    command = new NetCommand(ConcatenateBuffers(buffers), MessageType.BlenderBank);
+                    break;
+                case BlenderBankAction.List:
+                    command = new NetCommand(actionBuffer, MessageType.BlenderBank);
+                    break;
+            }
+            return command;
+        }
+
         public static NetCommand BuildSendPlayerTransform(ConnectedUser playerInfo)
         {
             if (null == SyncData.mixer)
