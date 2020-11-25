@@ -17,11 +17,11 @@ namespace VRtist
         string lazyImagePath = null;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public GameObjectHashChangedEvent onEnterUI3DObject = null;
-        public GameObjectHashChangedEvent onExitUI3DObject = null;
-        public UnityEvent onHoverEvent = null;
-        public UnityEvent onClickEvent = null;
-        public UnityEvent onReleaseEvent = null;
+        public GameObjectHashChangedEvent onEnterUI3DObject = new GameObjectHashChangedEvent();
+        public GameObjectHashChangedEvent onExitUI3DObject = new GameObjectHashChangedEvent();
+        public UnityEvent onHoverEvent = new UnityEvent();
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         private static GameObject textThumbnailPrefab;
         private static GameObject imageThumbnailPrefab;

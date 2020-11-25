@@ -91,20 +91,22 @@ namespace VRtist
 
         private void AddBuiltinAssets()
         {
+            AddBuiltinAsset("Empty", "Axis Locator", "Prefabs/UI/Axis Locator Item", "Prefabs/Primitives/Axis_locator");
+
             // TODO? parse them from Resources folder at editor time then create a db of those resources (scriptableObject)
             // available at runtime to finally parse that db
             AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/CUBE_UI", "Prefabs/Primitives/PRIMITIVES/CUBE_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/SPHERE_UI", "Prefabs/Primitives/PRIMITIVES/SPHERE_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/CYLINDER_UI", "Prefabs/Primitives/PRIMITIVES/CYLINDER_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/CONE_UI", "Prefabs/Primitives/PRIMITIVES/CONE_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/TORUS_UI", "Prefabs/Primitives/PRIMITIVES/TORUS_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/PLANE_UI", "Prefabs/Primitives/PRIMITIVES/PLANE_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/PRISM_UI", "Prefabs/Primitives/PRIMITIVES/PRISM_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/PENTE_963_UI", "Prefabs/Primitives/PRIMITIVES/PENTE_963_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/WINDOW_UI", "Prefabs/Primitives/PRIMITIVES/WINDOW_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/ARCH_QUARTER_UI", "Prefabs/Primitives/PRIMITIVES/ARCH_QUARTER_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/STRAIGHT_STAIRS_UI", "Prefabs/Primitives/PRIMITIVES/STRAIGHT_STAIRS_PRIM");
-            AddBuiltinAsset("Primitive", "Cube", "Prefabs/UI/PRIMITIVES/CIRCLE_SQUARE_STAIRS_UI", "Prefabs/Primitives/PRIMITIVES/CIRCLE_SQUARE_STAIRS_PRIM");
+            AddBuiltinAsset("Primitive", "Sphere", "Prefabs/UI/PRIMITIVES/SPHERE_UI", "Prefabs/Primitives/PRIMITIVES/SPHERE_PRIM");
+            AddBuiltinAsset("Primitive", "Cylinder", "Prefabs/UI/PRIMITIVES/CYLINDER_UI", "Prefabs/Primitives/PRIMITIVES/CYLINDER_PRIM");
+            AddBuiltinAsset("Primitive", "Cone", "Prefabs/UI/PRIMITIVES/CONE_UI", "Prefabs/Primitives/PRIMITIVES/CONE_PRIM");
+            AddBuiltinAsset("Primitive", "Torus", "Prefabs/UI/PRIMITIVES/TORUS_UI", "Prefabs/Primitives/PRIMITIVES/TORUS_PRIM");
+            AddBuiltinAsset("Primitive", "Plane", "Prefabs/UI/PRIMITIVES/PLANE_UI", "Prefabs/Primitives/PRIMITIVES/PLANE_PRIM");
+            AddBuiltinAsset("Primitive", "Prism", "Prefabs/UI/PRIMITIVES/PRISM_UI", "Prefabs/Primitives/PRIMITIVES/PRISM_PRIM");
+            AddBuiltinAsset("Primitive", "Pente", "Prefabs/UI/PRIMITIVES/PENTE_963_UI", "Prefabs/Primitives/PRIMITIVES/PENTE_963_PRIM");
+            AddBuiltinAsset("Primitive", "Window", "Prefabs/UI/PRIMITIVES/WINDOW_UI", "Prefabs/Primitives/PRIMITIVES/WINDOW_PRIM");
+            AddBuiltinAsset("Primitive", "Arch", "Prefabs/UI/PRIMITIVES/ARCH_QUARTER_UI", "Prefabs/Primitives/PRIMITIVES/ARCH_QUARTER_PRIM");
+            AddBuiltinAsset("Primitive", "Stairs", "Prefabs/UI/PRIMITIVES/STRAIGHT_STAIRS_UI", "Prefabs/Primitives/PRIMITIVES/STRAIGHT_STAIRS_PRIM");
+            AddBuiltinAsset("Primitive", "Circle Stairs", "Prefabs/UI/PRIMITIVES/CIRCLE_SQUARE_STAIRS_UI", "Prefabs/Primitives/PRIMITIVES/CIRCLE_SQUARE_STAIRS_PRIM");
 
             AddBuiltinAsset("Vegetation", "Banana Tree", "Prefabs/UI/VEGETATION/UI_Banana_Tree", "Prefabs/Primitives/VEGETATION/BANANA_TREE_PRIM");
             AddBuiltinAsset("Vegetation", "Coconut Tree", "Prefabs/UI/VEGETATION/UI_Coconut_Tree", "Prefabs/Primitives/VEGETATION/COCONUT_TREE_PRIM");
