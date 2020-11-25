@@ -20,8 +20,8 @@ namespace VRtist
         private int overrideMaterialPassIndex = -1;
 
         // To make sure the shader will ends up in the build, we keep it's reference in the custom pass
-        [SerializeField, HideInInspector]
-        Shader fullscreenOutlineShader;
+        [SerializeField]
+        Shader fullscreenOutlineShader = null;
 
         Material fullscreenOutlineMaterial;
         MaterialPropertyBlock outlineProperties;
@@ -30,7 +30,8 @@ namespace VRtist
 
         protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
         {
-            fullscreenOutlineShader = Shader.Find("VRtist/SelectionCustomPass_FullscreenOutlineShader_2");
+            if (null == fullscreenOutlineShader)
+                fullscreenOutlineShader = Shader.Find("VRtist/SelectionCustomPass_FullscreenOutlineShader_Thin");
             fullscreenOutlineMaterial = CoreUtils.CreateEngineMaterial(fullscreenOutlineShader);
             outlineProperties = new MaterialPropertyBlock();
 
