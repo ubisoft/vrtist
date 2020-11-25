@@ -96,8 +96,19 @@ namespace VRtist
         }
 
         #region Create Thumbnail helpers
+        static void LoadPrefabs()
+        {
+            // Load thumbnail prefabs
+            if (null == textThumbnailPrefab)
+            {
+                textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
+                imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
+            }
+        }
+
         public static GameObject CreateTextThumbnail(string text, UnityAction<int> onEnter, UnityAction<int> onExit)
         {
+            LoadPrefabs();
             GameObject thumbnail = Instantiate(textThumbnailPrefab);
             thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = text;
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
@@ -110,6 +121,7 @@ namespace VRtist
 
         public static GameObject CreateImageThumbnail(Sprite image, UnityAction<int> onEnter, UnityAction<int> onExit)
         {
+            LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
             thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = image;
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
@@ -122,6 +134,7 @@ namespace VRtist
 
         public static GameObject CreateLazyImageThumbnail(string path, UnityAction<int> onEnter, UnityAction<int> onExit)
         {
+            LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
             UIGrabber uiGrabber = thumbnail.AddComponent<UIGrabber>();
             uiGrabber.uid = thumbnail.GetHashCode();

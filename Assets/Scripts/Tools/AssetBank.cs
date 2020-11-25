@@ -172,7 +172,7 @@ namespace VRtist
         {
             GameObject original = Instantiate(Resources.Load<GameObject>(originalPath));
             original.transform.parent = bank.transform;
-            GameObject thumbnail = UIGrabber.Create3DThumbnail(Resources.Load<GameObject>(uiPath), OnUIObjectEnter, OnUIObjectExit);
+            GameObject thumbnail = UIGrabber.Create3DThumbnail(Instantiate(Resources.Load<GameObject>(uiPath)), OnUIObjectEnter, OnUIObjectExit);
             AssetBankItem item = AddAsset(name, thumbnail, original, tags);
             item.builtin = true;
         }
