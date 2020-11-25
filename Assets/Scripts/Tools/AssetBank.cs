@@ -59,7 +59,7 @@ namespace VRtist
             AddBuiltinAssets();
 
             // Add user defined objects
-            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory));
+            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () => uiList.OnFirstPage()));
         }
 
         public void ScanAssetBank()
@@ -76,7 +76,7 @@ namespace VRtist
             }
 
             // Scan user directory
-            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory));
+            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () => uiList.OnFirstPage()));
 
             // Rebuild tags list
             tags.Clear();
@@ -151,7 +151,7 @@ namespace VRtist
             AddBuiltinAsset("Vehicle", "Submarine", "Prefabs/UI/JUNK/Submarine", "Prefabs/Primitives/JUNK/SUBMARINE_PRIM");
         }
 
-        private IEnumerator ScanDirectory(string path)
+        private IEnumerator ScanDirectory(string path, Action onEndScan = null)
         {
             if (Directory.Exists(path))
             {
@@ -168,6 +168,8 @@ namespace VRtist
                     yield return null;
                 }
             }
+
+            if (null != onEndScan) { onEndScan(); }
         }
 
         private void AddBuiltinAsset(string tags, string name, string uiPath, string originalPath)
