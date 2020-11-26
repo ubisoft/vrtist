@@ -86,6 +86,8 @@ namespace VRtist
         ShotManagerCurrentShot,
         ShotManagerAction,
         _BlenderDataCreate,
+        _BlenderDataMedia,
+        Empty,
         BlenderBank,
 
         Optimized_Commands = 200,
@@ -135,6 +137,7 @@ namespace VRtist
 
         Transform prefab;
         GameObject cameraPrefab;
+        GameObject locatorPrefab;
         GameObject pointLightPrefab;
         GameObject spotLightPrefab;
         GameObject sunLightPrefab;
@@ -189,6 +192,7 @@ namespace VRtist
             pointLightPrefab = GetOrCreatePrefab("Prefabs/Point", "__PointLightPrefab");
             spotLightPrefab = GetOrCreatePrefab("Prefabs/Spot", "__SpotLightPrefab");
             sunLightPrefab = GetOrCreatePrefab("Prefabs/Sun", "__SunLightPrefab");
+            locatorPrefab = GetOrCreatePrefab("Prefabs/Primitives/Axis_locator", "__LocatorPrefab");
 
             SyncData.Init(prefab, root);
             StartCoroutine(ProcessIncomingCommands());
@@ -385,6 +389,12 @@ namespace VRtist
         public void SendAssignMaterial(AssignMaterialInfo info)
         {
             NetCommand command = MixerUtils.BuildAssignMaterialCommand(info);
+            AddCommand(command);
+        }
+
+        public void SendEmpty(Transform transform)
+        {
+            NetCommand command = MixerUtils.BuildEmptyCommand(root, transform);
             AddCommand(command);
         }
 
@@ -655,6 +665,9 @@ namespace VRtist
                                 break;
                             case MessageType.Transform:
                                 MixerUtils.BuildTransform(command.data);
+                                break;
+                            case MessageType.Empty:
+                                MixerUtils.BuildEmpty(prefab, locatorPrefab, command.data);
                                 break;
                             case MessageType.ObjectVisibility:
                                 MixerUtils.BuildObjectVisibility(root, command.data);

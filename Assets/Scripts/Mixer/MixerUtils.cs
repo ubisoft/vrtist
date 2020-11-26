@@ -936,6 +936,31 @@ namespace VRtist
             return transform;
         }
 
+        public static void BuildEmpty(Transform root, GameObject locatorPrefab, byte[] data)
+        {
+            int currentIndex = 0;
+            Transform transform = BuildPath(data, ref currentIndex, false);
+            if (transform == null)
+                transform = root;
+
+            currentIndex = 0;
+            string leafName = GetString(data, ref currentIndex);
+            int index = leafName.LastIndexOf('/');
+            if (index != -1)
+            {
+                leafName = leafName.Substring(index + 1, leafName.Length - index - 1);
+            }
+
+            if (!SyncData.nodes.ContainsKey(leafName))
+            {
+                GameObject locatorGameObject;
+                Node node;
+                locatorGameObject = SyncData.CreateInstance(locatorPrefab, root, leafName, isPrefab: true);
+                node = SyncData.CreateNode(leafName, SyncData.nodes[transform.name]);
+                node.prefab = locatorGameObject;
+            }
+        }
+
 
         /* --------------------------------------------------------------------------------------------
          * 
@@ -1014,6 +1039,20 @@ namespace VRtist
             byte[] materialName = StringToBytes(info.materialName);
             List<byte[]> buffers = new List<byte[]> { objectName, materialName };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AssignMaterial);
+            return command;
+        }
+
+        public static NetCommand BuildEmptyCommand(Transform root, Transform transform)
+        {
+            Transform current = transform;
+            string path = current.name;
+            while (current.parent && current.parent != root)
+            {
+                current = current.parent;
+                path = current.name + "/" + path;
+            }
+            byte[] bpath = StringToBytes(path);
+            NetCommand command = new NetCommand(bpath, MessageType.Empty);
             return command;
         }
 

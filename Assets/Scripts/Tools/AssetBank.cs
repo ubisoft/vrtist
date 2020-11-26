@@ -18,6 +18,7 @@ namespace VRtist
         public bool builtin = false;
         public Func<AssetBankItem, Task<GameObject>> importFunction = null;
         public bool skipInstantiation = false;
+        public bool imported = false;
 
         public UIDynamicListItem uiItem;
 
@@ -255,6 +256,7 @@ namespace VRtist
                 GlobalState.Instance.messageBox.ShowMessage("Loading asset, please wait...");
                 Selection.ClearSelection();
                 item.original = await item.importFunction(item);
+                item.imported = true;
                 if (!item.skipInstantiation)
                 {
                     InstantiateObject(item.original);
@@ -286,7 +288,15 @@ namespace VRtist
             }
 
             // Create the prefab and instantiate it
-            GameObject newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject));
+            GameObject newObject;
+            if (item.imported)
+            {
+                newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject));
+            }
+            else
+            {
+                newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+            }
 
             // Is this still required?
             MeshFilter meshFilter = newObject.GetComponentInChildren<MeshFilter>();

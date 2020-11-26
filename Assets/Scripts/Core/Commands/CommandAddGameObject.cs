@@ -44,12 +44,17 @@ namespace VRtist
             {
                 SendCamera();
             }
+            else if (null != gObject.GetComponent<LocatorController>())
+            {
+                SendEmpty();
+            }
             else if (gObject.GetComponent<MeshFilter>() != null)
             {
                 SendMesh();
             }
             else
             {
+                // For fbx import
                 SendEmpty();
             }
         }

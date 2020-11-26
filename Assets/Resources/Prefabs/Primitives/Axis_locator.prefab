@@ -11,9 +11,11 @@ GameObject:
   - component: {fileID: 8213587248116738553}
   - component: {fileID: 911838920308822991}
   - component: {fileID: 6889110783648198454}
+  - component: {fileID: -868588630876132870}
+  - component: {fileID: 2712560836088052701}
   m_Layer: 0
   m_Name: Axis_locator
-  m_TagString: Untagged
+  m_TagString: PhysicObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -81,3 +83,30 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &-868588630876132870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5163341570442517482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22f2a9429667132478cf32d34bbd9458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  locked: 0
+  controllerName: 
+--- !u!65 &2712560836088052701
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5163341570442517482}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.0977347, y: 1.0977347, z: 1.0977347}
+  m_Center: {x: 0.25, y: 0.25, z: 0.25}
