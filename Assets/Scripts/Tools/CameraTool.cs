@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -22,8 +23,15 @@ namespace VRtist
         public RenderTexture renderTexture = null;
 
         private float focal;
+        private float focus;
+        private float aperture;
         private GameObject UIObject = null;
         private Transform focalSlider = null;
+        private Transform focusSlider = null;
+        private Transform apertureSlider = null;
+
+        private UICheckbox enableDepthOfFieldCheckbox = null;
+        private bool enableDepthOfField = false;
 
         private UICheckbox showCameraFeedbackCheckbox = null;
         private UICheckbox feedbackPositionningCheckbox = null;
@@ -52,6 +60,8 @@ namespace VRtist
 
         public bool montage = false;
 
+        private UnityEngine.Rendering.HighDefinition.DepthOfField dof;
+
         public float Focal
         {
             get { return focal; }
@@ -65,6 +75,57 @@ namespace VRtist
                     if (null == cameraControler)
                         continue;
                     cameraControler.focal = value;
+                }
+            }
+        }
+
+        public float Focus
+        {
+            get { return focus; }
+            set
+            {
+                focus = value;
+                ApplyDepthOfFieldToVolume();
+                foreach (GameObject gobject in SelectedCameraObjects())
+                {
+                    CameraController cameraControler = gobject.GetComponent<CameraController>();
+                    if (null == cameraControler)
+                        continue;
+                    cameraControler.focus = value;
+                }
+            }
+        }
+
+        public float Aperture
+        {
+            get { return aperture; }
+            set
+            {
+                aperture = value;
+
+                foreach (GameObject gobject in SelectedCameraObjects())
+                {
+                    CameraController cameraControler = gobject.GetComponent<CameraController>();
+                    if (null == cameraControler)
+                        continue;
+                    cameraControler.aperture = value;
+                }
+            }
+        }
+
+        public bool EnableDepthOfField
+        {
+            get { return enableDepthOfField; }
+            set
+            {
+                enableDepthOfField = value;
+
+                foreach (GameObject gobject in SelectedCameraObjects())
+                {
+                    CameraController cameraControler = gobject.GetComponent<CameraController>();
+                    if (null == cameraControler)
+                        continue;
+                    cameraControler.enableDOF = value;
                 }
             }
         }
@@ -96,7 +157,10 @@ namespace VRtist
             }
             else
             {
-                focalSlider = panel.Find("Focal");
+                focalSlider = panel.Find("Focal"); 
+                focusSlider = panel.Find("Focus");
+                apertureSlider = panel.Find("Aperture");
+                enableDepthOfFieldCheckbox = panel.Find("EnableDepthOfField")?.gameObject.GetComponent<UICheckbox>();
                 showCameraFeedbackCheckbox = panel.Find("ShowFeedback")?.gameObject.GetComponent<UICheckbox>();
                 feedbackPositionningCheckbox = panel.Find("Feedback")?.gameObject.GetComponent<UICheckbox>();
                 showDopesheetCheckbox = panel.Find("ShowDopesheet")?.gameObject.GetComponent<UICheckbox>();
@@ -164,7 +228,11 @@ namespace VRtist
         protected override void Init()
         {
             base.Init();
+
             focalSlider.gameObject.SetActive(false);
+            focusSlider.gameObject.SetActive(false);
+            apertureSlider.gameObject.SetActive(false);
+            enableDepthOfFieldCheckbox.gameObject.SetActive(false);
 
             InitUIPanel();
         }
@@ -190,6 +258,13 @@ namespace VRtist
             if (null != showCameraFrustumCheckbox)
             {
                 showCameraFrustumCheckbox.Checked = showCameraFrustum;
+            }
+
+            if (null != enableDepthOfFieldCheckbox)
+            {
+                enableDepthOfFieldCheckbox.Checked = enableDepthOfField;
+                focusSlider.GetComponent<UISlider>().Disabled = !enableDepthOfField;
+                apertureSlider.GetComponent<UISlider>().Disabled = !enableDepthOfField;
             }
         }
 
@@ -482,6 +557,11 @@ namespace VRtist
             return cam.fieldOfView;
         }
 
+        private void SetCameraAperture(Camera cam, float aperture)
+        {
+            cam.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
+        }
+
         public void OnChangeFocal(float value)
         {
             Focal = value;
@@ -493,6 +573,28 @@ namespace VRtist
             }
         }
 
+        public void OnChangeFocus(float value)
+        {
+            Focus = value;
+            foreach (GameObject camObject in SelectedCameraObjects())
+            {
+                Camera cam = camObject.GetComponentInChildren<Camera>();
+                SendCameraParams(camObject);
+            }
+        }
+
+        public void OnChangeAperture(float value)
+        {
+            Aperture = value;
+            foreach (GameObject camObject in SelectedCameraObjects())
+            {
+                Camera cam = camObject.GetComponentInChildren<Camera>();
+                SetCameraAperture(cam, value);
+                SendCameraParams(camObject);
+            }
+        }
+
+        // NOTE: deprecated??? if not, handle Focus and Aperture, using the args.parameterName
         private void OnChangeParameter(object sender, ToolParameterChangedArgs args)
         {
             // update selection parameters from UI
@@ -517,12 +619,34 @@ namespace VRtist
                 //    cameraPreviewWindow.UpdateFromController(cameraController);
 
                 // Update the Camera Panel
+                enableDepthOfFieldCheckbox.gameObject.SetActive(true);
+                enableDepthOfFieldCheckbox.Checked = cameraController.enableDOF;
+
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
                 {
                     sliderComp.Value = cameraController.focal;
                     focalSlider.gameObject.SetActive(true);
                 }
+
+                sliderComp = focusSlider.GetComponent<UISlider>();
+                if (sliderComp != null)
+                {
+                    sliderComp.Value = cameraController.focus;
+                    focusSlider.gameObject.SetActive(true);
+                }
+
+                sliderComp = apertureSlider.GetComponent<UISlider>();
+                if (sliderComp != null)
+                {
+                    sliderComp.Value = cameraController.aperture;
+                    apertureSlider.gameObject.SetActive(true);
+                }
+
+                // update the focusDistance of the volume if the worldScale change.
+                if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+                dof.focusDistance.value = focus * GlobalState.worldScale;
+                dof.active = enableDepthOfField; // TODO: use the flag in the cameracontroller when we add it.
 
                 // Use only the first camera.
                 return;
@@ -531,7 +655,10 @@ namespace VRtist
             //if (cameraPreviewWindow != null)
             //    cameraPreviewWindow.Clear();
 
+            enableDepthOfFieldCheckbox.gameObject.SetActive(false);
             focalSlider.gameObject.SetActive(false);
+            focusSlider.gameObject.SetActive(false);
+            apertureSlider.gameObject.SetActive(false);
         }
 
         protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -545,44 +672,80 @@ namespace VRtist
             OnSliderPressed("Camera Focal", "/CameraController/focal");
         }
 
-        public void OnAddKeyframe(int i)
+        public void OnFocusSliderPressed()
         {
-            // TODO:
-            // - add a keyframe to the currently selected camera cameraController
+            OnSliderPressed("Camera Focus", "/CameraController/focus");
         }
 
-        public void OnRemoveKeyframe(int i)
+        public void OnApertureSliderPressed()
         {
-            // TODO:
-            // - remove a keyframe to the currently selected camera cameraController
+            OnSliderPressed("Camera Aperture", "/CameraController/aperture");
         }
 
-        static int the_next_keyframe = 1; // TMP
-        public void OnNextKeyframe(int currentKeyframe)
+        public void OnCheckEnableDepthOfField(bool value)
         {
-            // TODO: 
-            // - find the next keyframe, using the current one provided, and cameraController keyframes.
-            // - call the dopesheet to tell it the new current keyframe
-            if (dopesheet != null)
+            if (null != focusSlider)
             {
-                int f = the_next_keyframe++;
-                GlobalState.Animation.CurrentFrame = f;
+                focusSlider.GetComponent<UISlider>().Disabled = !value;
             }
-        }
-
-        static int the_previous_keyframe = 100; // TMP
-        public void OnPreviousKeyframe(int currentKeyframe)
-        {
-            // TODO: 
-            // - find the previous keyframe, using the current one provided, and cameraController keyframes.
-            // - call the dopesheet to tell it the new current keyframe
-
-            if (dopesheet != null)
+            if (null != apertureSlider)
             {
-                int f = the_previous_keyframe--;
-                GlobalState.Animation.CurrentFrame = f;
+                apertureSlider.GetComponent<UISlider>().Disabled = !value;
             }
+
+            EnableDepthOfField = value;
         }
+
+        private void ApplyDepthOfFieldToVolume()
+        {
+            // Only called when we move the focus distance of a selected camera, so we can use the tool values, not the camera values.
+            // No need to foreach all cameras and pick first one.
+
+            if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+            dof.focusDistance.value = focus * GlobalState.worldScale;
+            dof.active = enableDepthOfField;
+        }
+
+        // TODO: remove once we are sure it is no longer used.
+
+        //public void OnAddKeyframe(int i)
+        //{
+        //    // TODO:
+        //    // - add a keyframe to the currently selected camera cameraController
+        //}
+
+        //public void OnRemoveKeyframe(int i)
+        //{
+        //    // TODO:
+        //    // - remove a keyframe to the currently selected camera cameraController
+        //}
+
+        //static int the_next_keyframe = 1; // TMP
+        //public void OnNextKeyframe(int currentKeyframe)
+        //{
+        //    // TODO: 
+        //    // - find the next keyframe, using the current one provided, and cameraController keyframes.
+        //    // - call the dopesheet to tell it the new current keyframe
+        //    if (dopesheet != null)
+        //    {
+        //        int f = the_next_keyframe++;
+        //        GlobalState.Animation.CurrentFrame = f;
+        //    }
+        //}
+
+        //static int the_previous_keyframe = 100; // TMP
+        //public void OnPreviousKeyframe(int currentKeyframe)
+        //{
+        //    // TODO: 
+        //    // - find the previous keyframe, using the current one provided, and cameraController keyframes.
+        //    // - call the dopesheet to tell it the new current keyframe
+
+        //    if (dopesheet != null)
+        //    {
+        //        int f = the_previous_keyframe--;
+        //        GlobalState.Animation.CurrentFrame = f;
+        //    }
+        //}
 
         public void OnCheckShowCameraFrustum(bool value)
         {

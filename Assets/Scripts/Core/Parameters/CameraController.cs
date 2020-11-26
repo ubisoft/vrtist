@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
@@ -7,6 +8,9 @@ namespace VRtist
     {
         public Camera cameraObject = null;
         public float focal = 35f;
+        public float focus = 0.1f;
+        public float aperture = 16f; // [1..32] in Unity
+        public bool enableDOF = false;
         public float near = 0.07f;
         public float far = 1000f;
         public float filmHeight = 24f;
@@ -14,6 +18,15 @@ namespace VRtist
         private UISlider focalSlider = null;
         private bool focalActionSelected;
         private CommandSetValue<float> focalValueCommand;
+
+        private UISlider focusSlider = null;
+        private bool focusActionSelected;
+        private CommandSetValue<float> focusValueCommand;
+
+        private UISlider apertureSlider = null;
+        private bool apertureActionSelected;
+        private CommandSetValue<float> apertureValueCommand;
+
 
         private UIButton inFrontButton = null;
         public bool inFront = false;
@@ -62,14 +75,35 @@ namespace VRtist
                 nameLabel.onReleaseEvent.AddListener(OnNameClicked);
                 nameLabel.NeedsRebuild = true;
 
+                // FOCAL
                 focalSlider = gameObject.GetComponentInChildren<UISlider>();
                 focalSlider.onSlideEventInt.AddListener(OnFocalSliderChange);
                 focalSlider.onClickEvent.AddListener(OnFocalClicked);
                 focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
-
                 // Hack : force TMPro properties when component is enabled
                 UIUtils.SetTMProStyle(focalSlider.gameObject, minSize: 1f, maxSize: 1.5f);
                 focalSlider.NeedsRebuild = true;
+
+                // TODO: put sliders on the camera gizmo
+                /*
+                // FOCUS
+                focusSlider = gameObject.GetComponentInChildren<UISlider>();
+                focusSlider.onSlideEventInt.AddListener(OnFocusSliderChange);
+                focusSlider.onClickEvent.AddListener(OnFocusClicked);
+                focusSlider.onReleaseEvent.AddListener(OnFocusReleased);
+                // Hack : force TMPro properties when component is enabled
+                UIUtils.SetTMProStyle(focusSlider.gameObject, minSize: 1f, maxSize: 1.5f);
+                focusSlider.NeedsRebuild = true;
+
+                // APERTURE
+                apertureSlider = gameObject.GetComponentInChildren<UISlider>();
+                apertureSlider.onSlideEventInt.AddListener(OnApertureSliderChange);
+                apertureSlider.onClickEvent.AddListener(OnApertureClicked);
+                apertureSlider.onReleaseEvent.AddListener(OnApertureReleased);
+                // Hack : force TMPro properties when component is enabled
+                UIUtils.SetTMProStyle(apertureSlider.gameObject, minSize: 1f, maxSize: 1.5f);
+                apertureSlider.NeedsRebuild = true;
+                */
 
                 inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>();
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
@@ -115,17 +149,22 @@ namespace VRtist
             }
         }
 
-        private void OnFocalSliderChange(int focal)
-        {
-            this.focal = focal;
-            ComputeFOV();
-            CameraTool.SendCameraParams(gameObject);
-        }
+        //
+        // FOCAL
+        //
 
         private float ComputeFOV()
         {
             cameraObject.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * focal)) * Mathf.Rad2Deg;
             return cameraObject.fieldOfView;
+        }
+
+
+        private void OnFocalSliderChange(int focal)
+        {
+            this.focal = focal;
+            ComputeFOV();
+            CameraTool.SendCameraParams(gameObject);
         }
 
         private void OnFocalClicked()
@@ -148,6 +187,66 @@ namespace VRtist
             }
         }
 
+        //
+        // FOCUS
+        //
+
+        private void OnFocusSliderChange(int focus)
+        {
+            this.focus = focus;
+            CameraTool.SendCameraParams(gameObject);
+        }
+
+        private void OnFocusClicked()
+        {
+
+            focusActionSelected = Selection.IsSelected(gameObject);
+            if (!focusActionSelected)
+            {
+                Selection.AddToSelection(gameObject);
+            }
+            focusValueCommand = new CommandSetValue<float>("Camera Focus", "/CameraController/focus");
+        }
+
+        private void OnFocusReleased()
+        {
+            focusValueCommand.Submit();
+            if (!focusActionSelected)
+            {
+                Selection.RemoveFromSelection(gameObject);
+            }
+        }
+
+        //
+        // APERTURE
+        //
+
+        private void OnApertureSliderChange(int aperture)
+        {
+            this.aperture = aperture;
+            CameraTool.SendCameraParams(gameObject);
+        }
+
+        private void OnApertureClicked()
+        {
+
+            apertureActionSelected = Selection.IsSelected(gameObject);
+            if (!apertureActionSelected)
+            {
+                Selection.AddToSelection(gameObject);
+            }
+            apertureValueCommand = new CommandSetValue<float>("Camera Aperture", "/CameraController/aperture");
+        }
+
+        private void OnApertureReleased()
+        {
+            apertureValueCommand.Submit();
+            if (!apertureActionSelected)
+            {
+                Selection.RemoveFromSelection(gameObject);
+            }
+        }
+
         void Update()
         {
             if (null == cameraObject)
@@ -161,6 +260,20 @@ namespace VRtist
                 cameraObject.farClipPlane = far * scale;
                 cameraObject.nearClipPlane = near * scale;
                 cameraObject.focalLength = focal;
+                if (enableDOF)
+                {
+                    cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
+                }
+                else
+                {
+                    cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = 16f;
+                }
+
+                // NOTE: cant do that here because this Update is called for all cameras. Only the current one should do it.
+                //DepthOfField dof;
+                //Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+                //dof.focusDistance.value = focus * scale;
+                //dof.active = true; // enableDepthOfField; // TODO: add and use the flag to cameracontroller.
 
                 // Active camera
                 if (Selection.activeCamera == gameObject)
@@ -184,6 +297,16 @@ namespace VRtist
             {
                 focalSlider.Value = focal;
             }
+
+            if (null != focusSlider && focusSlider.Value != focus)
+            {
+                focusSlider.Value = focus;
+            }
+
+            if (null != apertureSlider && apertureSlider.Value != aperture)
+            {
+                apertureSlider.Value = aperture;
+            }
         }
 
         public void OnCameraRenamed(GameObject gObject)
@@ -200,6 +323,9 @@ namespace VRtist
             focal = other.focal;
             near = other.near;
             far = other.far;
+            focus = other.focus;
+            aperture = other.aperture;
+            enableDOF = other.enableDOF;
         }
 
         public override void SetName(string name)
@@ -213,6 +339,9 @@ namespace VRtist
         {
             frustumRenderer.enabled = true;
             frustumRenderer.gameObject.layer = LayerMask.NameToLayer("UI");  // we don't want the selection outline
+
+            // TODO: represent FOCUS and APERTURE
+            // ...
 
             float halfWidthFactor = cameraObject.sensorSize.x * 0.5f / focal;
             float halfHeightFactor = cameraObject.sensorSize.y * 0.5f / focal;

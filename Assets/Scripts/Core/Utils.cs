@@ -40,6 +40,20 @@ namespace VRtist
             return null;
         }
 
+        public static Volume FindCameraPostProcessVolume()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            GameObject[] roots = scene.GetRootGameObjects();
+            for (int i = 0; i < roots.Length; i++)
+            {
+                if (roots[i].name == "VolumePostProcessCamera")
+                {
+                    return roots[i].GetComponent<Volume>();
+                }
+            }
+            return null;
+        }
+
         public static GameObject FindGameObject(string name)
         {
             GameObject world = Utils.FindWorld();
