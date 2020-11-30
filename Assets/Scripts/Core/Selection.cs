@@ -165,7 +165,7 @@ namespace VRtist
                     TriggerSelectionChanged();
                 }
                 return;
-            }           
+            }
 
             // obj is selected => reset hoveredObject
             if (hoveredObject != null && IsSelected(obj))
@@ -215,6 +215,16 @@ namespace VRtist
                     gameObjects.Add(hoveredObject);
             }
             return gameObjects;
+        }
+
+        public static GameObject GetFirstSelectedObject()
+        {
+            if (selection.Count == 0) { return null; }
+            foreach (var first in selection.Values)
+            {
+                return first;
+            }
+            return null;
         }
 
         public static List<GameObject> GetGrippedOrSelection()
@@ -303,7 +313,7 @@ namespace VRtist
         {
             if (gObject.GetComponent<UIHandle>())
                 return false;
-            
+
             if (selection.ContainsKey(gObject.GetInstanceID()))
                 return false;
 

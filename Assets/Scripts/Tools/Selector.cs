@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -20,6 +22,21 @@ namespace VRtist
         public UICheckbox turnAroundXCheckbox = null;
         public UICheckbox turnAroundYCheckbox = null;
         public UICheckbox turnAroundZCheckbox = null;
+
+        GameObject selectPanel;
+        GameObject snapPanel;
+        GameObject inspectorPanel;
+
+        UIButton selectPanelButton;
+        UIButton snapPanelButton;
+        UIButton inspectorPanelButton;
+
+        UILabel selectedObjectNameLabel;
+
+        // Constraint UI
+        UIButton enableParentButton;
+        UILabel parentTargetLabel;
+        UIButton selectParentButton;
 
         public GridVFX grid = null;
 
@@ -70,6 +87,133 @@ namespace VRtist
         {
             Init();
             ToggleMouthpiece(mouthpiece, true);
+
+            // Sub panels
+            selectPanel = panel.Find("SelectPanel").gameObject;
+            snapPanel = panel.Find("SnapPanel").gameObject;
+            inspectorPanel = panel.Find("ObjectPropertiesPanel").gameObject;
+
+            selectPanel.SetActive(true);
+            snapPanel.SetActive(false);
+            inspectorPanel.SetActive(false);
+
+            selectPanelButton = panel.Find("SelectPanelButton").GetComponent<UIButton>();
+            selectPanelButton.Checked = true;
+            snapPanelButton = panel.Find("SnapPanelButton").GetComponent<UIButton>();
+            inspectorPanelButton = panel.Find("ObjectPropertiesPanelButton").GetComponent<UIButton>();
+
+            selectPanelButton.onReleaseEvent.AddListener(() => OnSelectPanel(selectPanelButton));
+            snapPanelButton.onReleaseEvent.AddListener(() => OnSelectPanel(snapPanelButton));
+            inspectorPanelButton.onReleaseEvent.AddListener(() => OnSelectPanel(inspectorPanelButton));
+
+            selectedObjectNameLabel = inspectorPanel.transform.Find("Object Name").GetComponent<UILabel>();
+
+            // Constraints
+            enableParentButton = inspectorPanel.transform.Find("Constraints/Parent/Active Button").GetComponent<UIButton>();
+            parentTargetLabel = inspectorPanel.transform.Find("Constraints/Parent/Target Label").GetComponent<UILabel>();
+            selectParentButton = inspectorPanel.transform.Find("Constraints/Parent/Select Button").GetComponent<UIButton>();
+
+            enableParentButton.onReleaseEvent.AddListener(OnToggleParentConstraint);
+            Selection.OnSelectionChanged += OnUpdateSelectionUI;
+            selectParentButton.onReleaseEvent.AddListener(() => { selectParentButton.Checked = true; });
+        }
+
+        void OnToggleParentConstraint()
+        {
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                ParentConstraint constraint = selected.GetComponent<ParentConstraint>();
+                if (null != constraint)
+                {
+                    constraint.constraintActive = !constraint.constraintActive;
+                }
+            }
+        }
+
+        void OnSetParentConstraintTarget()
+        {
+            GameObject hovered = Selection.GetHoveredObject();
+            if (null == hovered) { return; }
+
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                ParentConstraint constraint = selected.GetComponent<ParentConstraint>();
+                if (null == constraint)
+                {
+                    constraint = selected.AddComponent<ParentConstraint>();
+                }
+                ConstraintSource source;
+                try
+                {
+                    source = constraint.GetSource(0);
+                }
+                catch (InvalidOperationException)
+                {
+                    source = new ConstraintSource();
+                    constraint.AddSource(source);
+                }
+                source.sourceTransform = hovered.transform;
+                source.weight = 1f;
+                constraint.SetSource(0, source);
+
+                constraint.translationAtRest = selected.transform.localPosition;
+                constraint.rotationAtRest = selected.transform.localRotation.eulerAngles;
+
+                Vector3 offset = hovered.transform.InverseTransformPoint(selected.transform.position);
+                offset = Vector3.Scale(offset, hovered.transform.lossyScale);
+                constraint.SetTranslationOffset(0, offset);
+
+                Quaternion quat = Quaternion.Inverse(hovered.transform.rotation) * selected.transform.rotation;
+                constraint.SetRotationOffset(0, quat.eulerAngles);
+
+                constraint.constraintActive = true;
+                parentTargetLabel.Text = hovered.name;
+                enableParentButton.Checked = true;
+            }
+        }
+
+        void OnUpdateSelectionUI(object _, SelectionChangedArgs args)
+        {
+            // Update UI
+            selectedObjectNameLabel.Text = "";
+
+            enableParentButton.Checked = false;
+            parentTargetLabel.Text = "";
+
+            GameObject selected = Selection.GetFirstSelectedObject();
+            if (null == selected)
+            {
+                return;
+            }
+
+            // Selected label
+            if (Selection.Count() > 1) { selectedObjectNameLabel.Text = $"{Selection.Count()} objects selected"; }
+            else { selectedObjectNameLabel.Text = selected.name; }
+
+            ParentConstraint parentConstraint = selected.GetComponent<ParentConstraint>();
+            if (null != parentConstraint)
+            {
+                enableParentButton.Checked = parentConstraint.constraintActive;
+                parentTargetLabel.Text = parentConstraint.GetSource(0).sourceTransform.name;
+            }
+
+            // Manage constraint target selection
+            if (selectParentButton.Checked)
+            {
+                OnSetParentConstraintTarget();
+                selectParentButton.Checked = false;
+            }
+        }
+
+        void OnSelectPanel(UIButton button)
+        {
+            selectPanelButton.Checked = button == selectPanelButton;
+            snapPanelButton.Checked = button == snapPanelButton;
+            inspectorPanelButton.Checked = button == inspectorPanelButton;
+
+            selectPanel.SetActive(button == selectPanelButton);
+            snapPanel.SetActive(button == snapPanelButton);
+            inspectorPanel.SetActive(button == inspectorPanelButton);
         }
 
         protected override void Init()
