@@ -49,7 +49,7 @@ namespace VRtist
         void Start()
         {
             planeTransform = transform.Find("TimeTicks/Plane");
-            rulerMaterial = planeTransform.GetComponent<MeshRenderer>().material;
+            rulerMaterial = planeTransform.GetComponent<MeshRenderer>().sharedMaterial;
             rulerMaterial.SetFloat("_SubTickCount", GlobalState.Animation.fps);
         }
 

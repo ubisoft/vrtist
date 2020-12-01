@@ -49,7 +49,7 @@
         float depth = LoadCameraDepth(varyings.positionCS.xy);
         PositionInputs posInput = GetPositionInput(varyings.positionCS.xy, _ScreenSize.zw, depth, UNITY_MATRIX_I_VP, UNITY_MATRIX_V);
         float4 color = float4(0.0, 0.0, 0.0, 0.0);
-        //float luminanceThreshold = max(0.000001, _Threshold * 0.01); // render target is fill with 0
+        //float luminanceThreshold = max(0.000001, _Threshold);
         float luminanceThreshold = 80.0f; // render target is filled with 99
 
         // Load the camera color buffer at the mip 0 if we're not at the before rendering injection point

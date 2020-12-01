@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
-
-using UnityEditor;
 
 namespace VRtist
 {
@@ -23,10 +20,10 @@ namespace VRtist
             GUILayout.BeginArea(new Rect(10, 10, Screen.width, Screen.height));
             GUILayout.BeginVertical();
             {
-                if (GUILayout.Button("Generate Random BrushStroke", GUILayout.Width(200), GUILayout.Height(30)))
-                {
-                    paint.GenerateRandomBrushStroke();
-                }
+                //if (GUILayout.Button("Generate Random BrushStroke", GUILayout.Width(200), GUILayout.Height(30)))
+                //{
+                //    paint.GenerateRandomBrushStroke();
+                //}
             }
             GUILayout.EndVertical();
             GUILayout.EndArea();

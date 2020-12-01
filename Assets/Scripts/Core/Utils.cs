@@ -147,6 +147,47 @@ namespace VRtist
             return paint;
         }
 
+        public static GameObject CreateVolume(Transform parent, Color color)
+        {
+            GameObject intermediateParent = new GameObject();
+            intermediateParent.transform.parent = parent;
+
+            GameObject volume = new GameObject();
+            volume.transform.parent = intermediateParent.transform;
+            volume.name = SyncData.CreateUniqueName("Volume");
+            intermediateParent.name = volume.name + "_parent";
+
+            volume.transform.localPosition = Vector3.zero;
+            volume.transform.localRotation = Quaternion.identity;
+            volume.transform.localScale = Vector3.one;
+            volume.tag = "PhysicObject";
+
+            Mesh mesh = new Mesh();
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            MeshFilter meshFilter = volume.AddComponent<MeshFilter>();
+            meshFilter.mesh = mesh;
+            MeshRenderer renderer = volume.AddComponent<MeshRenderer>();
+            Material volumeMaterial = MixerUtils.GetMaterial(MaterialType.Paint); // TODO: another specific material??
+            renderer.sharedMaterial = volumeMaterial;
+
+            MeshCollider meshCollider = volume.AddComponent<MeshCollider>();
+
+            MaterialParameters parameters = new MaterialParameters();
+            parameters.materialType = MaterialType.Paint;
+            parameters.baseColor = color;
+
+            MixerUtils.materialsParameters[SyncData.GetMaterialName(volume)] = parameters;
+            Material instanceMaterial = renderer.material;
+            MixerUtils.ApplyMaterialParameters(instanceMaterial, parameters);
+            renderer.material = instanceMaterial;
+
+            volume.AddComponent<MeshCollider>();
+
+            VolumeController volumeController = volume.AddComponent<VolumeController>();
+
+            return volume;
+        }
+
         public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite)
         {
             RenderTexture renderTexture = new RenderTexture(width, height, depth, format);
