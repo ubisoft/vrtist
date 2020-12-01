@@ -170,8 +170,6 @@ namespace VRtist
             Material volumeMaterial = MixerUtils.GetMaterial(MaterialType.Paint); // TODO: another specific material??
             renderer.sharedMaterial = volumeMaterial;
 
-            MeshCollider meshCollider = volume.AddComponent<MeshCollider>();
-
             MaterialParameters parameters = new MaterialParameters();
             parameters.materialType = MaterialType.Paint;
             parameters.baseColor = color;
@@ -182,7 +180,6 @@ namespace VRtist
             renderer.material = instanceMaterial;
 
             volume.AddComponent<MeshCollider>();
-
             VolumeController volumeController = volume.AddComponent<VolumeController>();
 
             return volume;
