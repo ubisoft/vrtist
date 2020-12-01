@@ -278,7 +278,7 @@ namespace VRtist
                             mesh.RecalculateNormals();
 
                             // Recompute collider
-                            MeshCollider meshCollider = GetComponent<MeshCollider>();
+                            MeshCollider meshCollider = currentVolume.GetComponent<MeshCollider>();
                             if (meshCollider.sharedMesh == null)
                             {
                                 meshCollider.sharedMesh = mesh;
