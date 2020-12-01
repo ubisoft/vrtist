@@ -14,18 +14,25 @@ namespace VRtist
         Vector3 paintPrevPosition;
         GameObject currentPaintLine;
         float brushSize = 0.01f;
-        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull }
+        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume }
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
         int paintId = 0;
         bool paintOnSurface = false;
 
-        GameObject volumeCursor;
-        GameObject flatCursor;
-        GameObject convexCursor;
+        GameObject pencilCursor = null;
+        GameObject flatCursor = null;
+        GameObject convexCursor = null;
+        GameObject volumeCursor = null;
 
-        FreeDraw freeDraw;
+        FreeDraw freeDraw; // used for pencil, flat pencil and hull
         CommandGroup undoGroup = null;
+
+
+
+
+        VolumeMeshGenerator volumeGenerator; // used for volume
+        GameObject currentVolume;
 
         // Start is called before the first frame update
         void Start()
@@ -37,17 +44,20 @@ namespace VRtist
             else { paintLineRenderer.startWidth = 0.005f; paintLineRenderer.endWidth = 0.005f; }
 
             freeDraw = new FreeDraw();
-            updateButtonsColor();
+            UpdateButtonsColor();
 
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
 
-            volumeCursor = mouthpiece.transform.Find("curve").gameObject;
+            pencilCursor = mouthpiece.transform.Find("curve").gameObject;
             flatCursor = mouthpiece.transform.Find("flat_curve").gameObject;
             convexCursor = mouthpiece.transform.Find("convex").gameObject;
-            volumeCursor.SetActive(paintTool == PaintTools.Pencil);
+            volumeCursor = mouthpiece.transform.Find("volume").gameObject;
+
+            pencilCursor.SetActive(paintTool == PaintTools.Pencil);
             flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
             convexCursor.SetActive(paintTool == PaintTools.ConvexHull);
+            volumeCursor.SetActive(paintTool == PaintTools.Volume);
 
             // Create tooltips
             Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
@@ -108,18 +118,42 @@ namespace VRtist
 
         private void EndCurrentPaint()
         {
-            // Bake line renderer into a mesh so we can raycast on it
-            if (currentPaintLine != null)
+            switch (paintTool)
             {
-                TranslatePaintToItsCenter();
-                PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
-                paintParameters.color = GlobalState.CurrentColor;
-                paintParameters.controlPoints = freeDraw.controlPoints;
-                paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
-                new CommandAddGameObject(currentPaintLine).Submit();
-                currentPaintLine = null;
-            }
+                case PaintTools.Pencil:
+                case PaintTools.FlatPencil:
+                case PaintTools.ConvexHull:
+                    {
+                        // Bake line renderer into a mesh so we can raycast on it
+                        if (currentPaintLine != null)
+                        {
+                            TranslatePaintToItsCenter();
+                            PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
+                            paintParameters.color = GlobalState.CurrentColor;
+                            paintParameters.controlPoints = freeDraw.controlPoints;
+                            paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
+                            new CommandAddGameObject(currentPaintLine).Submit();
+                            currentPaintLine = null;
+                        }
+                        break;
+                    }
 
+                case PaintTools.Volume:
+                    {
+                        if (currentVolume != null)
+                        {
+                            VolumeParameters volumeParameters = currentVolume.GetComponent<VolumeController>().GetParameters() as VolumeParameters;
+                            volumeParameters.origin = volumeGenerator.origin;
+                            volumeParameters.bounds = volumeGenerator.bounds;
+                            volumeParameters.field = volumeGenerator.field;
+                            volumeParameters.resolution = volumeGenerator.resolution;
+                            volumeParameters.stepSize = volumeGenerator.stepSize;
+                            new CommandAddGameObject(currentVolume).Submit();
+                            currentVolume = null;
+                        }
+                    }
+                    break;
+            }
         }
 
         private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation)//, bool flat)
@@ -127,22 +161,28 @@ namespace VRtist
             // Activate a new paint            
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
             {
-                // Create an empty game object with a mesh
-                currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
-                ++paintId;
-                paintPrevPosition = Vector3.zero;
-                freeDraw = new FreeDraw();
-                freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
-                undoGroup = new CommandGroup("Paint");
+                switch (paintTool)
+                {
+                    case PaintTools.Pencil:
+                    case PaintTools.FlatPencil:
+                    case PaintTools.ConvexHull:
+                        // Create an empty game object with a mesh
+                        currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
+                        ++paintId;
+                        freeDraw = new FreeDraw();
+                        freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
+                        break;
 
-                /*
-                freeDraw.matrix = Matrix4x4.identity;
-                freeDraw.AddControlPoint(new Vector3(0, 0, 20), 1f);
-                freeDraw.AddControlPoint(new Vector3(10, 0, 20), 1f);
-                freeDraw.AddControlPoint(new Vector3(10, 10, 20), 1f);                
-                freeDraw.AddControlPoint(new Vector3(20, 10, 20), 1f);              
-                freeDraw.AddControlPoint(new Vector3(20, 0, 20), 1f);
-                */
+                    case PaintTools.Volume:
+                        currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
+                        currentVolume.transform.position = mouthpiece.position; // real-world position
+                        volumeGenerator = new VolumeMeshGenerator();
+                        volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
+                        break;
+                }
+
+                paintPrevPosition = Vector3.zero;
+                undoGroup = new CommandGroup("Paint");
             },
             () =>
             {
@@ -195,30 +235,67 @@ namespace VRtist
 
             // Draw
             float deadZone = VRInput.deadZoneIn;
-            if (triggerValue >= deadZone && position != paintPrevPosition && currentPaintLine != null)
+            if (triggerValue >= deadZone &&
+                (
+                  (position != paintPrevPosition && currentPaintLine != null) || currentVolume != null)
+                )
             {
                 // Add a point (the current world position) to the line renderer                        
 
                 float ratio = 0.5f * (triggerValue - deadZone) / (1f - deadZone);
-
-                // make some vibration feedback
-                //OVRInput.SetControllerVibration(1, ratio, OVRInput.Controller.RTouch);
-                //VRInput.rightController.SendHapticImpulse(0, ratio, 1f);                       
 
                 switch (paintTool)
                 {
                     case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, brushSize * ratio); break;
                     case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, brushSize * ratio); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
+                    case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, brushSize * ratio); break;
                 }
 
-                // set mesh components
-                MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
-                Mesh mesh = meshFilter.mesh;
-                mesh.Clear();
-                mesh.vertices = freeDraw.vertices;
-                mesh.normals = freeDraw.normals;
-                mesh.triangles = freeDraw.triangles;
+                switch (paintTool)
+                {
+                    case PaintTools.Pencil:
+                    case PaintTools.FlatPencil:
+                    case PaintTools.ConvexHull:
+                        {
+                            // set mesh components
+                            MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
+                            Mesh mesh = meshFilter.mesh;
+                            mesh.Clear();
+                            mesh.vertices = freeDraw.vertices;
+                            mesh.normals = freeDraw.normals;
+                            mesh.triangles = freeDraw.triangles;
+                            break;
+                        }
+
+                    case PaintTools.Volume:
+                        {
+                            MeshFilter meshFilter = currentVolume.GetComponent<MeshFilter>();
+                            Mesh mesh = meshFilter.mesh;
+                            mesh.Clear();
+                            mesh.vertices = volumeGenerator.vertices;
+                            mesh.triangles = volumeGenerator.triangles;
+                            mesh.RecalculateNormals();
+
+                            // Recompute collider
+                            MeshCollider meshCollider = GetComponent<MeshCollider>();
+                            if (meshCollider.sharedMesh == null)
+                            {
+                                meshCollider.sharedMesh = mesh;
+                            }
+                            // force update
+                            meshCollider.enabled = false;
+                            meshCollider.enabled = true;
+                            
+                            VolumeParameters volumeParameters = currentVolume.GetComponent<VolumeController>().GetParameters() as VolumeParameters;
+                            volumeParameters.origin = volumeGenerator.origin;
+                            volumeParameters.bounds = volumeGenerator.bounds; // TODO: dont duplicate data? use volumeparameters in volumegenerator?
+                            volumeParameters.field = volumeGenerator.field;
+                            volumeParameters.resolution = volumeGenerator.resolution;
+                            volumeParameters.stepSize = volumeGenerator.stepSize;
+                            break;
+                        }
+                }
             }
 
             paintPrevPosition = position;
@@ -234,7 +311,7 @@ namespace VRtist
             paintOnSurface = value;
         }
 
-        void updateButtonsColor()
+        void UpdateButtonsColor()
         {
             if (!panel)
                 return;
@@ -259,6 +336,10 @@ namespace VRtist
                     {
                         button.Checked = true;
                     }
+                    if (child.name == "VolumePencilButton" && paintTool == PaintTools.Volume)
+                    {
+                        button.Checked = true;
+                    }
                 }
             }
         }
@@ -266,82 +347,41 @@ namespace VRtist
         public void PaintSelectPencil()
         {
             paintTool = PaintTools.Pencil;
-            volumeCursor.SetActive(true);
+            pencilCursor.SetActive(true);
             flatCursor.SetActive(false);
             convexCursor.SetActive(false);
-            updateButtonsColor();
+            volumeCursor.SetActive(false);
+            UpdateButtonsColor();
         }
 
         public void PaintSelectFlatPencil()
         {
             paintTool = PaintTools.FlatPencil;
-            volumeCursor.SetActive(false);
+            pencilCursor.SetActive(false);
             flatCursor.SetActive(true);
             convexCursor.SetActive(false);
-            updateButtonsColor();
+            volumeCursor.SetActive(false);
+            UpdateButtonsColor();
         }
 
         public void PaintSelectConvexHullPencil()
         {
             paintTool = PaintTools.ConvexHull;
-            volumeCursor.SetActive(false);
+            pencilCursor.SetActive(false);
             flatCursor.SetActive(false);
             convexCursor.SetActive(true);
-            updateButtonsColor();
+            volumeCursor.SetActive(false);
+            UpdateButtonsColor();
         }
 
-        // DEBUG
-
-        public void GenerateRandomBrushStroke()
+        public void PaintSelectVolumePencil()
         {
-            //
-            // START
-            //
-            currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
-            ++paintId;
-            paintPrevPosition = Vector3.zero;
-            freeDraw = new FreeDraw();
-            //freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
-            freeDraw.matrix = Matrix4x4.identity;
-
-            //
-            // SPIRAL
-            //
-            int nbSteps = 200;
-            float radius = 1.0f;
-            for (int i = 0; i < nbSteps; ++i)
-            {
-                float t = (float) i / (float) (nbSteps - 1);
-                float growingRadius = (0.1f + radius * t * t);
-                Vector3 pos = new Vector3(
-                    growingRadius * Mathf.Cos(t * 5.0f * 2.0f * Mathf.PI),
-                    growingRadius * Mathf.Sin(t * 5.0f * 2.0f * Mathf.PI),
-                    t * 1.0f);
-                freeDraw.AddControlPoint(pos, 0.01f);
-            }
-
-
-            // set mesh components
-            MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
-            Mesh mesh = meshFilter.mesh;
-            mesh.Clear();
-            mesh.vertices = freeDraw.vertices;
-            mesh.normals = freeDraw.normals;
-            mesh.triangles = freeDraw.triangles;
-
-            //
-            // END
-            //
-            if (currentPaintLine != null)
-            {
-                MeshCollider collider = currentPaintLine.AddComponent<MeshCollider>();
-                PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
-                paintParameters.color = GlobalState.CurrentColor;
-                paintParameters.controlPoints = freeDraw.controlPoints;
-                paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
-                new CommandAddGameObject(currentPaintLine).Submit();
-                currentPaintLine = null;
-            }
+            paintTool = PaintTools.Volume;
+            pencilCursor.SetActive(false);
+            flatCursor.SetActive(false);
+            convexCursor.SetActive(false);
+            volumeCursor.SetActive(true);
+            UpdateButtonsColor();
         }
     }
 }
