@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.XR;
@@ -8,6 +7,7 @@ namespace VRtist
 {
     public class Selector : SelectorBase
     {
+        // Snap
         [Header("Movement & Snapping parameters")]
         public UICheckbox snapToGridCheckbox = null;
         public UISlider snapGridSizeSlider = null;
@@ -23,6 +23,7 @@ namespace VRtist
         public UICheckbox turnAroundYCheckbox = null;
         public UICheckbox turnAroundZCheckbox = null;
 
+        // Panels
         GameObject selectPanel;
         GameObject snapPanel;
         GameObject inspectorPanel;
@@ -33,10 +34,39 @@ namespace VRtist
 
         UILabel selectedObjectNameLabel;
 
-        // Constraint UI
+        // Transform
+        UISpinner posXSpinner;
+        UISpinner posYSpinner;
+        UISpinner posZSpinner;
+
+        UIButton posXLockButton;
+        UIButton posYLockButton;
+        UIButton posZLockButton;
+
+        UISpinner rotXSpinner;
+        UISpinner rotYSpinner;
+        UISpinner rotZSpinner;
+
+        UIButton rotXLockButton;
+        UIButton rotYLockButton;
+        UIButton rotZLockButton;
+
+        UISpinner scaleXSpinner;
+        UISpinner scaleYSpinner;
+        UISpinner scaleZSpinner;
+
+        UIButton scaleXLockButton;
+        UIButton scaleYLockButton;
+        UIButton scaleZLockButton;
+
+        // Constraints
         UIButton enableParentButton;
         UILabel parentTargetLabel;
         UIButton selectParentButton;
+
+        UIButton enableLookAtButton;
+        UILabel lookAtTargetLabel;
+        UIButton selectLookAtButton;
 
         public GridVFX grid = null;
 
@@ -109,13 +139,48 @@ namespace VRtist
             selectedObjectNameLabel = inspectorPanel.transform.Find("Object Name").GetComponent<UILabel>();
 
             // Constraints
+            Selection.OnSelectionChanged += OnUpdateSelectionUI;
+
             enableParentButton = inspectorPanel.transform.Find("Constraints/Parent/Active Button").GetComponent<UIButton>();
             parentTargetLabel = inspectorPanel.transform.Find("Constraints/Parent/Target Label").GetComponent<UILabel>();
             selectParentButton = inspectorPanel.transform.Find("Constraints/Parent/Select Button").GetComponent<UIButton>();
 
             enableParentButton.onReleaseEvent.AddListener(OnToggleParentConstraint);
-            Selection.OnSelectionChanged += OnUpdateSelectionUI;
             selectParentButton.onReleaseEvent.AddListener(() => { selectParentButton.Checked = true; });
+
+            enableLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Active Button").GetComponent<UIButton>();
+            lookAtTargetLabel = inspectorPanel.transform.Find("Constraints/Look At/Target Label").GetComponent<UILabel>();
+            selectLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Select Button").GetComponent<UIButton>();
+
+            enableLookAtButton.onReleaseEvent.AddListener(OnToggleLookAtConstraint);
+            selectLookAtButton.onReleaseEvent.AddListener(() => { selectLookAtButton.Checked = true; });
+
+            // Transforms
+            GlobalState.ObjectMovingEvent.AddListener(UpdateTransformUI);
+
+            posXSpinner = inspectorPanel.transform.Find("Transform/Position/X/Value").GetComponent<UISpinner>();
+            posYSpinner = inspectorPanel.transform.Find("Transform/Position/Y/Value").GetComponent<UISpinner>();
+            posZSpinner = inspectorPanel.transform.Find("Transform/Position/Z/Value").GetComponent<UISpinner>();
+
+            posXLockButton = inspectorPanel.transform.Find("Transform/Position/X/Lock").GetComponent<UIButton>();
+            posYLockButton = inspectorPanel.transform.Find("Transform/Position/Y/Lock").GetComponent<UIButton>();
+            posZLockButton = inspectorPanel.transform.Find("Transform/Position/Z/Lock").GetComponent<UIButton>();
+
+            rotXSpinner = inspectorPanel.transform.Find("Transform/Rotation/X/Value").GetComponent<UISpinner>();
+            rotYSpinner = inspectorPanel.transform.Find("Transform/Rotation/Y/Value").GetComponent<UISpinner>();
+            rotZSpinner = inspectorPanel.transform.Find("Transform/Rotation/Z/Value").GetComponent<UISpinner>();
+
+            rotXLockButton = inspectorPanel.transform.Find("Transform/Rotation/X/Lock").GetComponent<UIButton>();
+            rotYLockButton = inspectorPanel.transform.Find("Transform/Rotation/Y/Lock").GetComponent<UIButton>();
+            rotZLockButton = inspectorPanel.transform.Find("Transform/Rotation/Z/Lock").GetComponent<UIButton>();
+
+            scaleXSpinner = inspectorPanel.transform.Find("Transform/Scale/X/Value").GetComponent<UISpinner>();
+            scaleYSpinner = inspectorPanel.transform.Find("Transform/Scale/Y/Value").GetComponent<UISpinner>();
+            scaleZSpinner = inspectorPanel.transform.Find("Transform/Scale/Z/Value").GetComponent<UISpinner>();
+
+            scaleXLockButton = inspectorPanel.transform.Find("Transform/Scale/X/Lock").GetComponent<UIButton>();
+            scaleYLockButton = inspectorPanel.transform.Find("Transform/Scale/Y/Lock").GetComponent<UIButton>();
+            scaleZLockButton = inspectorPanel.transform.Find("Transform/Scale/Z/Lock").GetComponent<UIButton>();
         }
 
         void OnToggleParentConstraint()
@@ -143,14 +208,14 @@ namespace VRtist
                     constraint = selected.AddComponent<ParentConstraint>();
                 }
                 ConstraintSource source;
-                try
-                {
-                    source = constraint.GetSource(0);
-                }
-                catch (InvalidOperationException)
+                if (constraint.sourceCount == 0)
                 {
                     source = new ConstraintSource();
                     constraint.AddSource(source);
+                }
+                else
+                {
+                    source = constraint.GetSource(0);
                 }
                 source.sourceTransform = hovered.transform;
                 source.weight = 1f;
@@ -172,13 +237,60 @@ namespace VRtist
             }
         }
 
+        void OnToggleLookAtConstraint()
+        {
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                LookAtConstraint constraint = selected.GetComponent<LookAtConstraint>();
+                if (null != constraint)
+                {
+                    constraint.constraintActive = !constraint.constraintActive;
+                }
+            }
+        }
+
+        void OnSetLookAtConstraint()
+        {
+            GameObject hovered = Selection.GetHoveredObject();
+            if (null == hovered) { return; }
+
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                LookAtConstraint constraint = selected.GetComponent<LookAtConstraint>();
+                if (null == constraint)
+                {
+                    constraint = selected.AddComponent<LookAtConstraint>();
+                }
+                ConstraintSource source;
+                if (constraint.sourceCount == 0)
+                {
+                    source = new ConstraintSource();
+                    constraint.AddSource(source);
+                }
+                else
+                {
+                    source = constraint.GetSource(0);
+                }
+                source.sourceTransform = hovered.transform;
+                source.weight = 1f;
+                constraint.SetSource(0, source);
+
+                constraint.constraintActive = true;
+                lookAtTargetLabel.Text = hovered.name;
+                enableLookAtButton.Checked = true;
+            }
+        }
+
         void OnUpdateSelectionUI(object _, SelectionChangedArgs args)
         {
-            // Update UI
+            // Clear
             selectedObjectNameLabel.Text = "";
 
             enableParentButton.Checked = false;
             parentTargetLabel.Text = "";
+
+            enableLookAtButton.Checked = false;
+            lookAtTargetLabel.Text = "";
 
             GameObject selected = Selection.GetFirstSelectedObject();
             if (null == selected)
@@ -190,6 +302,10 @@ namespace VRtist
             if (Selection.Count() > 1) { selectedObjectNameLabel.Text = $"{Selection.Count()} objects selected"; }
             else { selectedObjectNameLabel.Text = selected.name; }
 
+            // Transform
+            UpdateTransformUI(selected);
+
+            // Constraints
             ParentConstraint parentConstraint = selected.GetComponent<ParentConstraint>();
             if (null != parentConstraint)
             {
@@ -197,12 +313,46 @@ namespace VRtist
                 parentTargetLabel.Text = parentConstraint.GetSource(0).sourceTransform.name;
             }
 
-            // Manage constraint target selection
+            LookAtConstraint lookAtConstraint = selected.GetComponent<LookAtConstraint>();
+            if (null != lookAtConstraint)
+            {
+                enableLookAtButton.Checked = lookAtConstraint.constraintActive;
+                lookAtTargetLabel.Text = lookAtConstraint.GetSource(0).sourceTransform.name;
+            }
+
+            // Manage constraints target selection
             if (selectParentButton.Checked)
             {
                 OnSetParentConstraintTarget();
                 selectParentButton.Checked = false;
             }
+            if (selectLookAtButton.Checked)
+            {
+                OnSetLookAtConstraint();
+                selectLookAtButton.Checked = false;
+            }
+        }
+
+        void UpdateTransformUI(GameObject gobject)
+        {
+            GameObject selected = Selection.GetFirstSelectedObject();
+            if (null == selected || gobject != selected) { return; }
+
+            // Transform
+            Vector3 localPosition = selected.transform.localPosition;
+            posXSpinner.FloatValue = localPosition.x;
+            posYSpinner.FloatValue = localPosition.y;
+            posZSpinner.FloatValue = localPosition.z;
+
+            Vector3 localRotation = selected.transform.localEulerAngles;
+            rotXSpinner.FloatValue = localRotation.x;
+            rotYSpinner.FloatValue = localRotation.y;
+            rotZSpinner.FloatValue = localRotation.z;
+
+            Vector3 localScale = selected.transform.localScale;
+            scaleXSpinner.FloatValue = localScale.x;
+            scaleYSpinner.FloatValue = localScale.y;
+            scaleZSpinner.FloatValue = localScale.z;
         }
 
         void OnSelectPanel(UIButton button)

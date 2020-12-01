@@ -368,6 +368,7 @@ namespace VRtist
                 endScales.Add(obj.transform.localScale);
             }
 
+            // A unique command at the end of the move operation
             if (objects.Count > 0)
                 new CommandMoveObjects(objects, beginPositions, beginRotations, beginScales, endPositions, endRotations, endScales).Submit();
         }
@@ -392,14 +393,6 @@ namespace VRtist
                 }
             }
 
-        }
-
-        private GameObject GetFirstSelectedObject()
-        {
-            List<GameObject> selectedObjects = Selection.GetSelectedObjects(SelectionType.All);
-            if (selectedObjects.Count == 0)
-                return null;
-            return selectedObjects[0];
         }
 
         protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
@@ -709,7 +702,10 @@ namespace VRtist
                         OnPreTransformSelection(obj.transform, ref mat);
                         // Set matrix
                         SyncData.SetTransform(obj.name, mat);
+
+                        // Send a live sync while moving
                         CommandManager.SendEvent(MessageType.Transform, obj.transform);
+                        GlobalState.FireObjectMoving(obj);
                     }
                 }
             }

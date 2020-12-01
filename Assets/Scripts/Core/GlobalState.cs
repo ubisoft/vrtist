@@ -2,7 +2,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
@@ -50,12 +49,12 @@ namespace VRtist
         public SkyChangedEvent skyChangedEvent = new SkyChangedEvent();
         public SkySettings SkySettings
         {
-            get 
+            get
             {
                 if (null == volumeSky) Utils.FindVolume().profile.TryGet(out volumeSky);
                 return new SkySettings { topColor = volumeSky.top.value, middleColor = volumeSky.middle.value, bottomColor = volumeSky.bottom.value };
             }
-            set 
+            set
             {
                 if (null == volumeSky) Utils.FindVolume().profile.TryGet(out volumeSky);
                 value.topColor.a = 1f;
@@ -90,10 +89,10 @@ namespace VRtist
         public static ColorChangedEvent colorReleasedEvent = new ColorChangedEvent();   // on release change
         public static UnityEvent colorClickedEvent = new UnityEvent();                  // on click
 
-
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRenamedEvent = new GameObjectChangedEvent();
+        public static GameObjectChangedEvent ObjectMovingEvent = new GameObjectChangedEvent();
 
         // Geometry Importer
         private GeometryImporter geometryImporter;
@@ -118,6 +117,11 @@ namespace VRtist
         public static void FireObjectRenamed(GameObject gObject)
         {
             ObjectRenamedEvent.Invoke(gObject);
+        }
+
+        public static void FireObjectMoving(GameObject gobject)
+        {
+            ObjectMovingEvent.Invoke(gobject);
         }
 
         public MessageBox messageBox = null;
