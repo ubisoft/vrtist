@@ -139,7 +139,7 @@ namespace VRtist
             selectedObjectNameLabel = inspectorPanel.transform.Find("Object Name").GetComponent<UILabel>();
 
             // Constraints
-            Selection.OnSelectionChanged += OnUpdateSelectionUI;
+            Selection.OnSelectionChanged += UpdateUIOnSelectionChanged;
 
             enableParentButton = inspectorPanel.transform.Find("Constraints/Parent/Active Button").GetComponent<UIButton>();
             parentTargetLabel = inspectorPanel.transform.Find("Constraints/Parent/Target Label").GetComponent<UILabel>();
@@ -181,6 +181,73 @@ namespace VRtist
             scaleXLockButton = inspectorPanel.transform.Find("Transform/Scale/X/Lock").GetComponent<UIButton>();
             scaleYLockButton = inspectorPanel.transform.Find("Transform/Scale/Y/Lock").GetComponent<UIButton>();
             scaleZLockButton = inspectorPanel.transform.Find("Transform/Scale/Z/Lock").GetComponent<UIButton>();
+
+            posXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(posXSpinner.FloatValue, "px"));
+            posYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(posYSpinner.FloatValue, "py"));
+            posZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(posZSpinner.FloatValue, "pz"));
+
+            rotXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(rotXSpinner.FloatValue, "rx"));
+            rotYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(rotYSpinner.FloatValue, "ry"));
+            rotZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(rotZSpinner.FloatValue, "rz"));
+
+            scaleXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleXSpinner.FloatValue, "sx"));
+            scaleYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleYSpinner.FloatValue, "sy"));
+            scaleZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleZSpinner.FloatValue, "sz"));
+        }
+
+        void OnStartEditTransform(float currentValue, string attr)
+        {
+            if (Selection.IsEmpty()) { return; }
+            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnEndEditTransform(value, attr), panel, currentValue);
+        }
+
+        void OnEndEditTransform(float value, string attr)
+        {
+            // Expecting attr to be one of px, py, pz, rx, ry, rz, sx, sy, sz
+            GameObject firstSelected = null;
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                if (null == firstSelected) { firstSelected = selected; }
+
+                if (attr[0] == 'p')
+                {
+                    Vector3 position = selected.transform.localPosition;
+                    switch (attr[1])
+                    {
+                        case 'x': position.x = value; break;
+                        case 'y': position.y = value; break;
+                        case 'z': position.z = value; break;
+                    }
+                    selected.transform.localPosition = position;
+                }
+                else if (attr[0] == 'r')
+                {
+                    Vector3 rotation = selected.transform.localEulerAngles;
+                    switch (attr[1])
+                    {
+                        case 'x': rotation.x = value; break;
+                        case 'y': rotation.y = value; break;
+                        case 'z': rotation.z = value; break;
+                    }
+                    selected.transform.localEulerAngles = rotation;
+                }
+                else if (attr[0] == 's')
+                {
+                    Vector3 scale = selected.transform.localScale;
+                    switch (attr[1])
+                    {
+                        case 'x': scale.x = value; break;
+                        case 'y': scale.y = value; break;
+                        case 'z': scale.z = value; break;
+                    }
+                    selected.transform.localScale = scale;
+                }
+            }
+
+            if (null != firstSelected)
+            {
+                UpdateTransformUI(firstSelected);
+            }
         }
 
         void OnToggleParentConstraint()
@@ -195,7 +262,7 @@ namespace VRtist
             }
         }
 
-        void OnSetParentConstraintTarget()
+        void SetParentConstraint()
         {
             GameObject hovered = Selection.GetHoveredObject();
             if (null == hovered) { return; }
@@ -249,7 +316,7 @@ namespace VRtist
             }
         }
 
-        void OnSetLookAtConstraint()
+        void SetLookAtConstraint()
         {
             GameObject hovered = Selection.GetHoveredObject();
             if (null == hovered) { return; }
@@ -281,7 +348,7 @@ namespace VRtist
             }
         }
 
-        void OnUpdateSelectionUI(object _, SelectionChangedArgs args)
+        void UpdateUIOnSelectionChanged(object _, SelectionChangedArgs args)
         {
             // Clear
             selectedObjectNameLabel.Text = "";
@@ -301,6 +368,7 @@ namespace VRtist
             // Selected label
             if (Selection.Count() > 1) { selectedObjectNameLabel.Text = $"{Selection.Count()} objects selected"; }
             else { selectedObjectNameLabel.Text = selected.name; }
+            selectedObjectNameLabel.Text = "<color=#0079FF>" + selectedObjectNameLabel.Text + "</color>";
 
             // Transform
             UpdateTransformUI(selected);
@@ -323,12 +391,12 @@ namespace VRtist
             // Manage constraints target selection
             if (selectParentButton.Checked)
             {
-                OnSetParentConstraintTarget();
+                SetParentConstraint();
                 selectParentButton.Checked = false;
             }
             if (selectLookAtButton.Checked)
             {
-                OnSetLookAtConstraint();
+                SetLookAtConstraint();
                 selectLookAtButton.Checked = false;
             }
         }
