@@ -176,7 +176,8 @@ namespace VRtist
                     case PaintTools.Volume:
                         currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
                         currentVolume.transform.position = mouthpiece.position; // real-world position
-                        volumeGenerator = new VolumeMeshGenerator();
+                        volumeGenerator = new VolumeMeshGenerator(); // TODO: pass in the accuracy/stepSize
+                        volumeGenerator.stepSize = 0.1f;
                         volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
                         break;
                 }
