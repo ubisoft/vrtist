@@ -24,6 +24,7 @@ namespace VRtist
         public static readonly float default_spinner_separation = 0.65f;
         public static readonly UISpinner.TextAndValueVisibilityType default_visibility_type = UISpinner.TextAndValueVisibilityType.ShowTextAndValue;
         public static readonly UISpinner.SpinnerValueType default_value_type = UISpinner.SpinnerValueType.Float;
+        public static readonly string default_value_format = "#0.00";
         public static readonly float default_min_value = 0.0f;
         public static readonly float default_max_value = 1.0f;
         public static readonly float default_current_value = 0.5f;
@@ -38,6 +39,7 @@ namespace VRtist
         [Percentage] public float separationPositionPct = 0.3f;
         public TextAndValueVisibilityType textAndValueVisibilityType = TextAndValueVisibilityType.ShowTextAndValue;
         public SpinnerValueType spinnerValueType = SpinnerValueType.Float;
+        public string valueFormat = default_value_format;
         public Material sourceMaterial = null;
         [TextArea] public string textContent = "";
 
@@ -293,7 +295,7 @@ namespace VRtist
                 if (txt != null)
                 {
                     txt.text = spinnerValueType == SpinnerValueType.Float
-                        ? currentValue.ToString("#0.00")
+                        ? currentValue.ToString(valueFormat)
                         : Mathf.RoundToInt(currentValue).ToString();
                 }
             }
@@ -597,7 +599,7 @@ namespace VRtist
 
                 TextMeshProUGUI t = text.AddComponent<TextMeshProUGUI>();
                 t.text = (input.value_type == SpinnerValueType.Float)
-                    ? input.cur_spinner_value.ToString("#0.00")
+                    ? input.cur_spinner_value.ToString(default_value_format)
                     : Mathf.RoundToInt(input.cur_spinner_value).ToString();
                 t.enableAutoSizing = true;
                 t.fontSizeMin = 1;
