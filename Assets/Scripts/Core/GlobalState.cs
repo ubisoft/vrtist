@@ -93,6 +93,7 @@ namespace VRtist
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRenamedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectMovingEvent = new GameObjectChangedEvent();
+        public static GameObjectChangedEvent ObjectConstraintEvent = new GameObjectChangedEvent();
 
         // Geometry Importer
         private GeometryImporter geometryImporter;
@@ -122,6 +123,11 @@ namespace VRtist
         public static void FireObjectMoving(GameObject gobject)
         {
             ObjectMovingEvent.Invoke(gobject);
+        }
+
+        public static void FireObjectConstraint(GameObject gobject)
+        {
+            ObjectConstraintEvent.Invoke(gobject);
         }
 
         public MessageBox messageBox = null;

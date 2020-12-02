@@ -284,6 +284,9 @@ MonoBehaviour:
   controllerName: 
   cameraObject: {fileID: 0}
   focal: 35
+  focus: 0.1
+  aperture: 16
+  enableDOF: 0
   near: 0.07
   far: 1000
   filmHeight: 24

@@ -63,10 +63,12 @@ namespace VRtist
         UIButton enableParentButton;
         UILabel parentTargetLabel;
         UIButton selectParentButton;
+        UIButton deleteParentButton;
 
         UIButton enableLookAtButton;
         UILabel lookAtTargetLabel;
         UIButton selectLookAtButton;
+        UIButton deleteLookAtButton;
 
         public GridVFX grid = null;
 
@@ -139,25 +141,25 @@ namespace VRtist
             selectedObjectNameLabel = inspectorPanel.transform.Find("Object Name").GetComponent<UILabel>();
 
             // Constraints
-            Selection.OnSelectionChanged += UpdateUIOnSelectionChanged;
-
             enableParentButton = inspectorPanel.transform.Find("Constraints/Parent/Active Button").GetComponent<UIButton>();
             parentTargetLabel = inspectorPanel.transform.Find("Constraints/Parent/Target Label").GetComponent<UILabel>();
             selectParentButton = inspectorPanel.transform.Find("Constraints/Parent/Select Button").GetComponent<UIButton>();
+            deleteParentButton = inspectorPanel.transform.Find("Constraints/Parent/Delete Button").GetComponent<UIButton>();
 
             enableParentButton.onReleaseEvent.AddListener(OnToggleParentConstraint);
             selectParentButton.onReleaseEvent.AddListener(() => { selectParentButton.Checked = true; });
+            deleteParentButton.onReleaseEvent.AddListener(RemoveParentConstraint);
 
             enableLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Active Button").GetComponent<UIButton>();
             lookAtTargetLabel = inspectorPanel.transform.Find("Constraints/Look At/Target Label").GetComponent<UILabel>();
             selectLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Select Button").GetComponent<UIButton>();
+            deleteLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Delete Button").GetComponent<UIButton>();
 
             enableLookAtButton.onReleaseEvent.AddListener(OnToggleLookAtConstraint);
             selectLookAtButton.onReleaseEvent.AddListener(() => { selectLookAtButton.Checked = true; });
+            deleteLookAtButton.onReleaseEvent.AddListener(RemoveLookAtConstraint);
 
             // Transforms
-            GlobalState.ObjectMovingEvent.AddListener(UpdateTransformUI);
-
             posXSpinner = inspectorPanel.transform.Find("Transform/Position/X/Value").GetComponent<UISpinner>();
             posYSpinner = inspectorPanel.transform.Find("Transform/Position/Y/Value").GetComponent<UISpinner>();
             posZSpinner = inspectorPanel.transform.Find("Transform/Position/Z/Value").GetComponent<UISpinner>();
@@ -193,6 +195,12 @@ namespace VRtist
             scaleXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleXSpinner.FloatValue, "sx"));
             scaleYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleYSpinner.FloatValue, "sy"));
             scaleZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleZSpinner.FloatValue, "sz"));
+
+            // Global events bindings
+            GlobalState.ObjectMovingEvent.AddListener(UpdateTransformUI);
+            GlobalState.ObjectConstraintEvent.AddListener((GameObject gobject) => UpdateUIOnSelectionChanged(null, null));
+            Selection.OnSelectionChanged += SetConstraintTargetOnSelectionChanged;
+            Selection.OnSelectionChanged += UpdateUIOnSelectionChanged;
         }
 
         void OnStartEditTransform(float currentValue, string attr)
@@ -269,53 +277,24 @@ namespace VRtist
             UIHandle uiHandle = hovered.GetComponent<UIHandle>();
             if (null != uiHandle) { return; }
 
+            CommandGroup commandGroup = new CommandGroup("Add Parent Constraint");
             foreach (var selected in Selection.GetSelectedObjects())
             {
-                ParentConstraint constraint = selected.GetComponent<ParentConstraint>();
-                if (null == constraint)
-                {
-                    constraint = selected.AddComponent<ParentConstraint>();
-                }
-                ConstraintSource source;
-                if (constraint.sourceCount == 0)
-                {
-                    source = new ConstraintSource();
-                    constraint.AddSource(source);
-                }
-                else
-                {
-                    source = constraint.GetSource(0);
-                }
-                source.sourceTransform = hovered.transform;
-                source.weight = 1f;
-                constraint.SetSource(0, source);
-
-                constraint.translationAtRest = selected.transform.localPosition;
-                constraint.rotationAtRest = selected.transform.localRotation.eulerAngles;
-
-                Vector3 offset = hovered.transform.InverseTransformPoint(selected.transform.position);
-                offset = Vector3.Scale(offset, hovered.transform.lossyScale);
-                constraint.SetTranslationOffset(0, offset);
-
-                Quaternion quat = Quaternion.Inverse(hovered.transform.rotation) * selected.transform.rotation;
-                constraint.SetRotationOffset(0, quat.eulerAngles);
-
-                constraint.constraintActive = true;
-                parentTargetLabel.Text = hovered.name;
-                enableParentButton.Checked = true;
+                CommandAddConstraint command = new CommandAddConstraint(ConstraintType.Parent, selected, hovered);
+                command.Submit();
             }
+            commandGroup.Submit();
         }
 
         void RemoveParentConstraint()
         {
+            CommandGroup commandGroup = new CommandGroup();
             foreach (var selected in Selection.GetSelectedObjects())
             {
-                ParentConstraint constraint = selected.GetComponent<ParentConstraint>();
-                if (null != constraint)
-                {
-                    Destroy(constraint);
-                }
+                CommandRemoveConstraint command = new CommandRemoveConstraint(ConstraintType.Parent, selected);
+                command.Submit();
             }
+            commandGroup.Submit();
         }
 
         void OnToggleLookAtConstraint()
@@ -337,43 +316,24 @@ namespace VRtist
             UIHandle uiHandle = hovered.GetComponent<UIHandle>();
             if (null != uiHandle) { return; }
 
+            CommandGroup commandGroup = new CommandGroup();
             foreach (var selected in Selection.GetSelectedObjects())
             {
-                LookAtConstraint constraint = selected.GetComponent<LookAtConstraint>();
-                if (null == constraint)
-                {
-                    constraint = selected.AddComponent<LookAtConstraint>();
-                }
-                ConstraintSource source;
-                if (constraint.sourceCount == 0)
-                {
-                    source = new ConstraintSource();
-                    constraint.AddSource(source);
-                }
-                else
-                {
-                    source = constraint.GetSource(0);
-                }
-                source.sourceTransform = hovered.transform;
-                source.weight = 1f;
-                constraint.SetSource(0, source);
-
-                constraint.constraintActive = true;
-                lookAtTargetLabel.Text = hovered.name;
-                enableLookAtButton.Checked = true;
+                CommandAddConstraint command = new CommandAddConstraint(ConstraintType.LookAt, selected, hovered);
+                command.Submit();
             }
+            commandGroup.Submit();
         }
 
         void RemoveLookAtConstraint()
         {
+            CommandGroup commandGroup = new CommandGroup();
             foreach (var selected in Selection.GetSelectedObjects())
             {
-                LookAtConstraint constraint = selected.GetComponent<LookAtConstraint>();
-                if (null != constraint)
-                {
-                    Destroy(constraint);
-                }
+                CommandRemoveConstraint command = new CommandRemoveConstraint(ConstraintType.LookAt, selected);
+                command.Submit();
             }
+            commandGroup.Submit();
         }
 
         void UpdateUIOnSelectionChanged(object _, SelectionChangedArgs args)
@@ -415,7 +375,10 @@ namespace VRtist
                 enableLookAtButton.Checked = lookAtConstraint.constraintActive;
                 lookAtTargetLabel.Text = lookAtConstraint.GetSource(0).sourceTransform.name;
             }
+        }
 
+        void SetConstraintTargetOnSelectionChanged(object _, SelectionChangedArgs args)
+        {
             // Manage constraints target selection
             if (selectParentButton.Checked)
             {

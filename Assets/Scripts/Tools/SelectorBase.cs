@@ -665,7 +665,6 @@ namespace VRtist
                     }
                 }
             }
-
         }
 
         protected void TransformSelection(Matrix4x4 transformation)
@@ -677,6 +676,9 @@ namespace VRtist
                 // Some objects may be locked, so check that
                 ParametersController parameters = obj.GetComponent<ParametersController>();
                 if (null != parameters && parameters.locked) { continue; }
+
+                // Check constraints
+                if (ConstraintUtility.IsLocked(obj)) { continue; }
 
                 var meshParentTransform = obj.transform.parent;
                 Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
@@ -699,6 +701,10 @@ namespace VRtist
                     else
                     {
                         Matrix4x4 mat = transformed;  // copy
+
+                        // Constraints and locked properties may change the final transform
+                        // TODO
+
                         OnPreTransformSelection(obj.transform, ref mat);
                         // Set matrix
                         SyncData.SetTransform(obj.name, mat);

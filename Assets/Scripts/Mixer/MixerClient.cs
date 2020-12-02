@@ -88,6 +88,8 @@ namespace VRtist
         _BlenderDataCreate,
         _BlenderDataMedia,
         Empty,
+        AddConstraint,
+        RemoveConstraint,
         BlenderBank,
 
         Optimized_Commands = 200,
@@ -396,6 +398,32 @@ namespace VRtist
         {
             NetCommand command = MixerUtils.BuildEmptyCommand(root, transform);
             AddCommand(command);
+        }
+
+        public void SendAddParentConstraint(GameObject gobject, GameObject target)
+        {
+            NetCommand command = MixerUtils.BuildSendAddParentConstraintCommand(gobject, target);
+            AddCommand(command);
+        }
+
+        public void SendAddLookAtConstraint(GameObject gobject, GameObject target)
+        {
+            NetCommand command = MixerUtils.BuildSendAddLookAtConstraintCommand(gobject, target);
+            AddCommand(command);
+        }
+
+        public void SendRemoveParentConstraint(GameObject gobject)
+        {
+            NetCommand command = MixerUtils.BuildSendRemoveParentConstraintCommand(gobject);
+            AddCommand(command);
+            SendTransform(gobject.transform);  // For Blender
+        }
+
+        public void SendRemoveLookAtConstraint(GameObject gobject)
+        {
+            NetCommand command = MixerUtils.BuildSendRemoveLookAtConstraintCommand(gobject);
+            AddCommand(command);
+            SendTransform(gobject.transform);  // For Blender
         }
 
         public void SendCamera(CameraInfo cameraInfo)
@@ -707,6 +735,12 @@ namespace VRtist
                                 break;
                             case MessageType.Sky:
                                 MixerUtils.BuildSky(command.data);
+                                break;
+                            case MessageType.AddConstraint:
+                                MixerUtils.ReceiveAddConstraint(command.data);
+                                break;
+                            case MessageType.RemoveConstraint:
+                                MixerUtils.ReceiveRemoveConstraint(command.data);
                                 break;
                             case MessageType.Delete:
                                 MixerUtils.Delete(prefab, command.data);

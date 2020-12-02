@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Rendering;
 
 namespace VRtist
@@ -12,6 +13,13 @@ namespace VRtist
         public int height;
         public byte[] buffer;
     }
+
+    public enum MessageConstraintType
+    {
+        Parent,
+        LookAt
+    }
+
     public class MixerUtils
     {
         public static Dictionary<string, Material> materials = new Dictionary<string, Material>();
@@ -1053,6 +1061,90 @@ namespace VRtist
             }
             byte[] bpath = StringToBytes(path);
             NetCommand command = new NetCommand(bpath, MessageType.Empty);
+            return command;
+        }
+
+        public static void ReceiveAddConstraint(byte[] data)
+        {
+            int currentIndex = 0;
+            MessageConstraintType constraintType = (MessageConstraintType) GetInt(data, ref currentIndex);
+            string objectName = GetString(data, ref currentIndex);
+            string targetName = GetString(data, ref currentIndex);
+
+            // Apply to instances
+            Node objectNode = SyncData.nodes[objectName];
+            Node targetNode = SyncData.nodes[targetName];
+            for (int i = 0; i < objectNode.instances.Count; ++i)
+            {
+                switch (constraintType)
+                {
+                    case MessageConstraintType.Parent:
+                        ConstraintUtility.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        break;
+                    case MessageConstraintType.LookAt:
+                        ConstraintUtility.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        break;
+                }
+            }
+        }
+
+        public static void ReceiveRemoveConstraint(byte[] data)
+        {
+            int currentIndex = 0;
+            MessageConstraintType constraintType = (MessageConstraintType) GetInt(data, ref currentIndex);
+            string objectName = GetString(data, ref currentIndex);
+
+            // Apply to instances
+            Node objectNode = SyncData.nodes[objectName];
+            for (int i = 0; i < objectNode.instances.Count; ++i)
+            {
+                switch (constraintType)
+                {
+                    case MessageConstraintType.Parent:
+                        ConstraintUtility.RemoveConstraint<ParentConstraint>(objectNode.instances[i].Item1);
+                        break;
+                    case MessageConstraintType.LookAt:
+                        ConstraintUtility.RemoveConstraint<LookAtConstraint>(objectNode.instances[i].Item1);
+                        break;
+                }
+            }
+        }
+
+        public static NetCommand BuildSendAddParentConstraintCommand(GameObject gobject, GameObject target)
+        {
+            byte[] constraintType = IntToBytes((int) MessageConstraintType.Parent);
+            byte[] objectName = StringToBytes(gobject.name);
+            byte[] targetName = StringToBytes(target.name);
+            List<byte[]> buffers = new List<byte[]> { constraintType, objectName, targetName };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddConstraint);
+            return command;
+        }
+
+        public static NetCommand BuildSendAddLookAtConstraintCommand(GameObject gobject, GameObject target)
+        {
+            byte[] constraintType = IntToBytes((int) MessageConstraintType.LookAt);
+            byte[] objectName = StringToBytes(gobject.name);
+            byte[] targetName = StringToBytes(target.name);
+            List<byte[]> buffers = new List<byte[]> { constraintType, objectName, targetName };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.AddConstraint);
+            return command;
+        }
+
+        public static NetCommand BuildSendRemoveParentConstraintCommand(GameObject gobject)
+        {
+            byte[] constraintType = IntToBytes((int) MessageConstraintType.Parent);
+            byte[] objectName = StringToBytes(gobject.name);
+            List<byte[]> buffers = new List<byte[]> { constraintType, objectName };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.RemoveConstraint);
+            return command;
+        }
+
+        public static NetCommand BuildSendRemoveLookAtConstraintCommand(GameObject gobject)
+        {
+            byte[] constraintType = IntToBytes((int) MessageConstraintType.LookAt);
+            byte[] objectName = StringToBytes(gobject.name);
+            List<byte[]> buffers = new List<byte[]> { constraintType, objectName };
+            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.RemoveConstraint);
             return command;
         }
 
