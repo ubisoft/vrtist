@@ -1,6 +1,5 @@
 ﻿
 using System.Collections.Generic;
-using System.Net.Mail;
 using UnityEngine;
 
 namespace VRtist
@@ -34,7 +33,7 @@ namespace VRtist
 
         public CommandMaterial(List<GameObject> gobjects, MaterialValue value)
         {
-            foreach(GameObject gobject in gobjects)
+            foreach (GameObject gobject in gobjects)
             {
                 oldValues[gobject] = GetMaterialValue(gobject);
             }
@@ -43,7 +42,7 @@ namespace VRtist
 
         public CommandMaterial(List<GameObject> gobjects, Color color, float roughness, float metallic)
         {
-            foreach(GameObject gobject in gobjects)
+            foreach (GameObject gobject in gobjects)
             {
                 oldValues[gobject] = GetMaterialValue(gobject);
             }
@@ -66,10 +65,10 @@ namespace VRtist
         {
             MeshRenderer renderer = gobject.GetComponentInChildren<MeshRenderer>();
             MaterialValue value = new MaterialValue();
-            if(null != renderer)
+            if (null != renderer)
             {
                 value.color = renderer.material.GetColor("_BaseColor");
-                if(renderer.material.HasProperty("_Smoothness")) { value.roughness = 1f - renderer.material.GetFloat("_Smoothness"); }
+                if (renderer.material.HasProperty("_Smoothness")) { value.roughness = 1f - renderer.material.GetFloat("_Smoothness"); }
                 else { value.roughness = renderer.material.GetFloat("_Roughness"); }
                 value.metallic = renderer.material.GetFloat("_Metallic");
             }
@@ -79,12 +78,12 @@ namespace VRtist
         private void SetMaterialValue(GameObject gobject, MaterialValue value)
         {
             MeshRenderer[] renderers = gobject.GetComponentsInChildren<MeshRenderer>();
-            foreach(MeshRenderer renderer in renderers)
+            foreach (MeshRenderer renderer in renderers)
             {
-                foreach(Material material in renderer.materials)
+                foreach (Material material in renderer.materials)
                 {
                     material.SetColor("_BaseColor", value.color);
-                    if(renderer.material.HasProperty("_Smoothness")) { material.SetFloat("_Smoothness", 1f - value.roughness); }
+                    if (renderer.material.HasProperty("_Smoothness")) { material.SetFloat("_Smoothness", 1f - value.roughness); }
                     else { material.SetFloat("_Roughness", value.roughness); }
                     material.SetFloat("_Metallic", value.metallic);
                 }
@@ -101,7 +100,7 @@ namespace VRtist
 
         public override void Redo()
         {
-            foreach(GameObject gobject in oldValues.Keys)
+            foreach (GameObject gobject in oldValues.Keys)
             {
                 // Set the prefab and the object.
                 // Then when we duplicate the object, the material is also duplicated
@@ -115,7 +114,7 @@ namespace VRtist
 
         public override void Undo()
         {
-            foreach(KeyValuePair<GameObject, MaterialValue> item in oldValues)
+            foreach (KeyValuePair<GameObject, MaterialValue> item in oldValues)
             {
                 GameObject gobject = item.Key;
 
@@ -131,11 +130,6 @@ namespace VRtist
         {
             Redo();
             CommandManager.AddCommand(this);
-        }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-            // Empty
         }
     }
 }

@@ -1,26 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
     public class CommandRemoveGameObject : CommandAddRemoveGameObject
     {
         ParametersController parametersController = null;
-        string objectPath;
 
-        public CommandRemoveGameObject(GameObject o) : base(o)
-        {            
-            parametersController = gObject.GetComponentInParent<ParametersController>();
-            if (parametersController)
-            {
-                GameObject root = parametersController.gameObject;
-                if (parametersController.GetType() == typeof(GeometryParameters) && root.transform.childCount > 0)
-                {
-                    objectPath = Utils.BuildTransformPath(gObject);
-                }
-            }
-        }
+        public CommandRemoveGameObject(GameObject o) : base(o) { }
+
         public override void Undo()
         {
             if (null == gObject) { return; }
@@ -51,26 +38,5 @@ namespace VRtist
             Redo();
             CommandManager.AddCommand(this);
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-            if(parametersController)
-            {
-                Parameters parameters = parametersController.GetParameters();
-                if (null != parameters)
-                {
-                    if (objectPath != null)
-                    {
-                        AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
-                        assetSerializer.CreateDeletedSerializer(objectPath);
-                    }
-                    else
-                    {
-                        serializer.RemoveAsset(parameters);
-                    }
-                }
-            }
-        }
-
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -57,7 +55,7 @@ namespace VRtist
                     }
                     break;
                 case ShotManagerAction.UpdateShot:
-                    {                       
+                    {
                     }
                     break;
             }
@@ -133,7 +131,5 @@ namespace VRtist
         {
             CommandManager.AddCommand(this);
         }
-
-        public override void Serialize(SceneSerializer serializer) { }
     }
 }

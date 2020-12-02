@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -36,14 +35,8 @@ namespace VRtist
         }
         public override void Submit()
         {
-            if(objects.Count > 0)
+            if (objects.Count > 0)
                 CommandManager.AddCommand(this);
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
-        }
-
     }
 }

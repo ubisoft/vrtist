@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -26,7 +25,7 @@ namespace VRtist
                 inst = fieldInfo.GetValue(inst);
                 fieldInfo = inst.GetType().GetField(fields[i]);
             }
-            return (T)fieldInfo.GetValue(inst);
+            return (T) fieldInfo.GetValue(inst);
         }
 
         public void SetValue(Component component, string fieldName, T value)
@@ -39,7 +38,7 @@ namespace VRtist
             for (int i = 1; i < fields.Length; i++)
             {
                 inst = fieldInfo.GetValue(inst);
-                fieldInfo = inst.GetType().GetField(fields[i]);                
+                fieldInfo = inst.GetType().GetField(fields[i]);
             }
             fieldInfo.SetValue(inst, value);
         }
@@ -47,7 +46,7 @@ namespace VRtist
         // Create a command for each currently selected game objects
         public CommandSetValue(string commandName, string propertyPath)
         {
-            name = commandName;            
+            name = commandName;
             ICommand.SplitPropertyPath(propertyPath, out objectPath, out componentName, out fieldName);
 
             foreach (var selectedItem in Selection.selection)
@@ -87,10 +86,10 @@ namespace VRtist
         {
             name = commandName;
             ICommand.SplitPropertyPath(propertyPath, out objectPath, out componentName, out fieldName);
-            foreach(GameObject obj in objects)
+            foreach (GameObject obj in objects)
             {
                 Component component = obj.GetComponent(componentName);
-                if(null == component) { continue; }
+                if (null == component) { continue; }
                 oldValues[obj] = GetValue(component, fieldName);
             }
         }
@@ -129,13 +128,5 @@ namespace VRtist
                 SetValue(component, fieldName, newValue);
             }
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
-        }
-
-
     }
-
 }

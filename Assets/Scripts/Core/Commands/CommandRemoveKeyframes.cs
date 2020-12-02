@@ -33,10 +33,5 @@ namespace VRtist
             base.Submit();
             MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
-        }
     }
 }

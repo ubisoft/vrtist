@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 
 namespace VRtist
@@ -25,14 +23,14 @@ namespace VRtist
         public override void Undo()
         {
             int commandCount = commands.Count;
-            for(int i = commandCount - 1; i >= 0; i--)
+            for (int i = commandCount - 1; i >= 0; i--)
             {
                 commands[i].Undo();
             }
         }
         public override void Redo()
         {
-            foreach(var command in commands)
+            foreach (var command in commands)
             {
                 command.Redo();
             }
@@ -46,15 +44,8 @@ namespace VRtist
         public override void Submit()
         {
             CommandManager.EndGroup();
-            if(commands.Count > 0)
+            if (commands.Count > 0)
                 CommandManager.AddCommand(this);
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-            for (int i = 0; i < commands.Count; i++)
-                commands[i].Serialize(serializer);
-        }
-
     }
 }

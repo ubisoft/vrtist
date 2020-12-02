@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -36,11 +33,6 @@ namespace VRtist
         {
             base.Submit();
             MixerClient.GetInstance().SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
-        }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
         }
     }
 }

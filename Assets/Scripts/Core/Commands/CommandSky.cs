@@ -1,10 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
-
-namespace VRtist
+﻿namespace VRtist
 {
     public class CommandSky : ICommand
     {
@@ -30,11 +24,6 @@ namespace VRtist
         {
             Redo();
             CommandManager.AddCommand(this);
-        }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
         }
     }
 }

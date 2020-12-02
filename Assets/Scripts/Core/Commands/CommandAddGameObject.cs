@@ -58,15 +58,5 @@ namespace VRtist
                 SendEmpty();
             }
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-            ParametersController parametersController = gObject.GetComponent<ParametersController>();
-            if (parametersController)
-            {
-                serializer.AddAsset(parametersController);
-            }
-        }
-
     }
 }

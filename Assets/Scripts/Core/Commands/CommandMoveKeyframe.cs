@@ -26,17 +26,12 @@ namespace VRtist
         public override void Redo()
         {
             GlobalState.Animation.MoveKeyframe(gObject, property, oldFrame, newFrame);
-            MixerClient.GetInstance().SendMoveKeyframe(new MoveKeyInfo { objectName = gObject.name, property = property, frame = oldFrame, newFrame = newFrame});
+            MixerClient.GetInstance().SendMoveKeyframe(new MoveKeyInfo { objectName = gObject.name, property = property, frame = oldFrame, newFrame = newFrame });
         }
         public override void Submit()
         {
             Redo();
             CommandManager.AddCommand(this);
-        }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
         }
     }
 }

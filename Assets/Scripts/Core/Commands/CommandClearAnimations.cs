@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -28,16 +26,12 @@ namespace VRtist
         public override void Redo()
         {
             GlobalState.Animation.ClearAnimations(gObject);
-            MixerClient.GetInstance().SendClearAnimations(new ClearAnimationInfo { gObject = gObject }); 
+            MixerClient.GetInstance().SendClearAnimations(new ClearAnimationInfo { gObject = gObject });
         }
         public override void Submit()
         {
             Redo();
             CommandManager.AddCommand(this);
-        }
-        public override void Serialize(SceneSerializer serializer)
-        {
-
         }
     }
 }

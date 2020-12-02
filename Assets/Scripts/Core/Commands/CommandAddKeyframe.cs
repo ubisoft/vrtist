@@ -49,10 +49,5 @@ namespace VRtist
             Redo();
             CommandManager.AddCommand(this);
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
-        }
     }
 }

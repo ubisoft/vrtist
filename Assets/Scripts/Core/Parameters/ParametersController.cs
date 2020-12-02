@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 namespace VRtist
 {
     [System.Serializable]
-    
+
     public class ParametersController : MonoBehaviour, IGizmo
     {
         protected Transform world = null;
@@ -34,8 +32,6 @@ namespace VRtist
             }
             return world;
         }
-        
-        public virtual Parameters GetParameters() { return null; }
 
         public virtual void SetGizmoVisible(bool value)
         {

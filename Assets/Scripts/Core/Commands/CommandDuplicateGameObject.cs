@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -56,25 +54,6 @@ namespace VRtist
             scale = gObject.transform.parent.localScale;
             CommandManager.AddCommand(this);
             SendDuplicate();
-        }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-            Parameters parameters = srcObject.GetComponentInParent<ParametersController>().GetParameters();
-            if(parameters.GetType() == typeof(GeometryParameters))
-            {
-                AssetSerializer assetSerializer = serializer.GetAssetSerializer(parameters.id);
-                string transformPath = Utils.BuildTransformPath(srcObject);
-                assetSerializer.CreateDuplicateSerializer(transformPath, gObject.name);
-            }
-            else
-            {
-                ParametersController parametersController = gObject.GetComponent<ParametersController>();
-                if (parametersController)
-                {
-                    serializer.AddAsset(parametersController);
-                }
-            }
         }
     }
 }

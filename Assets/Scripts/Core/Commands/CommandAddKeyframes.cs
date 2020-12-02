@@ -58,10 +58,5 @@ namespace VRtist
         {
             base.Submit();
         }
-
-        public override void Serialize(SceneSerializer serializer)
-        {
-
-        }
     }
 }

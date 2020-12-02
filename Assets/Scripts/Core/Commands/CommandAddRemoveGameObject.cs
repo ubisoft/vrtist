@@ -13,7 +13,6 @@ namespace VRtist
         public override void Undo() { }
         public override void Redo() { }
         public override void Submit() { }
-        public override void Serialize(SceneSerializer serializer) { }
 
         public CommandAddRemoveGameObject(GameObject o)
         {

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
@@ -31,7 +30,7 @@ namespace VRtist
         public override void Undo()
         {
             int count = objectNames.Count;
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 string objectName = objectNames[i];
 
@@ -62,23 +61,5 @@ namespace VRtist
                 }
             }
         }
-        public override void Serialize(SceneSerializer serializer)
-        {
-            for(int i = 0; i < objectNames.Count; i++)
-            {
-                GameObject gobject = SyncData.nodes[objectNames[i]].prefab;
-                ParametersController parametersController = gobject.GetComponentInParent<ParametersController>();
-                if (parametersController)
-                {
-                    AssetSerializer assetSerializer = serializer.GetAssetSerializer(parametersController.GetParameters().id);
-                    string transformPath = Utils.BuildTransformPath(gobject);
-                    TransformSerializer transformSerializer = assetSerializer.GetOrCreateTransformSerializer(transformPath);
-                    transformSerializer.position = endPositions[i];
-                    transformSerializer.rotation = endRotations[i];
-                    transformSerializer.scale = endScales[i];
-                }
-            }
-        }
-
     }
 }

@@ -90,7 +90,6 @@ namespace VRtist
         private void TranslatePaintToItsCenter()
         {
             // determine center
-            PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
             Vector3 min = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
             Vector3 max = new Vector3(-Mathf.Infinity, -Mathf.Infinity, -Mathf.Infinity);
             foreach (Vector3 pos in freeDraw.controlPoints)
@@ -128,10 +127,10 @@ namespace VRtist
                         if (currentPaintLine != null)
                         {
                             TranslatePaintToItsCenter();
-                            PaintParameters paintParameters = currentPaintLine.GetComponent<PaintController>().GetParameters() as PaintParameters;
-                            paintParameters.color = GlobalState.CurrentColor;
-                            paintParameters.controlPoints = freeDraw.controlPoints;
-                            paintParameters.controlPointsRadius = freeDraw.controlPointsRadius;
+                            PaintController controller = currentPaintLine.GetComponent<PaintController>();
+                            controller.color = GlobalState.CurrentColor;
+                            controller.controlPoints = freeDraw.controlPoints;
+                            controller.controlPointsRadius = freeDraw.controlPointsRadius;
                             new CommandAddGameObject(currentPaintLine).Submit();
                             currentPaintLine = null;
                         }
@@ -142,12 +141,12 @@ namespace VRtist
                     {
                         if (currentVolume != null)
                         {
-                            VolumeParameters volumeParameters = currentVolume.GetComponent<VolumeController>().GetParameters() as VolumeParameters;
-                            volumeParameters.origin = volumeGenerator.origin;
-                            volumeParameters.bounds = volumeGenerator.bounds;
-                            volumeParameters.field = volumeGenerator.field;
-                            volumeParameters.resolution = volumeGenerator.resolution;
-                            volumeParameters.stepSize = volumeGenerator.stepSize;
+                            VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                            controller.origin = volumeGenerator.origin;
+                            controller.bounds = volumeGenerator.bounds;
+                            controller.field = volumeGenerator.field;
+                            controller.resolution = volumeGenerator.resolution;
+                            controller.stepSize = volumeGenerator.stepSize;
                             new CommandAddGameObject(currentVolume).Submit();
                             currentVolume = null;
                         }
@@ -287,13 +286,13 @@ namespace VRtist
                             // force update
                             meshCollider.enabled = false;
                             meshCollider.enabled = true;
-                            
-                            VolumeParameters volumeParameters = currentVolume.GetComponent<VolumeController>().GetParameters() as VolumeParameters;
-                            volumeParameters.origin = volumeGenerator.origin;
-                            volumeParameters.bounds = volumeGenerator.bounds; // TODO: dont duplicate data? use volumeparameters in volumegenerator?
-                            volumeParameters.field = volumeGenerator.field;
-                            volumeParameters.resolution = volumeGenerator.resolution;
-                            volumeParameters.stepSize = volumeGenerator.stepSize;
+
+                            VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                            controller.origin = volumeGenerator.origin;
+                            controller.bounds = volumeGenerator.bounds; // TODO: dont duplicate data? use volumeparameters in volumegenerator?
+                            controller.field = volumeGenerator.field;
+                            controller.resolution = volumeGenerator.resolution;
+                            controller.stepSize = volumeGenerator.stepSize;
                             break;
                         }
                 }
