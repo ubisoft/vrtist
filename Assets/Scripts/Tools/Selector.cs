@@ -266,6 +266,8 @@ namespace VRtist
         {
             GameObject hovered = Selection.GetHoveredObject();
             if (null == hovered) { return; }
+            UIHandle uiHandle = hovered.GetComponent<UIHandle>();
+            if (null != uiHandle) { return; }
 
             foreach (var selected in Selection.GetSelectedObjects())
             {
@@ -304,6 +306,18 @@ namespace VRtist
             }
         }
 
+        void RemoveParentConstraint()
+        {
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                ParentConstraint constraint = selected.GetComponent<ParentConstraint>();
+                if (null != constraint)
+                {
+                    Destroy(constraint);
+                }
+            }
+        }
+
         void OnToggleLookAtConstraint()
         {
             foreach (var selected in Selection.GetSelectedObjects())
@@ -320,6 +334,8 @@ namespace VRtist
         {
             GameObject hovered = Selection.GetHoveredObject();
             if (null == hovered) { return; }
+            UIHandle uiHandle = hovered.GetComponent<UIHandle>();
+            if (null != uiHandle) { return; }
 
             foreach (var selected in Selection.GetSelectedObjects())
             {
@@ -345,6 +361,18 @@ namespace VRtist
                 constraint.constraintActive = true;
                 lookAtTargetLabel.Text = hovered.name;
                 enableLookAtButton.Checked = true;
+            }
+        }
+
+        void RemoveLookAtConstraint()
+        {
+            foreach (var selected in Selection.GetSelectedObjects())
+            {
+                LookAtConstraint constraint = selected.GetComponent<LookAtConstraint>();
+                if (null != constraint)
+                {
+                    Destroy(constraint);
+                }
             }
         }
 
