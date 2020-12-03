@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Animations;
 
 namespace VRtist
 {
@@ -10,6 +11,28 @@ namespace VRtist
 
         public bool locked = false;
         public string controllerName;
+
+        // world scale when constraint is created
+        public float initParentConstraintScale;
+        public Vector3 initParentConstraintOffset;
+
+        public void ConnectWorldScale()
+        {
+            GlobalState.onWorldScaleEvent.AddListener(OnWorldScaleChanged);
+        }
+
+        public void DisconnectWorldScale()
+        {
+            GlobalState.onWorldScaleEvent.RemoveListener(OnWorldScaleChanged);
+        }
+
+        private void OnWorldScaleChanged()
+        {
+            ParentConstraint parentConstraint = GetComponent<ParentConstraint>();
+            if (null == parentConstraint)
+                return;
+            ConstraintUtility.UpdateParentConstraintTranslationOffset(parentConstraint, initParentConstraintOffset, initParentConstraintScale);
+        }
 
         public virtual void CopyParameters(ParametersController sourceController)
         {

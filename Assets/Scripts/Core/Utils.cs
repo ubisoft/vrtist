@@ -72,14 +72,6 @@ namespace VRtist
         }
 
 
-        public static GameObject GetRoot(GameObject gobject)
-        {
-            ParametersController parametersController = gobject.GetComponentInParent<ParametersController>();
-            if (!parametersController)
-                return null;
-            return parametersController.gameObject;
-        }
-
         public static string BuildTransformPath(GameObject gobject)
         {
             string res = "";

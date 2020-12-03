@@ -4,8 +4,6 @@ namespace VRtist
 {
     public class CommandRemoveGameObject : CommandAddRemoveGameObject
     {
-        ParametersController parametersController = null;
-
         public CommandRemoveGameObject(GameObject o) : base(o) { }
 
         public override void Undo()

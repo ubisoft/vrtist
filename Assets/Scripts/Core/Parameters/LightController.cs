@@ -126,8 +126,7 @@ namespace VRtist
                 GetWorldTransform();
 
 
-            float worldScale = world.localScale.x;
-            float scale = worldScale;
+            float scale = GlobalState.WorldScale;
             if (lightObject.type == LightType.Directional)
                 scale = 1f;            
             lightObject.intensity = (scale * scale * intensity);
@@ -148,7 +147,7 @@ namespace VRtist
                 lightObject.intensity *= 0.05f;
             }
             // avoid flicking
-            float invWorldScale = 1f / worldScale;
+            float invWorldScale = 1f / GlobalState.WorldScale;
             lightObject.transform.localScale = new Vector3(invWorldScale, invWorldScale, invWorldScale);
         }
     }

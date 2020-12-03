@@ -29,9 +29,19 @@ namespace VRtist
 
         public static void RemoveConstraint<T>(GameObject gobject) where T : UnityEngine.Object
         {
+            ParametersController parametersController = gobject.GetComponent<ParametersController>();
+            if(null != parametersController)
+                parametersController.DisconnectWorldScale();
+
             T constraint = gobject.GetComponent<T>();
             GameObject.Destroy(constraint);
             GlobalState.FireObjectConstraint(gobject);
+        }
+
+        public static void UpdateParentConstraintTranslationOffset(ParentConstraint constraint, Vector3 initOffset, float initScale)
+        {
+            Vector3 offset = initOffset * GlobalState.WorldScale / initScale;
+            constraint.SetTranslationOffset(0, offset);
         }
 
         public static void AddParentConstraint(GameObject gobject, GameObject target)
@@ -40,6 +50,15 @@ namespace VRtist
             if (null == constraint)
             {
                 constraint = gobject.AddComponent<ParentConstraint>();
+                ParametersController parametersController = gobject.GetComponent<ParametersController>();
+                if(null == parametersController)
+                {
+                    parametersController = gobject.AddComponent<ParametersController>();
+                }
+                parametersController.initParentConstraintScale = GlobalState.WorldScale;
+                parametersController.initParentConstraintOffset = Vector3.Scale(target.transform.InverseTransformPoint(gobject.transform.position), target.transform.lossyScale);
+
+                parametersController.ConnectWorldScale();
             }
             ConstraintSource source;
             if (constraint.sourceCount == 0)
@@ -58,8 +77,7 @@ namespace VRtist
             constraint.translationAtRest = gobject.transform.localPosition;
             constraint.rotationAtRest = gobject.transform.localRotation.eulerAngles;
 
-            Vector3 offset = target.transform.InverseTransformPoint(gobject.transform.position);
-            offset = Vector3.Scale(offset, target.transform.lossyScale);
+            Vector3 offset = Vector3.Scale(target.transform.InverseTransformPoint(gobject.transform.position), target.transform.lossyScale);
             constraint.SetTranslationOffset(0, offset);
 
             Quaternion quat = Quaternion.Inverse(target.transform.rotation) * gobject.transform.rotation;

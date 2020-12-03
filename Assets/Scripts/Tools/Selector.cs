@@ -670,7 +670,7 @@ namespace VRtist
                 {
                     Vector4 column = transformed.GetColumn(3);
 
-                    float absWorldScale = Mathf.Abs(GlobalState.worldScale);
+                    float absWorldScale = Mathf.Abs(GlobalState.WorldScale);
                     Vector3 position = new Vector3(column.x, column.y, column.z);
                     Vector3 roundedPosition = new Vector3(
                         Mathf.Round(column.x / snapPrecision) * snapPrecision,

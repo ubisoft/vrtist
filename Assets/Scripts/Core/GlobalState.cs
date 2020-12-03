@@ -39,9 +39,15 @@ namespace VRtist
 
         // World
         public Transform world = null;
-        public static float worldScale = 1f;
+        private static float worldScale = 1f;
+        public static float WorldScale
+        {
+            get { return worldScale; }
+            set { worldScale = value; onWorldScaleEvent.Invoke(); }
+        }
         private static bool isGrippingWorld = false;
         public BoolChangedEvent onGripWorldEvent = new BoolChangedEvent(); // Event for Grip preemption.
+        public static UnityEvent onWorldScaleEvent = new UnityEvent();
         public static bool IsGrippingWorld { get { return isGrippingWorld; } set { isGrippingWorld = value; Instance.onGripWorldEvent.Invoke(value); } }
 
         // Sky

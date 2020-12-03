@@ -146,7 +146,7 @@ namespace VRtist
                 //    if (joystickAxis.y < -deadZone)
                 //        scale /= fixedScaleFactor;
 
-                //    GlobalState.worldScale = scale;
+                //    GlobalState.WorldScale = scale;
 
                 //    // TODO: draw scale factor.
                 //}
@@ -224,7 +224,7 @@ namespace VRtist
                         s = oldScale;
                     }
 
-                    GlobalState.worldScale = s;
+                    GlobalState.WorldScale = s;
 
                     // reverse text if right and left hands are crossed
                     if (leftControllerInHeadMatrix.x > rightControllerInHeadMatrix.x)
@@ -257,7 +257,7 @@ namespace VRtist
 
                     //lineUI.UpdateLineUI(currentLeftControllerPosition_W, currentLeftControllerPosition_W, currentLeftControllerMatrix_W.rotation, world.localScale.x);
                 }
-                GlobalState.worldScale = world.localScale.x;
+                GlobalState.WorldScale = world.localScale.x;
 
                 UpdateCameraClipPlanes();
             }
@@ -292,7 +292,7 @@ namespace VRtist
         {
             initWorldMatrix_W = world.localToWorldMatrix;
             scale = 1f;
-            GlobalState.worldScale = scale;
+            GlobalState.WorldScale = scale;
         }
 
         private void ResetDistance()

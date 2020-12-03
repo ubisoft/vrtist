@@ -100,7 +100,7 @@ namespace VRtist
                 if (joystickAxis.y < -deadZone)
                     scale /= fixedScaleFactor;
 
-                GlobalState.worldScale = scale;
+                GlobalState.WorldScale = scale;
 
                 // TODO: draw scale factor.
                 
@@ -122,7 +122,7 @@ namespace VRtist
                     scale = prevScale;
                 }
 
-                GlobalState.worldScale = world.localScale.x;
+                GlobalState.WorldScale = world.localScale.x;
 
                 UpdateCameraClipPlanes();
             }
@@ -141,7 +141,7 @@ namespace VRtist
         {
             initWorldMatrix_W = world.localToWorldMatrix;
             scale = 1f;
-            GlobalState.worldScale = scale;
+            GlobalState.WorldScale = scale;
         }
     }
 }

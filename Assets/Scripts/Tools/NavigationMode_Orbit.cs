@@ -217,7 +217,7 @@ namespace VRtist
                             float clampedScale = Mathf.Clamp(finalScale, 1.0f / maxPlayerScale, minPlayerScale);
                             world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
 
-                            GlobalState.worldScale = world.localScale.x;
+                            GlobalState.WorldScale = world.localScale.x;
 
                             UpdateCameraClipPlanes();
                         }

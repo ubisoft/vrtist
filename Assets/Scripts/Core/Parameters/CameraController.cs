@@ -256,7 +256,7 @@ namespace VRtist
                 if (gameObject.name != nameLabel.Text)
                     nameLabel.Text = gameObject.name;
 
-                float scale = GlobalState.worldScale;
+                float scale = GlobalState.WorldScale;
                 cameraObject.farClipPlane = far * scale;
                 cameraObject.nearClipPlane = near * scale;
                 cameraObject.focalLength = focal;
@@ -373,7 +373,7 @@ namespace VRtist
 
             // Remove camera object scale
             float invScale = 1f / frustumRenderer.transform.parent.lossyScale.x;
-            invScale *= GlobalState.worldScale;
+            invScale *= GlobalState.WorldScale;
             frustumRenderer.transform.localScale = new Vector3(invScale, invScale, invScale);
 
             frustumRenderer.positionCount = points.Length;
