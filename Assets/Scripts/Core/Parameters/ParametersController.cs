@@ -9,7 +9,21 @@ namespace VRtist
     {
         protected Transform world = null;
 
-        public bool locked = false;
+        public bool Lock
+        {
+            get { return lockPosition && lockRotation && lockScale; }
+            set
+            {
+                lockPosition = value;
+                lockRotation = value;
+                lockScale = value;
+            }
+        }
+
+        public bool lockPosition = false;
+        public bool lockRotation = false;
+        public bool lockScale = false;
+
         public string controllerName;
 
         // world scale when constraint is created
@@ -36,7 +50,9 @@ namespace VRtist
 
         public virtual void CopyParameters(ParametersController sourceController)
         {
-            locked = sourceController.locked;
+            lockPosition = sourceController.lockPosition;
+            lockRotation = sourceController.lockRotation;
+            lockScale = sourceController.lockScale;
         }
 
         public virtual void SetName(string name)

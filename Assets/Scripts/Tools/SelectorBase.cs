@@ -412,7 +412,7 @@ namespace VRtist
                     ParametersController parameters = gobject.GetComponent<ParametersController>();
                     if (null != parameters)
                     {
-                        if (parameters.locked) { ++numLocked; }
+                        if (parameters.Lock) { ++numLocked; }
                         else { ++numUnlocked; }
                     }
                 }
@@ -673,10 +673,6 @@ namespace VRtist
 
             foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
-                // Some objects may be locked, so check that
-                ParametersController parameters = obj.GetComponent<ParametersController>();
-                if (null != parameters && parameters.locked) { continue; }
-
                 // Check constraints
                 if (ConstraintUtility.IsLocked(obj)) { continue; }
 
@@ -717,7 +713,41 @@ namespace VRtist
             }
         }
 
-        public virtual void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed) { }
+        public void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed)
+        {
+            // Constrain movement
+            bool lockPosition = false;
+            bool lockRotation = false;
+            bool lockScale = false;
+            ParametersController parametersController = transform.gameObject.GetComponent<ParametersController>();
+            if (null != parametersController)
+            {
+                lockPosition = parametersController.lockPosition;
+                lockRotation = parametersController.lockRotation;
+                lockScale = parametersController.lockScale;
+            }
+
+            Maths.DecomposeMatrix(transformed, out Vector3 newPosition, out Quaternion newRotation, out Vector3 newScale);
+
+            // Translate
+            if (lockPosition)
+            {
+                newPosition = transform.localPosition;
+            }
+
+            if (lockRotation)
+            {
+                newRotation = transform.localRotation;
+            }
+
+            if (lockScale)
+            {
+                newScale = transform.localScale;
+            }
+            // transformation matrix (local)
+            transformed = Matrix4x4.TRS(newPosition, newRotation, newScale);
+
+        }
 
         private void UpdateEraser()
         {
@@ -1012,16 +1042,5 @@ namespace VRtist
             */
         }
 
-        public void OnSetLocked(bool locked)
-        {
-            foreach (GameObject gobject in Selection.GetGrippedOrSelection())
-            {
-                ParametersController parameters = gobject.GetComponent<ParametersController>();
-                if (null != parameters)
-                {
-                    parameters.locked = locked;
-                }
-            }
-        }
     }
 }

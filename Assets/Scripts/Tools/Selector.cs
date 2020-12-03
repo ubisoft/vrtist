@@ -39,6 +39,7 @@ namespace VRtist
         UISpinner posYSpinner;
         UISpinner posZSpinner;
 
+        UIButton posLockButton;
         UIButton posXLockButton;
         UIButton posYLockButton;
         UIButton posZLockButton;
@@ -47,6 +48,7 @@ namespace VRtist
         UISpinner rotYSpinner;
         UISpinner rotZSpinner;
 
+        UIButton rotLockButton;
         UIButton rotXLockButton;
         UIButton rotYLockButton;
         UIButton rotZLockButton;
@@ -55,6 +57,7 @@ namespace VRtist
         UISpinner scaleYSpinner;
         UISpinner scaleZSpinner;
 
+        UIButton scaleLockButton;
         UIButton scaleXLockButton;
         UIButton scaleYLockButton;
         UIButton scaleZLockButton;
@@ -87,6 +90,10 @@ namespace VRtist
         protected bool turnAroundY = true;
         protected bool turnAroundZ = true;
 
+        protected bool scaleOnX = true;
+        protected bool scaleOnY = true;
+        protected bool scaleOnZ = true;
+
         [Header("Deformer Parameters")]
         public Transform container;
         public Transform[] planes;
@@ -117,7 +124,6 @@ namespace VRtist
 
         void Start()
         {
-            Init();
             ToggleMouthpiece(mouthpiece, true);
 
             // Sub panels
@@ -164,6 +170,7 @@ namespace VRtist
             posYSpinner = inspectorPanel.transform.Find("Transform/Position/Y/Value").GetComponent<UISpinner>();
             posZSpinner = inspectorPanel.transform.Find("Transform/Position/Z/Value").GetComponent<UISpinner>();
 
+            posLockButton = inspectorPanel.transform.Find("Transform/Position/Global Lock").GetComponent<UIButton>();
             posXLockButton = inspectorPanel.transform.Find("Transform/Position/X/Lock").GetComponent<UIButton>();
             posYLockButton = inspectorPanel.transform.Find("Transform/Position/Y/Lock").GetComponent<UIButton>();
             posZLockButton = inspectorPanel.transform.Find("Transform/Position/Z/Lock").GetComponent<UIButton>();
@@ -172,6 +179,7 @@ namespace VRtist
             rotYSpinner = inspectorPanel.transform.Find("Transform/Rotation/Y/Value").GetComponent<UISpinner>();
             rotZSpinner = inspectorPanel.transform.Find("Transform/Rotation/Z/Value").GetComponent<UISpinner>();
 
+            rotLockButton = inspectorPanel.transform.Find("Transform/Rotation/Global Lock").GetComponent<UIButton>();
             rotXLockButton = inspectorPanel.transform.Find("Transform/Rotation/X/Lock").GetComponent<UIButton>();
             rotYLockButton = inspectorPanel.transform.Find("Transform/Rotation/Y/Lock").GetComponent<UIButton>();
             rotZLockButton = inspectorPanel.transform.Find("Transform/Rotation/Z/Lock").GetComponent<UIButton>();
@@ -180,6 +188,7 @@ namespace VRtist
             scaleYSpinner = inspectorPanel.transform.Find("Transform/Scale/Y/Value").GetComponent<UISpinner>();
             scaleZSpinner = inspectorPanel.transform.Find("Transform/Scale/Z/Value").GetComponent<UISpinner>();
 
+            scaleLockButton = inspectorPanel.transform.Find("Transform/Scale/Global Lock").GetComponent<UIButton>();
             scaleXLockButton = inspectorPanel.transform.Find("Transform/Scale/X/Lock").GetComponent<UIButton>();
             scaleYLockButton = inspectorPanel.transform.Find("Transform/Scale/Y/Lock").GetComponent<UIButton>();
             scaleZLockButton = inspectorPanel.transform.Find("Transform/Scale/Z/Lock").GetComponent<UIButton>();
@@ -196,11 +205,28 @@ namespace VRtist
             scaleYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleYSpinner.FloatValue, "sy"));
             scaleZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleZSpinner.FloatValue, "sz"));
 
+            posLockButton.onCheckEvent.AddListener(SetLockPosition);
+            posXLockButton.onCheckEvent.AddListener((bool value) => SetMoveOnX(!value));
+            posYLockButton.onCheckEvent.AddListener((bool value) => SetMoveOnY(!value));
+            posZLockButton.onCheckEvent.AddListener((bool value) => SetMoveOnZ(!value));
+
+            rotLockButton.onCheckEvent.AddListener(SetLockRotation);
+            rotXLockButton.onCheckEvent.AddListener((bool value) => SetTurnAroundX(!value));
+            rotYLockButton.onCheckEvent.AddListener((bool value) => SetTurnAroundY(!value));
+            rotZLockButton.onCheckEvent.AddListener((bool value) => SetTurnAroundZ(!value));
+
+            scaleLockButton.onCheckEvent.AddListener(SetLockScale);
+            scaleXLockButton.onCheckEvent.AddListener((bool value) => SetScaleOnX(!value));
+            scaleYLockButton.onCheckEvent.AddListener((bool value) => SetScaleOnY(!value));
+            scaleZLockButton.onCheckEvent.AddListener((bool value) => SetScaleOnZ(!value));
+
             // Global events bindings
             GlobalState.ObjectMovingEvent.AddListener(UpdateTransformUI);
             GlobalState.ObjectConstraintEvent.AddListener((GameObject gobject) => UpdateUIOnSelectionChanged(null, null));
             Selection.OnSelectionChanged += SetConstraintTargetOnSelectionChanged;
             Selection.OnSelectionChanged += UpdateUIOnSelectionChanged;
+
+            Init();
         }
 
         void OnStartEditTransform(float currentValue, string attr)
@@ -212,48 +238,56 @@ namespace VRtist
         void OnEndEditTransform(float value, string attr)
         {
             // Expecting attr to be one of px, py, pz, rx, ry, rz, sx, sy, sz
+            CommandMoveObjects command = new CommandMoveObjects();
+
             GameObject firstSelected = null;
             foreach (var selected in Selection.GetSelectedObjects())
             {
                 if (null == firstSelected) { firstSelected = selected; }
+                Vector3 position = selected.transform.localPosition;
+                Vector3 rotation = selected.transform.localEulerAngles;
+                Vector3 scale = selected.transform.localScale;
 
                 if (attr[0] == 'p')
-                {
-                    Vector3 position = selected.transform.localPosition;
+                {                    
                     switch (attr[1])
                     {
                         case 'x': position.x = value; break;
                         case 'y': position.y = value; break;
                         case 'z': position.z = value; break;
-                    }
-                    selected.transform.localPosition = position;
+                    }                                        
                 }
                 else if (attr[0] == 'r')
-                {
-                    Vector3 rotation = selected.transform.localEulerAngles;
+                {                    
                     switch (attr[1])
                     {
                         case 'x': rotation.x = value; break;
                         case 'y': rotation.y = value; break;
                         case 'z': rotation.z = value; break;
                     }
-                    selected.transform.localEulerAngles = rotation;
+                    
                 }
                 else if (attr[0] == 's')
-                {
-                    Vector3 scale = selected.transform.localScale;
+                {                    
                     switch (attr[1])
                     {
                         case 'x': scale.x = value; break;
                         case 'y': scale.y = value; break;
                         case 'z': scale.z = value; break;
                     }
-                    selected.transform.localScale = scale;
+                    
                 }
+
+                command.AddObject(selected, position, Quaternion.Euler(rotation), scale);
+
+                selected.transform.localPosition = position;
+                selected.transform.localEulerAngles = rotation;
+                selected.transform.localScale = scale;
             }
 
             if (null != firstSelected)
             {
+                command.Submit();
                 UpdateTransformUI(firstSelected);
             }
         }
@@ -338,6 +372,8 @@ namespace VRtist
 
         void UpdateUIOnSelectionChanged(object _, SelectionChangedArgs args)
         {
+            if (null == selectedObjectNameLabel)
+                return;
             // Clear
             selectedObjectNameLabel.Text = "";
 
@@ -346,6 +382,10 @@ namespace VRtist
 
             enableLookAtButton.Checked = false;
             lookAtTargetLabel.Text = "";
+
+            posLockButton.Checked = false;
+            rotLockButton.Checked = false;
+            scaleLockButton.Checked = false;
 
             GameObject selected = Selection.GetFirstSelectedObject();
             if (null == selected)
@@ -363,14 +403,14 @@ namespace VRtist
 
             // Constraints
             ParentConstraint parentConstraint = selected.GetComponent<ParentConstraint>();
-            if (null != parentConstraint)
+            if (null != parentConstraint && parentConstraint.sourceCount > 0)
             {
                 enableParentButton.Checked = parentConstraint.constraintActive;
                 parentTargetLabel.Text = parentConstraint.GetSource(0).sourceTransform.name;
             }
 
             LookAtConstraint lookAtConstraint = selected.GetComponent<LookAtConstraint>();
-            if (null != lookAtConstraint)
+            if (null != lookAtConstraint && lookAtConstraint.sourceCount > 0)
             {
                 enableLookAtButton.Checked = lookAtConstraint.constraintActive;
                 lookAtTargetLabel.Text = lookAtConstraint.GetSource(0).sourceTransform.name;
@@ -412,6 +452,17 @@ namespace VRtist
             scaleXSpinner.FloatValue = localScale.x;
             scaleYSpinner.FloatValue = localScale.y;
             scaleZSpinner.FloatValue = localScale.z;
+
+            ParametersController parametersController = selected.GetComponent<ParametersController>();
+            if (null != parametersController)
+            {
+                posLockButton.Checked = parametersController.lockPosition;
+                SetLockPosition(parametersController.lockPosition);
+                rotLockButton.Checked = parametersController.lockRotation;
+                SetLockRotation(parametersController.lockRotation);
+                scaleLockButton.Checked = parametersController.lockScale;
+                SetLockScale(parametersController.lockScale);
+            }
         }
 
         void OnSelectPanel(UIButton button)
@@ -438,6 +489,7 @@ namespace VRtist
             UpdateGrid();
             Selection.OnSelectionChanged += UpdateGridFromSelection;
             if (null != planesContainer) { planesContainer.SetActive(false); }
+            UpdateUIOnSelectionChanged(null, null);
         }
 
         protected override void OnDisable()
@@ -531,6 +583,30 @@ namespace VRtist
             InitUIPanel();
         }
 
+        public void SetLockPosition(bool value)
+        {
+            foreach(GameObject gobject in Selection.GetSelectedObjects())
+            {
+                if (value)
+                {
+                    ParametersController controller = gobject.GetComponent<ParametersController>();
+                    if (null == controller)
+                    {
+                        controller = gobject.AddComponent<ParametersController>();
+                    }
+                    controller.lockPosition = value;
+                }
+                else
+                {
+                    ParametersController controller = gobject.GetComponent<ParametersController>();
+                    if (null != controller)
+                    {
+                        controller.lockPosition = value;
+                    }
+                }
+            }
+        }
+
         public void SetMoveOnX(bool value)
         {
             moveOnX = value;
@@ -574,6 +650,30 @@ namespace VRtist
             InitUIPanel();
         }
 
+        public void SetLockRotation(bool value)
+        {
+            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            {
+                if (value)
+                {
+                    ParametersController controller = gobject.GetComponent<ParametersController>();
+                    if (null == controller)
+                    {
+                        controller = gobject.AddComponent<ParametersController>();
+                    }
+                    controller.lockRotation = value;
+                }
+                else
+                {
+                    ParametersController controller = gobject.GetComponent<ParametersController>();
+                    if (null != controller)
+                    {
+                        controller.lockRotation = value;
+                    }
+                }
+            }
+        }
+
         public void SetTurnAroundX(bool value)
         {
             if (value || !value && turnAroundAll)  // as a radio button
@@ -610,6 +710,55 @@ namespace VRtist
             InitUIPanel();
         }
 
+        public void SetLockScale(bool value)
+        {
+            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            {
+                if (value)
+                {
+                    ParametersController controller = gobject.GetComponent<ParametersController>();
+                    if (null == controller)
+                    {
+                        controller = gobject.AddComponent<ParametersController>();
+                    }
+                    controller.lockScale = value;
+                }
+                else
+                {
+                    ParametersController controller = gobject.GetComponent<ParametersController>();
+                    if (null != controller)
+                    {
+                        controller.lockScale = value;
+                    }
+                }
+            }
+        }
+
+        public void SetScaleOnX(bool value)
+        {
+            if (value != scaleOnX)
+            {
+                scaleOnX = true;
+                InitUIPanel();
+            }
+        }
+
+        public void SetScaleOnY(bool value)
+        {
+            if (value != scaleOnY)
+            {
+                scaleOnY = true;
+                InitUIPanel();
+            }
+        }
+        public void SetScaleOnZ(bool value)
+        {
+            if (value != scaleOnZ)
+            {
+                scaleOnZ = true;
+                InitUIPanel();
+            }
+        }
         public void EnableDeformMode(bool enabled)
         {
             deformEnabled = enabled;
@@ -636,6 +785,43 @@ namespace VRtist
             if (null != moveOnYCheckbox) { moveOnYCheckbox.Checked = moveOnY; }
             if (null != moveOnZCheckbox) { moveOnZCheckbox.Checked = moveOnZ; }
 
+            if (null != posXLockButton) { posXLockButton.Checked = !moveOnX; }
+            if (null != posYLockButton) { posYLockButton.Checked = !moveOnY; }
+            if (null != posZLockButton) { posZLockButton.Checked = !moveOnZ; }
+
+            if (null != posLockButton)
+            {
+                if (!moveOnX && !moveOnY && !moveOnZ)
+                    posLockButton.Checked = true;
+                else
+                    posLockButton.Checked = false;
+            }
+
+            if (null != rotXLockButton) { rotXLockButton.Checked = !turnAroundX; }
+            if (null != rotYLockButton) { rotYLockButton.Checked = !turnAroundY; }
+            if (null != rotZLockButton) { rotZLockButton.Checked = !turnAroundZ; }
+
+            if (null != rotLockButton)
+            {
+                if (!turnAroundX && !turnAroundY && !turnAroundZ)
+                    rotLockButton.Checked = true;
+                else
+                    rotLockButton.Checked = false;
+            }
+
+            if (null != scaleXLockButton) { scaleXLockButton.Checked = !scaleOnX; }
+            if (null != scaleYLockButton) { scaleYLockButton.Checked = !scaleOnY; }
+            if (null != scaleZLockButton) { scaleZLockButton.Checked = !scaleOnZ; }
+
+            if (null != scaleLockButton)
+            {
+                if (!scaleOnX && !scaleOnY && !scaleOnZ)
+                    scaleLockButton.Checked = true;
+                else
+                    scaleLockButton.Checked = false;
+            }
+
+
             if (null != snapRotationCheckbox) { snapRotationCheckbox.Checked = snapRotation; }
             if (null != snapAngleSlider)
             {
@@ -660,6 +846,7 @@ namespace VRtist
             initControllerPositionRelativeToHead = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
         }
 
+        /*
         public override void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed)
         {
             // Constrain movement
@@ -750,6 +937,7 @@ namespace VRtist
                 transformed = Matrix4x4.TRS(initPositions[transform.gameObject], Maths.GetRotationFromMatrix(localRotatedObject), initScales[transform.gameObject]);
             }
         }
+        */
 
         public override void OnSelectorTriggerEnter(Collider other)
         {

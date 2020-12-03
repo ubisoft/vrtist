@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6889110783648198454}
   - component: {fileID: -868588630876132870}
   - component: {fileID: 2712560836088052701}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Axis_locator
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -95,8 +95,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f2a9429667132478cf32d34bbd9458, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  locked: 0
+  lockPosition: 0
+  lockRotation: 0
+  lockScale: 0
   controllerName: 
+  initParentConstraintScale: 0
+  initParentConstraintOffset: {x: 0, y: 0, z: 0}
 --- !u!65 &2712560836088052701
 BoxCollider:
   m_ObjectHideFlags: 0

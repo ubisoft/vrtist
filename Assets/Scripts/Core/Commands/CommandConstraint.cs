@@ -11,7 +11,7 @@ namespace VRtist
 
     public static class ConstraintUtility
     {
-        public static IConstraint GetConstraint(ConstraintType constraintType, GameObject gobject)
+        public static Component GetConstraint(ConstraintType constraintType, GameObject gobject)
         {
             switch (constraintType)
             {
@@ -33,8 +33,10 @@ namespace VRtist
             if(null != parametersController)
                 parametersController.DisconnectWorldScale();
 
-            T constraint = gobject.GetComponent<T>();
-            GameObject.Destroy(constraint);
+            T component = gobject.GetComponent<T>();
+            IConstraint constraint = component as IConstraint;
+            constraint.RemoveSource(0);
+            GameObject.Destroy(component);
             GlobalState.FireObjectConstraint(gobject);
         }
 
@@ -108,6 +110,7 @@ namespace VRtist
             source.sourceTransform = target.transform;
             source.weight = 1f;
             constraint.SetSource(0, source);
+            constraint.rotationOffset = new Vector3(0, 180, 0);
 
             constraint.constraintActive = true;
 
@@ -175,10 +178,12 @@ namespace VRtist
         {
             this.constraintType = constraintType;
             this.gobject = gobject;
-            IConstraint constraint = ConstraintUtility.GetConstraint(constraintType, gobject);
-            if (null != constraint && constraint.sourceCount > 0)
+            Component component = ConstraintUtility.GetConstraint(constraintType, gobject);
+            if (null != component)
             {
-                target = constraint.GetSource(0).sourceTransform.gameObject;
+                IConstraint constraint = component as IConstraint;
+                if(constraint.sourceCount > 0)
+                    target = constraint.GetSource(0).sourceTransform.gameObject;
             }
         }
 
