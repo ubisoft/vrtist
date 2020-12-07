@@ -1082,7 +1082,7 @@ namespace VRtist
                         ConstraintUtility.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
                         break;
                     case MessageConstraintType.LookAt:
-                        ConstraintUtility.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        ConstraintUtility.AddLookAtConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
                         break;
                 }
             }
