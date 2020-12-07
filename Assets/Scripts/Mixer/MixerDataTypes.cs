@@ -190,7 +190,7 @@ namespace VRtist
     public class BlenderBankInfo
     {
         public BlenderBankAction action;
-        public int index;
+        public string name;
     }
 
     // Animation

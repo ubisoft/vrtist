@@ -44,6 +44,9 @@ namespace VRtist
         private int selectedItem = -1;
         private bool loadingAsset = false;
 
+        private TaskCompletionSource<GameObject> blenderImportTask = null;
+        private string requestedBlenderImportName;
+
         private UIDynamicList uiList;
 
         void Start()
@@ -61,6 +64,12 @@ namespace VRtist
 
             // Add user defined objects
             StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () => uiList.OnFirstPage()));
+
+            // Add Blender asset bank assets
+            GlobalState.ObjectAddedEvent.AddListener(OnObjectAdded);
+            GlobalState.blenderBankEvent.AddListener(OnBlenderBank);
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.List };
+            MixerClient.GetInstance().SendBlenderBank(info);
         }
 
         public void ScanAssetBank()
@@ -191,6 +200,28 @@ namespace VRtist
             AddAsset(filename, thumbnail, null, tags, importFunction: ImportObjectAsync);
         }
 
+        public void OnBlenderBank(List<string> names, List<string> tags, List<string> thumbnails)
+        {
+            // Load only once the whole asset bank data base from Blender
+            GlobalState.blenderBankEvent.RemoveListener(OnBlenderBank);
+            StartCoroutine(AddBlenderAssets(names, tags, thumbnails));
+        }
+
+        public IEnumerator AddBlenderAssets(List<string> names, List<string> tags, List<string> thumbnails)
+        {
+            for (int i = 0; i < names.Count; i++)
+            {
+                AddBlenderAsset(names[i], tags[i], thumbnails[i]);
+                yield return null;
+            }
+        }
+
+        private void AddBlenderAsset(string name, string tags, string thumbnailPath)
+        {
+            GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(thumbnailPath, OnUIObjectEnter, OnUIObjectExit);
+            AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset);
+        }
+
         public AssetBankItem AddAsset(string name, GameObject thumbnail, GameObject original, string tags, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool skipInstantiation = false)
         {
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
@@ -277,6 +308,24 @@ namespace VRtist
         private Task<GameObject> ImportObjectAsync(AssetBankItem item)
         {
             return GlobalState.GeometryImporter.ImportObjectAsync(item.assetName, bank.transform);
+        }
+
+        private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
+        {
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.Import, name = item.name };
+            MixerClient.GetInstance().SendBlenderBank(info);
+
+            blenderImportTask = new TaskCompletionSource<GameObject>();
+            return blenderImportTask.Task;
+        }
+
+        private void OnObjectAdded(GameObject gobject)
+        {
+            if (gobject.name == requestedBlenderImportName && null != blenderImportTask && !blenderImportTask.Task.IsCompleted)
+            {
+                blenderImportTask.TrySetResult(gobject);
+                Selection.AddToSelection(gobject);
+            }
         }
 
         private void InstantiateObject(GameObject gobject)

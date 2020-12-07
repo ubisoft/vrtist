@@ -78,6 +78,31 @@ namespace VRtist
             return bytes;
         }
 
+        public static string ConvertToString(byte[] data)
+        {
+            return System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
+        }
+
+        public static string GetString(byte[] data, ref int bufferIndex)
+        {
+            int strLength = (int) BitConverter.ToUInt32(data, bufferIndex);
+            string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
+            bufferIndex = bufferIndex + strLength + 4;
+            return str;
+        }
+
+        public static List<string> GetStrings(byte[] data, ref int index)
+        {
+            int count = (int) BitConverter.ToUInt32(data, index);
+            index += 4;
+            List<string> strings = new List<string>();
+            for (int i = 0; i < count; ++i)
+            {
+                strings.Add(GetString(data, ref index));
+            }
+            return strings;
+        }
+
         // Converts triangle indice array to byte buffer
         public static byte[] TriangleIndicesToBytes(int[] vectors)
         {
@@ -847,19 +872,6 @@ namespace VRtist
                 parent = transform;
             }
             return parent;
-        }
-
-        public static string ConvertToString(byte[] data)
-        {
-            return System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
-        }
-
-        public static string GetString(byte[] data, ref int bufferIndex)
-        {
-            int strLength = (int) BitConverter.ToUInt32(data, bufferIndex);
-            string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
-            bufferIndex = bufferIndex + strLength + 4;
-            return str;
         }
 
         public static string GetPathName(Transform root, Transform transform)
@@ -1753,8 +1765,8 @@ namespace VRtist
             switch (info.action)
             {
                 case BlenderBankAction.Import:
-                    byte[] indexBuffer = IntToBytes(info.index);
-                    List<byte[]> buffers = new List<byte[]> { actionBuffer, indexBuffer };
+                    byte[] nameBuffer = StringToBytes(info.name);
+                    List<byte[]> buffers = new List<byte[]> { actionBuffer, nameBuffer };
                     command = new NetCommand(ConcatenateBuffers(buffers), MessageType.BlenderBank);
                     break;
                 case BlenderBankAction.List:
@@ -1762,6 +1774,15 @@ namespace VRtist
                     break;
             }
             return command;
+        }
+
+        public static void ReceiveBlenderBank(byte[] data)
+        {
+            int index = 0;
+            List<string> names = GetStrings(data, ref index);
+            List<string> tags = GetStrings(data, ref index);
+            List<string> thumbnails = GetStrings(data, ref index);
+            GlobalState.blenderBankEvent.Invoke(names, tags, thumbnails);
         }
 
         public static NetCommand BuildSendPlayerTransform(ConnectedUser playerInfo)

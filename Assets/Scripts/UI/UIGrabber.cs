@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -12,9 +13,6 @@ namespace VRtist
         [HideInInspector] public int? uid;
         public bool rotateOnHover = true;
         public GameObject prefab;
-
-        bool lazyLoaded = false;
-        string lazyImagePath = null;
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = new GameObjectHashChangedEvent();
@@ -45,19 +43,6 @@ namespace VRtist
             {
                 textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
                 imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
-            }
-        }
-
-        private void OnEnable()
-        {
-            if (!lazyLoaded && null != lazyImagePath)
-            {
-                Sprite sprite = Utils.LoadSprite(lazyImagePath);
-                if (null != sprite)
-                {
-                    transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
-                    lazyLoaded = true;
-                }
             }
         }
 
@@ -137,13 +122,19 @@ namespace VRtist
             LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
             UIGrabber uiGrabber = thumbnail.AddComponent<UIGrabber>();
+            uiGrabber.StartCoroutine(LoadThumbnail(thumbnail, path));
             uiGrabber.uid = thumbnail.GetHashCode();
             uiGrabber.rotateOnHover = false;
-            uiGrabber.lazyImagePath = path;
-            uiGrabber.lazyLoaded = false;
             uiGrabber.onEnterUI3DObject.AddListener(onEnter);
             uiGrabber.onExitUI3DObject.AddListener(onExit);
             return thumbnail;
+        }
+
+        private static IEnumerator LoadThumbnail(GameObject thumbnail, string path)
+        {
+            Sprite sprite = Utils.LoadSprite(path);
+            thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
+            yield return null;
         }
 
         public static GameObject Create3DThumbnail(GameObject thumbnail, UnityAction<int> onEnter, UnityAction<int> onExit)

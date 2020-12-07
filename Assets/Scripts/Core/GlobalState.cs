@@ -101,6 +101,8 @@ namespace VRtist
         public static GameObjectChangedEvent ObjectMovingEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectConstraintEvent = new GameObjectChangedEvent();
 
+        public static BlenderBankEvent blenderBankEvent = new BlenderBankEvent();
+
         // Geometry Importer
         private GeometryImporter geometryImporter;
         public static GeometryImporter GeometryImporter

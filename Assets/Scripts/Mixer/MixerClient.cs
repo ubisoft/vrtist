@@ -820,6 +820,9 @@ namespace VRtist
                             case MessageType.ShotManagerAction:
                                 MixerUtils.BuildShotManagerAction(command.data);
                                 break;
+                            case MessageType.BlenderBank:
+                                MixerUtils.ReceiveBlenderBank(command.data);
+                                break;
 
                             case MessageType.ClientUpdate:
                                 MixerUtils.BuildClientAttribute(command.data);
