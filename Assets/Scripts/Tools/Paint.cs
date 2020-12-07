@@ -10,6 +10,21 @@ namespace VRtist
         [SerializeField] private Material paintMaterial;
         [SerializeField] private NavigationOptions navigation;
 
+        Transform tubePanel;
+        Transform ribbonPanel;
+        Transform hullPanel;
+        Transform volumePanel;
+
+        UIButton tubeButton;
+        UIButton ribbonButton;
+        UIButton hullButton;
+        UIButton volumeButton;
+
+        GameObject pencilCursor = null;
+        GameObject flatCursor = null;
+        GameObject convexCursor = null;
+        GameObject volumeCursor = null;
+
         // Paint tool
         Vector3 paintPrevPosition;
         GameObject currentPaintLine;
@@ -20,35 +35,71 @@ namespace VRtist
         int paintId = 0;
         bool paintOnSurface = false;
 
-        GameObject pencilCursor = null;
-        GameObject flatCursor = null;
-        GameObject convexCursor = null;
-        GameObject volumeCursor = null;
-
         FreeDraw freeDraw; // used for pencil, flat pencil and hull
         CommandGroup undoGroup = null;
 
-
-
-
+        // VOLUME
+        enum VolumeEditionMode { Create, Edit };
+        VolumeEditionMode volumeEditionMode = VolumeEditionMode.Create;
         VolumeMeshGenerator volumeGenerator; // used for volume
         GameObject currentVolume;
+        private float stepSize = 0.01f;
+        private float strength = 0.5f;
 
         // Start is called before the first frame update
         void Start()
         {
             Init();
 
+            paintTool = PaintTools.Pencil; // <---- Tube is default
+
+            ConfigureSubPanels();
+
+            ConfigureCursors();
+
             paintLineRenderer = transform.gameObject.GetComponent<LineRenderer>();
             if (paintLineRenderer == null) { Debug.LogWarning("Expected a line renderer on the paintItem game object."); }
             else { paintLineRenderer.startWidth = 0.005f; paintLineRenderer.endWidth = 0.005f; }
 
             freeDraw = new FreeDraw();
-            UpdateButtonsColor();
-
+            
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
 
+            // Create tooltips
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
+            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Brush Size");
+
+            GlobalState.colorChangedEvent.AddListener(OnPaintColor);
+        }
+
+        private void ConfigureSubPanels()
+        {
+            tubePanel = panel.Find("PaintTubePanel");
+            ribbonPanel = panel.Find("PaintRibbonPanel");
+            hullPanel = panel.Find("PaintHullPanel");
+            volumePanel = panel.Find("PaintVolumePanel");
+
+            tubePanel.gameObject.SetActive(true); // <---- Tube is default
+            ribbonPanel.gameObject.SetActive(false);
+            hullPanel.gameObject.SetActive(false);
+            volumePanel.gameObject.SetActive(false);
+
+            tubeButton = panel.Find("PaintTubeButton").GetComponent<UIButton>();
+            tubeButton.Checked = true; // <---- Tube is default
+            ribbonButton = panel.Find("PaintRibbonButton").GetComponent<UIButton>();
+            hullButton = panel.Find("PaintHullButton").GetComponent<UIButton>();
+            volumeButton = panel.Find("PaintVolumeButton").GetComponent<UIButton>();
+
+            tubeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Pencil));
+            ribbonButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.FlatPencil));
+            hullButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.ConvexHull));
+            volumeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Volume));
+        }
+
+        private void ConfigureCursors()
+        {
             pencilCursor = mouthpiece.transform.Find("curve").gameObject;
             flatCursor = mouthpiece.transform.Find("flat_curve").gameObject;
             convexCursor = mouthpiece.transform.Find("convex").gameObject;
@@ -58,13 +109,6 @@ namespace VRtist
             flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
             convexCursor.SetActive(paintTool == PaintTools.ConvexHull);
             volumeCursor.SetActive(paintTool == PaintTools.Volume);
-
-            // Create tooltips
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Brush Size");
-
-            GlobalState.colorChangedEvent.AddListener(OnPaintColor);
         }
 
         protected override void OnDisable()
@@ -78,6 +122,30 @@ namespace VRtist
             EndCurrentPaint();
             base.OnDisable();
         }
+
+        void OnSelectPanel(PaintTools tool)
+        {
+            paintTool = tool;
+
+            // CHECKED button
+            tubeButton.Checked = tool == PaintTools.Pencil;
+            ribbonButton.Checked = tool == PaintTools.FlatPencil;
+            hullButton.Checked = tool == PaintTools.ConvexHull;
+            volumeButton.Checked = tool == PaintTools.Volume;
+
+            // ACTIVE panel
+            tubePanel.gameObject.SetActive(tool == PaintTools.Pencil);
+            ribbonPanel.gameObject.SetActive(tool == PaintTools.FlatPencil);
+            hullPanel.gameObject.SetActive(tool == PaintTools.ConvexHull);
+            volumePanel.gameObject.SetActive(tool == PaintTools.Volume);
+
+            // Mouthpiece
+            pencilCursor.SetActive(tool == PaintTools.Pencil);
+            flatCursor.SetActive(tool == PaintTools.FlatPencil);
+            convexCursor.SetActive(tool == PaintTools.ConvexHull);
+            volumeCursor.SetActive(tool == PaintTools.Volume);
+        }
+
         protected override void DoUpdate()
         {
             Vector3 position;
@@ -176,7 +244,7 @@ namespace VRtist
                         currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
                         currentVolume.transform.position = mouthpiece.position; // real-world position
                         volumeGenerator = new VolumeMeshGenerator(); // TODO: pass in the accuracy/stepSize
-                        volumeGenerator.stepSize = 0.1f;
+                        volumeGenerator.stepSize = stepSize;
                         volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
                         break;
                 }
@@ -240,16 +308,16 @@ namespace VRtist
                   (position != paintPrevPosition && currentPaintLine != null) || currentVolume != null)
                 )
             {
-                // Add a point (the current world position) to the line renderer                        
+                // Add a point (the current world position) to the line renderer
 
-                float ratio = 0.5f * (triggerValue - deadZone) / (1f - deadZone);
+                float pressure = (triggerValue - deadZone) / (1f - deadZone);
 
                 switch (paintTool)
                 {
-                    case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, brushSize * ratio); break;
-                    case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, brushSize * ratio); break;
+                    case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, 0.5f * brushSize * pressure); break;
+                    case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * brushSize * pressure); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
-                    case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, brushSize * ratio); break;
+                    case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * brushSize * pressure * strength); break;
                 }
 
                 switch (paintTool)
@@ -311,77 +379,28 @@ namespace VRtist
             paintOnSurface = value;
         }
 
-        void UpdateButtonsColor()
+        public void OnVolumeCreatePressed()
         {
-            if (!panel)
-                return;
-
-            for (int i = 0; i < panel.childCount; i++)
-            {
-                GameObject child = panel.GetChild(i).gameObject;
-                UIButton button = child.GetComponent<UIButton>();
-                if (button != null)
-                {
-                    button.Checked = false;
-
-                    if (child.name == "PencilButton" && paintTool == PaintTools.Pencil)
-                    {
-                        button.Checked = true;
-                    }
-                    if (child.name == "FlatPencilButton" && paintTool == PaintTools.FlatPencil)
-                    {
-                        button.Checked = true;
-                    }
-                    if (child.name == "ConvexHullPencilButton" && paintTool == PaintTools.ConvexHull)
-                    {
-                        button.Checked = true;
-                    }
-                    if (child.name == "VolumePencilButton" && paintTool == PaintTools.Volume)
-                    {
-                        button.Checked = true;
-                    }
-                }
-            }
+            volumeEditionMode = VolumeEditionMode.Create;
+            // TODO: reload something, recreate the generator or configure it.
         }
 
-        public void PaintSelectPencil()
+        public void OnVolumeEditPressed()
         {
-            paintTool = PaintTools.Pencil;
-            pencilCursor.SetActive(true);
-            flatCursor.SetActive(false);
-            convexCursor.SetActive(false);
-            volumeCursor.SetActive(false);
-            UpdateButtonsColor();
+            volumeEditionMode = VolumeEditionMode.Edit;
+            // TODO: reload something, recreate the generator or configure it.
         }
 
-        public void PaintSelectFlatPencil()
+        public void OnVolumeStrengthChanged(float value)
         {
-            paintTool = PaintTools.FlatPencil;
-            pencilCursor.SetActive(false);
-            flatCursor.SetActive(true);
-            convexCursor.SetActive(false);
-            volumeCursor.SetActive(false);
-            UpdateButtonsColor();
+            strength = 0.5f;
+            // TODO: give it to the generator.
         }
 
-        public void PaintSelectConvexHullPencil()
+        public void OnVolumeCellSizeChanged(float value)
         {
-            paintTool = PaintTools.ConvexHull;
-            pencilCursor.SetActive(false);
-            flatCursor.SetActive(false);
-            convexCursor.SetActive(true);
-            volumeCursor.SetActive(false);
-            UpdateButtonsColor();
-        }
-
-        public void PaintSelectVolumePencil()
-        {
-            paintTool = PaintTools.Volume;
-            pencilCursor.SetActive(false);
-            flatCursor.SetActive(false);
-            convexCursor.SetActive(false);
-            volumeCursor.SetActive(true);
-            UpdateButtonsColor();
+            stepSize = value / 1000.0f;
+            // TODO: give it to the generator.
         }
     }
 }
