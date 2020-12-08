@@ -1684,12 +1684,6 @@ namespace VRtist
             return command;
         }
 
-        public static NetCommand BuildSendMontageMode(bool montage)
-        {
-            NetCommand command = new NetCommand(BoolToBytes(montage), MessageType.ShotManagerMontageMode);
-            return command;
-        }
-
         public static NetCommand BuildSendShotManagerAction(ShotManagerActionInfo info)
         {
             NetCommand command = null;
@@ -2483,19 +2477,6 @@ namespace VRtist
             SyncData.mixer.SetActiveCamera(cameraObject);
         }
 
-        public static void BuildShotManagerCurrentShot(byte[] data)
-        {
-            int index = 0;
-            int shotIndex = GetInt(data, ref index);
-            SyncData.mixer.SetShotManagerCurrentShot(shotIndex);
-        }
-
-        public static void BuildShotManagerMontageMode(byte[] data)
-        {
-            int index = 0;
-            bool montageMode = GetBool(data, ref index);
-            SyncData.mixer.EnableShotManagerMontage(montageMode);
-        }
         public static void BuildShotManager(byte[] data)
         {
             List<Shot> shots = new List<Shot>();

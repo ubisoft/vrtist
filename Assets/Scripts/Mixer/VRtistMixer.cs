@@ -550,22 +550,6 @@ namespace VRtist
 #endif
         }
 
-        public override void SetShotManagerCurrentShot(int shotIndex)
-        {
-#if !VRTIST
-            Debug.Log("SetShotManagerCurrentShot " + shotIndex.ToString());
-#else
-            ShotManager.Instance.ActiveShotIndex = shotIndex;
-#endif
-        }
-        public override void EnableShotManagerMontage(bool enable)
-        {
-#if !VRTIST
-            Debug.Log("EnableShotManagerMontage " + enable.ToString());
-#else
-            ShotManager.Instance.MontageEnabled = enable;
-#endif
-        }
         public override void UpdateShotManager(List<Shot> shots)
         {
 #if !VRTIST
