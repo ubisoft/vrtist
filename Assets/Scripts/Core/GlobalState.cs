@@ -261,6 +261,12 @@ namespace VRtist
             SetDisplayAvatars(value);
         }
 
+        public static void SetDisplayLocators(bool value)
+        {
+            Settings.displayLocators = value;
+            SetGizmosVisible(FindObjectsOfType<LocatorController>(), value);
+        }
+
         public static void SetDisplayAvatars(bool value)
         {
             Settings.displayAvatars = value;

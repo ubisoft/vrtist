@@ -10,6 +10,7 @@ namespace VRtist
     {
         public int version = 1;
         public bool displayGizmos = true;
+        public bool displayLocators = true;
         public bool displayWorldGrid = true;
         public bool displayAvatars = true;
         public bool displayFPS = false;
@@ -84,6 +85,7 @@ namespace VRtist
         public void Reset()
         {
             displayGizmos = true;
+            displayLocators = true;
             displayWorldGrid = true;
             displayFPS = false;
             masterVolume = 0f;

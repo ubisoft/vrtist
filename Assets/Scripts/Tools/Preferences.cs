@@ -20,6 +20,7 @@ namespace VRtist
         public Transform consoleHandle;
         public ConsoleWindow consoleWindow;
         public UIButton showGizmosShortcut;
+        public UIButton showLocatorsShortcut;
 
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
@@ -33,6 +34,7 @@ namespace VRtist
 
         private UICheckbox worldGridCheckbox;
         private UICheckbox displayGizmos;
+        private UICheckbox displayLocators;
         private UICheckbox displayAvatars;
         private UICheckbox displayFPS;
         private UICheckbox display3DCurves;
@@ -67,6 +69,7 @@ namespace VRtist
 
             worldGridCheckbox = displaySubPanel.transform.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
             displayGizmos = displaySubPanel.transform.Find("DisplayGizmos").GetComponent<UICheckbox>();
+            displayLocators = displaySubPanel.transform.Find("DisplayLocators").GetComponent<UICheckbox>();
             displayAvatars = displaySubPanel.transform.Find("DisplayAvatars").GetComponent<UICheckbox>();
             display3DCurves = displaySubPanel.transform.Find("Display3DCurves").GetComponent<UICheckbox>();
             masterVolume = soundsSubPanel.transform.Find("Master Volume").GetComponent<UISlider>();
@@ -94,6 +97,7 @@ namespace VRtist
         private void Apply(bool onStart = false)
         {
             OnDisplayGizmos(GlobalState.Settings.displayGizmos);
+            OnDisplayLocators(GlobalState.Settings.displayLocators);
             OnDisplayAvatars(GlobalState.Settings.displayAvatars);
             OnShowConsoleWindow(GlobalState.Settings.consoleVisible);
 
@@ -102,7 +106,9 @@ namespace VRtist
             worldGrid.SetActive(value);
 
             displayGizmos.Checked = GlobalState.Settings.displayGizmos;
+            displayLocators.Checked = GlobalState.Settings.displayLocators;
             showGizmosShortcut.Checked = GlobalState.Settings.displayGizmos;
+            showLocatorsShortcut.Checked = GlobalState.Settings.displayLocators;
             displayFPS.Checked = GlobalState.Settings.displayFPS;
             display3DCurves.Checked = GlobalState.Settings.display3DCurves;
             displayAvatars.Checked = GlobalState.Settings.displayAvatars;
@@ -154,6 +160,10 @@ namespace VRtist
         public void OnDisplayGizmos(bool show)
         {
             GlobalState.SetDisplayGizmos(show);
+        }
+        public void OnDisplayLocators(bool show)
+        {
+            GlobalState.SetDisplayLocators(show);
         }
 
         public void OnDisplayAvatars(bool show)
