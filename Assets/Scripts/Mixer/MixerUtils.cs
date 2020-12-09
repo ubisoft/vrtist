@@ -1079,10 +1079,10 @@ namespace VRtist
                 switch (constraintType)
                 {
                     case MessageConstraintType.Parent:
-                        ConstraintUtility.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        ConstraintManager.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
                         break;
                     case MessageConstraintType.LookAt:
-                        ConstraintUtility.AddLookAtConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        ConstraintManager.AddLookAtConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
                         break;
                 }
             }
@@ -1101,10 +1101,10 @@ namespace VRtist
                 switch (constraintType)
                 {
                     case MessageConstraintType.Parent:
-                        ConstraintUtility.RemoveConstraint<ParentConstraint>(objectNode.instances[i].Item1);
+                        ConstraintManager.RemoveConstraint<ParentConstraint>(objectNode.instances[i].Item1);
                         break;
                     case MessageConstraintType.LookAt:
-                        ConstraintUtility.RemoveConstraint<LookAtConstraint>(objectNode.instances[i].Item1);
+                        ConstraintManager.RemoveConstraint<LookAtConstraint>(objectNode.instances[i].Item1);
                         break;
                 }
             }

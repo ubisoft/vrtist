@@ -674,7 +674,7 @@ namespace VRtist
             foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
                 // Check constraints
-                if (ConstraintUtility.IsLocked(obj)) { continue; }
+                if (ConstraintManager.IsLocked(obj)) { continue; }
 
                 var meshParentTransform = obj.transform.parent;
                 Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
