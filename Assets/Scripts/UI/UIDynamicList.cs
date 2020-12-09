@@ -21,6 +21,7 @@ namespace VRtist
 
         public bool autoResizeContent = true;
         public bool autoCenterContent = true;
+        public bool focusItemOnAdd = true;
 
         public UILabel pageCountLabel = null;
 
@@ -106,9 +107,11 @@ namespace VRtist
             // full page, add one page
             if (nbItemsInLastPage == nbItemsPerPage)
                 pagesCount++;
-            currentPage = pagesCount == 0 ? 0 : pagesCount - 1;
+            if (focusItemOnAdd)
+                currentPage = pagesCount == 0 ? 0 : pagesCount - 1;
 
             GameObject gObj = new GameObject("List Item");
+            gObj.SetActive(false);  // gObj may be on another page, so by default not active
             UIDynamicListItem item = gObj.AddComponent<UIDynamicListItem>();
             gObj.tag = "UICollider";
             gObj.layer = LayerMask.NameToLayer("UI");

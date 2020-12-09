@@ -1760,7 +1760,7 @@ namespace VRtist
         public static NetCommand BuildSendBlenderBank(BlenderBankInfo info)
         {
             NetCommand command = null;
-            byte[] actionBuffer = IntToBytes((int) BlenderBankAction.Import);
+            byte[] actionBuffer = IntToBytes((int) info.action);
 
             switch (info.action)
             {
@@ -1769,7 +1769,7 @@ namespace VRtist
                     List<byte[]> buffers = new List<byte[]> { actionBuffer, nameBuffer };
                     command = new NetCommand(ConcatenateBuffers(buffers), MessageType.BlenderBank);
                     break;
-                case BlenderBankAction.List:
+                case BlenderBankAction.ListRequest:
                     command = new NetCommand(actionBuffer, MessageType.BlenderBank);
                     break;
             }
@@ -1779,10 +1779,14 @@ namespace VRtist
         public static void ReceiveBlenderBank(byte[] data)
         {
             int index = 0;
-            List<string> names = GetStrings(data, ref index);
-            List<string> tags = GetStrings(data, ref index);
-            List<string> thumbnails = GetStrings(data, ref index);
-            GlobalState.blenderBankEvent.Invoke(names, tags, thumbnails);
+            BlenderBankAction action = (BlenderBankAction) GetInt(data, ref index);
+            if (action == BlenderBankAction.ListResponse)
+            {
+                List<string> names = GetStrings(data, ref index);
+                List<string> tags = GetStrings(data, ref index);
+                List<string> thumbnails = GetStrings(data, ref index);
+                GlobalState.blenderBankEvent.Invoke(names, tags, thumbnails);
+            }
         }
 
         public static NetCommand BuildSendPlayerTransform(ConnectedUser playerInfo)

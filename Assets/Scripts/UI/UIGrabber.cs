@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -26,6 +25,9 @@ namespace VRtist
 
         private static Quaternion thumbnailRotation = Quaternion.Euler(25f, -35f, 0f);
 
+        private string lazyImagePath = null;
+        private bool lazyLoaded = false;
+
         void Start()
         {
             if (prefab)
@@ -49,6 +51,16 @@ namespace VRtist
         private void OnValidate()
         {
             NeedsRebuild = true;
+        }
+
+        private void OnEnable()
+        {
+            // Load lazy thumbnail
+            if (null != lazyImagePath && !lazyLoaded)
+            {
+                LoadThumbnail(lazyImagePath);
+                lazyLoaded = true;
+            }
         }
 
         private void Update()
@@ -121,8 +133,8 @@ namespace VRtist
         {
             LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
-            UIGrabber uiGrabber = thumbnail.AddComponent<UIGrabber>();
-            uiGrabber.StartCoroutine(LoadThumbnail(thumbnail, path));
+            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            uiGrabber.lazyImagePath = path;
             uiGrabber.uid = thumbnail.GetHashCode();
             uiGrabber.rotateOnHover = false;
             uiGrabber.onEnterUI3DObject.AddListener(onEnter);
@@ -130,11 +142,11 @@ namespace VRtist
             return thumbnail;
         }
 
-        private static IEnumerator LoadThumbnail(GameObject thumbnail, string path)
+        private void LoadThumbnail(string path)
         {
             Sprite sprite = Utils.LoadSprite(path);
-            thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
-            yield return null;
+            if (null == sprite) { sprite = UIUtils.LoadIcon("warning"); }
+            transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
         }
 
         public static GameObject Create3DThumbnail(GameObject thumbnail, UnityAction<int> onEnter, UnityAction<int> onExit)

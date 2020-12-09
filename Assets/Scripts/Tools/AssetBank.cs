@@ -54,6 +54,7 @@ namespace VRtist
             Init();
 
             uiList = panel.GetComponentInChildren<UIDynamicList>();
+            uiList.focusItemOnAdd = false;
 
             // Create our storage for loaded objects
             bank = new GameObject("__VRtist_Asset_Bank__");
@@ -63,13 +64,14 @@ namespace VRtist
             AddBuiltinAssets();
 
             // Add user defined objects
-            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () => uiList.OnFirstPage()));
-
-            // Add Blender asset bank assets
-            GlobalState.ObjectAddedEvent.AddListener(OnObjectAdded);
-            GlobalState.blenderBankEvent.AddListener(OnBlenderBank);
-            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.List };
-            MixerClient.GetInstance().SendBlenderBank(info);
+            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () =>
+            {
+                // Add Blender asset bank assets
+                GlobalState.ObjectAddedEvent.AddListener(OnObjectAdded);
+                GlobalState.blenderBankEvent.AddListener(OnBlenderBank);
+                BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ListRequest };
+                MixerClient.GetInstance().SendBlenderBank(info);
+            }));
         }
 
         public void ScanAssetBank()
@@ -219,7 +221,7 @@ namespace VRtist
         private void AddBlenderAsset(string name, string tags, string thumbnailPath)
         {
             GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(thumbnailPath, OnUIObjectEnter, OnUIObjectExit);
-            AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset);
+            AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
         }
 
         public AssetBankItem AddAsset(string name, GameObject thumbnail, GameObject original, string tags, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool skipInstantiation = false)
@@ -312,13 +314,14 @@ namespace VRtist
 
         private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
         {
-            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.Import, name = item.name };
-            MixerClient.GetInstance().SendBlenderBank(info);
-
+            requestedBlenderImportName = item.assetName;
             blenderImportTask = new TaskCompletionSource<GameObject>();
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.Import, name = item.assetName };
+            MixerClient.GetInstance().SendBlenderBank(info);
             return blenderImportTask.Task;
         }
 
+        // Used for blender bank to know if a blender asset has been imported
         private void OnObjectAdded(GameObject gobject)
         {
             if (gobject.name == requestedBlenderImportName && null != blenderImportTask && !blenderImportTask.Task.IsCompleted)
