@@ -10,13 +10,14 @@ Material:
   m_Name: Dash
   m_Shader: {fileID: -6465566751694194690, guid: 5ebd9d2af2a45724d9de8aeb84536f6c,
     type: 3}
-  m_ShaderKeywords: 
+  m_ShaderKeywords: _BLENDMODE_ALPHA _ENABLE_FOG_ON_TRANSPARENT _SURFACE_TYPE_TRANSPARENT
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap:
     MotionVector: User
+    RenderType: Transparent
   disabledShaderPasses:
   - MOTIONVECTORS
   - TransparentBackface
@@ -25,17 +26,17 @@ Material:
     m_TexEnvs: []
     m_Floats:
     - _AlphaCutoffEnable: 0
-    - _AlphaDstBlend: 0
+    - _AlphaDstBlend: 10
     - _AlphaSrcBlend: 1
     - _BlendMode: 0
     - _CullMode: 2
     - _CullModeForward: 2
     - _DoubleSidedEnable: 0
     - _DoubleSidedNormalMode: 2
-    - _DstBlend: 0
+    - _DstBlend: 10
     - _EnableFogOnTransparent: 1
     - _ReceivesSSR: 0
-    - _RenderQueueType: 1
+    - _RenderQueueType: 5
     - _RequireSplitLighting: 0
     - _SrcBlend: 1
     - _StencilRef: 0
@@ -48,13 +49,13 @@ Material:
     - _StencilWriteMaskDistortionVec: 4
     - _StencilWriteMaskGBuffer: 14
     - _StencilWriteMaskMV: 40
-    - _SurfaceType: 0
+    - _SurfaceType: 1
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentSortPriority: 0
     - _TransparentZWrite: 1
     - _UseShadowThreshold: 0
-    - _ZTestDepthEqualForOpaque: 3
+    - _ZTestDepthEqualForOpaque: 4
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
