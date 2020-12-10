@@ -1091,10 +1091,10 @@ namespace VRtist
                 switch (constraintType)
                 {
                     case MessageConstraintType.Parent:
-                        ConstraintUtility.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        ConstraintManager.AddParentConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
                         break;
                     case MessageConstraintType.LookAt:
-                        ConstraintUtility.AddLookAtConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
+                        ConstraintManager.AddLookAtConstraint(objectNode.instances[i].Item1, targetNode.instances[i].Item1);
                         break;
                 }
             }
@@ -1113,10 +1113,10 @@ namespace VRtist
                 switch (constraintType)
                 {
                     case MessageConstraintType.Parent:
-                        ConstraintUtility.RemoveConstraint<ParentConstraint>(objectNode.instances[i].Item1);
+                        ConstraintManager.RemoveConstraint<ParentConstraint>(objectNode.instances[i].Item1);
                         break;
                     case MessageConstraintType.LookAt:
-                        ConstraintUtility.RemoveConstraint<LookAtConstraint>(objectNode.instances[i].Item1);
+                        ConstraintManager.RemoveConstraint<LookAtConstraint>(objectNode.instances[i].Item1);
                         break;
                 }
             }
@@ -1693,12 +1693,6 @@ namespace VRtist
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
         {
             NetCommand command = new NetCommand(StringToBytes(info.gObject.name), MessageType.ClearAnimations);
-            return command;
-        }
-
-        public static NetCommand BuildSendMontageMode(bool montage)
-        {
-            NetCommand command = new NetCommand(BoolToBytes(montage), MessageType.ShotManagerMontageMode);
             return command;
         }
 
@@ -2519,19 +2513,6 @@ namespace VRtist
             SyncData.mixer.SetActiveCamera(cameraObject);
         }
 
-        public static void BuildShotManagerCurrentShot(byte[] data)
-        {
-            int index = 0;
-            int shotIndex = GetInt(data, ref index);
-            SyncData.mixer.SetShotManagerCurrentShot(shotIndex);
-        }
-
-        public static void BuildShotManagerMontageMode(byte[] data)
-        {
-            int index = 0;
-            bool montageMode = GetBool(data, ref index);
-            SyncData.mixer.EnableShotManagerMontage(montageMode);
-        }
         public static void BuildShotManager(byte[] data)
         {
             List<Shot> shots = new List<Shot>();

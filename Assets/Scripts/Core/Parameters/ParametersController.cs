@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Animations;
 
 namespace VRtist
@@ -29,7 +30,7 @@ namespace VRtist
         // world scale when constraint is created
         public float initParentConstraintScale;
         public Vector3 initParentConstraintOffset;
-
+        
         public void ConnectWorldScale()
         {
             GlobalState.onWorldScaleEvent.AddListener(OnWorldScaleChanged);
@@ -45,7 +46,7 @@ namespace VRtist
             ParentConstraint parentConstraint = GetComponent<ParentConstraint>();
             if (null == parentConstraint)
                 return;
-            ConstraintUtility.UpdateParentConstraintTranslationOffset(parentConstraint, initParentConstraintOffset, initParentConstraintScale);
+            ConstraintManager.UpdateParentConstraintTranslationOffset(parentConstraint, initParentConstraintOffset, initParentConstraintScale);
         }
 
         public virtual void CopyParameters(ParametersController sourceController)

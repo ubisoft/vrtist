@@ -81,9 +81,9 @@ namespace VRtist
         _BlenderDataRename,
         ClearAnimations,
         CurrentCamera,
-        ShotManagerMontageMode,
+        _ShotManagerMontageMode,
         ShotManagerContent,
-        ShotManagerCurrentShot,
+        _ShotManagerCurrentShot,
         ShotManagerAction,
         _BlenderDataCreate,
         _BlenderDataMedia,
@@ -536,12 +536,6 @@ namespace VRtist
             AddCommand(command);
         }
 
-        public void SendMontageMode(MontageModeInfo data)
-        {
-            NetCommand command = MixerUtils.BuildSendMontageMode(data.montage);
-            AddCommand(command);
-        }
-
         public void SendShotManagerAction(ShotManagerActionInfo info)
         {
             NetCommand command = MixerUtils.BuildSendShotManagerAction(info);
@@ -808,14 +802,8 @@ namespace VRtist
                             case MessageType.CurrentCamera:
                                 MixerUtils.BuildCurrentCamera(command.data);
                                 break;
-                            case MessageType.ShotManagerMontageMode:
-                                MixerUtils.BuildShotManagerMontageMode(command.data);
-                                break;
                             case MessageType.ShotManagerContent:
                                 MixerUtils.BuildShotManager(command.data);
-                                break;
-                            case MessageType.ShotManagerCurrentShot:
-                                MixerUtils.BuildShotManagerCurrentShot(command.data);
                                 break;
                             case MessageType.ShotManagerAction:
                                 MixerUtils.BuildShotManagerAction(command.data);
@@ -906,8 +894,6 @@ namespace VRtist
                     SendMoveKeyframe(data as MoveKeyInfo); break;
                 case MessageType.ClearAnimations:
                     SendClearAnimations(data as ClearAnimationInfo); break;
-                case MessageType.ShotManagerMontageMode:
-                    SendMontageMode(data as MontageModeInfo); break;
                 case MessageType.ShotManagerAction:
                     SendShotManagerAction(data as ShotManagerActionInfo); break;
                 case MessageType.BlenderBank:

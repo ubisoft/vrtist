@@ -38,8 +38,6 @@ namespace VRtist
         public abstract void CreateStroke(float[] points, int numPoints, int lineWidth, Vector3 offset, ref GPStroke subMesh);
         public abstract void CreateFill(float[] points, int numPoints, Vector3 offset, ref GPStroke subMesh);
         public abstract void BuildGreasePencilConnection(GameObject gobject, GreasePencilData gpdata);
-        public abstract void SetShotManagerCurrentShot(int shotIndex);
-        public abstract void EnableShotManagerMontage(bool enable);
         public abstract void UpdateShotManager(List<Shot> shots);
         public abstract void ShotManagerInsertShot(Shot shot, int shotIndex);
         public abstract void ShotManagerDeleteShot(int shotIndex);
