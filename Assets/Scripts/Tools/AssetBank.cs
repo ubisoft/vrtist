@@ -44,6 +44,9 @@ namespace VRtist
         private int selectedItem = -1;
         private bool loadingAsset = false;
 
+        private TaskCompletionSource<GameObject> blenderImportTask = null;
+        private string requestedBlenderImportName;
+
         private UIDynamicList uiList;
 
         void Start()
@@ -51,6 +54,7 @@ namespace VRtist
             Init();
 
             uiList = panel.GetComponentInChildren<UIDynamicList>();
+            uiList.focusItemOnAdd = false;
 
             // Create our storage for loaded objects
             bank = new GameObject("__VRtist_Asset_Bank__");
@@ -60,7 +64,14 @@ namespace VRtist
             AddBuiltinAssets();
 
             // Add user defined objects
-            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () => uiList.OnFirstPage()));
+            StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () =>
+            {
+                // Add Blender asset bank assets
+                GlobalState.blenderBankImportObjectEvent.AddListener(OnBlenderBankObjectImported);
+                GlobalState.blenderBankListEvent.AddListener(OnBlenderBank);
+                BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ListRequest };
+                MixerClient.GetInstance().SendBlenderBank(info);
+            }));
         }
 
         public void ScanAssetBank()
@@ -191,6 +202,28 @@ namespace VRtist
             AddAsset(filename, thumbnail, null, tags, importFunction: ImportObjectAsync);
         }
 
+        public void OnBlenderBank(List<string> names, List<string> tags, List<string> thumbnails)
+        {
+            // Load only once the whole asset bank data base from Blender
+            GlobalState.blenderBankListEvent.RemoveListener(OnBlenderBank);
+            StartCoroutine(AddBlenderAssets(names, tags, thumbnails));
+        }
+
+        public IEnumerator AddBlenderAssets(List<string> names, List<string> tags, List<string> thumbnails)
+        {
+            for (int i = 0; i < names.Count; i++)
+            {
+                AddBlenderAsset(names[i], tags[i], thumbnails[i]);
+                yield return null;
+            }
+        }
+
+        private void AddBlenderAsset(string name, string tags, string thumbnailPath)
+        {
+            GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(thumbnailPath, OnUIObjectEnter, OnUIObjectExit);
+            AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
+        }
+
         public AssetBankItem AddAsset(string name, GameObject thumbnail, GameObject original, string tags, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool skipInstantiation = false)
         {
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
@@ -257,9 +290,15 @@ namespace VRtist
                 Selection.ClearSelection();
                 item.original = await item.importFunction(item);
                 item.imported = true;
+
+                // For blender assets, we don't want to instantiate objects, we will receive them
                 if (!item.skipInstantiation)
                 {
                     InstantiateObject(item.original);
+                }
+                else
+                {
+                    item.original = null;
                 }
                 GlobalState.Instance.messageBox.SetVisible(false);
                 loadingAsset = false;
@@ -277,6 +316,26 @@ namespace VRtist
         private Task<GameObject> ImportObjectAsync(AssetBankItem item)
         {
             return GlobalState.GeometryImporter.ImportObjectAsync(item.assetName, bank.transform);
+        }
+
+        private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
+        {
+            requestedBlenderImportName = item.assetName;
+            blenderImportTask = new TaskCompletionSource<GameObject>();
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
+            MixerClient.GetInstance().SendBlenderBank(info);
+            return blenderImportTask.Task;
+        }
+
+        // Used for blender bank to know if a blender asset has been imported
+        private void OnBlenderBankObjectImported(string objectName, string niceName)
+        {
+            if (niceName == requestedBlenderImportName && null != blenderImportTask && !blenderImportTask.Task.IsCompleted)
+            {
+                GameObject instance = SyncData.nodes[objectName].instances[0].Item1;
+                blenderImportTask.TrySetResult(instance);
+                Selection.AddToSelection(instance);
+            }
         }
 
         private void InstantiateObject(GameObject gobject)

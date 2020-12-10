@@ -183,14 +183,16 @@ namespace VRtist
     // Blender Asset Bank
     public enum BlenderBankAction
     {
-        List,
-        Import
+        ListRequest,
+        ListResponse,
+        ImportRequest,
+        ImportResponse
     }
 
     public class BlenderBankInfo
     {
         public BlenderBankAction action;
-        public int index;
+        public string name;
     }
 
     // Animation

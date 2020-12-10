@@ -237,7 +237,7 @@ namespace VRtist
             }
             if (!File.Exists(path))
             {
-                Debug.LogWarning($"Invalid path: {path} does not exist");
+                Debug.LogWarning($"No such file: {path} does not exist");
                 return null;
             }
 
