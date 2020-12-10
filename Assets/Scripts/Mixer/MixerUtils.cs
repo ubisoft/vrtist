@@ -1764,7 +1764,7 @@ namespace VRtist
 
             switch (info.action)
             {
-                case BlenderBankAction.Import:
+                case BlenderBankAction.ImportRequest:
                     byte[] nameBuffer = StringToBytes(info.name);
                     List<byte[]> buffers = new List<byte[]> { actionBuffer, nameBuffer };
                     command = new NetCommand(ConcatenateBuffers(buffers), MessageType.BlenderBank);
@@ -1780,12 +1780,23 @@ namespace VRtist
         {
             int index = 0;
             BlenderBankAction action = (BlenderBankAction) GetInt(data, ref index);
-            if (action == BlenderBankAction.ListResponse)
+            switch (action)
             {
-                List<string> names = GetStrings(data, ref index);
-                List<string> tags = GetStrings(data, ref index);
-                List<string> thumbnails = GetStrings(data, ref index);
-                GlobalState.blenderBankEvent.Invoke(names, tags, thumbnails);
+                case BlenderBankAction.ListResponse:
+                    {
+                        List<string> names = GetStrings(data, ref index);
+                        List<string> tags = GetStrings(data, ref index);
+                        List<string> thumbnails = GetStrings(data, ref index);
+                        GlobalState.blenderBankListEvent.Invoke(names, tags, thumbnails);
+                    }
+                    break;
+                case BlenderBankAction.ImportResponse:
+                    {
+                        string objectName = GetString(data, ref index);
+                        string niceName = GetString(data, ref index);
+                        GlobalState.blenderBankImportObjectEvent.Invoke(objectName, niceName);
+                    }
+                    break;
             }
         }
 

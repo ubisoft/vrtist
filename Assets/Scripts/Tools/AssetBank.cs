@@ -67,8 +67,8 @@ namespace VRtist
             StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () =>
             {
                 // Add Blender asset bank assets
-                GlobalState.ObjectAddedEvent.AddListener(OnObjectAdded);
-                GlobalState.blenderBankEvent.AddListener(OnBlenderBank);
+                GlobalState.blenderBankImportObjectEvent.AddListener(OnBlenderBankObjectImported);
+                GlobalState.blenderBankListEvent.AddListener(OnBlenderBank);
                 BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ListRequest };
                 MixerClient.GetInstance().SendBlenderBank(info);
             }));
@@ -205,7 +205,7 @@ namespace VRtist
         public void OnBlenderBank(List<string> names, List<string> tags, List<string> thumbnails)
         {
             // Load only once the whole asset bank data base from Blender
-            GlobalState.blenderBankEvent.RemoveListener(OnBlenderBank);
+            GlobalState.blenderBankListEvent.RemoveListener(OnBlenderBank);
             StartCoroutine(AddBlenderAssets(names, tags, thumbnails));
         }
 
@@ -290,9 +290,15 @@ namespace VRtist
                 Selection.ClearSelection();
                 item.original = await item.importFunction(item);
                 item.imported = true;
+
+                // For blender assets, we don't want to instantiate objects, we will receive them
                 if (!item.skipInstantiation)
                 {
                     InstantiateObject(item.original);
+                }
+                else
+                {
+                    item.original = null;
                 }
                 GlobalState.Instance.messageBox.SetVisible(false);
                 loadingAsset = false;
@@ -316,18 +322,19 @@ namespace VRtist
         {
             requestedBlenderImportName = item.assetName;
             blenderImportTask = new TaskCompletionSource<GameObject>();
-            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.Import, name = item.assetName };
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
             MixerClient.GetInstance().SendBlenderBank(info);
             return blenderImportTask.Task;
         }
 
         // Used for blender bank to know if a blender asset has been imported
-        private void OnObjectAdded(GameObject gobject)
+        private void OnBlenderBankObjectImported(string objectName, string niceName)
         {
-            if (gobject.name == requestedBlenderImportName && null != blenderImportTask && !blenderImportTask.Task.IsCompleted)
+            if (niceName == requestedBlenderImportName && null != blenderImportTask && !blenderImportTask.Task.IsCompleted)
             {
-                blenderImportTask.TrySetResult(gobject);
-                Selection.AddToSelection(gobject);
+                GameObject instance = SyncData.nodes[objectName].instances[0].Item1;
+                blenderImportTask.TrySetResult(instance);
+                Selection.AddToSelection(instance);
             }
         }
 

@@ -185,7 +185,8 @@ namespace VRtist
     {
         ListRequest,
         ListResponse,
-        Import
+        ImportRequest,
+        ImportResponse
     }
 
     public class BlenderBankInfo
