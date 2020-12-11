@@ -172,7 +172,11 @@ namespace VRtist
             renderer.material = instanceMaterial;
 
             volume.AddComponent<MeshCollider>();
+            
             VolumeController volumeController = volume.AddComponent<VolumeController>();
+
+            //LineRenderer line = volume.AddComponent<LineRenderer>(); // for the bbox drawing
+            //line.material = Resources.Load<Material>("Materials/Ray");
 
             return volume;
         }

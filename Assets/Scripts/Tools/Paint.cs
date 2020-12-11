@@ -25,6 +25,9 @@ namespace VRtist
         GameObject convexCursor = null;
         GameObject volumeCursor = null;
 
+        UIButton volumeCreateButton;
+        UIButton volumeEditButton;
+
         // Paint tool
         Vector3 paintPrevPosition;
         GameObject currentPaintLine;
@@ -62,7 +65,8 @@ namespace VRtist
             else { paintLineRenderer.startWidth = 0.005f; paintLineRenderer.endWidth = 0.005f; }
 
             freeDraw = new FreeDraw();
-            
+            volumeGenerator = new VolumeMeshGenerator();
+
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
 
@@ -96,6 +100,14 @@ namespace VRtist
             ribbonButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.FlatPencil));
             hullButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.ConvexHull));
             volumeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Volume));
+
+            // Sub
+            volumeCreateButton = volumePanel.Find("ModeCreateButton").GetComponent<UIButton>(); // <---- Create is default.
+            volumeCreateButton.Checked = true;
+            volumeEditButton = volumePanel.Find("ModeEditButton").GetComponent<UIButton>();
+
+            volumeCreateButton.onReleaseEvent.AddListener(() => OnVolumeCreatePressed());
+            volumeEditButton.onReleaseEvent.AddListener(() => OnVolumeEditPressed());
         }
 
         private void ConfigureCursors()
@@ -125,6 +137,10 @@ namespace VRtist
 
         void OnSelectPanel(PaintTools tool)
         {
+            // If changing tool TO of FROM volume, reset the volume generator.
+            if (paintTool != tool && (paintTool == PaintTools.Volume || tool == PaintTools.Volume ))
+                ResetVolume();
+
             paintTool = tool;
 
             // CHECKED button
@@ -144,6 +160,21 @@ namespace VRtist
             flatCursor.SetActive(tool == PaintTools.FlatPencil);
             convexCursor.SetActive(tool == PaintTools.ConvexHull);
             volumeCursor.SetActive(tool == PaintTools.Volume);
+
+            // Sub-Elements (put in its own function?)
+            switch(tool)
+            {
+                case PaintTools.Volume:
+                {
+                    volumeCreateButton.Checked = true;
+                    volumeEditButton.Checked = false;
+                    // TODO: default values for sliders?
+                    // ...
+                }
+                break;
+
+                default: break;
+            }
         }
 
         protected override void DoUpdate()
@@ -152,7 +183,7 @@ namespace VRtist
             Quaternion rotation;
             VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
 
-            UpdateToolPaintPencil(position, rotation);
+            UpdateToolPaint(position, rotation);
         }
 
         private void TranslatePaintToItsCenter()
@@ -183,6 +214,37 @@ namespace VRtist
             mesh.RecalculateBounds();
         }
 
+        private void BeginPaint()
+        {
+            switch (paintTool)
+            {
+                case PaintTools.Pencil:
+                case PaintTools.FlatPencil:
+                case PaintTools.ConvexHull:
+                    // Create an empty game object with a mesh
+                    currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
+                    ++paintId;
+                    freeDraw = new FreeDraw();
+                    freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
+                    break;
+
+                case PaintTools.Volume:
+                    if (volumeEditionMode == VolumeEditionMode.Create)
+                    {
+                        currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
+                        currentVolume.transform.position = mouthpiece.position; // real-world position
+                        volumeGenerator.Reset();
+                        volumeGenerator.stepSize = stepSize;
+                        volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
+                    }
+                    else // volumeEditionMode == VolumeEditionMode.Edit
+                    {
+                        // nothing to do I guess.
+                    }
+                    break;
+            }
+        }
+
         private void EndCurrentPaint()
         {
             switch (paintTool)
@@ -209,45 +271,34 @@ namespace VRtist
                     {
                         if (currentVolume != null)
                         {
-                            VolumeController controller = currentVolume.GetComponent<VolumeController>();
-                            controller.origin = volumeGenerator.origin;
-                            controller.bounds = volumeGenerator.bounds;
-                            controller.field = volumeGenerator.field;
-                            controller.resolution = volumeGenerator.resolution;
-                            controller.stepSize = volumeGenerator.stepSize;
-                            new CommandAddGameObject(currentVolume).Submit();
-                            currentVolume = null;
+                            if (volumeEditionMode == VolumeEditionMode.Create)
+                            {
+                                VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                                controller.color = GlobalState.CurrentColor;
+                                controller.origin = volumeGenerator.origin;
+                                controller.bounds = volumeGenerator.bounds;
+                                controller.field = volumeGenerator.field;
+                                controller.resolution = volumeGenerator.resolution;
+                                controller.stepSize = volumeGenerator.stepSize;
+                                new CommandAddGameObject(currentVolume).Submit();
+                                currentVolume = null;
+                            }
+                            else // EDIT
+                            {
+                                // TODO: send an update mesh command. Which is it???
+                            }
                         }
                     }
                     break;
             }
         }
 
-        private void UpdateToolPaintPencil(Vector3 position, Quaternion rotation)//, bool flat)
+        private void UpdateToolPaint(Vector3 position, Quaternion rotation)
         {
-            // Activate a new paint            
+            // ON TRIGGER
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
             {
-                switch (paintTool)
-                {
-                    case PaintTools.Pencil:
-                    case PaintTools.FlatPencil:
-                    case PaintTools.ConvexHull:
-                        // Create an empty game object with a mesh
-                        currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
-                        ++paintId;
-                        freeDraw = new FreeDraw();
-                        freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
-                        break;
-
-                    case PaintTools.Volume:
-                        currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
-                        currentVolume.transform.position = mouthpiece.position; // real-world position
-                        volumeGenerator = new VolumeMeshGenerator(); // TODO: pass in the accuracy/stepSize
-                        volumeGenerator.stepSize = stepSize;
-                        volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
-                        break;
-                }
+                BeginPaint();
 
                 paintPrevPosition = Vector3.zero;
                 undoGroup = new CommandGroup("Paint");
@@ -289,6 +340,7 @@ namespace VRtist
             if (paintOnSurface)
             {
                 paintLineRenderer.enabled = true;
+                paintLineRenderer.positionCount = 2;
                 paintLineRenderer.SetPosition(0, transform.position);
                 paintLineRenderer.SetPosition(1, transform.position + transform.forward * 10f);
                 RaycastHit hitInfo;
@@ -298,6 +350,38 @@ namespace VRtist
                 {
                     penPosition = hitInfo.point - 0.001f * direction;
                     paintLineRenderer.SetPosition(1, penPosition);
+                }
+            }
+            else if (paintTool == PaintTools.Volume)
+            {
+                if (currentVolume)
+                {
+                    VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                    if (null != controller)
+                    {
+                        paintLineRenderer.enabled = true;
+
+                        Vector3 C = controller.bounds.center;
+                        Vector3 E = controller.bounds.extents;
+
+                        Vector3 tlf = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, -E.z));
+                        Vector3 trf = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, -E.z));
+                        Vector3 blf = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, -E.z));
+                        Vector3 brf = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, -E.z));
+                        Vector3 tlb = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, E.z));
+                        Vector3 trb = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, E.z));
+                        Vector3 blb = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, E.z));
+                        Vector3 brb = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, E.z));
+
+                        paintLineRenderer.positionCount = 16;
+                        paintLineRenderer.SetPositions(new Vector3[] {
+                            blf, tlf, brf, trf, brb, trb, blb,
+                            blf, brf, brb, blb,
+                            tlb, tlf, trf, trb, tlb
+                        });
+                        paintLineRenderer.startWidth = 0.001f;
+                        paintLineRenderer.endWidth = 0.001f;
+                    }
                 }
             }
 
@@ -337,6 +421,7 @@ namespace VRtist
                         }
 
                     case PaintTools.Volume:
+                        if (null != currentVolume)
                         {
                             MeshFilter meshFilter = currentVolume.GetComponent<MeshFilter>();
                             Mesh mesh = meshFilter.mesh;
@@ -361,12 +446,42 @@ namespace VRtist
                             controller.field = volumeGenerator.field;
                             controller.resolution = volumeGenerator.resolution;
                             controller.stepSize = volumeGenerator.stepSize;
-                            break;
+                            controller.UpdateBoundsRenderer();
                         }
+                        break;
                 }
             }
 
             paintPrevPosition = position;
+        }
+
+        private void ResetVolume()
+        {
+            // TODO: put an end to any EDIT that could still be happening (send command).
+            // ...
+
+            volumeGenerator.Reset();
+        }
+
+        private void InitVolumeFromSelection()
+        {
+            GameObject selected = Selection.GetFirstSelectedObject();
+            if (null != selected)
+            {
+                VolumeController controller = selected.GetComponent<VolumeController>();
+                if (null != controller)
+                {
+                    currentVolume = selected;
+                    volumeGenerator.InitFromController(controller);
+
+                    GlobalState.CurrentColor = controller.color;
+
+                    return;
+                }
+            }
+
+            ResetVolume();
+            currentVolume = null;
         }
 
         public void OnPaintColor(Color color)
@@ -382,13 +497,21 @@ namespace VRtist
         public void OnVolumeCreatePressed()
         {
             volumeEditionMode = VolumeEditionMode.Create;
-            // TODO: reload something, recreate the generator or configure it.
+
+            volumeCreateButton.Checked = true;
+            volumeEditButton.Checked = false;
+
+            ResetVolume();
         }
 
         public void OnVolumeEditPressed()
         {
             volumeEditionMode = VolumeEditionMode.Edit;
-            // TODO: reload something, recreate the generator or configure it.
+
+            volumeCreateButton.Checked = false;
+            volumeEditButton.Checked = true;
+
+            InitVolumeFromSelection();
         }
 
         public void OnVolumeStrengthChanged(float value)

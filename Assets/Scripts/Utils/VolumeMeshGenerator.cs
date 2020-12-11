@@ -57,25 +57,41 @@ namespace VRtist
 
         public VolumeMeshGenerator()
         {
+            computeShader = Resources.Load<ComputeShader>("Compute/MarchingCubes");
+
             Reset();
+
             toLocalMatrix = Matrix4x4.identity;
         }
 
         public void Reset()
         {
-            computeShader = Resources.Load<ComputeShader>("Compute/MarchingCubes");
-
             origin = Vector3.zero;
             resolution = Vector3Int.zero;
             bounds.center = Vector3.zero;
             bounds.extents = Vector3.zero;
 
-            //System.Array.Resize(ref field, 0);
+            field = null; // force garbage collection?
             field = new float[0, 0, 0];
 
             System.Array.Resize(ref vertices, 0);
             System.Array.Resize(ref normals, 0);
             System.Array.Resize(ref triangles, 0);
+
+            ReleaseComputeBuffers();
+        }
+
+        public void InitFromController(VolumeController controller)
+        {
+            // NOTE: is it useful to have data in Generator. Couldnt we have a controller reference?
+
+            origin = controller.origin;
+            resolution = controller.resolution;
+            bounds = controller.bounds;
+            field = controller.field;
+            stepSize = controller.stepSize;
+
+            ComputeIsosurface();
         }
 
         // + fallof curve
@@ -243,7 +259,7 @@ namespace VRtist
             }
         }
 
-        private void CreateBuffers()
+        private void CreateComputeBuffers()
         {
             int numPoints = resolution.x * resolution.y * resolution.z;
             int numVoxels = (resolution.x - 1) * (resolution.y - 1) * (resolution.z - 1);
@@ -255,7 +271,7 @@ namespace VRtist
             {
                 if (Application.isPlaying)
                 {
-                    ReleaseBuffers();
+                    ReleaseComputeBuffers();
                 }
                 triangleBuffer = new ComputeBuffer(maxTriangleCount, sizeof(float) * 3 * 3, ComputeBufferType.Append);
                 //pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
@@ -264,14 +280,17 @@ namespace VRtist
             }
         }
 
-        private void ReleaseBuffers()
+        private void ReleaseComputeBuffers()
         {
             if (triangleBuffer != null)
             {
                 triangleBuffer.Release();
                 fieldBuffer.Release();
-                //pointsBuffer.Release();
                 triCountBuffer.Release();
+
+                triangleBuffer = null;
+                fieldBuffer = null;
+                triCountBuffer = null;
             }
         }
 
@@ -286,7 +305,7 @@ namespace VRtist
 
             const int threadGroupSize = 8;
 
-            CreateBuffers();
+            CreateComputeBuffers(); // or re-create if need be.
 
             Vector3Int numVoxelsPerAxis = new Vector3Int(resolution.x - 1, resolution.y - 1, resolution.z - 1);
             Vector3Int numThreadsPerAxis = new Vector3Int(
@@ -344,7 +363,7 @@ namespace VRtist
             // Release buffers immediately in editor
             if (!Application.isPlaying)
             {
-                ReleaseBuffers();
+                ReleaseComputeBuffers();
             }
         }
     }
