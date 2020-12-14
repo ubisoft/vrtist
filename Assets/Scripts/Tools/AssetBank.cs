@@ -48,6 +48,7 @@ namespace VRtist
         private string requestedBlenderImportName;
 
         private UIDynamicList uiList;
+        private UILabel filterLabel;
 
         void Start()
         {
@@ -55,6 +56,8 @@ namespace VRtist
 
             uiList = panel.GetComponentInChildren<UIDynamicList>();
             uiList.focusItemOnAdd = false;
+
+            filterLabel = panel.Find("ListPanel/FilterLabel").GetComponent<UILabel>();
 
             // Create our storage for loaded objects
             bank = new GameObject("__VRtist_Asset_Bank__");
@@ -72,6 +75,23 @@ namespace VRtist
                 BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ListRequest };
                 MixerClient.GetInstance().SendBlenderBank(info);
             }));
+        }
+
+        public void OnEditFilter()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(OnValidateFilter, panel, uiList.GetFilter());
+        }
+
+        private void OnValidateFilter(string value)
+        {
+            filterLabel.Text = value;
+            uiList.OnFilterList(value);
+        }
+
+        public void OnClearFilter()
+        {
+            filterLabel.Text = "";
+            uiList.OnFilterList(null);
         }
 
         public void ScanAssetBank()
@@ -238,6 +258,7 @@ namespace VRtist
             AssetBankItem item = root.AddComponent<AssetBankItem>();
             item.uid = uid;
             item.assetName = name;
+            item.gameObject.name = name;
             item.thumbnail = thumbnail;
             item.original = original;
             item.thumbnail.transform.parent = root.transform;

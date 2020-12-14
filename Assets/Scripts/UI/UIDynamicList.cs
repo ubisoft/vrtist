@@ -41,6 +41,8 @@ namespace VRtist
         [SerializeField] private int pagesCount = 0;
         [SerializeField] private int currentPage = 0;
 
+        private string filter = null;
+
         private int currentIndex = -1;
         public int CurrentIndex
         {
@@ -203,6 +205,18 @@ namespace VRtist
             }
         }
 
+        public string GetFilter()
+        {
+            return filter;
+        }
+
+        public void OnFilterList(string filter)
+        {
+            this.filter = null != filter ? filter.ToLower() : null;
+            currentPage = 0;
+            NeedsRebuild = true;
+        }
+
         public void OnNextPage()
         {
             currentPage = (pagesCount != 0) ? (currentPage + 1) % pagesCount : 0;
@@ -269,9 +283,38 @@ namespace VRtist
             }
         }
 
+        private bool MatchFilter(UIDynamicListItem item)
+        {
+            string name = item.Content.name.ToLower();
+            return name.Contains(filter);
+        }
+
         // reposition every item depending on the itemWidth/Height, width/height, margin, and current page.
         private void UpdateItemPositions()
         {
+            // Filter items
+            List<UIDynamicListItem> filteredItems;
+            if (null != filter && filter.Length > 0)
+            {
+                filteredItems = new List<UIDynamicListItem>();
+                foreach (var item in items)
+                {
+                    if (MatchFilter(item))
+                    {
+                        filteredItems.Add(item);
+                    }
+                    else
+                    {
+                        // Be sure to hide items that don't match the filter
+                        item.gameObject.SetActive(false);
+                    }
+                }
+            }
+            else
+            {
+                filteredItems = items;
+            }
+
             //
             // Update items layout variables
             //
@@ -287,9 +330,9 @@ namespace VRtist
             itemHMargin = maxNbItemCols > 1 ? ((innerTotalWidth - ((float) maxNbItemCols * itemWidth)) / (maxNbItemCols - 1)) : 0.0f;
             nbItemsPerPage = maxNbItemCols * maxNbItemRows;
 
-            pagesCount = ((items.Count > 0) && (nbItemsPerPage > 0)) ? (items.Count - 1) / nbItemsPerPage + 1 : 0;
+            pagesCount = ((filteredItems.Count > 0) && (nbItemsPerPage > 0)) ? (filteredItems.Count - 1) / nbItemsPerPage + 1 : 0;
 
-            nbItemsInLastPage = pagesCount == 0 ? 0 : Math.Min(items.Count - nbItemsPerPage * (pagesCount - 1), nbItemsPerPage);
+            nbItemsInLastPage = pagesCount == 0 ? 0 : Math.Min(filteredItems.Count - nbItemsPerPage * (pagesCount - 1), nbItemsPerPage);
 
             float itemWidth2 = (float) itemWidth / 2.0f;
             float itemHeight2 = (float) itemHeight / 2.0f;
@@ -297,9 +340,9 @@ namespace VRtist
             //
             // Update items visibility, position, scale and collider.
             //
-            for (int i = 0; i < items.Count; ++i)
+            for (int i = 0; i < filteredItems.Count; ++i)
             {
-                UIDynamicListItem item = items[i];
+                UIDynamicListItem item = filteredItems[i];
                 if (nbItemsPerPage > 0)
                 {
                     bool isInCurrentPage = ((i / nbItemsPerPage) == currentPage);
