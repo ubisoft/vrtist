@@ -172,7 +172,11 @@ namespace VRtist
             renderer.material = instanceMaterial;
 
             volume.AddComponent<MeshCollider>();
+            
             VolumeController volumeController = volume.AddComponent<VolumeController>();
+
+            //LineRenderer line = volume.AddComponent<LineRenderer>(); // for the bbox drawing
+            //line.material = Resources.Load<Material>("Materials/Ray");
 
             return volume;
         }
@@ -237,7 +241,7 @@ namespace VRtist
             }
             if (!File.Exists(path))
             {
-                Debug.LogWarning($"Invalid path: {path} does not exist");
+                Debug.LogWarning($"No such file: {path} does not exist");
                 return null;
             }
 

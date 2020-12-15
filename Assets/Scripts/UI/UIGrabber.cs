@@ -13,9 +13,6 @@ namespace VRtist
         public bool rotateOnHover = true;
         public GameObject prefab;
 
-        bool lazyLoaded = false;
-        string lazyImagePath = null;
-
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public GameObjectHashChangedEvent onEnterUI3DObject = new GameObjectHashChangedEvent();
         public GameObjectHashChangedEvent onExitUI3DObject = new GameObjectHashChangedEvent();
@@ -27,6 +24,9 @@ namespace VRtist
         private static GameObject imageThumbnailPrefab;
 
         private static Quaternion thumbnailRotation = Quaternion.Euler(25f, -35f, 0f);
+
+        private string lazyImagePath = null;
+        private bool lazyLoaded = false;
 
         void Start()
         {
@@ -48,22 +48,19 @@ namespace VRtist
             }
         }
 
-        private void OnEnable()
-        {
-            if (!lazyLoaded && null != lazyImagePath)
-            {
-                Sprite sprite = Utils.LoadSprite(lazyImagePath);
-                if (null != sprite)
-                {
-                    transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
-                    lazyLoaded = true;
-                }
-            }
-        }
-
         private void OnValidate()
         {
             NeedsRebuild = true;
+        }
+
+        private void OnEnable()
+        {
+            // Load lazy thumbnail
+            if (null != lazyImagePath && !lazyLoaded)
+            {
+                LoadThumbnail(lazyImagePath);
+                lazyLoaded = true;
+            }
         }
 
         private void Update()
@@ -136,14 +133,20 @@ namespace VRtist
         {
             LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
-            UIGrabber uiGrabber = thumbnail.AddComponent<UIGrabber>();
+            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            uiGrabber.lazyImagePath = path;
             uiGrabber.uid = thumbnail.GetHashCode();
             uiGrabber.rotateOnHover = false;
-            uiGrabber.lazyImagePath = path;
-            uiGrabber.lazyLoaded = false;
             uiGrabber.onEnterUI3DObject.AddListener(onEnter);
             uiGrabber.onExitUI3DObject.AddListener(onExit);
             return thumbnail;
+        }
+
+        private void LoadThumbnail(string path)
+        {
+            Sprite sprite = Utils.LoadSprite(path);
+            if (null == sprite) { sprite = UIUtils.LoadIcon("warning"); }
+            transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
         }
 
         public static GameObject Create3DThumbnail(GameObject thumbnail, UnityAction<int> onEnter, UnityAction<int> onExit)
