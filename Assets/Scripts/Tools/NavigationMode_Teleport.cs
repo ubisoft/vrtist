@@ -45,6 +45,7 @@ namespace VRtist
     {
         private TeleportUI teleport = null;
         private LineRenderer teleportRay = null;
+        private float rayWidth = 0.003f;
         private Transform teleportTargetObject;
 
         private const float deadZone = 0.5f;
@@ -73,8 +74,11 @@ namespace VRtist
 
             usedControls = UsedControls.LEFT_JOYSTICK;
 
-            Transform drone = parameters.Find("Teleport");
-            drone.gameObject.SetActive(true);
+            Transform teleportParameters = parameters.Find("Teleport");
+            teleportParameters.gameObject.SetActive(true);
+
+            UICheckbox lockHeight = teleportParameters.Find("LockHeight").GetComponent<UICheckbox>();
+            lockHeight.Checked = options.lockHeight;
         }
 
         public override void DeInit()
@@ -129,6 +133,8 @@ namespace VRtist
                     teleportRay.SetPositions(points.ToArray());
                     teleportTargetObject.position = teleportTarget + new Vector3(0f, 0.01f, 0f);
                     teleportTargetObject.rotation = Quaternion.Euler(0.0f, cameraYAngle + joyAngle, 0.0f);
+                    teleportRay.startWidth = rayWidth / GlobalState.WorldScale;
+                    teleportRay.endWidth = rayWidth / GlobalState.WorldScale;
                 }
                 else // GO OUT of teleport mode, and TELEPORT
                 {
@@ -136,23 +142,27 @@ namespace VRtist
 
                     if (isValidLocationHit)
                     {
-                        float height = rig.position.y;
+                        float cameraHeight = camera.position.y;
+                        Vector3 cameraToRig = rig.position;
+                        cameraToRig = camera.InverseTransformPoint(cameraToRig);
 
                         Vector3 cameraForwardProj = new Vector3(camera.forward.x, 0.0f, camera.forward.z).normalized;
                         float YAngleDelta = Vector3.SignedAngle(cameraForwardProj, teleportTargetObject.forward, Vector3.up);
                         Quaternion deltaRotation = Quaternion.Euler(0.0f, YAngleDelta, 0.0f);
                         rig.rotation = rig.rotation * deltaRotation;
-                        
+
+                        /* place camera above target
                         Vector3 camera_to_rig = rig.transform.position - camera.transform.position;
-                        Vector3 new_camera_to_target = new Vector3(0.0f, teleportTarget.y - camera.transform.position.y, 0.0f); // place camera above target
+                        Vector3 new_camera_to_target = new Vector3(0.0f, teleportTarget.y - camera.transform.position.y, 0.0f); 
                         Vector3 deltaPosition = camera_to_rig - new_camera_to_target;
+                        */
                         rig.position = teleportTarget;
                         
                         rig.localScale = Vector3.one;
 
                         if (options.lockHeight)
-                        {
-                            rig.position = new Vector3(rig.position.x, height, rig.position.z);
+                        {                            
+                            rig.position = new Vector3(rig.position.x, cameraHeight + cameraToRig.y, rig.position.z);
                         }
 
                         GlobalState.WorldScale = 1f;

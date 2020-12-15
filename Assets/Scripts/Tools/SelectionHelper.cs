@@ -22,6 +22,8 @@ namespace VRtist
         private GameObject selectionLinkPrefab;
         private Collider controllerCollider;
 
+        float outOfFrustumLineWidth = 0.001f;
+
         void Start()
         {
             frustumPlanes = new Plane[6];
@@ -103,6 +105,8 @@ namespace VRtist
                     lineRenderer.positionCount = 2;
                     lineRenderer.SetPosition(0, transform.position);
                     lineRenderer.SetPosition(1, gobj.transform.position);
+                    lineRenderer.startWidth = outOfFrustumLineWidth / GlobalState.WorldScale;
+                    lineRenderer.endWidth = outOfFrustumLineWidth / GlobalState.WorldScale;
                     selectionLink.SetActive(true);
                 }
             }
