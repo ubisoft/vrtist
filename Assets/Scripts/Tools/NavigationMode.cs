@@ -76,17 +76,10 @@ namespace VRtist
         // Common Utils
         //
         protected void UpdateCameraClipPlanes()
-        {
-            if(useScaleFactor)
-            {
-                Camera.main.nearClipPlane = nearPlaneFactor * world.localScale.x; // 0.1f
-                Camera.main.farClipPlane = farPlaneFactor * world.localScale.x; // 5000.0f
-            }
-            else
-            {
-                Camera.main.nearClipPlane = nearPlane;
-                Camera.main.farClipPlane = farPlane;
-            }
+        {            
+            float scale = 1f / GlobalState.WorldScale;
+            Camera.main.nearClipPlane = nearPlane * scale;
+            Camera.main.farClipPlane = farPlane * scale;
         }
 
         protected void SetLeftControllerVisibility(ControllerVisibility visibility)

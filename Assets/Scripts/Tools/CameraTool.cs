@@ -522,7 +522,8 @@ namespace VRtist
                 if (feedbackPositioning
                     && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
                 {
-                    GlobalState.Instance.cameraPreviewDirection = transform.forward;
+                    Transform rig = transform.parent.parent.parent.parent;
+                    GlobalState.Instance.cameraPreviewDirection = rig.InverseTransformDirection(transform.forward);
                     trigger = true;
                 }
                 if (trigger)
@@ -645,7 +646,7 @@ namespace VRtist
 
                 // update the focusDistance of the volume if the worldScale change.
                 if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                dof.focusDistance.value = focus * GlobalState.WorldScale;
+                dof.focusDistance.value = focus /** GlobalState.WorldScale*/;
                 dof.active = enableDepthOfField; // TODO: use the flag in the cameracontroller when we add it.
 
                 // Use only the first camera.
@@ -702,7 +703,7 @@ namespace VRtist
             // No need to foreach all cameras and pick first one.
 
             if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-            dof.focusDistance.value = focus * GlobalState.WorldScale;
+            dof.focusDistance.value = focus;
             dof.active = enableDepthOfField;
         }
 

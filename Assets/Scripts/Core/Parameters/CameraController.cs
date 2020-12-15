@@ -256,9 +256,8 @@ namespace VRtist
                 if (gameObject.name != nameLabel.Text)
                     nameLabel.Text = gameObject.name;
 
-                float scale = GlobalState.WorldScale;
-                cameraObject.farClipPlane = far * scale;
-                cameraObject.nearClipPlane = near * scale;
+                cameraObject.farClipPlane = far;
+                cameraObject.nearClipPlane = near;
                 cameraObject.focalLength = focal;
                 if (enableDOF)
                 {

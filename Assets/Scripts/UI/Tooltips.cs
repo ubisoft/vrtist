@@ -122,17 +122,16 @@ namespace VRtist
                     framePosition.x *= -1f;
                 }
 
-                // Set the line renderer positions
-                LineRenderer line = tooltip.GetComponent<LineRenderer>();
-                if (hasLine)
-                {
-                    line.SetPosition(0, Vector3.zero);
-                    line.SetPosition(1, linePosition);
-                }
-                else
-                {
-                    line.enabled = false;
-                }
+                
+                FreeDraw freeDraw = new FreeDraw();
+                freeDraw.AddControlPoint(Vector3.zero, 0.00025f);
+                freeDraw.AddControlPoint(linePosition, 0.00025f);
+                MeshFilter meshFilter = tooltip.AddComponent<MeshFilter>();
+                Mesh mesh = meshFilter.mesh;
+                mesh.Clear();
+                mesh.vertices = freeDraw.vertices;
+                mesh.normals = freeDraw.normals;
+                mesh.triangles = freeDraw.triangles;
 
                 // Set the frame position
                 frame.localPosition = framePosition;

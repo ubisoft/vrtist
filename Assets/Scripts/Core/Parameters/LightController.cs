@@ -125,13 +125,10 @@ namespace VRtist
             if (null == world)
                 GetWorldTransform();
 
-
-            float scale = GlobalState.WorldScale;
-            if (lightObject.type == LightType.Directional)
-                scale = 1f;            
-            lightObject.intensity = (scale * scale * intensity);
-            lightObject.range = scale * range;
-            lightObject.shadowNearPlane = scale * near;
+         
+            lightObject.intensity = intensity;
+            lightObject.range = range;
+            lightObject.shadowNearPlane = near;
             lightObject.color = color;
             LightShadows shadows = GlobalState.Settings.castShadows && castShadows ? LightShadows.Soft : LightShadows.None;
             if (shadows != lightObject.shadows)
@@ -146,9 +143,6 @@ namespace VRtist
             {
                 lightObject.intensity *= 0.05f;
             }
-            // avoid flicking
-            float invWorldScale = 1f / GlobalState.WorldScale;
-            lightObject.transform.localScale = new Vector3(invWorldScale, invWorldScale, invWorldScale);
         }
     }
 

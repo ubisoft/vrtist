@@ -115,10 +115,12 @@ namespace VRtist
                         isValidLocationHit = true;
                         teleportTarget = hitInfo.point;
                         teleport.SetActiveColor();
+                        teleportTargetObject.gameObject.SetActive(true);
                     }
                     else
                     {
                         teleport.SetImpossibleColor();
+                        teleportTargetObject.gameObject.SetActive(false);
                     }
 
                     float cameraYAngle = Camera.main.transform.rotation.eulerAngles.y;
@@ -134,6 +136,8 @@ namespace VRtist
 
                     if (isValidLocationHit)
                     {
+                        float height = rig.position.y;
+
                         Vector3 cameraForwardProj = new Vector3(camera.forward.x, 0.0f, camera.forward.z).normalized;
                         float YAngleDelta = Vector3.SignedAngle(cameraForwardProj, teleportTargetObject.forward, Vector3.up);
                         Quaternion deltaRotation = Quaternion.Euler(0.0f, YAngleDelta, 0.0f);
@@ -143,8 +147,16 @@ namespace VRtist
                         Vector3 new_camera_to_target = new Vector3(0.0f, teleportTarget.y - camera.transform.position.y, 0.0f); // place camera above target
                         Vector3 deltaPosition = camera_to_rig - new_camera_to_target;
                         rig.position = teleportTarget;
+                        
+                        rig.localScale = Vector3.one;
+
                         if (options.lockHeight)
-                            rig.position += deltaPosition;
+                        {
+                            rig.position = new Vector3(rig.position.x, height, rig.position.z);
+                        }
+
+                        GlobalState.WorldScale = 1f;
+                        UpdateCameraClipPlanes();
 
                         isValidLocationHit = false;
                     }
@@ -186,27 +198,22 @@ namespace VRtist
 
             var aimPosition = startRay.origin;
             var aimDirection = startRay.direction * tParams.aimVelocity;
-            var rangeSquared = tParams.range * tParams.range;
+            var rangeSquared = tParams.range * tParams.range / GlobalState.WorldScale;
             bool hit;
+            float step = tParams.aimStep;
 
+            int layerMask = ~(1 << 5);
             do
             {
                 Vector3 oldAimPosition = aimPosition;
                 points.Add(aimPosition);
 
                 var aimVector = aimDirection;
-                aimVector.y = aimVector.y + tParams.gravity * 0.0111111111f * tParams.aimStep;
+                aimVector.y = aimVector.y + tParams.gravity * 0.0111111111f * step;
                 aimDirection = aimVector;
-                aimPosition += aimVector * tParams.aimStep;
-
-
-                //int uiLayerMask = LayerMask.NameToLayer("UI");
-                //int layerMask = ~0 & ~uiLayerMask;
-
-                //int layersMask = LayerMask.GetMask(new string[] { "Default" });
-                int layerMask = ~(1 << 5);
+                aimPosition += aimVector * step;
                 hit = Physics.Raycast(oldAimPosition, (aimPosition - oldAimPosition).normalized, out hitInfo, (aimPosition - oldAimPosition).magnitude, layerMask);
-            } while (!hit && (aimPosition.y - startRay.origin.y > tParams.minimumElevation) && ((startRay.origin - aimPosition).sqrMagnitude <= rangeSquared));
+            } while (!hit && (aimPosition.y - startRay.origin.y > tParams.minimumElevation / GlobalState.WorldScale) && ((startRay.origin - aimPosition).sqrMagnitude <= rangeSquared));
 
             return hit;
         }

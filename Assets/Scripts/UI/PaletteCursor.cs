@@ -120,7 +120,8 @@ namespace VRtist
             RaycastHit hitInfo;
             int allLayersMask = -1; // ~0
 
-            if(!Physics.Raycast(r, out hitInfo, 3.0f, allLayersMask, QueryTriggerInteraction.Collide))
+            float scale = 1f / GlobalState.WorldScale;
+            if(!Physics.Raycast(r, out hitInfo, 3.0f * scale, allLayersMask, QueryTriggerInteraction.Collide))
             {
                 // Nothing hit
                 HandleHoverPhysicObject(null);
@@ -158,7 +159,7 @@ namespace VRtist
             RaycastHit[] hits;
             //int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI", "Default" });
             int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI" });
-            hits = Physics.RaycastAll(r, 3.0f, layersMask, QueryTriggerInteraction.Collide);
+            hits = Physics.RaycastAll(r, 3.0f * scale, layersMask, QueryTriggerInteraction.Collide);
             if (hits.Length > 0)
             {
                 if (!UIElement.UIEnabled.Value)

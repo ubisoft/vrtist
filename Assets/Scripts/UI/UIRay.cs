@@ -114,8 +114,9 @@ namespace VRtist
                     line.SetPosition(i, pos);
                 }
 
-                line.startWidth = startWidth / f;
-                line.endWidth = endWidth / f;
+                float scale = 1f / GlobalState.WorldScale;
+                line.startWidth = startWidth / f * scale;
+                line.endWidth = endWidth / f * scale;
             }
 
             if (endPoint != null)

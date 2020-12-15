@@ -14,13 +14,15 @@ namespace VRtist
         private bool rotating = false;
 
         private Matrix4x4 initLeftControllerMatrix_WtoL;
-        private Matrix4x4 initWorldMatrix_W;
+        private Matrix4x4 initRigMatrix_W;
 
         private float scale;
         private bool isLeftGripped = false;
 
         private const float deadZone = 0.3f;
         private const float fixedScaleFactor = 1.05f; // for grip world scale
+
+        Matrix4x4 initPivotMatrix;
 
         public NavigationMode_Fly(float speed, float minScale, float maxScale)
         {
@@ -99,10 +101,6 @@ namespace VRtist
                     scale *= fixedScaleFactor;
                 if (joystickAxis.y < -deadZone)
                     scale /= fixedScaleFactor;
-
-                GlobalState.WorldScale = scale;
-
-                // TODO: draw scale factor.
                 
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
@@ -110,19 +108,21 @@ namespace VRtist
                 VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
                 Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
 
-                Matrix4x4 currentLeftControllerMatrix_W_Delta = pivot.localToWorldMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
-                Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initWorldMatrix_W;
+                Matrix4x4 currentLeftControllerMatrix_W_Delta = initPivotMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
+                Matrix4x4 transformed = currentLeftControllerMatrix_W_Delta * initRigMatrix_W;
 
-                world.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
-                world.localRotation = transformed.rotation;
+                transformed = transformed.inverse;
+
+                rig.localPosition = new Vector3(transformed.GetColumn(3).x, transformed.GetColumn(3).y, transformed.GetColumn(3).z);
+                rig.localRotation = transformed.rotation;
                 float clampedScale = Mathf.Clamp(transformed.lossyScale.x, 1.0f / maxPlayerScale, minPlayerScale);
-                world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
+                rig.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
                 if (transformed.lossyScale.x != clampedScale)
                 {
                     scale = prevScale;
                 }
 
-                GlobalState.WorldScale = world.localScale.x;
+                GlobalState.WorldScale = 1f / rig.localScale.x;
 
                 UpdateCameraClipPlanes();
             }
@@ -134,12 +134,13 @@ namespace VRtist
             Quaternion initLeftControllerRotation_L;
             VRInput.GetControllerTransform(VRInput.leftController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
             Matrix4x4 initLeftControllerMatrix_L = Matrix4x4.TRS(initLeftControllerPosition_L, initLeftControllerRotation_L, Vector3.one);
-            initLeftControllerMatrix_WtoL = (pivot.localToWorldMatrix * initLeftControllerMatrix_L).inverse;
+            initPivotMatrix = Matrix4x4.TRS(pivot.localPosition, pivot.localRotation, pivot.localScale);
+            initLeftControllerMatrix_WtoL = (initPivotMatrix * initLeftControllerMatrix_L).inverse;
         }
 
         private void ResetInitWorldMatrix()
         {
-            initWorldMatrix_W = world.localToWorldMatrix;
+            initRigMatrix_W = rig.worldToLocalMatrix;
             scale = 1f;
             GlobalState.WorldScale = scale;
         }

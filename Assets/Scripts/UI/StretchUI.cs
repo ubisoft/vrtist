@@ -100,6 +100,9 @@ namespace VRtist
                     line.SetPosition(0, Vector3.Lerp(left, right, m));
                     line.SetPosition(1, Vector3.Lerp(left, right, 1.0f - m));
                 }
+
+                line.startWidth = lineWidth * scale;
+                line.endWidth = lineWidth * scale;
             }
 
             //
@@ -110,6 +113,7 @@ namespace VRtist
             if (canvas != null)
             {
                 RectTransform canvasRT = canvas.gameObject.GetComponent<RectTransform>();
+                canvasRT.localScale = Vector3.one * scale;
                 Vector3 middlePoint = Vector3.Lerp(left, right, 0.5f);
                 canvasRT.localPosition = middlePoint;
                 canvasRT.rotation = rotation * Quaternion.Euler(localRotation);

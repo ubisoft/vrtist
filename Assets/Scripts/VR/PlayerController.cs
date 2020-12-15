@@ -36,9 +36,6 @@ namespace VRtist
 
         private const float deadZone = 0.3f; // for palette pop
 
-        private Vector3 initCameraPosition; // for reset
-        private Quaternion initCameraRotation; // for reset
-
         private GameObject tooltipPalette = null;
         private GameObject tooltipUndo = null;
         private GameObject tooltipRedo = null;
@@ -72,9 +69,6 @@ namespace VRtist
             tooltipReset = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.JoystickClick, "Reset");
 
             OnChangeNavigationMode("BiManual");
-
-            initCameraPosition = transform.position; // for reset
-            initCameraRotation = transform.rotation; // for reset
 
             rightHanded = world.Find("Avatars");
 
@@ -247,7 +241,17 @@ namespace VRtist
 
             // do not apply the position to the camera but invert it and apply to world
             Vector3 deltaCamera = newCameraPosition - cam.position;
-            world.position -= deltaCamera;
+            transform.position += deltaCamera;
+        }
+
+        private void ResetCameraClipPlanes()
+        {
+            float oldScale = 1f / GlobalState.WorldScale;
+            float nearPlane = Camera.main.nearClipPlane / oldScale;
+            float farPlane = Camera.main.farClipPlane / oldScale;
+            Camera.main.nearClipPlane = nearPlane;
+            Camera.main.farClipPlane = farPlane;
+            GlobalState.WorldScale = 1f;
         }
 
         private void HandleReset()
@@ -257,13 +261,10 @@ namespace VRtist
             {
                 if (Selection.selection.Count == 0)
                 {
-                    world.localPosition = Vector3.zero;
-                    world.localRotation = Quaternion.identity;
-                    world.localScale = Vector3.one;
-                    GlobalState.WorldScale = 1f;
-
-                    transform.position = initCameraPosition;
-                    transform.rotation = initCameraRotation;
+                    ResetCameraClipPlanes();
+                    transform.localPosition = Vector3.zero;
+                    transform.localRotation = Quaternion.identity;
+                    transform.localScale = Vector3.one;                    
                 }
                 else
                 {
@@ -277,17 +278,13 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primary2DAxisClick,
             () =>
             {
+                ResetCameraClipPlanes();
+
                 Transform cam = vrCamera.transform;
+                Vector3 initCameraInWorldPosition = cam.position;
+                transform.localScale = Vector3.one;
 
-                Vector3 initCameraInWorldPosition = world.worldToLocalMatrix.MultiplyPoint(cam.position);
-                Matrix4x4 m1 = world.worldToLocalMatrix;
-                world.localScale = Vector3.one;
-                GlobalState.WorldScale = 1f;
-                Vector3 initGlobalCamera = world.localToWorldMatrix.MultiplyPoint(initCameraInWorldPosition);
-                world.position += cam.position - initGlobalCamera;
-
-                // reset world up vector as well
-                world.localEulerAngles = new Vector3(0, world.localEulerAngles.y, 0);
+                transform.position += initCameraInWorldPosition - cam.position;
             });
         }
 

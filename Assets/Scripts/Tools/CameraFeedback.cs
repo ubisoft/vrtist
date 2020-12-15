@@ -28,18 +28,17 @@ namespace VRtist
             if (null == feedbackCamera)
                 return;
 
-            float far = 1000f * 0.7f; // 70% of far clip plane
-            float fov = 36.3f;
-            float aspect = 16f / 9f;
-            far = Camera.main.farClipPlane * 0.7f;
-            fov = Camera.main.fieldOfView;
+            float far = Camera.main.farClipPlane * GlobalState.WorldScale * 0.7f;
+            float fov = Camera.main.fieldOfView;
 
             Camera cam = feedbackCamera.GetComponentInChildren<Camera>();
-            aspect = cam.aspect;
+            float aspect = cam.aspect;
 
             float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
-            transform.position = targetCamera.position + GlobalState.Instance.cameraPreviewDirection.normalized * far;
-            transform.rotation = Quaternion.LookRotation(-GlobalState.Instance.cameraPreviewDirection) * Quaternion.Euler(0, 180, 0);
+            Transform rig = targetCamera.parent.parent;
+            Vector3 direction = rig.TransformDirection(GlobalState.Instance.cameraPreviewDirection);
+            transform.localPosition = targetCamera.localPosition + direction.normalized * far;
+            transform.localRotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
             transform.localScale = new Vector3(scale * aspect, scale, scale);
 
             GlobalState.Settings.cameraFeedbackPosition = transform.position;

@@ -311,13 +311,14 @@ namespace VRtist
                 // Add a point (the current world position) to the line renderer
 
                 float pressure = (triggerValue - deadZone) / (1f - deadZone);
+                float value = brushSize / GlobalState.WorldScale * pressure;
 
                 switch (paintTool)
                 {
-                    case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, 0.5f * brushSize * pressure); break;
-                    case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * brushSize * pressure); break;
+                    case PaintTools.Pencil: freeDraw.AddControlPoint(penPosition, 0.5f * value); break;
+                    case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * value); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
-                    case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * brushSize * pressure * strength); break;
+                    case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * value * strength); break;
                 }
 
                 switch (paintTool)
