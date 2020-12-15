@@ -10,6 +10,7 @@ namespace VRtist
     {
         // Start is called before the first frame update
         public GameObject cameraPrefab;
+        public Transform rig;
         public Transform cameraContainer;
         public Material screenShotMaterial;
         public Transform backgroundFeedback;
@@ -522,7 +523,6 @@ namespace VRtist
                 if (feedbackPositioning
                     && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
                 {
-                    Transform rig = transform.parent.parent.parent.parent;
                     GlobalState.Instance.cameraPreviewDirection = rig.InverseTransformDirection(transform.forward);
                     trigger = true;
                 }

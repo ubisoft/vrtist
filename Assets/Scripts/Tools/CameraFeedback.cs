@@ -5,7 +5,8 @@ namespace VRtist
 {
     public class CameraFeedback : MonoBehaviour
     {
-        public Transform targetCamera;
+        public Transform vrCamera;
+        public Transform rig;
         private GameObject cameraPlane;
         private GameObject feedbackCamera = null;
 
@@ -35,9 +36,8 @@ namespace VRtist
             float aspect = cam.aspect;
 
             float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
-            Transform rig = targetCamera.parent.parent;
             Vector3 direction = rig.TransformDirection(GlobalState.Instance.cameraPreviewDirection);
-            transform.localPosition = targetCamera.localPosition + direction.normalized * far;
+            transform.localPosition = vrCamera.localPosition + direction.normalized * far;
             transform.localRotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
             transform.localScale = new Vector3(scale * aspect, scale, scale);
 

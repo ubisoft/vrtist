@@ -543,7 +543,7 @@ namespace VRtist
                     foreach (GameObject gobj in objects)
                     {
                         // Snap VFX position in (world object) local space.
-                        Vector3 targetPositionInWorldObject = world.InverseTransformPoint(gobj.transform.position);
+                        Vector3 targetPositionInWorldObject = gobj.transform.position;
                         float snappedX = moveOnX ? Mathf.Round(targetPositionInWorldObject.x / snapPrecision) * snapPrecision : targetPositionInWorldObject.x;
                         float snappedY = moveOnZ ? Mathf.Round(targetPositionInWorldObject.y / snapPrecision) * snapPrecision : targetPositionInWorldObject.y; // NOTE: right handed.
                         float snappedZ = moveOnY ? Mathf.Round(targetPositionInWorldObject.z / snapPrecision) * snapPrecision : targetPositionInWorldObject.z;
@@ -1132,16 +1132,16 @@ namespace VRtist
 
             // Collider Scale
             Vector3 cs = new Vector3(
-                collidersThickness * (1.0f / world.localScale.x) * (1.0f / bs.x),
-                collidersThickness * (1.0f / world.localScale.y) * (1.0f / bs.y),
-                collidersThickness * (1.0f / world.localScale.z) * (1.0f / bs.z)
+                collidersThickness * (1.0f / bs.x),
+                collidersThickness * (1.0f / bs.y),
+                collidersThickness * (1.0f / bs.z)
             );
 
             // GAP: fixed in camera space. Scales with world and objet scales, inverse.
             Vector3 g = new Vector3(
-                cameraSpaceGap * (1.0f / world.localScale.x) * (1.0f / bs.x),
-                cameraSpaceGap * (1.0f / world.localScale.y) * (1.0f / bs.y),
-                cameraSpaceGap * (1.0f / world.localScale.z) * (1.0f / bs.z)
+                cameraSpaceGap * (1.0f / bs.x),
+                cameraSpaceGap * (1.0f / bs.y),
+                cameraSpaceGap * (1.0f / bs.z)
             );
 
             Vector3 minGapBound = minBound - new Vector3(g.x, g.y, g.z);

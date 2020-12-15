@@ -7,7 +7,7 @@ namespace VRtist
     public class SelectorBase : ToolBase
     {
         [Header("Selector Parameters")]
-        [SerializeField] protected Transform world;
+        //[SerializeField] protected Transform world;
         [SerializeField] protected Material selectionMaterial;
         [SerializeField] private float deadZoneDistance = 0.005f;
         [SerializeField] private NavigationOptions navigation;
