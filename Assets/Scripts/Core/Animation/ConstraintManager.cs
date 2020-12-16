@@ -108,12 +108,12 @@ namespace VRtist
                     constraint.lineRenderer = lineGameObject.AddComponent<LineRenderer>();
                     lineRenderer = constraint.lineRenderer;
                     lineRenderer.positionCount = 2;
-                    lineRenderer.startWidth = 0.001f;
-                    lineRenderer.endWidth = 0.001f;
                     lineRenderer.material = Resources.Load<Material>("Materials/Dash");
                 }
                 lineRenderer.SetPosition(0, constraint.gobject.transform.position);
                 lineRenderer.SetPosition(1, constraint.target.position);
+                lineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
+                lineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
             }
         }
 
