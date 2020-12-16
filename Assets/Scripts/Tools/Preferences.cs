@@ -131,6 +131,12 @@ namespace VRtist
             backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
             backgroundFeedback.localScale = GlobalState.Settings.cameraFeedbackScale;
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
+
+            ToolsUIManager.Instance.InitPaletteState();
+            ToolsUIManager.Instance.InitDopesheetState();
+            ToolsUIManager.Instance.InitShotManagerState();
+            ToolsUIManager.Instance.InitCameraPreviewState();
+            ToolsUIManager.Instance.InitConsoleState();
         }
 
         private void OnConnected()
@@ -144,7 +150,7 @@ namespace VRtist
         public void OnReset()
         {
             GlobalState.Settings.Reset();
-            Apply();
+            Apply();            
         }
 
         public void OnDisplayFPS(bool show)

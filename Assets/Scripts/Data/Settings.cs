@@ -25,16 +25,16 @@ namespace VRtist
         public Quaternion paletteRotation;
         public bool pinnedPalette = false;
 
-        public Vector3 dopeSheetPosition = Vector3.zero;
-        public Quaternion dopeSheetRotation = Quaternion.identity;
+        public Vector3 dopeSheetPosition = new Vector3(-0.02f, 0.05f, -0.05f);
+        public Quaternion dopeSheetRotation = Quaternion.Euler(30f, 0, 0);
         public bool dopeSheetVisible = false;
 
-        public Vector3 shotManagerPosition = Vector3.zero;
-        public Quaternion shotManagerRotation = Quaternion.identity;
+        public Vector3 shotManagerPosition = new Vector3(0.3f, 0.9f, 0.7f);
+        public Quaternion shotManagerRotation = Quaternion.Euler(7, 52, 0);
         public bool shotManagerVisible = false;
 
-        public Vector3 cameraPreviewPosition = Vector3.zero;
-        public Quaternion cameraPreviewRotation = Quaternion.identity;
+        public Vector3 cameraPreviewPosition = new Vector3(0.3f,1f,0.6f);
+        public Quaternion cameraPreviewRotation = Quaternion.Euler(-4, 49, 0);
         public bool cameraPreviewVisible = false;
 
         public Vector3 cameraFeedbackPosition = Vector3.zero;
@@ -45,8 +45,8 @@ namespace VRtist
         public float cameraDamping = 50f;
 
         public bool consoleVisible = false;
-        public Vector3 consolePosition = Vector3.zero;
-        public Quaternion consoleRotation = Quaternion.identity;
+        public Vector3 consolePosition = new Vector3(-0.2f, 0.5f, 0.5f);
+        public Quaternion consoleRotation = Quaternion.Euler(54, 6, 0);
 
         public SkySettings sky = new SkySettings
         {
@@ -94,22 +94,24 @@ namespace VRtist
             rightHanded = true;
             forcePaletteOpen = false;
             pinnedPalette = false;
+            palettePosition = new Vector3(-0.02f, 0.05f, -0.05f);
+            paletteRotation = Quaternion.Euler(30f, 0, 0);
             cameraDamping = 50f;
             castShadows = false;
             scaleSpeed = 50f;
             raySliderDrag = 95.0f;
 
             dopeSheetVisible = false;
-            dopeSheetPosition = Vector3.zero;
-            dopeSheetRotation = Quaternion.identity;
+            dopeSheetPosition = new Vector3(0.3f, 0.9f, 0.7f);
+            dopeSheetRotation = Quaternion.Euler(7,52,0);
 
             shotManagerVisible = false;
-            shotManagerPosition = Vector3.zero;
-            shotManagerRotation = Quaternion.identity;
+            shotManagerPosition = new Vector3(0.3f, 0.7f, 0.7f);
+            shotManagerRotation = Quaternion.Euler(64, 50, 0);
 
             cameraPreviewVisible = false;
-            cameraPreviewPosition = Vector3.zero;
-            cameraPreviewRotation = Quaternion.identity;
+            cameraPreviewPosition = new Vector3(0.3f, 1f, 0.6f);
+            cameraPreviewRotation = Quaternion.Euler(-4, 49, 0);
 
             cameraFeedbackPosition = Vector3.zero;
             cameraFeedbackRotation = Quaternion.identity;
@@ -118,8 +120,8 @@ namespace VRtist
             cameraFeedbackVisible = false;
 
             consoleVisible = false;
-            consolePosition = Vector3.zero;
-            consoleRotation = Quaternion.identity;
+            consolePosition = new Vector3(-0.2f, 0.5f, 0.5f);
+            consoleRotation = Quaternion.Euler(54, 6, 0);
 
             interpolation = Interpolation.Linear;
 
@@ -179,35 +181,7 @@ namespace VRtist
         }
 
         public void LoadWindowPosition(Transform window)
-        {
-            if (window.name == "DopesheetHandle")
-            {
-                window.localPosition = dopeSheetPosition;
-                window.localRotation = dopeSheetRotation;
-            }
-            if (window.name == "ShotManagerHandle")
-            {
-                window.localPosition = shotManagerPosition;
-                window.localRotation = shotManagerRotation;
-            }
-            if (window.name == "CameraPreviewHandle")
-            {
-                window.localPosition = cameraPreviewPosition;
-                window.localRotation = cameraPreviewRotation;
-            }
-            /*
-            if (window.name == "CameraFeedback")
-            {
-                window.localPosition = cameraFeedbackPosition;
-                window.localRotation = cameraFeedbackRotation;
-                window.localScale = cameraFeedbackScale;
-            }
-            */
-            if (window.name == "ConsoleHandle")
-            {
-                window.localPosition = consolePosition;
-                window.localRotation = consoleRotation;
-            }
+        {            
         }
 
         private string GetJsonFilename()

@@ -130,6 +130,21 @@ namespace VRtist
             OnToolChangedEvent += ToolsManager.OnChangeTool;
             OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
+            string firstToolName = ToolsManager.CurrentTool().name;
+            ChangeTab(firstToolName);
+            ChangeTool(firstToolName);
+
+            colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
+
+            keyboardWindow.localScale = Vector3.zero;
+            numericKeyboardWindow.localScale = Vector3.zero;
+
+            createInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");
+            deleteInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleDespawn");
+        }
+
+        public void InitPaletteState()
+        {
             isPaletteOpened = false;
             paletteRoot.localScale = Vector3.one * paletteScale;
             if (GlobalState.Settings.pinnedPalette)
@@ -145,6 +160,7 @@ namespace VRtist
             else
             {
                 palettePinButton.Checked = false;
+                paletteRoot.transform.parent = handContainer.transform;
                 paletteRoot.localPosition = GlobalState.Settings.palettePosition;
                 paletteRoot.localRotation = GlobalState.Settings.paletteRotation;
 
@@ -162,20 +178,38 @@ namespace VRtist
                     paletteCloseButton.Disabled = true;
                 }
             }
+        }
 
+        public void InitDopesheetState()
+        {
+            Transform dopesheet = vehicleContainer.Find("DopesheetHandle");
+            dopesheet.localPosition = GlobalState.Settings.dopeSheetPosition;
+            dopesheet.localRotation = GlobalState.Settings.dopeSheetRotation;
+            dopesheet.localScale = GlobalState.Settings.dopeSheetVisible ? Vector3.one * 0.7f : Vector3.zero;
+        }
 
-            string firstToolName = ToolsManager.CurrentTool().name;
-            ChangeTab(firstToolName);
-            ChangeTool(firstToolName);
+        public void InitShotManagerState()
+        {
+            Transform shotManager = vehicleContainer.Find("ShotManagerHandle");
+            shotManager.localPosition = GlobalState.Settings.shotManagerPosition;
+            shotManager.localRotation = GlobalState.Settings.shotManagerRotation;
+            shotManager.localScale = GlobalState.Settings.shotManagerVisible ? Vector3.one * 0.7f : Vector3.zero;
+        }
 
-            colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
+        public void InitCameraPreviewState()
+        {
+            Transform cameraPreview = vehicleContainer.Find("CameraPreviewHandle");
+            cameraPreview.localPosition = GlobalState.Settings.cameraPreviewPosition;
+            cameraPreview.localRotation = GlobalState.Settings.cameraPreviewRotation;
+            cameraPreview.localScale = GlobalState.Settings.cameraPreviewVisible ? Vector3.one * 0.7f : Vector3.zero;
+        }
 
-            keyboardWindow.localScale = Vector3.zero;
-            numericKeyboardWindow.localScale = Vector3.zero;
-
-            createInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");
-            deleteInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleDespawn");
-
+        public void InitConsoleState()
+        {
+            Transform console = vehicleContainer.Find("ConsoleHandle");
+            console.localPosition = GlobalState.Settings.consolePosition;
+            console.localRotation = GlobalState.Settings.consoleRotation;
+            console.localScale = GlobalState.Settings.consoleVisible ? Vector3.one * 0.7f : Vector3.zero;
         }
 
         public Bounds GetVFXBounds(GameObject source)
