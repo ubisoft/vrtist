@@ -240,19 +240,20 @@ namespace VRtist
 
         private void InvertTooltip(Transform anchor)
         {
-            for (int i = 0; i < anchor.childCount; i++)
-            {
-                Transform lineTooltip = anchor.GetChild(i);
-                LineRenderer line = lineTooltip.GetComponent<LineRenderer>();
-                if (null != line)
-                {
-                    Vector3 currentPosition = line.GetPosition(1);
-                    line.SetPosition(1, new Vector3(-currentPosition.x, currentPosition.y, currentPosition.z));
-
-                    Transform tooltip = lineTooltip.Find("Frame");
-                    Vector3 tooltipPosition = tooltip.localPosition;
-                    tooltip.localPosition = new Vector3(-tooltipPosition.x, tooltipPosition.y, tooltipPosition.z);
-                }
+            // TODO (Right / Left) handed
+            Transform tooltip = anchor.Find("Tooltip");
+            if(null != tooltip)
+            {/*
+                FreeDraw freeDraw = new FreeDraw();
+                freeDraw.AddControlPoint(Vector3.zero, 0.00025f);
+                freeDraw.AddControlPoint(linePosition, 0.00025f);
+                MeshFilter meshFilter = tooltip.GetComponent<MeshFilter>();
+                Mesh mesh = meshFilter.mesh;
+                mesh.Clear();
+                mesh.vertices = freeDraw.vertices;
+                mesh.normals = freeDraw.normals;
+                mesh.triangles = freeDraw.triangles;
+                */
             }
         }
 

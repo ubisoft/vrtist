@@ -197,7 +197,7 @@ namespace VRtist
                     Matrix4x4 middleMatrixWithRoll_L_Scaled = Matrix4x4.TRS(middlePosition_L, middleRotationWithRoll_L, new Vector3(s, s, s));
                     Quaternion middleRotationWithRoll_W = (pivot.localToWorldMatrix * middleMatrixWithRoll_L_Scaled).rotation;
 
-                    lineUI.UpdateLineUI(pivot.TransformPoint(currentLeftControllerPosition_L), pivot.TransformPoint(currentRightControllerPosition_L), middleRotationWithRoll_W, rig.localScale.x);
+                    lineUI.UpdateLineUI(pivot.TransformPoint(currentLeftControllerPosition_L), pivot.TransformPoint(currentRightControllerPosition_L), middleRotationWithRoll_W, 1f / GlobalState.WorldScale);
                 }
                 GlobalState.WorldScale = 1f / rig.localScale.x;
 

@@ -36,8 +36,8 @@ namespace VRtist
                     blf, brf, brb, blb,
                     tlb, tlf, trf, trb, tlb
                 });
-                line.startWidth = 0.001f;
-                line.endWidth = 0.001f;
+                line.startWidth = 0.001f / GlobalState.WorldScale;
+                line.endWidth = 0.001f / GlobalState.WorldScale;
             }
         }
     }

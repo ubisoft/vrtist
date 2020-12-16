@@ -46,21 +46,6 @@ namespace VRtist
         }
 #endif
 
-        void Update()
-        {
-#if UNITY_EDITOR
-            if(needsUpdate)
-            {
-                line.startWidth = lineWidth;
-                line.endWidth = lineWidth;
-
-                UpdateLineUI(previousLeft, previousRight, previousRotation, previousScale);
-
-                needsUpdate = false;
-            }
-#endif
-        }
-
         public void Show(bool doShow, LineMode mode = LineMode.SINGLE)
         {
             lineMode = mode;
@@ -77,12 +62,6 @@ namespace VRtist
 
         public void UpdateLineUI(Vector3 left, Vector3 right, Quaternion rotation, float scale)
         {
-#if UNITY_EDITOR
-            Vector3 previousLeft = left;
-            Vector3 previousRight = right;
-            Quaternion previousRotation = rotation;
-            float previousScale = scale;
-#endif
             //
             // Stretch bar
             //

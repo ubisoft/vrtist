@@ -50,7 +50,7 @@ Material:
     - _DoubleSidedNormalMode: 1
     - _DstBlend: 10
     - _EnableFogOnTransparent: 1
-    - _Line_Thickness: 0.01
+    - _Line_Thickness: 0.02
     - _ReceivesSSR: 0
     - _RenderQueueType: 5
     - _RequireSplitLighting: 0
@@ -66,7 +66,7 @@ Material:
     - _StencilWriteMaskGBuffer: 14
     - _StencilWriteMaskMV: 40
     - _SurfaceType: 1
-    - _Tiling: 100
+    - _Tiling: 1000
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentSortPriority: 0

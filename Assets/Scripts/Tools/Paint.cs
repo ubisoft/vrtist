@@ -379,8 +379,8 @@ namespace VRtist
                             blf, brf, brb, blb,
                             tlb, tlf, trf, trb, tlb
                         });
-                        paintLineRenderer.startWidth = 0.001f;
-                        paintLineRenderer.endWidth = 0.001f;
+                        paintLineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
+                        paintLineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
                     }
                 }
             }

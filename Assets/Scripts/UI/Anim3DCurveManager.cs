@@ -11,6 +11,8 @@ namespace VRtist
         public Transform curvesParent;
         public GameObject curvePrefab;
 
+        private float lineWidth = 0.001f;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -30,6 +32,18 @@ namespace VRtist
                     UpdateFromSelection();
                 else
                     ClearCurves();
+            }
+
+            UpdateCurvesWidth();
+        }
+
+        void UpdateCurvesWidth()
+        {
+            foreach(GameObject curve in curves.Values)
+            {
+                LineRenderer line = curve.GetComponent<LineRenderer>();
+                line.startWidth = lineWidth / GlobalState.WorldScale;
+                line.endWidth = line.startWidth;
             }
         }
 
@@ -145,6 +159,8 @@ namespace VRtist
             {
                 line.SetPosition(index, positions[index]);
             }
+            line.startWidth = lineWidth / GlobalState.WorldScale;
+            line.endWidth = line.startWidth;
 
             curves.Add(gObject, curve);
         }

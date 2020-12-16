@@ -52,7 +52,6 @@ namespace VRtist
                 Vector3 framePosition = frame.localPosition;
                 Vector3 linePosition = new Vector3(-0.025f, 0f, 0f);  // for line renderer (go to the left of the anchor)
                 float yOffset = 0.01f;
-                bool hasLine = true;
 
                 // Put the tooltip as a child of the controller's anchor
                 // Default position.x is based on the right controller
@@ -104,7 +103,6 @@ namespace VRtist
                     case Anchors.Info:
                         tooltip.transform.parent = controller.transform.Find("DisplayAnchor");
                         framePosition = Vector3.zero;
-                        hasLine = false;
                         break;
                 }
 

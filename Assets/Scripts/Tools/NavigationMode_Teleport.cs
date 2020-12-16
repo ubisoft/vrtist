@@ -54,7 +54,6 @@ namespace VRtist
         private bool teleporting = false;
         private bool isValidLocationHit = false;
         private Vector3 teleportTarget = Vector3.zero;
-        private Transform teleportStart;
         private TrajectoryParams trajectoryParams = null;
 
         public NavigationMode_Teleport(TeleportUI teleportObject, TrajectoryParams trajectoryP)

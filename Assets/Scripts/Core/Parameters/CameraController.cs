@@ -36,6 +36,8 @@ namespace VRtist
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
 
+        private float frustumLineWidth = 0.0020f;
+
         private void Awake()
         {
             Init();
@@ -377,6 +379,8 @@ namespace VRtist
 
             frustumRenderer.positionCount = points.Length;
             frustumRenderer.SetPositions(points);
+            frustumRenderer.startWidth = frustumLineWidth / GlobalState.WorldScale;
+            frustumRenderer.endWidth = frustumLineWidth / GlobalState.WorldScale;
         }
     }
 }
