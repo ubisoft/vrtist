@@ -129,11 +129,10 @@ namespace VRtist
                 return;
             }
 
-            bool UIHit = hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("UI") ||
-                hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("SelectionUI") ||
-                hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("HoverUI");
-
-            if(!UIHit)
+            bool UIHit = (null != hitInfo.transform.gameObject.GetComponent<UIElement>()) ||
+                 (null != hitInfo.transform.gameObject.GetComponent<UIHandle>()) ||
+                 (null != hitInfo.transform.gameObject.GetComponent<UIVolumeTag>());
+            if (!UIHit)
             {
                 // hit a non-UI object.
                 HandleHoverPhysicObject(null);
