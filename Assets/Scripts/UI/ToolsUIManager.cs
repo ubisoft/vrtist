@@ -131,18 +131,42 @@ namespace VRtist
             OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
             isPaletteOpened = false;
-            if (GlobalState.Settings.forcePaletteOpen)
-                PopUpPalette(true);
+            paletteRoot.localScale = Vector3.one * paletteScale;
+            if (GlobalState.Settings.pinnedPalette)
+            {
+                paletteRoot.transform.parent = vehicleContainer.transform;
+                isPaletteOpened = true;
+                palettePinButton.Disabled = true;
+                paletteCloseButton.Disabled = false;
+                palettePinButton.Checked = true;
+                paletteRoot.localPosition = GlobalState.Settings.palettePosition;
+                paletteRoot.localRotation = GlobalState.Settings.paletteRotation;
+            }
+            else
+            {
+                palettePinButton.Checked = false;
+                paletteRoot.localPosition = GlobalState.Settings.palettePosition;
+                paletteRoot.localRotation = GlobalState.Settings.paletteRotation;
 
+                if (GlobalState.Settings.forcePaletteOpen)
+                {
+                    isPaletteOpened = true;
+                    OpenWindow(paletteRoot.transform, paletteScale, () => onPaletteOpened.Invoke());
+                    palettePinButton.Disabled = false;
+                    paletteCloseButton.Disabled = false;
+                }
+                else
+                {
+                    paletteRoot.transform.localScale = Vector3.zero;
+                    palettePinButton.Disabled = false;
+                    paletteCloseButton.Disabled = true;
+                }
+            }
 
-            palettePinButton.Disabled = false;
-            paletteCloseButton.Disabled = true;
 
             string firstToolName = ToolsManager.CurrentTool().name;
             ChangeTab(firstToolName);
             ChangeTool(firstToolName);
-
-            paletteRoot.transform.localScale = Vector3.zero;
 
             colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
 
@@ -151,6 +175,7 @@ namespace VRtist
 
             createInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleSpawn");
             deleteInstanceVFXPrefab = Resources.Load<GameObject>("VFX/ParticleDespawn");
+
         }
 
         public Bounds GetVFXBounds(GameObject source)

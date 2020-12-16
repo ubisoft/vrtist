@@ -180,11 +180,6 @@ namespace VRtist
 
         public void LoadWindowPosition(Transform window)
         {
-            if (window.name == "PaletteHandle")
-            {
-                window.localPosition = palettePosition;
-                window.localRotation = paletteRotation;
-            }
             if (window.name == "DopesheetHandle")
             {
                 window.localPosition = dopeSheetPosition;
@@ -225,7 +220,6 @@ namespace VRtist
         public void Load()
         {
             LoadJson(GetJsonFilename());
-            pinnedPalette = false;
         }
 
         public void Save()
