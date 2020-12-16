@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7507687709139709549}
   - component: {fileID: 7507687709139709551}
   - component: {fileID: 7507687709139709550}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 7507687709698803777}
   - component: {fileID: 7507687709698803776}
   - component: {fileID: 7507687709698803791}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: StretchUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}

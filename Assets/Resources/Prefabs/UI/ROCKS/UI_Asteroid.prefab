@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2072815025612845816}
   - component: {fileID: 1360185317582811683}
   - component: {fileID: 1360185317582811684}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: UI_Asteroid
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: f967e09f1da8def4182f1c67967d1bcb,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f967e09f1da8def4182f1c67967d1bcb, type: 3}

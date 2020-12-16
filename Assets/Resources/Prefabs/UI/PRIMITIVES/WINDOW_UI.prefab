@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5415708663906515029}
   - component: {fileID: 9010639008686611975}
   - component: {fileID: 5190528334598761820}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: WINDOW_UI
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 3e4855b2596478440b4e455249e7fe64,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3e4855b2596478440b4e455249e7fe64, type: 3}

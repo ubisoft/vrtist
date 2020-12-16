@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8859677967860498697}
   - component: {fileID: 8419375280604922325}
   - component: {fileID: 3243576002559373039}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Ticket
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 3b6d0387e9fb8534cbf156f9849c1e3a,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3b6d0387e9fb8534cbf156f9849c1e3a, type: 3}

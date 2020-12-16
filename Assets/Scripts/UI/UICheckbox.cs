@@ -561,7 +561,7 @@ namespace VRtist
                 trt.localPosition = new Vector3(minSide, -input.margin, -0.002f);
             }
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiCheckbox;
         }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6485042915433305975}
   - component: {fileID: 6330872720675805099}
   - component: {fileID: 6005641967518322082}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: UI_Coconut_Tree
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -224,7 +224,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: e6c5bba2a647bda419b236136e70f4da,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e6c5bba2a647bda419b236136e70f4da, type: 3}

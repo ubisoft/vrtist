@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6820865329613065678}
   - component: {fileID: 7533636824236911516}
   - component: {fileID: 6739800343093287111}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: STRAIGHT_STAIRS_UI
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 23e922871cb05554b8359aaadd005662,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 23e922871cb05554b8359aaadd005662, type: 3}

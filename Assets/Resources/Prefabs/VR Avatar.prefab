@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2699965481524097348}
   - component: {fileID: 3266797242344670279}
   - component: {fileID: 8867756694328197837}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,7 +109,7 @@ GameObject:
   m_Component:
   - component: {fileID: 626656753810325205}
   - component: {fileID: 1986598937094251962}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: VR Avatar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 8856042586434752116}
   - component: {fileID: 8092531269810785154}
   - component: {fileID: 1992203008955156602}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: UserName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -228,13 +228,12 @@ MonoBehaviour:
   m_fontColorGradientPreset: {fileID: 0}
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: 0
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_outlineColor:
-    serializedVersion: 2
-    rgba: 4278190080
   m_fontSize: 23.55
   m_fontSizeBase: 36
   m_fontWeight: 400
@@ -242,6 +241,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
   m_textAlignment: 514
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -252,10 +253,8 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
-  m_isLinkedTextComponent: 0
-  m_isTextTruncated: 0
+  parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
@@ -263,40 +262,18 @@ MonoBehaviour:
   m_parseCtrlCharacters: 1
   m_isOrthographic: 1
   m_isCullingEnabled: 0
-  m_ignoreRectMaskCulling: 0
-  m_ignoreCulling: 1
   m_horizontalMapping: 0
   m_verticalMapping: 0
   m_uvLineOffset: 0
   m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
   m_VertexBufferAutoSizeReduction: 1
-  m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
   m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_textInfo:
-    textComponent: {fileID: 1992203008955156602}
-    characterCount: 9
-    spriteCount: 0
-    spaceCount: 1
-    wordCount: 2
-    linkCount: 0
-    lineCount: 1
-    pageCount: 1
-    materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_spriteAnimator: {fileID: 0}
   m_hasFontAssetChanged: 0
-  m_subTextObjects:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1001 &160567773181024717
@@ -314,12 +291,12 @@ PrefabInstance:
     - target: {fileID: -6713272831839625851, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: -4636026523606644143, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
@@ -394,7 +371,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 2345211957819186503, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
@@ -404,12 +381,12 @@ PrefabInstance:
     - target: {fileID: 5405262426397189913, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 5743228446497852095, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 7546545436660805148, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
@@ -419,7 +396,7 @@ PrefabInstance:
     - target: {fileID: 8051415255134806348, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 8151138129517724339, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
@@ -439,12 +416,12 @@ PrefabInstance:
     - target: {fileID: 9091094862930139297, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 9111962883125049612, guid: cf11e348bd3800948a54bf119754a671,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cf11e348bd3800948a54bf119754a671, type: 3}

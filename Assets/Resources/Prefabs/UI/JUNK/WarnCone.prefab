@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1431308982593341558}
   - component: {fileID: 2159828903400179882}
   - component: {fileID: 4912757539733186448}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: WarnCone
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: a5eb17d55ca02c3448ae9f35977385e4,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a5eb17d55ca02c3448ae9f35977385e4, type: 3}

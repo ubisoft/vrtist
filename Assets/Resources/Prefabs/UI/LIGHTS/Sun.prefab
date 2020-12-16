@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6126474109235608508}
   - component: {fileID: 6126474109235608510}
   - component: {fileID: 6126474109235608511}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Sun_Simple
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 6126474110168718687}
   - component: {fileID: 6126474110168718657}
   - component: {fileID: 6126474110168718686}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Sun
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -140,10 +140,44 @@ MonoBehaviour:
   relativeLocation: {x: 0, y: 0, z: 0}
   width: 1
   height: 1
-  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  rotateOnHover: 1
   prefab: {fileID: 2522542035530869807, guid: ae3dc63b793d94b4daf61902503fecc9, type: 3}
-  hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
   onEnterUI3DObject:
     m_PersistentCalls:
       m_Calls:
@@ -212,7 +246,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6126474110416566130}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: UI_Light_Sun(Clone)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

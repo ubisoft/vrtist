@@ -99,7 +99,7 @@ namespace VRtist
                 {
                     constraint.lineGameObject = new GameObject();
                     lineGameObject = constraint.lineGameObject;
-                    lineGameObject.layer = LayerMask.NameToLayer("UI");
+                    lineGameObject.layer = LayerMask.NameToLayer("CameraHidden");
                     lineGameObject.transform.parent = constraintVisualization.transform;
                 }
                 LineRenderer lineRenderer = constraint.lineRenderer;

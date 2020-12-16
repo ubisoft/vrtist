@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4983757571386011541}
   - component: {fileID: 3965942619361018072}
   - component: {fileID: 1128974765313292052}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -213,7 +213,7 @@ GameObject:
   - component: {fileID: 1191846293913894900}
   - component: {fileID: 3923007267501337695}
   - component: {fileID: 7606024625253914099}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Point
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -260,7 +260,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  locked: 0
+  lockPosition: 0
+  lockRotation: 0
+  lockScale: 0
+  controllerName: 
+  initParentConstraintScale: 0
+  initParentConstraintOffset: {x: 0, y: 0, z: 0}
   lightType: 2
   intensity: 50
   minIntensity: 0
@@ -294,7 +299,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6070714263433045052}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Rotate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -412,7 +417,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: d3dc573f97395fb418850dd79211659f,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d3dc573f97395fb418850dd79211659f, type: 3}

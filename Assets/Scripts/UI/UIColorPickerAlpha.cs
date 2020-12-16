@@ -280,7 +280,7 @@ namespace VRtist
             cursor.transform.localRotation = Quaternion.identity;
             uiColorPickerAlpha.cursor = cursor.transform;
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiColorPickerAlpha;
         }

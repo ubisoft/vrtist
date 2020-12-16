@@ -354,7 +354,7 @@ namespace VRtist
                 previewPosition, previewWidth, previewHeight, previewThickness,
                 input.previewMaterial);
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
         }
     }
 }

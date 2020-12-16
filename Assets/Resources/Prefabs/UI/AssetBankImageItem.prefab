@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4391902614583328958}
   - component: {fileID: 1767787357060451112}
   - component: {fileID: 909019844667975200}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: AssetBankImageItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 1177034796133267749}
   - component: {fileID: 7851567075763911591}
   - component: {fileID: 5490034788590651455}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -200,7 +200,7 @@ GameObject:
   - component: {fileID: 5493129814154566343}
   - component: {fileID: 6197093650240916523}
   - component: {fileID: 5654387698534390989}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -298,7 +298,7 @@ GameObject:
   - component: {fileID: 6150073981734267526}
   - component: {fileID: 7847048219957677187}
   - component: {fileID: 5452303776835705356}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}

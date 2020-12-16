@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 248553507755954839}
   - component: {fileID: 248553507755954837}
   - component: {fileID: 248553507755954836}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: UIRay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -291,7 +291,7 @@ GameObject:
   - component: {fileID: 4251061557514575494}
   - component: {fileID: 8676165538445138553}
   - component: {fileID: 1143895074212105297}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: WidgetSphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}

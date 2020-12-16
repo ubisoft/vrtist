@@ -116,7 +116,7 @@ namespace VRtist
             gObj.SetActive(false);  // gObj may be on another page, so by default not active
             UIDynamicListItem item = gObj.AddComponent<UIDynamicListItem>();
             gObj.tag = "UICollider";
-            gObj.layer = LayerMask.NameToLayer("UI");
+            gObj.layer = LayerMask.NameToLayer("CameraHidden");
             item.list = this;
             item.autoResizeContent = autoResizeContent;
             item.autoCenterContent = autoCenterContent;
@@ -472,7 +472,7 @@ namespace VRtist
             uiDynamicList.itemWidth = item_width;
             uiDynamicList.itemHeight = item_height;
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
         }
     }
 }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8648902753907902526}
   - component: {fileID: 8512740240598976738}
   - component: {fileID: 3456383112021436376}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: TrunkArmy
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -219,7 +219,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 7d34d2828ae49fc4193035ea26ec2a82,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7d34d2828ae49fc4193035ea26ec2a82, type: 3}

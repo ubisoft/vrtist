@@ -588,9 +588,10 @@ namespace VRtist
             transform.localRotation = rotation;
         }
 
-        public static void DeepSetLayer(GameObject gameObject, int layer)
+        public static void DeepSetLayer(GameObject gameObject, string layerName)
         {
             if (gameObject == null) { return; }
+            int layer = LayerMask.NameToLayer(layerName);
             foreach (Transform transform in gameObject.GetComponentsInChildren<Transform>(true))
             {
                 transform.gameObject.layer = layer;

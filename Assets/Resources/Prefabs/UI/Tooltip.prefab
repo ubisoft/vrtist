@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3286594483610318868}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Frame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 3286594484227960089}
   - component: {fileID: 3286594484227960088}
   - component: {fileID: 3286594484227960095}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 3286594484398259151}
   - component: {fileID: 3286594484398259145}
   - component: {fileID: 3286594484398259144}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -273,7 +273,7 @@ GameObject:
   - component: {fileID: 3286594484558431703}
   - component: {fileID: 3286594484558431697}
   - component: {fileID: 3286594484558431696}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +346,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3286594484717800525}
   - component: {fileID: 747709337298302341}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Tooltip
   m_TagString: Untagged
   m_Icon: {fileID: 0}

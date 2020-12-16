@@ -1383,7 +1383,7 @@ namespace VRtist
                 }
             }
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
             uiRange.SetLightLayer(2);
 
             return uiRange;

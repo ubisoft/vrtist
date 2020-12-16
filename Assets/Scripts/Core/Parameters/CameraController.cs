@@ -339,7 +339,7 @@ namespace VRtist
         private void DrawFrustum()
         {
             frustumRenderer.enabled = true;
-            frustumRenderer.gameObject.layer = LayerMask.NameToLayer("UI");  // we don't want the selection outline
+            frustumRenderer.gameObject.layer = LayerMask.NameToLayer("CameraHidden");  // we don't want the selection outline
 
             // TODO: represent FOCUS and APERTURE
             // ...

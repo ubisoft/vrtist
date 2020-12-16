@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5581234259314826103}
   - component: {fileID: 8885822907014413605}
   - component: {fileID: 5644284323370602110}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: CIRCLE_SQUARE_STAIRS_UI
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 7f5f539b5f44ed949bf2040895ba6a0f,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7f5f539b5f44ed949bf2040895ba6a0f, type: 3}

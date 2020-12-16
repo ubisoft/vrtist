@@ -521,7 +521,7 @@ namespace VRtist
 
             text.SetActive(input.labelContent != LabelContent.ImageOnly);
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiLabel;
         }

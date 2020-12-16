@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4209834487246103016}
   - component: {fileID: 6761392727659477303}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Curve3D
   m_TagString: Untagged
   m_Icon: {fileID: 0}

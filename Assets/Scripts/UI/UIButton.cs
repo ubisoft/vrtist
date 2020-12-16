@@ -643,7 +643,7 @@ namespace VRtist
 
             text.SetActive(input.buttonContent != ButtonContent.ImageOnly);
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiButton;
         }

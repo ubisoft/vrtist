@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8838334420947222028}
   - component: {fileID: 8398181183119032016}
   - component: {fileID: 3267514704138654186}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Bench
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: f260eee89aba0c04fbfeff7daa77b563,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f260eee89aba0c04fbfeff7daa77b563, type: 3}

@@ -16,7 +16,7 @@ namespace VRtist
             newCamera.GetComponentInChildren<Camera>(true).targetTexture = renderTexture;
             newCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", renderTexture);
 
-            VRInput.DeepSetLayer(newCamera, 5);
+            VRInput.DeepSetLayer(newCamera, "CameraHidden");
 
             newCamera.GetComponentInChildren<CameraController>(true).CopyParameters(source.GetComponentInChildren<CameraController>(true));
 

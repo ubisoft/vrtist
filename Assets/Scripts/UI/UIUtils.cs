@@ -1815,22 +1815,22 @@ namespace VRtist
             {
                 if (layerName == "Default") { layerName = "Selection"; }
                 else if (layerName == "Hover") { layerName = "Selection"; }
-                else if (layerName == "UI") { layerName = "SelectionUI"; }
-                else if (layerName == "HoverUI") { layerName = "SelectionUI"; }
+                else if (layerName == "CameraHidden") { layerName = "SelectionCameraHidden"; }
+                else if (layerName == "HoverCameraHidden") { layerName = "SelectionCameraHidden"; }
             }
             else if (layerType == LayerType.Default)
             {
-                if (layerName == "SelectionUI") { layerName = "UI"; }
+                if (layerName == "SelectionCameraHidden") { layerName = "CameraHidden"; }
                 else if (layerName == "Hover") { layerName = "Default"; }
-                else if (layerName == "HoverUI") { layerName = "UI"; }
+                else if (layerName == "HoverCameraHidden") { layerName = "CameraHidden"; }
                 else if (layerName == "Selection") { layerName = "Default"; }
             }
             else if (layerType == LayerType.Hover)
             {
                 if (layerName == "Default") { layerName = "Hover"; }
-                else if (layerName == "UI") { layerName = "HoverUI"; }
+                else if (layerName == "CameraHidden") { layerName = "HoverCameraHidden"; }
                 else if (layerName == "Selection") { layerName = "Hover"; }
-                else if (layerName == "SelectionUI") { layerName = "HoverUI"; }
+                else if (layerName == "SelectionCameraHidden") { layerName = "HoverCameraHidden"; }
             }
 
             gObject.layer = LayerMask.NameToLayer(layerName);

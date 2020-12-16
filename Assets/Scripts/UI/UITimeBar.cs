@@ -459,7 +459,7 @@ namespace VRtist
             GameObject K = new GameObject("Knob");
             uiTimeBar.knob = K.transform;
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
         }
         #endregion
     }

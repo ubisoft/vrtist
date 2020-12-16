@@ -290,7 +290,7 @@ namespace VRtist
         {
             GameObject root = new GameObject("shotItem");
             ShotItem shotItem = root.AddComponent<ShotItem>();
-            root.layer = LayerMask.NameToLayer("UI");
+            root.layer = LayerMask.NameToLayer("CameraHidden");
 
             // Set the item invisible in order to hide it while it is not added into
             // a list. We will activate it after it is added

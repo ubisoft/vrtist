@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7890776273698031566}
   - component: {fileID: 6022771271503421419}
   - component: {fileID: 8921121287545007794}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Axis Locator Item
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 7705811181865293210}
   - component: {fileID: 1705611701616865196}
   - component: {fileID: 4942425322346025813}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

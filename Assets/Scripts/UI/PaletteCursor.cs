@@ -156,8 +156,8 @@ namespace VRtist
             //
 
             RaycastHit[] hits;
-            //int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI", "Default" });
-            int layersMask = LayerMask.GetMask(new string[] { "UI", "SelectionUI", "HoverUI" });
+            //int layersMask = LayerMask.GetMask(new string[] { "CameraHidden", "SelectionCameraHidden", "HoverCameraHidden", "Default" });
+            int layersMask = LayerMask.GetMask(new string[] { "CameraHidden", "SelectionCameraHidden", "HoverCameraHidden" });
             hits = Physics.RaycastAll(r, 3.0f * scale, layersMask, QueryTriggerInteraction.Collide);
             if (hits.Length > 0)
             {

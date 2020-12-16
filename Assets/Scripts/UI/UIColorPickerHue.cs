@@ -280,7 +280,7 @@ namespace VRtist
             cursor.transform.localPosition = Vector3.zero;
             uiColorPickerHue.cursor = cursor.transform;
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiColorPickerHue;
         }

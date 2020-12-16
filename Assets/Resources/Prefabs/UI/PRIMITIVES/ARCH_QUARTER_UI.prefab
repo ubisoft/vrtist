@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7587021495245920458}
   - component: {fileID: 6876660163396173464}
   - component: {fileID: 7668085940591398339}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: ARCH_QUARTER_UI
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -219,7 +219,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 5f4b68660dbdc8042b48b7445281cafb,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5f4b68660dbdc8042b48b7445281cafb, type: 3}

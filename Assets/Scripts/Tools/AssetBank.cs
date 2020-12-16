@@ -254,7 +254,7 @@ namespace VRtist
             }
             int uid = thumbnail.GetHashCode();
             GameObject root = new GameObject("AssetBankItem");
-            root.layer = LayerMask.NameToLayer("UI");
+            root.layer = LayerMask.NameToLayer("CameraHidden");
             AssetBankItem item = root.AddComponent<AssetBankItem>();
             item.uid = uid;
             item.assetName = name;

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3074859598785938940}
   - component: {fileID: 3074859598785938939}
   - component: {fileID: 3074859598785938938}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: RayEnd
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 3074859599741741243}
   - component: {fileID: 3074859599741741241}
   - component: {fileID: 3074859599741741240}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: StraightRay
   m_TagString: Untagged
   m_Icon: {fileID: 0}

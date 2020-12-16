@@ -20,13 +20,13 @@ TagManager:
   - PostProcessing
   - Selection
   - Hover
-  - SelectionUI
-  - HoverUI
+  - SelectionCameraHidden
+  - HoverCameraHidden
   - Controllers
   - InFront
   - CustomPass
   - CameraPostProcessing
-  - 
+  - CameraHidden
   - 
   - 
   - 

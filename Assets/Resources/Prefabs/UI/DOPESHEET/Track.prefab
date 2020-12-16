@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6346963652570859850}
   - component: {fileID: 4225865635692316175}
   - component: {fileID: 872981246941723649}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Keyframes
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -178,7 +178,7 @@ GameObject:
   - component: {fileID: 5970878118641275215}
   - component: {fileID: 5970878118641275208}
   - component: {fileID: 5970878118641275209}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Label
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -352,7 +352,7 @@ GameObject:
   - component: {fileID: 5970878119009890383}
   - component: {fileID: 5970878119009890381}
   - component: {fileID: 5970878119009890382}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -429,7 +429,7 @@ GameObject:
   - component: {fileID: 5970878119456396718}
   - component: {fileID: 5970878119456396716}
   - component: {fileID: 5970878119456396717}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -511,7 +511,7 @@ GameObject:
   - component: {fileID: 5970878119735100806}
   - component: {fileID: 5970878119735100804}
   - component: {fileID: 5970878119735100805}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -582,7 +582,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4676812600274671249}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Track
   m_TagString: Untagged
   m_Icon: {fileID: 0}

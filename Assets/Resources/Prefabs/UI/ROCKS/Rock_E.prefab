@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5877457361309018002}
   - component: {fileID: 6896325264109954894}
   - component: {fileID: 4449733375579934851}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Rock_E
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 43ab056dea6fa264aacc252ccf01d342,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 43ab056dea6fa264aacc252ccf01d342, type: 3}

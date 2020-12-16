@@ -625,7 +625,7 @@ namespace VRtist
             svCursor.transform.localRotation = Quaternion.identity;
             uiColorPickerHSV.svCursor = svCursor.transform;
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiColorPickerHSV;
         }

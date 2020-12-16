@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1925000378449254815}
   - component: {fileID: 1482456938941946180}
   - component: {fileID: 1482456938941946179}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: UI_Lapin
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -229,7 +229,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: ad7ad9f404a907d41bdd5f75eb2a0464,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}

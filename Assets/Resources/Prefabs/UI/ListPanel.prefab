@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5563176664287617453}
   - component: {fileID: 5563176664287617450}
   - component: {fileID: 5563176664287617451}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: PageLabel
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -107,13 +107,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a313013d1908c440b64fa3603896534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.08, y: -0.41, z: 0}
+  relativeLocation: {x: 0.08, y: -0.41, z: -0.001}
   width: 0.16
   height: 0.03
-  baseColor: {r: 0.2, g: 0.2, b: 0.2, a: 0}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
-  textColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  thickness: 0.001
+  content: 0
+  imagePosition: 0
+  iconMarginBehavior: 0
+  iconMargin: 0
+  source_material: {fileID: 0}
+  image: {fileID: 0}
+  textContent: 
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onHoverEvent:
@@ -135,7 +176,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5563176664479658994}
   - component: {fileID: 5563176664479658997}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: List
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -171,15 +212,50 @@ MonoBehaviour:
   relativeLocation: {x: 0.01, y: -0.01, z: 0}
   width: 0.29999998
   height: 0.38
-  baseColor: {r: 0.1742, g: 0.5336, b: 0.723, a: 1}
-  disabledColor: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.01
   itemWidth: 0.049999993
   itemHeight: 0.049999993
+  itemDepth: 0.1
+  autoResizeContent: 1
+  autoCenterContent: 1
+  focusItemOnAdd: 1
   pageCountLabel: {fileID: 5563176664287617451}
-  onClicked:
-    m_PersistentCalls:
-      m_Calls: []
   items: []
   innerTotalHeight: 0.35999998
   innerTotalWidth: 0.27999997
@@ -204,7 +280,7 @@ GameObject:
   - component: {fileID: 5563176664604478610}
   - component: {fileID: 5563176664604478611}
   - component: {fileID: 5563176664604478608}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: PrevButton
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -298,19 +374,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3c2b99db58ea5b499e1efd6f09a3cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.044999998, y: -0.41, z: 0}
+  relativeLocation: {x: 0.044999998, y: -0.41, z: -0.001}
   width: 0.03
   height: 0.03
-  baseColor: {r: 0.17254902, g: 0.53333336, b: 0.72156864, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
-  iconMargin: 0
   iconMarginBehavior: 0
-  pushedColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  checkedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  iconMargin: 0
+  content: 2
+  baseSprite: {fileID: 0}
   checkedSprite: {fileID: 0}
-  uncheckedSprite: {fileID: 0}
+  checkedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textContent: 
+  source_material: {fileID: 0}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onClickEvent:
@@ -348,7 +465,7 @@ GameObject:
   - component: {fileID: 5563176664665875653}
   - component: {fileID: 5563176664665875655}
   - component: {fileID: 5563176664665875652}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -429,7 +546,7 @@ GameObject:
   - component: {fileID: 5563176664678376654}
   - component: {fileID: 5563176664678376640}
   - component: {fileID: 5563176664678376641}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -502,7 +619,7 @@ GameObject:
   - component: {fileID: 5563176664814292804}
   - component: {fileID: 5563176664814292806}
   - component: {fileID: 5563176664814292807}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -575,7 +692,7 @@ GameObject:
   - component: {fileID: 5563176665040817061}
   - component: {fileID: 5563176665040817063}
   - component: {fileID: 5563176665040817060}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -659,7 +776,7 @@ GameObject:
   - component: {fileID: 5563176665128352876}
   - component: {fileID: 5563176665128352877}
   - component: {fileID: 5563176665128352874}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: NextButton
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -753,19 +870,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3c2b99db58ea5b499e1efd6f09a3cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.24499997, y: -0.41, z: 0}
+  relativeLocation: {x: 0.24499997, y: -0.41, z: -0.001}
   width: 0.03
   height: 0.03
-  baseColor: {r: 0.17254902, g: 0.53333336, b: 0.72156864, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
-  iconMargin: 0
   iconMarginBehavior: 0
-  pushedColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  checkedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  iconMargin: 0
+  content: 2
+  baseSprite: {fileID: 0}
   checkedSprite: {fileID: 0}
-  uncheckedSprite: {fileID: 0}
+  checkedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textContent: 
+  source_material: {fileID: 0}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onClickEvent:
@@ -803,7 +961,7 @@ GameObject:
   - component: {fileID: 5563176665143778594}
   - component: {fileID: 5563176665143778596}
   - component: {fileID: 5563176665143778597}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -885,7 +1043,7 @@ GameObject:
   - component: {fileID: 5563176665217449762}
   - component: {fileID: 5563176665217449764}
   - component: {fileID: 5563176665217449765}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -964,7 +1122,7 @@ GameObject:
   - component: {fileID: 5563176665237523475}
   - component: {fileID: 5563176665237523472}
   - component: {fileID: 5563176665237523473}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: FirstButton
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -1058,19 +1216,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3c2b99db58ea5b499e1efd6f09a3cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.01, y: -0.41, z: 0}
+  relativeLocation: {x: 0.01, y: -0.41, z: -0.001}
   width: 0.03
   height: 0.03
-  baseColor: {r: 0.17254902, g: 0.53333336, b: 0.72156864, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
-  iconMargin: 0
   iconMarginBehavior: 0
-  pushedColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  checkedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  iconMargin: 0
+  content: 2
+  baseSprite: {fileID: 0}
   checkedSprite: {fileID: 0}
-  uncheckedSprite: {fileID: 0}
+  checkedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textContent: 
+  source_material: {fileID: 0}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onClickEvent:
@@ -1108,7 +1307,7 @@ GameObject:
   - component: {fileID: 5563176665282070936}
   - component: {fileID: 5563176665282070938}
   - component: {fileID: 5563176665282070939}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1191,8 +1390,8 @@ GameObject:
   - component: {fileID: 5563176665506685432}
   - component: {fileID: 5563176665506685433}
   - component: {fileID: 5563176665506685414}
-  m_Layer: 5
-  m_Name: SnapshotListPanel
+  m_Layer: 17
+  m_Name: ListPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1277,13 +1476,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7a827743f0ebf543b0183759f26826a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.34, y: 0, z: 0}
+  relativeLocation: {x: 0.34, y: 0, z: -0.001}
   width: 0.32
   height: 0.45
-  baseColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   radius: 0.002
+  thickness: 0.001
+  backgroundGeometryStyle: 1
+  source_material: {fileID: 0}
   circleSubdiv: 8
   nbSubdivPerUnit: 1
   nbSubdivCornerFixed: 5
@@ -1299,7 +1535,7 @@ GameObject:
   - component: {fileID: 5563176665529768464}
   - component: {fileID: 5563176665529768466}
   - component: {fileID: 5563176665529768467}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1378,7 +1614,7 @@ GameObject:
   - component: {fileID: 5563176665638979046}
   - component: {fileID: 5563176665638979047}
   - component: {fileID: 5563176665638979044}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: LastButton
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -1472,19 +1708,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3c2b99db58ea5b499e1efd6f09a3cfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  relativeLocation: {x: 0.28, y: -0.41, z: 0}
+  relativeLocation: {x: 0.28, y: -0.41, z: -0.001}
   width: 0.03
   height: 0.03
-  baseColor: {r: 0.17254902, g: 0.53333336, b: 0.72156864, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
-  iconMargin: 0
   iconMarginBehavior: 0
-  pushedColor: {r: 0, g: 0.654902, b: 1, a: 1}
-  checkedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
+  iconMargin: 0
+  content: 2
+  baseSprite: {fileID: 0}
   checkedSprite: {fileID: 0}
-  uncheckedSprite: {fileID: 0}
+  checkedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textContent: 
+  source_material: {fileID: 0}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onClickEvent:
@@ -1522,7 +1799,7 @@ GameObject:
   - component: {fileID: 5563176665804398635}
   - component: {fileID: 5563176665804398637}
   - component: {fileID: 5563176665804398634}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1595,7 +1872,7 @@ GameObject:
   - component: {fileID: 5563176666024307949}
   - component: {fileID: 5563176666024307951}
   - component: {fileID: 5563176666024307948}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1672,7 +1949,7 @@ GameObject:
   - component: {fileID: 5563176666037468423}
   - component: {fileID: 5563176666037468441}
   - component: {fileID: 5563176666037468422}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1754,7 +2031,7 @@ GameObject:
   - component: {fileID: 5563176666246060844}
   - component: {fileID: 5563176666246060846}
   - component: {fileID: 5563176666246060847}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1827,7 +2104,7 @@ GameObject:
   - component: {fileID: 5563176666293793566}
   - component: {fileID: 5563176666293793552}
   - component: {fileID: 5563176666293793553}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1904,7 +2181,7 @@ GameObject:
   - component: {fileID: 5563176666336881630}
   - component: {fileID: 5563176666336881616}
   - component: {fileID: 5563176666336881617}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}

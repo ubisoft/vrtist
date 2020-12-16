@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6486250613971190017}
   - component: {fileID: 6063971069477175773}
   - component: {fileID: 1005238997792845543}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Dumpster
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: d487c3243ae1e304bab5e31bae368e80,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d487c3243ae1e304bab5e31bae368e80, type: 3}

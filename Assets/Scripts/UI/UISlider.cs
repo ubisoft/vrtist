@@ -882,7 +882,7 @@ namespace VRtist
                 trt.localPosition = new Vector3(textPosRight, -uiSlider.margin, -0.002f);
             }
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiSlider;
         }

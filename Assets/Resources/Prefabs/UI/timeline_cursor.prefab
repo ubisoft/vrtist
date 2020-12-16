@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2817764003471865350}
   - component: {fileID: 8369442953363016447}
   - component: {fileID: 4607801780100788276}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: timeline_cursor
   m_TagString: UICollider
   m_Icon: {fileID: 0}

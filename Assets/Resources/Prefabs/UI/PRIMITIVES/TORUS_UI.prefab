@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4767387916421932030}
   - component: {fileID: 8362450219211523500}
   - component: {fileID: 4686323471069574903}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: TORUS_UI
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: c0535db858e082e41b19330677b012ff,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c0535db858e082e41b19330677b012ff, type: 3}

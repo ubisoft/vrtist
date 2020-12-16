@@ -299,7 +299,7 @@ namespace VRtist
                 uiPanel.SetColor(input.color.value);
             }
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiPanel;
         }

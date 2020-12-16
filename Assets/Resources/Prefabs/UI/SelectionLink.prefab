@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6401784566218455065}
   - component: {fileID: 6401784566218455064}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: SelectionLink
   m_TagString: Untagged
   m_Icon: {fileID: 0}

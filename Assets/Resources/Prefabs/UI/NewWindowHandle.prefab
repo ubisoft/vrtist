@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6971733933604054892}
   - component: {fileID: 635884723700919397}
   - component: {fileID: 7383140542968024657}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: _MAINOBJECT_
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -70,7 +70,7 @@ GameObject:
   - component: {fileID: 4294829541436622614}
   - component: {fileID: 4917384719567372866}
   - component: {fileID: 3506415420607495307}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: NewWindowHandle
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -131,7 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3998873420387244840}
   - component: {fileID: 4794818992194731502}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Audio_Open
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -260,7 +260,7 @@ GameObject:
   - component: {fileID: 1395689576773391166}
   - component: {fileID: 53213730694375078}
   - component: {fileID: 5470417564412734314}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -333,7 +333,7 @@ GameObject:
   - component: {fileID: 2768636986431618377}
   - component: {fileID: 9098126417497829267}
   - component: {fileID: 1423217596658615833}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: CloseButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -391,7 +391,7 @@ GameObject:
   - component: {fileID: 1546665006033947803}
   - component: {fileID: 2472949835795472322}
   - component: {fileID: 6808158439007368647}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -472,7 +472,7 @@ GameObject:
   - component: {fileID: 5728256130321055539}
   - component: {fileID: 8250919326069688289}
   - component: {fileID: 6186172323811330972}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Spot Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -673,7 +673,7 @@ GameObject:
   - component: {fileID: 4324203141246885650}
   - component: {fileID: 6204248430926222123}
   - component: {fileID: 2789022707859086379}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -750,7 +750,7 @@ GameObject:
   - component: {fileID: 8168760541883137391}
   - component: {fileID: 4349524695431067572}
   - component: {fileID: 8615509717707209576}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -833,7 +833,7 @@ GameObject:
   - component: {fileID: 2573106910379796612}
   - component: {fileID: 3527488393853683538}
   - component: {fileID: 4023049299165965875}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: MainPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -922,12 +922,36 @@ MonoBehaviour:
     reference:
       isHdr: 0
       value: {r: 0, g: 0, b: 0, a: 1}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   disabledColor:
     useConstant: 0
     constant: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
     reference:
       isHdr: 0
       value: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   radius: 0.002
   thickness: 0.001
@@ -947,7 +971,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5911893361116965714}
   - component: {fileID: 7228430519723307006}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Audio_Close
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1078,7 +1102,7 @@ GameObject:
   - component: {fileID: 5997478352202677399}
   - component: {fileID: 7331952894544926396}
   - component: {fileID: 2601942350553101016}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: CloseWindowButton
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -1181,22 +1205,51 @@ MonoBehaviour:
     reference:
       isHdr: 0
       value: {r: 0.8584906, g: 0.29156283, b: 0.7239765, a: 1}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   disabledColor:
     useConstant: 0
     constant: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
     reference:
       isHdr: 0
       value: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
   iconMarginBehavior: 0
   iconMargin: 0
   content: 2
-  source_material: {fileID: 2100000, guid: fcdf6c9cb5b40014b89bc65a1e89c63e, type: 2}
-  pushedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  checkedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   baseSprite: {fileID: 21300000, guid: dec3896bdca5fbf478acd3f7f926ed4e, type: 3}
   checkedSprite: {fileID: 0}
+  checkedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textContent: 
+  source_material: {fileID: 2100000, guid: fcdf6c9cb5b40014b89bc65a1e89c63e, type: 2}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onClickEvent:
@@ -1236,7 +1289,7 @@ GameObject:
   - component: {fileID: 8776334453005321190}
   - component: {fileID: 9122984076585884605}
   - component: {fileID: 4608127625643853570}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: TitleBar
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -1339,12 +1392,36 @@ MonoBehaviour:
     reference:
       isHdr: 0
       value: {r: 0.1742, g: 0.5336, b: 0.723, a: 1}
+  textColor:
+    useConstant: 0
+    constant: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   disabledColor:
     useConstant: 0
     constant: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
     reference:
       isHdr: 0
       value: {r: 0.5873, g: 0.617, b: 0.632, a: 1}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   margin: 0.005
   thickness: 0.001
   content: 0
@@ -1354,12 +1431,6 @@ MonoBehaviour:
   source_material: {fileID: 2100000, guid: 137f8342931d0d148bc8a5a120b36aeb, type: 2}
   image: {fileID: 0}
   textContent: __TITLE__
-  textColor:
-    useConstant: 0
-    constant: {r: 0.9, g: 0.9, b: 0.9, a: 1}
-    reference:
-      isHdr: 0
-      value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   nbSubdivCornerFixed: 3
   nbSubdivCornerPerUnit: 3
   onHoverEvent:
@@ -1382,7 +1453,7 @@ GameObject:
   - component: {fileID: 8982725169189880758}
   - component: {fileID: 6629739296781441071}
   - component: {fileID: 1072240450915689691}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}

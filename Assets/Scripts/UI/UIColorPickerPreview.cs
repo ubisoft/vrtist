@@ -124,7 +124,7 @@ namespace VRtist
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
             }
 
-            UIUtils.SetRecursiveLayer(go, "UI");
+            UIUtils.SetRecursiveLayer(go, "CameraHidden");
 
             return uiColorPickerPreview;
         }

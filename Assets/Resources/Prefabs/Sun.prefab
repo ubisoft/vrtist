@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1862806351537794285}
   - component: {fileID: 1204138857207612560}
   - component: {fileID: 7266784867430804055}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Sun
   m_TagString: PhysicObject
   m_Icon: {fileID: 0}
@@ -46,7 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191c5c829f0886f4d8944d9c92407100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  locked: 0
+  lockPosition: 0
+  lockRotation: 0
+  lockScale: 0
+  controllerName: 
+  initParentConstraintScale: 0
+  initParentConstraintOffset: {x: 0, y: 0, z: 0}
   lightType: 1
   intensity: 8
   minIntensity: 0
@@ -93,7 +98,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1402099131505382279}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Rotate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,7 +132,7 @@ GameObject:
   - component: {fileID: 2363868379688984270}
   - component: {fileID: 3551377350450663505}
   - component: {fileID: 4233052572024792226}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -412,7 +417,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: fd5eb8089aefc534a947cb9428b9a7e8,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fd5eb8089aefc534a947cb9428b9a7e8, type: 3}

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3731542231183277019}
   - component: {fileID: 4462327250532662023}
   - component: {fileID: 7221945281081398333}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Fridge
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -214,7 +214,7 @@ PrefabInstance:
     - target: {fileID: -927199367670048503, guid: 37eaca22ff8411e40b9af520520d9335,
         type: 3}
       propertyPath: m_Layer
-      value: 5
+      value: 17
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37eaca22ff8411e40b9af520520d9335, type: 3}

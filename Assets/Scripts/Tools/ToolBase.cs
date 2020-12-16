@@ -5,7 +5,7 @@ namespace VRtist
 {
     public abstract class ToolBase : MonoBehaviour
     {
-        [Header("UI")]
+        [Header("Panel")]
         [SerializeField] protected Transform panel = null;
 
         // Does this tool authorizes the swap-to-alt-tool operation. 

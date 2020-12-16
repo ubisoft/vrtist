@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 684239676963330906}
   - component: {fileID: 4403210706006056590}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Teleport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -56,7 +56,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 684239677101281315}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Target
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,7 +88,7 @@ GameObject:
   m_Component:
   - component: {fileID: 800405444916371886}
   - component: {fileID: 6038830135218962994}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Ray
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -218,7 +218,7 @@ GameObject:
   - component: {fileID: 9132891345694479490}
   - component: {fileID: 7980415866945623265}
   - component: {fileID: 7456071827755400827}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}

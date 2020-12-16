@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4078262801255707187}
   - component: {fileID: 4078262801255707185}
   - component: {fileID: 4078262801255707184}
-  m_Layer: 5
+  m_Layer: 17
   m_Name: Point
   m_TagString: UICollider
   m_Icon: {fileID: 0}
@@ -61,10 +61,44 @@ MonoBehaviour:
   relativeLocation: {x: 0, y: 0, z: 0}
   width: 1
   height: 1
-  baseColor: {r: 0.7294118, g: 0.7294118, b: 0.7294118, a: 1}
-  disabledColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  baseColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  textColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  disabledColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  pushedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  hoveredColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
+  rotateOnHover: 1
   prefab: {fileID: 7550228801638383316, guid: 07880906275969a45acec9d7a86a9fa0, type: 3}
-  hoverColor: {r: 0, g: 0.654902, b: 1, a: 1}
   onEnterUI3DObject:
     m_PersistentCalls:
       m_Calls:
@@ -133,7 +167,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4078262801769576027}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: UI_Light_Point(Clone)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,7 +200,7 @@ GameObject:
   - component: {fileID: 4078262802624568580}
   - component: {fileID: 4078262802624568586}
   - component: {fileID: 4078262802624568581}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: LightBulb_Simple
   m_TagString: Untagged
   m_Icon: {fileID: 0}

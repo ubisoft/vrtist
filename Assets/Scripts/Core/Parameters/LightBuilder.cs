@@ -10,7 +10,7 @@ namespace VRtist
         {
             GameObject newLight = GameObject.Instantiate(source, parent);
             LightController lightController = source.GetComponentInChildren<LightController>();
-            VRInput.DeepSetLayer(newLight, 5);
+            VRInput.DeepSetLayer(newLight, "CameraHidden");
 
             newLight.GetComponentInChildren<LightController>().CopyParameters(lightController);
 
