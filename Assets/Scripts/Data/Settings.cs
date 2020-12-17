@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -28,25 +29,51 @@ namespace VRtist
         public Vector3 dopeSheetPosition = new Vector3(-0.02f, 0.05f, -0.05f);
         public Quaternion dopeSheetRotation = Quaternion.Euler(30f, 0, 0);
         public bool dopeSheetVisible = false;
+        public bool DopeSheetVisible
+        {
+            get { return dopeSheetVisible; }
+            set { dopeSheetVisible = value; onSettingsChanged.Invoke(); }
+        }
 
         public Vector3 shotManagerPosition = new Vector3(0.3f, 0.9f, 0.7f);
         public Quaternion shotManagerRotation = Quaternion.Euler(7, 52, 0);
         public bool shotManagerVisible = false;
+        public bool ShotManagerVisible
+        {
+            get { return shotManagerVisible; }
+            set { shotManagerVisible = value; onSettingsChanged.Invoke(); }
+        }
 
         public Vector3 cameraPreviewPosition = new Vector3(0.3f,1f,0.6f);
         public Quaternion cameraPreviewRotation = Quaternion.Euler(-4, 49, 0);
         public bool cameraPreviewVisible = false;
+        public bool CameraPreviewVisible
+        {
+            get { return cameraPreviewVisible; }
+            set { cameraPreviewVisible = value; onSettingsChanged.Invoke(); }
+        }
 
         public Vector3 cameraFeedbackPosition = Vector3.zero;
         public Quaternion cameraFeedbackRotation = Quaternion.identity;
         public Vector3 cameraFeedbackScale = new Vector3(160, 90, 100);
         public float cameraFeedbackScaleValue = 1f;
         public bool cameraFeedbackVisible = false;
+        public bool CameraFeedbackVisible
+        {
+            get { return cameraFeedbackVisible; }
+            set { cameraFeedbackVisible = value; onSettingsChanged.Invoke(); }
+        }
+
         public float cameraDamping = 50f;
 
         public bool consoleVisible = false;
         public Vector3 consolePosition = new Vector3(-0.2f, 0.5f, 0.5f);
         public Quaternion consoleRotation = Quaternion.Euler(54, 6, 0);
+        public bool ConsoleVisible
+        {
+            get { return consoleVisible; }
+            set { consoleVisible = value; onSettingsChanged.Invoke(); }
+        }
 
         public SkySettings sky = new SkySettings
         {
@@ -82,6 +109,7 @@ namespace VRtist
 
         public string assetBankDirectory = "D:/VRtistData/";
 
+        public static UnityEvent onSettingsChanged = new UnityEvent();
         public void Reset()
         {
             displayGizmos = true;

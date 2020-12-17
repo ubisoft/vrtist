@@ -124,16 +124,17 @@ namespace VRtist
 
         protected virtual void OnEnable()
         {
-            //GlobalState.Instance.AddAnimationListener(OnParametersChanged);
-            //hasListener = true;
+            Settings.onSettingsChanged.AddListener(OnSettingsChanged);
         }
 
         protected virtual void OnDisable()
         {
-            //if (hasListener && null != GlobalState.Instance)
-            //    GlobalState.Instance.RemoveAnimationListener(OnParametersChanged);
-            //hasListener = false;
+            Settings.onSettingsChanged.RemoveListener(OnSettingsChanged);
         }
+        protected virtual void OnSettingsChanged()
+        {
+        }
+
 
         protected void OnSliderPressed(string title, string parameterPath)
         {

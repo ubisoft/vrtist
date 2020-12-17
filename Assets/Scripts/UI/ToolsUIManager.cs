@@ -185,7 +185,7 @@ namespace VRtist
             Transform dopesheet = vehicleContainer.Find("DopesheetHandle");
             dopesheet.localPosition = GlobalState.Settings.dopeSheetPosition;
             dopesheet.localRotation = GlobalState.Settings.dopeSheetRotation;
-            dopesheet.localScale = GlobalState.Settings.dopeSheetVisible ? Vector3.one * 0.7f : Vector3.zero;
+            dopesheet.localScale = GlobalState.Settings.DopeSheetVisible ? Vector3.one * 0.7f : Vector3.zero;
         }
 
         public void InitShotManagerState()
@@ -193,7 +193,7 @@ namespace VRtist
             Transform shotManager = vehicleContainer.Find("ShotManagerHandle");
             shotManager.localPosition = GlobalState.Settings.shotManagerPosition;
             shotManager.localRotation = GlobalState.Settings.shotManagerRotation;
-            shotManager.localScale = GlobalState.Settings.shotManagerVisible ? Vector3.one * 0.7f : Vector3.zero;
+            shotManager.localScale = GlobalState.Settings.ShotManagerVisible ? Vector3.one * 0.7f : Vector3.zero;
         }
 
         public void InitCameraPreviewState()
@@ -209,7 +209,7 @@ namespace VRtist
             Transform console = vehicleContainer.Find("ConsoleHandle");
             console.localPosition = GlobalState.Settings.consolePosition;
             console.localRotation = GlobalState.Settings.consoleRotation;
-            console.localScale = GlobalState.Settings.consoleVisible ? Vector3.one * 0.7f : Vector3.zero;
+            console.localScale = GlobalState.Settings.ConsoleVisible ? Vector3.one * 0.7f : Vector3.zero;
         }
 
         public Bounds GetVFXBounds(GameObject source)

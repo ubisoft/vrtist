@@ -47,7 +47,6 @@ namespace VRtist
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
 
-        private bool firstTimeShowConsole = true;
         private bool previousRightHandedValue = true;
 
         private void Start()
@@ -99,33 +98,18 @@ namespace VRtist
             OnDisplayGizmos(GlobalState.Settings.displayGizmos);
             OnDisplayLocators(GlobalState.Settings.displayLocators);
             OnDisplayAvatars(GlobalState.Settings.displayAvatars);
-            OnShowConsoleWindow(GlobalState.Settings.consoleVisible);
+            OnShowConsoleWindow(GlobalState.Settings.ConsoleVisible);
 
-            bool value = GlobalState.Settings.displayWorldGrid;
-            worldGridCheckbox.Checked = value;
-            worldGrid.SetActive(value);
-
-            displayGizmos.Checked = GlobalState.Settings.displayGizmos;
-            displayLocators.Checked = GlobalState.Settings.displayLocators;
-            showGizmosShortcut.Checked = GlobalState.Settings.displayGizmos;
-            showLocatorsShortcut.Checked = GlobalState.Settings.displayLocators;
-            displayFPS.Checked = GlobalState.Settings.displayFPS;
-            display3DCurves.Checked = GlobalState.Settings.display3DCurves;
-            displayAvatars.Checked = GlobalState.Settings.displayAvatars;
-
-            masterVolume.Value = GlobalState.Settings.masterVolume;
+            UpdateUIFromPreferences();
+            worldGrid.SetActive(GlobalState.Settings.displayWorldGrid);
             OnChangeMasterVolume(GlobalState.Settings.masterVolume);
-            ambientVolume.Value = GlobalState.Settings.ambientVolume;
             OnChangeAmbientVolume(GlobalState.Settings.ambientVolume);
-            uiVolume.Value = GlobalState.Settings.uiVolume;
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
 
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
-            rightHanded.Checked = GlobalState.Settings.rightHanded;
+
             if (!(onStart && GlobalState.Settings.rightHanded))
                 OnRightHanded(GlobalState.Settings.rightHanded);
-            forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
-            showConsoleWindow.Checked = GlobalState.Settings.consoleVisible;
 
             backgroundFeedback.localPosition = GlobalState.Settings.cameraFeedbackPosition;
             backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
@@ -137,6 +121,38 @@ namespace VRtist
             ToolsUIManager.Instance.InitShotManagerState();
             ToolsUIManager.Instance.InitCameraPreviewState();
             ToolsUIManager.Instance.InitConsoleState();
+        }
+
+        protected virtual void OnEnable()
+        {
+            Settings.onSettingsChanged.AddListener(UpdateUIFromPreferences);
+        }
+
+        protected virtual void OnDisable()
+        {
+            Settings.onSettingsChanged.RemoveListener(UpdateUIFromPreferences);
+        }
+
+        protected void UpdateUIFromPreferences()
+        {
+            showConsoleWindow.Checked = GlobalState.Settings.ConsoleVisible;
+            worldGridCheckbox.Checked = GlobalState.Settings.displayWorldGrid;
+
+            displayGizmos.Checked = GlobalState.Settings.displayGizmos;
+            displayLocators.Checked = GlobalState.Settings.displayLocators;
+            showGizmosShortcut.Checked = GlobalState.Settings.displayGizmos;
+            showLocatorsShortcut.Checked = GlobalState.Settings.displayLocators;
+            displayFPS.Checked = GlobalState.Settings.displayFPS;
+            display3DCurves.Checked = GlobalState.Settings.display3DCurves;
+            displayAvatars.Checked = GlobalState.Settings.displayAvatars;
+
+            masterVolume.Value = GlobalState.Settings.masterVolume;
+            ambientVolume.Value = GlobalState.Settings.ambientVolume;
+            uiVolume.Value = GlobalState.Settings.uiVolume;
+
+            rightHanded.Checked = GlobalState.Settings.rightHanded;
+            forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
+            showConsoleWindow.Checked = GlobalState.Settings.ConsoleVisible;
         }
 
         private void OnConnected()
@@ -421,18 +437,10 @@ namespace VRtist
 
         public void OnShowConsoleWindow(bool value)
         {
-            GlobalState.Settings.consoleVisible = value;
             if (consoleWindow != null && consoleHandle != null)
             {
                 if (value)
                 {
-                    if (firstTimeShowConsole && consoleHandle.position == Vector3.zero)
-                    {
-                        Vector3 offset = new Vector3(0.5f, 0.5f, 0.0f);
-                        consoleHandle.position = paletteHandle.TransformPoint(offset);
-                        consoleHandle.rotation = paletteHandle.rotation;
-                        firstTimeShowConsole = false;
-                    }
                     ToolsUIManager.Instance.OpenWindow(consoleHandle, 0.7f);
                 }
                 else
@@ -440,6 +448,7 @@ namespace VRtist
                     ToolsUIManager.Instance.CloseWindow(consoleHandle, 0.7f);
                 }
             }
+            GlobalState.Settings.ConsoleVisible = value;
         }
 
         public void OnCloseConsoleWindow()

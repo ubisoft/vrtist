@@ -39,13 +39,8 @@ namespace VRtist
         private bool feedbackPositioning = false;
         private float cameraFeedbackScaleFactor = 1.05f;
 
-        private bool firstTimeShowDopesheet = true;
         private UICheckbox showDopesheetCheckbox = null;
-
-        private bool firstTimeShowShotManager = true;
         private UICheckbox showShotManagerCheckbox = null;
-
-        private bool firstTimeShowCameraPreview = true;
         private UICheckbox showCameraPreviewCheckbox = null;
         private CameraPreviewWindow cameraPreviewWindow;
 
@@ -139,13 +134,18 @@ namespace VRtist
 
             OnSelectionChanged(null, null);
             foreach (Camera camera in SelectedCameras())
-                ComputeFocal(camera);
+                ComputeFocal(camera);            
         }
 
         protected override void OnDisable()
         {
             base.OnDisable();
             feedbackPositioning = false;
+        }
+
+        protected override void OnSettingsChanged()
+        {
+            InitUIPanel();
         }
 
         protected override void Awake()
@@ -245,11 +245,6 @@ namespace VRtist
 
         protected void InitUIPanel()
         {
-            if (showCameraFeedbackCheckbox != null)
-            {
-                showCameraFeedbackCheckbox.Checked = GlobalState.Settings.cameraFeedbackVisible;
-            }
-
             if (feedbackPositionningCheckbox != null)
             {
                 feedbackPositionningCheckbox.Checked = feedbackPositioning;
@@ -267,6 +262,24 @@ namespace VRtist
                 focusSlider.GetComponent<UISlider>().Disabled = !enableDepthOfField;
                 apertureSlider.GetComponent<UISlider>().Disabled = !enableDepthOfField;
             }
+
+            if (null != showCameraFeedbackCheckbox)
+            {
+                showCameraFeedbackCheckbox.Checked = GlobalState.Settings.cameraFeedbackVisible;
+            }
+            if (null != showDopesheetCheckbox)
+            {
+                showDopesheetCheckbox.Checked = GlobalState.Settings.DopeSheetVisible;
+            }
+            if (null != showShotManagerCheckbox)
+            {
+                showShotManagerCheckbox.Checked = GlobalState.Settings.ShotManagerVisible;
+            }
+            if (null != showCameraPreviewCheckbox)
+            {
+                showCameraPreviewCheckbox.Checked = GlobalState.Settings.CameraPreviewVisible;
+            }
+
         }
 
         public void OnCameraRenamed(GameObject gObject)
@@ -344,13 +357,8 @@ namespace VRtist
         public void OnCloseDopesheet()
         {
             OnCheckShowDopesheet(false);
-
-            UICheckbox showDopesheet = showDopesheetCheckbox.GetComponent<UICheckbox>();
-            if (showDopesheet != null)
-            {
-                showDopesheet.Checked = false;
-            }
         }
+
         public void OnCloseShotManager()
         {
             OnCheckShowShotManager(false);
@@ -364,18 +372,10 @@ namespace VRtist
 
         public void OnCheckShowDopesheet(bool value)
         {
-            GlobalState.Settings.dopeSheetVisible = value;
             if (dopesheet != null && dopesheetHandle != null)
             {
                 if (value)
                 {
-                    if (firstTimeShowDopesheet && dopesheetHandle.position == Vector3.zero)
-                    {
-                        Vector3 offset = new Vector3(0.25f, 0.0f, 0.0f);
-                        dopesheetHandle.position = paletteHandle.TransformPoint(offset);
-                        dopesheetHandle.rotation = paletteHandle.rotation;
-                        firstTimeShowDopesheet = false;
-                    }
                     ToolsUIManager.Instance.OpenWindow(dopesheetHandle, 0.7f);
                 }
                 else
@@ -383,22 +383,16 @@ namespace VRtist
                     ToolsUIManager.Instance.CloseWindow(dopesheetHandle, 0.7f);
                 }
             }
+            GlobalState.Settings.DopeSheetVisible = value;
         }
 
         public void OnCheckShowShotManager(bool value)
         {
-            GlobalState.Settings.shotManagerVisible = value;
+            GlobalState.Settings.ShotManagerVisible = value;
             if (shotManager != null && shotManagerHandle != null)
             {
                 if (value)
                 {
-                    if (firstTimeShowShotManager && shotManagerHandle.position == Vector3.zero)
-                    {
-                        Vector3 offset = new Vector3(0.25f, 0.0f, 0.0f);
-                        shotManagerHandle.position = paletteHandle.TransformPoint(offset);
-                        shotManagerHandle.rotation = paletteHandle.rotation;
-                        firstTimeShowShotManager = false;
-                    }
                     ToolsUIManager.Instance.OpenWindow(shotManagerHandle, 0.7f);
                 }
                 else
@@ -425,13 +419,6 @@ namespace VRtist
             {
                 if (value)
                 {
-                    if (firstTimeShowCameraPreview && cameraPreviewHandle.position == Vector3.zero)
-                    {
-                        Vector3 offset = new Vector3(0.5f, 0.5f, 0.0f);
-                        cameraPreviewHandle.position = paletteHandle.TransformPoint(offset);
-                        cameraPreviewHandle.rotation = paletteHandle.rotation;
-                        firstTimeShowCameraPreview = false;
-                    }
                     ToolsUIManager.Instance.OpenWindow(cameraPreviewHandle, 0.7f);
                 }
                 else

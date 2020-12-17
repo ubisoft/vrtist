@@ -81,12 +81,11 @@ namespace VRtist
         {
             base.OnEnable();
             OnSelectMode();
-            Selection.OnSelectionChanged += OnSelectionChanged;
-
+            Selection.OnSelectionChanged += OnSelectionChanged;            
         }
 
         protected override void OnDisable()
-        {
+        {            
             Selection.OnSelectionChanged -= OnSelectionChanged;
             if (Gripping)
                 OnEndGrip();
