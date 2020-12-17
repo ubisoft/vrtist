@@ -21,6 +21,7 @@ namespace VRtist
         public ConsoleWindow consoleWindow;
         public UIButton showGizmosShortcut;
         public UIButton showLocatorsShortcut;
+        public UIButton playShortcut;
 
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
@@ -126,11 +127,18 @@ namespace VRtist
         protected virtual void OnEnable()
         {
             Settings.onSettingsChanged.AddListener(UpdateUIFromPreferences);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
         protected virtual void OnDisable()
         {
             Settings.onSettingsChanged.RemoveListener(UpdateUIFromPreferences);
+            GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
+        }
+
+        private void OnAnimationStateChanged(AnimationState state)
+        {
+            playShortcut.Checked = state == AnimationState.Playing || state == AnimationState.Recording;
         }
 
         protected void UpdateUIFromPreferences()
@@ -139,8 +147,8 @@ namespace VRtist
             worldGridCheckbox.Checked = GlobalState.Settings.DisplayWorldGrid;
 
             displayGizmos.Checked = GlobalState.Settings.DisplayGizmos;
-            displayLocators.Checked = GlobalState.Settings.DisplayLocators;
             showGizmosShortcut.Checked = GlobalState.Settings.DisplayGizmos;
+            displayLocators.Checked = GlobalState.Settings.DisplayLocators;
             showLocatorsShortcut.Checked = GlobalState.Settings.DisplayLocators;
             displayFPS.Checked = GlobalState.Settings.DisplayFPS;
             display3DCurves.Checked = GlobalState.Settings.Display3DCurves;

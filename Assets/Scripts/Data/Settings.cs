@@ -59,8 +59,8 @@ namespace VRtist
         public Quaternion paletteRotation;
         public bool pinnedPalette = false;
 
-        public Vector3 dopeSheetPosition = new Vector3(-0.02f, 0.05f, -0.05f);
-        public Quaternion dopeSheetRotation = Quaternion.Euler(30f, 0, 0);
+        public Vector3 dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);
+        public Quaternion dopeSheetRotation = Quaternion.Euler(7, 52, 0);
         public bool dopeSheetVisible = false;
         public bool DopeSheetVisible
         {
@@ -68,8 +68,8 @@ namespace VRtist
             set { dopeSheetVisible = value; onSettingsChanged.Invoke(); }
         }
 
-        public Vector3 shotManagerPosition = new Vector3(0.3f, 0.9f, 0.7f);
-        public Quaternion shotManagerRotation = Quaternion.Euler(7, 52, 0);
+        public Vector3 shotManagerPosition = new Vector3(0.3f, 1.2f, 0.7f);
+        public Quaternion shotManagerRotation = Quaternion.Euler(64, 50, 0);
         public bool shotManagerVisible = false;
         public bool ShotManagerVisible
         {
@@ -77,7 +77,7 @@ namespace VRtist
             set { shotManagerVisible = value; onSettingsChanged.Invoke(); }
         }
 
-        public Vector3 cameraPreviewPosition = new Vector3(0.3f,1f,0.6f);
+        public Vector3 cameraPreviewPosition = new Vector3(0.3f, 1.5f, 0.6f);
         public Quaternion cameraPreviewRotation = Quaternion.Euler(-4, 49, 0);
         public bool cameraPreviewVisible = false;
         public bool CameraPreviewVisible
@@ -100,7 +100,7 @@ namespace VRtist
         public float cameraDamping = 50f;
 
         public bool consoleVisible = false;
-        public Vector3 consolePosition = new Vector3(-0.2f, 0.5f, 0.5f);
+        public Vector3 consolePosition = new Vector3(-0.2f, 1.0f, 0.5f);
         public Quaternion consoleRotation = Quaternion.Euler(54, 6, 0);
         public bool ConsoleVisible
         {
@@ -163,15 +163,15 @@ namespace VRtist
             raySliderDrag = 95.0f;
 
             dopeSheetVisible = false;
-            dopeSheetPosition = new Vector3(0.3f, 0.9f, 0.7f);
+            dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);
             dopeSheetRotation = Quaternion.Euler(7,52,0);
 
             shotManagerVisible = false;
-            shotManagerPosition = new Vector3(0.3f, 0.7f, 0.7f);
+            shotManagerPosition = new Vector3(0.3f, 1.2f, 0.7f);
             shotManagerRotation = Quaternion.Euler(64, 50, 0);
 
             cameraPreviewVisible = false;
-            cameraPreviewPosition = new Vector3(0.3f, 1f, 0.6f);
+            cameraPreviewPosition = new Vector3(0.3f, 1.5f, 0.6f);
             cameraPreviewRotation = Quaternion.Euler(-4, 49, 0);
 
             cameraFeedbackPosition = Vector3.zero;
@@ -181,7 +181,7 @@ namespace VRtist
             cameraFeedbackVisible = false;
 
             consoleVisible = false;
-            consolePosition = new Vector3(-0.2f, 0.5f, 0.5f);
+            consolePosition = new Vector3(-0.2f, 1.0f, 0.5f);
             consoleRotation = Quaternion.Euler(54, 6, 0);
 
             interpolation = Interpolation.Linear;
