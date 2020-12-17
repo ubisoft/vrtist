@@ -48,8 +48,6 @@ namespace VRtist
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
 
-        private bool previousRightHandedValue = true;
-
         private void Start()
         {
             // tmp
@@ -82,9 +80,7 @@ namespace VRtist
             showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
 
-            previousRightHandedValue = GlobalState.Settings.rightHanded;
-
-            Apply(onStart: true);
+            Apply();
 
             if (null != versionLabel && versionLabel.Text.Length == 0)
             {
@@ -94,7 +90,7 @@ namespace VRtist
             OnSetDisplaySubPanel();
         }
 
-        private void Apply(bool onStart = false)
+        private void Apply()
         {
             OnDisplayGizmos(GlobalState.Settings.DisplayGizmos);
             OnDisplayLocators(GlobalState.Settings.DisplayLocators);
@@ -109,8 +105,7 @@ namespace VRtist
 
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
 
-            if (!(onStart && GlobalState.Settings.rightHanded))
-                OnRightHanded(GlobalState.Settings.rightHanded);
+            OnRightHanded(GlobalState.Settings.rightHanded);
 
             backgroundFeedback.localPosition = GlobalState.Settings.cameraFeedbackPosition;
             backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
@@ -174,7 +169,7 @@ namespace VRtist
         public void OnReset()
         {
             GlobalState.Settings.Reset();
-            Apply();            
+            Apply();
         }
 
         public void OnDisplayFPS(bool show)
@@ -272,7 +267,7 @@ namespace VRtist
         {
             // TODO (Right / Left) handed
             Transform tooltip = anchor.Find("Tooltip");
-            if(null != tooltip)
+            if (null != tooltip)
             {/*
                 FreeDraw freeDraw = new FreeDraw();
                 freeDraw.AddControlPoint(Vector3.zero, 0.00025f);
@@ -289,131 +284,7 @@ namespace VRtist
 
         public void OnRightHanded(bool value)
         {
-            if (previousRightHandedValue == value)
-                return;
-
-            previousRightHandedValue = value;
-            GlobalState.Settings.rightHanded = value;
-
-            GameObject leftPrefab = Resources.Load("Prefabs/left_controller") as GameObject;
-            GameObject rightPrefab = Resources.Load("Prefabs/right_controller") as GameObject;
-
-            Transform leftInstance = leftHandle.Find("left_controller");
-            Transform rightInstance = rightHandle.Find("right_controller");
-
-            // Get the prefab and instance controller meshes/parts
-            MeshFilter[] leftPrefabMeshFilters = leftPrefab.GetComponentsInChildren<MeshFilter>();
-            MeshFilter[] rightPrefabMeshFilters = rightPrefab.GetComponentsInChildren<MeshFilter>();
-            MeshFilter[] leftInstanceMeshFilters = leftInstance.GetComponentsInChildren<MeshFilter>();
-            MeshFilter[] rightInstanceMeshFilters = rightInstance.GetComponentsInChildren<MeshFilter>();
-
-            // Copy prefab/default (right handed) transforms and meshes to the corresponding controller.
-            if (value)
-            {
-                Canvas fpsPrefabCanvas = leftPrefab.transform.Find("Canvas").GetComponent<Canvas>();
-                Canvas fpsInstanceCanvas = leftInstance.Find("Canvas").GetComponent<Canvas>();
-                fpsInstanceCanvas.transform.localPosition = fpsPrefabCanvas.transform.localPosition;
-
-                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
-                {
-                    leftInstanceMeshFilters[i].mesh = leftPrefabMeshFilters[i].sharedMesh;
-                }
-
-                leftInstance.localPosition = leftPrefab.transform.localPosition;
-                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
-                {
-                    if (leftInstanceMeshFilters[i].gameObject.name != "left_controller")
-                    {
-                        // copy the translations/rotations of the pivots of mesh objects (parents)
-                        leftInstanceMeshFilters[i].transform.parent.localPosition = leftPrefabMeshFilters[i].transform.parent.localPosition;
-                        leftInstanceMeshFilters[i].transform.parent.localRotation = leftPrefabMeshFilters[i].transform.parent.localRotation;
-                    }
-                }
-
-                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
-                {
-                    rightInstanceMeshFilters[i].mesh = rightPrefabMeshFilters[i].sharedMesh;
-                }
-
-                rightInstance.localPosition = rightPrefab.transform.localPosition;
-                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
-                {
-                    if (rightInstanceMeshFilters[i].gameObject.name != "right_controller")
-                    {
-                        // copy the translations/rotations of the pivots of mesh objects (parents)
-                        rightInstanceMeshFilters[i].transform.parent.localPosition = rightPrefabMeshFilters[i].transform.parent.localPosition;
-                        rightInstanceMeshFilters[i].transform.parent.localRotation = rightPrefabMeshFilters[i].transform.parent.localRotation;
-                    }
-                }
-            }
-            else
-            {
-                Canvas fpsPrefabCanvas = leftPrefab.transform.Find("Canvas").GetComponent<Canvas>();
-                Canvas fpsInstanceCanvas = leftInstance.Find("Canvas").GetComponent<Canvas>();
-                fpsInstanceCanvas.transform.localPosition = Vector3.Scale(fpsPrefabCanvas.transform.localPosition, new Vector3(-1,1,1));
-
-                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
-                {
-                    leftInstanceMeshFilters[i].mesh = rightPrefabMeshFilters[i].sharedMesh;
-                }
-
-                leftInstance.localPosition = rightPrefab.transform.localPosition;
-                for (int i = 0; i < leftPrefabMeshFilters.Length; ++i)
-                {
-                    if (leftInstanceMeshFilters[i].gameObject.name != "left_controller")
-                    {
-                        // copy the translations/rotations of the pivots of mesh objects (parents)
-                        leftInstanceMeshFilters[i].transform.parent.localPosition = rightPrefabMeshFilters[i].transform.parent.localPosition;
-                        leftInstanceMeshFilters[i].transform.parent.localRotation = rightPrefabMeshFilters[i].transform.parent.localRotation;
-                    }
-                }
-
-                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
-                {
-                    rightInstanceMeshFilters[i].mesh = leftPrefabMeshFilters[i].sharedMesh;
-                }
-
-                rightInstance.localPosition = leftPrefab.transform.localPosition;
-                for (int i = 0; i < rightPrefabMeshFilters.Length; ++i)
-                {
-                    if (rightInstanceMeshFilters[i].gameObject.name != "right_controller")
-                    {
-                        // copy the translations/rotations of the pivots of mesh objects (parents)
-                        rightInstanceMeshFilters[i].transform.parent.localPosition = leftPrefabMeshFilters[i].transform.parent.localPosition;
-                        rightInstanceMeshFilters[i].transform.parent.localRotation = leftPrefabMeshFilters[i].transform.parent.localRotation;
-                    }
-                }
-            }
-
-            AnimateControllerButtons acmLeft = leftInstance.parent.GetComponent<AnimateControllerButtons>();
-            AnimateControllerButtons acmRight = rightInstance.parent.GetComponent<AnimateControllerButtons>();
-
-            acmLeft.OnRightHanded(value);
-            acmRight.OnRightHanded(value);
-
-            // Swap tooltips anchors            
-            for (int i = 0; i < leftInstance.childCount; i++)
-            {
-                Transform leftChild = leftInstance.GetChild(i);
-                if (leftChild.name.EndsWith("Anchor"))
-                {
-                    Transform rightChild = rightInstance.GetChild(i);
-                    InvertTooltip(leftChild);
-                    InvertTooltip(rightChild);
-
-                    Vector3 tmpPos = leftChild.localPosition;
-                    leftChild.localPosition = rightChild.localPosition;
-                    rightChild.localPosition = tmpPos;
-                }
-            }
-
-            // Move Palette
-            Transform palette = leftHandle.Find("PaletteHandle");
-            Vector3 currentPalettePosition = palette.localPosition;
-            if (GlobalState.Settings.rightHanded)
-                palette.localPosition = new Vector3(-0.02f, currentPalettePosition.y, currentPalettePosition.z);
-            else
-                palette.localPosition = new Vector3(-0.2f, currentPalettePosition.y, currentPalettePosition.z);
+            GlobalState.SetRightHanded(value);
         }
 
         public void OnChangeMasterVolume(float volume)

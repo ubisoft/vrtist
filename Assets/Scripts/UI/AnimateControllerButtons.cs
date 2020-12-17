@@ -5,106 +5,90 @@ namespace VRtist
 {
     public class AnimateControllerButtons : MonoBehaviour
     {
-        public Transform gripTransform = null;
-        public float gripRotationAmplitude = 15.0f;
+        private Transform gripTransform = null;
+        private float gripRotationAmplitude = 15.0f;
         private Quaternion initGripRotation = Quaternion.identity;
 
-        public Transform triggerTransform = null;
-        public float triggerRotationAmplitude = 15.0f;
+        private Transform triggerTransform = null;
+        private float triggerRotationAmplitude = 15.0f;
         private Quaternion initTriggerRotation = Quaternion.identity;
 
-        public Transform joystickTransform = null;
-        public float joystickRotationAmplitude = 15.0f;
+        private Transform joystickTransform = null;
+        private float joystickRotationAmplitude = 15.0f;
         private Quaternion initJoystickRotation = Quaternion.identity;
 
-        public Transform primaryTransform = null;
-        public float primaryTranslationAmplitude = -0.0016f;
+        private Transform primaryTransform = null;
+        private float primaryTranslationAmplitude = -0.0016f;
         private Vector3 initPrimaryTranslation = Vector3.zero;
 
-        public Transform secondaryTransform = null;
-        public float secondaryTranslationAmplitude = -0.0016f;
+        private Transform secondaryTransform = null;
+        private float secondaryTranslationAmplitude = -0.0016f;
         private Vector3 initSecondaryTranslation = Vector3.zero;
 
-        public Transform systemTransform = null;
-        public float systemTranslationAmplitude = -0.001f;
+        private Transform systemTransform = null;
+        private float systemTranslationAmplitude = -0.001f;
         private Vector3 initSystemTranslation = Vector3.zero;
 
+        public bool rightHand = true;
         private InputDevice device;
-        private Transform controllerTransform = null;
 
-        private float gripDirection = 1.0f;
+        public float gripDirection = 1.0f;
 
         // Start is called before the first frame update
         void Start()
         {
-            CaptureControllers();
+            CaptureController();
             CaptureInitialTransforms();
         }
 
-        private void CaptureControllers()
+        private void CaptureController()
         {
-            for (int i = 0; i < transform.childCount; ++i)
+            if (rightHand)
             {
-                string childName = transform.GetChild(i).gameObject.name;
-                if (childName == "left_controller")
-                {
-                    device = VRInput.leftController;
-                    controllerTransform = transform.GetChild(i);
-                    break;
-                }
-                else if (childName == "right_controller")
-                {
-                    device = VRInput.rightController;
-                    controllerTransform = transform.GetChild(i);
-                    break;
-                }
+                device = VRInput.primaryController;
             }
-
-            if (!device.isValid || controllerTransform == null)
+            else
             {
-                Debug.LogWarning("AnimateControllerButtons could not find the controller.");
+                device = VRInput.secondaryController;
             }
         }
 
         private void CaptureInitialTransforms()
         {
-            if (null != controllerTransform)
+            gripTransform = transform.Find("GripButtonPivot/GripButton");
+            if (null != gripTransform)
             {
-                gripTransform = controllerTransform.Find("GripButtonPivot/GripButton");
-                if (null != gripTransform)
-                {
-                    initGripRotation = gripTransform.localRotation;
-                }
+                initGripRotation = gripTransform.localRotation;
+            }
 
-                triggerTransform = controllerTransform.Find("TriggerButtonPivot/TriggerButton");
-                if (null != triggerTransform)
-                {
-                    initTriggerRotation = triggerTransform.localRotation;
-                }
+            triggerTransform = transform.Find("TriggerButtonPivot/TriggerButton");
+            if (null != triggerTransform)
+            {
+                initTriggerRotation = triggerTransform.localRotation;
+            }
 
-                joystickTransform = controllerTransform.Find("PrimaryAxisPivot/PrimaryAxis");
-                if (null != joystickTransform)
-                {
-                    initJoystickRotation = joystickTransform.localRotation;
-                }
+            joystickTransform = transform.Find("PrimaryAxisPivot/PrimaryAxis");
+            if (null != joystickTransform)
+            {
+                initJoystickRotation = joystickTransform.localRotation;
+            }
 
-                primaryTransform = controllerTransform.Find("PrimaryButtonPivot/PrimaryButton");
-                if (null != primaryTransform)
-                {
-                    initPrimaryTranslation = primaryTransform.localPosition;
-                }
+            primaryTransform = transform.Find("PrimaryButtonPivot/PrimaryButton");
+            if (null != primaryTransform)
+            {
+                initPrimaryTranslation = primaryTransform.localPosition;
+            }
 
-                secondaryTransform = controllerTransform.Find("SecondaryButtonPivot/SecondaryButton");
-                if (null != secondaryTransform)
-                {
-                    initSecondaryTranslation = secondaryTransform.localPosition;
-                }
+            secondaryTransform = transform.Find("SecondaryButtonPivot/SecondaryButton");
+            if (null != secondaryTransform)
+            {
+                initSecondaryTranslation = secondaryTransform.localPosition;
+            }
 
-                systemTransform = controllerTransform.Find("SystemButtonPivot/SystemButton");
-                if (null != systemTransform)
-                {
-                    initSystemTranslation = systemTransform.localPosition;
-                }
+            systemTransform = transform.Find("SystemButtonPivot/SystemButton");
+            if (null != systemTransform)
+            {
+                initSystemTranslation = systemTransform.localPosition;
             }
         }
 
@@ -112,18 +96,15 @@ namespace VRtist
         {
             // TODO: handle what needs to be handled when we change hands.
 
-            CaptureControllers();
-            CaptureInitialTransforms();
-
-            gripDirection = isRightHanded ? 1.0f : -1.0f;
+            //gripDirection = isRightHanded ? 1.0f : -1.0f;
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (!device.isValid || controllerTransform == null)
+            if (!device.isValid)
             {
-                CaptureControllers();
+                CaptureController();
                 CaptureInitialTransforms();
             }
 
@@ -186,7 +167,6 @@ namespace VRtist
                 ////    systemTransform.localPosition += new Vector3(0, 0, systemTranslationAmplitude); // TODO: quick anim? CoRoutine.
                 ////}
             }
-
         }
     }
 }

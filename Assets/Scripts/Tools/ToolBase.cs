@@ -52,8 +52,7 @@ namespace VRtist
 
         protected void SetControllerVisible(bool visible)
         {
-            rightController.gameObject.SetActive(visible);
-
+            GlobalState.SetPrimaryControllerVisible(visible);
             // Mouth piece have the selectorTrigger script attached to them which has to be always enabled
             // So don't deactivate mouth piece, but hide it instead
             ShowMouthpiece(visible);
@@ -88,7 +87,7 @@ namespace VRtist
                 // Toggle selection
                 if (enableToggleTool)
                 {
-                    VRInput.ButtonEvent(VRInput.rightController, CommonUsages.secondaryButton, () =>
+                    VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.secondaryButton, () =>
                     {
                         ToolsManager.ToggleTool();
                     });

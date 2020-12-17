@@ -181,7 +181,7 @@ namespace VRtist
         {
             Vector3 position;
             Quaternion rotation;
-            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+            VRInput.GetControllerTransform(VRInput.primaryController, out position, out rotation);
 
             UpdateToolPaint(position, rotation);
         }
@@ -296,7 +296,7 @@ namespace VRtist
         private void UpdateToolPaint(Vector3 position, Quaternion rotation)
         {
             // ON TRIGGER
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
             {
                 BeginPaint();
 
@@ -320,12 +320,12 @@ namespace VRtist
 
             });
 
-            float triggerValue = VRInput.GetValue(VRInput.rightController, CommonUsages.trigger);
+            float triggerValue = VRInput.GetValue(VRInput.primaryController, CommonUsages.trigger);
 
             // Change brush size
             if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
-                Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                Vector2 val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
                 if (val != Vector2.zero)
                 {
                     if (val.y > 0.3f) { brushSize += 0.001f; }

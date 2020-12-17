@@ -39,7 +39,7 @@ namespace VRtist
         private void Update()
         {
             // Trigger action forwarded to Colorize script
-            bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
+            bool triggerState = VRInput.GetValue(VRInput.primaryController, CommonUsages.triggerButton);
             if(triggerState && collidedObjects.Count > 0) {
                 // Process then remove objects from the list of collided objects in order to prevent
                 // processing the same objects each frame (until trigger exit)
@@ -50,7 +50,7 @@ namespace VRtist
             // Scaling of collider
             if(navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
-                Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                Vector2 val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
                 if(val != Vector2.zero)
                 {
                     float scale = gameObject.transform.localScale.x;

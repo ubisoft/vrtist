@@ -131,7 +131,7 @@ namespace VRtist
 
         protected override void DoUpdateGui()
         {
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.gripButton, () =>
             {
                 if (UIObject)
                 {

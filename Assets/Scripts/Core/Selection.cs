@@ -140,7 +140,7 @@ namespace VRtist
                 if (hoveredObject)
                 {
                     outlinedObject = hoveredObject;
-                    VRInput.SendHapticImpulse(VRInput.rightController, 0, 0.1f, 0.1f);
+                    VRInput.SendHapticImpulse(VRInput.primaryController, 0, 0.1f, 0.1f);
                 }
             }
 

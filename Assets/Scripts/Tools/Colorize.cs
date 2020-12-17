@@ -69,7 +69,7 @@ namespace VRtist
         protected override void DoUpdate()
         {
             // Alt button
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton, () =>
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.primaryButton, () =>
             {
                 previousColorOp = colorOp;
                 colorOp = ColorOp.Pick;
@@ -96,7 +96,7 @@ namespace VRtist
             // Clear selection: only when triggering on nothing with the ColorOp.UpdateSelection
             if (ColorOp.UpdateSelection == colorOp)
             {
-                VRInput.ButtonEvent(VRInput.rightController, CommonUsages.triggerButton, () =>
+                VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.triggerButton, () =>
                 {
                     selectionHasChanged = false;
                 }, () =>
@@ -147,7 +147,7 @@ namespace VRtist
         {
             CommandMaterial command = new CommandMaterial(gobjects, GlobalState.CurrentColor, roughnessSlider.Value, metallicSlider.Value);
             command.Submit();
-            VRInput.SendHaptic(VRInput.rightController, 0.1f, 0.2f);
+            VRInput.SendHaptic(VRInput.primaryController, 0.1f, 0.2f);
         }
 
         private void PickObjects(List<GameObject> gobjects)
@@ -158,12 +158,12 @@ namespace VRtist
             else { roughnessSlider.Value = renderer.material.GetFloat("_Roughness"); }
             metallicSlider.Value = renderer.material.GetFloat("_Metallic");
             UpdatePreview();
-            VRInput.SendHaptic(VRInput.rightController, 0.1f, 0.2f);
+            VRInput.SendHaptic(VRInput.primaryController, 0.1f, 0.2f);
         }
 
         private void SelectObjects(List<GameObject> gobjects)
         {
-            bool primaryState = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
+            bool primaryState = VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton);
             ICommand command;
             if (!primaryState) { command = new CommandAddToSelection(gobjects); }
             else { command = new CommandRemoveFromSelection(gobjects); }

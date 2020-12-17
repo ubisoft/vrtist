@@ -52,7 +52,7 @@ namespace VRtist
             // LEFT GRIP WORLD
             //
 
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
+            VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.gripButton,
             () =>
             {
                 // left AFTER right => reset all
@@ -91,7 +91,7 @@ namespace VRtist
             // NOTE: On ne peut predire dans quel ordre les Update vont s'executer. Le Selector/SelectorTrigger peuvent
             //       recuperer le LeftGrip avant nous, et commencer a grip un objet avant qu'on ait pu set la property
             //       GlobalState.IsGrippingWorld. Cela pose-t-il encore un probleme?
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton,
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.gripButton,
             () =>
             {
                 //if (Selection.selection.Count == 0)
@@ -131,14 +131,14 @@ namespace VRtist
             });
 
             // NOTE: we test isLeftGrip because we can be ungripped but still over the deadzone, strangely.
-            if (isLeftGripped && VRInput.GetValue(VRInput.leftController, CommonUsages.grip) > deadZone)
+            if (isLeftGripped && VRInput.GetValue(VRInput.secondaryController, CommonUsages.grip) > deadZone)
             {
                 if (isRightGripped)
                 {
                     float prevScale = scale;
 
-                    VRInput.GetControllerTransform(VRInput.leftController, out Vector3 currentLeftControllerPosition_L, out Quaternion currentLeftControllerRotation_L);
-                    VRInput.GetControllerTransform(VRInput.rightController, out Vector3 currentRightControllerPosition_L, out Quaternion currentRightControllerRotation_L);
+                    VRInput.GetControllerTransform(VRInput.secondaryController, out Vector3 currentLeftControllerPosition_L, out Quaternion currentLeftControllerRotation_L);
+                    VRInput.GetControllerTransform(VRInput.primaryController, out Vector3 currentRightControllerPosition_L, out Quaternion currentRightControllerRotation_L);
 
                     Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
                     Matrix4x4 currentLeftControllerMatrix_W = initPivotMatrix * currentLeftControllerMatrix_L_Scaled;
@@ -209,7 +209,7 @@ namespace VRtist
         {
             Vector3 initLeftControllerPosition_L;
             Quaternion initLeftControllerRotation_L;
-            VRInput.GetControllerTransform(VRInput.leftController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
+            VRInput.GetControllerTransform(VRInput.secondaryController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
             Matrix4x4 initLeftControllerMatrix_L = Matrix4x4.TRS(initLeftControllerPosition_L, initLeftControllerRotation_L, Vector3.one);
             initPivotMatrix = Matrix4x4.TRS(pivot.localPosition, pivot.localRotation, pivot.localScale);
             initLeftControllerMatrix_WtoL = (initPivotMatrix * initLeftControllerMatrix_L).inverse;
@@ -218,7 +218,7 @@ namespace VRtist
             {
                 Vector3 initRightControllerPosition_L; // initial right controller position in local space.
                 Quaternion initRightControllerRotation_L; // initial right controller rotation in local space.
-                VRInput.GetControllerTransform(VRInput.rightController, out initRightControllerPosition_L, out initRightControllerRotation_L);
+                VRInput.GetControllerTransform(VRInput.primaryController, out initRightControllerPosition_L, out initRightControllerRotation_L);
                 Matrix4x4 initRightControllerMatrix_L = Matrix4x4.TRS(initRightControllerPosition_L, initRightControllerRotation_L, Vector3.one);
                 initRightControllerMatrix_WtoL = (initPivotMatrix * initRightControllerMatrix_L).inverse;
 
@@ -243,14 +243,14 @@ namespace VRtist
             // compute left controller world space position
             Vector3 currentLeftControllerPosition_L;
             Quaternion currentLeftControllerRotation_L;
-            VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
+            VRInput.GetControllerTransform(VRInput.secondaryController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
             Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
             Vector3 currentLeftControllerPosition_W = (initPivotMatrix * currentLeftControllerMatrix_L_Scaled).MultiplyPoint(Vector3.zero);
 
             // compute right controller world space position
             Vector3 currentRightControllerPosition_L;
             Quaternion currentRightControllerRotation_L;
-            VRInput.GetControllerTransform(VRInput.rightController, out currentRightControllerPosition_L, out currentRightControllerRotation_L);
+            VRInput.GetControllerTransform(VRInput.primaryController, out currentRightControllerPosition_L, out currentRightControllerRotation_L);
             Matrix4x4 currentRightControllerMatrix_L_Scaled = Matrix4x4.TRS(currentRightControllerPosition_L, currentRightControllerRotation_L, new Vector3(scale, scale, scale));
             Vector3 currentRightControllerPosition_W = (initPivotMatrix * currentRightControllerMatrix_L_Scaled).MultiplyPoint(Vector3.zero);
 

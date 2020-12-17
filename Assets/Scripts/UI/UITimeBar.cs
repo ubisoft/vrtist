@@ -290,7 +290,7 @@ namespace VRtist
         {
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
-            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+            VRInput.GetInstantButtonEvent(VRInput.primaryController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
 
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);

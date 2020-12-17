@@ -168,12 +168,12 @@ namespace VRtist
 
         protected override void DoUpdate()
         {
-            if (VRInput.GetValue(VRInput.rightController, CommonUsages.grip) <= deadZone)
+            if (VRInput.GetValue(VRInput.primaryController, CommonUsages.grip) <= deadZone)
             {
                 if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                 {
                     // Change selector size
-                    Vector2 val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                    Vector2 val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
                     if (val != Vector2.zero)
                     {
                         float scaleFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
@@ -194,7 +194,7 @@ namespace VRtist
 
         protected void InitControllerMatrix()
         {
-            VRInput.GetControllerTransform(VRInput.rightController, out initControllerPosition, out initControllerRotation);
+            VRInput.GetControllerTransform(VRInput.primaryController, out initControllerPosition, out initControllerRotation);
 
             //initControllerPosition = rightControllerPosition;
             //initControllerRotation = rightControllerRotation;
@@ -466,7 +466,7 @@ namespace VRtist
         {
             Vector3 position;
             Quaternion rotation;
-            VRInput.GetControllerTransform(VRInput.rightController, out position, out rotation);
+            VRInput.GetControllerTransform(VRInput.primaryController, out position, out rotation);
 
             if (!HasDamping())
             {
@@ -532,7 +532,7 @@ namespace VRtist
             // Move & Duplicate selection
 
             // Duplicate / Stop Record
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.primaryButton,
                 () => { },
                 () =>
                 {
@@ -558,7 +558,7 @@ namespace VRtist
                 }
             );
 
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip, OnStartGrip, OnEndGrip);
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.grip, OnStartGrip, OnEndGrip);
 
             if (Gripping)
             {
@@ -576,7 +576,7 @@ namespace VRtist
                 {
                     if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                     {
-                        Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                        Vector2 joystickAxis = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
                         float scaleFactor = 1f + GlobalState.Settings.scaleSpeed / 1000.0f;
                         if (joystickAxis.y > deadZone)
                             scale *= scaleFactor;
@@ -595,7 +595,7 @@ namespace VRtist
 
             if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
-                Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                Vector2 joystickAxis = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
 
                 if (joystickAxis != Vector2.zero)
                 {
@@ -803,7 +803,7 @@ namespace VRtist
 
             if (haptic && objectsAddedToSelection.Count > 0)
             {
-                VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
+                VRInput.SendHapticImpulse(VRInput.primaryController, 0, 1, 0.1f);
             }
         }
 
@@ -831,7 +831,7 @@ namespace VRtist
 
             if (haptic && objectsRemovedFromSelection.Count > 0)
             {
-                VRInput.SendHapticImpulse(VRInput.rightController, 0, 1, 0.1f);
+                VRInput.SendHapticImpulse(VRInput.primaryController, 0, 1, 0.1f);
             }
         }
 

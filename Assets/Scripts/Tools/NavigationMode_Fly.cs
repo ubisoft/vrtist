@@ -50,7 +50,7 @@ namespace VRtist
             // Joystick -- go forward/backward, and rotate 45 degrees.
             //
 
-            Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
+            Vector2 val = VRInput.GetValue(VRInput.secondaryController, CommonUsages.primary2DAxis);
             if (val != Vector2.zero)
             {
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
@@ -73,7 +73,7 @@ namespace VRtist
             // LEFT GRIP WORLD (on click)
             //
 
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
+            VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.gripButton,
             () =>
             {
                 ResetInitControllerMatrices();
@@ -91,12 +91,12 @@ namespace VRtist
             });
 
             // NOTE: we test isLeftGrip because we can be ungripped but still over the deadzone, strangely.
-            if (isLeftGripped && VRInput.GetValue(VRInput.leftController, CommonUsages.grip) > deadZone)
+            if (isLeftGripped && VRInput.GetValue(VRInput.secondaryController, CommonUsages.grip) > deadZone)
             {
                 float prevScale = scale;
 
                 // Scale using left joystick.
-                Vector2 joystickAxis = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
+                Vector2 joystickAxis = VRInput.GetValue(VRInput.secondaryController, CommonUsages.primary2DAxis);
                 if (joystickAxis.y > deadZone)
                     scale *= fixedScaleFactor;
                 if (joystickAxis.y < -deadZone)
@@ -105,7 +105,7 @@ namespace VRtist
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
                 Quaternion currentLeftControllerRotation_L;
-                VRInput.GetControllerTransform(VRInput.leftController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
+                VRInput.GetControllerTransform(VRInput.secondaryController, out currentLeftControllerPosition_L, out currentLeftControllerRotation_L);
                 Matrix4x4 currentLeftControllerMatrix_L_Scaled = Matrix4x4.TRS(currentLeftControllerPosition_L, currentLeftControllerRotation_L, new Vector3(scale, scale, scale));
 
                 Matrix4x4 currentLeftControllerMatrix_W_Delta = initPivotMatrix * currentLeftControllerMatrix_L_Scaled * initLeftControllerMatrix_WtoL;
@@ -132,7 +132,7 @@ namespace VRtist
         {
             Vector3 initLeftControllerPosition_L;
             Quaternion initLeftControllerRotation_L;
-            VRInput.GetControllerTransform(VRInput.leftController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
+            VRInput.GetControllerTransform(VRInput.secondaryController, out initLeftControllerPosition_L, out initLeftControllerRotation_L);
             Matrix4x4 initLeftControllerMatrix_L = Matrix4x4.TRS(initLeftControllerPosition_L, initLeftControllerRotation_L, Vector3.one);
             initPivotMatrix = Matrix4x4.TRS(pivot.localPosition, pivot.localRotation, pivot.localScale);
             initLeftControllerMatrix_WtoL = (initPivotMatrix * initLeftControllerMatrix_L).inverse;
