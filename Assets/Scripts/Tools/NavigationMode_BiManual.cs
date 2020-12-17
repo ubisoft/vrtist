@@ -38,6 +38,13 @@ namespace VRtist
         {
             base.Init(rigTransform, worldTransform, leftHandleTransform, rightHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
+            // reset rig rotation
+            Vector3 up = Vector3.up;
+            Vector3 right = Vector3.Cross(up, rig.forward).normalized;
+            Vector3 forward = Vector3.Cross(right, Vector3.up).normalized;
+            Matrix4x4 m = new Matrix4x4(right, up, forward, new Vector4(0, 0, 0, 1));
+            rig.localRotation = m.rotation;
+
             lineUI.Show(false);
 
             // Create tooltips
