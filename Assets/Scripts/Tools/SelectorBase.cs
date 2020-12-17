@@ -312,7 +312,7 @@ namespace VRtist
             }
             if (controllers.Count > 0)
             {
-                GlobalState.SetGizmosVisible(controllers.ToArray(), GlobalState.Settings.displayGizmos);
+                GlobalState.SetGizmosVisible(controllers.ToArray(), GlobalState.Settings.DisplayGizmos);
             }
 
             if (!Selection.IsHandleSelected())

@@ -95,13 +95,13 @@ namespace VRtist
 
         private void Apply(bool onStart = false)
         {
-            OnDisplayGizmos(GlobalState.Settings.displayGizmos);
-            OnDisplayLocators(GlobalState.Settings.displayLocators);
-            OnDisplayAvatars(GlobalState.Settings.displayAvatars);
+            OnDisplayGizmos(GlobalState.Settings.DisplayGizmos);
+            OnDisplayLocators(GlobalState.Settings.DisplayLocators);
+            OnDisplayAvatars(GlobalState.Settings.DisplayAvatars);
             OnShowConsoleWindow(GlobalState.Settings.ConsoleVisible);
 
             UpdateUIFromPreferences();
-            worldGrid.SetActive(GlobalState.Settings.displayWorldGrid);
+            worldGrid.SetActive(GlobalState.Settings.DisplayWorldGrid);
             OnChangeMasterVolume(GlobalState.Settings.masterVolume);
             OnChangeAmbientVolume(GlobalState.Settings.ambientVolume);
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
@@ -136,15 +136,15 @@ namespace VRtist
         protected void UpdateUIFromPreferences()
         {
             showConsoleWindow.Checked = GlobalState.Settings.ConsoleVisible;
-            worldGridCheckbox.Checked = GlobalState.Settings.displayWorldGrid;
+            worldGridCheckbox.Checked = GlobalState.Settings.DisplayWorldGrid;
 
-            displayGizmos.Checked = GlobalState.Settings.displayGizmos;
-            displayLocators.Checked = GlobalState.Settings.displayLocators;
-            showGizmosShortcut.Checked = GlobalState.Settings.displayGizmos;
-            showLocatorsShortcut.Checked = GlobalState.Settings.displayLocators;
-            displayFPS.Checked = GlobalState.Settings.displayFPS;
-            display3DCurves.Checked = GlobalState.Settings.display3DCurves;
-            displayAvatars.Checked = GlobalState.Settings.displayAvatars;
+            displayGizmos.Checked = GlobalState.Settings.DisplayGizmos;
+            displayLocators.Checked = GlobalState.Settings.DisplayLocators;
+            showGizmosShortcut.Checked = GlobalState.Settings.DisplayGizmos;
+            showLocatorsShortcut.Checked = GlobalState.Settings.DisplayLocators;
+            displayFPS.Checked = GlobalState.Settings.DisplayFPS;
+            display3DCurves.Checked = GlobalState.Settings.Display3DCurves;
+            displayAvatars.Checked = GlobalState.Settings.DisplayAvatars;
 
             masterVolume.Value = GlobalState.Settings.masterVolume;
             ambientVolume.Value = GlobalState.Settings.ambientVolume;
@@ -171,12 +171,12 @@ namespace VRtist
 
         public void OnDisplayFPS(bool show)
         {
-            GlobalState.Settings.displayFPS = show;
+            GlobalState.Settings.DisplayFPS = show;
         }
 
         public void OnDisplay3DCurves(bool show)
         {
-            GlobalState.Settings.display3DCurves = show;
+            GlobalState.Settings.Display3DCurves = show;
         }
 
         public void OnDisplayGizmos(bool show)
@@ -196,7 +196,7 @@ namespace VRtist
         public void OnDisplayWorldGrid(bool show)
         {
             worldGrid.SetActive(show);
-            GlobalState.Settings.displayWorldGrid = show;
+            GlobalState.Settings.DisplayWorldGrid = show;
         }
 
         public void OnEditAssetBankDirectory()

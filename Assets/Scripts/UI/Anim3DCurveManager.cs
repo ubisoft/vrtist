@@ -25,9 +25,9 @@ namespace VRtist
         // Update is called once per frame
         void Update()
         {
-            if (displaySelectedCurves != GlobalState.Settings.display3DCurves)
+            if (displaySelectedCurves != GlobalState.Settings.Display3DCurves)
             {
-                displaySelectedCurves = GlobalState.Settings.display3DCurves;
+                displaySelectedCurves = GlobalState.Settings.Display3DCurves;
                 if (displaySelectedCurves)
                     UpdateFromSelection();
                 else
@@ -49,7 +49,7 @@ namespace VRtist
 
         void OnSelectionChanged(object sender, SelectionChangedArgs args)
         {
-            if (GlobalState.Settings.display3DCurves)
+            if (GlobalState.Settings.Display3DCurves)
                 UpdateFromSelection();
         }
 

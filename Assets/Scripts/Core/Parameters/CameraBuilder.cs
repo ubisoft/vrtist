@@ -20,7 +20,7 @@ namespace VRtist
 
             newCamera.GetComponentInChildren<CameraController>(true).CopyParameters(source.GetComponentInChildren<CameraController>(true));
 
-            if (!GlobalState.Settings.displayGizmos)
+            if (!GlobalState.Settings.DisplayGizmos)
                 GlobalState.SetGizmoVisible(newCamera, false);
 
             // Add UI

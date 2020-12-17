@@ -14,7 +14,7 @@ namespace VRtist
 
             newLight.GetComponentInChildren<LightController>().CopyParameters(lightController);
 
-            if (!GlobalState.Settings.displayGizmos)
+            if (!GlobalState.Settings.DisplayGizmos)
                 GlobalState.SetGizmoVisible(newLight, false);
 
             return newLight;

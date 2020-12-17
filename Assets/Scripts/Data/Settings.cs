@@ -11,11 +11,44 @@ namespace VRtist
     {
         public int version = 1;
         public bool displayGizmos = true;
+        public bool DisplayGizmos
+        {
+            get { return displayGizmos; }
+            set { displayGizmos = value; onSettingsChanged.Invoke(); }
+        }
+
         public bool displayLocators = true;
+        public bool DisplayLocators
+        {
+            get { return displayLocators; }
+            set { displayLocators = value; onSettingsChanged.Invoke(); }
+        }
         public bool displayWorldGrid = true;
+
+        public bool DisplayWorldGrid
+        {
+            get { return displayWorldGrid; }
+            set { displayWorldGrid = value; onSettingsChanged.Invoke(); }
+        }
         public bool displayAvatars = true;
+        public bool DisplayAvatars
+        {
+            get { return displayAvatars; }
+            set { displayAvatars = value; onSettingsChanged.Invoke(); }
+        }
         public bool displayFPS = false;
+        public bool DisplayFPS
+        {
+            get { return displayFPS; }
+            set { displayFPS = value; onSettingsChanged.Invoke(); }
+        }
+
         public bool display3DCurves = true;
+        public bool Display3DCurves
+        {
+            get { return display3DCurves; }
+            set { display3DCurves = value; onSettingsChanged.Invoke(); }
+        }
         public float masterVolume = 0f;
         public float ambientVolume = -35f;
         public float uiVolume = 0f;

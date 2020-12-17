@@ -209,7 +209,7 @@ namespace VRtist
 
         private void UpdateFps()
         {
-            if (!settings.displayFPS) { return; }
+            if (!settings.DisplayFPS) { return; }
 
             // Initialize
             if (null == fpsBuffer || fpsBuffer.Length != fpsFrameRange)
@@ -242,7 +242,7 @@ namespace VRtist
             if (null != leftControllerDisplay)
             {
                 string infoText = worldScale < 1f ? $"Scale\n-{1f / worldScale:F2}" : $"Scale\n{worldScale:F2}";
-                if (settings.displayFPS)
+                if (settings.DisplayFPS)
                 {
                     UpdateFps();
                     infoText += $"\n\nFPS\n{fps}";
@@ -258,7 +258,7 @@ namespace VRtist
 
         public static void SetDisplayGizmos(bool value)
         {
-            Settings.displayGizmos = value;
+            Settings.DisplayGizmos = value;
             SetGizmosVisible(FindObjectsOfType<LightController>(), value);
             SetGizmosVisible(FindObjectsOfType<CameraController>(), value);
             SetDisplayAvatars(value);
@@ -266,13 +266,13 @@ namespace VRtist
 
         public static void SetDisplayLocators(bool value)
         {
-            Settings.displayLocators = value;
+            Settings.DisplayLocators = value;
             SetGizmosVisible(FindObjectsOfType<LocatorController>(), value);
         }
 
         public static void SetDisplayAvatars(bool value)
         {
-            Settings.displayAvatars = value;
+            Settings.DisplayAvatars = value;
             SetGizmosVisible(FindObjectsOfType<AvatarController>(), value);
         }
 
