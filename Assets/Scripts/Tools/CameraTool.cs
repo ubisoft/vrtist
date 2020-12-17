@@ -460,7 +460,7 @@ namespace VRtist
 
         protected override void DoUpdateGui()
         {
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, () =>
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.gripButton, () =>
             {
                 if (UIObject)
                 {
@@ -508,7 +508,7 @@ namespace VRtist
             {
                 bool trigger = false;
                 if (feedbackPositioning
-                    && VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
+                    && VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
                 {
                     GlobalState.Instance.cameraPreviewDirection = rig.InverseTransformDirection(transform.forward);
                     trigger = true;
@@ -516,7 +516,7 @@ namespace VRtist
                 if (trigger)
                 {
                     // Cam feedback scale
-                    Vector2 joystickAxis = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                    Vector2 joystickAxis = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
                     if (joystickAxis.y > deadZone)
                         GlobalState.Settings.cameraFeedbackScaleValue *= cameraFeedbackScaleFactor;
                     if (joystickAxis.y < -deadZone)

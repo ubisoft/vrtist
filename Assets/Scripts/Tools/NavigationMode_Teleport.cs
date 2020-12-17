@@ -99,7 +99,7 @@ namespace VRtist
                 return;
 
             // Teleport
-            Vector2 leftJoyValue = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
+            Vector2 leftJoyValue = VRInput.GetValue(VRInput.secondaryController, CommonUsages.primary2DAxis);
             float joyMag = leftJoyValue.magnitude;
             float yVal = leftJoyValue.y;
             float xVal = leftJoyValue.x;

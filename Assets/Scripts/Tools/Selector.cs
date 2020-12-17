@@ -1203,7 +1203,7 @@ namespace VRtist
             // Deform
             if (deformEnabled && activePlane != null)
             {
-                VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
+                VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
                 {
                     InitDeformerMatrix();
                     InitTransforms();

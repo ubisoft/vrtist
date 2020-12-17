@@ -482,12 +482,12 @@ namespace VRtist
             bool joyRightJustClicked = false;
             bool joyRightJustReleased = false;
             bool joyRightLongPush = false;
-            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
+            VRInput.GetInstantJoyEvent(VRInput.primaryController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
 
             bool joyLeftJustClicked = false;
             bool joyLeftJustReleased = false;
             bool joyLeftLongPush = false;
-            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
+            VRInput.GetInstantJoyEvent(VRInput.primaryController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)
             {
@@ -549,7 +549,7 @@ namespace VRtist
         {
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
-            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+            VRInput.GetInstantButtonEvent(VRInput.primaryController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
 
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);

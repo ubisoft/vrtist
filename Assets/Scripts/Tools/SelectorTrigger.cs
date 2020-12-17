@@ -30,7 +30,7 @@ namespace VRtist
         void Update()
         {
             // Clear selection on trigger click on nothing
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.trigger, () =>
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
             {
                 selectionHasChanged = false;
                 undoGroup = new CommandGroup("Selector Trigger");
@@ -39,7 +39,7 @@ namespace VRtist
             {
                 try
                 {
-                    if (!selectionHasChanged && !VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton))
+                    if (!selectionHasChanged && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
                     {
                         selector.ClearSelection();
                     }
@@ -142,12 +142,12 @@ namespace VRtist
         private void UpdateSelection()
         {
             // Get right controller buttons states
-            bool primaryButtonState = VRInput.GetValue(VRInput.rightController, CommonUsages.primaryButton);
-            bool triggerState = VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton);
+            bool primaryButtonState = VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton);
+            bool triggerState = VRInput.GetValue(VRInput.primaryController, CommonUsages.triggerButton);
 
             GameObject hoveredObject = Selection.GetHoveredObject();
 
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.grip,
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.grip,
                  () =>
                  {
                      Selection.SetGrippedObject(hoveredObject);
@@ -180,7 +180,7 @@ namespace VRtist
                 if (hoveredObject.GetComponent<UIHandle>())
                     return;
 
-                if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
+                if (VRInput.GetValue(VRInput.primaryController, CommonUsages.triggerButton))
                 {
                     CommandGroup group = new CommandGroup("Erase Hovered Object");
                     try
@@ -202,7 +202,7 @@ namespace VRtist
             // If we don't have any hovered object but we collided with a selection, delete the whole selection
             else if (collidedObjects.Count > 0 && Selection.IsSelected(collidedObjects[0]))
             {
-                if (VRInput.GetValue(VRInput.rightController, CommonUsages.triggerButton))
+                if (VRInput.GetValue(VRInput.primaryController, CommonUsages.triggerButton))
                 {
                     CommandGroup group = new CommandGroup("Erase Selected Objects");
                     try

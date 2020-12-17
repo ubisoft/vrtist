@@ -423,12 +423,12 @@ namespace VRtist
         protected override void DoUpdateGui()
         {
             bool gripped = false;
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.gripButton, async () =>
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.gripButton, async () =>
             {
                 await OnInstantiateUIObject();
 
                 // Since OnInstantiateUIObject may take some time, check we are still gripped
-                gripped = VRInput.GetValue(VRInput.rightController, CommonUsages.gripButton);
+                gripped = VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton);
                 if (gripped) { OnStartGrip(); }
             }, () =>
             {

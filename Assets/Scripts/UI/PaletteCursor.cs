@@ -33,7 +33,7 @@ namespace VRtist
                 return;
 
             // Device rotation
-            VRInput.GetControllerTransform(VRInput.rightController, out Vector3 position, out Quaternion rotation);
+            VRInput.GetControllerTransform(VRInput.primaryController, out Vector3 position, out Quaternion rotation);
 
             // The main cursor object always follows the controller
             // so that the collider sticks to the actual hand position.
@@ -72,7 +72,7 @@ namespace VRtist
 
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
-            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+            VRInput.GetInstantButtonEvent(VRInput.primaryController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
 
             //
             // Raycast, find out the closest volume, handle and widget.

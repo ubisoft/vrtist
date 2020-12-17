@@ -646,12 +646,12 @@ namespace VRtist
             bool joyRightJustClicked = false;
             bool joyRightJustReleased = false;
             bool joyRightLongPush = false;
-            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
+            VRInput.GetInstantJoyEvent(VRInput.primaryController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
 
             bool joyLeftJustClicked = false;
             bool joyLeftJustReleased = false;
             bool joyLeftLongPush = false;
-            VRInput.GetInstantJoyEvent(VRInput.rightController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
+            VRInput.GetInstantJoyEvent(VRInput.primaryController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
             Vector3 localProjectedWidgetPosition = GetLocalProjected(ray);
             RangeWidgetPart hoveredPart = GetRangeWidgetPart(localProjectedWidgetPosition);
@@ -795,7 +795,7 @@ namespace VRtist
         {
             bool triggerJustClicked = false;
             bool triggerJustReleased = false;
-            VRInput.GetInstantButtonEvent(VRInput.rightController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
+            VRInput.GetInstantButtonEvent(VRInput.primaryController, CommonUsages.triggerButton, ref triggerJustClicked, ref triggerJustReleased);
 
             Vector3 localProjectedWidgetPosition = GetLocalProjected(ray);
 

@@ -52,8 +52,8 @@ namespace VRtist
 
         private Vector4 GetJoysticksValue()
         {
-            Vector2 leftJoyValue = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
-            Vector2 rightJoyValue = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+            Vector2 leftJoyValue = VRInput.GetValue(VRInput.secondaryController, CommonUsages.primary2DAxis);
+            Vector2 rightJoyValue = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
             Vector4 currentValue = new Vector4(leftJoyValue.x, leftJoyValue.y, rightJoyValue.x, rightJoyValue.y);
 
             float damping = options.fpsDamping * 5f;
@@ -141,7 +141,7 @@ namespace VRtist
                 isGrounded = Mathf.Abs(hitPoint.y - rig.position.y) < 0.1f;
             }
 
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primaryButton,
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.primaryButton,
             () =>
             {
                 if(isGrounded)

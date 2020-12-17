@@ -12,7 +12,8 @@ namespace VRtist
         public NetworkSettings networkSettings;
 
         [Header("Parameters")]
-        public GameObject leftController = null;
+        public Transform rightHandle;
+        public Transform leftHandle;
         public GameObject colorPanel = null;
         public GameObject cameraFeedback = null;
 
@@ -35,7 +36,8 @@ namespace VRtist
         private static int fpsFrameRange = 60;
         private static int[] fpsBuffer = null;
         private static int fpsBufferIndex = 0;
-        private TextMeshProUGUI leftControllerDisplay = null;
+        private TextMeshProUGUI primaryControllerDisplay = null;
+        private TextMeshProUGUI secondaryControllerDisplay = null;
 
         // World
         public Transform world = null;
@@ -188,11 +190,6 @@ namespace VRtist
 
         private void Start()
         {
-            if (null != leftController)
-            {
-                leftControllerDisplay = leftController.transform.Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
-                leftControllerDisplay.text = "";
-            }
             if (null != cameraFeedback)
             {
                 cameraFeedback.transform.localPosition = settings.cameraFeedbackPosition;
@@ -238,8 +235,8 @@ namespace VRtist
 
         private void Update()
         {
-            // Info on the left controller
-            if (null != leftControllerDisplay)
+            // Info on the secondary controller
+            if (null != secondaryControllerDisplay)
             {
                 string infoText = worldScale < 1f ? $"Scale\n-{1f / worldScale:F2}" : $"Scale\n{worldScale:F2}";
                 if (settings.DisplayFPS)
@@ -247,7 +244,7 @@ namespace VRtist
                     UpdateFps();
                     infoText += $"\n\nFPS\n{fps}";
                 }
-                leftControllerDisplay.text = infoText;
+                secondaryControllerDisplay.text = infoText;
             }
         }
 
@@ -368,6 +365,84 @@ namespace VRtist
             {
                 Instance.connectedAvatars[user.id].SetUser(user);
             }
+        }
+
+        public static void SetPrimaryControllerVisible(bool visible)
+        {
+            GetPrimaryControllerTransform().gameObject.SetActive(visible);
+        }
+
+        public static Transform GetPrimaryControllerTransform()
+        {
+            if (Settings.rightHanded)
+            {
+                return Instance.rightHandle.Find("right_controller");
+            }
+            else
+            {
+                return Instance.rightHandle.Find("left_controller");
+            }
+        }
+
+        public static Transform GetSecondaryControllerTransform()
+        {
+            if (Settings.rightHanded)
+            {
+                return Instance.leftHandle.Find("left_controller");
+            }
+            else
+            {
+                return Instance.leftHandle.Find("right_controller");
+            }
+        }
+
+        public static void SetPrimaryControllerDisplayText(string text)
+        {
+            if (null != Instance.primaryControllerDisplay)
+            {
+                Instance.primaryControllerDisplay.text = text;
+            }
+        }
+
+        public static void SetSecondaryControllerDisplayText(string text)
+        {
+            if (null != Instance.secondaryControllerDisplay)
+            {
+                Instance.secondaryControllerDisplay.text = text;
+            }
+        }
+
+        public static void SetRightHanded(bool value)
+        {
+            if (null != Instance.secondaryControllerDisplay && Settings.rightHanded == value)
+                return;
+
+            Settings.rightHanded = value;
+
+            GameObject leftHandleRightController = Instance.leftHandle.Find("right_controller").gameObject;
+            GameObject leftHandleLeftController = Instance.leftHandle.Find("left_controller").gameObject;
+
+            GameObject rightHandleRightController = Instance.rightHandle.Find("right_controller").gameObject;
+            GameObject rightHandleLeftController = Instance.rightHandle.Find("left_controller").gameObject;
+
+            leftHandleLeftController.SetActive(value);
+            leftHandleRightController.SetActive(!value);
+            rightHandleRightController.SetActive(value);
+            rightHandleLeftController.SetActive(!value);
+
+            // Update controller's displays
+            Instance.primaryControllerDisplay = GetPrimaryControllerTransform().Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
+            Instance.secondaryControllerDisplay = GetSecondaryControllerTransform().Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
+            Instance.secondaryControllerDisplay.text = "";
+            Instance.primaryControllerDisplay.text = "";
+
+            // Move Palette
+            Transform palette = Instance.leftHandle.Find("PaletteHandle");
+            Vector3 currentPalettePosition = palette.localPosition;
+            if (Settings.rightHanded)
+                palette.localPosition = new Vector3(-0.02f, currentPalettePosition.y, currentPalettePosition.z);
+            else
+                palette.localPosition = new Vector3(-0.2f, currentPalettePosition.y, currentPalettePosition.z);
         }
     }
 }

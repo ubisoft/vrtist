@@ -156,8 +156,8 @@ namespace VRtist
             }
 
             // Update left controller transform
-            VRInput.UpdateTransformFromVRDevice(leftHandle, VRInput.leftController);
-            VRInput.UpdateTransformFromVRDevice(rightHandle, VRInput.rightController);
+            VRInput.UpdateTransformFromVRDevice(leftHandle, VRInput.secondaryController);
+            VRInput.UpdateTransformFromVRDevice(rightHandle, VRInput.primaryController);
 
             if (null != options.currentNavigationMode)
                 options.currentNavigationMode.Update();
@@ -256,7 +256,7 @@ namespace VRtist
 
         private void HandleReset()
         {
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.primary2DAxisClick,
+            VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.primary2DAxisClick,
             () =>
             {
                 if (Selection.selection.Count == 0)
@@ -275,7 +275,7 @@ namespace VRtist
 
         private void HandleResetScale()
         {
-            VRInput.ButtonEvent(VRInput.rightController, CommonUsages.primary2DAxisClick,
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.primary2DAxisClick,
             () =>
             {
                 ResetCameraClipPlanes();
@@ -293,7 +293,7 @@ namespace VRtist
             if (null == ToolsUIManager.Instance)
                 return;
 
-            if (VRInput.GetValue(VRInput.leftController, CommonUsages.trigger) > deadZone)
+            if (VRInput.GetValue(VRInput.secondaryController, CommonUsages.trigger) > deadZone)
             {
                 ToolsUIManager.Instance.PopUpPalette(true);
             }
@@ -305,12 +305,12 @@ namespace VRtist
 
         private void HandleUndoRedo()
         {
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.primaryButton, () => { },
+            VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.primaryButton, () => { },
             () =>
             {
                 CommandManager.Undo();
             });
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.secondaryButton, () => { },
+            VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.secondaryButton, () => { },
             () =>
             {
                 CommandManager.Redo();
@@ -322,12 +322,12 @@ namespace VRtist
             bool joyRightJustClicked = false;
             bool joyRightJustReleased = false;
             bool joyRightLongPush = false;
-            VRInput.GetInstantJoyEvent(VRInput.leftController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
+            VRInput.GetInstantJoyEvent(VRInput.secondaryController, VRInput.JoyDirection.RIGHT, ref joyRightJustClicked, ref joyRightJustReleased, ref joyRightLongPush);
 
             bool joyLeftJustClicked = false;
             bool joyLeftJustReleased = false;
             bool joyLeftLongPush = false;
-            VRInput.GetInstantJoyEvent(VRInput.leftController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
+            VRInput.GetInstantJoyEvent(VRInput.secondaryController, VRInput.JoyDirection.LEFT, ref joyLeftJustClicked, ref joyLeftJustReleased, ref joyLeftLongPush);
 
             // Manage time with joystick
             if (joyRightJustClicked || joyLeftJustClicked || joyRightLongPush || joyLeftLongPush)

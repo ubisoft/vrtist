@@ -148,7 +148,7 @@ namespace VRtist
                 //
                 // Left Joystick -- left/right = rotate left/right.
                 //                  up/down = rotate up/down.
-                Vector2 val = VRInput.GetValue(VRInput.leftController, CommonUsages.primary2DAxis);
+                Vector2 val = VRInput.GetValue(VRInput.secondaryController, CommonUsages.primary2DAxis);
                 if(val != Vector2.zero)
                 {
                     // Horizontal rotation
@@ -178,7 +178,7 @@ namespace VRtist
                 //
                 // Right Joystick -- left/right = move closer/farther
                 //                   up/down = scale world
-                val = VRInput.GetValue(VRInput.rightController, CommonUsages.primary2DAxis);
+                val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
                 if(val != Vector2.zero)
                 {
                     float remainingDistance = distance - minDistance;
@@ -234,7 +234,7 @@ namespace VRtist
             // LEFT GRIP (click) - lock on targetted object/point.
             //
 
-            VRInput.ButtonEvent(VRInput.leftController, CommonUsages.gripButton,
+            VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.gripButton,
             () =>
             {
                 if(target != null)

@@ -33,13 +33,13 @@ namespace VRtist
 
         static List<InputDevice> inputDevices = new List<InputDevice>();
         public static InputDevice head;
-        public static InputDevice leftController;
-        public static InputDevice rightController;
+        public static InputDevice secondaryController;
+        public static InputDevice primaryController;
         private static bool remapLeftRightHandedDevices = true;
         public static Dictionary<InputDevice, InputDevice> invertedController = new Dictionary<InputDevice, InputDevice>();
 
-        public static ControllerValues leftControllerValues = new ControllerValues();
-        public static ControllerValues rightControllerValues = new ControllerValues();
+        public static ControllerValues secondaryControllerValues = new ControllerValues();
+        public static ControllerValues primaryControllerValues = new ControllerValues();
 
         static Dictionary<InputDevice, ControllerValues> currentControllerValues = new Dictionary<InputDevice, ControllerValues>();
         static Dictionary<InputDevice, ControllerValues> prevControllerValues = new Dictionary<InputDevice, ControllerValues>();
@@ -86,7 +86,7 @@ namespace VRtist
             joyJustPressed.Clear();
             joyJustReleased.Clear();
 
-            List<InputDevice> devices = new List<InputDevice>() { leftController, rightController };
+            List<InputDevice> devices = new List<InputDevice>() { secondaryController, primaryController };
             foreach (InputDevice device in devices)
             {
                 bool bValue;
@@ -168,7 +168,7 @@ namespace VRtist
         static void ClearLongPush(InputDevice controller)
         {
             HashSet<JoyInputPair> longPush = new HashSet<JoyInputPair>();
-            foreach(JoyInputPair joyInput in joyLongPush)
+            foreach (JoyInputPair joyInput in joyLongPush)
             {
                 if (joyInput.Key != controller)
                     longPush.Add(joyInput);
@@ -341,6 +341,7 @@ namespace VRtist
         {
             if (GlobalState.Settings.rightHanded || !remapLeftRightHandedDevices)
                 return controller;
+            if (invertedController.Count == 0) { return new InputDevice(); }  // invalid and unknown in our maps of devices
             return invertedController[controller];
         }
         public static Vector2 GetValue(InputDevice controller, InputFeatureUsage<Vector2> usage)
@@ -485,40 +486,40 @@ namespace VRtist
 
         public static void InitInvertedControllers()
         {
-            if (invertedController.Count == 0 && leftController.isValid && rightController.isValid)
+            if (invertedController.Count == 0 && secondaryController.isValid && primaryController.isValid)
             {
                 invertedController[head] = head;
-                invertedController[leftController] = rightController;
-                invertedController[rightController] = leftController;
+                invertedController[secondaryController] = primaryController;
+                invertedController[primaryController] = secondaryController;
                 Debug.Log("Got left/right handed controllers");
             }
         }
 
         public static bool TryGetDevices()
         {
-            if (!head.isValid || !leftController.isValid || !rightController.isValid)
+            if (!head.isValid || !secondaryController.isValid || !primaryController.isValid)
             {
                 var inputDevices = new List<InputDevice>();
                 InputDevices.GetDevices(inputDevices);
                 foreach (var device in inputDevices)
                 {
                     if (device.characteristics == (InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice)) { head = device; }
-                    if (device.characteristics == (InputDeviceCharacteristics.Right | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { rightController = device; }
-                    if (device.characteristics == (InputDeviceCharacteristics.Left | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { leftController = device; }
+                    if (device.characteristics == (InputDeviceCharacteristics.Right | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { primaryController = device; }
+                    if (device.characteristics == (InputDeviceCharacteristics.Left | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { secondaryController = device; }
                     Debug.Log(string.Format("Device found with name '{0}' and role '{1}'", device.name, device.characteristics.ToString()));
                 }
                 if (!head.isValid) { Debug.LogWarning("Generic device not found !!"); }
-                if (!leftController.isValid) { Debug.LogWarning("Left device not found !!"); }
+                if (!secondaryController.isValid) { Debug.LogWarning("Left device not found !!"); }
                 else
                 {
-                    currentControllerValues[leftController] = leftControllerValues;
-                    prevControllerValues[leftController] = leftControllerValues;
+                    currentControllerValues[secondaryController] = secondaryControllerValues;
+                    prevControllerValues[secondaryController] = secondaryControllerValues;
                 }
-                if (!rightController.isValid) { Debug.LogWarning("Right device not found !!"); }
+                if (!primaryController.isValid) { Debug.LogWarning("Right device not found !!"); }
                 else
                 {
-                    currentControllerValues[rightController] = rightControllerValues;
-                    prevControllerValues[rightController] = rightControllerValues;
+                    currentControllerValues[primaryController] = primaryControllerValues;
+                    prevControllerValues[primaryController] = primaryControllerValues;
                 }
                 if (currentControllerValues.Count == 2)
                 {
@@ -528,7 +529,7 @@ namespace VRtist
                 }
             }
 
-            return head.isValid && leftController.isValid && rightController.isValid;
+            return head.isValid && secondaryController.isValid && primaryController.isValid;
         }
 
         class DeviceTransform
