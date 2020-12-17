@@ -30,24 +30,7 @@ namespace VRtist
         // world scale when constraint is created
         public float initParentConstraintScale;
         public Vector3 initParentConstraintOffset;
-        
-        public void ConnectWorldScale()
-        {
-            GlobalState.onWorldScaleEvent.AddListener(OnWorldScaleChanged);
-        }
-
-        public void DisconnectWorldScale()
-        {
-            GlobalState.onWorldScaleEvent.RemoveListener(OnWorldScaleChanged);
-        }
-
-        private void OnWorldScaleChanged()
-        {
-            ParentConstraint parentConstraint = GetComponent<ParentConstraint>();
-            if (null == parentConstraint)
-                return;
-            ConstraintManager.UpdateParentConstraintTranslationOffset(parentConstraint, initParentConstraintOffset, initParentConstraintScale);
-        }
+       
 
         public virtual void CopyParameters(ParametersController sourceController)
         {

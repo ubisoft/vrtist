@@ -47,12 +47,6 @@ namespace VRtist
             return null != parentConstraint;
         }
 
-        public static void UpdateParentConstraintTranslationOffset(ParentConstraint constraint, Vector3 initOffset, float initScale)
-        {
-            Vector3 offset = initOffset * GlobalState.WorldScale / initScale;
-            constraint.SetTranslationOffset(0, offset);
-        }
-
         public static void RemoveConstraint<T>(GameObject gobject) where T : UnityEngine.Object
         {
             T component = gobject.GetComponent<T>();
@@ -61,8 +55,6 @@ namespace VRtist
             ParametersController parametersController = gobject.GetComponent<ParametersController>();
             if (null != parametersController)
             {
-                parametersController.DisconnectWorldScale();
-
                 ConstraintType constraintType = ConstraintType.Unknown;
                 switch (component)
                 {
@@ -131,8 +123,6 @@ namespace VRtist
                 constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.Parent });
                 parametersController.initParentConstraintScale = GlobalState.WorldScale;
                 parametersController.initParentConstraintOffset = Vector3.Scale(target.transform.InverseTransformPoint(gobject.transform.position), target.transform.lossyScale);
-
-                parametersController.ConnectWorldScale();
             }
             ConstraintSource source;
             if (constraint.sourceCount == 0)
