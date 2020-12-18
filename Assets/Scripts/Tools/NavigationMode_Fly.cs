@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 namespace VRtist
-{ 
+{
     public class NavigationMode_Fly : NavigationMode
     {
         private float maxPlayerScale = 2000.0f;// world min scale = 0.0005f;
@@ -36,8 +34,8 @@ namespace VRtist
             base.Init(rigTransform, worldTransform, leftHandleTransform, rightHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
             // Create tooltips
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Move / Turn");
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip World");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Joystick, "Move Turn");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Grip, Tooltips.Action.HoldPush, "Grip World");
 
             usedControls = UsedControls.LEFT_GRIP | UsedControls.LEFT_JOYSTICK;
         }
@@ -101,7 +99,7 @@ namespace VRtist
                     scale *= fixedScaleFactor;
                 if (joystickAxis.y < -deadZone)
                     scale /= fixedScaleFactor;
-                
+
                 // update left joystick
                 Vector3 currentLeftControllerPosition_L;
                 Quaternion currentLeftControllerRotation_L;

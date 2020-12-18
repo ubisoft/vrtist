@@ -249,33 +249,33 @@ namespace VRtist
                 Vector3 scale = selected.transform.localScale;
 
                 if (attr[0] == 'p')
-                {                    
+                {
                     switch (attr[1])
                     {
                         case 'x': position.x = value; break;
                         case 'y': position.y = value; break;
                         case 'z': position.z = value; break;
-                    }                                        
+                    }
                 }
                 else if (attr[0] == 'r')
-                {                    
+                {
                     switch (attr[1])
                     {
                         case 'x': rotation.x = value; break;
                         case 'y': rotation.y = value; break;
                         case 'z': rotation.z = value; break;
                     }
-                    
+
                 }
                 else if (attr[0] == 's')
-                {                    
+                {
                     switch (attr[1])
                     {
                         case 'x': scale.x = value; break;
                         case 'y': scale.y = value; break;
                         case 'z': scale.z = value; break;
                     }
-                    
+
                 }
 
                 command.AddObject(selected, position, Quaternion.Euler(rotation), scale);
@@ -585,7 +585,7 @@ namespace VRtist
 
         public void SetLockPosition(bool value)
         {
-            foreach(GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.GetSelectedObjects())
             {
                 if (value)
                 {
@@ -941,12 +941,12 @@ namespace VRtist
 
         public override void OnSelectorTriggerEnter(Collider other)
         {
-            Tooltips.SetTooltipVisibility(gripTooltip, true);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, true);
         }
 
         public override void OnSelectorTriggerExit(Collider other)
         {
-            Tooltips.SetTooltipVisibility(gripTooltip, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
         }
 
         protected void OnStartDeform()
@@ -1295,11 +1295,11 @@ namespace VRtist
                     Color selectColor = new Color(selectionColor.r, selectionColor.g, selectionColor.b, 0.2f);
                     activePlane.gameObject.GetComponent<MeshRenderer>().material.SetColor("_PlaneColor", selectColor);
 
-                    Tooltips.SetTooltipVisibility(triggerTooltip, true);
+                    Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, true);
                 }
                 else
                 {
-                    Tooltips.SetTooltipVisibility(triggerTooltip, false);
+                    Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
                 }
 
                 selectorTrigger.enabled = (plane == null);

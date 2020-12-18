@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -21,10 +20,7 @@ namespace VRtist
 
             cameraForward = Camera.main.transform.TransformDirection(Vector3.forward).normalized;
             // Create tooltips
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Altitude / Strafe");
-            // TODO: trouver un moyen d'aller changer un tooltip sur le right_controller (le bon, il y en a un par outil), et lui remettre
-            // ses tooltips quand on change d'outil.
-            //Tooltips.CreateTooltip(leftHandle.Find("right_controller").gameObject, Tooltips.Anchors.Joystick, "Move Forward, Backward / Turn");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Joystick, "Altitude / Strafe");
 
             usedControls = UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
 
@@ -32,7 +28,7 @@ namespace VRtist
             drone.gameObject.SetActive(true);
         }
 
-        public override void DeInit() 
+        public override void DeInit()
         {
             Transform drone = parameters.Find("Drone");
             drone.gameObject.SetActive(false);
@@ -45,7 +41,7 @@ namespace VRtist
             Vector4 currentValue = new Vector4(leftJoyValue.x, leftJoyValue.y, rightJoyValue.x, rightJoyValue.y);
 
             float damping = options.flightDamping * 5f;
-            int elemCount = (int)damping;
+            int elemCount = (int) damping;
 
             int currentSize = prevJoysticksStates.Count;
             if (currentSize > elemCount)
@@ -58,14 +54,14 @@ namespace VRtist
             deltaTimes.Add(Time.deltaTime);
 
             Vector4 average = Vector4.zero;
-            float invCount = 1f / (float)prevJoysticksStates.Count;
+            float invCount = 1f / (float) prevJoysticksStates.Count;
 
             float dtSum = 0;
             foreach (float dt in deltaTimes)
                 dtSum += dt;
 
             float invDtSum = 1f / dtSum;
-            for(int i = 0; i < prevJoysticksStates.Count; i++)
+            for (int i = 0; i < prevJoysticksStates.Count; i++)
             {
                 average += prevJoysticksStates[i] * deltaTimes[i] * invDtSum;
             }

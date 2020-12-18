@@ -69,7 +69,7 @@ namespace VRtist
             base.Init(rigTransform, worldTransform, leftHandleTransform, rightHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
             // Create tooltips
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Target/Turn");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Joystick, "Target / Turn");
 
             usedControls = UsedControls.LEFT_JOYSTICK;
 
@@ -156,11 +156,11 @@ namespace VRtist
                         Vector3 deltaPosition = camera_to_rig - new_camera_to_target;
                         */
                         rig.position = teleportTarget;
-                        
+
                         rig.localScale = Vector3.one;
 
                         if (options.lockHeight)
-                        {                            
+                        {
                             rig.position = new Vector3(rig.position.x, cameraHeight + cameraToRig.y, rig.position.z);
                         }
 

@@ -180,5 +180,10 @@ namespace VRtist
         {
             return false;
         }
+
+        public virtual void SetTooltips()
+        {
+            // Empty
+        }
     }
 }

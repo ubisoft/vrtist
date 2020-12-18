@@ -122,7 +122,7 @@ namespace VRtist
 
         void Awake()
         {
-            ToolsUIManager.Instance = this;
+            Instance = this;
         }
 
         void Start()
@@ -130,7 +130,7 @@ namespace VRtist
             OnToolChangedEvent += ToolsManager.OnChangeTool;
             OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
-            string firstToolName = ToolsManager.CurrentTool().name;
+            string firstToolName = ToolsManager.CurrentToolName();
             ChangeTab(firstToolName);
             ChangeTool(firstToolName);
 
@@ -280,7 +280,7 @@ namespace VRtist
 
         public void ShowCurrentTool(bool doShowTool)
         {
-            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool();
             if (tool != null)
             {
                 tool.IsInGui = !doShowTool;
@@ -323,7 +323,7 @@ namespace VRtist
 
         public void OnUI3DObjectEnter(int gohash)
         {
-            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool();
             if (tool != null)
             {
                 tool.OnUIObjectEnter(gohash);
@@ -332,7 +332,7 @@ namespace VRtist
 
         public void OnUI3DObjectExit(int gohash)
         {
-            ToolBase tool = ToolsManager.CurrentTool().GetComponent<ToolBase>();
+            ToolBase tool = ToolsManager.CurrentTool();
             if (tool != null)
             {
                 tool.OnUIObjectExit(gohash);

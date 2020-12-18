@@ -80,13 +80,24 @@ namespace VRtist
             }
         }
 
-        public static GameObject CurrentTool()
+        public static GameObject CurrentToolGameObject()
+        {
+            return Instance.currentToolRef;
+        }
+
+        public static string CurrentToolName()
+        {
+            return Instance.currentToolRef.name;
+        }
+
+        public static ToolBase CurrentTool()
         {
             return Instance._CurrentTool();
         }
-        public GameObject _CurrentTool()
+        public ToolBase _CurrentTool()
         {
-            return currentToolRef;
+            if (null != currentToolRef) { return currentToolRef.GetComponent<ToolBase>(); }
+            return null;
         }
 
         public static void SetCurrentTool(GameObject tool)
