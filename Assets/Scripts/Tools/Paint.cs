@@ -346,7 +346,7 @@ namespace VRtist
             if (paintOnSurface)
             {
                 Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
-                Vector3 startRay = penPosition + mouthpiece.localScale.x * direction;
+                Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
                 Vector3 endRay = startRay + 1000f * direction;
                 paintLineRenderer.enabled = true;
                 paintLineRenderer.positionCount = 2;
