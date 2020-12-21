@@ -6,19 +6,17 @@ namespace VRtist
 {
     public class Tooltips
     {
-        //public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, JoystickClick, Pointer, System, Info }
-
         public enum Location { Trigger, Grip, Primary, Secondary, Joystick }
         public enum Action { Push, HoldPush, Horizontal, HoldHorizontal, Vertical, HoldVertical, Joystick }
 
-        public static void SetText(VRDevice device, Location location, Action action, string text, int index = 0, bool visible = true)
+        private static float visibilityAngle = 30f;
+
+        public static void SetText(VRDevice device, Location location, Action action, string text, bool visible = true)
         {
             Transform tooltip = GetTooltipTransform(device, location);
             if (null == tooltip) { return; }
 
-            string textPath = "Canvas/Panel/Text";
-            if (index > 0) { textPath += index; }
-            Transform textTransform = tooltip.Find(textPath);
+            Transform textTransform = tooltip.Find("Canvas/Panel/Text");
             if (null != textTransform)
             {
                 TextMeshProUGUI tmpro = textTransform.GetComponent<TextMeshProUGUI>();
@@ -36,12 +34,11 @@ namespace VRtist
                 case Action.HoldVertical: icon = "action-hold-joystick-vertical"; break;
                 case Action.Joystick: icon = "action-joystick"; break;
             }
-            string imagePath = "Canvas/Panel/Image";
-            if (index > 0) { imagePath += index; }
-            Transform imageTransform = tooltip.Find(imagePath);
+            Transform imageTransform = tooltip.Find("Canvas/Panel/Image");
             if (null != imageTransform)
             {
                 Image image = imageTransform.GetComponent<Image>();
+                icon = "empty";  // don't use icon value yet, we don't have any image
                 image.sprite = UIUtils.LoadIcon(icon);
             }
 
@@ -65,6 +62,57 @@ namespace VRtist
             SetVisible(device, Location.Joystick, false);
         }
 
+        public static void UpdateOpacity()
+        {
+            Transform camTransform = Camera.main.transform;
+            Vector3 primaryTarget = -GlobalState.GetPrimaryControllerTransform().up;
+            float primaryAngle = Vector3.Angle(primaryTarget, camTransform.forward);
+            SetOpacity(VRDevice.PrimaryController, primaryAngle);
+
+            Vector3 secondaryTarget = -GlobalState.GetSecondaryControllerTransform().up;
+            float secondaryAngle = Vector3.Angle(secondaryTarget, camTransform.forward);
+            SetOpacity(VRDevice.SecondaryController, secondaryAngle);
+        }
+
+        private static void SetOpacity(VRDevice device, float angle)
+        {
+            Transform controller = GlobalState.GetControllerTransform(device);
+            if (null == controller) { return; }
+
+            Transform tooltip = controller.Find("GripButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("TriggerButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("PrimaryButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("SecondaryButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("JoystickBaseAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+        }
+
+        private static void SetOpacity(Transform tooltip, float angle)
+        {
+            if (null == tooltip) { return; }
+            Image imagePanel = tooltip.Find("Canvas/Panel").GetComponent<Image>();
+            Image image = tooltip.Find("Canvas/Panel/Image").GetComponent<Image>();
+            TextMeshProUGUI text = tooltip.Find("Canvas/Panel/Text").GetComponent<TextMeshProUGUI>();
+
+            float factor = 1f - Mathf.Min(visibilityAngle, angle) / visibilityAngle;
+
+            Color color = image.color;
+            color.a = 1f * factor;
+            image.color = color;
+
+            color = text.color;
+            color.a = 1f * factor;
+            text.color = color;
+
+            color = imagePanel.color;
+            color.a = 0.39f * factor;
+            imagePanel.color = color;
+        }
+
         private static Transform GetTooltipTransform(VRDevice device, Location location)
         {
             Transform controller = GlobalState.GetControllerTransform(device);
@@ -77,7 +125,7 @@ namespace VRtist
                 case Location.Trigger: tooltip = controller.Find("TriggerButtonAnchor/Tooltip"); break;
                 case Location.Primary: tooltip = controller.Find("PrimaryButtonAnchor/Tooltip"); break;
                 case Location.Secondary: tooltip = controller.Find("SecondaryButtonAnchor/Tooltip"); break;
-                case Location.Joystick: tooltip = controller.Find("JoystickButtonAnchor/Tooltip"); break;
+                case Location.Joystick: tooltip = controller.Find("JoystickBaseAnchor/Tooltip"); break;
             }
             return tooltip;
         }
