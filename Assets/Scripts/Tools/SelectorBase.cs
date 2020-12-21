@@ -81,11 +81,11 @@ namespace VRtist
         {
             base.OnEnable();
             OnSelectMode();
-            Selection.OnSelectionChanged += OnSelectionChanged;            
+            Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
         protected override void OnDisable()
-        {            
+        {
             Selection.OnSelectionChanged -= OnSelectionChanged;
             if (Gripping)
                 OnEndGrip();
@@ -105,21 +105,21 @@ namespace VRtist
 
         public virtual void OnSelectorTriggerEnter(Collider other)
         {
-            Tooltips.SetTooltipVisibility(triggerTooltip, true);
-            Tooltips.SetTooltipVisibility(gripTooltip, true);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, true);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, true);
         }
 
         public virtual void OnSelectorTriggerExit(Collider other)
         {
-            Tooltips.SetTooltipVisibility(triggerTooltip, false);
-            Tooltips.SetTooltipVisibility(gripTooltip, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
         }
 
         protected override void Init()
         {
             base.Init();
 
-            CreateTooltips();
+            SetTooltips();
 
             selectorRadius = mouthpiece.localScale.x;
             mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
@@ -145,25 +145,24 @@ namespace VRtist
 
             if (state == AnimationState.Recording)
             {
-                Tooltips.SetTooltipText(ATooltip, "Stop Record");
+                Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Stop Record");
             }
             else
             {
-                Tooltips.SetTooltipText(ATooltip, "Duplicate");
+                Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Duplicate");
             }
         }
 
-        protected void CreateTooltips()
+        public override void SetTooltips()
         {
-            GameObject controller = rightController.gameObject;
-            ATooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Duplicate");
-            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Secondary, "Switch Tool");
-            triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "Select");
-            gripTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Grip, "Select & Move");
-            joystickTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale");
-            Tooltips.SetTooltipVisibility(triggerTooltip, false);
-            Tooltips.SetTooltipVisibility(gripTooltip, false);
-            Tooltips.SetTooltipVisibility(joystickTooltip, false);
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Duplicate");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Switch Tool");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Select");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Grip, Tooltips.Action.Push, "Move");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Scale");
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Joystick, false);
         }
 
         protected override void DoUpdate()
@@ -399,7 +398,7 @@ namespace VRtist
             outOfDeadZone = false;
 
             int numSelected = Selection.selection.Count;
-            Tooltips.SetTooltipVisibility(joystickTooltip, numSelected > 0);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Joystick, numSelected > 0);
 
             // Update locked checkbox if anyone
             if (null != lockedCheckbox)

@@ -36,7 +36,7 @@ namespace VRtist
 
             cameraForward = Camera.main.transform.TransformDirection(Vector3.forward).normalized;
             // Create tooltips
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Altitude / Strafe");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Joystick, "Altitude / Strafe");
             usedControls = UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK | UsedControls.RIGHT_PRIMARY;
 
             Transform fps = parametersTransform.Find("FPS");
@@ -60,7 +60,7 @@ namespace VRtist
             int elemCount = (int) damping;
 
             int currentSize = prevJoysticksStates.Count;
-            if(currentSize > elemCount)
+            if (currentSize > elemCount)
             {
                 prevJoysticksStates.RemoveRange(0, currentSize - elemCount);
                 deltaTimes.RemoveRange(0, currentSize - elemCount);
@@ -73,11 +73,11 @@ namespace VRtist
             float invCount = 1f / (float) prevJoysticksStates.Count;
 
             float dtSum = 0;
-            foreach(float dt in deltaTimes)
+            foreach (float dt in deltaTimes)
                 dtSum += dt;
 
             float invDtSum = 1f / dtSum;
-            for(int i = 0; i < prevJoysticksStates.Count; i++)
+            for (int i = 0; i < prevJoysticksStates.Count; i++)
             {
                 average += prevJoysticksStates[i] * deltaTimes[i] * invDtSum;
             }
@@ -92,7 +92,7 @@ namespace VRtist
             Vector4 joystickValue = GetJoysticksValue();
 
             Vector2 rightJoyValue = new Vector2(joystickValue.z, joystickValue.w);
-            if(rightJoyValue != Vector2.zero)
+            if (rightJoyValue != Vector2.zero)
             {
                 float rSpeed = fpsRotationSpeedFactor * options.fpsRotationSpeed;
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
@@ -115,7 +115,7 @@ namespace VRtist
             }
 
             Vector2 leftJoyValue = new Vector2(joystickValue.x, joystickValue.y);
-            if(leftJoyValue != Vector2.zero)
+            if (leftJoyValue != Vector2.zero)
             {
                 float d = Vector3.Distance(world.transform.TransformPoint(Vector3.one), world.transform.TransformPoint(Vector3.zero));
 
@@ -135,7 +135,7 @@ namespace VRtist
             isGrounded = Physics.CheckSphere(rig.position - Vector3.up, groundDistance, 5);
             Ray ray = new Ray(rig.position, -Vector3.up);
             RaycastHit hit;
-            if(Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out hit))
             {
                 Vector3 hitPoint = hit.point;
                 isGrounded = Mathf.Abs(hitPoint.y - rig.position.y) < 0.1f;
@@ -144,11 +144,11 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.primaryButton,
             () =>
             {
-                if(isGrounded)
+                if (isGrounded)
                     velocity.y = Mathf.Sqrt(jumpHeight * 2f * options.fpsGravity);
             });
 
-            if(isGrounded && velocity.y < 0 || (rig.position.y < -10f))
+            if (isGrounded && velocity.y < 0 || (rig.position.y < -10f))
                 velocity.y = 0f;
             else
                 velocity.y -= options.fpsGravity * Time.deltaTime * Time.deltaTime;

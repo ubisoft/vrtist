@@ -1,202 +1,133 @@
-﻿using UnityEngine;
-using UnityEngine.Assertions;
+﻿using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace VRtist
 {
     public class Tooltips
     {
-        public enum Anchors { Trigger, Grip, Primary, Secondary, Joystick, JoystickClick, Pointer, System, Info }
+        public enum Location { Trigger, Grip, Primary, Secondary, Joystick }
+        public enum Action { Push, HoldPush, Horizontal, HoldHorizontal, Vertical, HoldVertical, Joystick }
 
-        private static GameObject tooltipPrefab = null;
+        private static float visibilityAngle = 30f;
 
-        public static GameObject FindTooltip(GameObject gObject, string name)
+        public static void SetText(VRDevice device, Location location, Action action, string text, bool visible = true)
         {
-            if (gObject.name == name)
-                return gObject;
+            Transform tooltip = GetTooltipTransform(device, location);
+            if (null == tooltip) { return; }
 
-            for (int i = 0; i < gObject.transform.childCount; i++)
+            Transform textTransform = tooltip.Find("Canvas/Panel/Text");
+            if (null != textTransform)
             {
-                GameObject child = gObject.transform.GetChild(i).gameObject;
-                GameObject tooltip = FindTooltip(child, name);
-                if (tooltip)
-                    return tooltip;
+                TextMeshProUGUI tmpro = textTransform.GetComponent<TextMeshProUGUI>();
+                tmpro.text = text;
             }
 
-            return null;
+            string icon = "";
+            switch (action)
+            {
+                case Action.Push: icon = "action-push"; break;
+                case Action.HoldPush: icon = "action-hold-push"; break;
+                case Action.Horizontal: icon = "action-joystick-horizontal"; break;
+                case Action.HoldHorizontal: icon = "action-hold-joystick-horizontal"; break;
+                case Action.Vertical: icon = "action-joystick-vertical"; break;
+                case Action.HoldVertical: icon = "action-hold-joystick-vertical"; break;
+                case Action.Joystick: icon = "action-joystick"; break;
+            }
+            Transform imageTransform = tooltip.Find("Canvas/Panel/Image");
+            if (null != imageTransform)
+            {
+                Image image = imageTransform.GetComponent<Image>();
+                icon = "empty";  // don't use icon value yet, we don't have any image
+                image.sprite = UIUtils.LoadIcon(icon);
+            }
+
+            tooltip.gameObject.SetActive(visible);
         }
 
-        /// <summary>
-        /// Create a tooltip as a GameObject attached to a controller's anchor (paint > right_controller > PrimaryButtonAnchor, for example)
-        /// </summary>
-        /// <param name="controller">"left_controller" or "right_controller" game object</param>
-        /// <param name="anchor">Where to put the tooltip</param>
-        /// <param name="text">Its text</param>
-        /// <returns></returns>
-        public static GameObject CreateTooltip(GameObject controller, Anchors anchor, string text)
+        public static void SetVisible(VRDevice device, Location location, bool visible)
         {
-            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
+            Transform tooltip = GetTooltipTransform(device, location);
+            if (null == tooltip) { return; }
 
-            if (tooltipPrefab == null)
+            tooltip.gameObject.SetActive(visible);
+        }
+
+        public static void HideAll(VRDevice device)
+        {
+            SetVisible(device, Location.Grip, false);
+            SetVisible(device, Location.Trigger, false);
+            SetVisible(device, Location.Primary, false);
+            SetVisible(device, Location.Secondary, false);
+            SetVisible(device, Location.Joystick, false);
+        }
+
+        public static void UpdateOpacity()
+        {
+            Transform camTransform = Camera.main.transform;
+            Vector3 primaryTarget = -GlobalState.GetPrimaryControllerTransform().up;
+            float primaryAngle = Vector3.Angle(primaryTarget, camTransform.forward);
+            SetOpacity(VRDevice.PrimaryController, primaryAngle);
+
+            Vector3 secondaryTarget = -GlobalState.GetSecondaryControllerTransform().up;
+            float secondaryAngle = Vector3.Angle(secondaryTarget, camTransform.forward);
+            SetOpacity(VRDevice.SecondaryController, secondaryAngle);
+        }
+
+        private static void SetOpacity(VRDevice device, float angle)
+        {
+            Transform controller = GlobalState.GetControllerTransform(device);
+            if (null == controller) { return; }
+
+            Transform tooltip = controller.Find("GripButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("TriggerButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("PrimaryButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("SecondaryButtonAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+            tooltip = controller.Find("JoystickBaseAnchor/Tooltip");
+            SetOpacity(tooltip, angle);
+        }
+
+        private static void SetOpacity(Transform tooltip, float angle)
+        {
+            if (null == tooltip) { return; }
+            Image imagePanel = tooltip.Find("Canvas/Panel").GetComponent<Image>();
+            Image image = tooltip.Find("Canvas/Panel/Image").GetComponent<Image>();
+            TextMeshProUGUI text = tooltip.Find("Canvas/Panel/Text").GetComponent<TextMeshProUGUI>();
+
+            float factor = 1f - Mathf.Min(visibilityAngle, angle) / visibilityAngle;
+
+            Color color = image.color;
+            color.a = 1f * factor;
+            image.color = color;
+
+            color = text.color;
+            color.a = 1f * factor;
+            text.color = color;
+
+            color = imagePanel.color;
+            color.a = 0.39f * factor;
+            imagePanel.color = color;
+        }
+
+        private static Transform GetTooltipTransform(VRDevice device, Location location)
+        {
+            Transform controller = GlobalState.GetControllerTransform(device);
+            if (null == controller) { return null; }
+
+            Transform tooltip = null;
+            switch (location)
             {
-                tooltipPrefab = Resources.Load<GameObject>("Prefabs/UI/Tooltip");
+                case Location.Grip: tooltip = controller.Find("GripButtonAnchor/Tooltip"); break;
+                case Location.Trigger: tooltip = controller.Find("TriggerButtonAnchor/Tooltip"); break;
+                case Location.Primary: tooltip = controller.Find("PrimaryButtonAnchor/Tooltip"); break;
+                case Location.Secondary: tooltip = controller.Find("SecondaryButtonAnchor/Tooltip"); break;
+                case Location.Joystick: tooltip = controller.Find("JoystickBaseAnchor/Tooltip"); break;
             }
-
-            string tooltipName = anchor.ToString();
-            GameObject tooltip = FindTooltip(controller, tooltipName);
-            if (null == tooltip)
-            {
-                tooltip = GameObject.Instantiate(tooltipPrefab);
-                tooltip.name = tooltipName;
-
-                Transform frame = tooltip.transform.Find("Frame");
-                Vector3 framePosition = frame.localPosition;
-                Vector3 linePosition = new Vector3(-0.025f, 0f, 0f);  // for line renderer (go to the left of the anchor)
-                float yOffset = 0.01f;
-
-                // Put the tooltip as a child of the controller's anchor
-                // Default position.x is based on the right controller
-                switch (anchor)
-                {
-                    case Anchors.Grip:
-                        tooltip.transform.parent = controller.transform.Find("GripButtonAnchor");
-                        break;
-                    case Anchors.Joystick:
-                        tooltip.transform.parent = controller.transform.Find("JoystickTopAnchor");
-                        linePosition.x *= -1f;
-                        framePosition.x *= -1f;
-                        linePosition.y += 0.5f * yOffset;
-                        framePosition.y += 0.5f * yOffset;
-                        break;
-                    case Anchors.JoystickClick:
-                        tooltip.transform.parent = controller.transform.Find("JoystickBaseAnchor");
-                        linePosition.x *= -1f;
-                        framePosition.x *= -1f;
-                        linePosition.y -= 1.5f * yOffset;
-                        framePosition.y -= 1.5f * yOffset;
-                        break;
-                    case Anchors.Pointer:
-                        tooltip.transform.parent = controller.transform.Find("FrontAnchor");
-                        linePosition.x = 0f;
-                        framePosition.x = 0f;
-                        framePosition.y += yOffset;
-                        break;
-                    case Anchors.Primary:
-                        tooltip.transform.parent = controller.transform.Find("PrimaryButtonAnchor");
-                        break;
-                    case Anchors.Secondary:
-                        tooltip.transform.parent = controller.transform.Find("SecondaryButtonAnchor");
-                        linePosition.y += yOffset;
-                        framePosition.y += yOffset;
-                        break;
-                    case Anchors.Trigger:
-                        tooltip.transform.parent = controller.transform.Find("TriggerButtonAnchor");
-                        linePosition.x *= -1f;
-                        framePosition.x *= -1f;
-                        linePosition.y += 2.0f * yOffset;
-                        framePosition.y += 2.0f * yOffset;
-                        break;
-                    case Anchors.System:
-                        tooltip.transform.parent = controller.transform.Find("SystemButtonAnchor");
-                        linePosition.x *= -1f;
-                        framePosition.x *= -1f;
-                        break;
-                    case Anchors.Info:
-                        tooltip.transform.parent = controller.transform.Find("DisplayAnchor");
-                        framePosition = Vector3.zero;
-                        break;
-                }
-
-                // Reset tooltip's transform after parent is set
-                tooltip.transform.localPosition = Vector3.zero;
-                tooltip.transform.localRotation = Quaternion.identity;
-                tooltip.transform.localScale = Vector3.one;
-
-                // Invert positions for left controller
-                //bool rightHanded = GlobalState.Settings.rightHanded;
-                //if ((rightHanded && controller.name == "left_controller") || (!rightHanded && controller.name == "right_controller"))
-                if (controller.name == "left_controller")
-                {
-                    linePosition.x *= -1f;
-                    framePosition.x *= -1f;
-                }
-
-                
-                FreeDraw freeDraw = new FreeDraw();
-                freeDraw.AddControlPoint(Vector3.zero, 0.00025f);
-                freeDraw.AddControlPoint(linePosition, 0.00025f);
-                MeshFilter meshFilter = tooltip.AddComponent<MeshFilter>();
-                Mesh mesh = meshFilter.mesh;
-                mesh.Clear();
-                mesh.vertices = freeDraw.vertices;
-                mesh.normals = freeDraw.normals;
-                mesh.triangles = freeDraw.triangles;
-
-                // Set the frame position
-                frame.localPosition = framePosition;
-            }
-
-            // Set text
-            SetTooltipText(tooltip, text);
-
-            // Show tooltip (if Create is used on an already existing tooltip, which may have be hidden).
-            SetTooltipVisibility(tooltip, true);
-
             return tooltip;
-        }
-
-        public static void HideAllTooltips(GameObject controller)
-        {
-            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
-
-            // foreach anchor in Anchors???
-            SetTooltipVisibility(controller, Anchors.Grip, false);
-            SetTooltipVisibility(controller, Anchors.Joystick, false);
-            SetTooltipVisibility(controller, Anchors.Pointer, false);
-            SetTooltipVisibility(controller, Anchors.Primary, false);
-            SetTooltipVisibility(controller, Anchors.Secondary, false);
-            SetTooltipVisibility(controller, Anchors.System, false);
-            SetTooltipVisibility(controller, Anchors.Trigger, false);
-        }
-
-        public static void SetTooltipVisibility(GameObject controller, Anchors anchor, bool visible)
-        {
-            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
-
-            string tooltipName = anchor.ToString();
-            GameObject tooltip = FindTooltip(controller, tooltipName);
-            if (null != tooltip)
-            {
-                SetTooltipVisibility(tooltip, visible);
-            }
-        }
-
-        public static void SetTooltipVisibility(GameObject tooltip, bool visible)
-        {
-            tooltip.SetActive(visible);
-        }
-
-        public static void SetTooltipText(GameObject controller, Anchors anchor, string text)
-        {
-            Assert.IsTrue(controller.name == "right_controller" || controller.name == "left_controller", "Expected a controller");
-
-            string tooltipName = anchor.ToString();
-            GameObject tooltip = FindTooltip(controller, tooltipName);
-            if (null != tooltip)
-            {
-                SetTooltipText(tooltip, text);
-            }
-        }
-
-        public static void SetTooltipText(GameObject tooltip, string text)
-        {
-            TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            tmpro.text = text;
-        }
-
-        public static string GetTooltipText(GameObject tooltip)
-        {
-            TMPro.TextMeshProUGUI tmpro = tooltip.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            return tmpro.text;
         }
     }
 }

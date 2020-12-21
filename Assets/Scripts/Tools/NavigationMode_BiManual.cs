@@ -48,7 +48,7 @@ namespace VRtist
             lineUI.Show(false);
 
             // Create tooltips
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip World");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Grip, Tooltips.Action.HoldPush, "Grip World");
 
             usedControls = UsedControls.LEFT_GRIP | UsedControls.RIGHT_GRIP;
         }

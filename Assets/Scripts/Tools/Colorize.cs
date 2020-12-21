@@ -52,11 +52,14 @@ namespace VRtist
             metallicSlider.onReleaseEvent.AddListener(UpdateMaterial);
             GlobalState.colorReleasedEvent.AddListener((Color color) => UpdateMaterial());
 
-            // Tooltips
-            GameObject controller = rightController.gameObject;
-            triggerTooltip = Tooltips.CreateTooltip(controller, Tooltips.Anchors.Trigger, "-");
-            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Primary, "Pick Material");
-            Tooltips.CreateTooltip(controller, Tooltips.Anchors.Joystick, "Scale Tool");
+            SetTooltips();
+        }
+
+        public override void SetTooltips()
+        {
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Pick Material");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldHorizontal, "Brush Size");
         }
 
         protected override void OnEnable()
@@ -179,7 +182,7 @@ namespace VRtist
             colorizeButton.Checked = true;
             pickButton.Checked = false;
             updateSelectionButton.Checked = false;
-            Tooltips.SetTooltipText(triggerTooltip, "Set Material");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Set Material");
         }
 
         public void OnSetPick()
@@ -188,7 +191,7 @@ namespace VRtist
             colorizeButton.Checked = false;
             pickButton.Checked = true;
             updateSelectionButton.Checked = false;
-            Tooltips.SetTooltipText(triggerTooltip, "Pick Material");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Pick Material");
         }
 
         public void OnSetUpdateSelection()
@@ -197,7 +200,7 @@ namespace VRtist
             colorizeButton.Checked = false;
             pickButton.Checked = false;
             updateSelectionButton.Checked = true;
-            Tooltips.SetTooltipText(triggerTooltip, "Select Object");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Select Object");
             UpdateMaterial();
         }
     }

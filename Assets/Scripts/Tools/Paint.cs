@@ -70,12 +70,16 @@ namespace VRtist
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
 
-            // Create tooltips
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Trigger, "Draw");
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Secondary, "Switch To Selection");
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Brush Size");
+            SetTooltips();
 
             GlobalState.colorChangedEvent.AddListener(OnPaintColor);
+        }
+
+        public override void SetTooltips()
+        {
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Trigger, Tooltips.Action.HoldPush, "Draw");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Switch Tool");
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldHorizontal, "Brush Size");
         }
 
         private void ConfigureSubPanels()
@@ -138,7 +142,7 @@ namespace VRtist
         void OnSelectPanel(PaintTools tool)
         {
             // If changing tool TO of FROM volume, reset the volume generator.
-            if (paintTool != tool && (paintTool == PaintTools.Volume || tool == PaintTools.Volume ))
+            if (paintTool != tool && (paintTool == PaintTools.Volume || tool == PaintTools.Volume))
                 ResetVolume();
 
             paintTool = tool;
@@ -162,16 +166,16 @@ namespace VRtist
             volumeCursor.SetActive(tool == PaintTools.Volume);
 
             // Sub-Elements (put in its own function?)
-            switch(tool)
+            switch (tool)
             {
                 case PaintTools.Volume:
-                {
-                    volumeCreateButton.Checked = true;
-                    volumeEditButton.Checked = false;
-                    // TODO: default values for sliders?
-                    // ...
-                }
-                break;
+                    {
+                        volumeCreateButton.Checked = true;
+                        volumeEditButton.Checked = false;
+                        // TODO: default values for sliders?
+                        // ...
+                    }
+                    break;
 
                 default: break;
             }

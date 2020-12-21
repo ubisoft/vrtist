@@ -12,6 +12,7 @@ namespace VRtist
         public NetworkSettings networkSettings;
 
         [Header("Parameters")]
+        public PlayerController playerController;
         public Transform rightHandle;
         public Transform leftHandle;
         public GameObject colorPanel = null;
@@ -246,6 +247,8 @@ namespace VRtist
                 }
                 secondaryControllerDisplay.text = infoText;
             }
+
+            Tooltips.UpdateOpacity();
         }
 
         public void LateUpdate()
@@ -396,6 +399,13 @@ namespace VRtist
             }
         }
 
+        public static Transform GetControllerTransform(VRDevice device)
+        {
+            if (device == VRDevice.PrimaryController) { return GetPrimaryControllerTransform(); }
+            if (device == VRDevice.SecondaryController) { return GetSecondaryControllerTransform(); }
+            return null;
+        }
+
         public static void SetPrimaryControllerDisplayText(string text)
         {
             if (null != Instance.primaryControllerDisplay)
@@ -435,6 +445,16 @@ namespace VRtist
             Instance.secondaryControllerDisplay = GetSecondaryControllerTransform().Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
             Instance.secondaryControllerDisplay.text = "";
             Instance.primaryControllerDisplay.text = "";
+
+            // Update tooltips
+            Tooltips.HideAll(VRDevice.PrimaryController);
+            Tooltips.HideAll(VRDevice.SecondaryController);
+            ToolBase tool = ToolsManager.CurrentTool();
+            if (null != tool)
+            {
+                tool.SetTooltips();
+            }
+            Instance.playerController.HandleCommonTooltipsVisibility();
 
             // Move Palette
             Transform palette = Instance.leftHandle.Find("PaletteHandle");

@@ -25,6 +25,13 @@ namespace VRtist
         public Vector2 primary2DAxis;
     }
 
+    public enum VRDevice
+    {
+        Head,
+        PrimaryController,
+        SecondaryController
+    }
+
     class VRInput
     {
 

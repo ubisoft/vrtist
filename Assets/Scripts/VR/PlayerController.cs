@@ -63,10 +63,10 @@ namespace VRtist
             if (teleport != null)
                 teleport.gameObject.SetActive(false);
 
-            tooltipPalette = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Trigger, "Display Palette");
-            tooltipUndo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Primary, "Undo");
-            tooltipRedo = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Secondary, "Redo");
-            tooltipReset = Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.JoystickClick, "Reset");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Trigger, Tooltips.Action.HoldPush, "Open Palette");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset");
 
             OnChangeNavigationMode("BiManual");
 
@@ -264,7 +264,7 @@ namespace VRtist
                     ResetCameraClipPlanes();
                     transform.localPosition = Vector3.zero;
                     transform.localRotation = Quaternion.identity;
-                    transform.localScale = Vector3.one;                    
+                    transform.localScale = Vector3.one;
                 }
                 else
                 {
@@ -345,43 +345,38 @@ namespace VRtist
             }
         }
 
-        private void HandleCommonTooltipsVisibility()
+        public void HandleCommonTooltipsVisibility()
         {
             if (options.currentNavigationMode == null)
                 return;
 
             if (IsCompatibleWithReset(options.currentNavigationMode))
             {
-                Tooltips.SetTooltipVisibility(tooltipReset, true);
-                Tooltips.SetTooltipText(tooltipReset, "Reset");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset");
             }
             else
             {
-                Tooltips.SetTooltipVisibility(tooltipReset, false);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Joystick, false);
             }
 
             if (IsCompatibleWithPalette(options.currentNavigationMode))
             {
-                Tooltips.SetTooltipVisibility(tooltipPalette, true);
-                Tooltips.SetTooltipText(tooltipPalette, "Display Palette");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Open Palette");
             }
             else
             {
-                Tooltips.SetTooltipVisibility(tooltipPalette, false);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Trigger, false);
             }
 
             if (IsCompatibleWithUndoRedo(options.currentNavigationMode))
             {
-                Tooltips.SetTooltipVisibility(tooltipUndo, true);
-                Tooltips.SetTooltipText(tooltipUndo, "Undo");
-
-                Tooltips.SetTooltipVisibility(tooltipRedo, true);
-                Tooltips.SetTooltipText(tooltipRedo, "Redo");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo");
             }
             else
             {
-                Tooltips.SetTooltipVisibility(tooltipUndo, false);
-                Tooltips.SetTooltipVisibility(tooltipRedo, false);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Primary, false);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Secondary, false);
             }
         }
 
@@ -392,7 +387,7 @@ namespace VRtist
         {
             UpdateRadioButtons(buttonName);
 
-            Tooltips.HideAllTooltips(leftHandle.Find("left_controller").gameObject);
+            Tooltips.HideAll(VRDevice.SecondaryController);
 
             if (options.currentNavigationMode != null)
                 options.currentNavigationMode.DeInit();

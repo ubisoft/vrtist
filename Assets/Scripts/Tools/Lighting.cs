@@ -57,7 +57,7 @@ namespace VRtist
             DisableUI();
 
             Init();
-            CreateTooltips();
+            SetTooltips();
 
             // Camera list
             GlobalState.ObjectAddedEvent.AddListener(OnLightAdded);

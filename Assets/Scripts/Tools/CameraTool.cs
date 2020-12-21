@@ -121,7 +121,7 @@ namespace VRtist
 
             OnSelectionChanged(null, null);
             foreach (Camera camera in SelectedCameras())
-                ComputeFocal(camera);            
+                ComputeFocal(camera);
         }
 
         protected override void OnDisable()
@@ -150,7 +150,7 @@ namespace VRtist
             }
             else
             {
-                focalSlider = panel.Find("Focal"); 
+                focalSlider = panel.Find("Focal");
                 focusSlider = panel.Find("Focus");
                 apertureSlider = panel.Find("Aperture");
                 enableDepthOfFieldCheckbox = panel.Find("EnableDepthOfField")?.gameObject.GetComponent<UICheckbox>();
@@ -201,8 +201,8 @@ namespace VRtist
             ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
 
             // Create tooltips
-            CreateTooltips();
-            Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Joystick, "Zoom");
+            SetTooltips();
+            Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldVertical, "Zoom");
 
             // Camera list
             GlobalState.ObjectAddedEvent.AddListener(OnCameraAdded);

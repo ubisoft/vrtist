@@ -40,36 +40,36 @@ namespace VRtist
             base.Init(rigTransform, worldTransform, leftHandleTransform, rightHandleTransform, pivotTransform, cameraTransform, parametersTransform);
 
             // Create tooltips
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Joystick, "Turn");
-            Tooltips.CreateTooltip(leftHandle.Find("left_controller").gameObject, Tooltips.Anchors.Grip, "Grip Object");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Joystick, "Turn");
+            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Grip, Tooltips.Action.HoldPush, "Grip Object");
             // TODO: find a way to reach the current right_controller (via GlobalState???)
 
             usedControls = UsedControls.LEFT_GRIP | UsedControls.LEFT_JOYSTICK | UsedControls.RIGHT_JOYSTICK;
 
             // Activate Panel and set initial slider values.
             Transform orbitPanel = parametersTransform.Find("Orbit");
-            if(orbitPanel != null)
+            if (orbitPanel != null)
             {
                 orbitPanel.gameObject.SetActive(true);
                 UISlider moveSpeedSlider = orbitPanel.Find("MoveSpeed")?.GetComponent<UISlider>();
-                if(moveSpeedSlider != null)
+                if (moveSpeedSlider != null)
                 {
                     moveSpeedSlider.Value = moveSpeed;
                 }
                 UISlider scaleSpeedSlider = orbitPanel.Find("ScaleSpeed")?.GetComponent<UISlider>();
-                if(scaleSpeedSlider)
+                if (scaleSpeedSlider)
                 {
                     scaleSpeedSlider.Value = scaleSpeed;
                 }
                 UISlider rotateSpeedSlider = orbitPanel.Find("RotateSpeed")?.GetComponent<UISlider>();
-                if(rotateSpeedSlider)
+                if (rotateSpeedSlider)
                 {
                     rotateSpeedSlider.Value = rotationalSpeed;
                 }
             }
 
             // Activate the ray.
-            if(ray != null)
+            if (ray != null)
             {
                 ray.gameObject.SetActive(true);
                 ray.SetDefaultColor(); // TODO: does not seem to work.
@@ -97,13 +97,13 @@ namespace VRtist
 
         public override void Update()
         {
-            if(ray == null)
+            if (ray == null)
                 return;
 
             //
             // RAY - collision with scene objects.
             //
-            if(!isLocked)
+            if (!isLocked)
             {
                 RaycastHit hit;
                 Vector3 worldStart = leftHandle.TransformPoint(0.01f, 0.0f, 0.05f);
@@ -111,7 +111,7 @@ namespace VRtist
                 Vector3 worldDirection = worldEnd - worldStart;
                 Ray r = new Ray(worldStart, worldDirection);
                 int layersMask = LayerMask.GetMask(new string[] { "Default", "Selection", "Hover" });
-                if(Physics.Raycast(r, out hit, 100.0f, layersMask))
+                if (Physics.Raycast(r, out hit, 100.0f, layersMask))
                 {
                     target = hit.collider.transform;
                     targetPosition = hit.collider.bounds.center;
@@ -119,14 +119,14 @@ namespace VRtist
                     ray.SetStartPosition(worldStart);
                     ray.SetEndPosition(hit.point);
                     ray.SetActiveColor();
-                    if(target)
+                    if (target)
                     {
                         Selection.AddToHoverLayer(target.gameObject);
                     }
                 }
                 else
                 {
-                    if(target)
+                    if (target)
                     {
                         Selection.RemoveFromHover(target.gameObject);
                     }
@@ -149,10 +149,10 @@ namespace VRtist
                 // Left Joystick -- left/right = rotate left/right.
                 //                  up/down = rotate up/down.
                 Vector2 val = VRInput.GetValue(VRInput.secondaryController, CommonUsages.primary2DAxis);
-                if(val != Vector2.zero)
+                if (val != Vector2.zero)
                 {
                     // Horizontal rotation
-                    if(Mathf.Abs(val.x) > deadZone)
+                    if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
                         float rotate_amount_h = value * options.orbitRotationalSpeed;//rotationalSpeed;
@@ -160,14 +160,14 @@ namespace VRtist
                     }
 
                     // Vertical rotation
-                    if(Mathf.Abs(val.y) > deadZone)
+                    if (Mathf.Abs(val.y) > deadZone)
                     {
                         float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone) / (1.0f - deadZone); // remap
                         float dot = Vector3.Dot(up, forward);
                         bool in_safe_zone = (Mathf.Abs(dot) < 0.8f);
                         bool above_but_going_down = (dot > 0.8f) && (value < 0.0f);
                         bool below_but_going_up = (dot < -0.8f) && (value > 0.0f);
-                        if(!limitVertical || in_safe_zone || above_but_going_down || below_but_going_up) // only within limits
+                        if (!limitVertical || in_safe_zone || above_but_going_down || below_but_going_up) // only within limits
                         {
                             float rotate_amount_v = value * options.orbitRotationalSpeed; //rotationalSpeed;
                             rig.RotateAround(targetPosition, right, -rotate_amount_v);
@@ -179,17 +179,17 @@ namespace VRtist
                 // Right Joystick -- left/right = move closer/farther
                 //                   up/down = scale world
                 val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
-                if(val != Vector2.zero)
+                if (val != Vector2.zero)
                 {
                     float remainingDistance = distance - minDistance;
                     bool in_safe_zone = (remainingDistance > 0.0f);
 
                     // Move the world closer/farther
-                    if(Mathf.Abs(val.x) > deadZone)
+                    if (Mathf.Abs(val.x) > deadZone)
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
                         bool too_close_but_going_back = (remainingDistance <= 0.0f) && (value < 0.0f);
-                        if(in_safe_zone || too_close_but_going_back)
+                        if (in_safe_zone || too_close_but_going_back)
                         {
                             Vector3 offset = forward * value * (minMoveDistance + options.orbitMoveSpeed * Mathf.Abs(remainingDistance)); //moveSpeed 
                             rig.position -= offset;
@@ -198,11 +198,11 @@ namespace VRtist
 
                     /*
                     // Scale the world
-                    if(Mathf.Abs(val.y) > deadZone)
+                    if (Mathf.Abs(val.y) > deadZone)
                     {
                         float value = Mathf.Sign(val.y) * (Mathf.Abs(val.y) - deadZone) / (1.0f - deadZone); // remap
                         bool too_close_but_scaling_down = (remainingDistance <= 0.0f) && (value < 0.0f);
-                        if(in_safe_zone || too_close_but_scaling_down)
+                        if (in_safe_zone || too_close_but_scaling_down)
                         {
                             float scale = 1.0f + (value * options.orbitScaleSpeed); // scaleSpeed
 
@@ -240,7 +240,7 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.gripButton,
             () =>
             {
-                if(target != null)
+                if (target != null)
                 {
                     isLocked = true;
                     ray.gameObject.SetActive(false); // hide ray on grip
