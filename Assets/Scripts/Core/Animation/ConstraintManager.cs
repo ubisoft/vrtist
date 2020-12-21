@@ -26,7 +26,7 @@ namespace VRtist
         public static List<Constraint> constraints = new List<Constraint>();
 
         // Update is called once per frame
-        void Update()
+        void LateUpdate()
         {
             UpdateConstraintVisualization(gameObject);
         }

@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SimpleFresnel
+  m_Name: Colimator
   m_Shader: {fileID: -6465566751694194690, guid: 31a14f78303002d4ab1ff7f69027e7b0,
     type: 3}
   m_ShaderKeywords: _BLENDMODE_ALPHA _SURFACE_TYPE_TRANSPARENT
@@ -48,7 +48,7 @@ Material:
     - _DoubleSidedNormalMode: 2
     - _DstBlend: 10
     - _EnableFogOnTransparent: 0
-    - _Power: 1
+    - _Power: 0.3
     - _ReceivesSSR: 0
     - _RenderQueueType: 5
     - _RequireSplitLighting: 0
@@ -74,6 +74,6 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.33459416, g: 0.80700696, b: 0.9716981, a: 1}
+    - _BaseColor: {r: 0.9150943, g: 0.29686606, b: 0.2719384, a: 1}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
