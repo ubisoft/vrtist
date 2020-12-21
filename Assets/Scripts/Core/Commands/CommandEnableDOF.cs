@@ -19,7 +19,7 @@ namespace VRtist
             colimator.gameObject.SetActive(value);
             if (value)
             {                
-                colimator.position = camera.transform.position + new Vector3(0, 0, cameraController.focus);
+                colimator.position = camera.transform.position - camera.transform.forward * cameraController.Focus;
             }
             cameraController.EnableDOF = value;
         }

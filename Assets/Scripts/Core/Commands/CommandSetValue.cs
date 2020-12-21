@@ -13,34 +13,45 @@ namespace VRtist
         string componentName;
         string fieldName;
 
-        public T GetValue(Component component, string fieldName)
+        private void GetGenericAttribute(Component component, string fieldName, out object inst, out MemberInfo memberInfo)
         {
-            object inst = component;
+            inst = component;
             string[] fields = fieldName.Split('.');
 
-            FieldInfo fieldInfo = component.GetType().GetField(fields[0]);
+            memberInfo = component.GetType().GetField(fields[0]);
+            if (null == memberInfo)
+                memberInfo = component.GetType().GetProperty(fields[0]);
 
             for (int i = 1; i < fields.Length; i++)
             {
-                inst = fieldInfo.GetValue(inst);
-                fieldInfo = inst.GetType().GetField(fields[i]);
+                if (memberInfo is FieldInfo)
+                    inst = (memberInfo as FieldInfo).GetValue(inst);
+                else
+                    inst = (memberInfo as PropertyInfo).GetValue(inst);
+
+                memberInfo = inst.GetType().GetField(fields[i]);
+                if (null == memberInfo)
+                    memberInfo = component.GetType().GetProperty(fields[i]);
             }
-            return (T) fieldInfo.GetValue(inst);
+
+        }
+
+        public T GetValue(Component component, string fieldName)
+        {
+            GetGenericAttribute(component, fieldName, out object inst, out MemberInfo memberInfo);       
+            if (memberInfo is FieldInfo)
+                return (T)(memberInfo as FieldInfo).GetValue(inst);
+            else
+                return (T)(memberInfo as PropertyInfo).GetValue(inst);
         }
 
         public void SetValue(Component component, string fieldName, T value)
         {
-            object inst = component;
-            string[] fields = fieldName.Split('.');
-
-            FieldInfo fieldInfo = component.GetType().GetField(fields[0]);
-
-            for (int i = 1; i < fields.Length; i++)
-            {
-                inst = fieldInfo.GetValue(inst);
-                fieldInfo = inst.GetType().GetField(fields[i]);
-            }
-            fieldInfo.SetValue(inst, value);
+            GetGenericAttribute(component, fieldName, out object inst, out MemberInfo memberInfo);
+            if (memberInfo is FieldInfo)
+                (memberInfo as FieldInfo).SetValue(inst, value);
+            else
+                (memberInfo as PropertyInfo).SetValue(inst, value);
         }
 
         // Create a command for each currently selected game objects

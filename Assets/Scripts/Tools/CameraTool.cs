@@ -59,9 +59,6 @@ namespace VRtist
 
         private UnityEngine.Rendering.HighDefinition.DepthOfField dof;
         private List<CameraController> selectedCameraControllers = new List<CameraController>();
-        private List<Vector3> beginColimatorPositions = new List<Vector3>();
-        private List<Quaternion> beginColimatorRotations = new List<Quaternion>();
-        private List<Vector3> beginColimatorScales = new List<Vector3>();
 
         public float Focal
         {
@@ -91,7 +88,7 @@ namespace VRtist
                     CameraController cameraControler = gobject.GetComponent<CameraController>();
                     if (null == cameraControler)
                         continue;
-                    cameraControler.focus = value;
+                    cameraControler.Focus = value;
                 }
             }
         }
@@ -210,7 +207,7 @@ namespace VRtist
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
             if (null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
-            cameraColimator = Resources.Load<GameObject>("Prefabs/Primitives/Axis_locator");
+            cameraColimator = Resources.Load<GameObject>("Prefabs/UI/Colimator");
         }
 
         void Start()
@@ -468,6 +465,7 @@ namespace VRtist
                     GameObject colimatorInstance = SyncData.InstantiatePrefab(colimator);
 
                     newCamera.GetComponent<CameraController>().colimator = colimatorInstance.transform;
+                    colimatorInstance.SetActive(false);
 
                     if (newCamera)
                     {
@@ -631,7 +629,7 @@ namespace VRtist
                 sliderComp = focusSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
                 {
-                    sliderComp.Value = cameraController.focus;
+                    sliderComp.Value = cameraController.Focus;
                     focusSlider.gameObject.SetActive(true);
                 }
 
@@ -693,44 +691,16 @@ namespace VRtist
         }
 
         public void OnFocalSliderPressed()
-        {
+        {            
             OnSliderPressed("Camera Focal", "/CameraController/focal");
         }
 
         public void OnFocusSliderPressed()
         {
-            beginColimatorPositions.Clear();
-            beginColimatorRotations.Clear();
-            beginColimatorScales.Clear();
-            foreach (CameraController selectedCamera in selectedCameraControllers)
-            {
-                beginColimatorPositions.Add(selectedCamera.colimator.localPosition);
-                beginColimatorRotations.Add(selectedCamera.colimator.localRotation);
-                beginColimatorScales.Add(selectedCamera.colimator.localScale);
-            }
-
-            OnSliderPressed("Camera Focus", "/CameraController/focus");
+            OnSliderPressed("Camera Focus", "/CameraController/Focus");
         }
         public void OnFocusSliderReleased()
-        {
-            List<Vector3> ep = new List<Vector3>();
-            List<Quaternion> er = new List<Quaternion>();
-            List<Vector3> es = new List<Vector3>();
-            List<string> names = new List<string>();
-            foreach (CameraController selectedCamera in selectedCameraControllers)
-            {
-                ep.Add(selectedCamera.colimator.localPosition);
-                er.Add(selectedCamera.colimator.localRotation);
-                es.Add(selectedCamera.colimator.localScale);
-                names.Add(selectedCamera.name);
-            }
-
-            CommandMoveObjects command = new CommandMoveObjects(names, beginColimatorPositions, beginColimatorRotations, beginColimatorScales, ep, er, es);
-            command.Submit();
-            beginColimatorPositions.Clear();
-            beginColimatorRotations.Clear();
-            beginColimatorScales.Clear();
-
+        {           
             OnReleased();
         }
         public void OnApertureSliderPressed()

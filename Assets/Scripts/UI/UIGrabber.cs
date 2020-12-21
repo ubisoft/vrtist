@@ -56,7 +56,7 @@ namespace VRtist
         private void OnEnable()
         {
             // Load lazy thumbnail
-            if (null != lazyImagePath && !lazyLoaded)
+            if (null != lazyImagePath && lazyImagePath != "" && !lazyLoaded)
             {
                 LoadThumbnail(lazyImagePath);
                 lazyLoaded = true;

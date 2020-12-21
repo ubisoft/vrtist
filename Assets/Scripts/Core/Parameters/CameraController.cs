@@ -9,7 +9,20 @@ namespace VRtist
     {
         public Camera cameraObject = null;
         public float focal = 35f;
-        public float focus = 0.1f;
+        public float focus = 1.0f;
+        public float Focus
+        {
+            get { return focus; }
+            set 
+            { 
+                focus = value;
+                if(null != colimator)
+                {
+                    Vector3 direction = gameObject.transform.forward;
+                    colimator.position = gameObject.transform.position - direction * focus;
+                }
+            }
+        }
         public float aperture = 16f; // [1..32] in Unity
         private bool enableDOF = false;
         private static UnityEngine.Rendering.HighDefinition.DepthOfField dof;
@@ -276,6 +289,8 @@ namespace VRtist
                     cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
                     focus = Vector3.Distance(colimator.position, transform.position);
 
+                    colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
+
                     if (Selection.activeCamera == gameObject)
                     {
                         if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
@@ -285,6 +300,7 @@ namespace VRtist
                 }
                 else
                 {
+                    colimator.gameObject.SetActive(false);
                     cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = 16f;
                     if (Selection.activeCamera == gameObject)
                     {
@@ -292,12 +308,6 @@ namespace VRtist
                         dof.active = false;
                     }
                 }
-
-                // NOTE: cant do that here because this Update is called for all cameras. Only the current one should do it.
-                //DepthOfField dof;
-                //Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                //dof.focusDistance.value = focus * scale;
-                //dof.active = true; // enableDepthOfField; // TODO: add and use the flag to cameracontroller.
 
                 // Active camera
                 if (Selection.activeCamera == gameObject)
