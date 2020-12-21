@@ -181,6 +181,12 @@ namespace VRtist
             }
         }
 
+        protected override void DoUpdateGui()
+        {
+            base.DoUpdateGui();
+            paintLineRenderer.enabled = false;
+        }
+
         protected override void DoUpdate()
         {
             Vector3 position;
@@ -343,18 +349,21 @@ namespace VRtist
             Vector3 penPosition = mouthpiece.position;
             if (paintOnSurface)
             {
+                Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
+                Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
+                Vector3 endRay = startRay + 1000f * direction;
                 paintLineRenderer.enabled = true;
                 paintLineRenderer.positionCount = 2;
-                paintLineRenderer.SetPosition(0, transform.position);
-                paintLineRenderer.SetPosition(1, transform.position + transform.forward * 10f);
+                paintLineRenderer.SetPosition(0, startRay);
+                paintLineRenderer.SetPosition(1, endRay);
+                paintLineRenderer.startWidth = 0.005f / GlobalState.WorldScale;
+                paintLineRenderer.endWidth = paintLineRenderer.startWidth;
                 RaycastHit hitInfo;
-                Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
-                bool hit = Physics.Raycast(transform.position, direction, out hitInfo, Mathf.Infinity);
-                if (hit)
-                {
-                    penPosition = hitInfo.point - 0.001f * direction;
-                    paintLineRenderer.SetPosition(1, penPosition);
-                }
+                bool hit = Physics.Raycast(startRay, direction, out hitInfo, Mathf.Infinity);
+                if (!hit)
+                    return;
+                penPosition = hitInfo.point - 0.001f * direction;
+                paintLineRenderer.SetPosition(1, penPosition);
             }
             else if (paintTool == PaintTools.Volume)
             {

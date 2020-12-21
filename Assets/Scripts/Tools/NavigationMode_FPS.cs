@@ -148,10 +148,10 @@ namespace VRtist
                     velocity.y = Mathf.Sqrt(jumpHeight * 2f * options.fpsGravity);
             });
 
-            if (isGrounded && velocity.y < 0)
+            if (isGrounded && velocity.y < 0 || (rig.position.y < -10f))
                 velocity.y = 0f;
-
-            velocity.y -= options.fpsGravity * Time.deltaTime * Time.deltaTime;
+            else
+                velocity.y -= options.fpsGravity * Time.deltaTime * Time.deltaTime;
             controller.Move(velocity);
         }
     }

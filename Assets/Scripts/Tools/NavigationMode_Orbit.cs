@@ -140,7 +140,7 @@ namespace VRtist
             }
             else
             {
-                Vector3 up = world.up;
+                Vector3 up = Vector3.up; //rig.up;
                 Vector3 forward = Vector3.Normalize(camera.position - targetPosition);
                 Vector3 right = Vector3.Cross(up, forward);
                 float distance = Vector3.Distance(camera.position, targetPosition);
@@ -156,7 +156,7 @@ namespace VRtist
                     {
                         float value = Mathf.Sign(val.x) * (Mathf.Abs(val.x) - deadZone) / (1.0f - deadZone); // remap
                         float rotate_amount_h = value * options.orbitRotationalSpeed;//rotationalSpeed;
-                        world.RotateAround(targetPosition, up, rotate_amount_h);
+                        rig.RotateAround(targetPosition, up, -rotate_amount_h);
                     }
 
                     // Vertical rotation
@@ -170,7 +170,7 @@ namespace VRtist
                         if (!limitVertical || in_safe_zone || above_but_going_down || below_but_going_up) // only within limits
                         {
                             float rotate_amount_v = value * options.orbitRotationalSpeed; //rotationalSpeed;
-                            world.RotateAround(targetPosition, right, rotate_amount_v);
+                            rig.RotateAround(targetPosition, right, -rotate_amount_v);
                         }
                     }
                 }
@@ -192,11 +192,11 @@ namespace VRtist
                         if (in_safe_zone || too_close_but_going_back)
                         {
                             Vector3 offset = forward * value * (minMoveDistance + options.orbitMoveSpeed * Mathf.Abs(remainingDistance)); //moveSpeed 
-                            world.position += offset;
-                            targetPosition += offset;
+                            rig.position -= offset;
                         }
                     }
 
+                    /*
                     // Scale the world
                     if (Mathf.Abs(val.y) > deadZone)
                     {
@@ -215,6 +215,8 @@ namespace VRtist
 
                             float finalScale = scale * world.localScale.x;
                             float clampedScale = Mathf.Clamp(finalScale, 1.0f / maxPlayerScale, minPlayerScale);
+                            
+                            // should touch rig, not world
                             world.localScale = new Vector3(clampedScale, clampedScale, clampedScale);
 
                             GlobalState.WorldScale = world.localScale.x;
@@ -222,6 +224,7 @@ namespace VRtist
                             UpdateCameraClipPlanes();
                         }
                     }
+                    */
                 }
 
                 // Position the ray AFTER the rotation of the camera, to avoid a one frame shift.
