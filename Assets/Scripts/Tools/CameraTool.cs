@@ -10,6 +10,7 @@ namespace VRtist
     {
         // Start is called before the first frame update
         public GameObject cameraPrefab;
+        private GameObject cameraColimator;
         public Transform rig;
         public Transform cameraContainer;
         public Material screenShotMaterial;
@@ -57,6 +58,10 @@ namespace VRtist
         public bool montage = false;
 
         private UnityEngine.Rendering.HighDefinition.DepthOfField dof;
+        private List<CameraController> selectedCameraControllers = new List<CameraController>();
+        private List<Vector3> beginColimatorPositions = new List<Vector3>();
+        private List<Quaternion> beginColimatorRotations = new List<Quaternion>();
+        private List<Vector3> beginColimatorScales = new List<Vector3>();
 
         public float Focal
         {
@@ -81,7 +86,6 @@ namespace VRtist
             set
             {
                 focus = value;
-                ApplyDepthOfFieldToVolume();
                 foreach (GameObject gobject in SelectedCameraObjects())
                 {
                     CameraController cameraControler = gobject.GetComponent<CameraController>();
@@ -107,24 +111,7 @@ namespace VRtist
                     cameraControler.aperture = value;
                 }
             }
-        }
-
-        public bool EnableDepthOfField
-        {
-            get { return enableDepthOfField; }
-            set
-            {
-                enableDepthOfField = value;
-
-                foreach (GameObject gobject in SelectedCameraObjects())
-                {
-                    CameraController cameraControler = gobject.GetComponent<CameraController>();
-                    if (null == cameraControler)
-                        continue;
-                    cameraControler.enableDOF = value;
-                }
-            }
-        }
+        }        
 
         protected override void OnEnable()
         {
@@ -140,6 +127,11 @@ namespace VRtist
         protected override void OnDisable()
         {
             base.OnDisable();
+            foreach(CameraController cameraController in selectedCameraControllers)
+            {
+                cameraController.parameterChanged.RemoveListener(OnCameraParameterChanged);
+            }
+            selectedCameraControllers.Clear();
             feedbackPositioning = false;
         }
 
@@ -218,6 +210,7 @@ namespace VRtist
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
             if (null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
+            cameraColimator = Resources.Load<GameObject>("Prefabs/Primitives/Axis_locator");
         }
 
         void Start()
@@ -466,6 +459,16 @@ namespace VRtist
                 {
                     Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
                     GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
+
+                    // Colimator locator
+                    GameObject colimator = SyncData.CreateInstance(cameraColimator, SyncData.prefab, isPrefab: true);
+                    Node cameraNode = SyncData.nodes[newCamera.name];
+                    Node colimatorNode = SyncData.GetOrCreateNode(colimator);
+                    cameraNode.AddChild(colimatorNode);
+                    GameObject colimatorInstance = SyncData.InstantiatePrefab(colimator);
+
+                    newCamera.GetComponent<CameraController>().colimator = colimatorInstance.transform;
+
                     if (newCamera)
                     {
                         CommandGroup undoGroup = new CommandGroup("Instantiate Camera");
@@ -566,7 +569,10 @@ namespace VRtist
             Focus = value;
             foreach (GameObject camObject in SelectedCameraObjects())
             {
-                Camera cam = camObject.GetComponentInChildren<Camera>();
+                CameraController cameraController = camObject.GetComponent<CameraController>();
+                Vector3 direction = (cameraController.colimator.position - camObject.transform.position).normalized;
+                cameraController.colimator.position = camObject.transform.position + value * direction;
+
                 SendCameraParams(camObject);
             }
         }
@@ -603,12 +609,17 @@ namespace VRtist
                 if (null == cameraController)
                     continue;
 
+                bool DOFActive = cameraController.EnableDOF;
+                focusSlider.GetComponent<UISlider>().Disabled = !DOFActive;
+                apertureSlider.GetComponent<UISlider>().Disabled = !DOFActive;
+
+
                 //if (cameraPreviewWindow != null)
                 //    cameraPreviewWindow.UpdateFromController(cameraController);
 
                 // Update the Camera Panel
                 enableDepthOfFieldCheckbox.gameObject.SetActive(true);
-                enableDepthOfFieldCheckbox.Checked = cameraController.enableDOF;
+                enableDepthOfFieldCheckbox.Checked = cameraController.EnableDOF; ;
 
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)
@@ -631,11 +642,6 @@ namespace VRtist
                     apertureSlider.gameObject.SetActive(true);
                 }
 
-                // update the focusDistance of the volume if the worldScale change.
-                if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                dof.focusDistance.value = focus /** GlobalState.WorldScale*/;
-                dof.active = enableDepthOfField; // TODO: use the flag in the cameracontroller when we add it.
-
                 // Use only the first camera.
                 return;
             }
@@ -649,9 +655,40 @@ namespace VRtist
             apertureSlider.gameObject.SetActive(false);
         }
 
-        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        private void UpdateSelectedCameraControllers()
         {
+            foreach (CameraController cameraController in selectedCameraControllers)
+            {
+                cameraController.parameterChanged.RemoveListener(OnCameraParameterChanged);
+            }
+
+            selectedCameraControllers.Clear();
+            foreach (GameObject item in Selection.selection.Values)
+            {
+                CameraController cameraController = item.GetComponent<CameraController>();
+                if (null != cameraController)
+                {
+                    selectedCameraControllers.Add(cameraController);
+                    cameraController.parameterChanged.AddListener(OnCameraParameterChanged);
+                }
+            }
+        }
+
+        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        {           
             base.OnSelectionChanged(sender, args);
+            UpdateSelectedCameraControllers();
+            foreach (GameObject item in Selection.selection.Values)
+            {
+                CameraController cameraController = item.GetComponent<CameraController>();
+                if (null != cameraController)
+                    cameraController.parameterChanged.AddListener(OnCameraParameterChanged);
+            }
+            UpdateUI();
+        }
+
+        private void OnCameraParameterChanged()
+        {
             UpdateUI();
         }
 
@@ -662,9 +699,40 @@ namespace VRtist
 
         public void OnFocusSliderPressed()
         {
+            beginColimatorPositions.Clear();
+            beginColimatorRotations.Clear();
+            beginColimatorScales.Clear();
+            foreach (CameraController selectedCamera in selectedCameraControllers)
+            {
+                beginColimatorPositions.Add(selectedCamera.colimator.localPosition);
+                beginColimatorRotations.Add(selectedCamera.colimator.localRotation);
+                beginColimatorScales.Add(selectedCamera.colimator.localScale);
+            }
+
             OnSliderPressed("Camera Focus", "/CameraController/focus");
         }
+        public void OnFocusSliderReleased()
+        {
+            List<Vector3> ep = new List<Vector3>();
+            List<Quaternion> er = new List<Quaternion>();
+            List<Vector3> es = new List<Vector3>();
+            List<string> names = new List<string>();
+            foreach (CameraController selectedCamera in selectedCameraControllers)
+            {
+                ep.Add(selectedCamera.colimator.localPosition);
+                er.Add(selectedCamera.colimator.localRotation);
+                es.Add(selectedCamera.colimator.localScale);
+                names.Add(selectedCamera.name);
+            }
 
+            CommandMoveObjects command = new CommandMoveObjects(names, beginColimatorPositions, beginColimatorRotations, beginColimatorScales, ep, er, es);
+            command.Submit();
+            beginColimatorPositions.Clear();
+            beginColimatorRotations.Clear();
+            beginColimatorScales.Clear();
+
+            OnReleased();
+        }
         public void OnApertureSliderPressed()
         {
             OnSliderPressed("Camera Aperture", "/CameraController/aperture");
@@ -672,27 +740,18 @@ namespace VRtist
 
         public void OnCheckEnableDepthOfField(bool value)
         {
-            if (null != focusSlider)
+            CommandGroup commangGroup = new CommandGroup();
+            foreach(GameObject item in Selection.selection.Values)
             {
-                focusSlider.GetComponent<UISlider>().Disabled = !value;
+                CameraController cameraController = item.GetComponent<CameraController>();
+                if(null != cameraContainer)
+                {
+                    new CommandEnableDOF(item, value).Submit();
+                }
             }
-            if (null != apertureSlider)
-            {
-                apertureSlider.GetComponent<UISlider>().Disabled = !value;
-            }
-
-            EnableDepthOfField = value;
+            commangGroup.Submit();
         }
 
-        private void ApplyDepthOfFieldToVolume()
-        {
-            // Only called when we move the focus distance of a selected camera, so we can use the tool values, not the camera values.
-            // No need to foreach all cameras and pick first one.
-
-            if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-            dof.focusDistance.value = focus;
-            dof.active = enableDepthOfField;
-        }
 
         // TODO: remove once we are sure it is no longer used.
 

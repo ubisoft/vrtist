@@ -4,7 +4,7 @@ using UnityEngine;
 namespace VRtist
 {
     public class CameraBuilder : GameObjectBuilder
-    {
+    {        
         public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newCamera = GameObject.Instantiate(source, parent);

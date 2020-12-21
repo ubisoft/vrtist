@@ -612,6 +612,18 @@ namespace VRtist
                 intermediateParent.transform.localScale = srcParent.localScale;
             }
 
+            string appliedName;
+            if (null == name)
+            {
+                string baseName = gObject.name.Split('.')[0];
+                appliedName = CreateUniqueName(baseName);
+            }
+            else
+            {
+                appliedName = name;
+            }
+            intermediateParent.name = appliedName + "_parent";
+
             GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
             if (builder)
@@ -623,19 +635,8 @@ namespace VRtist
                 // duplicate object or subobject
                 res = GameObject.Instantiate(gObject, intermediateParent.transform);
             }
-
-            string appliedName;
-            if (null == name)
-            {
-                string baseName = gObject.name.Split('.')[0];
-                appliedName = CreateUniqueName(baseName);
-            }
-            else
-            {
-                appliedName = name;
-            }
             res.name = appliedName;
-            intermediateParent.name = appliedName + "_parent";
+
 
             // Name material too
             MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>(true);
