@@ -289,11 +289,18 @@ namespace VRtist
         public static bool RemoveFromHover(GameObject gObject)
         {
             LayerType layerType = LayerType.Default;
-            if (selection.ContainsKey(gObject.GetInstanceID()))
-            {
-                layerType = LayerType.Selection;
-            }
 
+            Transform parent = gObject.transform;
+            while(parent != null)
+            {
+                if (selection.ContainsKey(parent.gameObject.GetInstanceID()))
+                {
+                    layerType = LayerType.Selection;
+                    break;
+                }
+                parent = parent.parent;
+            }
+           
             if (gObject)
             {
                 UIUtils.SetRecursiveLayerSmart(gObject, layerType);
