@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2767154189476292732}
   - component: {fileID: 4111714210875603536}
   - component: {fileID: 3214773632610861681}
+  - component: {fileID: -4522163291240350012}
   m_Layer: 17
   m_Name: Colimator
   m_TagString: PhysicObject
@@ -93,3 +94,19 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-4522163291240350012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2537505416600458502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71705e9af10b38b4fb6d32d940f0de21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lockPosition: 0
+  lockRotation: 0
+  lockScale: 0
+  isVRtist: 0

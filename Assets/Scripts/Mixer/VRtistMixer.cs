@@ -173,7 +173,7 @@ namespace VRtist
 #endif
         }
 
-        public override void GetCameraInfo(GameObject obj, out float focal, out float near, out float far)
+        public override void GetCameraInfo(GameObject obj, out float focal, out float near, out float far, out bool dofEnabled, out float aperture, out Transform colimatorr)
         {
 #if !VRTIST
             Debug.Log("GetCameraInfo " + obj.name);
@@ -183,10 +183,13 @@ namespace VRtist
             focal = cameraController.focal;
             near = cameraController.near;
             far = cameraController.far;
+            aperture = cameraController.aperture;
+            colimatorr = cameraController.colimator;
+            dofEnabled = cameraController.enableDOF;
 #endif
         }
 
-        public override void SetCameraInfo(GameObject obj, float focal)
+        public override void SetCameraInfo(GameObject obj, float focal, float near, float far, bool dofEnabled, float aperture, string colimatorName, Camera.GateFitMode gateFit, Vector2 sensorSize)
         {
 #if !VRTIST
             Debug.Log("SetCameraInfo " + obj.name);
@@ -196,6 +199,13 @@ namespace VRtist
                 return;
             CameraController cameraController = obj.GetComponent<CameraController>();
             cameraController.focal = focal;
+            cameraController.near = near;
+            cameraController.far = far;
+            cameraController.aperture = aperture;
+            cameraController.colimator = colimatorName == ""  ? null : SyncData.nodes[colimatorName].prefab.transform;
+            cameraController.enableDOF = dofEnabled;
+
+            cameraController.filmHeight = sensorSize.y;
 #endif
         }
 

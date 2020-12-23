@@ -514,9 +514,9 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Delete All Selection");
             try
             {
+                ClearSelection();
                 foreach (GameObject selected in allSelected)
                 {
-                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(selected);
                     new CommandRemoveGameObject(selected).Submit();
                 }
             }

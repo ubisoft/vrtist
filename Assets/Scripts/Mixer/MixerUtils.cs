@@ -209,8 +209,18 @@ namespace VRtist
             return new Vector2(buffer[0], buffer[1]);
         }
 
+        // Convert Vector2 to byte buffer
+        public static byte[] Vector2ToBytes(Vector2 vector)
+        {
+            byte[] bytes = new byte[2 * sizeof(float)];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, 0, sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, sizeof(float), sizeof(float));
+            return bytes;
+        }
+
         // Convert Vector2 array to byte buffer
-        public static byte[] Vector2ToBytes(Vector2[] vectors)
+        public static byte[] Vectors2ToBytes(Vector2[] vectors)
         {
             byte[] bytes = new byte[2 * sizeof(float) * vectors.Length + sizeof(int)];
             Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
@@ -1062,6 +1072,17 @@ namespace VRtist
             return command;
         }
 
+        public static void AddObjectToScene(GameObject gObject)
+        {
+            AddToCollectionInfo addObjectToCollection = new AddToCollectionInfo();
+            addObjectToCollection.collectionName = "VRtistCollection";
+            addObjectToCollection.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.AddObjectToCollection, addObjectToCollection);
+
+            AddObjectToSceneInfo addObjectToScene = new AddObjectToSceneInfo();
+            addObjectToScene.transform = gObject.transform;
+            CommandManager.SendEvent(MessageType.AddObjectToScene, addObjectToScene);
+        }
         public static NetCommand BuildEmptyCommand(Transform root, Transform transform)
         {
             Transform current = transform;
@@ -1171,37 +1192,26 @@ namespace VRtist
             }
             byte[] bpath = StringToBytes(path);
 
-            SyncData.mixer.GetCameraInfo(cameraInfo.transform.gameObject, out float focal, out float near, out float far);
+            SyncData.mixer.GetCameraInfo(cameraInfo.transform.gameObject, out float focal, out float near, out float far, out bool dofEnabled, out float aperture, out Transform colimator);
             byte[] bname = StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
             int sensorFit = (int) cam.gateFit;
 
-            byte[] paramsBuffer = new byte[6 * sizeof(float) + 1 * sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(focal), 0, paramsBuffer, 0 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(near), 0, paramsBuffer, 1 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(far), 0, paramsBuffer, 2 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(1.8f), 0, paramsBuffer, 3 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(sensorFit), 0, paramsBuffer, 4 * sizeof(float), sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.x), 0, paramsBuffer, 4 * sizeof(float) + sizeof(int), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(cam.sensorSize.y), 0, paramsBuffer, 5 * sizeof(float) + sizeof(int), sizeof(float));
+            byte[] focalBuffer = FloatToBytes(focal);
+            byte[] nearBuffer = FloatToBytes(near);
+            byte[] farBuffer = FloatToBytes(far);
+            byte[] dofEnabledBuffer = BoolToBytes(dofEnabled);
+            byte[] apertureBuffer = FloatToBytes(aperture);
+            byte[] colimatorBuffer = null != colimator ? StringToBytes(colimator.name) : StringToBytes("");
+            byte[] sensorFitBuffer = IntToBytes(sensorFit);
+            byte[] sensorSizeBuffer = Vector2ToBytes(cam.sensorSize);
 
-            List<byte[]> buffers = new List<byte[]> { bpath, bname, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, focalBuffer, nearBuffer, farBuffer, dofEnabledBuffer, apertureBuffer, colimatorBuffer, sensorFitBuffer, sensorSizeBuffer };
             NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.Camera);
             return command;
         }
 
-        public static NetCommand BuildCameraAttributesCommand(Transform root, CameraInfo cameraInfo)
-        {
-            Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
-
-            byte[] nameBuffer = StringToBytes(cameraInfo.transform.name);
-            byte[] focalBuffer = FloatToBytes(cam.focalLength);
-
-            List<byte[]> buffers = new List<byte[]> { nameBuffer, focalBuffer };
-            NetCommand command = new NetCommand(ConcatenateBuffers(buffers), MessageType.CameraAttributes);
-            return command;
-        }
         public static NetCommand BuildLightCommand(Transform root, LightInfo lightInfo)
         {
             Transform current = lightInfo.transform;
@@ -1325,7 +1335,7 @@ namespace VRtist
             {
                 splittedUVs = new Vector2[0];
             }
-            byte[] uvs = Vector2ToBytes(splittedUVs);
+            byte[] uvs = Vectors2ToBytes(splittedUVs);
 
             int[] materialIndices;
             if (mesh.subMeshCount <= 1)
@@ -1508,21 +1518,6 @@ namespace VRtist
                 SyncData.mixer.ClearAnimations(t.Item1);
             }
         }
-        public static void BuildCameraAttributes(byte[] data)
-        {
-            int currentIndex = 0;
-            string cameraName = GetString(data, ref currentIndex);
-
-            Node node = SyncData.nodes[cameraName];
-            float focal = GetFloat(data, ref currentIndex);
-            SyncData.mixer.SetCameraInfo(node.prefab, focal);
-
-            // Apply to instances
-            foreach (Tuple<GameObject, string> t in node.instances)
-            {
-                SyncData.mixer.SetCameraInfo(t.Item1, focal);
-            }
-        }
 
         public static void BuildLightAttributes(byte[] data)
         {
@@ -1574,34 +1569,18 @@ namespace VRtist
                 camGameObject = node.prefab;
             }
 
-            float focal = BitConverter.ToSingle(data, currentIndex);
-            BitConverter.ToSingle(data, currentIndex + sizeof(float));
-            BitConverter.ToSingle(data, currentIndex + 2 * sizeof(float));
-            BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
-            currentIndex += 4 * sizeof(float);
-
-            Camera.GateFitMode gateFit = (Camera.GateFitMode) BitConverter.ToInt32(data, currentIndex);
+            float focal = GetFloat(data, ref currentIndex);
+            float near = GetFloat(data, ref currentIndex);
+            float far = GetFloat(data, ref currentIndex);
+            bool dofEnabled = GetBool(data, ref currentIndex);
+            float aperture = GetFloat(data, ref currentIndex);
+            string colimatorName = GetString(data, ref currentIndex);
+            Camera.GateFitMode gateFit = (Camera.GateFitMode)GetInt(data, ref currentIndex);
             if (gateFit == Camera.GateFitMode.None)
                 gateFit = Camera.GateFitMode.Horizontal;
-            currentIndex += sizeof(Int32);
+            Vector2 sensorSize = GetVector2(data, ref currentIndex);
 
-            float sensorWidth = BitConverter.ToSingle(data, currentIndex);
-            currentIndex += sizeof(float);
-            float sensorHeight = BitConverter.ToSingle(data, currentIndex);
-            currentIndex += sizeof(float);
-
-            Camera cam = camGameObject.GetComponentInChildren<Camera>(true);
-
-            // TMP fix for a weird case.
-            if (cam == null)
-                return;
-
-            SyncData.mixer.SetCameraInfo(camGameObject, focal);
-
-            cam.focalLength = focal;
-            cam.gateFit = gateFit;
-            cam.focalLength = focal;
-            cam.sensorSize = new Vector2(sensorWidth, sensorHeight);
+            SyncData.mixer.SetCameraInfo(camGameObject, focal, near, far, dofEnabled, aperture, colimatorName, gateFit, sensorSize);
         }
 
         public static void BuildLight(Transform root, GameObject sunPrefab, GameObject pointPrefab, GameObject spotPrefab, byte[] data)

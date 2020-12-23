@@ -41,7 +41,8 @@ namespace VRtist
                 {
                     if (!selectionHasChanged && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
                     {
-                        selector.ClearSelection();
+                        if(selector.mode == SelectorBase.SelectorModes.Select)
+                            selector.ClearSelection();
                     }
                 }
                 finally
@@ -187,9 +188,7 @@ namespace VRtist
                     {
                         RemoveCollidedObject(hoveredObject);
                         selector.RemoveSiblingsFromSelection(hoveredObject, false);
-
-                        ToolsUIManager.Instance.SpawnDeleteInstanceVFX(hoveredObject);
-
+                        
                         new CommandRemoveGameObject(hoveredObject).Submit();
                     }
                     finally
@@ -210,9 +209,7 @@ namespace VRtist
                         foreach (GameObject gobject in Selection.GetSelectedObjects())
                         {
                             RemoveCollidedObject(gobject);
-                            selector.RemoveSiblingsFromSelection(gobject, false);
-
-                            ToolsUIManager.Instance.SpawnDeleteInstanceVFX(gobject);
+                            selector.RemoveSiblingsFromSelection(gobject, false);                            
 
                             new CommandRemoveGameObject(gobject).Submit();
                         }

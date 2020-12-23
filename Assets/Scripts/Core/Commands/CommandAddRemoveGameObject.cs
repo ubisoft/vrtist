@@ -20,24 +20,12 @@ namespace VRtist
             parent = o.transform.parent.parent;
         }
 
-        protected void AddObjectToScene()
-        {
-            AddToCollectionInfo addObjectToCollection = new AddToCollectionInfo();
-            addObjectToCollection.collectionName = "VRtistCollection";
-            addObjectToCollection.transform = gObject.transform;
-            CommandManager.SendEvent(MessageType.AddObjectToCollection, addObjectToCollection);
-
-            AddObjectToSceneInfo addObjectToScene = new AddObjectToSceneInfo();
-            addObjectToScene.transform = gObject.transform;
-            CommandManager.SendEvent(MessageType.AddObjectToScene, addObjectToScene);
-        }
-
         protected void SendLight()
         {
             LightInfo lightInfo = new LightInfo();
             lightInfo.transform = gObject.transform;
             CommandManager.SendEvent(MessageType.Light, lightInfo);
-            AddObjectToScene();
+            MixerUtils.AddObjectToScene(gObject);
         }
 
         protected void SendCamera()
@@ -46,7 +34,7 @@ namespace VRtist
             cameraInfo.transform = gObject.transform;
             CommandManager.SendEvent(MessageType.Camera, cameraInfo);
             CommandManager.SendEvent(MessageType.Transform, gObject.transform);
-            AddObjectToScene();
+            MixerUtils.AddObjectToScene(gObject);
         }
 
         protected void SendMesh()
@@ -64,14 +52,14 @@ namespace VRtist
             CommandManager.SendEvent(MessageType.Mesh, meshInfos);
             CommandManager.SendEvent(MessageType.Transform, gObject.transform);
 
-            AddObjectToScene();
+            MixerUtils.AddObjectToScene(gObject);
         }
 
         protected void SendEmpty()
         {
             MixerClient.GetInstance().SendEmpty(gObject.transform);
             MixerClient.GetInstance().SendTransform(gObject.transform);
-            AddObjectToScene();
+            MixerUtils.AddObjectToScene(gObject);
         }
     }
 }

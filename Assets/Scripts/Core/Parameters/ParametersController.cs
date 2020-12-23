@@ -25,12 +25,10 @@ namespace VRtist
         public bool lockRotation = false;
         public bool lockScale = false;
 
-        public string controllerName;
-
-        // world scale when constraint is created
-        public float initParentConstraintScale;
-        public Vector3 initParentConstraintOffset;
-       
+        public virtual bool IsDeletable()
+        {
+            return true;
+        }
 
         public virtual void CopyParameters(ParametersController sourceController)
         {

@@ -905,7 +905,6 @@ namespace VRtist
                 {
                     //RemoveCollidedObject(o);
                     RemoveSiblingsFromSelection(o, false);
-                    ToolsUIManager.Instance.SpawnDeleteInstanceVFX(o);
                     new CommandRemoveGameObject(o).Submit();
                 }
             }

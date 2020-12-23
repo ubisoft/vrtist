@@ -24,7 +24,7 @@ namespace VRtist
             }
         }
         public float aperture = 16f; // [1..32] in Unity
-        private bool enableDOF = false;
+        public bool enableDOF = false;
         private static UnityEngine.Rendering.HighDefinition.DepthOfField dof;
         public bool EnableDOF
         {
@@ -284,28 +284,31 @@ namespace VRtist
                 cameraObject.farClipPlane = far;
                 cameraObject.nearClipPlane = near;
                 cameraObject.focalLength = focal;
-                if (enableDOF)
+                if (null != colimator)
                 {
-                    cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
-                    focus = Vector3.Distance(colimator.position, transform.position);
-
-                    colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
-
-                    if (Selection.activeCamera == gameObject)
+                    if (enableDOF)
                     {
-                        if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                        dof.focusDistance.value = focus;
-                        dof.active = true;
+                        cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
+                        focus = Vector3.Distance(colimator.position, transform.position);
+
+                        colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
+
+                        if (Selection.activeCamera == gameObject)
+                        {
+                            if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+                            dof.focusDistance.value = focus;
+                            dof.active = true;
+                        }
                     }
-                }
-                else
-                {
-                    colimator.gameObject.SetActive(false);
-                    cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = 16f;
-                    if (Selection.activeCamera == gameObject)
+                    else
                     {
-                        if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                        dof.active = false;
+                        colimator.gameObject.SetActive(false);
+                        cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = 16f;
+                        if (Selection.activeCamera == gameObject)
+                        {
+                            if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+                            dof.active = false;
+                        }
                     }
                 }
 
@@ -386,10 +389,6 @@ namespace VRtist
             float farHalfHeight = halfHeightFactor * far;
 
             int pointCount = 16;
-            if (enableDOF)
-            {
-                pointCount += 4;
-            }
 
             Vector3[] points = new Vector3[pointCount];
             points[0] = new Vector3(nearHalfWidth, -nearHalfHeight, -near);
@@ -410,29 +409,7 @@ namespace VRtist
             points[13] = new Vector3(-farHalfWidth, farHalfHeight, -far);
             points[14] = new Vector3(-farHalfWidth, -farHalfHeight, -far);
             points[15] = new Vector3(-nearHalfWidth, -nearHalfHeight, -near);
-
-            if(enableDOF)
-            {
-                /*
-                points[16] = new Vector3(halfWidthFactor * focus, -halfHeightFactor * focus, -focus);
-                points[17] = new Vector3(halfWidthFactor * focus, halfHeightFactor * focus, -focus);
-                points[18] = new Vector3(-halfWidthFactor * focus, halfHeightFactor * focus, -focus);
-                points[19] = new Vector3(-halfWidthFactor * focus, -halfHeightFactor * focus, -focus);
-                points[20] = new Vector3(halfWidthFactor * focus, -halfHeightFactor * focus, -focus);
-                */
-                points[16] = new Vector3(halfWidthFactor * focus, -halfHeightFactor * focus, -focus);
-                points[17] = new Vector3(-halfWidthFactor * focus, halfHeightFactor * focus, -focus);
-                points[18] = new Vector3(-halfWidthFactor * focus, -halfHeightFactor * focus, -focus);
-                points[19] = new Vector3(halfWidthFactor * focus, halfHeightFactor * focus, -focus);
-            }
-
-            // Remove camera object scale
-            /*
-            float invScale = 1f / frustumRenderer.transform.parent.lossyScale.x;
-            invScale *= GlobalState.WorldScale;
-            frustumRenderer.transform.localScale = new Vector3(invScale, invScale, invScale);
-            */
-
+           
             frustumRenderer.positionCount = points.Length;
             frustumRenderer.SetPositions(points);
             frustumRenderer.startWidth = frustumLineWidth / GlobalState.WorldScale;

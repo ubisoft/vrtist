@@ -30,6 +30,12 @@ namespace VRtist
         }
         public override void Submit()
         {
+            ParametersController controller = gObject.GetComponent<ParametersController>();
+            if (null != controller && !controller.IsDeletable())
+                return;
+
+            ToolsUIManager.Instance.SpawnDeleteInstanceVFX(gObject);
+
             position = gObject.transform.parent.localPosition;
             rotation = gObject.transform.parent.localRotation;
             scale = gObject.transform.parent.localScale;

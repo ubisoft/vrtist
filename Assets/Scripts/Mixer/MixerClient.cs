@@ -75,8 +75,8 @@ namespace VRtist
         _QueryCurrentFrame,
         QueryAnimationData,
         _BlenderDataUpdate,
-        CameraAttributes,
-        LightAttributes,
+        _CameraAttributes,
+        _LightAttributes,
         _BlenderDataRemove,
         _BlenderDataRename,
         ClearAnimations,
@@ -432,11 +432,6 @@ namespace VRtist
             AddCommand(command);
         }
 
-        public void SendCameraAttributes(CameraInfo cameraInfo)
-        {
-            NetCommand command = MixerUtils.BuildCameraAttributesCommand(root, cameraInfo);
-            AddCommand(command);
-        }
         public void SendLight(LightInfo lightInfo)
         {
             NetCommand command = MixerUtils.BuildLightCommand(root, lightInfo);
@@ -718,12 +713,6 @@ namespace VRtist
                             case MessageType.ClearAnimations:
                                 MixerUtils.BuildClearAnimations(command.data);
                                 break;
-                            case MessageType.CameraAttributes:
-                                MixerUtils.BuildCameraAttributes(command.data);
-                                break;
-                            case MessageType.LightAttributes:
-                                MixerUtils.BuildLightAttributes(command.data);
-                                break;
                             case MessageType.Light:
                                 MixerUtils.BuildLight(prefab, sunLightPrefab, pointLightPrefab, spotLightPrefab, command.data);
                                 break;
@@ -861,9 +850,6 @@ namespace VRtist
                 case MessageType.Camera:
                     SendCamera(data as CameraInfo);
                     SendTransform((data as CameraInfo).transform);
-                    break;
-                case MessageType.CameraAttributes:
-                    SendCameraAttributes(data as CameraInfo);
                     break;
                 case MessageType.Light:
                     SendLight(data as LightInfo);

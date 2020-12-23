@@ -10,7 +10,6 @@ namespace VRtist
     {
         // Start is called before the first frame update
         public GameObject cameraPrefab;
-        private GameObject cameraColimator;
         public Transform rig;
         public Transform cameraContainer;
         public Material screenShotMaterial;
@@ -207,7 +206,6 @@ namespace VRtist
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
             if (null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
-            cameraColimator = Resources.Load<GameObject>("Prefabs/UI/Colimator");
         }
 
         void Start()
@@ -447,6 +445,7 @@ namespace VRtist
                 selectedCameras.Add(Selection.activeCamera);
             return selectedCameras;
         }
+        
 
         protected override void DoUpdateGui()
         {
@@ -455,24 +454,14 @@ namespace VRtist
                 if (UIObject)
                 {
                     Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
-                    GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
-
-                    // Colimator locator
-                    GameObject colimator = SyncData.CreateInstance(cameraColimator, SyncData.prefab, isPrefab: true);
-                    Node cameraNode = SyncData.nodes[newCamera.name];
-                    Node colimatorNode = SyncData.GetOrCreateNode(colimator);
-                    cameraNode.AddChild(colimatorNode);
-                    GameObject colimatorInstance = SyncData.InstantiatePrefab(colimator);
-
-                    newCamera.GetComponent<CameraController>().colimator = colimatorInstance.transform;
-                    colimatorInstance.SetActive(false);
+                    GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);                   
 
                     if (newCamera)
                     {
                         CommandGroup undoGroup = new CommandGroup("Instantiate Camera");
                         try
                         {
-                            ClearSelection();
+                            ClearSelection();                           
                             new CommandAddGameObject(newCamera).Submit();
                             AddToSelection(newCamera);
                             Selection.SetHoveredObject(newCamera);
@@ -499,7 +488,7 @@ namespace VRtist
         {
             CameraInfo cameraInfo = new CameraInfo();
             cameraInfo.transform = camera.transform;
-            CommandManager.SendEvent(MessageType.CameraAttributes, cameraInfo);
+            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
         }
 
         protected override void DoUpdate()
@@ -617,7 +606,7 @@ namespace VRtist
 
                 // Update the Camera Panel
                 enableDepthOfFieldCheckbox.gameObject.SetActive(true);
-                enableDepthOfFieldCheckbox.Checked = cameraController.EnableDOF; ;
+                enableDepthOfFieldCheckbox.Checked = cameraController.EnableDOF;
 
                 UISlider sliderComp = focalSlider.GetComponent<UISlider>();
                 if (sliderComp != null)

@@ -121,8 +121,6 @@ namespace VRtist
                     parametersController = gobject.AddComponent<ParametersController>();
                 }
                 constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.Parent });
-                parametersController.initParentConstraintScale = GlobalState.WorldScale;
-                parametersController.initParentConstraintOffset = Vector3.Scale(target.transform.InverseTransformPoint(gobject.transform.position), target.transform.lossyScale);
             }
             ConstraintSource source;
             if (constraint.sourceCount == 0)

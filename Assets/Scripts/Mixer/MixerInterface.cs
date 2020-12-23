@@ -20,8 +20,8 @@ namespace VRtist
         public abstract void SetLightEnabled(GameObject obj, bool enable);
         public abstract Texture2D LoadTexture(string filePath, ImageData imageData, bool isLinear);
         public abstract bool IsObjectInUse(GameObject obj);
-        public abstract void GetCameraInfo(GameObject obj, out float focal, out float near, out float far);
-        public abstract void SetCameraInfo(GameObject obj, float focal);
+        public abstract void GetCameraInfo(GameObject obj, out float focal, out float near, out float far, out bool dofEnabled, out float aperture, out Transform colimator);
+        public abstract void SetCameraInfo(GameObject obj, float focal, float near, float far, bool dofEnabled, float aperture, string colimatorName, Camera.GateFitMode gateFit, Vector2 sensorSize);
         public abstract void SetActiveCamera(GameObject cameraObject);
         public abstract void GetLightInfo(GameObject obj, out LightType lightType, out bool castShadows, out float power, out Color color, out float range, out float innerAngle, out float outerAngle);
         public abstract void SetLightInfo(GameObject obj, LightType lightType, bool castShadows, float power, Color color, float range, float innerAngle, float outerAngle);
