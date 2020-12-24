@@ -426,10 +426,17 @@ namespace VRtist
             Matrix4x4 mat = GetMatrix(data, ref bufferIndex);
             Maths.DecomposeMatrix(mat, out Vector3 position, out Quaternion rotation, out Vector3 scale);
 
-            GameObject newGameObject = SyncData.Duplicate(srcPrefab, name);
-            newGameObject.transform.localPosition = position;
-            newGameObject.transform.localRotation = rotation;
-            newGameObject.transform.localScale = scale;
+            GameObject newInstance = SyncData.Duplicate(srcPrefab, name);
+            Node duplicateNode = SyncData.nodes[newInstance.name];
+            duplicateNode.prefab.transform.localPosition = position;
+            duplicateNode.prefab.transform.localRotation = rotation;
+            duplicateNode.prefab.transform.localScale = scale;
+            foreach(var instanceItem in duplicateNode.instances)
+            {
+                instanceItem.Item1.transform.localPosition = position;
+                instanceItem.Item1.transform.localRotation = rotation;
+                instanceItem.Item1.transform.localScale = scale;
+            }            
         }
 
         public static void BuildSendToTrash(Transform root, byte[] data)
