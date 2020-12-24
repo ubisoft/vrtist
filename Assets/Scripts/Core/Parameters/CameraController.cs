@@ -303,13 +303,13 @@ namespace VRtist
                     else
                     {
                         colimator.gameObject.SetActive(false);
-                        cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = 16f;
-                        if (Selection.activeCamera == gameObject)
-                        {
-                            if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                            dof.active = false;
-                        }
                     }
+                }
+
+                if (!enableDOF && Selection.activeCamera == gameObject)
+                {
+                    if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+                    dof.active = false;
                 }
 
                 // Active camera

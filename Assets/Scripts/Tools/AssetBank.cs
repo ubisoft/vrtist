@@ -302,6 +302,7 @@ namespace VRtist
             if (loadingAsset) { return; }
             if (selectedItem == -1) { return; }
             if (!items.TryGetValue(selectedItem, out AssetBankItem item)) { return; }
+            if (!item.thumbnail.GetComponent<UIGrabber>().isValid) { return; }
 
             // If the original doesn't exist, load it
             if (null == item.original)

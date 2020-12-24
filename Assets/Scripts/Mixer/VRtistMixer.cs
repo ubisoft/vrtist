@@ -204,8 +204,21 @@ namespace VRtist
             cameraController.aperture = aperture;
             cameraController.colimator = colimatorName == ""  ? null : SyncData.nodes[colimatorName].prefab.transform;
             cameraController.enableDOF = dofEnabled;
-
             cameraController.filmHeight = sensorSize.y;
+
+            Node cameraNode = SyncData.nodes[obj.name];
+            foreach(var instanceItem in cameraNode.instances)
+            {
+                GameObject instance = instanceItem.Item1;
+                CameraController instanceCameraController = instance.GetComponent<CameraController>();
+                instanceCameraController.focal = focal;
+                instanceCameraController.near = near;
+                instanceCameraController.far = far;
+                instanceCameraController.aperture = aperture;
+                instanceCameraController.colimator = colimatorName == "" ? null : SyncData.nodes[colimatorName].instances[0].Item1.transform;
+                instanceCameraController.enableDOF = dofEnabled;
+                instanceCameraController.filmHeight = sensorSize.y;
+            }
 #endif
         }
 
@@ -266,6 +279,21 @@ namespace VRtist
             controller.range = range;
             controller.outerAngle = outerAngle;
             controller.innerAngle = innerAngle;
+
+            Node lightNode = SyncData.nodes[obj.name];
+            foreach (var instanceItem in lightNode.instances)
+            {
+                GameObject instance = instanceItem.Item1;
+                LightController instanceController = instance.GetComponent<LightController>();
+                instanceController.lightType = lightType;
+                instanceController.SetPower(power);
+                instanceController.color = color;
+                instanceController.castShadows = castShadows;
+                instanceController.range = range;
+                instanceController.outerAngle = outerAngle;
+                instanceController.innerAngle = innerAngle;
+            }
+
 #endif
         }
 

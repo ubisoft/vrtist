@@ -27,6 +27,7 @@ namespace VRtist
 
         private string lazyImagePath = null;
         private bool lazyLoaded = false;
+        public bool isValid = true;
 
         void Start()
         {
@@ -145,7 +146,11 @@ namespace VRtist
         private void LoadThumbnail(string path)
         {
             Sprite sprite = Utils.LoadSprite(path);
-            if (null == sprite) { sprite = UIUtils.LoadIcon("warning"); }
+            if (null == sprite) 
+            { 
+                sprite = UIUtils.LoadIcon("warning");
+                isValid = false;
+            }
             transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
         }
 

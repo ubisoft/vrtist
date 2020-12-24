@@ -58,8 +58,9 @@ namespace VRtist
         private void SetDOFEnabled(bool value)
         {
             CameraController cameraController = camera.GetComponent<CameraController>();
+            cameraController.EnableDOF = value;
             Transform colimator = cameraController.colimator;
-            if(null == colimator)
+            if (null == colimator)
             {
                 if(value)
                 {
@@ -82,8 +83,7 @@ namespace VRtist
                         DestroyColimator(camera);
                     }
                 }
-            }
-            cameraController.EnableDOF = value;
+            }            
         }
 
         public override void Undo()
