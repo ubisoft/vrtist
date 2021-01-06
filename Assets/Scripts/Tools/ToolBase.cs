@@ -42,6 +42,9 @@ namespace VRtist
 
         public static void ToggleMouthpiece(Transform mouthPiece, bool activate)
         {
+            if (null == mouthPiece) // some tools dont have mouthpieces (WindowTool)
+                return;
+            
             Transform container = mouthPiece.parent;
             for (int i = 0; i < container.childCount; i++)
             {
@@ -60,6 +63,9 @@ namespace VRtist
 
         protected void ShowMouthpiece(bool value)
         {
+            if (null == mouthpiece) // some tools dont have mouthpieces (WindowTool)
+                return;
+
             foreach (var meshRenderer in mouthpiece.GetComponentsInChildren<MeshRenderer>(true))
             {
                 meshRenderer.enabled = value;
@@ -72,6 +78,9 @@ namespace VRtist
 
         public void ActivateMouthpiece(bool value)
         {
+            if (null == mouthpiece) // some tools dont have mouthpieces (WindowTool)
+                return;
+
             mouthpiece.gameObject.SetActive(value);
         }
 

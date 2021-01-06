@@ -35,8 +35,50 @@ namespace VRtist
 
         public GameObject defaultTool = null;
         public GameObject altTool = null;
+        public GameObject windowTool = null;
+
         private GameObject currentToolRef = null;
         private GameObject previousTool = null;
+
+        private bool isInWindowTool = false;
+        private GameObject pushedTool = null;
+
+        public static void PushWindowTool()
+        {
+            if (!Instance.isInWindowTool && Instance.currentToolRef != Instance.windowTool) // protect against multiple PUSH
+            {
+                Instance.isInWindowTool = true;
+                Instance.pushedTool = Instance.currentToolRef;
+
+                Instance.currentToolRef.SetActive(false);
+                Instance.currentToolRef = Instance.windowTool;
+                Instance.currentToolRef.SetActive(true);
+            }
+        }
+
+        public static void PopWindowTool()
+        {
+            if (Instance.isInWindowTool && Instance.pushedTool != null) // protect against multiple POP
+            {
+                Instance.isInWindowTool = false;
+                Instance.currentToolRef.SetActive(false);
+                Instance.currentToolRef = Instance.pushedTool;
+                Instance.currentToolRef.SetActive(true);
+                Instance.pushedTool = null;
+            }
+        }
+
+        public static bool CurrentToolIsGripping()
+        {
+            if (Instance.currentToolRef == null)
+                return false;
+
+            SelectorBase t = Instance.currentToolRef.GetComponent<SelectorBase>();
+            if (t == null)
+                return false;
+
+            return t.Gripping;
+        }
 
         public static void RegisterTool(GameObject tool)
         {
@@ -104,6 +146,7 @@ namespace VRtist
         {
             Instance._SetCurrentTool(tool);
         }
+
         public void _SetCurrentTool(GameObject tool)
         {
             currentToolRef = tool;

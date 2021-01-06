@@ -21,6 +21,9 @@ namespace VRtist
         GameObject hoveredObject = null;
         Vector3 prevWorldDirection = Vector3.zero;
 
+        bool WidgetIsClicked { get { return widgetClicked != null; } }
+        bool TitleBarIsGripped { get { return ToolsManager.CurrentToolIsGripping(); } }
+
         void Start()
         {
             audioSource = transform.Find("AudioSource").GetComponent<AudioSource>();
@@ -91,7 +94,7 @@ namespace VRtist
             if (UIElement.UIEnabled.Value)
             {
                 // If a widget is locked (trigger has been pressed on it), give it a chance to handle the ray endpoint.
-                if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                 {
                     widgetClicked.OverrideRayEndPoint(r, ref rayEndPoint);
                 }
@@ -100,7 +103,7 @@ namespace VRtist
             // Lambda to avoid copy-paste.
             System.Action handleHitNothing = () =>
             {
-                if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                 {
                     ActivateRay(true);
                     ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
@@ -264,7 +267,7 @@ namespace VRtist
                 //{
                 //    HandleHoverPhysicObject(null);
 
-                //    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                //    if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                 //    {
                 //        ActivateRay(true);
                 //        ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
@@ -281,7 +284,7 @@ namespace VRtist
 
                     if (prevWidget != widget) // change widget
                     {
-                        if (widgetClicked != null) // trigger is held pushed.
+                        if (WidgetIsClicked) // trigger is held pushed.
                         {
                             if (widgetClicked == widget) // on same widget
                             {
@@ -312,7 +315,7 @@ namespace VRtist
                     }
                     else // still on same widget
                     {
-                        if (widgetClicked != null) // trigger is held pushed.
+                        if (WidgetIsClicked) // trigger is held pushed.
                         {
                             if (widgetClicked == widget) // on same widget
                             {
@@ -359,7 +362,7 @@ namespace VRtist
                     if (triggerJustReleased)
                     {
                         // do not send Release to another widget than the one which received the click.
-                        if (widgetClicked != null)
+                        if (WidgetIsClicked)
                         {
                             if (widgetClicked == widget)
                             {
@@ -408,7 +411,7 @@ namespace VRtist
                         ray.SetWidgetColor();
                     }
 
-                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                     {
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
                     }
@@ -419,7 +422,7 @@ namespace VRtist
                 }
                 else if (physicIsHit)
                 {
-                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                     {
                         ActivateRay(true);
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
@@ -438,7 +441,7 @@ namespace VRtist
                     //HandleHoverPhysicObject(null);
 
                     ray.gameObject.SetActive(true);
-                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                     {
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
                     }
@@ -454,7 +457,7 @@ namespace VRtist
                 {
                     HandleHoverPhysicObject(null);
 
-                    if (widgetClicked != null && widgetClicked.OverridesRayEndPoint())
+                    if (WidgetIsClicked && widgetClicked.OverridesRayEndPoint())
                     {
                         ActivateRay(true);
                         ray.SetParameters(worldStart, rayEndPoint, newWorldDirection);
@@ -477,12 +480,25 @@ namespace VRtist
         {
             //Selection.SetHoveredObject(gObj);
 
+            //TitleBarIsGripped
+
             if (gObj == null) // REMOVE
             {
                 if (hoveredObject != null) // Only if we had hovered an object with the cursor => Dont un-hover general objects.
                 {
-                    Selection.SetHoveredObject(null);
-                    hoveredObject = null;
+                    if (TitleBarIsGripped)
+                    {
+
+                    }
+                    else
+                    {
+                        Selection.SetHoveredObject(null);
+                        hoveredObject = null;
+                        ToolsManager.PopWindowTool();
+                    }
+                    
+                    // NOTE: problem here if the ray goes out of the titlebar, and we are GRIPPED on it. It will disable the tool and drop the window.
+                    // TOOD: find a way here to know that we are gripped with the WindowTool.
                 }
             }
             else // ADD
@@ -491,13 +507,18 @@ namespace VRtist
                 {
                     Selection.SetHoveredObject(gObj); // will automatically switch with previously hovered object (UI or other).
                     hoveredObject = gObj;
+
+                    if (null != gObj.GetComponent<UIHandle>())
+                    {
+                        ToolsManager.PushWindowTool();
+                    }
                 }
             }
         }
 
         private void HandleRayOutOfWidget(bool triggerJustReleased)
         {
-            if (widgetClicked != null) // trigger is held pushed.
+            if (WidgetIsClicked) // trigger is held pushed.
             {
                 if (prevWidget != null) // do it only once.
                 {
