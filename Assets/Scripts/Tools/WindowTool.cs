@@ -9,8 +9,10 @@
         {
             Init();
 
-            gripTooltip = Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Grip, "Grab");
-            Tooltips.SetTooltipVisibility(gripTooltip, true);
+            // TODO: use new tooltips API
+
+            //gripTooltip = Tooltips.CreateTooltip(rightController.gameObject, Tooltips.Anchors.Grip, "Grab");
+            //Tooltips.SetTooltipVisibility(gripTooltip, true);
         }
 
         protected override void DoUpdateGui()
