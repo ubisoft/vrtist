@@ -77,16 +77,43 @@ namespace VRtist
 
         private void SetMaterialValue(GameObject gobject, MaterialValue value)
         {
+            Material opaqueMat = Resources.Load<Material>("Materials/BlenderImport");
+            Material transpMat = Resources.Load<Material>("Materials/BlenderImportTransparent");
             MeshRenderer[] renderers = gobject.GetComponentsInChildren<MeshRenderer>();
             foreach (MeshRenderer renderer in renderers)
             {
-                foreach (Material material in renderer.materials)
+                int i = 0;
+                Material[] newMaterials = renderer.materials;
+                foreach (Material oldMaterial in renderer.materials)
                 {
-                    material.SetColor("_BaseColor", value.color);
-                    if (renderer.material.HasProperty("_Smoothness")) { material.SetFloat("_Smoothness", 1f - value.roughness); }
-                    else { material.SetFloat("_Roughness", value.roughness); }
-                    material.SetFloat("_Metallic", value.metallic);
+                    bool previousMaterialWasTransparent = oldMaterial.HasProperty("_Opacity") && oldMaterial.GetFloat("_Opacity") < 0.99f;
+                    bool newMaterialIsTransparent = value.color.a < 1.0f;
+                    if (previousMaterialWasTransparent != newMaterialIsTransparent)
+                    {
+                        // swap material type
+                        if (newMaterialIsTransparent)
+                        {
+                            newMaterials[i] = new Material(transpMat);
+                        }
+                        else
+                        {
+                            newMaterials[i] = new Material(opaqueMat);
+                        }
+                    }
+                    //else
+                    //{
+                    //    newMaterials[i] = oldMaterial;
+                    //}
+                    
+                    Material newMaterial = newMaterials[i++];
+
+                    newMaterial.SetColor("_BaseColor", value.color);
+                    if (newMaterial.HasProperty("_Opacity")) { newMaterial.SetFloat("_Opacity", value.color.a); }
+                    if (newMaterial.HasProperty("_Smoothness")) { newMaterial.SetFloat("_Smoothness", 1f - value.roughness); }
+                    else { newMaterial.SetFloat("_Roughness", value.roughness); }
+                    newMaterial.SetFloat("_Metallic", value.metallic);
                 }
+                renderer.materials = newMaterials; // set array
             }
         }
 
