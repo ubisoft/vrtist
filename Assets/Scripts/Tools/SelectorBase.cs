@@ -24,7 +24,8 @@ namespace VRtist
         protected Dictionary<GameObject, float> initFocals = new Dictionary<GameObject, float>();
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
-        protected Matrix4x4 initTransformation;
+        protected Matrix4x4 initMouthPieceWorldToLocal;
+        protected Ray bottomRay;
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
@@ -54,6 +55,21 @@ namespace VRtist
 
         private GameObject ATooltip = null;
         private string prevATooltipText;
+
+        // snap parameters
+        [Header("Snap Parameters")]
+        bool isSnapping = false;
+        private float snapDistance = 0.1f;
+        protected Transform rightHanded;
+        private Transform[] planes;
+        protected GameObject planesContainer;
+        [CentimeterFloat] public float cameraSpaceGap = 0.01f;
+        [CentimeterFloat] public float collidersThickness = 0.05f;
+        private Vector3 minBound = Vector3.positiveInfinity;
+        private Vector3 maxBound = Vector3.negativeInfinity;
+        private bool hasBounds = false;
+        private Vector3[] planePositions;
+        private Matrix4x4 planeContainerMatrix;
 
         struct ControllerDamping
         {
@@ -137,6 +153,16 @@ namespace VRtist
 
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
 
+            // bounding box
+            rightHanded = Utils.FindWorld().transform.Find("RightHanded");
+            planesContainer = rightHanded.Find("DeformerPlanes").gameObject;
+            planes = new Transform[6];
+            planes[0] = planesContainer.transform.Find("Top");
+            planes[1] = planesContainer.transform.Find("Bottom");
+            planes[2] = planesContainer.transform.Find("Left");
+            planes[3] = planesContainer.transform.Find("Right");
+            planes[4] = planesContainer.transform.Find("Front");
+            planes[5] = planesContainer.transform.Find("Back");
         }
         private void OnAnimationStateChanged(AnimationState state)
         {
@@ -191,16 +217,54 @@ namespace VRtist
             }
         }
 
-        protected void InitControllerMatrix()
+        // Tell whether the current selection contains a hierarchical object (mesh somewhere in children) or not.
+        // Camera and lights are known hierarchical objects.
+        // TODO: check for multiselection of a light and and simple primitive for example
+        protected bool IsHierarchical(List<GameObject> objects)
         {
-            VRInput.GetControllerTransform(VRInput.primaryController, out initControllerPosition, out initControllerRotation);
+            foreach (GameObject gObject in objects)
+            {
+                if (gObject.GetComponent<LightController>() != null || gObject.GetComponent<CameraController>() != null)
+                {
+                    return true;
+                }
+                MeshFilter meshFilter = gObject.GetComponentInChildren<MeshFilter>();
+                if (meshFilter.gameObject != gObject)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-            //initControllerPosition = rightControllerPosition;
-            //initControllerRotation = rightControllerRotation;
-            // compute rightMouthpiece local to world matrix with initial controller position/rotation
-            //initTransformation = (rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpiece.localPosition, rightMouthpiece.localRotation, Vector3.one)).inverse;
-            initTransformation = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(initControllerPosition, initControllerRotation, Vector3.one) * Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, Vector3.one);
-            initTransformation = initTransformation.inverse;
+        private Mesh CreatePlaneMesh(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
+        {
+            Vector3[] vertices = new Vector3[4];
+            vertices[0] = v1;
+            vertices[1] = v2;
+            vertices[2] = v3;
+            vertices[3] = v4;
+
+            Vector2[] uvs = new Vector2[4];
+            uvs[0] = new Vector2(0, 0);
+            uvs[1] = new Vector2(1, 0);
+            uvs[2] = new Vector2(1, 1);
+            uvs[3] = new Vector2(0, 1);
+
+            int[] indices = { 0, 1, 2, 0, 2, 3 };
+            Mesh mesh = new Mesh();
+            mesh.vertices = vertices;
+            mesh.uv = uvs;
+            mesh.triangles = indices;
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+        private void SetPlaneCollider(Transform plane, Vector3 center, Vector3 size)
+        {
+            var collider = plane.GetComponent<BoxCollider>();
+            collider.center = center;
+            collider.size = size;
         }
 
         protected void InitTransforms()
@@ -268,8 +332,12 @@ namespace VRtist
             Selection.SetGrippedObject(Selection.GetHoveredObject());
             SetControllerVisible(Selection.GetGrippedOrSelection().Count == 0);
 
+            ComputeSelectionBounds();
+            UpdateSelectionPlanes();
+
             InitControllerMatrix();
             InitTransforms();
+            planesContainer.SetActive(true);
             outOfDeadZone = false;
 
             gripCmdGroup = new CommandGroup("Grip Selection");
@@ -278,6 +346,7 @@ namespace VRtist
 
         protected virtual void OnEndGrip()
         {
+            planesContainer.SetActive(false);
             SetControllerVisible(true);
             enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
 
@@ -584,11 +653,9 @@ namespace VRtist
                     }
                 }
 
-                // compute rightMouthpiece local to world matrix with controller position/rotation
-                Matrix4x4 controllerMatrix = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
-                    Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, new Vector3(scale, scale, scale));
-
-                TransformSelection(controllerMatrix);
+                TransformSelection(Snap(rightMouthpieces.localToWorldMatrix * Matrix4x4.Scale(Vector3.one * scale)));
+                ComputeSelectionBounds();
+                UpdateSelectionPlanes();
             }
 
 
@@ -665,10 +732,196 @@ namespace VRtist
             }
         }
 
+        public void ComputeSelectionBounds()
+        {
+            // Get bounds
+            minBound = Vector3.positiveInfinity;
+            maxBound = Vector3.negativeInfinity;
+            hasBounds = false;
+            List<GameObject> selectedObjects = Selection.GetGrippedOrSelection();
+            int selectionCount = selectedObjects.Count;
+
+            bool foundHierarchicalObject = false;
+            if (selectionCount == 1)
+            {
+                foundHierarchicalObject = IsHierarchical(selectedObjects);
+            }            
+
+            foreach (GameObject obj in selectedObjects)
+            {
+                MeshFilter meshFilter = obj.GetComponentInChildren<MeshFilter>();
+                if (null != meshFilter)
+                {
+                    Matrix4x4 transformMatrix;
+                    if (selectionCount > 1 || foundHierarchicalObject)
+                    {
+                        if (meshFilter.gameObject != obj)
+                        {
+                            transformMatrix = rightHanded.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
+                        }
+                        else
+                        {
+                            transformMatrix = rightHanded.worldToLocalMatrix * obj.transform.localToWorldMatrix;
+                        }
+                    }
+                    else
+                    {
+                        transformMatrix = Matrix4x4.identity;
+                    }
+
+                    Mesh mesh = meshFilter.mesh;
+                    // Get vertices
+                    Vector3[] vertices = new Vector3[8];
+                    vertices[0] = new Vector3(mesh.bounds.min.x, mesh.bounds.min.y, mesh.bounds.min.z);
+                    vertices[1] = new Vector3(mesh.bounds.min.x, mesh.bounds.min.y, mesh.bounds.max.z);
+                    vertices[2] = new Vector3(mesh.bounds.min.x, mesh.bounds.max.y, mesh.bounds.min.z);
+                    vertices[3] = new Vector3(mesh.bounds.min.x, mesh.bounds.max.y, mesh.bounds.max.z);
+                    vertices[4] = new Vector3(mesh.bounds.max.x, mesh.bounds.min.y, mesh.bounds.min.z);
+                    vertices[5] = new Vector3(mesh.bounds.max.x, mesh.bounds.min.y, mesh.bounds.max.z);
+                    vertices[6] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.min.z);
+                    vertices[7] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.max.z);
+
+                    for (int i = 0; i < vertices.Length; i++)
+                    {
+                        vertices[i] = transformMatrix.MultiplyPoint(vertices[i]);
+                        //  Compute min and max bounds
+                        if (vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
+                        if (vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
+                        if (vertices[i].z < minBound.z) { minBound.z = vertices[i].z; }
+
+                        if (vertices[i].x > maxBound.x) { maxBound.x = vertices[i].x; }
+                        if (vertices[i].y > maxBound.y) { maxBound.y = vertices[i].y; }
+                        if (vertices[i].z > maxBound.z) { maxBound.z = vertices[i].z; }
+                    }
+                    hasBounds = true;
+                }
+            }
+            if(hasBounds)
+            {
+                planePositions = new Vector3[6];
+                planePositions[0] = new Vector3((maxBound.x + minBound.x) * 0.5f, maxBound.y, (maxBound.z + minBound.z) * 0.5f);
+                planePositions[1] = new Vector3((maxBound.x + minBound.x) * 0.5f, minBound.y, (maxBound.z + minBound.z) * 0.5f);
+                planePositions[2] = new Vector3(minBound.x, (maxBound.y + minBound.y) * 0.5f, (maxBound.z + minBound.z) * 0.5f);
+                planePositions[3] = new Vector3(maxBound.x, (maxBound.y + minBound.y) * 0.5f, (maxBound.z + minBound.z) * 0.5f);
+                planePositions[4] = new Vector3((maxBound.x + minBound.x) * 0.5f, (maxBound.y + minBound.y) * 0.5f, minBound.z);
+                planePositions[5] = new Vector3((maxBound.x + minBound.x) * 0.5f, (maxBound.y + minBound.y) * 0.5f, maxBound.z);
+            }
+
+            if (selectionCount == 1 && !foundHierarchicalObject)
+            {
+                Transform transform = selectedObjects[0].GetComponentInChildren<MeshFilter>().transform;
+                planeContainerMatrix = rightHanded.worldToLocalMatrix * transform.localToWorldMatrix;
+            }
+            else
+            {
+                planeContainerMatrix = Matrix4x4.identity;
+            }
+        }
+
+        public void UpdateSelectionPlanes()
+        {
+            Maths.DecomposeMatrix(planeContainerMatrix, out Vector3 planePosition, out Quaternion planeRotation, out Vector3 planeScale);
+            planesContainer.transform.localPosition = planePosition;
+            planesContainer.transform.localRotation = planeRotation;
+            planesContainer.transform.localScale = planeScale;
+            
+            if (!hasBounds)
+            {
+                planesContainer.SetActive(false);
+                return;
+            }
+
+            Vector3 bs = planesContainer.transform.localScale; // boundsScale
+
+            // Collider Scale
+            Vector3 cs = new Vector3(
+                collidersThickness * (1.0f / bs.x),
+                collidersThickness * (1.0f / bs.y),
+                collidersThickness * (1.0f / bs.z)
+            );
+
+            // GAP: fixed in camera space. Scales with world and objet scales, inverse.
+            Vector3 g = new Vector3(
+                cameraSpaceGap * (1.0f / bs.x),
+                cameraSpaceGap * (1.0f / bs.y),
+                cameraSpaceGap * (1.0f / bs.z)
+            );
+
+            Vector3 minGapBound = minBound - new Vector3(g.x, g.y, g.z);
+            Vector3 maxGapBound = maxBound + new Vector3(g.x, g.y, g.z);
+
+            Vector3 delta = (maxGapBound - minGapBound) * 0.5f;
+
+            // Set planes (depending on their initial rotation)
+            // Top
+            planes[0].transform.localPosition = planePositions[0];
+            planes[0].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-delta.x, g.y, -delta.z), new Vector3(-delta.x, g.y, delta.z), new Vector3(delta.x, g.y, delta.z), new Vector3(delta.x, g.y, -delta.z));
+            SetPlaneCollider(planes[0], new Vector3(0, g.y, 0), new Vector3(delta.x * 2f, cs.y, delta.z * 2f));
+
+            // Bottom
+            planes[1].transform.localPosition = planePositions[1];
+            planes[1].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -g.y, -delta.z), new Vector3(delta.x, -g.y, delta.z), new Vector3(-delta.x, -g.y, delta.z), new Vector3(-delta.x, -g.y, -delta.z));
+            SetPlaneCollider(planes[1], new Vector3(0, -g.y, 0), new Vector3(delta.x * 2f, cs.y, delta.z * 2f));
+
+            // Left
+            planes[2].transform.localPosition = planePositions[2];
+            planes[2].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-g.x, -delta.y, -delta.z), new Vector3(-g.x, -delta.y, delta.z), new Vector3(-g.x, delta.y, delta.z), new Vector3(-g.x, delta.y, -delta.z));
+            SetPlaneCollider(planes[2], new Vector3(-g.x, 0, 0), new Vector3(cs.x, delta.y * 2f, delta.z * 2f));
+
+            // Right
+            planes[3].transform.localPosition = planePositions[3];
+            planes[3].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(g.x, delta.y, -delta.z), new Vector3(g.x, delta.y, delta.z), new Vector3(g.x, -delta.y, delta.z), new Vector3(g.x, -delta.y, -delta.z));
+            SetPlaneCollider(planes[3], new Vector3(g.x, 0, 0), new Vector3(cs.x, delta.y * 2f, delta.z * 2f));
+
+            // Front
+            planes[4].transform.localPosition = planePositions[4];
+            planes[4].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(-delta.x, -delta.y, -g.z), new Vector3(-delta.x, delta.y, -g.z), new Vector3(delta.x, delta.y, -g.z), new Vector3(delta.x, -delta.y, -g.z));
+            SetPlaneCollider(planes[4], new Vector3(0, 0, -g.z), new Vector3(delta.x * 2f, delta.y * 2f, cs.z));
+
+            // Back
+            planes[5].transform.localPosition = planePositions[5];
+            planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, g.z), new Vector3(delta.x, delta.y, g.z), new Vector3(-delta.x, delta.y, g.z), new Vector3(-delta.x, -delta.y, g.z));
+            SetPlaneCollider(planes[5], new Vector3(0, 0, g.z), new Vector3(delta.x * 2f, delta.y * 2f, cs.z));
+
+            planesContainer.SetActive(true);
+        }
+
+        protected void InitControllerMatrix()
+        {
+            if (!hasBounds)
+                return;
+
+            initMouthPieceWorldToLocal = rightMouthpieces.worldToLocalMatrix;
+
+            Vector3 worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[1]);
+            bottomRay = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.up));
+        }
+
+        private Matrix4x4 Snap(Matrix4x4 currentMouthPieceLocalToWorld)
+        {
+            int layersMask = LayerMask.GetMask(new string[] { "Default" });
+
+            Ray ray = new Ray(rightMouthpieces.TransformPoint(bottomRay.origin), rightMouthpieces.TransformDirection(bottomRay.direction));
+            if (Physics.Raycast(ray, out RaycastHit hit, snapDistance / GlobalState.WorldScale, layersMask))
+            {
+                Vector3 hitPoint = rightMouthpieces.TransformPoint(rightMouthpieces.InverseTransformPoint(hit.point) - bottomRay.origin);
+
+                // set position to hit point
+                currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
+
+                // compute rotation to align up vector to hit normal
+                Matrix4x4 T = Matrix4x4.Translate(-hit.point);
+                Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-ray.direction, hit.normal), Vector3.one);
+
+                return T.inverse * R * T * currentMouthPieceLocalToWorld * initMouthPieceWorldToLocal;
+            }
+            else
+            {
+                return currentMouthPieceLocalToWorld * initMouthPieceWorldToLocal;
+            }
+        }
         protected void TransformSelection(Matrix4x4 transformation)
         {
-            transformation = transformation * initTransformation;
-
             foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
                 // Check constraints

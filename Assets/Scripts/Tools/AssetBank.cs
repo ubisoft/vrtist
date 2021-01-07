@@ -35,7 +35,6 @@ namespace VRtist
     public class AssetBank : SelectorBase
     {
         [Header("Parameters")]
-        public Transform container;
         private bool useDefaultInstantiationScale = false;
 
         private Dictionary<int, AssetBankItem> items = new Dictionary<int, AssetBankItem>();   // uid -> asset bank item
@@ -386,7 +385,7 @@ namespace VRtist
                 meshFilter.mesh.name = newObject.name;
             }
 
-            Matrix4x4 matrix = container.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
+            Matrix4x4 matrix = rightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
             if (!useDefaultInstantiationScale)
             {
                 SyncData.SetTransform(newObject.name, matrix * Matrix4x4.Scale(gobject.transform.localScale));
