@@ -63,7 +63,7 @@ namespace VRtist
         protected Transform rightHanded;
         private Transform[] planes;
         protected GameObject planesContainer;
-        [CentimeterFloat] public float cameraSpaceGap = 0.01f;
+        private float cameraSpaceGap = 0.0001f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
         private Vector3 minBound = Vector3.positiveInfinity;
         private Vector3 maxBound = Vector3.negativeInfinity;
