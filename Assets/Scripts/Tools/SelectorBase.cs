@@ -25,7 +25,7 @@ namespace VRtist
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
         protected Matrix4x4 initMouthPieceWorldToLocal;
-        protected Ray bottomRay;
+        protected Ray[] snapRays;
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
@@ -59,7 +59,7 @@ namespace VRtist
         // snap parameters
         [Header("Snap Parameters")]
         bool isSnapping = false;
-        private float snapDistance = 0.1f;
+        private float snapDistance = 0.03f;
         protected Transform rightHanded;
         private Transform[] planes;
         protected GameObject planesContainer;
@@ -653,7 +653,12 @@ namespace VRtist
                     }
                 }
 
-                TransformSelection(Snap(rightMouthpieces.localToWorldMatrix * Matrix4x4.Scale(Vector3.one * scale)));
+                Matrix4x4 snapped = rightMouthpieces.localToWorldMatrix * Matrix4x4.Scale(Vector3.one * scale);
+                for(int i = 0; i< 6; i++)
+                {
+                    snapped = Snap(snapped, i);
+                }
+                TransformSelection(snapped * initMouthPieceWorldToLocal);
                 ComputeSelectionBounds();
                 UpdateSelectionPlanes();
             }
@@ -892,34 +897,48 @@ namespace VRtist
                 return;
 
             initMouthPieceWorldToLocal = rightMouthpieces.worldToLocalMatrix;
+            snapRays = new Ray[6];
+            Vector3 worldPlanePosition;
 
-            Vector3 worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[1]);
-            bottomRay = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.up));
+            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[0]);
+            snapRays[0] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.up));
+            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[1]);
+            snapRays[1] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.up));
+            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[2]);
+            snapRays[2] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.right));
+            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[3]);
+            snapRays[3] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.right));
+            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[4]);
+            snapRays[4] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.forward));
+            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[5]);
+            snapRays[5] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.forward));
         }
 
-        private Matrix4x4 Snap(Matrix4x4 currentMouthPieceLocalToWorld)
+        private Matrix4x4 Snap(Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)
         {
             int layersMask = LayerMask.GetMask(new string[] { "Default" });
 
-            Ray ray = new Ray(rightMouthpieces.TransformPoint(bottomRay.origin), rightMouthpieces.TransformDirection(bottomRay.direction));
+            Vector3 origin = currentMouthPieceLocalToWorld.MultiplyPoint(snapRays[planeIndex].origin);
+            Ray ray = new Ray(origin, currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized);
+            Debug.DrawRay(ray.origin, ray.direction, Color.white);
             if (Physics.Raycast(ray, out RaycastHit hit, snapDistance / GlobalState.WorldScale, layersMask))
             {
-                Vector3 hitPoint = rightMouthpieces.TransformPoint(rightMouthpieces.InverseTransformPoint(hit.point) - bottomRay.origin);
-
+                Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
                 // set position to hit point
                 currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
 
                 // compute rotation to align up vector to hit normal
                 Matrix4x4 T = Matrix4x4.Translate(-hit.point);
-                Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-ray.direction, hit.normal), Vector3.one);
+                Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized, hit.normal), Vector3.one);
 
-                return T.inverse * R * T * currentMouthPieceLocalToWorld * initMouthPieceWorldToLocal;
+                return T.inverse * R * T * currentMouthPieceLocalToWorld;
             }
             else
             {
-                return currentMouthPieceLocalToWorld * initMouthPieceWorldToLocal;
+                return currentMouthPieceLocalToWorld;
             }
         }
+
         protected void TransformSelection(Matrix4x4 transformation)
         {
             foreach (GameObject obj in Selection.GetGrippedOrSelection())
