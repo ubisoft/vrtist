@@ -35,7 +35,7 @@ namespace VRtist
         float scale = 1f;
         bool outOfDeadZone = false;
         private CommandGroup gripCmdGroup = null;
-        private bool Gripping { get { return null != gripCmdGroup; } }
+        public bool Gripping { get { return null != gripCmdGroup; } }
 
 
         protected bool gripPrevented = false;

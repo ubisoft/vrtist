@@ -331,15 +331,24 @@ namespace VRtist
         private IEnumerator ImportMaterials()
         {
             int i = 0;
-            Shader hdrplit = Shader.Find("HDRP/Lit");
+            Material opaqueMat = Resources.Load<Material>("Materials/BlenderImport");
+            Material transpMat = Resources.Load<Material>("Materials/BlenderImportTransparent");
             foreach (Assimp.Material assimpMaterial in scene.Materials)
             {
-                materials.Add(new Material(hdrplit));
+                if (assimpMaterial.HasOpacity && assimpMaterial.Opacity < 0.99f)
+                {
+                    materials.Add(new Material(transpMat));
+                }
+                else
+                {
+                    materials.Add(new Material(opaqueMat));
+                }
 
                 var material = materials[i];
                 material.enableInstancing = true;
 
-                material.SetFloat("_Smoothness", 0.2f);
+                material.SetFloat("_Metallic", 0.0f);
+                material.SetFloat("_Roughness", 0.8f);
 
                 if (assimpMaterial.IsTwoSided)
                 {
@@ -354,6 +363,10 @@ namespace VRtist
                     Color baseColor = new Color(assimpMaterial.ColorDiffuse.R, assimpMaterial.ColorDiffuse.G, assimpMaterial.ColorDiffuse.B, assimpMaterial.ColorDiffuse.A);
                     material.SetColor("_BaseColor", baseColor);
                 }
+                if (assimpMaterial.HasOpacity && assimpMaterial.Opacity < 1.0f)
+                {
+                    material.SetFloat("_Opacity", assimpMaterial.Opacity);
+                }
                 if (assimpMaterial.HasTextureDiffuse)
                 {
                     Assimp.TextureSlot tslot = assimpMaterial.TextureDiffuse;
@@ -361,7 +374,8 @@ namespace VRtist
                     if (File.Exists(fullpath))
                     {
                         Texture2D texture = GetOrCreateTextureFromFile(fullpath);
-                        material.SetTexture("_BaseColorMap", texture);
+                        material.SetFloat("_UseColorMap", 1f);
+                        material.SetTexture("_ColorMap", texture);
                     }
                     else
                     {
