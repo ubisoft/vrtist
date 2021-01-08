@@ -136,6 +136,10 @@ namespace VRtist
             }
         }
 
+        public override bool IsSnappable()
+        {
+            return false;
+        }
         public override void SetGizmoVisible(bool value)
         {
             bool isDisabledLayerActive = disabledLayer.activeSelf;

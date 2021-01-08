@@ -25,7 +25,6 @@ namespace VRtist
         protected Vector3 initControllerPosition;
         protected Quaternion initControllerRotation;
         protected Matrix4x4 initMouthPieceWorldToLocal;
-        protected Ray[] snapRays;
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
@@ -58,10 +57,13 @@ namespace VRtist
 
         // snap parameters
         [Header("Snap Parameters")]
+        protected Ray[] snapRays;
         bool isSnapping = false;
         private float snapDistance = 0.03f;
+        private float snapVisibleRayFactor = 3f;
         protected Transform rightHanded;
         private Transform[] planes;
+        private LineRenderer[] planeLines;
         protected GameObject planesContainer;
         private float cameraSpaceGap = 0.0001f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
@@ -70,6 +72,8 @@ namespace VRtist
         private bool hasBounds = false;
         private Vector3[] planePositions;
         private Matrix4x4 planeContainerMatrix;
+
+        [SerializeField] private Gradient rayGradient;
 
         struct ControllerDamping
         {
@@ -131,6 +135,31 @@ namespace VRtist
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
         }
 
+        private void InitRayGradient()
+        {
+            rayGradient = new Gradient();
+            GradientColorKey[] colorKeys = new GradientColorKey[4];
+            GradientAlphaKey[] alphaKeys = new GradientAlphaKey[4];
+            colorKeys[0].color = Color.red;
+            colorKeys[0].time = 0;
+            colorKeys[1].color = Color.red;
+            colorKeys[1].time = 0.2f;
+            colorKeys[2].color = Color.blue;
+            colorKeys[2].time = 0.21f;
+            colorKeys[3].color = Color.blue;
+            colorKeys[3].time = 1f;
+            alphaKeys[0].alpha = 1f;
+            alphaKeys[0].time = 0;
+            alphaKeys[1].alpha = 1f;
+            alphaKeys[1].time = 0.2f;
+            alphaKeys[2].alpha = 1f;
+            alphaKeys[2].time = 0.21f;
+            alphaKeys[3].alpha = 1f;
+            alphaKeys[3].time = 1f;
+            rayGradient.SetKeys(colorKeys, alphaKeys);
+            rayGradient.mode = GradientMode.Fixed;
+        }
+
         protected override void Init()
         {
             base.Init();
@@ -163,6 +192,14 @@ namespace VRtist
             planes[3] = planesContainer.transform.Find("Right");
             planes[4] = planesContainer.transform.Find("Front");
             planes[5] = planesContainer.transform.Find("Back");
+
+            InitRayGradient();
+            planeLines = new LineRenderer[6];
+            for (int i = 0; i < 6; i++)
+            {
+                planeLines[i] = planes[i].GetComponent<LineRenderer>();
+                planeLines[i].material = Resources.Load<Material>("Materials/SnapRayMaterial");
+            }
         }
         private void OnAnimationStateChanged(AnimationState state)
         {
@@ -333,11 +370,9 @@ namespace VRtist
             SetControllerVisible(Selection.GetGrippedOrSelection().Count == 0);
 
             ComputeSelectionBounds();
-            UpdateSelectionPlanes();
-
             InitControllerMatrix();
+            InitSnap();
             InitTransforms();
-            planesContainer.SetActive(true);
             outOfDeadZone = false;
 
             gripCmdGroup = new CommandGroup("Grip Selection");
@@ -619,6 +654,7 @@ namespace VRtist
                             DuplicateSelection();
 
                             InitControllerMatrix();
+                            InitSnap();
                             InitTransforms();
                             outOfDeadZone = true;
                         }
@@ -653,14 +689,13 @@ namespace VRtist
                     }
                 }
 
-                Matrix4x4 snapped = rightMouthpieces.localToWorldMatrix * Matrix4x4.Scale(Vector3.one * scale);
-                for(int i = 0; i< 6; i++)
-                {
-                    snapped = Snap(snapped, i);
-                }
-                TransformSelection(snapped * initMouthPieceWorldToLocal);
+                // right controller filtered matrix
+                Matrix4x4 mouthPieceLocalToWorld = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
+                    Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, Vector3.one * scale);
+
+                Snap(ref mouthPieceLocalToWorld);
+                TransformSelection(mouthPieceLocalToWorld * initMouthPieceWorldToLocal);
                 ComputeSelectionBounds();
-                UpdateSelectionPlanes();
             }
 
 
@@ -821,6 +856,8 @@ namespace VRtist
             {
                 planeContainerMatrix = Matrix4x4.identity;
             }
+
+            UpdateSelectionPlanes();
         }
 
         public void UpdateSelectionPlanes()
@@ -888,15 +925,19 @@ namespace VRtist
             planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, g.z), new Vector3(delta.x, delta.y, g.z), new Vector3(-delta.x, delta.y, g.z), new Vector3(-delta.x, -delta.y, g.z));
             SetPlaneCollider(planes[5], new Vector3(0, 0, g.z), new Vector3(delta.x * 2f, delta.y * 2f, cs.z));
 
-            planesContainer.SetActive(true);
+            
         }
 
         protected void InitControllerMatrix()
         {
+            initMouthPieceWorldToLocal = rightMouthpieces.worldToLocalMatrix;
+        }
+
+        protected void InitSnap()
+        { 
             if (!hasBounds)
                 return;
-
-            initMouthPieceWorldToLocal = rightMouthpieces.worldToLocalMatrix;
+            
             snapRays = new Ray[6];
             Vector3 worldPlanePosition;
 
@@ -914,29 +955,67 @@ namespace VRtist
             snapRays[5] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.forward));
         }
 
-        private Matrix4x4 Snap(Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)
+        protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
+        {
+            planesContainer.SetActive(false);
+            if (!IsSelectionSnappable()) 
+                return;
+
+            for (int i = 0; i < 12; i++)
+            {
+                SnapPlane(ref currentMouthPieceLocalToWorld, i % 6);
+            }
+        }
+
+        protected bool SnapPlane(ref Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)
         {
             int layersMask = LayerMask.GetMask(new string[] { "Default" });
 
             Vector3 origin = currentMouthPieceLocalToWorld.MultiplyPoint(snapRays[planeIndex].origin);
             Ray ray = new Ray(origin, currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized);
-            Debug.DrawRay(ray.origin, ray.direction, Color.white);
-            if (Physics.Raycast(ray, out RaycastHit hit, snapDistance / GlobalState.WorldScale, layersMask))
-            {
-                Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
-                // set position to hit point
-                currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
 
-                // compute rotation to align up vector to hit normal
-                Matrix4x4 T = Matrix4x4.Translate(-hit.point);
-                Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized, hit.normal), Vector3.one);
+            LineRenderer line = planeLines[planeIndex];
+            bool enableLine = false;
 
-                return T.inverse * R * T * currentMouthPieceLocalToWorld;
-            }
-            else
+            if (Physics.Raycast(ray, out RaycastHit hit, snapVisibleRayFactor * snapDistance / GlobalState.WorldScale, layersMask))
             {
-                return currentMouthPieceLocalToWorld;
+                planesContainer.SetActive(true);
+                enableLine = true;
+                line.positionCount = 2;
+                line.SetPosition(0, origin);
+                line.SetPosition(1, hit.point);
+                planeLines[planeIndex].material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hit.distance));
+                line.endWidth = line.startWidth = 0.001f / GlobalState.WorldScale;
+
+                if (hit.distance <= snapDistance / GlobalState.WorldScale)
+                {
+                    line.enabled = false;
+                    Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
+                    // set position to hit point
+                    currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
+
+                    // compute rotation to align up vector to hit normal
+                    Matrix4x4 T = Matrix4x4.Translate(-hit.point);
+                    Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized, hit.normal), Vector3.one);
+
+                    currentMouthPieceLocalToWorld = T.inverse * R * T * currentMouthPieceLocalToWorld;
+                    return true;
+                }
             }
+
+            line.enabled = enableLine;
+            return false;
+        }
+
+        private bool IsSelectionSnappable()
+        {
+            foreach (GameObject obj in Selection.GetGrippedOrSelection())
+            {
+                ParametersController controller = obj.GetComponent<ParametersController>();
+                if (controller != null && !controller.IsSnappable())
+                    return false;
+            }
+            return true;
         }
 
         protected void TransformSelection(Matrix4x4 transformation)

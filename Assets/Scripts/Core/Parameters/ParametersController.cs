@@ -77,5 +77,10 @@ namespace VRtist
                 canvas.gameObject.SetActive(value);
             }
         }
+
+        public virtual bool IsSnappable()
+        {
+            return true;
+        }
     }
 }

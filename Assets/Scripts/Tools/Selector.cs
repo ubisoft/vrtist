@@ -1050,7 +1050,7 @@ namespace VRtist
             if (deformEnabled)
             {
                 ComputeSelectionBounds();
-                UpdateSelectionPlanes();
+                planesContainer.SetActive(true);
             }
 
             // Move grid with object(s), enable/disable it.
