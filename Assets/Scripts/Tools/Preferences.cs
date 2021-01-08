@@ -9,8 +9,6 @@ namespace VRtist
         [Header("Settings Parameters")]
         public AudioMixer mixer = null;
         public GameObject worldGrid;
-        public Transform leftHandle;
-        public Transform rightHandle;
         public Transform cursor;
         public Transform backgroundFeedback = null;
 
@@ -26,11 +24,13 @@ namespace VRtist
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
         private UIButton advancedOptionsButton;
+        private UIButton saveOptionsButton;
         private UIButton infoOptionsButton;
 
         private GameObject displaySubPanel;
         private GameObject soundsSubPanel;
         private GameObject advancedSubPanel;
+        private GameObject saveSubPanel;
         private GameObject infoSubPanel;
 
         private UICheckbox worldGridCheckbox;
@@ -58,11 +58,13 @@ namespace VRtist
             displayOptionsButton = panel.Find("DisplayOptionsButton").GetComponent<UIButton>();
             soundsOptionsButton = panel.Find("SoundsOptionsButton").GetComponent<UIButton>();
             advancedOptionsButton = panel.Find("AdvancedOptionsButton").GetComponent<UIButton>();
+            saveOptionsButton = panel.Find("SaveOptionsButton").GetComponent<UIButton>();
             infoOptionsButton = panel.Find("InfoOptionsButton").GetComponent<UIButton>();
 
             displaySubPanel = panel.Find("DisplayOptions").gameObject;
             soundsSubPanel = panel.Find("SoundsOptions").gameObject;
             advancedSubPanel = panel.Find("AdvancedOptions").gameObject;
+            saveSubPanel = panel.Find("SaveOptions").gameObject;
             infoSubPanel = panel.Find("InfoOptions").gameObject;
 
             worldGridCheckbox = displaySubPanel.transform.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
@@ -214,6 +216,11 @@ namespace VRtist
             GlobalState.Settings.assetBankDirectory = value;
         }
 
+        public void OnEditProjectName()
+        {
+            //ToolsUIManager.Instance.OpenKeyboard(SetProjectName, )
+        }
+
         private void ResetSubPanels()
         {
             displayOptionsButton.Checked = false;
@@ -222,6 +229,8 @@ namespace VRtist
             soundsSubPanel.SetActive(false);
             advancedOptionsButton.Checked = false;
             advancedSubPanel.SetActive(false);
+            saveOptionsButton.Checked = false;
+            saveSubPanel.SetActive(false);
             infoOptionsButton.Checked = false;
             infoSubPanel.SetActive(false);
         }
@@ -247,6 +256,13 @@ namespace VRtist
             advancedSubPanel.SetActive(true);
         }
 
+        public void OnSetSaveSubPanel()
+        {
+            ResetSubPanels();
+            saveOptionsButton.Checked = true;
+            saveSubPanel.SetActive(true);
+        }
+
         public void OnSetInfoSubPanel()
         {
             ResetSubPanels();
@@ -261,25 +277,6 @@ namespace VRtist
 #else
             Application.Quit();
 #endif
-        }
-
-        private void InvertTooltip(Transform anchor)
-        {
-            // TODO (Right / Left) handed
-            Transform tooltip = anchor.Find("Tooltip");
-            if (null != tooltip)
-            {/*
-                FreeDraw freeDraw = new FreeDraw();
-                freeDraw.AddControlPoint(Vector3.zero, 0.00025f);
-                freeDraw.AddControlPoint(linePosition, 0.00025f);
-                MeshFilter meshFilter = tooltip.GetComponent<MeshFilter>();
-                Mesh mesh = meshFilter.mesh;
-                mesh.Clear();
-                mesh.vertices = freeDraw.vertices;
-                mesh.normals = freeDraw.normals;
-                mesh.triangles = freeDraw.triangles;
-                */
-            }
         }
 
         public void OnRightHanded(bool value)
@@ -334,6 +331,20 @@ namespace VRtist
         {
             OnShowConsoleWindow(false);
             showConsoleWindow.Checked = false;
+        }
+
+        public void OnSaveProject()
+        {
+            GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
+            SaveManager.Instance.Save("Plop");
+            GlobalState.Instance.messageBox.SetVisible(false);
+        }
+
+        public void OnLoadProject()
+        {
+            GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
+            SaveManager.Instance.Load("Plop");
+            GlobalState.Instance.messageBox.SetVisible(false);
         }
     }
 }
