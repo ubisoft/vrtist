@@ -39,6 +39,7 @@ namespace VRtist
         UISpinner posYSpinner;
         UISpinner posZSpinner;
 
+        UIButton posResetButton;
         UIButton posLockButton;
         UIButton posXLockButton;
         UIButton posYLockButton;
@@ -48,6 +49,7 @@ namespace VRtist
         UISpinner rotYSpinner;
         UISpinner rotZSpinner;
 
+        UIButton rotResetButton;
         UIButton rotLockButton;
         UIButton rotXLockButton;
         UIButton rotYLockButton;
@@ -57,6 +59,7 @@ namespace VRtist
         UISpinner scaleYSpinner;
         UISpinner scaleZSpinner;
 
+        UIButton scaleResetButton;
         UIButton scaleLockButton;
         UIButton scaleXLockButton;
         UIButton scaleYLockButton;
@@ -101,6 +104,7 @@ namespace VRtist
         public UICheckbox uniformScaleCheckbox = null;
         public bool uniformScale = false;
 
+        public UICheckbox snapCheckbox = null;
 
         private DeformerPlane activePlane = null;
         private bool deforming = false;
@@ -138,6 +142,8 @@ namespace VRtist
 
             selectedObjectNameLabel = inspectorPanel.transform.Find("Object Name").GetComponent<UILabel>();
 
+            snapCheckbox = selectPanel.transform.Find("Snap").GetComponent<UICheckbox>();            
+
             // Constraints
             enableParentButton = inspectorPanel.transform.Find("Constraints/Parent/Active Button").GetComponent<UIButton>();
             parentTargetLabel = inspectorPanel.transform.Find("Constraints/Parent/Target Label").GetComponent<UILabel>();
@@ -162,6 +168,7 @@ namespace VRtist
             posYSpinner = inspectorPanel.transform.Find("Transform/Position/Y/Value").GetComponent<UISpinner>();
             posZSpinner = inspectorPanel.transform.Find("Transform/Position/Z/Value").GetComponent<UISpinner>();
 
+            posResetButton = inspectorPanel.transform.Find("Transform/Position/Reset").GetComponent<UIButton>();
             posLockButton = inspectorPanel.transform.Find("Transform/Position/Global Lock").GetComponent<UIButton>();
             posXLockButton = inspectorPanel.transform.Find("Transform/Position/X/Lock").GetComponent<UIButton>();
             posYLockButton = inspectorPanel.transform.Find("Transform/Position/Y/Lock").GetComponent<UIButton>();
@@ -171,6 +178,7 @@ namespace VRtist
             rotYSpinner = inspectorPanel.transform.Find("Transform/Rotation/Y/Value").GetComponent<UISpinner>();
             rotZSpinner = inspectorPanel.transform.Find("Transform/Rotation/Z/Value").GetComponent<UISpinner>();
 
+            rotResetButton = inspectorPanel.transform.Find("Transform/Position/Reset").GetComponent<UIButton>();
             rotLockButton = inspectorPanel.transform.Find("Transform/Rotation/Global Lock").GetComponent<UIButton>();
             rotXLockButton = inspectorPanel.transform.Find("Transform/Rotation/X/Lock").GetComponent<UIButton>();
             rotYLockButton = inspectorPanel.transform.Find("Transform/Rotation/Y/Lock").GetComponent<UIButton>();
@@ -180,6 +188,7 @@ namespace VRtist
             scaleYSpinner = inspectorPanel.transform.Find("Transform/Scale/Y/Value").GetComponent<UISpinner>();
             scaleZSpinner = inspectorPanel.transform.Find("Transform/Scale/Z/Value").GetComponent<UISpinner>();
 
+            scaleResetButton = inspectorPanel.transform.Find("Transform/Position/Reset").GetComponent<UIButton>();
             scaleLockButton = inspectorPanel.transform.Find("Transform/Scale/Global Lock").GetComponent<UIButton>();
             scaleXLockButton = inspectorPanel.transform.Find("Transform/Scale/X/Lock").GetComponent<UIButton>();
             scaleYLockButton = inspectorPanel.transform.Find("Transform/Scale/Y/Lock").GetComponent<UIButton>();
@@ -271,10 +280,6 @@ namespace VRtist
                 }
 
                 command.AddObject(selected, position, Quaternion.Euler(rotation), scale);
-
-                selected.transform.localPosition = position;
-                selected.transform.localEulerAngles = rotation;
-                selected.transform.localScale = scale;
             }
 
             if (null != firstSelected)
@@ -575,6 +580,36 @@ namespace VRtist
             InitUIPanel();
         }
 
+        public void ResetPosition()
+        {
+            CommandMoveObjects command = new CommandMoveObjects();
+            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            {
+                command.AddObject(gobject, Vector3.zero, gobject.transform.localRotation, gobject.transform.localScale);                
+            }
+            command.Submit();
+        }
+
+        public void ResetRotation()
+        {
+            CommandMoveObjects command = new CommandMoveObjects();
+            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            {
+                command.AddObject(gobject, gobject.transform.localPosition, Quaternion.identity, gobject.transform.localScale);
+            }
+            command.Submit();
+        }
+
+        public void ResetScale()
+        {
+            CommandMoveObjects command = new CommandMoveObjects();
+            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            {
+                command.AddObject(gobject, gobject.transform.localPosition, gobject.transform.localRotation, Vector3.one);
+            }
+            command.Submit();
+        }
+
         public void SetLockPosition(bool value)
         {
             foreach (GameObject gobject in Selection.GetSelectedObjects())
@@ -765,8 +800,14 @@ namespace VRtist
             uniformScale = value;
         }
 
+        public void EnableSnap(bool value)
+        {
+            isSnapping = value;
+        }
+
         protected virtual void InitUIPanel()
         {
+            if (null != snapCheckbox) snapCheckbox.Checked = isSnapping;
             if (null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
             if (null != snapGridSizeSlider)
             {

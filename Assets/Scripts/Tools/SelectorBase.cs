@@ -59,7 +59,7 @@ namespace VRtist
         // snap parameters
         [Header("Snap Parameters")]
         protected Ray[] snapRays;
-        bool isSnapping = false;
+        static protected bool isSnapping = false;
         private float snapDistance = 0.03f;
         private float epsilonDistance = 0.0001f;
         private float snapVisibleRayFactor = 3f;
@@ -984,13 +984,15 @@ namespace VRtist
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
         {
+            if (!isSnapping)
+                return;
+
             if (!IsSelectionSnappable())
             {
                 foreach(Transform snapUI in snapTargets)
                     snapUI.gameObject.SetActive(false);
                 return;
             }
-
 
             int notSnappedCount = 0;
             int i = 0;
