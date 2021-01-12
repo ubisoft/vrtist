@@ -1810,6 +1810,9 @@ namespace VRtist
 
         public static void SetRecursiveLayerSmart(GameObject gObject, LayerType layerType)
         {
+            if (GlobalState.Instance.selectionGripped)
+                return;
+
             string layerName = LayerMask.LayerToName(gObject.layer);
             if (layerType == LayerType.Selection)
             {
@@ -1837,6 +1840,15 @@ namespace VRtist
             for (int i = 0; i < gObject.transform.childCount; i++)
             {
                 SetRecursiveLayerSmart(gObject.transform.GetChild(i).gameObject, layerType);
+            }
+
+            ParametersController parametersConstroller = gObject.GetComponent<ParametersController>();
+            if(null != parametersConstroller)
+            {
+                foreach (GameObject sourceConstraint in parametersConstroller.sourceConstraints)
+                {
+                    SetRecursiveLayerSmart(sourceConstraint, layerType);
+                }
             }
         }
 

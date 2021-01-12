@@ -13,48 +13,14 @@ namespace VRtist
 
         private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
-        protected CommandGroup undoGroup = null;
-
         private void OnDisable()
         {
-            if (null != undoGroup)
-            {
-                undoGroup.Submit();
-                undoGroup = null;
-            }
-
             collidedObjects.Clear();
             Selection.SetHoveredObject(null);
         }
 
         void Update()
-        {
-            // Clear selection on trigger click on nothing
-            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
-            {
-                selectionHasChanged = false;
-                undoGroup = new CommandGroup("Selector Trigger");
-            },
-            () =>
-            {
-                try
-                {
-                    if (!selectionHasChanged && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
-                    {
-                        if(selector.mode == SelectorBase.SelectorModes.Select)
-                            selector.ClearSelection();
-                    }
-                }
-                finally
-                {
-                    if (null != undoGroup)
-                    {
-                        undoGroup.Submit();
-                        undoGroup = null;
-                    }
-                }
-            });
-
+        {            
             switch (selector.mode)
             {
                 case SelectorBase.SelectorModes.Select: UpdateSelection(); break;

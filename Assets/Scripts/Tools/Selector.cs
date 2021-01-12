@@ -941,6 +941,18 @@ namespace VRtist
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
         }
 
+        override protected void ClearSelectionOnVoidTrigger()
+        {
+            if (!deforming)
+            {
+                base.ClearSelectionOnVoidTrigger();
+            }
+            else
+            {
+                ResetClearSelectionUndoGroup();
+            }
+        }
+
         protected void OnStartDeform()
         {
             deforming = true;
@@ -1050,7 +1062,7 @@ namespace VRtist
             if (deformEnabled)
             {
                 ComputeSelectionBounds();
-                planesContainer.SetActive(true);
+                planesContainer.SetActive(!Selection.IsEmpty());
             }
 
             // Move grid with object(s), enable/disable it.

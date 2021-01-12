@@ -33,6 +33,7 @@ namespace VRtist
         public static Color SelectedColor = new Color(0f / 255f, 167f / 255f, 255f / 255f);
         public static Color UnselectedColor = Color.white;
 
+        public static bool selectionHasChanged = false;
         public static Dictionary<int, GameObject> selection = new Dictionary<int, GameObject>();
         public static event EventHandler<SelectionChangedArgs> OnSelectionChanged;
         public static event EventHandler<GameObjectArgs> OnGrippedObjectChanged;
@@ -328,6 +329,7 @@ namespace VRtist
             FillSelection(ref args.selectionBefore);
 
             selection.Add(gObject.GetInstanceID(), gObject);
+            selectionHasChanged = true;
 
             CameraController controller = gObject.GetComponentInChildren<CameraController>(true);
             if (null != controller)
@@ -353,6 +355,7 @@ namespace VRtist
             FillSelection(ref args.selectionBefore);
 
             selection.Remove(gObject.GetInstanceID());
+            selectionHasChanged = true;
 
             if (activeCamera != gObject)
                 SetActiveCamera(null);
@@ -380,6 +383,7 @@ namespace VRtist
             FillSelection(ref args.selectionBefore);
 
             selection.Clear();
+            selectionHasChanged = true;
 
             if (hoveredObject != activeCamera)
                 SetActiveCamera(null);
@@ -399,6 +403,11 @@ namespace VRtist
         public static bool IsEmpty()
         {
             return selection.Count == 0;
+        }
+
+        public static void ResetSelectionHasChanged()
+        {
+            selectionHasChanged = false;
         }
     }
 }

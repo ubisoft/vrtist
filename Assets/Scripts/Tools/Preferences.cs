@@ -122,13 +122,15 @@ namespace VRtist
         protected virtual void OnEnable()
         {
             Settings.onSettingsChanged.AddListener(UpdateUIFromPreferences);
-            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
+            if(null != GlobalState.Animation)
+                GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
         protected virtual void OnDisable()
         {
             Settings.onSettingsChanged.RemoveListener(UpdateUIFromPreferences);
-            GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
+            if(null != GlobalState.Animation)
+                GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
         }
 
         private void OnAnimationStateChanged(AnimationState state)

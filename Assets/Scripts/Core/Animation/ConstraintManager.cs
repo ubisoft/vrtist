@@ -77,6 +77,13 @@ namespace VRtist
                 }
             }
 
+            GameObject source = constraint.GetSource(0).sourceTransform.gameObject;
+            ParametersController sourceParametersController = source.GetComponent<ParametersController>();
+            if(null != sourceParametersController)
+            {
+                sourceParametersController.RemoveSourceConstraint(gobject);
+            }
+
             constraint.RemoveSource(0);
             GameObject.Destroy(component);
             GlobalState.FireObjectConstraint(gobject);
@@ -121,6 +128,12 @@ namespace VRtist
                     parametersController = gobject.AddComponent<ParametersController>();
                 }
                 constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.Parent });
+                ParametersController targetParametersController = target.GetComponent<ParametersController>();
+                if (null == targetParametersController)
+                {
+                    targetParametersController = target.AddComponent<ParametersController>();
+                }
+                targetParametersController.AddSourceConstraint(gobject);
             }
             ConstraintSource source;
             if (constraint.sourceCount == 0)
@@ -173,6 +186,14 @@ namespace VRtist
             {
                 parametersController = gobject.AddComponent<ParametersController>();
             }
+
+            ParametersController targetParametersController = target.GetComponent<ParametersController>();
+            if (null == targetParametersController)
+            {
+                targetParametersController = target.AddComponent<ParametersController>();
+            }
+            targetParametersController.AddSourceConstraint(gobject);
+
             constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.LookAt });
             source.sourceTransform = target.transform;
             source.weight = 1f;

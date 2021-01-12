@@ -28,6 +28,7 @@ namespace VRtist
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
+        protected CommandGroup clearSelectionUndoGroup;
 
         const float deadZone = 0.3f;
 
@@ -60,6 +61,7 @@ namespace VRtist
         protected Ray[] snapRays;
         bool isSnapping = false;
         private float snapDistance = 0.03f;
+        private float epsilonDistance = 0.0001f;
         private float snapVisibleRayFactor = 3f;
         protected Transform rightHanded;
         private Transform[] planes;
@@ -106,12 +108,22 @@ namespace VRtist
             Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
+        protected void ResetClearSelectionUndoGroup()
+        {
+            if (null != clearSelectionUndoGroup)
+            {
+                clearSelectionUndoGroup.Submit();
+                clearSelectionUndoGroup = null;
+            }
+        }
+
         protected override void OnDisable()
         {
             Selection.OnSelectionChanged -= OnSelectionChanged;
             if (Gripping)
                 OnEndGrip();
             EndUndoGroup(); // secu
+            ResetClearSelectionUndoGroup();
             SubmitCameraFocalCommand();
             base.OnDisable();
         }
@@ -233,8 +245,35 @@ namespace VRtist
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Joystick, false);
         }
 
+        virtual protected void ClearSelectionOnVoidTrigger()
+        {
+            // Clear selection on trigger click on nothing
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
+            {
+                Selection.ResetSelectionHasChanged();
+                clearSelectionUndoGroup = new CommandGroup("Clear Selector");
+            },
+            () =>
+            {
+                try
+                {
+                    if (!Selection.selectionHasChanged && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
+                    {
+                        if (mode == SelectorBase.SelectorModes.Select)
+                            ClearSelection();
+                    }
+                }
+                finally
+                {
+                    ResetClearSelectionUndoGroup();
+                }
+            });
+        }
+
         protected override void DoUpdate()
         {
+            ClearSelectionOnVoidTrigger();
+
             if (VRInput.GetValue(VRInput.primaryController, CommonUsages.grip) <= deadZone)
             {
                 if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
@@ -952,12 +991,20 @@ namespace VRtist
                 return;
             }
 
-            // snap each plane twice because of plane order
-            for (int i = 0; i < 12; i++)
+
+            int notSnappedCount = 0;
+            int i = 0;
+            int totalCount = 0;
+            while(notSnappedCount < 6 && totalCount++ < 18)
             {
-                SnapPlane(ref currentMouthPieceLocalToWorld, i % 6);
+                if (!SnapPlane(ref currentMouthPieceLocalToWorld, i % 6))
+                    notSnappedCount++;
+                else
+                    notSnappedCount = 1;
+                i++;
             }
         }
+
 
         protected bool SnapPlane(ref Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)
         {
@@ -991,17 +1038,21 @@ namespace VRtist
                 if (hit.distance <= snapDistance / GlobalState.WorldScale)
                 {
                     snapTarget.gameObject.SetActive(false);
-                    Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
-                    // set position to hit point
-                    currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
+                    if (hit.distance > epsilonDistance / GlobalState.WorldScale)
+                    {
+                        Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
+                        // set position to hit point
+                        currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
 
-                    // compute rotation to align up vector to hit normal
-                    Matrix4x4 T = Matrix4x4.Translate(-hit.point);
-                    Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized, hit.normal), Vector3.one);
+                        // compute rotation to align up vector to hit normal
+                        Matrix4x4 T = Matrix4x4.Translate(-hit.point);
+                        Matrix4x4 R = Matrix4x4.TRS(Vector3.zero, Quaternion.FromToRotation(-currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized, hit.normal), Vector3.one);
 
-                    currentMouthPieceLocalToWorld = T.inverse * R * T * currentMouthPieceLocalToWorld;
-                    return true;
+                        currentMouthPieceLocalToWorld = T.inverse * R * T * currentMouthPieceLocalToWorld;
+                        return true;
+                    }
                 }
+
             }
 
             snapTarget.gameObject.SetActive(enableSnapUI);
