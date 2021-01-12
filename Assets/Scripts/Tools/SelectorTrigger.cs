@@ -152,7 +152,6 @@ namespace VRtist
                  () =>
                  {
                      Selection.SetGrippedObject(hoveredObject);
-                     if (null != hoveredObject) { collidedObjects.Clear(); }
                  },
                  () => { Selection.SetGrippedObject(null); });
 

@@ -12,18 +12,23 @@ namespace VRtist
     {
         static Material paintMaterial = null;
 
-        public static GameObject FindWorld()
+        public static GameObject FindRootGameObject(string name)
         {
             Scene scene = SceneManager.GetActiveScene();
             GameObject[] roots = scene.GetRootGameObjects();
             for (int i = 0; i < roots.Length; i++)
             {
-                if (roots[i].name == "World")
+                if (roots[i].name == name)
                 {
                     return roots[i];
                 }
             }
             return null;
+        }
+
+        public static GameObject FindWorld()
+        {
+            return FindRootGameObject("World");
         }
 
         public static Volume FindVolume()

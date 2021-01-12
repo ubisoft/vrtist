@@ -1094,8 +1094,6 @@ namespace VRtist
                 {
                     Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
                 }
-
-                selectorTrigger.enabled = (plane == null);
             }
         }
 

@@ -65,6 +65,8 @@ namespace VRtist
         private Transform[] planes;
         private LineRenderer[] planeLines;
         protected GameObject planesContainer;
+        protected GameObject snapUIContainer;
+        private Transform[] snapTargets;
         private float cameraSpaceGap = 0.0001f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
         private Vector3 minBound = Vector3.positiveInfinity;
@@ -194,10 +196,13 @@ namespace VRtist
             planes[5] = planesContainer.transform.Find("Back");
 
             InitRayGradient();
+            snapTargets = new Transform[6];
             planeLines = new LineRenderer[6];
+            snapUIContainer = Utils.FindRootGameObject("SnapUI");
             for (int i = 0; i < 6; i++)
             {
-                planeLines[i] = planes[i].GetComponent<LineRenderer>();
+                snapTargets[i] = snapUIContainer.transform.GetChild(i);
+                planeLines[i] = snapTargets[i].GetComponent<LineRenderer>();
                 planeLines[i].material = Resources.Load<Material>("Materials/SnapRayMaterial");
             }
         }
@@ -381,6 +386,7 @@ namespace VRtist
 
         protected virtual void OnEndGrip()
         {
+            snapUIContainer.SetActive(false);
             planesContainer.SetActive(false);
             SetControllerVisible(true);
             enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
@@ -609,25 +615,6 @@ namespace VRtist
             rightControllerPosition = positionSum;
             rightControllerRotation = rotationSum.normalized;
         }
-
-        // A ref for snapping controller
-        //private Matrix4x4 SnapController(Matrix4x4 controllerMatrix)
-        //{
-        //    Matrix4x4 controllerMatrixInWorld = world.worldToLocalMatrix * controllerMatrix;
-        //    Vector3 controllerTranslate, controllerScale;
-        //    Quaternion controllerRotation;
-        //    Maths.DecomposeMatrix(controllerMatrixInWorld, out controllerTranslate, out controllerRotation, out controllerScale);
-        //    controllerTranslate = new Vector3((float)Math.Round(controllerTranslate.x, 0), (float)Math.Round(controllerTranslate.y, 0), (float)Math.Round(controllerTranslate.z, 0));
-
-        //    float snapXAngle = 90;
-        //    float snapYAngle = 90;
-        //    float snapZAngle = 90;
-        //    Vector3 eulerAngles = controllerRotation.eulerAngles;
-        //    eulerAngles = new Vector3((float)Math.Round(eulerAngles.x / snapXAngle, 0) * snapXAngle, (float)Math.Round(eulerAngles.y / snapYAngle, 0) * snapYAngle, (float)Math.Round(eulerAngles.z / snapZAngle, 0) * snapZAngle);
-        //    controllerRotation.eulerAngles = eulerAngles;
-
-        //    return world.localToWorldMatrix * Matrix4x4.TRS(controllerTranslate, Quaternion.identity, Vector3.one) * Matrix4x4.TRS(Vector3.zero, controllerRotation, Vector3.one);
-        //}
 
         private void UpdateSelect()
         {
@@ -869,6 +856,7 @@ namespace VRtist
             
             if (!hasBounds)
             {
+                snapUIContainer.SetActive(false);
                 planesContainer.SetActive(false);
                 return;
             }
@@ -957,10 +945,14 @@ namespace VRtist
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
         {
-            planesContainer.SetActive(false);
-            if (!IsSelectionSnappable()) 
+            if (!IsSelectionSnappable())
+            {
+                foreach(Transform snapUI in snapTargets)
+                    snapUI.gameObject.SetActive(false);
                 return;
+            }
 
+            // snap each plane twice because of plane order
             for (int i = 0; i < 12; i++)
             {
                 SnapPlane(ref currentMouthPieceLocalToWorld, i % 6);
@@ -969,27 +961,36 @@ namespace VRtist
 
         protected bool SnapPlane(ref Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)
         {
+            if (!hasBounds)
+                return false;
+
             int layersMask = LayerMask.GetMask(new string[] { "Default" });
 
             Vector3 origin = currentMouthPieceLocalToWorld.MultiplyPoint(snapRays[planeIndex].origin);
             Ray ray = new Ray(origin, currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized);
 
             LineRenderer line = planeLines[planeIndex];
-            bool enableLine = false;
+            Transform snapTarget = snapTargets[planeIndex];
+            bool enableSnapUI = false;
 
             if (Physics.Raycast(ray, out RaycastHit hit, snapVisibleRayFactor * snapDistance / GlobalState.WorldScale, layersMask))
             {
+                snapUIContainer.SetActive(true);
                 planesContainer.SetActive(true);
-                enableLine = true;
+                enableSnapUI = true;
                 line.positionCount = 2;
                 line.SetPosition(0, origin);
                 line.SetPosition(1, hit.point);
-                planeLines[planeIndex].material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hit.distance));
+                line.material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hit.distance));
                 line.endWidth = line.startWidth = 0.001f / GlobalState.WorldScale;
+                
+                snapTarget.localScale = Vector3.one * 0.03f / GlobalState.WorldScale;
+                snapTarget.LookAt(hit.point - hit.normal);
+                snapTarget.position = hit.point + hit.normal * 0.001f / GlobalState.WorldScale;
 
                 if (hit.distance <= snapDistance / GlobalState.WorldScale)
                 {
-                    line.enabled = false;
+                    snapTarget.gameObject.SetActive(false);
                     Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
                     // set position to hit point
                     currentMouthPieceLocalToWorld.SetColumn(3, new Vector4(hitPoint.x, hitPoint.y, hitPoint.z, 1));
@@ -1003,7 +1004,7 @@ namespace VRtist
                 }
             }
 
-            line.enabled = enableLine;
+            snapTarget.gameObject.SetActive(enableSnapUI);
             return false;
         }
 
