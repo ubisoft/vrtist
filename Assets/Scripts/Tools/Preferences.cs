@@ -106,10 +106,6 @@ namespace VRtist
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
 
             OnRightHanded(GlobalState.Settings.rightHanded);
-
-            backgroundFeedback.localPosition = GlobalState.Settings.cameraFeedbackPosition;
-            backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
-            backgroundFeedback.localScale = GlobalState.Settings.cameraFeedbackScale;
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
 
             ToolsUIManager.Instance.InitPaletteState();

@@ -114,11 +114,6 @@ namespace VRtist
             get { return Instance.geometryImporter; }
         }
 
-        // Animation
-        //private AnimationController animationController = new AnimationController();
-
-        public Vector3 cameraPreviewDirection = new Vector3(0, 1, 1);
-
         public static void FireObjectAdded(GameObject gObject)
         {
             ObjectAddedEvent.Invoke(gObject);
@@ -193,11 +188,6 @@ namespace VRtist
         {
             if (null != cameraFeedback)
             {
-                cameraFeedback.transform.localPosition = settings.cameraFeedbackPosition;
-                cameraFeedback.transform.localRotation = settings.cameraFeedbackRotation;
-                if (settings.cameraFeedbackScale.x == 0f || settings.cameraFeedbackScale.y == 0f || settings.cameraFeedbackScale.z == 0f)
-                    settings.cameraFeedbackScale = new Vector3(160f, 90f, 100f);
-                cameraFeedback.transform.localScale = settings.cameraFeedbackScale;
                 cameraFeedback.SetActive(settings.cameraFeedbackVisible);
             }
 

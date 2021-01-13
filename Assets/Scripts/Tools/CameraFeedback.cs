@@ -36,14 +36,11 @@ namespace VRtist
             float aspect = cam.aspect;
 
             float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
-            Vector3 direction = rig.TransformDirection(GlobalState.Instance.cameraPreviewDirection);
-            transform.localPosition = vrCamera.localPosition + direction.normalized * far;
+            Vector3 direction = GlobalState.Settings.cameraFeedbackDirection;
+            transform.localPosition = direction.normalized * far;
             transform.localRotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
             transform.localScale = new Vector3(scale * aspect, scale, scale);
 
-            GlobalState.Settings.cameraFeedbackPosition = transform.position;
-            GlobalState.Settings.cameraFeedbackRotation = transform.rotation;
-            GlobalState.Settings.cameraFeedbackScale = transform.localScale;
         }
 
         void OnCameraChanged(object sender, ActiveCameraChangedArgs args)

@@ -190,7 +190,6 @@ namespace VRtist
                 cameraPreviewHandle.position = Vector3.zero;
             }
 
-            GlobalState.Instance.cameraPreviewDirection = new Vector3(Camera.main.transform.forward.x, 0, Camera.main.transform.forward.z);
 
             Init();
 
@@ -210,7 +209,6 @@ namespace VRtist
 
         void Start()
         {
-            GlobalState.Instance.cameraPreviewDirection = backgroundFeedback.forward;
             ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
         }
 
@@ -500,17 +498,23 @@ namespace VRtist
                 if (feedbackPositioning
                     && VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
                 {
-                    GlobalState.Instance.cameraPreviewDirection = rig.InverseTransformDirection(transform.forward);
+                    GlobalState.Settings.cameraFeedbackDirection = rig.InverseTransformDirection(transform.forward); // direction local to rig
                     trigger = true;
                 }
                 if (trigger)
                 {
                     // Cam feedback scale
                     Vector2 joystickAxis = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
+                    float value = GlobalState.Settings.cameraFeedbackScaleValue;
                     if (joystickAxis.y > deadZone)
-                        GlobalState.Settings.cameraFeedbackScaleValue *= cameraFeedbackScaleFactor;
+                    {
+                        value *= cameraFeedbackScaleFactor;
+                    }
                     if (joystickAxis.y < -deadZone)
-                        GlobalState.Settings.cameraFeedbackScaleValue /= cameraFeedbackScaleFactor;
+                    {
+                        value /= cameraFeedbackScaleFactor;
+                    }
+                    GlobalState.Settings.cameraFeedbackScaleValue = Mathf.Clamp(value, GlobalState.Settings.cameraFeedbackMinScaleValue, GlobalState.Settings.cameraFeedbackMaxScaleValue);
                 }
             }
 
