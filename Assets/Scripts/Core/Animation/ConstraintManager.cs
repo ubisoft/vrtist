@@ -127,7 +127,7 @@ namespace VRtist
                 ParametersController parametersController = gobject.GetComponent<ParametersController>();
                 if (null == parametersController)
                 {
-                    parametersController = gobject.AddComponent<ParametersController>();
+                    gobject.AddComponent<ParametersController>();
                 }
                 constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.Parent });
                 ParametersController targetParametersController = target.GetComponent<ParametersController>();
@@ -137,6 +137,19 @@ namespace VRtist
                 }
                 targetParametersController.AddSourceConstraint(gobject);
             }
+            else
+            {
+                // update visual target for LineRenderer
+                foreach (Constraint c in constraints)
+                {
+                    if(c.gobject == gobject && c.constraintType == ConstraintType.Parent)
+                    {
+                        c.target = target.transform;
+                        break;
+                    }
+                }
+            }
+
             ConstraintSource source;
             if (constraint.sourceCount == 0)
             {
@@ -171,6 +184,30 @@ namespace VRtist
             if (null == constraint)
             {
                 constraint = gobject.AddComponent<LookAtConstraint>();
+                ParametersController parametersController = gobject.GetComponent<ParametersController>();
+                if (null == parametersController)
+                {
+                    gobject.AddComponent<ParametersController>();
+                }
+                constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.LookAt });
+                ParametersController targetParametersController = target.GetComponent<ParametersController>();
+                if (null == targetParametersController)
+                {
+                    targetParametersController = target.AddComponent<ParametersController>();
+                }
+                targetParametersController.AddSourceConstraint(gobject);
+            }
+            else
+            {
+                // update visual target for LineRenderer
+                foreach (Constraint c in constraints)
+                {
+                    if (c.gobject == gobject && c.constraintType == ConstraintType.LookAt)
+                    {
+                        c.target = target.transform;
+                        break;
+                    }
+                }
             }
             ConstraintSource source;
             if (constraint.sourceCount == 0)
@@ -182,21 +219,7 @@ namespace VRtist
             {
                 source = constraint.GetSource(0);
             }
-
-            ParametersController parametersController = gobject.GetComponent<ParametersController>();
-            if (null == parametersController)
-            {
-                parametersController = gobject.AddComponent<ParametersController>();
-            }
-
-            ParametersController targetParametersController = target.GetComponent<ParametersController>();
-            if (null == targetParametersController)
-            {
-                targetParametersController = target.AddComponent<ParametersController>();
-            }
-            targetParametersController.AddSourceConstraint(gobject);
-
-            constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.LookAt });
+          
             source.sourceTransform = target.transform;
             source.weight = 1f;
             constraint.SetSource(0, source);
