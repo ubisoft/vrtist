@@ -251,6 +251,7 @@ namespace VRtist
             Settings.DisplayGizmos = value;
             SetGizmosVisible(FindObjectsOfType<LightController>(), value);
             SetGizmosVisible(FindObjectsOfType<CameraController>(), value);
+            SetGizmosVisible(FindObjectsOfType<ConstraintLineController>(), value);
             SetDisplayAvatars(value);
         }
 

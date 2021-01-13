@@ -105,6 +105,8 @@ namespace VRtist
                 if (null == lineRenderer)
                 {
                     constraint.lineRenderer = lineGameObject.AddComponent<LineRenderer>();
+                    lineGameObject.AddComponent<ConstraintLineController>();
+                    lineGameObject.name = "line";
                     lineRenderer = constraint.lineRenderer;
                     lineRenderer.positionCount = 2;
                     lineRenderer.material = Resources.Load<Material>("Materials/Dash");
