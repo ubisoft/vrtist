@@ -81,6 +81,8 @@ namespace VRtist
 
         public virtual bool IsSnappable()
         {
+            if (lockPosition)
+                return false;
             return true;
         }
 
