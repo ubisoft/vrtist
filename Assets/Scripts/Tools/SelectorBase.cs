@@ -60,6 +60,7 @@ namespace VRtist
         [Header("Snap Parameters")]
         protected Ray[] snapRays;
         static protected bool isSnapping = false;
+        static protected bool isSnappingToGround = false;
         private float snapDistance = 0.03f;
         private float epsilonDistance = 0.0001f;
         private float snapVisibleRayFactor = 3f;
@@ -994,16 +995,23 @@ namespace VRtist
                 return;
             }
 
-            int notSnappedCount = 0;
-            int i = 0;
-            int totalCount = 0;
-            while(notSnappedCount < 6 && totalCount++ < 18)
+            if (isSnappingToGround)
             {
-                if (!SnapPlane(ref currentMouthPieceLocalToWorld, i % 6))
-                    notSnappedCount++;
-                else
-                    notSnappedCount = 1;
-                i++;
+                SnapPlane(ref currentMouthPieceLocalToWorld, 1);
+            }
+            else
+            {
+                int notSnappedCount = 0;
+                int i = 0;
+                int totalCount = 0;
+                while (notSnappedCount < 6 && totalCount++ < 18)
+                {
+                    if (!SnapPlane(ref currentMouthPieceLocalToWorld, i % 6))
+                        notSnappedCount++;
+                    else
+                        notSnappedCount = 1;
+                    i++;
+                }
             }
         }
 

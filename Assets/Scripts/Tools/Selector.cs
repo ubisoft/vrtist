@@ -105,6 +105,7 @@ namespace VRtist
         public bool uniformScale = false;
 
         public UICheckbox snapCheckbox = null;
+        public UICheckbox snapToGroundCheckbox = null;
 
         private DeformerPlane activePlane = null;
         private bool deforming = false;
@@ -142,7 +143,8 @@ namespace VRtist
 
             selectedObjectNameLabel = inspectorPanel.transform.Find("Object Name").GetComponent<UILabel>();
 
-            snapCheckbox = selectPanel.transform.Find("Snap").GetComponent<UICheckbox>();            
+            snapCheckbox = selectPanel.transform.Find("Snap").GetComponent<UICheckbox>();
+            snapToGroundCheckbox = selectPanel.transform.Find("SnapToGround").GetComponent<UICheckbox>();
 
             // Constraints
             enableParentButton = inspectorPanel.transform.Find("Constraints/Parent/Active Button").GetComponent<UIButton>();
@@ -803,11 +805,22 @@ namespace VRtist
         public void EnableSnap(bool value)
         {
             isSnapping = value;
+            snapToGroundCheckbox.Disabled = !isSnapping;
+        }
+
+        public void SnapToGround(bool value)
+        {
+            isSnappingToGround = value;
         }
 
         protected virtual void InitUIPanel()
         {
             if (null != snapCheckbox) snapCheckbox.Checked = isSnapping;
+            if (null != snapToGroundCheckbox)
+            {
+                snapToGroundCheckbox.Disabled = !isSnapping;
+                snapToGroundCheckbox.Checked = isSnappingToGround;
+            }
             if (null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
             if (null != snapGridSizeSlider)
             {
