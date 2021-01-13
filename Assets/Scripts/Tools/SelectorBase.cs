@@ -1063,8 +1063,11 @@ namespace VRtist
 
         private bool IsSelectionSnappable()
         {
+            int layersMask = LayerMask.NameToLayer("HoverCameraHidden");
             foreach (GameObject obj in Selection.GetGrippedOrSelection())
             {
+                if (obj.layer == layersMask)
+                    return false;
                 ParametersController controller = obj.GetComponent<ParametersController>();
                 if (controller != null && !controller.IsSnappable())
                     return false;
