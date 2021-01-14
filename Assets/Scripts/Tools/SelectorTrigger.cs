@@ -58,8 +58,12 @@ namespace VRtist
                 }
                 if (Selection.GetHoveredObject() != gObject)
                 {
-                    Selection.SetHoveredObject(gObject);
-                    selector.OnSelectorTriggerEnter(other);
+                    // when moving object, we don't want to hover other objects
+                    if (!GlobalState.Instance.selectionGripped)
+                    {
+                        Selection.SetHoveredObject(gObject);
+                        selector.OnSelectorTriggerEnter(other);
+                    }
                 }
             }
         }
@@ -86,9 +90,9 @@ namespace VRtist
 
         private void RemoveCollidedObject(GameObject obj)
         {
-            bool removed = collidedObjects.Remove(obj);
-            if (!removed) { return; }
+            collidedObjects.Remove(obj);
 
+            // manage successive imbrication of objects
             GameObject hoveredObject = Selection.GetHoveredObject();
             if (hoveredObject == obj)
             {

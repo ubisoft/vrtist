@@ -81,7 +81,7 @@ namespace VRtist
             ParametersController sourceParametersController = source.GetComponent<ParametersController>();
             if(null != sourceParametersController)
             {
-                sourceParametersController.RemoveSourceConstraint(gobject);
+                sourceParametersController.RemoveConstraintHolder(gobject);
             }
 
             constraint.RemoveSource(0);
@@ -135,7 +135,7 @@ namespace VRtist
                 {
                     targetParametersController = target.AddComponent<ParametersController>();
                 }
-                targetParametersController.AddSourceConstraint(gobject);
+                targetParametersController.AddConstraintHolder(gobject);
             }
             else
             {
@@ -195,7 +195,7 @@ namespace VRtist
                 {
                     targetParametersController = target.AddComponent<ParametersController>();
                 }
-                targetParametersController.AddSourceConstraint(gobject);
+                targetParametersController.AddConstraintHolder(gobject);
             }
             else
             {

@@ -1001,10 +1001,9 @@ namespace VRtist
             }
             else
             {
-                int notSnappedCount = 0;
                 int i = 0;
-                int totalCount = 0;
-                while (notSnappedCount < 6 && totalCount++ < 18)
+                int notSnappedCount = 0;
+                while (notSnappedCount < 6 && i < 18)
                 {
                     if (!SnapPlane(ref currentMouthPieceLocalToWorld, i % 6))
                         notSnappedCount++;
