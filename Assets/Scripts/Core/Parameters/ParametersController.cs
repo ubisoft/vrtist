@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Animations;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -24,6 +22,9 @@ namespace VRtist
         public bool lockPosition = false;
         public bool lockRotation = false;
         public bool lockScale = false;
+
+        public bool isImported = false;
+        public string importPath;
 
         public virtual bool IsDeletable()
         {

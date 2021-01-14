@@ -14,34 +14,66 @@ namespace VRtist
 
 
     [System.Serializable]
+    public class MaterialData
+    {
+        public bool useColorMap;
+        public Color baseColor;
+        public string colorMapPath;
+
+        public bool useNormalMap;
+        public string normalMapPath;
+
+        public bool useMetallicMap;
+        public float metallic;
+        public string metallicMapPath;
+
+        public bool useRoughnessMap;
+        public float roughness;
+        public string roughnessMapPath;
+
+        public bool useEmissiveMap;
+        public float emissive;
+        public string emissiveMapPath;
+
+        public bool useAoMap;
+        public string aoMapPath;
+
+        public Vector4 uvOffset;
+        public Vector4 uvScale;
+
+        public bool useOpacityMap;
+        public float opacity;
+        public float opacityMapPath;
+    }
+
+
+    [System.Serializable]
     public class SubMesh
     {
         public MeshTopology topology;
         public int[] indices;
+        public MaterialData materialData;
     }
 
 
     [System.Serializable]
     public class MeshData
     {
-        // MeshSurrogate doesn't work :(
-        //public Mesh mesh;
-
         public MeshData() { }
 
-        public MeshData(Mesh mesh)
+        public MeshData(SaveManager.MeshInfo meshInfo)
         {
-            name = mesh.name;
-            vertices = mesh.vertices;
-            normals = mesh.normals;
-            uvs = mesh.uv;
-            subMeshes = new SubMesh[mesh.subMeshCount];
-            for (int i = 0; i < mesh.subMeshCount; ++i)
+            name = meshInfo.mesh.name;
+            vertices = meshInfo.mesh.vertices;
+            normals = meshInfo.mesh.normals;
+            uvs = meshInfo.mesh.uv;
+            subMeshes = new SubMesh[meshInfo.mesh.subMeshCount];
+            for (int i = 0; i < meshInfo.mesh.subMeshCount; ++i)
             {
                 subMeshes[i] = new SubMesh
                 {
-                    topology = mesh.GetSubMesh(i).topology,
-                    indices = mesh.GetIndices(i)
+                    topology = meshInfo.mesh.GetSubMesh(i).topology,
+                    indices = meshInfo.mesh.GetIndices(i)
                 };
             }
         }
@@ -83,6 +115,7 @@ namespace VRtist
 
         // Mesh
         public string meshPath;
+        public bool isImported;
 
         // Material
         //public string materialPath;
@@ -100,14 +133,42 @@ namespace VRtist
     [System.Serializable]
     public class LightData : ObjectData
     {
-
+        public LightType lightType;
+        public float intensity;
+        public float minIntensity;
+        public float maxIntensity;
+        public Color color;
+        public bool castShadows;
+        public float near;
+        public float range;
+        public float minRange;
+        public float maxRange;
+        public float outerAngle;
+        public float innerAngle;
     }
 
 
     [System.Serializable]
     public class CameraData : ObjectData
     {
+        public float focal;
+        public float focus;
+        public float aperture;
+        public bool enableDOF;
+        public float near;
+        public float far;
+        public float filmHeight;
+    }
 
+
+    [System.Serializable]
+    public class ShotData
+    {
+        public string name;
+        public int index;
+        public int start;
+        public int end;
+        public string cameraName;
     }
 
 
@@ -127,6 +188,8 @@ namespace VRtist
         private List<ObjectData> objects = new List<ObjectData>();
         private List<LightData> lights = new List<LightData>();
         private List<CameraData> cameras = new List<CameraData>();
+
+        private List<ShotData> shots = new List<ShotData>();
 
         public void AddObject(ObjectData data)
         {
@@ -156,6 +219,16 @@ namespace VRtist
         public List<CameraData> GetCameras()
         {
             return cameras;
+        }
+
+        public void AddShot(ShotData data)
+        {
+            shots.Add(data);
+        }
+
+        public List<ShotData> GetShots()
+        {
+            return shots;
         }
     }
 }

@@ -54,12 +54,16 @@ namespace VRtist
 
             Vector2Surrogate vector2Surrogate = new Vector2Surrogate();
             Vector3Surrogate vector3Surrogate = new Vector3Surrogate();
+            Vector4Surrogate vector4Surrogate = new Vector4Surrogate();
             QuaternionSurrogate quaternionSurrogate = new QuaternionSurrogate();
+            ColorSurrogate colorSurrogate = new ColorSurrogate();
             MeshSurrogate meshSurrogate = new MeshSurrogate();
 
             selector.AddSurrogate(typeof(Vector2), new StreamingContext(StreamingContextStates.All), vector2Surrogate);
             selector.AddSurrogate(typeof(Vector3), new StreamingContext(StreamingContextStates.All), vector3Surrogate);
+            selector.AddSurrogate(typeof(Vector4), new StreamingContext(StreamingContextStates.All), vector4Surrogate);
             selector.AddSurrogate(typeof(Quaternion), new StreamingContext(StreamingContextStates.All), quaternionSurrogate);
+            selector.AddSurrogate(typeof(Color), new StreamingContext(StreamingContextStates.All), colorSurrogate);
             selector.AddSurrogate(typeof(Mesh), new StreamingContext(StreamingContextStates.All), meshSurrogate);
 
             formatter.SurrogateSelector = selector;
