@@ -374,16 +374,17 @@ namespace VRtist
 
         public static void ClearSelection()
         {
-            foreach (KeyValuePair<int, GameObject> data in selection)
-            {
-                UIUtils.SetRecursiveLayerSmart(data.Value, LayerType.Default);
-            }
-
             SelectionChangedArgs args = new SelectionChangedArgs();
             FillSelection(ref args.selectionBefore);
 
             selection.Clear();
             selectionHasChanged = true;
+
+            // must be done when selection is up to date
+            foreach (GameObject obj in args.selectionBefore.Values)
+            {
+                UIUtils.SetRecursiveLayerSmart(obj, LayerType.Default);
+            }
 
             if (hoveredObject != activeCamera)
                 SetActiveCamera(null);

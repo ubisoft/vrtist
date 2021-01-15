@@ -1809,13 +1809,16 @@ namespace VRtist
             }
         }
 
-        public static bool HasParentOrConstraintSelected(Transform t)
+        public static bool HasParentOrConstraintSelected(Transform t, ref string parentLayerName)
         {
             Transform parent = t.parent;
             while(null != parent && parent.name != "RightHanded")
             {
                 if (Selection.IsSelected(parent.gameObject))
+                {
+                    parentLayerName = LayerMask.LayerToName(parent.gameObject.layer);
                     return true;
+                }
                 parent = parent.parent;
             }
 
@@ -1824,8 +1827,12 @@ namespace VRtist
             {
                 if (constraint.sourceCount > 0)
                 {
-                    if (Selection.IsSelected(constraint.GetSource(0).sourceTransform.gameObject))
+                    GameObject sourceObject = constraint.GetSource(0).sourceTransform.gameObject;
+                    if (Selection.IsSelected(sourceObject))
+                    {
+                        parentLayerName = LayerMask.LayerToName(sourceObject.layer);
                         return true;
+                    }
                 }
             }
 
@@ -1834,8 +1841,12 @@ namespace VRtist
             {
                 if (lookAtConstraint.sourceCount > 0)
                 {
+                    GameObject sourceObject = constraint.GetSource(0).sourceTransform.gameObject;
                     if (Selection.IsSelected(lookAtConstraint.GetSource(0).sourceTransform.gameObject))
+                    {
+                        parentLayerName = LayerMask.LayerToName(sourceObject.layer);
                         return true;
+                    }
                 }
             }
 
@@ -1858,7 +1869,7 @@ namespace VRtist
                     else
                         layerName = "Selection";
                 }
-                else if (layerName == "Hover") 
+                else if (layerName == "Hover" || layerName == "HoverChild") 
                 {
                     if (isChild && !Selection.IsSelected(gObject))
                         layerName = "SelectionChild";
@@ -1880,7 +1891,7 @@ namespace VRtist
                     else
                         layerName = "Hover";
                 }
-                else if (layerName == "Selection")
+                else if (layerName == "Selection" || layerName == "SelectionChild")
                 {
                     if (isChild && !Selection.IsSelected(gObject))
                         layerName = "HoverChild";
@@ -1896,20 +1907,30 @@ namespace VRtist
             else if (layerType == LayerType.Default)
             {
                 if (layerName == "SelectionCameraHidden") { layerName = "CameraHidden"; }
-                else if (layerName == "Hover") 
+                else if (layerName == "Hover" || layerName == "HoverChild") 
                 {
-                    if (HasParentOrConstraintSelected(gObject.transform))
-                        layerName = "HoverChild";
+                    string parentLayer = "";
+                    if (HasParentOrConstraintSelected(gObject.transform, ref parentLayer))
+                    {
+                        layerName = parentLayer + "Child";
+                    }
                     else
-                        layerName = "Default"; 
+                    {
+                        layerName = "Default";  
+                    }
                 }
                 else if (layerName == "HoverCameraHidden") { layerName = "CameraHidden"; }
-                else if (layerName == "Selection") 
+                else if (layerName == "Selection" || layerName == "SelectionChild") 
                 {
-                    if (HasParentOrConstraintSelected(gObject.transform))
-                        layerName = "SelectionChild";
+                    string parentLayer = "";
+                    if (HasParentOrConstraintSelected(gObject.transform, ref parentLayer))
+                    {
+                        layerName = parentLayer + "Child";
+                    }
                     else
-                        layerName = "Default"; 
+                    {
+                        layerName = "Default";
+                    }
                 }
             }
 
