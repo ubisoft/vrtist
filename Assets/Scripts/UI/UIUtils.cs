@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Rendering;
 
 namespace VRtist
@@ -1808,35 +1809,114 @@ namespace VRtist
             }
         }
 
-        public static void SetRecursiveLayerSmart(GameObject gObject, LayerType layerType)
+        public static bool HasParentOrConstraintSelected(Transform t)
+        {
+            Transform parent = t.parent;
+            while(null != parent && parent.name != "RightHanded")
+            {
+                if (Selection.IsSelected(parent.gameObject))
+                    return true;
+                parent = parent.parent;
+            }
+
+            ParentConstraint constraint = t.gameObject.GetComponent<ParentConstraint>();
+            if (null != constraint)
+            {
+                if (constraint.sourceCount > 0)
+                {
+                    if (Selection.IsSelected(constraint.GetSource(0).sourceTransform.gameObject))
+                        return true;
+                }
+            }
+
+            LookAtConstraint lookAtConstraint = t.gameObject.GetComponent<LookAtConstraint>();
+            if (null != lookAtConstraint)
+            {
+                if (lookAtConstraint.sourceCount > 0)
+                {
+                    if (Selection.IsSelected(lookAtConstraint.GetSource(0).sourceTransform.gameObject))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static void SetRecursiveLayerSmart(GameObject gObject, LayerType layerType, bool isChild = false)
         {
             string layerName = LayerMask.LayerToName(gObject.layer);
+            
+            //
+            // SELECT
+            //
             if (layerType == LayerType.Selection)
             {
-                if (layerName == "Default") { layerName = "Selection"; }
-                else if (layerName == "Hover") { layerName = "Selection"; }
+                if (layerName == "Default") 
+                {
+                    if (isChild && !Selection.IsSelected(gObject))
+                        layerName = "SelectionChild";
+                    else
+                        layerName = "Selection";
+                }
+                else if (layerName == "Hover") 
+                {
+                    if (isChild && !Selection.IsSelected(gObject))
+                        layerName = "SelectionChild";
+                    else
+                        layerName = "Selection";
+                }
                 else if (layerName == "CameraHidden") { layerName = "SelectionCameraHidden"; }
                 else if (layerName == "HoverCameraHidden") { layerName = "SelectionCameraHidden"; }
             }
+            //
+            // HOVER
+            //
+            else if (layerType == LayerType.Hover)
+            {
+                if (layerName == "Default")
+                {
+                    if (isChild && !Selection.IsSelected(gObject))
+                        layerName = "HoverChild";
+                    else
+                        layerName = "Hover";
+                }
+                else if (layerName == "Selection")
+                {
+                    if (isChild && !Selection.IsSelected(gObject))
+                        layerName = "HoverChild";
+                    else
+                        layerName = "Hover";
+                }
+                else if (layerName == "CameraHidden") { layerName = "HoverCameraHidden"; }
+                else if (layerName == "SelectionCameraHidden") { layerName = "HoverCameraHidden"; }
+            }
+            //
+            // RESET layer
+            //
             else if (layerType == LayerType.Default)
             {
                 if (layerName == "SelectionCameraHidden") { layerName = "CameraHidden"; }
-                else if (layerName == "Hover") { layerName = "Default"; }
+                else if (layerName == "Hover") 
+                {
+                    if (HasParentOrConstraintSelected(gObject.transform))
+                        layerName = "HoverChild";
+                    else
+                        layerName = "Default"; 
+                }
                 else if (layerName == "HoverCameraHidden") { layerName = "CameraHidden"; }
-                else if (layerName == "Selection") { layerName = "Default"; }
-            }
-            else if (layerType == LayerType.Hover)
-            {
-                if (layerName == "Default") { layerName = "Hover"; }
-                else if (layerName == "CameraHidden") { layerName = "HoverCameraHidden"; }
-                else if (layerName == "Selection") { layerName = "Hover"; }
-                else if (layerName == "SelectionCameraHidden") { layerName = "HoverCameraHidden"; }
+                else if (layerName == "Selection") 
+                {
+                    if (HasParentOrConstraintSelected(gObject.transform))
+                        layerName = "SelectionChild";
+                    else
+                        layerName = "Default"; 
+                }
             }
 
             gObject.layer = LayerMask.NameToLayer(layerName);
             for (int i = 0; i < gObject.transform.childCount; i++)
             {
-                SetRecursiveLayerSmart(gObject.transform.GetChild(i).gameObject, layerType);
+                SetRecursiveLayerSmart(gObject.transform.GetChild(i).gameObject, layerType, true);
             }
 
             ParametersController parametersConstroller = gObject.GetComponent<ParametersController>();
@@ -1845,7 +1925,7 @@ namespace VRtist
                 foreach (GameObject sourceConstraint in parametersConstroller.constraintHolders)
                 {
                     if(!Selection.IsSelected(sourceConstraint))
-                        SetRecursiveLayerSmart(sourceConstraint, layerType);
+                        SetRecursiveLayerSmart(sourceConstraint, layerType, true);
                 }
             }
         }
