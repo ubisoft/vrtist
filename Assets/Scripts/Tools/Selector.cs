@@ -153,7 +153,6 @@ namespace VRtist
             deleteParentButton = inspectorPanel.transform.Find("Constraints/Parent/Delete Button").GetComponent<UIButton>();
 
             enableParentButton.onReleaseEvent.AddListener(OnToggleParentConstraint);
-            selectParentButton.onReleaseEvent.AddListener(() => { selectParentButton.Checked = true; });
             deleteParentButton.onReleaseEvent.AddListener(RemoveParentConstraint);
 
             enableLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Active Button").GetComponent<UIButton>();
@@ -162,7 +161,6 @@ namespace VRtist
             deleteLookAtButton = inspectorPanel.transform.Find("Constraints/Look At/Delete Button").GetComponent<UIButton>();
 
             enableLookAtButton.onReleaseEvent.AddListener(OnToggleLookAtConstraint);
-            selectLookAtButton.onReleaseEvent.AddListener(() => { selectLookAtButton.Checked = true; });
             deleteLookAtButton.onReleaseEvent.AddListener(RemoveLookAtConstraint);
 
             // Transforms

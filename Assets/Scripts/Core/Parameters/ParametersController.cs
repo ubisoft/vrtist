@@ -24,7 +24,7 @@ namespace VRtist
         public bool lockPosition = false;
         public bool lockRotation = false;
         public bool lockScale = false;
-        public List<GameObject> sourceConstraints = new List<GameObject>();
+        public List<GameObject> constraintHolders = new List<GameObject>();
 
         public virtual bool IsDeletable()
         {
@@ -86,14 +86,14 @@ namespace VRtist
             return true;
         }
 
-        public void AddSourceConstraint(GameObject gobject)
+        public void AddConstraintHolder(GameObject gobject)
         {
-            sourceConstraints.Add(gobject);
+            constraintHolders.Add(gobject);
         }
 
-        public void RemoveSourceConstraint(GameObject gobject)
+        public void RemoveConstraintHolder(GameObject gobject)
         {
-            sourceConstraints.Remove(gobject);
+            constraintHolders.Remove(gobject);
         }
     }
 }

@@ -145,7 +145,7 @@ namespace VRtist
                 }
             }
 
-            if (outlinedObject)
+            if (outlinedObject && !IsSelected(outlinedObject))
                 AddToHoverLayer(outlinedObject);
         }
 
