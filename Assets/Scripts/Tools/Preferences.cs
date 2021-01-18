@@ -120,14 +120,14 @@ namespace VRtist
         protected virtual void OnEnable()
         {
             Settings.onSettingsChanged.AddListener(UpdateUIFromPreferences);
-            if(null != GlobalState.Animation)
+            if (null != GlobalState.Animation)
                 GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
         protected virtual void OnDisable()
         {
             Settings.onSettingsChanged.RemoveListener(UpdateUIFromPreferences);
-            if(null != GlobalState.Animation)
+            if (null != GlobalState.Animation)
                 GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
         }
 
@@ -334,14 +334,14 @@ namespace VRtist
         public void OnSaveProject()
         {
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
-            SaveManager.Instance.Save("Plop");
+            Serialization.SaveManager.Instance.Save("Plop");
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         public void OnLoadProject()
         {
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
-            SaveManager.Instance.Load("Plop");
+            Serialization.SaveManager.Instance.Load("Plop");
             GlobalState.Instance.messageBox.SetVisible(false);
         }
     }
