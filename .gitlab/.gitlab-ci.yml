@@ -11,7 +11,7 @@ build:
   extends: .tag_only
   stage: build
   script:
-    - .\build.bat --buildDir "${CI_COMMIT_TAG}"
+    - .\.gitlab\build.bat --buildDir "${CI_COMMIT_TAG}"
     - echo ${CI_COMMIT_TAG} > "Build\${CI_COMMIT_TAG}\version.txt"
   artifacts:
     name: "VRtist_${CI_COMMIT_TAG}"
