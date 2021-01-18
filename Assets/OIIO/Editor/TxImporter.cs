@@ -1,15 +1,15 @@
 ﻿using System.IO; // Path
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.Experimental.AssetImporters;
+
 using System.Runtime.InteropServices;
 
-[ScriptedImporter(5, "tx")]
-public class TxImporter : ScriptedImporter
+[UnityEditor.AssetImporters.ScriptedImporter(5, "tx")]
+public class TxImporter : UnityEditor.AssetImporters.ScriptedImporter
 {
     [SerializeField] public Vector2Int imageDimensions;
 
-    public override void OnImportAsset(AssetImportContext ctx)
+    public override void OnImportAsset(UnityEditor.AssetImporters.AssetImportContext ctx)
     {
         // NOTE: repere bas gauche, Y up.
 
