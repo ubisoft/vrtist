@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Serialization
 {
     public class SerializationManager
     {

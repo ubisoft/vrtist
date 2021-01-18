@@ -3,17 +3,25 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Serialization
 {
+    public class MeshInfo
+    {
+        public string meshPath;
+        public Mesh mesh;
+        public List<MaterialInfo> materialsInfo;
+    }
+
+
+    public class MaterialInfo
+    {
+        public string materialPath;
+        public Material material;
+    }
+
+
     public class SaveManager : MonoBehaviour
     {
-        public class MeshInfo
-        {
-            public string meshPath;
-            public Mesh mesh;
-            public Material[] materials;
-        }
-
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -26,13 +34,18 @@ namespace VRtist
         private string saveFolder;
         private string currentProjectName;
 
-        private Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separate files
+        private Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
 
         private GameObject sunLightPrefab;
         private GameObject pointLightPrefab;
         private GameObject spotLightPrefab;
 
         private GameObject cameraPrefab;
+
+        private static Material opaqueMaterial;
+        private static Material transparentMaterial;
+        private static Material opaqueEditorMaterial;
+        private static Material transparentEditorMaterial;
 
         private void Awake()
         {
@@ -43,11 +56,26 @@ namespace VRtist
 
             saveFolder = Application.persistentDataPath + "/saves/";
 
+            // Prefabs (we should have unique refs for the whole app somewhere)
             sunLightPrefab = Resources.Load<GameObject>("Prefabs/Sun");
             pointLightPrefab = Resources.Load<GameObject>("Prefabs/Point");
             spotLightPrefab = Resources.Load<GameObject>("Prefabs/Spot");
 
             cameraPrefab = Resources.Load<GameObject>("Prefabs/Camera");
+
+            opaqueMaterial = Resources.Load<Material>("Materials/BlenderImport");
+            transparentMaterial = Resources.Load<Material>("Materials/BlenderImportTransparent");
+            opaqueEditorMaterial = Resources.Load<Material>("Materials/BlenderImportEditor");
+            transparentEditorMaterial = Resources.Load<Material>("Materials/BlenderImportTransparentEditor");
+        }
+
+        public static Material GetMaterial(bool opaque)
+        {
+#if UNITY_EDITOR
+            return opaque ? opaqueEditorMaterial : transparentEditorMaterial;
+#else
+            return opaque ? opaqueMaterial : transparentMaterial;
+#endif
         }
 
         private string ReplaceInvalidChars(string filename)
@@ -63,6 +91,11 @@ namespace VRtist
         private string GetMeshPath(string projectName, string meshName)
         {
             return saveFolder + projectName + "/" + ReplaceInvalidChars(meshName) + ".mesh";
+        }
+
+        private string GetMaterialPath(string projectName, string materialName)
+        {
+            return saveFolder + projectName + "/" + ReplaceInvalidChars(materialName) + "/";
         }
 
         public void Save(string projectName)
@@ -99,7 +132,7 @@ namespace VRtist
                     LightData lightData = new LightData();
                     SetCommonData(child, childPath, lightController, lightData);
                     SetLightData(child, lightController, lightData);
-                    SceneData.Current.AddLight(lightData);
+                    SceneData.Current.lights.Add(lightData);
                     continue;
                 }
 
@@ -109,7 +142,7 @@ namespace VRtist
                     CameraData cameraData = new CameraData();
                     SetCommonData(child, childPath, cameraController, cameraData);
                     SetCameraData(child, cameraController, cameraData);
-                    SceneData.Current.AddCamera(cameraData);
+                    SceneData.Current.cameras.Add(cameraData);
                     continue;
                 }
 
@@ -125,7 +158,7 @@ namespace VRtist
                 ObjectData data = new ObjectData();
                 SetCommonData(child, childPath, controller, data);
                 SetMeshData(child, controller, data);
-                SceneData.Current.AddObject(data);
+                SceneData.Current.objects.Add(data);
 
                 // Serialize children
                 if (!data.isImported)
@@ -142,14 +175,53 @@ namespace VRtist
 
                 // Save animation data
 
-                // Save objects
+                // Save scene
                 SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current);
+
+                // Save meshes
                 foreach (var meshInfo in meshes.Values)
                 {
                     yield return null;
-
                     SerializationManager.Save(meshInfo.meshPath, new MeshData(meshInfo));
+
+                    // Save materials
+                    foreach (MaterialInfo materialInfo in meshInfo.materialsInfo)
+                    {
+                        yield return null;
+                        SaveMaterial(materialInfo);
+                    }
                 }
+            }
+        }
+
+        private void SaveMaterial(MaterialInfo materialInfo)
+        {
+            string shaderName = materialInfo.material.shader.name;
+            if (shaderName != "VRtist/BlenderImport" &&
+                shaderName != "VRtist/BlenderImportTransparent" &&
+                shaderName != "VRtist/BlenderImportEditor" &&
+                shaderName != "VRtist/BlenderImportTransparentEditor")
+            {
+                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/BlenderImport***.");
+                return;
+            }
+
+            SaveTexture("_ColorMap", "_UseColorMap", materialInfo);
+            SaveTexture("_NormalMap", "_UseNormalMap", materialInfo);
+            SaveTexture("_MetallicMap", "_UseMetallicMap", materialInfo);
+            SaveTexture("_RoughnessMap", "_UseRoughnessMap", materialInfo);
+            SaveTexture("_EmissiveMap", "_UseEmissiveMap", materialInfo);
+            SaveTexture("_AoMap", "_UseAoMap", materialInfo);
+            SaveTexture("_OpacityMap", "_UseOpacityMap", materialInfo);
+        }
+
+        private void SaveTexture(string textureName, string useName, MaterialInfo materialInfo)
+        {
+            if (materialInfo.material.GetInt(useName) == 1)
+            {
+                string path = materialInfo.materialPath + name + ".tex";
+                Texture2D texture = (Texture2D) materialInfo.material.GetTexture(textureName);
+                Utils.SavePNG(texture, path);
             }
         }
 
@@ -162,8 +234,17 @@ namespace VRtist
                 MeshFilter meshFilter = trans.GetComponent<MeshFilter>();
                 if (null != meshFilter && null != meshRenderer)
                 {
+                    // Materials
+                    List<MaterialInfo> materialsInfo = new List<MaterialInfo>();
+                    foreach (Material material in meshRenderer.materials)
+                    {
+                        string materialPath = GetMaterialPath(currentProjectName, material.name);
+                        materialsInfo.Add(new MaterialInfo { materialPath = materialPath, material = material });
+                    }
+
+                    // Mesh
                     string meshPath = GetMeshPath(currentProjectName, meshFilter.mesh.name);
-                    meshes[meshPath] = new MeshInfo { meshPath = meshPath, mesh = meshFilter.mesh, materials = meshRenderer.materials };
+                    meshes[meshPath] = new MeshInfo { meshPath = meshPath, mesh = meshFilter.mesh, materialsInfo = materialsInfo };
                     data.meshPath = meshPath;
                 }
                 data.isImported = false;
@@ -173,8 +254,6 @@ namespace VRtist
                 data.meshPath = controller.importPath;
                 data.isImported = true;
             }
-
-            // TODO materials
         }
 
         private void SetCommonData(Transform trans, string path, ParametersController controller, ObjectData data)
@@ -239,20 +318,20 @@ namespace VRtist
 
             // Objects
             Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
-            foreach (ObjectData data in saveData.GetObjects())
+            foreach (ObjectData data in saveData.objects)
             {
                 LoadObject(data, importedParent);
             }
             Destroy(importedParent.gameObject);
 
             // Lights
-            foreach (LightData data in saveData.GetLights())
+            foreach (LightData data in saveData.lights)
             {
                 LoadLight(data);
             }
 
             // Cameras
-            foreach (CameraData data in saveData.GetCameras())
+            foreach (CameraData data in saveData.cameras)
             {
                 LoadCamera(data);
             }
@@ -321,7 +400,7 @@ namespace VRtist
                 {
                     MeshData meshData = (MeshData) SerializationManager.Load(data.meshPath);
                     gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
-                    gobject.AddComponent<MeshRenderer>();
+                    gobject.AddComponent<MeshRenderer>().materials = meshData.GetMaterials();
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
                     collider.convex = true;
                     collider.isTrigger = true;

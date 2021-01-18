@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Serialization
 {
     public class Vector2Surrogate : ISerializationSurrogate
     {

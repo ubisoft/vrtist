@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Serialization
 {
     [System.Serializable]
     public enum ObjectType
@@ -16,6 +16,9 @@ namespace VRtist
     [System.Serializable]
     public class MaterialData
     {
+        bool valid;
+        string path;
+
         public bool useColorMap;
         public Color baseColor;
         public string colorMapPath;
@@ -38,12 +41,122 @@ namespace VRtist
         public bool useAoMap;
         public string aoMapPath;
 
+        public bool useOpacityMap;
+        public float opacity;
+        public string opacityMapPath;
+
         public Vector4 uvOffset;
         public Vector4 uvScale;
 
-        public bool useOpacityMap;
-        public float opacity;
-        public float opacityMapPath;
+        public MaterialData(MaterialInfo materialInfo)
+        {
+            string shaderName = materialInfo.material.shader.name;
+            if (shaderName != "VRtist/BlenderImport" &&
+                shaderName != "VRtist/BlenderImportTransparent" &&
+                shaderName != "VRtist/BlenderImportEditor" &&
+                shaderName != "VRtist/BlenderImportTransparentEditor")
+            {
+                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/BlenderImport***.");
+                valid = false;
+                return;
+            }
+
+            valid = true;
+            path = materialInfo.materialPath;
+
+            useColorMap = materialInfo.material.GetInt("_UseColorMap") == 1;
+            baseColor = materialInfo.material.GetColor("_BaseColor");
+            if (useColorMap) { colorMapPath = materialInfo.materialPath + "color.tex"; }
+
+            useNormalMap = materialInfo.material.GetInt("_UseNormalMap") == 1;
+            if (useNormalMap) { normalMapPath = materialInfo.materialPath + "normal.tex"; }
+
+            useMetallicMap = materialInfo.material.GetInt("_UseMetallicMap") == 1;
+            metallic = materialInfo.material.GetFloat("_Metallic");
+            if (useMetallicMap) { metallicMapPath = materialInfo.materialPath + "metallic.tex"; }
+
+            useRoughnessMap = materialInfo.material.GetInt("_UseRoughnessMap") == 1;
+            roughness = materialInfo.material.GetFloat("_Roughness");
+            if (useRoughnessMap) { roughnessMapPath = materialInfo.materialPath + "roughness.tex"; }
+
+            useEmissiveMap = materialInfo.material.GetInt("_UseEmissiveMap") == 1;
+            emissive = materialInfo.material.GetFloat("_Emissive");
+            if (useEmissiveMap) { metallicMapPath = materialInfo.materialPath + "emissive.tex"; }
+
+            useAoMap = materialInfo.material.GetInt("_UseAoMap") == 1;
+            if (useAoMap) { aoMapPath = materialInfo.materialPath + "ao.tex"; }
+
+            useOpacityMap = materialInfo.material.GetInt("_UseOpacityMap") == 1;
+            opacity = materialInfo.material.GetFloat("_Opacity");
+            if (useOpacityMap) { opacityMapPath = materialInfo.materialPath + "opacity.tex"; }
+
+            uvOffset = materialInfo.material.GetVector("_UvOffset");
+            uvScale = materialInfo.material.GetVector("_UvScale");
+        }
+
+        public Material CreateMaterial()
+        {
+            Material material = new Material(SaveManager.GetMaterial(opacity == 1f));
+
+            material.SetInt("_UseColorMap", useColorMap ? 1 : 0);
+            material.SetColor("_BaseColor", baseColor);
+            if (useColorMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "color.tex");
+                if (null != texture) { material.SetTexture("_ColorMap", texture); }
+            }
+
+            material.SetInt("_UseNormalMap", useNormalMap ? 1 : 0);
+            if (useNormalMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "normal.tex");
+                if (null != texture) { material.SetTexture("_NormalMap", texture); }
+            }
+
+            material.SetInt("_UseMetallicMap", useMetallicMap ? 1 : 0);
+            material.SetFloat("_Metallic", metallic);
+            if (useMetallicMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "metallic.tex");
+                if (null != texture) { material.SetTexture("_MetallicMap", texture); }
+            }
+
+            material.SetInt("_UseRoughnessMap", useRoughnessMap ? 1 : 0);
+            material.SetFloat("_Roughness", roughness);
+            if (useRoughnessMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "roughness.tex");
+                if (null != texture) { material.SetTexture("_RoughnessMap", texture); }
+            }
+
+            material.SetInt("_UseEmissiveMap", useEmissiveMap ? 1 : 0);
+            material.SetFloat("_Emissive", emissive);
+            if (useEmissiveMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "emissive.tex");
+                if (null != texture) { material.SetTexture("_EmissiveMap", texture); }
+            }
+
+            material.SetInt("_UseAoMap", useAoMap ? 1 : 0);
+            if (useAoMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "ao.tex");
+                if (null != texture) { material.SetTexture("_AoMap", texture); }
+            }
+
+            material.SetInt("_UseOpacityMap", useOpacityMap ? 1 : 0);
+            material.SetFloat("_Opacity", opacity);
+            if (useOpacityMap)
+            {
+                Texture2D texture = Utils.LoadTexture(path + "opacity.tex");
+                if (null != texture) { material.SetTexture("_OpacityMap", texture); }
+            }
+
+            material.SetVector("_UvOffset", uvOffset);
+            material.SetVector("_UvScale", uvScale);
+
+            return material;
+        }
     }
 
 
@@ -61,7 +174,7 @@ namespace VRtist
     {
         public MeshData() { }
 
-        public MeshData(SaveManager.MeshInfo meshInfo)
+        public MeshData(Serialization.MeshInfo meshInfo)
         {
             name = meshInfo.mesh.name;
             vertices = meshInfo.mesh.vertices;
@@ -73,7 +186,8 @@ namespace VRtist
                 subMeshes[i] = new SubMesh
                 {
                     topology = meshInfo.mesh.GetSubMesh(i).topology,
-                    indices = meshInfo.mesh.GetIndices(i)
+                    indices = meshInfo.mesh.GetIndices(i),
+                    materialData = new MaterialData(meshInfo.materialsInfo[i])
                 };
             }
         }
@@ -99,6 +213,16 @@ namespace VRtist
             mesh.RecalculateBounds();
             return mesh;
         }
+
+        public Material[] GetMaterials()
+        {
+            Material[] materials = new Material[subMeshes.Length];
+            for (int i = 0; i < subMeshes.Length; ++i)
+            {
+                materials[i] = subMeshes[i].materialData.CreateMaterial();
+            }
+            return materials;
+        }
     }
 
 
@@ -116,9 +240,6 @@ namespace VRtist
         // Mesh
         public string meshPath;
         public bool isImported;
-
-        // Material
-        //public string materialPath;
 
         // Parameters
         public bool lockPosition;
@@ -185,50 +306,10 @@ namespace VRtist
             }
         }
 
-        private List<ObjectData> objects = new List<ObjectData>();
-        private List<LightData> lights = new List<LightData>();
-        private List<CameraData> cameras = new List<CameraData>();
+        public List<ObjectData> objects = new List<ObjectData>();
+        public List<LightData> lights = new List<LightData>();
+        public List<CameraData> cameras = new List<CameraData>();
 
-        private List<ShotData> shots = new List<ShotData>();
-
-        public void AddObject(ObjectData data)
-        {
-            objects.Add(data);
-        }
-
-        public List<ObjectData> GetObjects()
-        {
-            return objects;
-        }
-
-        public void AddLight(LightData data)
-        {
-            lights.Add(data);
-        }
-
-        public List<LightData> GetLights()
-        {
-            return lights;
-        }
-
-        public void AddCamera(CameraData data)
-        {
-            cameras.Add(data);
-        }
-
-        public List<CameraData> GetCameras()
-        {
-            return cameras;
-        }
-
-        public void AddShot(ShotData data)
-        {
-            shots.Add(data);
-        }
-
-        public List<ShotData> GetShots()
-        {
-            return shots;
-        }
+        public List<ShotData> shots = new List<ShotData>();
     }
 }
