@@ -562,9 +562,8 @@ namespace VRtist
             return "Mat_" + gobject.name;
         }
 
-        public static GameObject CreateFullHierarchyPrefab(GameObject original)
+        public static GameObject CreateFullHierarchyPrefab(GameObject original, string rootPath)
         {
-            string rootPath = "__VRtist_Asset_Bank__";
             GameObject root = null;
             foreach (var originalTransform in original.GetComponentsInChildren<Transform>())
             {
@@ -1017,13 +1016,13 @@ namespace VRtist
             GameObject srcPrefab = srcNode.prefab;
 
             GameObject prefabClone = SyncData.CreateInstance(srcPrefab, srcPrefab.transform.parent.parent, name);
-            
+
             Matrix4x4 matrix = root.worldToLocalMatrix * srcInstance.transform.localToWorldMatrix;
             Maths.DecomposeMatrix(matrix, out Vector3 position, out Quaternion quaternion, out Vector3 scale);
             prefabClone.transform.localPosition = position;
             prefabClone.transform.localRotation = quaternion;
             prefabClone.transform.localScale = scale;
-            
+
             Node prefabCloneNode = CreateNode(prefabClone.name, null);
             prefabCloneNode.prefab = prefabClone;
             GameObject clone = AddObjectToDocument(root, prefabClone.name, "/");

@@ -34,6 +34,8 @@ namespace VRtist
 
     public class AssetBank : SelectorBase
     {
+        private const string ASSET_BANK_NAME = "__VRtist_Asset_Bank__";
+
         [Header("Parameters")]
         private bool useDefaultInstantiationScale = false;
 
@@ -59,7 +61,7 @@ namespace VRtist
             filterLabel = panel.Find("ListPanel/FilterLabel").GetComponent<UILabel>();
 
             // Create our storage for loaded objects
-            bank = new GameObject("__VRtist_Asset_Bank__");
+            bank = new GameObject(ASSET_BANK_NAME);
             bank.SetActive(false);
 
             // Add our predifined objects
@@ -371,7 +373,10 @@ namespace VRtist
             GameObject newObject;
             if (item.imported)
             {
-                newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject));
+                newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, ASSET_BANK_NAME));
+                ParametersController controller = newObject.AddComponent<ParametersController>();
+                controller.isImported = true;
+                controller.importPath = item.assetName;
             }
             else
             {
