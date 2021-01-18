@@ -70,10 +70,6 @@ namespace VRtist
             {
                 meshRenderer.enabled = value;
             }
-            foreach (var collider in mouthpiece.GetComponentsInChildren<Collider>(true))
-            {
-                collider.enabled = value;
-            }
         }
 
         public void ActivateMouthpiece(bool value)

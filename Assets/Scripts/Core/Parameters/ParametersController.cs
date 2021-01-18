@@ -22,6 +22,7 @@ namespace VRtist
         public bool lockPosition = false;
         public bool lockRotation = false;
         public bool lockScale = false;
+        public List<GameObject> constraintHolders = new List<GameObject>();
 
         public bool isImported = false;
         public string importPath;
@@ -77,6 +78,23 @@ namespace VRtist
             {
                 canvas.gameObject.SetActive(value);
             }
+        }
+
+        public virtual bool IsSnappable()
+        {
+            if (lockPosition)
+                return false;
+            return true;
+        }
+
+        public void AddConstraintHolder(GameObject gobject)
+        {
+            constraintHolders.Add(gobject);
+        }
+
+        public void RemoveConstraintHolder(GameObject gobject)
+        {
+            constraintHolders.Remove(gobject);
         }
     }
 }

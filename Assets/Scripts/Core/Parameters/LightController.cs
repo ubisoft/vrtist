@@ -144,6 +144,11 @@ namespace VRtist
                 lightObject.intensity *= 0.05f;
             }
         }
+        public override bool IsSnappable()
+        {
+            return false;
+        }
+
     }
 
 }

@@ -13,48 +13,14 @@ namespace VRtist
 
         private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
-        protected CommandGroup undoGroup = null;
-
         private void OnDisable()
         {
-            if (null != undoGroup)
-            {
-                undoGroup.Submit();
-                undoGroup = null;
-            }
-
             collidedObjects.Clear();
             Selection.SetHoveredObject(null);
         }
 
         void Update()
-        {
-            // Clear selection on trigger click on nothing
-            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
-            {
-                selectionHasChanged = false;
-                undoGroup = new CommandGroup("Selector Trigger");
-            },
-            () =>
-            {
-                try
-                {
-                    if (!selectionHasChanged && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
-                    {
-                        if(selector.mode == SelectorBase.SelectorModes.Select)
-                            selector.ClearSelection();
-                    }
-                }
-                finally
-                {
-                    if (null != undoGroup)
-                    {
-                        undoGroup.Submit();
-                        undoGroup = null;
-                    }
-                }
-            });
-
+        {            
             switch (selector.mode)
             {
                 case SelectorBase.SelectorModes.Select: UpdateSelection(); break;
@@ -92,8 +58,12 @@ namespace VRtist
                 }
                 if (Selection.GetHoveredObject() != gObject)
                 {
-                    Selection.SetHoveredObject(gObject);
-                    selector.OnSelectorTriggerEnter(other);
+                    // when moving object, we don't want to hover other objects
+                    if (!GlobalState.Instance.selectionGripped)
+                    {
+                        Selection.SetHoveredObject(gObject);
+                        selector.OnSelectorTriggerEnter(other);
+                    }
                 }
             }
         }
@@ -120,9 +90,9 @@ namespace VRtist
 
         private void RemoveCollidedObject(GameObject obj)
         {
-            bool removed = collidedObjects.Remove(obj);
-            if (!removed) { return; }
+            collidedObjects.Remove(obj);
 
+            // manage successive imbrication of objects
             GameObject hoveredObject = Selection.GetHoveredObject();
             if (hoveredObject == obj)
             {
@@ -152,7 +122,6 @@ namespace VRtist
                  () =>
                  {
                      Selection.SetGrippedObject(hoveredObject);
-                     if (null != hoveredObject) { collidedObjects.Clear(); }
                  },
                  () => { Selection.SetGrippedObject(null); });
 

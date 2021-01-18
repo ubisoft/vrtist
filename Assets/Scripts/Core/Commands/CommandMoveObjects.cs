@@ -81,13 +81,8 @@ namespace VRtist
         {
             if (objectNames.Count > 0)
             {
+                Redo();
                 CommandManager.AddCommand(this);
-                int count = objectNames.Count;
-                for (int i = 0; i < count; i++)
-                {
-                    string objectName = objectNames[i];
-                    CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
-                }
             }
         }
     }

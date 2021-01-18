@@ -642,6 +642,7 @@ namespace VRtist
             if (null != meshRenderer)
             {
                 meshRenderer.material.name = GetMaterialName(res);
+                // TODO: ALSO rename materials after the first one.
             }
 
             return res;

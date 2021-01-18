@@ -27,8 +27,8 @@ TagManager:
   - CustomPass
   - CameraPostProcessing
   - CameraHidden
-  - 
-  - 
+  - SelectionChild
+  - HoverChild
   - 
   - 
   - 

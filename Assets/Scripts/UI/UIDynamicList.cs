@@ -384,15 +384,7 @@ namespace VRtist
         {
             if (pageCountLabel != null)
             {
-                Canvas canvas = pageCountLabel.GetComponentInChildren<Canvas>();
-                if (canvas != null)
-                {
-                    TextMeshProUGUI text = canvas.gameObject.GetComponentInChildren<TextMeshProUGUI>();
-                    if (text != null)
-                    {
-                        text.text = pagesCount == 0 ? "0/0" : $"{currentPage + 1}/{pagesCount}";
-                    }
-                }
+                pageCountLabel.Text = pagesCount == 0 ? "0/0" : $"{currentPage + 1}/{pagesCount}";
             }
         }
 

@@ -18,6 +18,7 @@ namespace VRtist
         
         public ColorReference baseColor = new ColorReference();
         public ColorReference textColor = new ColorReference();
+        public ColorReference disabledTextColor = new ColorReference();
         public ColorReference disabledColor = new ColorReference();
         public ColorReference pushedColor = new ColorReference();
         public ColorReference selectedColor = new ColorReference();
@@ -112,6 +113,10 @@ namespace VRtist
         public virtual Color GetColor()
         {
             return GetComponent<MeshRenderer>().sharedMaterial.GetColor("_BaseColor");
+        }
+
+        public virtual void SetForegroundColor(Color color)
+        {
         }
 
         public virtual void SetLightLayer(int layerIndex)

@@ -108,10 +108,6 @@ namespace VRtist
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
 
             OnRightHanded(GlobalState.Settings.rightHanded);
-
-            backgroundFeedback.localPosition = GlobalState.Settings.cameraFeedbackPosition;
-            backgroundFeedback.localRotation = GlobalState.Settings.cameraFeedbackRotation;
-            backgroundFeedback.localScale = GlobalState.Settings.cameraFeedbackScale;
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
 
             ToolsUIManager.Instance.InitPaletteState();
@@ -124,13 +120,15 @@ namespace VRtist
         protected virtual void OnEnable()
         {
             Settings.onSettingsChanged.AddListener(UpdateUIFromPreferences);
-            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
+            if(null != GlobalState.Animation)
+                GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
         protected virtual void OnDisable()
         {
             Settings.onSettingsChanged.RemoveListener(UpdateUIFromPreferences);
-            GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
+            if(null != GlobalState.Animation)
+                GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
         }
 
         private void OnAnimationStateChanged(AnimationState state)

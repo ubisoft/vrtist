@@ -72,6 +72,8 @@ namespace VRtist
                   : (Hovered ? HoveredColor
                   : BaseColor))));
 
+            SetForegroundColor(Disabled ? DisabledColor : TextColor);
+
             // Make the canvas pop front if Hovered.
             Canvas c = GetComponentInChildren<Canvas>();
             if (c != null)
@@ -83,6 +85,28 @@ namespace VRtist
                 }
             }
         }
+
+        public override void SetForegroundColor(Color color)
+        {
+            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            if (canvas != null)
+            {
+                // IMAGE
+                Image image = canvas.GetComponentInChildren<Image>();
+                if (image != null)
+                {
+                    image.color = color;
+                }
+
+                // TEXT
+                TextMeshProUGUI text = canvas.gameObject.GetComponentInChildren<TextMeshProUGUI>();
+                if (text != null)
+                {
+                    text.color = image.color = color;
+                }
+            }
+        }
+
 
         public override void RebuildMesh()
         {
@@ -403,6 +427,7 @@ namespace VRtist
             public Material material = UIUtils.LoadMaterial(UICheckbox.default_material_name);
             public ColorVar color = UIOptions.BackgroundColorVar;
             public ColorVar textColor = UIOptions.ForegroundColorVar;
+            public ColorVar disabledTextColor = UIOptions.DisabledColorVar;
             public ColorVar pushedColor = UIOptions.PushedColorVar;
             public ColorVar selectedColor = UIOptions.SelectedColorVar;
             public string caption = UICheckbox.default_text;
@@ -447,6 +472,8 @@ namespace VRtist
             uiCheckbox.baseColor.reference = input.color;
             uiCheckbox.textColor.useConstant = false;
             uiCheckbox.textColor.reference = input.textColor;
+            uiCheckbox.disabledTextColor.useConstant = false;
+            uiCheckbox.disabledTextColor.reference = input.disabledTextColor;
             uiCheckbox.pushedColor.useConstant = false;
             uiCheckbox.pushedColor.reference = input.pushedColor;
             uiCheckbox.selectedColor.useConstant = false;

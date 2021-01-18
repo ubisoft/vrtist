@@ -551,7 +551,11 @@ namespace VRtist
 
         public void JoinRoom(string roomName)
         {
-            NetCommand command = new NetCommand(System.Text.Encoding.UTF8.GetBytes(roomName), MessageType.JoinRoom);
+            byte[] nameBuffer = MixerUtils.StringToBytes(roomName);
+            byte[] mockVersionBuffer = MixerUtils.StringToBytes("ignored");
+            byte[] versionCheckBuffer = MixerUtils.BoolToBytes(true);
+            byte[] buffer = MixerUtils.ConcatenateBuffers(new List<byte[]> { nameBuffer, mockVersionBuffer, mockVersionBuffer, versionCheckBuffer });
+            NetCommand command = new NetCommand(buffer, MessageType.JoinRoom);
             AddCommand(command);
 
             string json = SyncData.mixer.CreateClientNameAndColor();

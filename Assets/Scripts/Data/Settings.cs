@@ -86,10 +86,11 @@ namespace VRtist
             set { cameraPreviewVisible = value; onSettingsChanged.Invoke(); }
         }
 
-        public Vector3 cameraFeedbackPosition = Vector3.zero;
-        public Quaternion cameraFeedbackRotation = Quaternion.identity;
-        public Vector3 cameraFeedbackScale = new Vector3(160, 90, 100);
+        public Vector3 cameraFeedbackDirection = Vector3.forward;
         public float cameraFeedbackScaleValue = 1f;
+        public float cameraFeedbackMaxScaleValue = 1.7f;
+        public float cameraFeedbackMinScaleValue = 0.4f;
+
         public bool cameraFeedbackVisible = false;
         public bool CameraFeedbackVisible
         {
@@ -174,9 +175,7 @@ namespace VRtist
             cameraPreviewPosition = new Vector3(0.3f, 1.5f, 0.6f);
             cameraPreviewRotation = Quaternion.Euler(-4, 49, 0);
 
-            cameraFeedbackPosition = Vector3.zero;
-            cameraFeedbackRotation = Quaternion.identity;
-            cameraFeedbackScale = Vector3.one;
+            cameraFeedbackDirection = Vector3.forward;
             cameraFeedbackScaleValue = 1f;
             cameraFeedbackVisible = false;
 
@@ -226,14 +225,6 @@ namespace VRtist
                 cameraPreviewPosition = window.localPosition;
                 cameraPreviewRotation = window.localRotation;
             }
-            /*
-            if (window.name == "CameraFeedback")
-            {
-                cameraFeedbackPosition = window.localPosition;
-                cameraFeedbackRotation = window.localRotation;
-                cameraFeedbackScale = window.localScale;
-            }
-            */
             if (window.name == "ConsoleHandle")
             {
                 consolePosition = window.localPosition;
