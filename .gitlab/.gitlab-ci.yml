@@ -24,6 +24,6 @@ deploy:
   extends: .tag_only
   stage: deploy
   script:
-    - xcopy /y/s/e/i Build\${CI_COMMIT_TAG} \\ubisoft.org\mtrstudio\World\UAS\Tech\VRTist\Releases\${CI_COMMIT_TAG}
+    - xcopy /y/s/e/i Build\${CI_COMMIT_TAG} {UAS_DEPLOY_FOLDER}\${CI_COMMIT_TAG}
   tags:
     - uas
