@@ -57,7 +57,7 @@ namespace VRtist
 
         public VolumeMeshGenerator()
         {
-            computeShader = Resources.Load<ComputeShader>("Compute/MarchingCubes");
+            computeShader = Resources.Load<ComputeShader>("Compute Shaders/MarchingCubes");
 
             Reset();
 
