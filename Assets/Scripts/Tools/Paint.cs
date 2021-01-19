@@ -46,7 +46,7 @@ namespace VRtist
         VolumeEditionMode volumeEditionMode = VolumeEditionMode.Create;
         VolumeMeshGenerator volumeGenerator; // used for volume
         GameObject currentVolume;
-        private float stepSize = 0.01f;
+        private float stepSize = 0.01f; // size in viewer's space
         private float strength = 0.5f;
 
         // Start is called before the first frame update
@@ -244,7 +244,7 @@ namespace VRtist
                         currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
                         currentVolume.transform.position = mouthpiece.position; // real-world position
                         volumeGenerator.Reset();
-                        volumeGenerator.stepSize = stepSize;
+                        volumeGenerator.stepSize = stepSize / GlobalState.WorldScale; // viewer scale -> world scale.
                         volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
                     }
                     else // volumeEditionMode == VolumeEditionMode.Edit
@@ -460,7 +460,7 @@ namespace VRtist
                             controller.field = volumeGenerator.field;
                             controller.resolution = volumeGenerator.resolution;
                             controller.stepSize = volumeGenerator.stepSize;
-                            controller.UpdateBoundsRenderer();
+                            //controller.UpdateBoundsRenderer();
                         }
                         break;
                 }
@@ -530,14 +530,12 @@ namespace VRtist
 
         public void OnVolumeStrengthChanged(float value)
         {
-            strength = 0.5f;
-            // TODO: give it to the generator.
+            strength = value;
         }
 
         public void OnVolumeCellSizeChanged(float value)
         {
-            stepSize = value / 1000.0f;
-            // TODO: give it to the generator.
+            stepSize = value / 1000.0f; // millimeters to meters
         }
     }
 }

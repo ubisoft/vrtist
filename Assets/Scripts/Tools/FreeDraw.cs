@@ -329,32 +329,6 @@ namespace VRtist
             System.Array.Resize(ref lineRadius, 0);
         }
 
-        private Vector3 GetFirstPerpVector(Vector3 v)
-        {
-            Vector3 result = new Vector3();
-            // That's easy.
-            if (v.x == 0.0f || v.y == 0.0f || v.z == 0.0f)
-            {
-                if (v.x == 0.0f)
-                    result.x = 1.0f;
-                else if (v.y == 0.0f)
-                    result.y = 1.0f;
-                else
-                    result.z = 1.0f;
-            }
-            else
-            {
-                // If xyz is all set, we set the z coordinate as first and second argument .
-                // As the scalar product must be zero, we add the negated sum of x and y as third argument
-                result.x = v.z;      //scalp = z*x
-                result.y = v.z;      //scalp = z*(x+y)
-                result.z = -(v.x + v.y); //scalp = z*(x+y)-z*(x+y) = 0
-                                         // Normalize vector
-                result.Normalize();
-            }
-            return result;
-        }
-
         // reorder vertices to minimize distances
         // the first vertex of the previous circle is the reference
         // get the closest point to this ref and re index circle points according to this
@@ -477,7 +451,7 @@ namespace VRtist
             if (index > 0)
             {
                 dir = (point - prevPrevP).normalized;
-                firstPerp = GetFirstPerpVector(dir);
+                firstPerp = Maths.GetFirstPerpVector(dir);
                 secondPerp = Vector3.Cross(dir, firstPerp).normalized;
 
                 center = linePoints[index - 1];
@@ -497,7 +471,7 @@ namespace VRtist
             }
 
             dir = (nextPoint - prevP).normalized;
-            firstPerp = GetFirstPerpVector(dir);
+            firstPerp = Maths.GetFirstPerpVector(dir);
             secondPerp = Vector3.Cross(dir, firstPerp).normalized;
 
             center = linePoints[index];
