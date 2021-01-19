@@ -34,10 +34,10 @@ namespace VRtist
             GameObject colimatorInstance = SyncData.InstantiatePrefab(colimator);
             cameraController.colimator = colimatorInstance.transform;
 
-            MixerClient.GetInstance().SendEmpty(colimator.transform);
-            MixerClient.GetInstance().SendTransform(colimator.transform);
+            MixerClient.Instance.SendEmpty(colimator.transform);
+            MixerClient.Instance.SendTransform(colimator.transform);
             MixerUtils.AddObjectToScene(colimator);
-            MixerClient.GetInstance().SendCamera(new CameraInfo { transform = camera.transform });
+            MixerClient.Instance.SendCamera(new CameraInfo { transform = camera.transform });
         }
 
         private void DestroyColimator(GameObject camera)
@@ -46,7 +46,7 @@ namespace VRtist
             if (null != controller.colimator)
             {
                 GameObject.Destroy(controller.colimator.gameObject);
-                MixerClient.GetInstance().SendDelete(new DeleteInfo { meshTransform = controller.colimator });
+                MixerClient.Instance.SendDelete(new DeleteInfo { meshTransform = controller.colimator });
             }
         }
 
@@ -73,7 +73,7 @@ namespace VRtist
                 {
                     colimator.gameObject.SetActive(true);
                     colimator.transform.localPosition = new Vector3(0, 0, -cameraController.Focus);
-                    MixerClient.GetInstance().SendTransform(colimator.transform);
+                    MixerClient.Instance.SendTransform(colimator.transform);
                 }
                 else
                 {

@@ -122,7 +122,7 @@ namespace VRtist
             GlobalState.Animation.StartFrame = globalBounds.x;
             GlobalState.Animation.EndFrame = globalBounds.y;
             FrameStartEnd info = new FrameStartEnd() { start = globalBounds.x, end = globalBounds.y };
-            MixerClient.GetInstance().SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
+            MixerClient.Instance.SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
         }
 
         public void OnLocalRangeChanged(Vector2Int bounds)

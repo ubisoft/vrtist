@@ -27,13 +27,13 @@ namespace VRtist
         public override void Undo()
         {
             GlobalState.Animation.AddKeyframe(gObject, property, oldAnimationKey);
-            MixerClient.GetInstance().SendAddKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
+            MixerClient.Instance.SendAddKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
         }
 
         public override void Redo()
         {
             GlobalState.Animation.RemoveKeyframe(gObject, property, oldAnimationKey.frame);
-            MixerClient.GetInstance().SendRemoveKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
+            MixerClient.Instance.SendRemoveKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
         }
         public override void Submit()
         {

@@ -202,7 +202,7 @@ namespace VRtist
                 shotColor = Color.blue  // TODO: find a unique color
             };
             new CommandShotManager(info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Add the shot to ShotManager singleton
             shotIndex++;
@@ -240,7 +240,7 @@ namespace VRtist
             new CommandShotManager(info).Submit();
 
             sm.RemoveShot(shotIndex);
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Rebuild UI
             OnShotManagerChanged();
@@ -273,7 +273,7 @@ namespace VRtist
                 shotColor = Color.blue  // TODO: find a unique color
             };
             new CommandShotManager(info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Add the shot to ShotManager singleton
             shotIndex++;
@@ -305,7 +305,7 @@ namespace VRtist
                 moveOffset = offset
             };
             new CommandShotManager(info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Rebuild UI
             OnShotManagerChanged();
@@ -332,7 +332,7 @@ namespace VRtist
             shot.start = intValue;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             UpdateShotItemsColors(GlobalState.Animation.CurrentFrame);
         }
@@ -359,7 +359,7 @@ namespace VRtist
             shot.end = intValue;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             UpdateShotItemsColors(GlobalState.Animation.CurrentFrame);
         }
@@ -381,7 +381,7 @@ namespace VRtist
             shot.name = value;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
             OnShotManagerChanged();
         }
 
@@ -402,7 +402,7 @@ namespace VRtist
             shot.color = value;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
         }
 
@@ -425,7 +425,7 @@ namespace VRtist
             shot.enabled = value;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnSetCamera(Shot shot)
@@ -444,7 +444,7 @@ namespace VRtist
             shot.camera = Selection.activeCamera;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.GetInstance().SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Update Camera UI Button
             ShotItem uiItem = GetShotItem(shotIndex);

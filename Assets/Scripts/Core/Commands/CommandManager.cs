@@ -146,7 +146,7 @@ namespace VRtist
 
         public static void SendEvent<T>(MessageType messageType, T data)
         {
-            MixerClient.GetInstance().SendEvent<T>(messageType, data);
+            MixerClient.Instance.SendEvent<T>(messageType, data);
         }
     }
 }

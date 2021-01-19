@@ -128,6 +128,10 @@ namespace VRtist
     public class MixerClient : MonoBehaviour
     {
         private static MixerClient _instance;
+        public static MixerClient Instance
+        {
+            get { return _instance; }
+        }
         public Transform root;
         public string hostname = "localhost";
         public int port = 12800;
@@ -157,10 +161,6 @@ namespace VRtist
             _instance = this;
         }
 
-        public static MixerClient GetInstance()
-        {
-            return _instance;
-        }
 
         void OnDestroy()
         {

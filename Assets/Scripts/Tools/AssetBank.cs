@@ -74,7 +74,7 @@ namespace VRtist
                 GlobalState.blenderBankImportObjectEvent.AddListener(OnBlenderBankObjectImported);
                 GlobalState.blenderBankListEvent.AddListener(OnBlenderBank);
                 BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ListRequest };
-                MixerClient.GetInstance().SendBlenderBank(info);
+                MixerClient.Instance.SendBlenderBank(info);
             }));
         }
 
@@ -346,7 +346,7 @@ namespace VRtist
             requestedBlenderImportName = item.assetName;
             blenderImportTask = new TaskCompletionSource<GameObject>();
             BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
-            MixerClient.GetInstance().SendBlenderBank(info);
+            MixerClient.Instance.SendBlenderBank(info);
             return blenderImportTask.Task;
         }
 

@@ -25,13 +25,13 @@ namespace VRtist
             if (null == oldAnimationSet)
             {
                 GlobalState.Animation.ClearAnimations(gObject);
-                MixerClient.GetInstance().SendClearAnimations(new ClearAnimationInfo { gObject = gObject });
+                MixerClient.Instance.SendClearAnimations(new ClearAnimationInfo { gObject = gObject });
                 return;
             }
             GlobalState.Animation.SetObjectAnimation(gObject, oldAnimationSet);
             foreach (Curve curve in oldAnimationSet.curves.Values)
             {
-                MixerClient.GetInstance().SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
+                MixerClient.Instance.SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
             }
         }
 
@@ -40,7 +40,7 @@ namespace VRtist
             GlobalState.Animation.SetObjectAnimation(gObject, newAnimationSet);
             foreach (Curve curve in newAnimationSet.curves.Values)
             {
-                MixerClient.GetInstance().SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
+                MixerClient.Instance.SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
             }
         }
         public override void Submit()

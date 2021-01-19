@@ -139,9 +139,9 @@ namespace VRtist
                     GlobalState.networkUser.corners[3] = rightHanded.InverseTransformPoint(bottomLeft);
 
                     // TODO: fix this. Instance is sometimes null, even if retrieved in Awake.
-                    if (MixerClient.GetInstance())
+                    if (MixerClient.Instance)
                     {
-                        MixerClient.GetInstance().SendPlayerTransform(GlobalState.networkUser);
+                        MixerClient.Instance.SendPlayerTransform(GlobalState.networkUser);
                     }
                 }
                 yield return new WaitForSeconds(1f / 15f);

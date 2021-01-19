@@ -57,8 +57,8 @@ namespace VRtist
 
         protected void SendEmpty()
         {
-            MixerClient.GetInstance().SendEmpty(gObject.transform);
-            MixerClient.GetInstance().SendTransform(gObject.transform);
+            MixerClient.Instance.SendEmpty(gObject.transform);
+            MixerClient.Instance.SendTransform(gObject.transform);
             MixerUtils.AddObjectToScene(gObject);
         }
     }

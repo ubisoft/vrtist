@@ -22,11 +22,11 @@ namespace VRtist
             {
                 case ConstraintType.Parent:
                     ConstraintManager.RemoveConstraint<ParentConstraint>(gobject);
-                    MixerClient.GetInstance().SendRemoveParentConstraint(gobject);
+                    MixerClient.Instance.SendRemoveParentConstraint(gobject);
                     break;
                 case ConstraintType.LookAt:
                     ConstraintManager.RemoveConstraint<LookAtConstraint>(gobject);
-                    MixerClient.GetInstance().SendRemoveLookAtConstraint(gobject);
+                    MixerClient.Instance.SendRemoveLookAtConstraint(gobject);
                     break;
             }
         }
@@ -37,11 +37,11 @@ namespace VRtist
             {
                 case ConstraintType.Parent:
                     ConstraintManager.AddParentConstraint(gobject, target);
-                    MixerClient.GetInstance().SendAddParentConstraint(gobject, target);
+                    MixerClient.Instance.SendAddParentConstraint(gobject, target);
                     break;
                 case ConstraintType.LookAt:
                     ConstraintManager.AddLookAtConstraint(gobject, target);
-                    MixerClient.GetInstance().SendAddLookAtConstraint(gobject, target);
+                    MixerClient.Instance.SendAddLookAtConstraint(gobject, target);
                     break;
             }
         }
@@ -78,11 +78,11 @@ namespace VRtist
             {
                 case ConstraintType.Parent:
                     ConstraintManager.RemoveConstraint<ParentConstraint>(gobject);
-                    MixerClient.GetInstance().SendRemoveParentConstraint(gobject);
+                    MixerClient.Instance.SendRemoveParentConstraint(gobject);
                     break;
                 case ConstraintType.LookAt:
                     ConstraintManager.RemoveConstraint<LookAtConstraint>(gobject);
-                    MixerClient.GetInstance().SendRemoveLookAtConstraint(gobject);
+                    MixerClient.Instance.SendRemoveLookAtConstraint(gobject);
                     break;
             }
         }
@@ -93,11 +93,11 @@ namespace VRtist
             {
                 case ConstraintType.Parent:
                     ConstraintManager.AddParentConstraint(gobject, target);
-                    MixerClient.GetInstance().SendAddParentConstraint(gobject, target);
+                    MixerClient.Instance.SendAddParentConstraint(gobject, target);
                     break;
                 case ConstraintType.LookAt:
                     ConstraintManager.AddLookAtConstraint(gobject, target);
-                    MixerClient.GetInstance().SendAddLookAtConstraint(gobject, target);
+                    MixerClient.Instance.SendAddLookAtConstraint(gobject, target);
                     break;
             }
         }
