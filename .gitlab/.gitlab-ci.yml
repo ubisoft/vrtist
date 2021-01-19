@@ -11,6 +11,7 @@ build:
   extends: .tag_only
   stage: build
   script:
+    - echo $CI_JOB_STAGE
     - echo ${UNITY_EXE}
     - echo $UNITY_EXE
     - .\.gitlab\build.bat ${UNITY_EXE} --buildDir "${CI_COMMIT_TAG}"
