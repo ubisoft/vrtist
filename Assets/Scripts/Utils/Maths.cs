@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -108,5 +106,30 @@ namespace VRtist
             return new Vector3(Mathf.Atan2(r31, r32), Mathf.Asin(r21), Mathf.Atan2(r11, r12));
         }
 
+        public static Vector3 GetFirstPerpVector(Vector3 v)
+        {
+            Vector3 result = new Vector3();
+            // That's easy.
+            if (v.x == 0.0f || v.y == 0.0f || v.z == 0.0f)
+            {
+                if (v.x == 0.0f)
+                    result.x = 1.0f;
+                else if (v.y == 0.0f)
+                    result.y = 1.0f;
+                else
+                    result.z = 1.0f;
+            }
+            else
+            {
+                // If xyz is all set, we set the z coordinate as first and second argument .
+                // As the scalar product must be zero, we add the negated sum of x and y as third argument
+                result.x = v.z;      //scalp = z*x
+                result.y = v.z;      //scalp = z*(x+y)
+                result.z = -(v.x + v.y); //scalp = z*(x+y)-z*(x+y) = 0
+                                         // Normalize vector
+                result.Normalize();
+            }
+            return result;
+        }
     }
 }

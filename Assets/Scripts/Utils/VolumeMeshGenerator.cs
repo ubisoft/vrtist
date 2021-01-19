@@ -2,6 +2,13 @@
 
 // Based on pieces of: https://github.com/SebLague/Marching-Cubes
 
+/**
+ * TODO:
+ * - Color the mouthpiece in RED if the radius if bigger than a 10x10x10 cells (or whatever the max size we set).
+ * - Show the strength and stepsize on the mouthpiece.
+ * 
+ */
+
 namespace VRtist
 {
     public class VolumeMeshGenerator
@@ -16,8 +23,12 @@ namespace VRtist
         public Matrix4x4 toLocalMatrix;
 
         public float stepSize = 0.01f; // 1 cm
-        //public float stepSize = 0.1f; // 10 cm
         public Vector3Int resolution = Vector3Int.zero;
+        //public int maxNbCells = 1000; // 10x10x10
+        //public int maxNbCells = 8000; // 20x20x20
+        //public int maxNbCells = 64000; // 40x40x40
+        public int maxNbCells = 128000; // 
+        //public int maxNbCells = 512000; // 80x80x80 <--- CA RAME
         public float strength = 1.0f;
         public float isoLevel = 0.5f;
 
@@ -132,11 +143,15 @@ namespace VRtist
             // First point
             if (bounds.size == Vector3.zero)
             {
-                bounds.center = point; // local = 0,0,0
-                bounds.size = new Vector3(radius * 2, radius * 2, radius * 2); // local
-                origin = bounds.center - bounds.extents;
-
-                bboxChanged = true;
+                Bounds newBounds = new Bounds(point, new Vector3(radius * 2, radius * 2, radius * 2));
+                Vector3 newOrigin = newBounds.center - newBounds.extents;
+                Vector3Int newRes = ComputeResolution(newBounds, newOrigin, stepSize);
+                if (!GridIsTooBig(newRes))
+                {
+                    bounds = newBounds;
+                    origin = newOrigin;
+                    bboxChanged = true;
+                }
             }
             else
             {
@@ -177,13 +192,50 @@ namespace VRtist
 
                 if (size_offset.sqrMagnitude > Mathf.Epsilon)
                 {
-                    bounds.size = bounds.size + size_offset;
-                    bounds.center = bounds.center + center_offset;
-                    bboxChanged = true;
+                    Bounds newBounds = new Bounds(bounds.center + center_offset, bounds.size + size_offset);
+                    Vector3Int newRes = ComputeResolution(newBounds, origin, stepSize);
+                    if (!GridIsTooBig(newRes))
+                    {
+                        bounds = newBounds;
+                        bboxChanged = true;
+                    }
                 }
             }
 
             return bboxChanged;
+        }
+
+        private bool GridIsTooBig(Vector3Int newRes)
+        {
+            int nbCells = newRes.x * newRes.y * newRes.z;
+            return nbCells > maxNbCells;
+        }
+
+        private bool GridIsTooSmall(Vector3Int res)
+        {
+            return res.x < 2 || res.y < 2 || res.z < 2;
+        }
+
+        // compute the new resolution from bounds, origin, and stepSize
+        private static Vector3Int ComputeResolution(Bounds bounds, Vector3 origin, float stepSize)
+        {
+            Vector3 originToBounds = bounds.center - bounds.extents - origin;
+
+            Vector3Int newResPositive = new Vector3Int(
+                Mathf.FloorToInt((bounds.size.x - Mathf.Abs(originToBounds.x)) / stepSize),
+                Mathf.FloorToInt((bounds.size.y - Mathf.Abs(originToBounds.y)) / stepSize),
+                Mathf.FloorToInt((bounds.size.z - Mathf.Abs(originToBounds.z)) / stepSize)
+            );
+
+            Vector3Int newResNegative = new Vector3Int(
+                Mathf.FloorToInt(Mathf.Abs(originToBounds.x) / stepSize),
+                Mathf.FloorToInt(Mathf.Abs(originToBounds.y) / stepSize),
+                Mathf.FloorToInt(Mathf.Abs(originToBounds.z) / stepSize)
+            );
+
+            Vector3Int newRes = newResPositive + newResNegative + Vector3Int.one;
+
+            return newRes;
         }
 
         private void UpdateFieldDimensions()
@@ -203,6 +255,11 @@ namespace VRtist
             );
 
             Vector3Int newRes = newResPositive + newResNegative + Vector3Int.one;
+
+            // prevent the grid from growing too much
+            if (GridIsTooBig(newRes))
+                return;
+
             origin = origin - new Vector3(newResNegative.x * stepSize, newResNegative.y * stepSize, newResNegative.z * stepSize);
 
             float[,,] newField = new float[newRes.z, newRes.y, newRes.x];
@@ -237,7 +294,10 @@ namespace VRtist
             float ny = field.GetLength(1);
             float nx = field.GetLength(2);
 
-            if (nz < 2 || ny < 2 || nx < 2)
+            //if (nz < 2 || ny < 2 || nx < 2)
+            //    return;
+
+            if (GridIsTooSmall(resolution) || GridIsTooBig(resolution))
                 return;
 
             for (int z = 0; z < nz; ++z)
