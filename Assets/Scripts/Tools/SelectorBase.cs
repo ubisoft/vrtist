@@ -67,7 +67,7 @@ namespace VRtist
         protected Transform rightHanded;
         private Transform[] planes;
         private LineRenderer[] planeLines;
-        protected GameObject planesContainer;
+        protected GameObject boundingBox;
         protected GameObject snapUIContainer;
         private Transform[] snapTargets;
         private float cameraSpaceGap = 0.0001f;
@@ -199,19 +199,19 @@ namespace VRtist
 
             // bounding box
             rightHanded = Utils.FindWorld().transform.Find("RightHanded");
-            planesContainer = rightHanded.Find("DeformerPlanes").gameObject;
+            boundingBox = rightHanded.Find("__VRtist_BoundingBox__").gameObject;
             planes = new Transform[6];
-            planes[0] = planesContainer.transform.Find("Top");
-            planes[1] = planesContainer.transform.Find("Bottom");
-            planes[2] = planesContainer.transform.Find("Left");
-            planes[3] = planesContainer.transform.Find("Right");
-            planes[4] = planesContainer.transform.Find("Front");
-            planes[5] = planesContainer.transform.Find("Back");
+            planes[0] = boundingBox.transform.Find("Top");
+            planes[1] = boundingBox.transform.Find("Bottom");
+            planes[2] = boundingBox.transform.Find("Left");
+            planes[3] = boundingBox.transform.Find("Right");
+            planes[4] = boundingBox.transform.Find("Front");
+            planes[5] = boundingBox.transform.Find("Back");
 
             InitRayGradient();
             snapTargets = new Transform[6];
             planeLines = new LineRenderer[6];
-            snapUIContainer = Utils.FindRootGameObject("SnapUI");
+            snapUIContainer = Utils.FindRootGameObject("UIUtils").transform.Find("SnapUI").gameObject;
             for (int i = 0; i < 6; i++)
             {
                 snapTargets[i] = snapUIContainer.transform.GetChild(i);
@@ -427,7 +427,7 @@ namespace VRtist
         protected virtual void OnEndGrip()
         {
             snapUIContainer.SetActive(false);
-            planesContainer.SetActive(false);
+            boundingBox.SetActive(false);
             SetControllerVisible(true);
             enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
 
@@ -717,7 +717,7 @@ namespace VRtist
                 }
 
                 // right controller filtered matrix
-                Matrix4x4 mouthPieceLocalToWorld = rightHandle.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
+                Matrix4x4 mouthPieceLocalToWorld = toolsController.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
                     Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, Vector3.one * scale);
 
                 Snap(ref mouthPieceLocalToWorld);
@@ -890,18 +890,18 @@ namespace VRtist
         public void UpdateSelectionPlanes()
         {
             Maths.DecomposeMatrix(planeContainerMatrix, out Vector3 planePosition, out Quaternion planeRotation, out Vector3 planeScale);
-            planesContainer.transform.localPosition = planePosition;
-            planesContainer.transform.localRotation = planeRotation;
-            planesContainer.transform.localScale = planeScale;
+            boundingBox.transform.localPosition = planePosition;
+            boundingBox.transform.localRotation = planeRotation;
+            boundingBox.transform.localScale = planeScale;
             
             if (!hasBounds)
             {
                 snapUIContainer.SetActive(false);
-                planesContainer.SetActive(false);
+                boundingBox.SetActive(false);
                 return;
             }
 
-            Vector3 bs = planesContainer.transform.localScale; // boundsScale
+            Vector3 bs = boundingBox.transform.localScale; // boundsScale
 
             // Collider Scale
             Vector3 cs = new Vector3(
@@ -969,18 +969,18 @@ namespace VRtist
             snapRays = new Ray[6];
             Vector3 worldPlanePosition;
 
-            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[0]);
-            snapRays[0] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.up));
-            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[1]);
-            snapRays[1] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.up));
-            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[2]);
-            snapRays[2] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.right));
-            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[3]);
-            snapRays[3] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.right));
-            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[4]);
-            snapRays[4] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-planesContainer.transform.forward));
-            worldPlanePosition = planesContainer.transform.TransformPoint(planePositions[5]);
-            snapRays[5] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(planesContainer.transform.forward));
+            worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[0]);
+            snapRays[0] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(boundingBox.transform.up));
+            worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[1]);
+            snapRays[1] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-boundingBox.transform.up));
+            worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[2]);
+            snapRays[2] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(boundingBox.transform.right));
+            worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[3]);
+            snapRays[3] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-boundingBox.transform.right));
+            worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[4]);
+            snapRays[4] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-boundingBox.transform.forward));
+            worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[5]);
+            snapRays[5] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(boundingBox.transform.forward));
         }
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
@@ -1032,7 +1032,7 @@ namespace VRtist
             if (Physics.Raycast(ray, out RaycastHit hit, snapVisibleRayFactor * snapDistance / GlobalState.WorldScale, layersMask))
             {
                 snapUIContainer.SetActive(true);
-                planesContainer.SetActive(true);
+                boundingBox.SetActive(true);
                 enableSnapUI = true;
                 line.positionCount = 2;
                 line.SetPosition(0, origin);

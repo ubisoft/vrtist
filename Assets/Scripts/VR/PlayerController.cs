@@ -10,8 +10,8 @@ namespace VRtist
         [SerializeField] private Transform world = null;
         [SerializeField] private Transform buttonsContainer = null;
         [SerializeField] private Transform navigationParametersContainer = null;
-        [SerializeField] private Transform leftHandle = null;
-        [SerializeField] private Transform rightHandle = null;
+        [SerializeField] private Transform paletteController = null;
+        [SerializeField] private Transform toolsController = null;
         [SerializeField] private Transform pivot = null;
         [SerializeField] private Transform vrCamera = null;
         [Tooltip("Player can be xxx times bigger than the world")]
@@ -53,8 +53,8 @@ namespace VRtist
             }
 
             if (vrCamera == null) { Debug.LogWarning("Cannot find 'VRCamera' game object"); }
-            if (leftHandle == null) { Debug.LogWarning("Cannot find 'LeftHandle' game object"); }
-            if (rightHandle == null) { Debug.LogWarning("Cannot find 'RightHandle' game object"); }
+            if (paletteController == null) { Debug.LogWarning("Cannot find 'PaletteController' game object"); }
+            if (toolsController == null) { Debug.LogWarning("Cannot find 'ToolsController' game object"); }
             if (pivot == null) { Debug.LogWarning("Cannot find 'Pivot' game object"); }
 
             if (ray != null)
@@ -150,14 +150,14 @@ namespace VRtist
 
         private void HandleNavigation()
         {
-            if (!leftHandle.gameObject.activeSelf)
+            if (!paletteController.gameObject.activeSelf)
             {
-                leftHandle.gameObject.SetActive(true);
+                paletteController.gameObject.SetActive(true);
             }
 
             // Update left controller transform
-            VRInput.UpdateTransformFromVRDevice(leftHandle, VRInput.secondaryController);
-            VRInput.UpdateTransformFromVRDevice(rightHandle, VRInput.primaryController);
+            VRInput.UpdateTransformFromVRDevice(paletteController, VRInput.secondaryController);
+            VRInput.UpdateTransformFromVRDevice(toolsController, VRInput.primaryController);
 
             if (null != options.currentNavigationMode)
                 options.currentNavigationMode.Update();
@@ -413,42 +413,42 @@ namespace VRtist
             // TODO: Scriptable NEW ou CreateInstance(SO), ou avoir une liste de SO dans PlayerController.
             options.currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Teleport()
         {
             options.currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
             options.currentNavigationMode = new NavigationMode_Orbit(ray, options.orbitRotationalSpeed, options.orbitScaleSpeed, options.orbitMoveSpeed, minPlayerScale, maxPlayerScale);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fps()
         {
             options.currentNavigationMode = new NavigationMode_FPS();
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Drone()
         {
             options.currentNavigationMode = new NavigationMode_Drone();
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fly()
         {
             options.currentNavigationMode = new NavigationMode_Fly(options.flySpeed, minPlayerScale, maxPlayerScale);
             options.currentNavigationMode.options = options;
-            options.currentNavigationMode.Init(transform, world, leftHandle, rightHandle, pivot, vrCamera, navigationParametersContainer);
+            options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         private void UpdateRadioButtons(string activeButtonName)

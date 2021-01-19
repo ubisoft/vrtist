@@ -10,8 +10,6 @@ namespace VRtist
 {
     public class Utils
     {
-        static Material paintMaterial = null;
-
         public static GameObject FindRootGameObject(string name)
         {
             Scene scene = SceneManager.GetActiveScene();
@@ -33,30 +31,14 @@ namespace VRtist
 
         public static Volume FindVolume()
         {
-            Scene scene = SceneManager.GetActiveScene();
-            GameObject[] roots = scene.GetRootGameObjects();
-            for (int i = 0; i < roots.Length; i++)
-            {
-                if (roots[i].name == "VolumePostProcess")
-                {
-                    return roots[i].GetComponent<Volume>();
-                }
-            }
-            return null;
+            GameObject volumes = Utils.FindRootGameObject("Volumes");
+            return volumes.transform.Find("VolumePostProcess").GetComponent<Volume>();
         }
 
         public static Volume FindCameraPostProcessVolume()
         {
-            Scene scene = SceneManager.GetActiveScene();
-            GameObject[] roots = scene.GetRootGameObjects();
-            for (int i = 0; i < roots.Length; i++)
-            {
-                if (roots[i].name == "VolumePostProcessCamera")
-                {
-                    return roots[i].GetComponent<Volume>();
-                }
-            }
-            return null;
+            GameObject volumes = Utils.FindRootGameObject("Volumes");
+            return volumes.transform.Find("VolumePostProcessCamera").GetComponent<Volume>();
         }
 
         public static GameObject FindGameObject(string name)

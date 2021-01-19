@@ -8,8 +8,8 @@ namespace VRtist
 
         protected Transform rig = null;
         protected Transform world = null;
-        protected Transform leftHandle = null;
-        protected Transform rightHandle = null;
+        protected Transform paletteController = null;
+        protected Transform toolsController = null;
         protected Transform pivot = null;
         protected Transform camera = null;
         protected Transform parameters = null;
@@ -17,9 +17,6 @@ namespace VRtist
         public UsedControls usedControls = UsedControls.NONE;
 
         // Clip Planes config. Can be set back to PlayerController if we need tweaking.
-        private bool useScaleFactor = false;
-        private float nearPlaneFactor = 0.1f;
-        private float farPlaneFactor = 5000.0f;
         private float nearPlane = 0.1f; // 10 cm, close enough to not clip the controllers.
         private float farPlane = 1000.0f; // 1km from us, far enough?
 
@@ -59,8 +56,8 @@ namespace VRtist
         {
             rig = rigTransform;
             world = worldTransform;
-            leftHandle = leftHandleTransform;
-            rightHandle = rightHandleTransform;
+            paletteController = leftHandleTransform;
+            toolsController = rightHandleTransform;
             pivot = pivotTransform;
             camera = cameraTransform;
             parameters = parametersTransform;
@@ -84,7 +81,7 @@ namespace VRtist
 
         protected void SetLeftControllerVisibility(ControllerVisibility visibility)
         {
-            leftHandle.localScale = visibility == ControllerVisibility.HIDE ? Vector3.zero : Vector3.one;
+            paletteController.localScale = visibility == ControllerVisibility.HIDE ? Vector3.zero : Vector3.one;
         }
     }
 }

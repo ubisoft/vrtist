@@ -19,7 +19,7 @@ namespace VRtist
 
         public Transform mouthpiece;
 
-        protected Transform rightHandle;
+        protected Transform toolsController;
         protected Transform rightMouthpieces;
         protected Transform rightController;
 
@@ -34,9 +34,9 @@ namespace VRtist
         {
             rightController = transform.parent.parent.Find("right_controller");
             UnityEngine.Assertions.Assert.IsNotNull(rightController);
-            rightHandle = rightController.parent;
-            UnityEngine.Assertions.Assert.IsNotNull(rightHandle);
-            rightMouthpieces = rightHandle.Find("mouthpieces");
+            toolsController = rightController.parent;
+            UnityEngine.Assertions.Assert.IsNotNull(toolsController);
+            rightMouthpieces = toolsController.Find("mouthpieces");
             UnityEngine.Assertions.Assert.IsNotNull(rightMouthpieces);
         }
 

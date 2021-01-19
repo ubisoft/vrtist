@@ -4,7 +4,8 @@
 Preset:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: DirectionalLight_Default
   m_TargetType:
     m_NativeTypeID: 108
@@ -18,6 +19,10 @@ Preset:
   - target: {fileID: 0}
     propertyPath: m_Type
     value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shape
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_Color.r
@@ -37,7 +42,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_Intensity
-    value: 3.1415927
+    value: 100000
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_Range
@@ -46,6 +51,10 @@ Preset:
   - target: {fileID: 0}
     propertyPath: m_SpotAngle
     value: 30
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_InnerSpotAngle
+    value: 21.80208
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_CookieSize
@@ -80,6 +89,74 @@ Preset:
     value: 0.1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e00
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e01
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e02
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e03
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e10
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e11
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e12
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e13
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e20
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e21
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e22
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e23
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e30
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e31
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e32
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_CullingMatrixOverride.e33
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_Shadows.m_UseCullingMatrixOverride
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: m_Cookie
     value: 
     objectReference: {fileID: 0}
@@ -100,12 +177,16 @@ Preset:
     value: 4294967295
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: m_RenderingLayerMask
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: m_Lightmapping
     value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_LightShadowCasterMode
-    value: 0
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_AreaSize.x
@@ -125,7 +206,31 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_UseColorTemperature
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BoundingSphereOverride.x
     value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BoundingSphereOverride.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BoundingSphereOverride.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_BoundingSphereOverride.w
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_UseBoundingSphereOverride
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_UseViewFrustumForShadowCasterCull
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: m_ShadowRadius
@@ -135,3 +240,4 @@ Preset:
     propertyPath: m_ShadowAngle
     value: 0
     objectReference: {fileID: 0}
+  m_ExcludedProperties: []

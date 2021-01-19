@@ -485,7 +485,7 @@ namespace VRtist
             InitUIPanel();
             UpdateGrid();
             Selection.OnSelectionChanged += UpdateGridFromSelection;
-            if (null != planesContainer) { planesContainer.SetActive(false); }
+            if (null != boundingBox) { boundingBox.SetActive(false); }
             UpdateUIOnSelectionChanged(null, null);
         }
 
@@ -500,7 +500,7 @@ namespace VRtist
             base.OnDisable();
             Selection.OnSelectionChanged -= UpdateGridFromSelection;
             if (null != grid) { grid.gameObject.SetActive(false); }
-            if (null != planesContainer) { planesContainer.SetActive(false); }
+            if (null != boundingBox) { boundingBox.SetActive(false); }
         }
 
         public void OnDeleteSelection()
@@ -791,7 +791,7 @@ namespace VRtist
             deformEnabled = enabled;
             if (!enabled)
             {
-                planesContainer.SetActive(false);
+                boundingBox.SetActive(false);
             }
         }
 
@@ -1040,7 +1040,7 @@ namespace VRtist
         {
             Vector3 controllerPosition = rightControllerPosition;
             Quaternion controllerRotation = rightControllerRotation;
-            controllerPosition = rightHandle.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
+            controllerPosition = toolsController.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
             controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer)
@@ -1114,7 +1114,7 @@ namespace VRtist
             if (deformEnabled)
             {
                 ComputeSelectionBounds();
-                planesContainer.SetActive(!Selection.IsEmpty());
+                boundingBox.SetActive(!Selection.IsEmpty());
             }
 
             // Move grid with object(s), enable/disable it.
@@ -1130,8 +1130,8 @@ namespace VRtist
         private void InitDeformerMatrix()
         {
             initMouthPieceWorldToLocal = activePlane.opposite.worldToLocalMatrix;
-            initPlaneContainerMatrix = planesContainer.transform.localToWorldMatrix;
-            initInversePlaneContainerMatrix = planesContainer.transform.worldToLocalMatrix;
+            initPlaneContainerMatrix = boundingBox.transform.localToWorldMatrix;
+            initInversePlaneContainerMatrix = boundingBox.transform.worldToLocalMatrix;
             initOppositeMatrix = activePlane.opposite.localToWorldMatrix;
         }
 

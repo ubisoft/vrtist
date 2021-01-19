@@ -13,8 +13,8 @@ namespace VRtist
 
         [Header("Parameters")]
         public PlayerController playerController;
-        public Transform rightHandle;
-        public Transform leftHandle;
+        public Transform toolsController;
+        public Transform paletteController;
         public GameObject colorPanel = null;
         public GameObject cameraFeedback = null;
 
@@ -370,11 +370,11 @@ namespace VRtist
         {
             if (Settings.rightHanded)
             {
-                return Instance.rightHandle.Find("right_controller");
+                return Instance.toolsController.Find("right_controller");
             }
             else
             {
-                return Instance.rightHandle.Find("left_controller");
+                return Instance.toolsController.Find("left_controller");
             }
         }
 
@@ -382,11 +382,11 @@ namespace VRtist
         {
             if (Settings.rightHanded)
             {
-                return Instance.leftHandle.Find("left_controller");
+                return Instance.paletteController.Find("left_controller");
             }
             else
             {
-                return Instance.leftHandle.Find("right_controller");
+                return Instance.paletteController.Find("right_controller");
             }
         }
 
@@ -420,11 +420,11 @@ namespace VRtist
 
             Settings.rightHanded = value;
 
-            GameObject leftHandleRightController = Instance.leftHandle.Find("right_controller").gameObject;
-            GameObject leftHandleLeftController = Instance.leftHandle.Find("left_controller").gameObject;
+            GameObject leftHandleRightController = Instance.paletteController.Find("right_controller").gameObject;
+            GameObject leftHandleLeftController = Instance.paletteController.Find("left_controller").gameObject;
 
-            GameObject rightHandleRightController = Instance.rightHandle.Find("right_controller").gameObject;
-            GameObject rightHandleLeftController = Instance.rightHandle.Find("left_controller").gameObject;
+            GameObject rightHandleRightController = Instance.toolsController.Find("right_controller").gameObject;
+            GameObject rightHandleLeftController = Instance.toolsController.Find("left_controller").gameObject;
 
             leftHandleLeftController.SetActive(value);
             leftHandleRightController.SetActive(!value);
@@ -448,7 +448,7 @@ namespace VRtist
             Instance.playerController.HandleCommonTooltipsVisibility();
 
             // Move Palette
-            Transform palette = Instance.leftHandle.Find("PaletteHandle");
+            Transform palette = Instance.paletteController.Find("PaletteHandle");
             Vector3 currentPalettePosition = palette.localPosition;
             if (Settings.rightHanded)
                 palette.localPosition = new Vector3(-0.02f, currentPalettePosition.y, currentPalettePosition.z);
