@@ -230,8 +230,6 @@ namespace VRtist
     {
         Opaque,
         Transparent,
-        EditorOpaque,
-        EditorTransparent,
         GreasePencil,
         Paint,
     }

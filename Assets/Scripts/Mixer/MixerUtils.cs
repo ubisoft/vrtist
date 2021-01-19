@@ -586,11 +586,8 @@ namespace VRtist
                 return materialParameters;
 
             MaterialType materialType;
-#if UNITY_EDITOR
-            materialType = MaterialType.EditorOpaque;
-#else
             materialType = MaterialType.Opaque;
-#endif
+
             materialParameters = new MaterialParameters();
             materialsParameters[name] = materialParameters;
             materialParameters.name = name;
@@ -637,10 +634,8 @@ namespace VRtist
         {
             if (baseMaterials.Count == 0)
             {
-                baseMaterials.Add(MaterialType.Opaque, Resources.Load<Material>("Materials/BlenderImport"));
-                baseMaterials.Add(MaterialType.Transparent, Resources.Load<Material>("Materials/BlenderImportTransparent"));
-                baseMaterials.Add(MaterialType.EditorOpaque, Resources.Load<Material>("Materials/BlenderImportEditor"));
-                baseMaterials.Add(MaterialType.EditorTransparent, Resources.Load<Material>("Materials/BlenderImportTransparentEditor"));
+                baseMaterials.Add(MaterialType.Opaque, Resources.Load<Material>("Materials/ObjectOpaque"));
+                baseMaterials.Add(MaterialType.Transparent, Resources.Load<Material>("Materials/ObjectTransparent"));
                 baseMaterials.Add(MaterialType.GreasePencil, Resources.Load<Material>("Materials/GreasePencilMat"));
                 baseMaterials.Add(MaterialType.Paint, Resources.Load<Material>("Materials/Paint"));
             }
@@ -657,13 +652,9 @@ namespace VRtist
             if (!materialsParameters.TryGetValue(name, out MaterialParameters materialParameters))
             {
                 MaterialType materialType;
-#if UNITY_EDITOR
-                materialType = (opacityTexturePath.Length > 0 || opacity < 1.0f)
-                    ? MaterialType.EditorTransparent : MaterialType.EditorOpaque;
-#else
                 materialType = (opacityTexturePath.Length > 0 || opacity < 1.0f)
                     ? MaterialType.Transparent : MaterialType.Opaque;
-#endif
+
                 materialParameters = new MaterialParameters
                 {
                     name = name,

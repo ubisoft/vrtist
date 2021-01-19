@@ -77,8 +77,8 @@ namespace VRtist
 
         private void SetMaterialValue(GameObject gobject, MaterialValue value)
         {
-            Material opaqueMat = Resources.Load<Material>("Materials/BlenderImport");
-            Material transpMat = Resources.Load<Material>("Materials/BlenderImportTransparent");
+            Material opaqueMat = Resources.Load<Material>("Materials/ObjectOpaque");
+            Material transpMat = Resources.Load<Material>("Materials/ObjectTransparent");
             MeshRenderer[] renderers = gobject.GetComponentsInChildren<MeshRenderer>();
             foreach (MeshRenderer renderer in renderers)
             {

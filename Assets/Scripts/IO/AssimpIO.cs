@@ -331,8 +331,8 @@ namespace VRtist
         private IEnumerator ImportMaterials()
         {
             int i = 0;
-            Material opaqueMat = Resources.Load<Material>("Materials/BlenderImport");
-            Material transpMat = Resources.Load<Material>("Materials/BlenderImportTransparent");
+            Material opaqueMat = Resources.Load<Material>("Materials/ObjectOpaque");
+            Material transpMat = Resources.Load<Material>("Materials/ObjectTransparent");
             foreach (Assimp.Material assimpMaterial in scene.Materials)
             {
                 if (assimpMaterial.HasOpacity && assimpMaterial.Opacity < 0.99f)
