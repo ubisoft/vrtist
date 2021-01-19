@@ -1,4 +1,4 @@
-@ECHO OFF
+REM @ECHO OFF
 REM Build Unity from a builder script
 %0 -quit -batchmode -projectPath %~dp1..\ -executeMethod VRtist.Builder.PerformBuild -logFile - %*
 
