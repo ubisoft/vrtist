@@ -105,9 +105,6 @@ namespace VRtist
             paint.transform.localScale = Vector3.one;
             paint.tag = "PhysicObject";
 
-            paint.AddComponent<MeshCollider>();
-            paint.AddComponent<PaintController>();
-
             Mesh mesh = new Mesh();
             MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
@@ -123,6 +120,9 @@ namespace VRtist
                 baseColor = color
             };
             MixerUtils.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
+
+            paint.AddComponent<MeshCollider>();
+            paint.AddComponent<PaintController>();
 
             return paint;
         }
@@ -142,9 +142,6 @@ namespace VRtist
             volume.transform.localScale = Vector3.one;
             volume.tag = "PhysicObject";
 
-            volume.AddComponent<MeshCollider>();
-            volume.AddComponent<VolumeController>();
-
             Mesh mesh = new Mesh
             {
                 indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
@@ -163,6 +160,9 @@ namespace VRtist
                 baseColor = color
             };
             MixerUtils.materialsParameters[SyncData.GetMaterialName(volume)] = parameters;
+
+            volume.AddComponent<MeshCollider>();
+            volume.AddComponent<VolumeController>();
 
             return volume;
         }
