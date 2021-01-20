@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+
 using UnityEngine;
 
 namespace VRtist
@@ -142,11 +143,6 @@ namespace VRtist
 
 
         Transform prefab;
-        GameObject cameraPrefab;
-        GameObject locatorPrefab;
-        GameObject pointLightPrefab;
-        GameObject spotLightPrefab;
-        GameObject sunLightPrefab;
 
         Thread thread = null;
         bool alive = true;
@@ -167,17 +163,6 @@ namespace VRtist
             Join();
         }
 
-        GameObject GetOrCreatePrefab(string resourceName, string prefabName)
-        {
-            GameObject newPrefab = Resources.Load(resourceName) as GameObject;
-            if (null == newPrefab)
-            {
-                newPrefab = new GameObject(prefabName);
-                newPrefab.transform.parent = prefab;
-            }
-            return newPrefab;
-        }
-
         void Start()
         {
             if (null == SyncData.mixer)
@@ -189,18 +174,8 @@ namespace VRtist
             prefabGameObject.SetActive(false);
             prefab = prefabGameObject.transform;
 
-            // Prefabs
-            cameraPrefab = GetOrCreatePrefab("Prefabs/Camera", "__CameraPrefab");
-            pointLightPrefab = GetOrCreatePrefab("Prefabs/Point", "__PointLightPrefab");
-            spotLightPrefab = GetOrCreatePrefab("Prefabs/Spot", "__SpotLightPrefab");
-            sunLightPrefab = GetOrCreatePrefab("Prefabs/Sun", "__SunLightPrefab");
-            locatorPrefab = GetOrCreatePrefab("Prefabs/Primitives/Axis_locator", "__LocatorPrefab");
-
             SyncData.Init(prefab, root);
             StartCoroutine(ProcessIncomingCommands());
-
-            // Animation listeners
-            //GlobalState.Animation.onAnimationEvent.AddListener()
         }
 
         IPAddress GetIpAddressFromHostname(string hostname)
@@ -214,7 +189,7 @@ namespace VRtist
                 {
                     if (Int32.TryParse(splitted[i], out int val) && val >= 0 && val <= 255)
                     {
-                        baddr[i] = (byte) val;
+                        baddr[i] = (byte)val;
                     }
                     else
                     {
@@ -328,21 +303,21 @@ namespace VRtist
             long current = 0;
             while (remaining > 0)
             {
-                int sizeRead = socket.Receive(data, (int) current, (int) remaining, SocketFlags.None);
+                int sizeRead = socket.Receive(data, (int)current, (int)remaining, SocketFlags.None);
                 current += sizeRead;
                 remaining -= sizeRead;
             }
 
 
-            NetCommand command = new NetCommand(data, (MessageType) mtype);
+            NetCommand command = new NetCommand(data, (MessageType)mtype);
             return command;
         }
 
         void WriteMessage(NetCommand command)
         {
-            byte[] sizeBuffer = BitConverter.GetBytes((Int64) command.data.Length);
-            byte[] commandId = BitConverter.GetBytes((Int32) command.id);
-            byte[] typeBuffer = BitConverter.GetBytes((Int16) command.messageType);
+            byte[] sizeBuffer = BitConverter.GetBytes((Int64)command.data.Length);
+            byte[] commandId = BitConverter.GetBytes((Int32)command.id);
+            byte[] typeBuffer = BitConverter.GetBytes((Int16)command.messageType);
             List<byte[]> buffers = new List<byte[]> { sizeBuffer, commandId, typeBuffer, command.data };
 
             socket.Send(MixerUtils.ConcatenateBuffers(buffers));
@@ -632,7 +607,7 @@ namespace VRtist
                 Buffer.BlockCopy(command.data, index, newBuffer, 0, dataLength);
                 index += dataLength;
 
-                NetCommand newCommand = new NetCommand(newBuffer, (MessageType) messageType);
+                NetCommand newCommand = new NetCommand(newBuffer, (MessageType)messageType);
                 commands.Add(newCommand);
             }
 
@@ -688,7 +663,7 @@ namespace VRtist
                                 MixerUtils.BuildTransform(command.data);
                                 break;
                             case MessageType.Empty:
-                                MixerUtils.BuildEmpty(prefab, locatorPrefab, command.data);
+                                MixerUtils.BuildEmpty(prefab, command.data);
                                 break;
                             case MessageType.ObjectVisibility:
                                 MixerUtils.BuildObjectVisibility(root, command.data);
@@ -700,7 +675,7 @@ namespace VRtist
                                 MixerUtils.BuildAssignMaterial(command.data);
                                 break;
                             case MessageType.Camera:
-                                MixerUtils.BuildCamera(prefab, cameraPrefab, command.data);
+                                MixerUtils.BuildCamera(prefab, command.data);
                                 break;
                             case MessageType.Animation:
                                 MixerUtils.BuildAnimation(command.data);
@@ -718,7 +693,7 @@ namespace VRtist
                                 MixerUtils.BuildClearAnimations(command.data);
                                 break;
                             case MessageType.Light:
-                                MixerUtils.BuildLight(prefab, sunLightPrefab, pointLightPrefab, spotLightPrefab, command.data);
+                                MixerUtils.BuildLight(prefab, command.data);
                                 break;
                             case MessageType.Sky:
                                 MixerUtils.BuildSky(command.data);

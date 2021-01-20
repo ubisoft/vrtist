@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -8,9 +9,6 @@ namespace VRtist
     {
         [Header("Lighting Parameters")]
         [SerializeField] private Transform parentContainer;
-        [SerializeField] private GameObject sunPrefab;
-        [SerializeField] private GameObject pointPrefab;
-        [SerializeField] private GameObject spotPrefab;
 
         enum LightTools { None = 0, Sun, Spot, Point }
 
@@ -99,13 +97,13 @@ namespace VRtist
             switch (lightType)
             {
                 case "Sun":
-                    light = sunPrefab;
+                    light = ResourceManager.GetPrefab(PrefabID.SunLight);
                     break;
                 case "Spot":
-                    light = spotPrefab;
+                    light = ResourceManager.GetPrefab(PrefabID.SpotLight);
                     break;
                 case "Point":
-                    light = pointPrefab;
+                    light = ResourceManager.GetPrefab(PrefabID.PointLight);
                     break;
             }
 

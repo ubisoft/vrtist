@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
+
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -74,7 +75,7 @@ namespace VRtist
             return res;
         }
 
-        private static Regex readableNameRegex = new Regex(@"(?<basename>.+?)\.(?<hash>.+?)\.(?<number>\d+)", RegexOptions.Compiled);
+        private static readonly Regex readableNameRegex = new Regex(@"(?<basename>.+?)\.(?<hash>.+?)\.(?<number>\d+)", RegexOptions.Compiled);
         public static string GetReadableName(string name)
         {
             string readableName = name;
@@ -104,24 +105,24 @@ namespace VRtist
             paint.transform.localScale = Vector3.one;
             paint.tag = "PhysicObject";
 
+            paint.AddComponent<MeshCollider>();
+            paint.AddComponent<PaintController>();
+
             Mesh mesh = new Mesh();
             MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = paint.AddComponent<MeshRenderer>();
-            Material paintMaterial = MixerUtils.GetMaterial(MaterialType.Paint);
+            Material paintMaterial = ResourceManager.GetMaterial(MaterialID.Paint);
             renderer.sharedMaterial = paintMaterial;
+            renderer.material.SetColor("_BaseColor", color);
 
-            MaterialParameters parameters = new MaterialParameters();
-            parameters.materialType = MaterialType.Paint;
-            parameters.baseColor = color;
-
+            // Update Mixer (TODO: have a VRtist API to do that, not directly Mixer)
+            MaterialParameters parameters = new MaterialParameters
+            {
+                materialType = MaterialID.Paint,
+                baseColor = color
+            };
             MixerUtils.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
-            Material instanceMaterial = renderer.material;
-            MixerUtils.ApplyMaterialParameters(instanceMaterial, parameters);
-            renderer.material = instanceMaterial;
-
-            paint.AddComponent<MeshCollider>();
-            PaintController paintController = paint.AddComponent<PaintController>();
 
             return paint;
         }
@@ -141,37 +142,37 @@ namespace VRtist
             volume.transform.localScale = Vector3.one;
             volume.tag = "PhysicObject";
 
-            Mesh mesh = new Mesh();
-            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            volume.AddComponent<MeshCollider>();
+            volume.AddComponent<VolumeController>();
+
+            Mesh mesh = new Mesh
+            {
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+            };
             MeshFilter meshFilter = volume.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = volume.AddComponent<MeshRenderer>();
-            Material volumeMaterial = MixerUtils.GetMaterial(MaterialType.Paint); // TODO: another specific material??
+            Material volumeMaterial = ResourceManager.GetMaterial(MaterialID.Paint); // TODO: another specific material??
             renderer.sharedMaterial = volumeMaterial;
+            renderer.material.SetColor("_BaseColor", color);
 
-            MaterialParameters parameters = new MaterialParameters();
-            parameters.materialType = MaterialType.Paint;
-            parameters.baseColor = color;
-
+            // Update Mixer (TODO: have a VRtist API to do that, not directly Mixer)
+            MaterialParameters parameters = new MaterialParameters
+            {
+                materialType = MaterialID.Paint,
+                baseColor = color
+            };
             MixerUtils.materialsParameters[SyncData.GetMaterialName(volume)] = parameters;
-            Material instanceMaterial = renderer.material;
-            MixerUtils.ApplyMaterialParameters(instanceMaterial, parameters);
-            renderer.material = instanceMaterial;
-
-            volume.AddComponent<MeshCollider>();
-            
-            VolumeController volumeController = volume.AddComponent<VolumeController>();
-
-            //LineRenderer line = volume.AddComponent<LineRenderer>(); // for the bbox drawing
-            //line.material = Resources.Load<Material>("Materials/Ray");
 
             return volume;
         }
 
         public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite)
         {
-            RenderTexture renderTexture = new RenderTexture(width, height, depth, format);
-            renderTexture.enableRandomWrite = randomWrite;
+            RenderTexture renderTexture = new RenderTexture(width, height, depth, format)
+            {
+                enableRandomWrite = randomWrite
+            };
             renderTexture.Create();
             return renderTexture;
         }
@@ -180,7 +181,7 @@ namespace VRtist
             return CreateRenderTexture(source.width, source.height, 0, source.format, true);
         }
 
-        public static void TryDispose(System.IDisposable obj)
+        public static void TryDispose(IDisposable obj)
         {
             if (null == obj) { return; }
             obj.Dispose();

@@ -25,10 +25,6 @@ namespace VRtist
         private float secondaryTranslationAmplitude = -0.0016f;
         private Vector3 initSecondaryTranslation = Vector3.zero;
 
-        private Transform systemTransform = null;
-        private float systemTranslationAmplitude = -0.001f;
-        private Vector3 initSystemTranslation = Vector3.zero;
-
         public bool rightHand = true;
         private InputDevice device;
 
@@ -83,12 +79,6 @@ namespace VRtist
             if (null != secondaryTransform)
             {
                 initSecondaryTranslation = secondaryTransform.localPosition;
-            }
-
-            systemTransform = transform.Find("SystemButtonPivot/SystemButton");
-            if (null != systemTransform)
-            {
-                initSystemTranslation = systemTransform.localPosition;
             }
         }
 
@@ -154,18 +144,6 @@ namespace VRtist
                 {
                     secondaryTransform.localPosition += new Vector3(0, 0, secondaryTranslationAmplitude); // TODO: quick anim? CoRoutine.
                 }
-            }
-
-            // SYSTEM
-            if (null != systemTransform)
-            {
-                ////bool systemState = VRInput.GetValue(device, CommonUsages.menuButton);
-                ////systemTransform.localPosition = initSystemTranslation;
-                ////systemTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", systemState ? UIOptions.SelectedColor : Color.black);
-                ////if (systemState)
-                ////{
-                ////    systemTransform.localPosition += new Vector3(0, 0, systemTranslationAmplitude); // TODO: quick anim? CoRoutine.
-                ////}
             }
         }
     }

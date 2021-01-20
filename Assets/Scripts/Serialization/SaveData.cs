@@ -16,7 +16,6 @@ namespace VRtist.Serialization
     [System.Serializable]
     public class MaterialData
     {
-        bool valid;
         string path;
 
         public bool useColorMap;
@@ -57,11 +56,9 @@ namespace VRtist.Serialization
                 shaderName != "VRtist/BlenderImportTransparentEditor")
             {
                 Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/BlenderImport***.");
-                valid = false;
                 return;
             }
 
-            valid = true;
             path = materialInfo.materialPath;
 
             useColorMap = materialInfo.material.GetInt("_UseColorMap") == 1;

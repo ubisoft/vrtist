@@ -41,10 +41,6 @@ namespace VRtist
         protected bool gripPrevented = false;
         protected bool gripInterrupted = false;
 
-        protected GameObject triggerTooltip;
-        protected GameObject gripTooltip;
-        protected GameObject joystickTooltip;
-
         protected Dopesheet dopesheet;
         protected UIShotManager shotManager;
 
@@ -106,6 +102,7 @@ namespace VRtist
         {
             base.OnEnable();
             OnSelectMode();
+            SetTooltips();
             Selection.OnSelectionChanged += OnSelectionChanged;
         }
 
@@ -812,7 +809,7 @@ namespace VRtist
             if (selectionCount == 1)
             {
                 foundHierarchicalObject = IsHierarchical(selectedObjects);
-            }            
+            }
 
             foreach (GameObject obj in selectedObjects)
             {
@@ -863,7 +860,7 @@ namespace VRtist
                     hasBounds = true;
                 }
             }
-            if(hasBounds)
+            if (hasBounds)
             {
                 planePositions = new Vector3[6];
                 planePositions[0] = new Vector3((maxBound.x + minBound.x) * 0.5f, maxBound.y, (maxBound.z + minBound.z) * 0.5f);
@@ -893,7 +890,7 @@ namespace VRtist
             boundingBox.transform.localPosition = planePosition;
             boundingBox.transform.localRotation = planeRotation;
             boundingBox.transform.localScale = planeScale;
-            
+
             if (!hasBounds)
             {
                 snapUIContainer.SetActive(false);
@@ -953,7 +950,7 @@ namespace VRtist
             planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, g.z), new Vector3(delta.x, delta.y, g.z), new Vector3(-delta.x, delta.y, g.z), new Vector3(-delta.x, -delta.y, g.z));
             SetPlaneCollider(planes[5], new Vector3(0, 0, g.z), new Vector3(delta.x * 2f, delta.y * 2f, cs.z));
 
-            
+
         }
 
         protected void InitControllerMatrix()
@@ -962,10 +959,10 @@ namespace VRtist
         }
 
         protected void InitSnap()
-        { 
+        {
             if (!hasBounds)
                 return;
-            
+
             snapRays = new Ray[6];
             Vector3 worldPlanePosition;
 
@@ -990,7 +987,7 @@ namespace VRtist
 
             if (!IsSelectionSnappable())
             {
-                foreach(Transform snapUI in snapTargets)
+                foreach (Transform snapUI in snapTargets)
                     snapUI.gameObject.SetActive(false);
                 return;
             }
@@ -1039,7 +1036,7 @@ namespace VRtist
                 line.SetPosition(1, hit.point);
                 line.material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hit.distance));
                 line.endWidth = line.startWidth = 0.001f / GlobalState.WorldScale;
-                
+
                 snapTarget.localScale = Vector3.one * 0.03f / GlobalState.WorldScale;
                 snapTarget.LookAt(hit.point - hit.normal);
                 snapTarget.position = hit.point + hit.normal * 0.001f / GlobalState.WorldScale;

@@ -36,11 +36,6 @@ namespace VRtist
 
         private const float deadZone = 0.3f; // for palette pop
 
-        private GameObject tooltipPalette = null;
-        private GameObject tooltipUndo = null;
-        private GameObject tooltipRedo = null;
-        private GameObject tooltipReset = null;
-
         private Vector3 previousPosition;
         private Vector3 previousForward;
         private Transform rightHanded;

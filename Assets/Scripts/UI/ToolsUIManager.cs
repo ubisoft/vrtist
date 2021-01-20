@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+
 using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -47,17 +49,10 @@ namespace VRtist
         [SerializeField] private Transform tabButtonsContainer;
         [SerializeField] private Transform panelsContainer;
         [SerializeField] private float paletteScale = 0.5f;
-        [SerializeField] private Color defaultColor = new Color(114f / 255f, 114f / 255f, 114f / 255f);
-        [SerializeField] private Color selectionColor = new Color(0f, 167f / 255f, 1f);
-        [SerializeField] private AudioSource audioOpenPalette = null;
-        [SerializeField] private AudioSource audioClosePalette = null;
-        [SerializeField] private AudioSource audioOpenDopesheet = null;
-        [SerializeField] private AudioSource audioCloseDopesheet = null;
 
         public event EventHandler<TabChangedArgs> OnTabChangedEvent;
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
         public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
-        public event EventHandler<BoolToolParameterChangedArgs> OnBoolToolParameterChangedEvent;
         public UnityEvent onPaletteOpened = new UnityEvent();
 
         public Transform keyboardWindow;
@@ -215,7 +210,6 @@ namespace VRtist
         public Bounds GetVFXBounds(GameObject source)
         {
             MeshRenderer[] meshRenderers = source.GetComponentsInChildren<MeshRenderer>();
-            float s = 0;
             Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
 
             for (int i = 0; i < meshRenderers.Length; i++)
@@ -549,7 +543,7 @@ namespace VRtist
             {
                 for (int i = 0; i < nbFrames; i++)
                 {
-                    float t = (float) i / (nbFrames - 1);
+                    float t = (float)i / (nbFrames - 1);
                     if (reverse) t = 1.0f - t;
                     float tx = scaleFactor * xCurve.Evaluate(t);
                     float ty = scaleFactor * yCurve.Evaluate(t);

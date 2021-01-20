@@ -80,6 +80,8 @@ namespace VRtist
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Trigger, Tooltips.Action.HoldPush, "Draw");
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Switch Tool");
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldHorizontal, "Brush Size");
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Primary, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
         }
 
         private void ConfigureSubPanels()

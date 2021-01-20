@@ -7,11 +7,7 @@ namespace VRtist
     public class SelectorTrigger : MonoBehaviour
     {
         public SelectorBase selector = null;
-
-        private bool selectionHasChanged = false;
         private List<GameObject> collidedObjects = new List<GameObject>();
-
-        private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
         private void OnDisable()
         {
@@ -20,13 +16,12 @@ namespace VRtist
         }
 
         void Update()
-        {            
+        {
             switch (selector.mode)
             {
                 case SelectorBase.SelectorModes.Select: UpdateSelection(); break;
                 case SelectorBase.SelectorModes.Eraser: UpdateEraser(); break;
             }
-
         }
 
         GameObject GetRootIfCollectionInstance(GameObject gObject)
@@ -126,9 +121,8 @@ namespace VRtist
                  () => { Selection.SetGrippedObject(null); });
 
             // Multi-selection using the trigger button
-            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject)  
+            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject)
             {
-                selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
                     foreach (GameObject obj in collidedObjects)
@@ -157,7 +151,7 @@ namespace VRtist
                     {
                         RemoveCollidedObject(hoveredObject);
                         selector.RemoveSiblingsFromSelection(hoveredObject, false);
-                        
+
                         new CommandRemoveGameObject(hoveredObject).Submit();
                     }
                     finally
@@ -178,7 +172,7 @@ namespace VRtist
                         foreach (GameObject gobject in Selection.GetSelectedObjects())
                         {
                             RemoveCollidedObject(gobject);
-                            selector.RemoveSiblingsFromSelection(gobject, false);                            
+                            selector.RemoveSiblingsFromSelection(gobject, false);
 
                             new CommandRemoveGameObject(gobject).Submit();
                         }

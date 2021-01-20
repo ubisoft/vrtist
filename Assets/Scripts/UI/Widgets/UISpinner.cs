@@ -65,9 +65,6 @@ namespace VRtist
         public UnityEvent onReleaseEvent = new UnityEvent();
 
         private Vector3 localProjectedWidgetInitialPosition = Vector3.zero;
-        private float initialFloatValue = 0.0f;
-
-        private bool cursorExitedWidget = true;
 
         public string Text { get { return textContent; } set { SetText(value); } }
         public float FloatValue { get { return GetFloatValue(); } set { SetFloatValue(value); UpdateValueText(); } }

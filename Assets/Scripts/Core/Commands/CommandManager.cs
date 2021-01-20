@@ -60,7 +60,6 @@ namespace VRtist
         static List<ICommand> redoStack = new List<ICommand>();
         static List<CommandGroup> groupStack = new List<CommandGroup>();
         static CommandGroup currentGroup = null;
-        static int maxUndo = 100;
 
         public static void Undo()
         {
