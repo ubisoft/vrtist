@@ -44,8 +44,6 @@ namespace VRtist.Serialization
 
         private static Material opaqueMaterial;
         private static Material transparentMaterial;
-        private static Material opaqueEditorMaterial;
-        private static Material transparentEditorMaterial;
 
         private void Awake()
         {
@@ -63,19 +61,13 @@ namespace VRtist.Serialization
 
             cameraPrefab = Resources.Load<GameObject>("Prefabs/Camera");
 
-            opaqueMaterial = Resources.Load<Material>("Materials/BlenderImport");
-            transparentMaterial = Resources.Load<Material>("Materials/BlenderImportTransparent");
-            opaqueEditorMaterial = Resources.Load<Material>("Materials/BlenderImportEditor");
-            transparentEditorMaterial = Resources.Load<Material>("Materials/BlenderImportTransparentEditor");
+            opaqueMaterial = Resources.Load<Material>("Materials/ObjectOpaque");
+            transparentMaterial = Resources.Load<Material>("Materials/ObjectTransparent");
         }
 
         public static Material GetMaterial(bool opaque)
         {
-#if UNITY_EDITOR
-            return opaque ? opaqueEditorMaterial : transparentEditorMaterial;
-#else
             return opaque ? opaqueMaterial : transparentMaterial;
-#endif
         }
 
         private string ReplaceInvalidChars(string filename)
