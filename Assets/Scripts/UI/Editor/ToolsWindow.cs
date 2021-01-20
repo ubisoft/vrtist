@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+
 using UnityEngine;
 
 namespace VRtist
@@ -21,10 +22,10 @@ namespace VRtist
 
             GUIStyle textStyle = new GUIStyle();
             textStyle.alignment = TextAnchor.MiddleLeft;
-            textStyle.normal.textColor = Color.black;
+            textStyle.normal.textColor = Color.white;
 
             GUILayout.BeginArea(new Rect(5, 5, position.width - 10, position.height - 10));
-            { 
+            {
                 GUILayout.BeginHorizontal();
                 {
                     GUILayout.Label(new GUIContent("GOTO:"), textStyle, GUILayout.Width(60), GUILayout.Height(20));
@@ -46,7 +47,7 @@ namespace VRtist
                 GUILayout.EndHorizontal();
 
                 //DebugUI debug = GameObject.FindObjectOfType<DebugUI>();
-                GameObject singleton = GameObject.Find("Singleton");
+                GameObject singleton = GameObject.Find("Game Manager");
                 DebugUI debug = (singleton != null) ? singleton.GetComponent<DebugUI>() : null;
                 if (debug != null)
                 {
