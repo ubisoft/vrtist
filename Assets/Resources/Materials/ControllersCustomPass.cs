@@ -58,12 +58,12 @@ namespace VRtist
             }
         }
 
-        void DrawOutlineMeshes(ScriptableRenderContext renderContext, CommandBuffer cmd, HDCamera hdCamera, CullingResults cullingResult)
+        void DrawOutlineMeshes(CustomPassContext ctx)
         {
             // TODO: see how we can render objects without lights here.
             // Their rendered color is compared to black to find the outline... black on black...
 
-            var result = new RendererListDesc(shaderTags, cullingResult, hdCamera.camera)
+            var result = new RendererListDesc(shaderTags, ctx.cullingResults, ctx.hdCamera.camera)
             {
                 // We need the lighting render configuration to support rendering lit objects
                 rendererConfiguration = PerObjectData.LightProbe | PerObjectData.LightProbeProxyVolume | PerObjectData.Lightmaps,
@@ -75,23 +75,21 @@ namespace VRtist
                 overrideMaterialPassIndex = 0
             };
 
-            GetCameraBuffers(out RTHandle plop, out RTHandle plip);
-            CoreUtils.SetRenderTarget(cmd, outlineBuffer, plip, ClearFlag.Color,
+            CoreUtils.SetRenderTarget(ctx.cmd, outlineBuffer, ctx.cameraDepthBuffer, ClearFlag.Color,
                 new Color(99.0f, 99.0f, 99.0f) // clear target with a big number, hopefully bigger than anything. Next compare if <, instead of >
                 );
-            HDUtils.DrawRendererList(renderContext, cmd, RendererList.Create(result));
+            CoreUtils.DrawRendererList(ctx.renderContext, ctx.cmd, RendererList.Create(result));
         }
 
-        protected override void Execute(ScriptableRenderContext renderContext, CommandBuffer cmd, HDCamera camera, CullingResults cullingResult)
+        protected override void Execute(CustomPassContext ctx)
         {
-            DrawOutlineMeshes(renderContext, cmd, camera, cullingResult);
+            DrawOutlineMeshes(ctx);
 
-            SetCameraRenderTarget(cmd);
-
+            CoreUtils.SetRenderTarget(ctx.cmd, ctx.cameraColorBuffer, ctx.cameraDepthBuffer);
             outlineProperties.SetColor("_OutlineColor", outlineColor);
             outlineProperties.SetTexture("_OutlineBuffer", outlineBuffer);
             outlineProperties.SetFloat("_Threshold", threshold);
-            CoreUtils.DrawFullScreen(cmd, fullscreenOutline, outlineProperties, shaderPassId: 1);
+            CoreUtils.DrawFullScreen(ctx.cmd, fullscreenOutline, outlineProperties, shaderPassId: 1);
         }
 
         protected override void Cleanup()
