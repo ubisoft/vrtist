@@ -1,14 +1,22 @@
 ﻿using TMPro;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Builder for a camera.
+    /// </summary>
     public class CameraBuilder : GameObjectBuilder
-    {        
+    {
+        private const int RT_WIDTH = 1920 / 2;
+        private const int RT_HEIGHT = 1080 / 2;
+        private const int RT_DEPTH = 24;
+
         public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newCamera = GameObject.Instantiate(source, parent);
-            RenderTexture renderTexture = new RenderTexture(1920 / 2, 1080 / 2, 24, RenderTextureFormat.Default);
+            RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.Default);
             if (null == renderTexture)
                 Debug.LogError("CAMERA FAILED");
             renderTexture.name = "Camera RT";
@@ -86,8 +94,6 @@ namespace VRtist
                 inFrontButton.baseSprite = UIUtils.LoadIcon("back");
                 inFrontButton.checkedSprite = UIUtils.LoadIcon("front");
                 inFrontButton.SetLightLayer(2);
-
-                // Lock button
             }
 
             return newCamera;

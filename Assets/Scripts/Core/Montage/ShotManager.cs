@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
 {
-
+    /// <summary>
+    /// Manage shots.
+    /// </summary>
     public class ShotManager : TimeHook
     {
         public static ShotManager Instance
@@ -244,7 +247,7 @@ namespace VRtist
             }
         }
 
-        private static Regex shotNameRegex = new Regex(@"Sh(?<number>\d{4})", RegexOptions.Compiled);
+        private static readonly Regex shotNameRegex = new Regex(@"Sh(?<number>\d{4})", RegexOptions.Compiled);
         public string GetUniqueShotName()
         {
             int maxNumber = 0;
@@ -264,5 +267,4 @@ namespace VRtist
             return $"Sh{maxNumber + 10:D4}";
         }
     }
-
 }

@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -23,37 +22,39 @@ namespace VRtist
         GreasePencil
     }
 
-    public class ResourceManager : MonoBehaviour
+    public class ResourceManager
     {
-        Dictionary<PrefabID, string> prefabsMap = new Dictionary<PrefabID, string>();
-        Dictionary<PrefabID, GameObject> prefabs = new Dictionary<PrefabID, GameObject>();
+        readonly Dictionary<PrefabID, string> prefabsMap = new Dictionary<PrefabID, string>();
+        readonly Dictionary<PrefabID, GameObject> prefabs = new Dictionary<PrefabID, GameObject>();
 
-        Dictionary<MaterialID, string> materialsMap = new Dictionary<MaterialID, string>();
-        Dictionary<MaterialID, Material> materials = new Dictionary<MaterialID, Material>();
+        readonly Dictionary<MaterialID, string> materialsMap = new Dictionary<MaterialID, string>();
+        readonly Dictionary<MaterialID, Material> materials = new Dictionary<MaterialID, Material>();
 
         private static ResourceManager _instance;
         public static ResourceManager Instance
         {
-            get { return _instance; }
+            get
+            {
+                if (null == _instance)
+                {
+                    _instance = new ResourceManager();
+                }
+                return _instance;
+            }
         }
 
-        private void Awake()
+        private ResourceManager()
         {
-            if (null == _instance)
-            {
-                _instance = this;
+            prefabsMap.Add(PrefabID.SunLight, "Prefabs/Sun");
+            prefabsMap.Add(PrefabID.SpotLight, "Prefabs/Spot");
+            prefabsMap.Add(PrefabID.PointLight, "Prefabs/Point");
+            prefabsMap.Add(PrefabID.Camera, "Prefabs/Camera");
+            prefabsMap.Add(PrefabID.Locator, "Prefabs/Primitives/Axis_locator");
 
-                prefabsMap.Add(PrefabID.SunLight, "Prefabs/Sun");
-                prefabsMap.Add(PrefabID.SpotLight, "Prefabs/Spot");
-                prefabsMap.Add(PrefabID.PointLight, "Prefabs/Point");
-                prefabsMap.Add(PrefabID.Camera, "Prefabs/Camera");
-                prefabsMap.Add(PrefabID.Locator, "Prefabs/Primitives/Axis_locator");
-
-                materialsMap.Add(MaterialID.ObjectOpaque, "Materials/ObjectOpaque");
-                materialsMap.Add(MaterialID.ObjectTransparent, "Materials/ObjectTransparent");
-                materialsMap.Add(MaterialID.Paint, "Materials/Paint");
-                materialsMap.Add(MaterialID.GreasePencil, "Materials/GreasePencilMat");
-            }
+            materialsMap.Add(MaterialID.ObjectOpaque, "Materials/ObjectOpaque");
+            materialsMap.Add(MaterialID.ObjectTransparent, "Materials/ObjectTransparent");
+            materialsMap.Add(MaterialID.Paint, "Materials/Paint");
+            materialsMap.Add(MaterialID.GreasePencil, "Materials/GreasePencilMat");
         }
 
         public static GameObject GetPrefab(PrefabID resource)

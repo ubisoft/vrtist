@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -10,6 +11,7 @@ namespace VRtist
         Default,
         Hover
     }
+
     public class SelectionChangedArgs : EventArgs
     {
         public Dictionary<int, GameObject> selectionBefore = new Dictionary<int, GameObject>();
@@ -28,6 +30,9 @@ namespace VRtist
         All = 7,
     }
 
+    /// <summary>
+    /// Current selection and hover object.
+    /// </summary>
     public class Selection
     {
         public static Color SelectedColor = new Color(0f / 255f, 167f / 255f, 255f / 255f);
@@ -62,8 +67,10 @@ namespace VRtist
 
         public static void TriggerCurrentCameraChanged()
         {
-            ActiveCameraChangedArgs args = new ActiveCameraChangedArgs();
-            args.activeCamera = activeCamera;
+            ActiveCameraChangedArgs args = new ActiveCameraChangedArgs
+            {
+                activeCamera = activeCamera
+            };
             OnActiveCameraChanged?.Invoke(null, args);
         }
 
@@ -113,15 +120,6 @@ namespace VRtist
             controller.UpdateCameraPreviewInFront(true);
 
             TriggerCurrentCameraChanged();
-        }
-
-        static void SetCameraEnabled(GameObject obj, bool value)
-        {
-            Camera cam = obj.GetComponentInChildren<Camera>(true);
-            if (cam)
-            {
-                cam.gameObject.SetActive(value);
-            }
         }
 
         static void UpdateCurrentObjectOutline()
@@ -292,7 +290,7 @@ namespace VRtist
             LayerType layerType = LayerType.Default;
 
             Transform parent = gObject.transform;
-            while(parent != null)
+            while (parent != null)
             {
                 if (selection.ContainsKey(parent.gameObject.GetInstanceID()))
                 {
@@ -301,7 +299,7 @@ namespace VRtist
                 }
                 parent = parent.parent;
             }
-           
+
             if (gObject)
             {
                 UIUtils.SetRecursiveLayerSmart(gObject, layerType);
@@ -337,11 +335,7 @@ namespace VRtist
 
             UIUtils.SetRecursiveLayerSmart(gObject, LayerType.Selection);
 
-            EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if (handler != null)
-            {
-                handler(null, args);
-            }
+            OnSelectionChanged?.Invoke(null, args);
 
             return true;
         }
@@ -363,11 +357,7 @@ namespace VRtist
 
             UIUtils.SetRecursiveLayerSmart(gObject, LayerType.Default);
 
-            EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if (handler != null)
-            {
-                handler(null, args);
-            }
+            OnSelectionChanged?.Invoke(null, args);
 
             return true;
         }
@@ -389,11 +379,7 @@ namespace VRtist
             if (hoveredObject != activeCamera)
                 SetActiveCamera(null);
 
-            EventHandler<SelectionChangedArgs> handler = OnSelectionChanged;
-            if (handler != null)
-            {
-                handler(null, args);
-            }
+            OnSelectionChanged?.Invoke(null, args);
         }
 
         public static int Count()

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -215,7 +216,7 @@ namespace VRtist
                 }
             }
 
-            center /= (float) bboxCount;
+            center /= (float)bboxCount;
 
             // compute distance to camera;
             float max = Mathf.Max(bmax.x - bmin.x, bmax.y - bmin.y);
