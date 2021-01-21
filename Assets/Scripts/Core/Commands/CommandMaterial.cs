@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -11,10 +12,13 @@ namespace VRtist
         public float metallic;
     }
 
+    /// <summary>
+    /// Command that assigns a material to an object.
+    /// </summary>
     public class CommandMaterial : ICommand
     {
         // Store for each gameObject its old value
-        private Dictionary<GameObject, MaterialValue> oldValues = new Dictionary<GameObject, MaterialValue>();
+        private readonly Dictionary<GameObject, MaterialValue> oldValues = new Dictionary<GameObject, MaterialValue>();
 
         // The new value
         private MaterialValue newValue;
@@ -104,7 +108,7 @@ namespace VRtist
                     //{
                     //    newMaterials[i] = oldMaterial;
                     //}
-                    
+
                     Material newMaterial = newMaterials[i++];
 
                     newMaterial.SetColor("_BaseColor", value.color);

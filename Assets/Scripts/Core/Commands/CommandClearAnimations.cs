@@ -2,10 +2,13 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to clear all the animations on an object.
+    /// </summary>
     public class CommandClearAnimations : ICommand
     {
-        GameObject gObject;
-        AnimationSet animationSet;
+        readonly GameObject gObject;
+        readonly AnimationSet animationSet;
         public CommandClearAnimations(GameObject obj)
         {
             gObject = obj;

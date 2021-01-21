@@ -2,12 +2,15 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to enable/disable the DoF of a camera. In the case of enabling the DoF it may create a colimator object.
+    /// </summary>
     public class CommandEnableDOF : ICommand
     {
         private static GameObject cameraColimator = null;
+        readonly GameObject camera;
+        readonly bool enable;
 
-        GameObject camera;
-        bool enable;
         public CommandEnableDOF(GameObject camera, bool enable)
         {
             this.camera = camera;
@@ -16,7 +19,7 @@ namespace VRtist
 
         private void CreateColimator(GameObject camera)
         {
-            if(null == cameraColimator)
+            if (null == cameraColimator)
             {
                 cameraColimator = Resources.Load<GameObject>("Prefabs/UI/Colimator");
             }
@@ -50,11 +53,6 @@ namespace VRtist
             }
         }
 
-        private bool IsVRtistColimator()
-
-        {
-            return true;
-        }
         private void SetDOFEnabled(bool value)
         {
             CameraController cameraController = camera.GetComponent<CameraController>();
@@ -62,7 +60,7 @@ namespace VRtist
             Transform colimator = cameraController.colimator;
             if (null == colimator)
             {
-                if(value)
+                if (value)
                 {
                     CreateColimator(camera);
                 }
@@ -78,12 +76,12 @@ namespace VRtist
                 else
                 {
                     ColimatorController colimatorController = colimator.GetComponent<ColimatorController>();
-                    if(colimatorController.isVRtist)
+                    if (colimatorController.isVRtist)
                     {
                         DestroyColimator(camera);
                     }
                 }
-            }            
+            }
         }
 
         public override void Undo()

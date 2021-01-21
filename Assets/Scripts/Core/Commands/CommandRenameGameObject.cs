@@ -2,11 +2,14 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to rename an object of the scene.
+    /// </summary>
     public class CommandRenameGameObject : ICommand
     {
-        Transform transform;
-        string oldName;
-        string newName;
+        readonly Transform transform;
+        readonly string oldName;
+        readonly string newName;
 
         public CommandRenameGameObject(string commandName, GameObject gobject, string newName)
         {

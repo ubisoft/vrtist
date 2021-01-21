@@ -2,12 +2,15 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to ad a keyframe to a property of an object.
+    /// </summary>
     public class CommandAddKeyframe : ICommand
     {
-        GameObject gObject;
-        AnimatableProperty property;
-        AnimationKey oldAnimationKey = null;
-        AnimationKey newAnimationKey = null;
+        readonly GameObject gObject;
+        readonly AnimatableProperty property;
+        readonly AnimationKey oldAnimationKey = null;
+        readonly AnimationKey newAnimationKey = null;
 
         public CommandAddKeyframe(GameObject obj, AnimatableProperty property, int frame, float value, Interpolation interpolation)
         {

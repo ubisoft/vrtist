@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Abstract base class for commands.
+    /// </summary>
     public abstract class ICommand
     {
         abstract public void Undo();
@@ -31,34 +35,43 @@ namespace VRtist
 
         protected void SendDelete(GameObject gObject)
         {
-            DeleteInfo deleteInfo = new DeleteInfo();
-            deleteInfo.meshTransform = gObject.transform;
+            DeleteInfo deleteInfo = new DeleteInfo
+            {
+                meshTransform = gObject.transform
+            };
             CommandManager.SendEvent(MessageType.Delete, deleteInfo);
         }
 
         protected void SendToTrash(GameObject gObject)
         {
-            SendToTrashInfo trashInfo = new SendToTrashInfo();
-            trashInfo.transform = gObject.transform;
+            SendToTrashInfo trashInfo = new SendToTrashInfo
+            {
+                transform = gObject.transform
+            };
             CommandManager.SendEvent(MessageType.SendToTrash, trashInfo);
         }
 
         protected void RestoreFromTrash(GameObject gObject, Transform parent)
         {
-            RestoreFromTrashInfo trashInfo = new RestoreFromTrashInfo();
-            trashInfo.transform = gObject.transform;
-            trashInfo.parent = parent;
+            RestoreFromTrashInfo trashInfo = new RestoreFromTrashInfo
+            {
+                transform = gObject.transform,
+                parent = parent
+            };
             CommandManager.SendEvent(MessageType.RestoreFromTrash, trashInfo);
         }
 
         protected string name;
     }
 
+    /// <summary>
+    /// Manage the undo/redo stack.
+    /// </summary>
     public static class CommandManager
     {
-        static List<ICommand> undoStack = new List<ICommand>();
-        static List<ICommand> redoStack = new List<ICommand>();
-        static List<CommandGroup> groupStack = new List<CommandGroup>();
+        static readonly List<ICommand> undoStack = new List<ICommand>();
+        static readonly List<ICommand> redoStack = new List<ICommand>();
+        static readonly List<CommandGroup> groupStack = new List<CommandGroup>();
         static CommandGroup currentGroup = null;
 
         public static void Undo()

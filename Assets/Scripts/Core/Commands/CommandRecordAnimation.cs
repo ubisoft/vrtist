@@ -9,17 +9,22 @@ namespace VRtist
         public Curve curve;
     }
 
+    /// <summary>
+    /// Command to set the whole animation of an object.
+    /// </summary>
     public class CommandRecordAnimations : ICommand
     {
-        GameObject gObject;
-        AnimationSet oldAnimationSet;
-        AnimationSet newAnimationSet;
+        readonly GameObject gObject;
+        readonly AnimationSet oldAnimationSet;
+        readonly AnimationSet newAnimationSet;
+
         public CommandRecordAnimations(GameObject obj, AnimationSet oldAnimationSet, AnimationSet newAnimationSet)
         {
             gObject = obj;
             this.oldAnimationSet = oldAnimationSet;
             this.newAnimationSet = newAnimationSet;
         }
+
         public override void Undo()
         {
             if (null == oldAnimationSet)
@@ -43,6 +48,7 @@ namespace VRtist
                 MixerClient.Instance.SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
             }
         }
+
         public override void Submit()
         {
             Redo();

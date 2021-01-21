@@ -2,6 +2,9 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to remove (delete) an object from the scene.
+    /// </summary>
     public class CommandRemoveGameObject : CommandAddRemoveGameObject
     {
         public CommandRemoveGameObject(GameObject o) : base(o) { }
@@ -19,6 +22,7 @@ namespace VRtist
 
             RestoreFromTrash(gObject, parent);
         }
+
         public override void Redo()
         {
             if (null == gObject) { return; }
@@ -28,6 +32,7 @@ namespace VRtist
             Node node = SyncData.nodes[gObject.name];
             node.RemoveInstance(gObject);
         }
+
         public override void Submit()
         {
             ParametersController controller = gObject.GetComponent<ParametersController>();

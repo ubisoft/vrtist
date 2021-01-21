@@ -2,9 +2,13 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to move a keyframe of an object.
+    /// </summary>
     public class CommandMoveKeyframes : CommandGroup
     {
-        GameObject gObject;
+        readonly GameObject gObject;
+
         public CommandMoveKeyframes(GameObject obj, int frame, int newFrame) : base("Move Keyframes")
         {
             gObject = obj;

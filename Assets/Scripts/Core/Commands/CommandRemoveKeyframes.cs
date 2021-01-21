@@ -2,9 +2,13 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to remove all keyframes at a specific time of an object.
+    /// </summary>
     public class CommandRemoveKeyframes : CommandGroup
     {
-        GameObject gObject;
+        readonly GameObject gObject;
+
         public CommandRemoveKeyframes(GameObject obj) : base("Remove Keyframes")
         {
             gObject = obj;
@@ -28,6 +32,7 @@ namespace VRtist
             MixerClient.Instance.SendEvent<string>(MessageType.QueryAnimationData, gObject.name);
 
         }
+
         public override void Submit()
         {
             base.Submit();

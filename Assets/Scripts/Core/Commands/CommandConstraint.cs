@@ -3,11 +3,14 @@ using UnityEngine.Animations;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to add a constraint on an object.
+    /// </summary>
     public class CommandAddConstraint : ICommand
     {
-        ConstraintType constraintType;
-        GameObject gobject;
-        GameObject target;
+        readonly ConstraintType constraintType;
+        readonly GameObject gobject;
+        readonly GameObject target;
 
         public CommandAddConstraint(ConstraintType constraintType, GameObject gobject, GameObject target)
         {
@@ -53,11 +56,14 @@ namespace VRtist
         }
     }
 
+    /// <summary>
+    /// Command to remove a constraint of an object.
+    /// </summary>
     public class CommandRemoveConstraint : ICommand
     {
-        ConstraintType constraintType;
-        GameObject gobject;
-        GameObject target;
+        readonly ConstraintType constraintType;
+        readonly GameObject gobject;
+        readonly GameObject target;
 
         public CommandRemoveConstraint(ConstraintType constraintType, GameObject gobject)
         {
@@ -67,7 +73,7 @@ namespace VRtist
             if (null != component)
             {
                 IConstraint constraint = component as IConstraint;
-                if(constraint.sourceCount > 0)
+                if (constraint.sourceCount > 0)
                     target = constraint.GetSource(0).sourceTransform.gameObject;
             }
         }

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -44,20 +44,27 @@ namespace VRtist
         public Interpolation interpolation;
     }
 
+    /// <summary>
+    /// Allow to hook the time of the animation engine.
+    /// An example of use is the shot manager.
+    /// </summary>
     public abstract class TimeHook
     {
-        public abstract int hookTime(int frame);
+        public abstract int HookTime(int frame);
     }
 
+    /// <summary>
+    /// Animation Engine.
+    /// </summary>
     public class AnimationEngine : MonoBehaviour
     {
         // All animations
-        Dictionary<GameObject, AnimationSet> animations = new Dictionary<GameObject, AnimationSet>();
-        Dictionary<GameObject, AnimationSet> disabledAnimations = new Dictionary<GameObject, AnimationSet>();
-        Dictionary<GameObject, AnimationSet> recordingObjects = new Dictionary<GameObject, AnimationSet>();
-        Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
+        readonly Dictionary<GameObject, AnimationSet> animations = new Dictionary<GameObject, AnimationSet>();
+        readonly Dictionary<GameObject, AnimationSet> disabledAnimations = new Dictionary<GameObject, AnimationSet>();
+        readonly Dictionary<GameObject, AnimationSet> recordingObjects = new Dictionary<GameObject, AnimationSet>();
+        readonly Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
 
-        List<TimeHook> timeHooks = new List<TimeHook>();
+        readonly List<TimeHook> timeHooks = new List<TimeHook>();
 
         public float fps = 24f;
         float playStartTime;
@@ -160,14 +167,14 @@ namespace VRtist
         }
 
         public void UnregisterTimeHook(TimeHook timeHook)
-        {            
+        {
             timeHooks.Remove(timeHook);
         }
 
         private void Update()
         {
             // Find current time and frame & Animate objects
-          if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
+            if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
             {
                 // Compute new frame
                 float deltaTime = Time.time - playStartTime;
@@ -178,7 +185,7 @@ namespace VRtist
                     int prevFrame = newFrame;
                     foreach (TimeHook timeHook in timeHooks)
                     {
-                        newFrame = timeHook.hookTime(newFrame);
+                        newFrame = timeHook.HookTime(newFrame);
                     }
                     if (prevFrame != newFrame)
                     {
@@ -312,12 +319,12 @@ namespace VRtist
 
         public int TimeToFrame(float time)
         {
-            return (int) (fps * time);
+            return (int)(fps * time);
         }
 
         public float FrameToTime(int frame)
         {
-            return (float) frame / fps;
+            return (float)frame / fps;
         }
 
         public AnimationSet GetObjectAnimation(GameObject gobject)

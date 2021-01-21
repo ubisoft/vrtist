@@ -89,7 +89,7 @@ namespace VRtist
             }
         }
 
-        public override int hookTime(int frame)
+        public override int HookTime(int frame)
         {
             if (!montageEnabled || shots.Count == 0)
                 return frame;

@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to move an object or a list of objects or the current selection.
+    /// </summary>
     public class CommandMoveObjects : ICommand
     {
         List<string> objectNames;
@@ -19,6 +23,7 @@ namespace VRtist
         {
 
         }
+
         public CommandMoveObjects(List<string> o, List<Vector3> bp, List<Quaternion> br, List<Vector3> bs, List<Vector3> ep, List<Quaternion> er, List<Vector3> es)
         {
             objectNames = o;
@@ -72,7 +77,7 @@ namespace VRtist
             {
                 string objectName = objectNames[i];
                 SyncData.SetTransform(objectName, endPositions[i], endRotations[i], endScales[i]);
-                foreach(var instance in SyncData.nodes[objectName].instances)
+                foreach (var instance in SyncData.nodes[objectName].instances)
                     GlobalState.FireObjectMoving(instance.Item1);
                 CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
             }

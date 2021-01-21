@@ -1,17 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to set a value to a component property of an object.
+    /// The property is defined by a path like "/Transform/localPosition/x", for example.
+    /// </summary>
+    /// <typeparam name="T">Value type</typeparam>
     public class CommandSetValue<T> : ICommand
     {
-        Dictionary<GameObject, T> oldValues = new Dictionary<GameObject, T>();
+        readonly Dictionary<GameObject, T> oldValues = new Dictionary<GameObject, T>();
 
         T newValue;
-        string objectPath;
-        string componentName;
-        string fieldName;
+        readonly string objectPath;
+        readonly string componentName;
+        readonly string fieldName;
 
         private void GetGenericAttribute(Component component, string fieldName, out object inst, out MemberInfo memberInfo)
         {
@@ -38,7 +44,7 @@ namespace VRtist
 
         public T GetValue(Component component, string fieldName)
         {
-            GetGenericAttribute(component, fieldName, out object inst, out MemberInfo memberInfo);       
+            GetGenericAttribute(component, fieldName, out object inst, out MemberInfo memberInfo);
             if (memberInfo is FieldInfo)
                 return (T)(memberInfo as FieldInfo).GetValue(inst);
             else
