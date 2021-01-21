@@ -1,18 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FPSLook : MonoBehaviour
 {
     public Transform rotateX;
     private float sensitivity = 400;
     float xRotation = 0f;
-    // Start is called before the first frame update
-    void Start()
-    {        
-    }
 
-    // Update is called once per frame
     void Update()
     {
         float z = Input.GetAxis("Fire1");
@@ -22,7 +15,7 @@ public class FPSLook : MonoBehaviour
             return;
         }
 
-        Cursor.lockState = CursorLockMode.Locked;            
+        Cursor.lockState = CursorLockMode.Locked;
 
         float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
