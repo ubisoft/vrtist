@@ -18,7 +18,7 @@ namespace VRtist
 
         void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;
+            Selection.onSelectionChanged.AddListener(OnSelectionChanged);
             GlobalState.Animation.onAddAnimation.AddListener(OnAnimationAdded);
             GlobalState.Animation.onRemoveAnimation.AddListener(OnAnimationRemoved);
             GlobalState.Animation.onChangeCurve.AddListener(OnCurveChanged);
@@ -48,7 +48,7 @@ namespace VRtist
             }
         }
 
-        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        void OnSelectionChanged(HashSet<GameObject> previousSelectedObjects, HashSet<GameObject> selectedObjects)
         {
             if (GlobalState.Settings.Display3DCurves)
                 UpdateFromSelection();
@@ -57,7 +57,7 @@ namespace VRtist
         void UpdateFromSelection()
         {
             ClearCurves();
-            foreach (GameObject gObject in Selection.selection.Values)
+            foreach (GameObject gObject in Selection.SelectedObjects)
             {
                 AddCurve(gObject);
             }

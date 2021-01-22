@@ -134,7 +134,7 @@ namespace VRtist
         private void OnSetInFront(bool value)
         {
             inFront = value;
-            UpdateCameraPreviewInFront(Selection.activeCamera == gameObject);
+            UpdateCameraPreviewInFront(CameraManager.Instance.ActiveCamera == gameObject);
         }
 
         public void UpdateCameraPreviewInFront(bool active)
@@ -208,7 +208,7 @@ namespace VRtist
 
                         colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
 
-                        if (Selection.activeCamera == gameObject)
+                        if (CameraManager.Instance.ActiveCamera == gameObject)
                         {
                             if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
                             dof.focusDistance.value = focus;
@@ -221,14 +221,14 @@ namespace VRtist
                     }
                 }
 
-                if (!enableDOF && Selection.activeCamera == gameObject)
+                if (!enableDOF && CameraManager.Instance.ActiveCamera == gameObject)
                 {
                     if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
                     dof.active = false;
                 }
 
                 // Active camera
-                if (Selection.activeCamera == gameObject)
+                if (CameraManager.Instance.ActiveCamera == gameObject)
                 {
                     if (CameraTool.showCameraFrustum && GlobalState.Settings.DisplayGizmos)
                         DrawFrustum();

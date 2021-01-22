@@ -12,7 +12,7 @@ namespace VRtist
 
         private void Awake()
         {
-            Selection.OnActiveCameraChanged += OnCameraChanged;
+            CameraManager.Instance.onActiveCameraChanged.AddListener(OnCameraChanged);
         }
 
         void Start()
@@ -43,9 +43,9 @@ namespace VRtist
 
         }
 
-        void OnCameraChanged(object sender, ActiveCameraChangedArgs args)
+        void OnCameraChanged(GameObject _, GameObject activeCamera)
         {
-            SetActiveCamera(args.activeCamera);
+            SetActiveCamera(activeCamera);
         }
 
         private void SetActiveCamera(GameObject activeCamera)

@@ -481,7 +481,12 @@ namespace VRtist
 
         private void InitVolumeFromSelection()
         {
-            GameObject selected = Selection.GetFirstSelectedObject();
+            GameObject selected = null;
+            foreach (GameObject o in Selection.SelectedObjects)
+            {
+                selected = o;
+                break;
+            }
             if (null != selected)
             {
                 VolumeController controller = selected.GetComponent<VolumeController>();

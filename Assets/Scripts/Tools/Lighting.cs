@@ -118,7 +118,7 @@ namespace VRtist
                     ClearSelection();
                     new CommandAddGameObject(instance).Submit();
                     AddToSelection(instance);
-                    Selection.SetHoveredObject(instance);
+                    Selection.HoveredObject = instance;
                 }
                 finally
                 {
@@ -168,9 +168,8 @@ namespace VRtist
 
         protected override void UpdateUI()
         {
-            foreach (var item in Selection.selection)
+            foreach (var gobject in Selection.SelectedObjects)
             {
-                GameObject gobject = item.Value;
                 LightController lightController = gobject.GetComponent<LightController>();
                 if (null == lightController)
                     continue;
@@ -190,9 +189,9 @@ namespace VRtist
             }
         }
 
-        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected override void OnSelectionChanged(HashSet<GameObject> previousSelection, HashSet<GameObject> currentSelection)
         {
-            base.OnSelectionChanged(sender, args);
+            base.OnSelectionChanged(previousSelection, currentSelection);
             // update lighting panel from selection
             ////////////////////////////////////////
 
@@ -201,7 +200,7 @@ namespace VRtist
             int spotCount = 0;
 
             List<GameObject> selectedLights = new List<GameObject>();
-            foreach (GameObject gobject in Selection.GetGrippedOrSelection())
+            foreach (GameObject gobject in Selection.ActiveObjects)
             {
                 LightController lightController = gobject.GetComponent<LightController>();
                 if (null == lightController)
@@ -251,9 +250,8 @@ namespace VRtist
             if (!gameObject.activeSelf) { return; }
 
             // update selection light color from UI
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
-                GameObject gobject = data.Value;
                 LightController lightingController = gobject.GetComponent<LightController>();
                 if (null == lightingController)
                     continue;
@@ -274,9 +272,8 @@ namespace VRtist
 
         private void OnBoolChangeParameter(string param, bool value)
         {
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
-                GameObject gobject = data.Value;
                 LightController lightingController = gobject.GetComponent<LightController>();
                 if (null == lightingController)
                     continue;
@@ -367,9 +364,8 @@ namespace VRtist
 
         private void OnFloatChangeParameter(string param, float value)
         {
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
-                GameObject gobject = data.Value;
                 LightController lightingController = gobject.GetComponent<LightController>();
                 if (null == lightingController)
                     continue;

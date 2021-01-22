@@ -171,10 +171,9 @@ namespace VRtist
             int bboxCount = 0;
 
             // parse selection
-            foreach (var item in Selection.selection)
+            foreach (var gobj in Selection.SelectedObjects)
             {
                 // get all meshes of selected object
-                GameObject gobj = item.Value;
                 MeshFilter[] meshFilters = gobj.GetComponentsInChildren<MeshFilter>();
                 foreach (MeshFilter meshFilter in meshFilters)
                 {
@@ -255,7 +254,7 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.primary2DAxisClick,
             () =>
             {
-                if (Selection.selection.Count == 0)
+                if (Selection.SelectedObjects.Count == 0)
                 {
                     ResetCameraClipPlanes();
                     transform.localPosition = Vector3.zero;

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+
 using UnityEngine;
 
 namespace VRtist
@@ -202,12 +203,12 @@ namespace VRtist
             cameraController.near = near;
             cameraController.far = far;
             cameraController.aperture = aperture;
-            cameraController.colimator = colimatorName == ""  ? null : SyncData.nodes[colimatorName].prefab.transform;
+            cameraController.colimator = colimatorName == "" ? null : SyncData.nodes[colimatorName].prefab.transform;
             cameraController.enableDOF = dofEnabled;
             cameraController.filmHeight = sensorSize.y;
 
             Node cameraNode = SyncData.nodes[obj.name];
-            foreach(var instanceItem in cameraNode.instances)
+            foreach (var instanceItem in cameraNode.instances)
             {
                 GameObject instance = instanceItem.Item1;
                 CameraController instanceCameraController = instance.GetComponent<CameraController>();
@@ -229,13 +230,13 @@ namespace VRtist
 #else
             if (null == cameraObject)
             {
-                Selection.SetActiveCamera(null);
+                CameraManager.Instance.ActiveCamera = null;
             }
             else
             {
                 // We only have one instance of any camera in the scene                
                 CameraController controller = cameraObject.GetComponent<CameraController>();
-                if (null != controller) { Selection.SetActiveCamera(controller); }
+                if (null != controller) { CameraManager.Instance.ActiveCamera = controller.gameObject; }
             }
 #endif
         }
@@ -327,7 +328,7 @@ namespace VRtist
         public override void CreateAnimationKey(string objectName, string channel, int channelIndex, int frame, float value, int interpolation)
         {
             AnimatableProperty property = BlenderToVRtistAnimationProperty(channel, channelIndex);
-            if(property == AnimatableProperty.Unknown)
+            if (property == AnimatableProperty.Unknown)
             {
                 Debug.LogError("Unknown Animation Property " + objectName + " " + channel + " " + channelIndex);
                 return;
@@ -346,7 +347,7 @@ namespace VRtist
                     value = Mathf.Rad2Deg * value;
                 }
 
-                curve.AddKey(new AnimationKey ( frame,  value, (Interpolation)interpolation ));
+                curve.AddKey(new AnimationKey(frame, value, (Interpolation)interpolation));
             }
         }
 
@@ -414,7 +415,7 @@ namespace VRtist
                     value = Mathf.Rad2Deg * value;
                 }
 
-                keys.Add(new AnimationKey(frames[i], value, (Interpolation) interpolations[i]));
+                keys.Add(new AnimationKey(frames[i], value, (Interpolation)interpolations[i]));
             }
 
 

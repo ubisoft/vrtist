@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
@@ -17,6 +18,24 @@ namespace VRtist
         public Dictionary<int, GameObject> selectionBefore = new Dictionary<int, GameObject>();
     }
 
+    [Serializable]
+    public class SelectionChangedEvent : UnityEvent<HashSet<GameObject>, HashSet<GameObject>>
+    {
+        // Empty
+    }
+
+    [Serializable]
+    public class HoverChangedEvent : UnityEvent<GameObject, GameObject>
+    {
+        // Empty
+    }
+
+    [Serializable]
+    public class AuxiliaryChangedEvent : UnityEvent<GameObject, GameObject>
+    {
+        // Empty
+    }
+
     public class ActiveCameraChangedArgs : EventArgs
     {
         public GameObject activeCamera = null;
@@ -30,15 +49,143 @@ namespace VRtist
         All = 7,
     }
 
+    public class Selection
+    {
+        // Current selected objects (blue outlined)
+        static readonly HashSet<GameObject> selectedObjects = new HashSet<GameObject>();
+        public static HashSet<GameObject> SelectedObjects
+        {
+            get { return selectedObjects; }
+        }
+        public static SelectionChangedEvent onSelectionChanged = new SelectionChangedEvent();
+
+        // Current hovered object (yellow outlined)
+        static GameObject hoveredObject = null;
+        public static GameObject HoveredObject
+        {
+            get { return hoveredObject; }
+            set
+            {
+                GameObject previousHovered = hoveredObject;
+                hoveredObject = value;
+                onHoveredChanged.Invoke(previousHovered, value);
+            }
+        }
+        public static HoverChangedEvent onHoveredChanged = new HoverChangedEvent();
+
+        // An auxiliary selection represents a volatile object out of the main selection
+        static HashSet<GameObject> auxiliarySelection = new HashSet<GameObject>();
+        public static GameObject AuxiliarySelection
+        {
+            get
+            {
+                foreach (GameObject o in auxiliarySelection)
+                {
+                    return o;
+                }
+                return null;
+            }
+            set
+            {
+                if (IsSelected(value))
+                    return;
+
+                GameObject oldAuxiliarySelection = null;
+                foreach (GameObject o in auxiliarySelection)
+                {
+                    oldAuxiliarySelection = o;
+                    break;
+                }
+                auxiliarySelection.Clear();
+                if (null != value)
+                    auxiliarySelection.Add(value);
+                onAuxiliarySelectionChanged.Invoke(oldAuxiliarySelection, value);
+            }
+        }
+        public static AuxiliaryChangedEvent onAuxiliarySelectionChanged = new AuxiliaryChangedEvent();
+
+        // Active objects represents manipulated objects (selected or off-selection gripped object)
+        public static HashSet<GameObject> ActiveObjects
+        {
+            get
+            {
+                if (auxiliarySelection.Count == 0)
+                    return selectedObjects;
+                return auxiliarySelection;
+            }
+        }
+
+        static int selectionStateTimestamp = 0;
+        public static int SelectionStateTimestamp
+        {
+            get { return selectionStateTimestamp; }
+        }
+
+        public static bool IsSelected(GameObject gObject)
+        {
+            if (null == gObject)
+                return false;
+            return selectedObjects.Contains(gObject);
+        }
+
+        public static bool HasSelectedObjects()
+        {
+            return selectedObjects.Count != 0;
+        }
+
+        public static bool AddToSelection(GameObject gObject)
+        {
+            if (IsSelected(gObject))
+                return false;
+            selectionStateTimestamp++;
+            HashSet<GameObject> previousSelectedObjects = new HashSet<GameObject>(selectedObjects);
+            selectedObjects.Add(gObject);
+            onSelectionChanged.Invoke(previousSelectedObjects, selectedObjects);
+            return true;
+        }
+
+        public static bool RemoveFromSelection(GameObject gObject)
+        {
+            if (!IsSelected(gObject))
+                return false;
+            selectionStateTimestamp++;
+            HashSet<GameObject> previousSelectedObjects = new HashSet<GameObject>(selectedObjects);
+            selectedObjects.Remove(gObject);
+            onSelectionChanged.Invoke(previousSelectedObjects, selectedObjects);
+            return true;
+        }
+
+        public static void ClearSelection()
+        {
+            if (!HasSelectedObjects())
+                return;
+            selectionStateTimestamp++;
+            HashSet<GameObject> previousSelectedObjects = new HashSet<GameObject>(selectedObjects);
+            selectedObjects.Clear();
+            onSelectionChanged.Invoke(previousSelectedObjects, selectedObjects);
+        }
+
+        public static bool IsHovered(GameObject gObject)
+        {
+            return gObject == hoveredObject;
+        }
+
+        public static bool HasHoveredObject()
+        {
+            return hoveredObject != null;
+        }
+    }
+
     /// <summary>
     /// Current selection and hover object.
     /// </summary>
+    /*
     public class Selection
     {
         public static Color SelectedColor = new Color(0f / 255f, 167f / 255f, 255f / 255f);
         public static Color UnselectedColor = Color.white;
 
-        public static bool selectionHasChanged = false;
+        public static int selectionStateTimestamp = 0;
         public static Dictionary<int, GameObject> selection = new Dictionary<int, GameObject>();
         public static event EventHandler<SelectionChangedArgs> OnSelectionChanged;
         public static event EventHandler<GameObjectArgs> OnGrippedObjectChanged;
@@ -327,7 +474,7 @@ namespace VRtist
             FillSelection(ref args.selectionBefore);
 
             selection.Add(gObject.GetInstanceID(), gObject);
-            selectionHasChanged = true;
+            selectionStateTimestamp++;
 
             CameraController controller = gObject.GetComponentInChildren<CameraController>(true);
             if (null != controller)
@@ -349,7 +496,7 @@ namespace VRtist
             FillSelection(ref args.selectionBefore);
 
             selection.Remove(gObject.GetInstanceID());
-            selectionHasChanged = true;
+            selectionStateTimestamp++;
 
             if (activeCamera != gObject)
                 SetActiveCamera(null);
@@ -368,7 +515,7 @@ namespace VRtist
             FillSelection(ref args.selectionBefore);
 
             selection.Clear();
-            selectionHasChanged = true;
+            selectionStateTimestamp++;
 
             // must be done when selection is up to date
             foreach (GameObject obj in args.selectionBefore.Values)
@@ -392,9 +539,10 @@ namespace VRtist
             return selection.Count == 0;
         }
 
-        public static void ResetSelectionHasChanged()
+        public static int GetSelectionStateTimestamp()
         {
-            selectionHasChanged = false;
+            return selectionStateTimestamp;
         }
     }
+    */
 }

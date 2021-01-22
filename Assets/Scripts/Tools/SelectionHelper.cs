@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+
 using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -38,15 +40,15 @@ namespace VRtist
 
             controllerCollider = GetComponent<Collider>();
 
-            Selection.OnSelectionChanged += OnSelectionChanged;
-            Selection.OnGrippedObjectChanged += OnGrippedObjectChanged;
+            Selection.onSelectionChanged.AddListener(OnSelectionChanged);
+            Selection.onAuxiliarySelectionChanged.AddListener(OnAuxiliarySelectedObjectChanged);
             SetSelectionCount();
         }
 
         private void OnDestroy()
         {
-            Selection.OnSelectionChanged -= OnSelectionChanged;
-            Selection.OnGrippedObjectChanged -= OnGrippedObjectChanged;
+            Selection.onSelectionChanged.RemoveListener(OnSelectionChanged);
+            Selection.onAuxiliarySelectionChanged.RemoveListener(OnAuxiliarySelectedObjectChanged);
         }
 
         private void Update()
@@ -69,7 +71,7 @@ namespace VRtist
                 return;
             }
 
-            foreach (GameObject gobj in Selection.GetGrippedOrSelection())
+            foreach (GameObject gobj in Selection.ActiveObjects)
             {
                 // Check if the object is outside the view frustum
                 Bounds bounds;
@@ -125,23 +127,23 @@ namespace VRtist
             }
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        private void OnSelectionChanged(HashSet<GameObject> previousSelection, HashSet<GameObject> currentSelection)
         {
             SetSelectionCount();
         }
 
         private void SetSelectionCount()
         {
-            int count = Selection.selection.Count;
+            int count = Selection.SelectedObjects.Count;
             text.text = count.ToString();
             GlobalState.SetPrimaryControllerDisplayText("Sel " + count.ToString());
             hasSelection = count > 0;
             gameObject.SetActive(hasSelection);
         }
 
-        private void OnGrippedObjectChanged(object sender, GameObjectArgs args)
+        private void OnAuxiliarySelectedObjectChanged(GameObject previousAuxiliarySelectedObject, GameObject auxiliarySelectedObject)
         {
-            if (null != args.gobject && !Selection.IsSelected(args.gobject))
+            if (null != auxiliarySelectedObject)
             {
                 image.sprite = grabImage;
                 text.text = "1";  // we can grab only one object outside of the selection

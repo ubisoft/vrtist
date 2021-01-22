@@ -24,7 +24,7 @@ namespace VRtist
                 titleBar = transform.parent.Find("TitleBar").GetComponent<UILabel>();
             }
 
-            Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+            CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
@@ -48,11 +48,11 @@ namespace VRtist
             }
         }
 
-        private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
+        private void OnActiveCameraChanged(GameObject _, GameObject activeCamera)
         {
             CameraController cameraController = null;
-            if (args.activeCamera)
-                cameraController = args.activeCamera.GetComponent<CameraController>();
+            if (activeCamera)
+                cameraController = activeCamera.GetComponent<CameraController>();
             if (null != cameraController)
             {
                 UpdateFromController(cameraController);
@@ -69,7 +69,8 @@ namespace VRtist
 
             // Get the renderTexture of the camera, and set it on the material of the previewImagePanel
             RenderTexture rt = activeCameraController.gameObject.GetComponentInChildren<Camera>(true).targetTexture;
-            previewImagePlane?.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", rt);
+            if (null != previewImagePlane)
+                previewImagePlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", rt);
 
             // Get the name of the camera, and set it in the title bar
             ToolsUIManager.Instance.SetWindowTitle(handle, cameraController.gameObject.name);

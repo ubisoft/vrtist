@@ -191,6 +191,7 @@ namespace VRtist
 
         private void Start()
         {
+            _ = OutlineManager.Instance;
             if (null != cameraFeedback)
             {
                 cameraFeedback.SetActive(settings.cameraFeedbackVisible);

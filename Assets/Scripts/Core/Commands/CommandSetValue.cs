@@ -66,9 +66,9 @@ namespace VRtist
             name = commandName;
             ICommand.SplitPropertyPath(propertyPath, out objectPath, out componentName, out fieldName);
 
-            foreach (var selectedItem in Selection.selection)
+            foreach (var selectedItem in Selection.SelectedObjects)
             {
-                GameObject gObject = objectPath.Length > 0 ? selectedItem.Value.transform.Find(objectPath).gameObject : selectedItem.Value;
+                GameObject gObject = objectPath.Length > 0 ? selectedItem.transform.Find(objectPath).gameObject : selectedItem;
                 Component component = gObject.GetComponent(componentName);
 
                 if (null == component)
@@ -113,9 +113,9 @@ namespace VRtist
 
         public override void Submit()
         {
-            foreach (var selectedItem in Selection.selection)
+            foreach (var selectedItem in Selection.SelectedObjects)
             {
-                GameObject gObject = objectPath.Length > 0 ? selectedItem.Value.transform.Find(objectPath).gameObject : selectedItem.Value;
+                GameObject gObject = objectPath.Length > 0 ? selectedItem.transform.Find(objectPath).gameObject : selectedItem;
                 Component component = gObject.GetComponent(componentName);
                 if (null == component)
                     continue;

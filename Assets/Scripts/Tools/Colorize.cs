@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -108,7 +109,7 @@ namespace VRtist
                 {
                     if (!selectionHasChanged && ColorOp.UpdateSelection == colorOp)
                     {
-                        CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.selection.Values.ToList());
+                        CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.SelectedObjects.ToList());
                         command.Redo();
                         command.Submit();
                     }
@@ -124,7 +125,7 @@ namespace VRtist
 
             if (colorOp == ColorOp.UpdateSelection)
             {
-                ColorizeObjects(Selection.selection.Values.ToList());
+                ColorizeObjects(Selection.SelectedObjects.ToList());
             }
         }
 

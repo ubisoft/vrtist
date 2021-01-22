@@ -415,7 +415,7 @@ namespace VRtist
         private List<Camera> SelectedCameras()
         {
             List<Camera> selectedCameras = new List<Camera>();
-            foreach (var selectedItem in Selection.GetGrippedOrSelection())
+            foreach (var selectedItem in Selection.ActiveObjects)
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
@@ -429,16 +429,16 @@ namespace VRtist
         {
             List<GameObject> selectedCameras = new List<GameObject>();
 
-            foreach (var selectedItem in Selection.GetGrippedOrSelection())
+            foreach (var selectedItem in Selection.ActiveObjects)
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
                     continue;
-                if (selectedItem != Selection.activeCamera)
+                if (selectedItem != CameraManager.Instance.ActiveCamera)
                     selectedCameras.Add(selectedItem);
             }
-            if (null != Selection.activeCamera)
-                selectedCameras.Add(Selection.activeCamera);
+            if (null != CameraManager.Instance.ActiveCamera)
+                selectedCameras.Add(CameraManager.Instance.ActiveCamera);
             return selectedCameras;
         }
 
@@ -461,7 +461,7 @@ namespace VRtist
                             ClearSelection();
                             new CommandAddGameObject(newCamera).Submit();
                             AddToSelection(newCamera);
-                            Selection.SetHoveredObject(newCamera);
+                            Selection.HoveredObject = newCamera;
                         }
                         finally
                         {
@@ -592,9 +592,8 @@ namespace VRtist
         protected override void UpdateUI()
         {
             // updates the panel from selection
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
-                GameObject gobject = data.Value;
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;
@@ -653,7 +652,7 @@ namespace VRtist
             }
 
             selectedCameraControllers.Clear();
-            foreach (GameObject item in Selection.selection.Values)
+            foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
@@ -664,11 +663,11 @@ namespace VRtist
             }
         }
 
-        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected override void OnSelectionChanged(HashSet<GameObject> previousSelection, HashSet<GameObject> currentSelection)
         {
-            base.OnSelectionChanged(sender, args);
+            base.OnSelectionChanged(previousSelection, currentSelection);
             UpdateSelectedCameraControllers();
-            foreach (GameObject item in Selection.selection.Values)
+            foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
@@ -703,7 +702,7 @@ namespace VRtist
         public void OnCheckEnableDepthOfField(bool value)
         {
             CommandGroup commangGroup = new CommandGroup();
-            foreach (GameObject item in Selection.selection.Values)
+            foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraContainer)

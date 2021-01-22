@@ -508,7 +508,7 @@ namespace VRtist
 
         void RecordFrame()
         {
-            foreach (var selected in Selection.GetGrippedOrSelection())
+            foreach (var selected in Selection.ActiveObjects)
             {
                 if (!recordingObjects.TryGetValue(selected, out AnimationSet animationSet))
                 {

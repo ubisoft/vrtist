@@ -1,4 +1,5 @@
 ﻿using System;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -490,7 +491,7 @@ namespace VRtist
                     }
                     else
                     {
-                        Selection.SetHoveredObject(null);
+                        Selection.HoveredObject = null;
                         hoveredObject = null;
                         ToolsManager.PopWindowTool();
                     }
@@ -503,7 +504,7 @@ namespace VRtist
             {
                 if (hoveredObject != gObj) // Only once for gObj
                 {
-                    Selection.SetHoveredObject(gObj); // will automatically switch with previously hovered object (UI or other).
+                    Selection.HoveredObject = gObj; // will automatically switch with previously hovered object (UI or other).
                     hoveredObject = gObj;
 
                     if (null != gObj.GetComponent<UIHandle>())

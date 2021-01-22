@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using TMPro;
+
 using UnityEngine;
 
 namespace VRtist
@@ -114,7 +116,7 @@ namespace VRtist
 
         public void OnEditCurrentFrame()
         {
-            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnChangeCurrentFrame((int) value), currentFrameLabel.transform, GlobalState.Animation.CurrentFrame);
+            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnChangeCurrentFrame((int)value), currentFrameLabel.transform, GlobalState.Animation.CurrentFrame);
         }
 
         public void OnGlobalRangeChanged(Vector2Int globalBounds)
@@ -156,11 +158,14 @@ namespace VRtist
                     GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
                     GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
                     GlobalState.Animation.onRangeEvent.AddListener(OnRangeChanged);
-                    Selection.OnSelectionChanged += OnSelectionChanged;
+
+                    Selection.onSelectionChanged.AddListener(OnSelectionChanged);
+                    Selection.onAuxiliarySelectionChanged.AddListener(OnAuxiliaryChanged);
+
                     GlobalState.Animation.onAddAnimation.AddListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onRemoveAnimation.AddListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onChangeCurve.AddListener(OnCurveUpdated);
-                    OnSelectionChanged(null, null);
+                    UpdateSelectionChanged();
                 }
             }
             else
@@ -171,7 +176,10 @@ namespace VRtist
                     GlobalState.ObjectRenamedEvent.RemoveListener(OnCameraNameChanged);
                     GlobalState.Animation.onFrameEvent.RemoveListener(OnFrameChanged);
                     GlobalState.Animation.onRangeEvent.RemoveListener(OnRangeChanged);
-                    Selection.OnSelectionChanged -= OnSelectionChanged;
+
+                    Selection.onSelectionChanged.RemoveListener(OnSelectionChanged);
+                    Selection.onAuxiliarySelectionChanged.RemoveListener(OnAuxiliaryChanged);
+
                     GlobalState.Animation.onAddAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onRemoveAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onChangeCurve.RemoveListener(OnCurveUpdated);
@@ -202,7 +210,7 @@ namespace VRtist
         {
             if (currentFrameLabel != null)
             {
-                int frames = GlobalState.Animation.CurrentFrame % (int) GlobalState.Animation.fps;
+                int frames = GlobalState.Animation.CurrentFrame % (int)GlobalState.Animation.fps;
                 TimeSpan t = TimeSpan.FromSeconds(GlobalState.Animation.CurrentFrame / GlobalState.Animation.fps);
                 currentFrameLabel.Text = $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}:{frames:D2} / {GlobalState.Animation.CurrentFrame}";
             }
@@ -289,8 +297,8 @@ namespace VRtist
                 GameObject keyframe = keyframes.GetChild(i++).gameObject;
 
                 float time = key.Key;
-                float currentValue = (float) time;
-                float pct = (float) (currentValue - localFirstFrame) / (float) (localLastFrame - localFirstFrame);
+                float currentValue = (float)time;
+                float pct = (float)(currentValue - localFirstFrame) / (float)(localLastFrame - localFirstFrame);
 
                 float startX = 0.0f;
                 float endX = timeBar.width;
@@ -329,7 +337,7 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Add Keyframe");
             try
             {
-                foreach (GameObject item in Selection.selection.Values)
+                foreach (GameObject item in Selection.SelectedObjects)
                 {
                     new CommandMoveKeyframes(item, frame, frame + delta).Submit();
                 }
@@ -348,18 +356,32 @@ namespace VRtist
             }
         }
 
-        protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected void UpdateSelectionChanged()
         {
-            if (Selection.IsEmpty())
+            if (Selection.ActiveObjects.Count == 0)
             {
                 Clear();
                 UpdateTrackName();
                 return;
             }
 
-            GameObject gObject = Selection.GetGrippedOrSelection()[0];
+            GameObject gObject = null;
+            foreach (GameObject o in Selection.ActiveObjects)
+            {
+                gObject = o;
+                break;
+            }
             currentObject = gObject;
             UpdateCurrentObjectAnimation(gObject);
+        }
+
+        protected virtual void OnSelectionChanged(HashSet<GameObject> previousSelectedObjects, HashSet<GameObject> currentSelectedObjects)
+        {
+            UpdateSelectionChanged();
+        }
+        protected virtual void OnAuxiliaryChanged(GameObject previousAuxiliarySelectedObject, GameObject currentAuxiliarySelectedObject)
+        {
+            UpdateSelectionChanged();
         }
 
         public int GetNextKeyFrame()
@@ -390,14 +412,13 @@ namespace VRtist
         public void UpdateTrackName()
         {
             TextMeshProUGUI trackLabel = transform.Find("MainPanel/Tracks/Summary/Label/Canvas/Text").GetComponent<TextMeshProUGUI>();
-            List<GameObject> selectedObjects = Selection.GetSelectedObjects(SelectionType.Hovered | SelectionType.Selection | SelectionType.Gripped);
-            int count = selectedObjects.Count;
+            int count = Selection.ActiveObjects.Count;
             if (count > 1)
             {
                 trackLabel.text = count.ToString() + " Objects";
                 return;
             }
-            foreach (GameObject obj in selectedObjects)
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
                 trackLabel.text = obj.name;
                 return;
@@ -446,7 +467,7 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Add Keyframe");
             try
             {
-                foreach (GameObject item in Selection.selection.Values)
+                foreach (GameObject item in Selection.SelectedObjects)
                 {
                     new CommandAddKeyframes(item).Submit();
                 }
@@ -462,7 +483,7 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Remove Keyframe");
             try
             {
-                foreach (GameObject gObject in Selection.selection.Values)
+                foreach (GameObject gObject in Selection.SelectedObjects)
                 {
                     if (GlobalState.Animation.ObjectHasKeyframeAt(gObject, GlobalState.Animation.CurrentFrame))
                     {
@@ -481,7 +502,7 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Clear Animations");
             try
             {
-                foreach (GameObject gObject in Selection.selection.Values)
+                foreach (GameObject gObject in Selection.SelectedObjects)
                 {
                     new CommandClearAnimations(gObject).Submit();
                 }
