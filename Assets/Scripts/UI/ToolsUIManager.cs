@@ -52,7 +52,6 @@ namespace VRtist
 
         public event EventHandler<TabChangedArgs> OnTabChangedEvent;
         public event EventHandler<ToolChangedArgs> OnToolChangedEvent;
-        public event EventHandler<ToolParameterChangedArgs> OnToolParameterChangedEvent;
         public UnityEvent onPaletteOpened = new UnityEvent();
 
         public Transform keyboardWindow;
@@ -123,7 +122,6 @@ namespace VRtist
         void Start()
         {
             OnToolChangedEvent += ToolsManager.OnChangeTool;
-            OnToolParameterChangedEvent += ToolsManager.OnChangeToolParameter;
 
             string firstToolName = ToolsManager.CurrentToolName();
             ChangeTab(firstToolName);

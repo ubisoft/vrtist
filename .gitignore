@@ -12,6 +12,8 @@ Assets/Resources/Data/NetworkSettings.asset
 Assets/AssetStoreTools*
 Assets/AmplifyShaderEditor.meta
 AmplifyShaderEditor/
+UserSettings/
+Packages/packages-lock.json
 
 # Visual Studio cache directory
 .vs/

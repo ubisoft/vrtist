@@ -193,8 +193,6 @@ namespace VRtist
 
             Init();
 
-            ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
-
             // Create tooltips
             SetTooltips();
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldVertical, "Zoom");
