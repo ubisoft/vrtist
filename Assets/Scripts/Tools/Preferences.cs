@@ -1,4 +1,5 @@
 ﻿using System.IO;
+
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -58,13 +59,13 @@ namespace VRtist
             displayOptionsButton = panel.Find("DisplayOptionsButton").GetComponent<UIButton>();
             soundsOptionsButton = panel.Find("SoundsOptionsButton").GetComponent<UIButton>();
             advancedOptionsButton = panel.Find("AdvancedOptionsButton").GetComponent<UIButton>();
-            //saveOptionsButton = panel.Find("SaveOptionsButton").GetComponent<UIButton>();
+            saveOptionsButton = panel.Find("SaveOptionsButton").GetComponent<UIButton>();
             infoOptionsButton = panel.Find("InfoOptionsButton").GetComponent<UIButton>();
 
             displaySubPanel = panel.Find("DisplayOptions").gameObject;
             soundsSubPanel = panel.Find("SoundsOptions").gameObject;
             advancedSubPanel = panel.Find("AdvancedOptions").gameObject;
-            //saveSubPanel = panel.Find("SaveOptions").gameObject;
+            saveSubPanel = panel.Find("SaveOptions").gameObject;
             infoSubPanel = panel.Find("InfoOptions").gameObject;
 
             worldGridCheckbox = displaySubPanel.transform.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
@@ -227,8 +228,8 @@ namespace VRtist
             soundsSubPanel.SetActive(false);
             advancedOptionsButton.Checked = false;
             advancedSubPanel.SetActive(false);
-            //saveOptionsButton.Checked = false;
-            //saveSubPanel.SetActive(false);
+            saveOptionsButton.Checked = false;
+            saveSubPanel.SetActive(false);
             infoOptionsButton.Checked = false;
             infoSubPanel.SetActive(false);
         }

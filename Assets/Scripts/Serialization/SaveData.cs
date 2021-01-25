@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist.Serialization
@@ -50,12 +51,9 @@ namespace VRtist.Serialization
         public MaterialData(MaterialInfo materialInfo)
         {
             string shaderName = materialInfo.material.shader.name;
-            if (shaderName != "VRtist/BlenderImport" &&
-                shaderName != "VRtist/BlenderImportTransparent" &&
-                shaderName != "VRtist/BlenderImportEditor" &&
-                shaderName != "VRtist/BlenderImportTransparentEditor")
+            if (shaderName != "VRtist/ObjectOpaque" && shaderName != "VRtist/ObjectTransparent")
             {
-                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/BlenderImport***.");
+                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/ObjectOpaque or VRtist/ObjectTransparent.");
                 return;
             }
 
