@@ -55,7 +55,7 @@ namespace VRtist
             feedbackCamera = activeCamera;
             if (null != feedbackCamera)
             {
-                Camera cam = feedbackCamera.GetComponentInChildren<Camera>();
+                Camera cam = feedbackCamera.GetComponentInChildren<Camera>(true);
                 cameraPlane.SetActive(true);
                 cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
             }

@@ -5,6 +5,10 @@ using UnityEngine.Animations;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Show selected objects. To do so we change the layer of the selected objects.
+    /// We also show the relationships between objects when there are constraints.
+    /// </summary>
     public class OutlineManager
     {
         static OutlineManager instance = null;

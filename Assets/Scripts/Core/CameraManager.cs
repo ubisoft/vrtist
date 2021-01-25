@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 
@@ -12,6 +11,10 @@ namespace VRtist
     {
         // Empty
     }
+
+    /// <summary>
+    /// Manage the current active camera.
+    /// </summary>
     public class CameraManager
     {
         private GameObject activeCamera = null;
@@ -58,24 +61,57 @@ namespace VRtist
 
         void UpdateActiveCamera(GameObject hoveredObject, HashSet<GameObject> currentSelection)
         {
+            // --------------------------------------------
+            // Check hover
+            // --------------------------------------------
             GameObject hoveredCamera = null;
             if (null != hoveredObject && null != hoveredObject.GetComponent<CameraController>())
                 hoveredCamera = hoveredObject;
+
+            // Set current active camera from hovered one
             if (null != hoveredCamera && hoveredCamera != activeCamera)
             {
+                // Disable previous active camera
+                if (null != activeCamera)
+                {
+                    activeCamera.GetComponentInChildren<Camera>().gameObject.SetActive(false);
+                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
+                }
+
+                // Enable current active camera
                 ActiveCamera = hoveredCamera;
+                activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
+                activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(true);
                 return;
             }
 
+            // --------------------------------------------
+            // Check selected
+            // --------------------------------------------
             GameObject selectedCamera = GetFirstCamera(currentSelection);
             if (null != selectedCamera && selectedCamera != activeCamera)
             {
+                // Disable previous selected camera
+                if (null != activeCamera)
+                {
+                    activeCamera.GetComponentInChildren<Camera>().gameObject.SetActive(false);
+                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
+                }
+
+                // Enable new one
                 ActiveCamera = selectedCamera;
+                activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
+                activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(true);
                 return;
             }
 
             if (null == hoveredCamera && null == selectedCamera)
             {
+                if (null != activeCamera)
+                {
+                    activeCamera.GetComponentInChildren<Camera>().gameObject.SetActive(false);
+                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
+                }
                 ActiveCamera = null;
             }
         }

@@ -189,11 +189,6 @@ namespace VRtist
             setCameraButton.onClickEvent.RemoveAllListeners();
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
-        {
-            // select line depending on camera selected ???
-        }
-
         public void SetShot(Shot shot)
         {
             this.shot = shot;
