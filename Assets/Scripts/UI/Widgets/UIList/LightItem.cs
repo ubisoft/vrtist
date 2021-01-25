@@ -1,4 +1,7 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,15 +14,15 @@ namespace VRtist
 
         public void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;
+            Selection.onSelectionChanged.AddListener(OnSelectionChanged);
         }
 
         public void OnDestroy()
         {
-            Selection.OnSelectionChanged -= OnSelectionChanged;
+            Selection.onSelectionChanged.RemoveListener(OnSelectionChanged);
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        private void OnSelectionChanged(HashSet<GameObject> previousSelectedObjects, HashSet<GameObject> currentSelectedObjects)
         {
             if (Selection.IsSelected(lightObject))
             {

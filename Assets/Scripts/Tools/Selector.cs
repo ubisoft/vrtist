@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.XR;
@@ -224,15 +225,15 @@ namespace VRtist
             // Global events bindings
             GlobalState.ObjectMovingEvent.AddListener(UpdateTransformUI);
             GlobalState.ObjectConstraintEvent.AddListener((GameObject gobject) => UpdateUIOnSelectionChanged(null, null));
-            Selection.OnSelectionChanged += SetConstraintTargetOnSelectionChanged;
-            Selection.OnSelectionChanged += UpdateUIOnSelectionChanged;
+            Selection.onHoveredChanged.AddListener(SetConstraintTargetOnSelectionChanged);
+            Selection.onSelectionChanged.AddListener(UpdateUIOnSelectionChanged);
 
             Init();
         }
 
         void OnStartEditTransform(float currentValue, string attr)
         {
-            if (Selection.IsEmpty()) { return; }
+            if (Selection.SelectedObjects.Count == 0) { return; }
             ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnEndEditTransform(value, attr), panel, currentValue);
         }
 
@@ -242,7 +243,7 @@ namespace VRtist
             CommandMoveObjects command = new CommandMoveObjects();
 
             GameObject firstSelected = null;
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 if (null == firstSelected) { firstSelected = selected; }
                 Vector3 position = selected.transform.localPosition;
@@ -291,7 +292,7 @@ namespace VRtist
 
         void OnToggleParentConstraint()
         {
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 ParentConstraint constraint = selected.GetComponent<ParentConstraint>();
                 if (null != constraint)
@@ -301,15 +302,14 @@ namespace VRtist
             }
         }
 
-        void SetParentConstraint()
+        void SetParentConstraint(GameObject hovered)
         {
-            GameObject hovered = Selection.GetHoveredObject();
             if (null == hovered) { return; }
             UIHandle uiHandle = hovered.GetComponent<UIHandle>();
             if (null != uiHandle) { return; }
 
             CommandGroup commandGroup = new CommandGroup("Add Parent Constraint");
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 CommandAddConstraint command = new CommandAddConstraint(ConstraintType.Parent, selected, hovered);
                 command.Submit();
@@ -320,7 +320,7 @@ namespace VRtist
         void RemoveParentConstraint()
         {
             CommandGroup commandGroup = new CommandGroup();
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 CommandRemoveConstraint command = new CommandRemoveConstraint(ConstraintType.Parent, selected);
                 command.Submit();
@@ -330,7 +330,7 @@ namespace VRtist
 
         void OnToggleLookAtConstraint()
         {
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 LookAtConstraint constraint = selected.GetComponent<LookAtConstraint>();
                 if (null != constraint)
@@ -340,15 +340,14 @@ namespace VRtist
             }
         }
 
-        void SetLookAtConstraint()
+        void SetLookAtConstraint(GameObject hovered)
         {
-            GameObject hovered = Selection.GetHoveredObject();
             if (null == hovered) { return; }
             UIHandle uiHandle = hovered.GetComponent<UIHandle>();
             if (null != uiHandle) { return; }
 
             CommandGroup commandGroup = new CommandGroup();
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 CommandAddConstraint command = new CommandAddConstraint(ConstraintType.LookAt, selected, hovered);
                 command.Submit();
@@ -359,7 +358,7 @@ namespace VRtist
         void RemoveLookAtConstraint()
         {
             CommandGroup commandGroup = new CommandGroup();
-            foreach (var selected in Selection.GetSelectedObjects())
+            foreach (var selected in Selection.SelectedObjects)
             {
                 CommandRemoveConstraint command = new CommandRemoveConstraint(ConstraintType.LookAt, selected);
                 command.Submit();
@@ -367,7 +366,7 @@ namespace VRtist
             commandGroup.Submit();
         }
 
-        void UpdateUIOnSelectionChanged(object _, SelectionChangedArgs args)
+        void UpdateUIOnSelectionChanged(HashSet<GameObject> _, HashSet<GameObject> __)
         {
             if (null == selectedObjectNameLabel)
                 return;
@@ -384,14 +383,20 @@ namespace VRtist
             rotLockButton.Checked = false;
             scaleLockButton.Checked = false;
 
-            GameObject selected = Selection.GetFirstSelectedObject();
+            GameObject selected = null;
+            foreach (GameObject gobject in Selection.SelectedObjects)
+            {
+                selected = gobject;
+                break;
+            }
+
             if (null == selected)
             {
                 return;
             }
 
             // Selected label
-            if (Selection.Count() > 1) { selectedObjectNameLabel.Text = $"{Selection.Count()} objects selected"; }
+            if (Selection.SelectedObjects.Count > 1) { selectedObjectNameLabel.Text = $"{Selection.SelectedObjects.Count} objects selected"; }
             else { selectedObjectNameLabel.Text = selected.name; }
             selectedObjectNameLabel.Text = "<color=#0079FF>" + selectedObjectNameLabel.Text + "</color>";
 
@@ -414,24 +419,29 @@ namespace VRtist
             }
         }
 
-        void SetConstraintTargetOnSelectionChanged(object _, SelectionChangedArgs args)
+        void SetConstraintTargetOnSelectionChanged(GameObject previousHoveredObject, GameObject hoveredObject)
         {
             // Manage constraints target selection
             if (selectParentButton.Checked)
             {
-                SetParentConstraint();
+                SetParentConstraint(hoveredObject);
                 selectParentButton.Checked = false;
             }
             if (selectLookAtButton.Checked)
             {
-                SetLookAtConstraint();
+                SetLookAtConstraint(hoveredObject);
                 selectLookAtButton.Checked = false;
             }
         }
 
         void UpdateTransformUI(GameObject gobject)
         {
-            GameObject selected = Selection.GetFirstSelectedObject();
+            GameObject selected = null;
+            foreach (GameObject o in Selection.SelectedObjects)
+            {
+                selected = o;
+                break;
+            }
             if (null == selected || gobject != selected) { return; }
 
             // Transform
@@ -484,7 +494,7 @@ namespace VRtist
             base.OnEnable();
             InitUIPanel();
             UpdateGrid();
-            Selection.OnSelectionChanged += UpdateGridFromSelection;
+            Selection.onSelectionChanged.AddListener(UpdateGridFromSelection);
             if (null != boundingBox) { boundingBox.SetActive(false); }
             UpdateUIOnSelectionChanged(null, null);
         }
@@ -498,21 +508,20 @@ namespace VRtist
             }
 
             base.OnDisable();
-            Selection.OnSelectionChanged -= UpdateGridFromSelection;
+            Selection.onSelectionChanged.RemoveListener(UpdateGridFromSelection);
             if (null != grid) { grid.gameObject.SetActive(false); }
             if (null != boundingBox) { boundingBox.SetActive(false); }
         }
 
         public void OnDeleteSelection()
         {
-            List<GameObject> allSelected = Selection.GetSelectedObjects(SelectionType.Selection);
-            if (allSelected.Count == 0) { return; }
+            if (Selection.SelectedObjects.Count == 0) { return; }
 
             CommandGroup group = new CommandGroup("Delete All Selection");
             try
             {
                 ClearSelection();
-                foreach (GameObject selected in allSelected)
+                foreach (GameObject selected in Selection.SelectedObjects)
                 {
                     new CommandRemoveGameObject(selected).Submit();
                 }
@@ -525,8 +534,7 @@ namespace VRtist
 
         protected void UpdateGrid()
         {
-            List<GameObject> objects = Selection.GetGrippedOrSelection();
-            int numSelected = objects.Count;
+            int numSelected = Selection.ActiveObjects.Count;
             bool showGrid = numSelected > 0 && snapToGrid;
             if (grid != null)
             {
@@ -537,7 +545,7 @@ namespace VRtist
 
                     grid.SetAxis(moveOnX, moveOnZ, moveOnY); // right handed
 
-                    foreach (GameObject gobj in objects)
+                    foreach (GameObject gobj in Selection.ActiveObjects)
                     {
                         // Snap VFX position in (world object) local space.
                         Vector3 targetPositionInWorldObject = gobj.transform.position;
@@ -583,9 +591,9 @@ namespace VRtist
         public void ResetPosition()
         {
             CommandMoveObjects command = new CommandMoveObjects();
-            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
-                command.AddObject(gobject, Vector3.zero, gobject.transform.localRotation, gobject.transform.localScale);                
+                command.AddObject(gobject, Vector3.zero, gobject.transform.localRotation, gobject.transform.localScale);
             }
             command.Submit();
         }
@@ -593,7 +601,7 @@ namespace VRtist
         public void ResetRotation()
         {
             CommandMoveObjects command = new CommandMoveObjects();
-            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
                 command.AddObject(gobject, gobject.transform.localPosition, Quaternion.identity, gobject.transform.localScale);
             }
@@ -603,7 +611,7 @@ namespace VRtist
         public void ResetScale()
         {
             CommandMoveObjects command = new CommandMoveObjects();
-            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
                 command.AddObject(gobject, gobject.transform.localPosition, gobject.transform.localRotation, Vector3.one);
             }
@@ -612,7 +620,7 @@ namespace VRtist
 
         public void SetLockPosition(bool value)
         {
-            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
                 if (value)
                 {
@@ -679,7 +687,7 @@ namespace VRtist
 
         public void SetLockRotation(bool value)
         {
-            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
                 if (value)
                 {
@@ -739,7 +747,7 @@ namespace VRtist
 
         public void SetLockScale(bool value)
         {
-            foreach (GameObject gobject in Selection.GetSelectedObjects())
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
                 if (value)
                 {
@@ -890,99 +898,6 @@ namespace VRtist
             initControllerPositionRelativeToHead = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
         }
 
-        /*
-        public override void OnPreTransformSelection(Transform transform, ref Matrix4x4 transformed)
-        {
-            // Constrain movement
-            if (turnAroundAll)
-            {
-                // Translate
-                if (!moveOnX || !moveOnY || !moveOnZ || snapToGrid)
-                {
-                    Vector4 column = transformed.GetColumn(3);
-
-                    float absWorldScale = Mathf.Abs(GlobalState.WorldScale);
-                    Vector3 position = new Vector3(column.x, column.y, column.z);
-                    Vector3 roundedPosition = new Vector3(
-                        Mathf.Round(column.x / snapPrecision) * snapPrecision,
-                        Mathf.Round(column.y / snapPrecision) * snapPrecision,
-                        Mathf.Round(column.z / snapPrecision) * snapPrecision
-                    );
-
-                    float snapThreshold = (snapGap * snapPrecision) / absWorldScale;
-
-                    if (!moveOnX) { column.x = transform.localPosition.x; }
-                    else if (snapToGrid && Mathf.Abs(position.x - roundedPosition.x) <= snapThreshold)
-                    {
-                        column.x = roundedPosition.x;
-                    }
-
-                    if (!moveOnY) { column.y = transform.localPosition.y; }
-                    else if (snapToGrid && Mathf.Abs(position.y - roundedPosition.y) <= snapThreshold)
-                    {
-                        column.y = roundedPosition.y;
-                    }
-
-                    if (!moveOnZ) { column.z = transform.localPosition.z; }
-                    else if (snapToGrid && Mathf.Abs(position.z - roundedPosition.z) <= snapThreshold)
-                    {
-                        column.z = roundedPosition.z;
-                    }
-
-                    // Set new translation and lock rotation
-                    transformed.SetTRS(column, initRotations[transform.gameObject], initScales[transform.gameObject]);
-                }
-            }
-            else  // Rotate & lock translation
-            {
-                Vector4 column = new Vector4(transform.localPosition.x, transform.localPosition.y, transform.localPosition.z, 1f);
-                transformed.SetColumn(3, column);
-
-                // compute rotation angle from start controller position to current controller position
-                // in X axis (left/right) local to initial head direction
-                Vector3 controllerPosition = rightControllerPosition;
-                Quaternion controllerRotation = rightControllerRotation;
-                controllerPosition = inverseHeadMatrix.MultiplyPoint(controllerPosition);
-                float angle = (controllerPosition.x - initControllerPositionRelativeToHead.x) * 1000f;
-
-                Quaternion newQuaternion = new Quaternion();
-                if (snapRotation)
-                {
-                    float roundedAngle = Mathf.Round(angle / snapAngle) * snapAngle;
-                    Vector3 initAngles = world.worldToLocalMatrix * initParentMatrix[transform.gameObject] * initRotations[transform.gameObject].eulerAngles;
-                    newQuaternion.eulerAngles = new Vector3(
-                        turnAroundX ? roundedAngle - initAngles.x : 0,
-                        turnAroundZ ? roundedAngle - initAngles.y : 0,
-                        turnAroundY ? -(roundedAngle - initAngles.z) : 0
-                    );
-                    //newQuaternion.eulerAngles = new Vector3(
-                    //    turnAroundX ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
-                    //    turnAroundY ? Mathf.Round(angle / snapAngle) * snapAngle : 0,
-                    //    turnAroundZ ? Mathf.Round(angle / snapAngle) * snapAngle : 0
-                    //);
-                }
-                else
-                {
-                    newQuaternion.eulerAngles = new Vector3(
-                        turnAroundX ? angle : 0,
-                        turnAroundZ ? angle : 0,
-                        turnAroundY ? -angle : 0
-                    );
-                }
-
-                Matrix4x4 objectInitGlobalMatrix = initParentMatrix[transform.gameObject] * Matrix4x4.TRS(initPositions[transform.gameObject], initRotations[transform.gameObject], initScales[transform.gameObject]);
-                Matrix4x4 objectInitWorldMatrix = world.worldToLocalMatrix * objectInitGlobalMatrix;
-                Matrix4x4 globalRotation = world.localToWorldMatrix * Matrix4x4.TRS(Vector3.zero, newQuaternion, Vector3.one);
-
-                Matrix4x4 globalRotatedObject = globalRotation * objectInitWorldMatrix;
-                Matrix4x4 localRotatedObject = initParentMatrix[transform.gameObject].inverse * globalRotatedObject;
-
-                // transformation matrix (local)
-                transformed = Matrix4x4.TRS(initPositions[transform.gameObject], Maths.GetRotationFromMatrix(localRotatedObject), initScales[transform.gameObject]);
-            }
-        }
-        */
-
         public override void OnSelectorTriggerEnter(Collider other)
         {
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, true);
@@ -1030,7 +945,7 @@ namespace VRtist
             ManageMoveObjectsUndo();
         }
 
-        private void UpdateGridFromSelection(object sender, SelectionChangedArgs args)
+        private void UpdateGridFromSelection(HashSet<GameObject> _, HashSet<GameObject> selectedObjects)
         {
             UpdateGrid();
         }
@@ -1086,12 +1001,11 @@ namespace VRtist
 
                 Vector3 scale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 
-                List<GameObject> selectedObjects = Selection.GetGrippedOrSelection();
-                int selectionCount = selectedObjects.Count;
+                int selectionCount = Selection.ActiveObjects.Count;
                 bool foundLightOrCamera = false;
                 if (selectionCount == 1)
                 {
-                    foundLightOrCamera = IsHierarchical(selectedObjects);
+                    foundLightOrCamera = IsHierarchical(Selection.ActiveObjects);
                 }
 
                 bool scaleAll = selectionCount != 1 || foundLightOrCamera || uniformScale;
@@ -1114,7 +1028,7 @@ namespace VRtist
             if (deformEnabled)
             {
                 ComputeSelectionBounds();
-                boundingBox.SetActive(!Selection.IsEmpty());
+                boundingBox.SetActive(Selection.ActiveObjects.Count != 0);
             }
 
             // Move grid with object(s), enable/disable it.

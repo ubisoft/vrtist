@@ -7,17 +7,17 @@ namespace VRtist
 {
     public class Version
     {
-        private static string VERSION_PATH = "version.txt";
+        private static readonly string VERSION_PATH = "version.txt";
 
         // Our version
         private static string _version = "";
-        public static string version
+        public static string VersionString
         {
             get
             {
-                if(_version.Length == 0)
+                if (_version.Length == 0)
                 {
-                    if(File.Exists(VERSION_PATH))
+                    if (File.Exists(VERSION_PATH))
                         _version = File.ReadAllText(VERSION_PATH);
                     else
                         _version = "dev-build";
@@ -29,7 +29,7 @@ namespace VRtist
         // Supported sync version (Mixer)
         public static string syncVersion = "v0.1.0";
 
-        private static Regex versionRegex = new Regex(@"v?(?<major>\d+)\.(?<minor>\d+)\.(?<debug>\d+)(\.(?<other>.+))?", RegexOptions.Compiled);
+        private static readonly Regex versionRegex = new Regex(@"v?(?<major>\d+)\.(?<minor>\d+)\.(?<debug>\d+)(\.(?<other>.+))?", RegexOptions.Compiled);
 
         public static bool UnpackVersionNumber(string v, out int major, out int minor, out int debug, out string other)
         {
@@ -37,7 +37,7 @@ namespace VRtist
             other = "";
 
             MatchCollection matches = versionRegex.Matches(v);
-            if(matches.Count != 1) { return false; }
+            if (matches.Count != 1) { return false; }
 
             GroupCollection groups = matches[0].Groups;
             major = Int32.Parse(groups["major"].Value);
@@ -49,14 +49,8 @@ namespace VRtist
 
         public static bool CheckSyncCompatibility(string number)
         {
-            int major, minor, debug;
-            string other;
-            UnpackVersionNumber(number, out major, out minor, out debug, out other);
-
-            int syncMajor, syncMinor, syncDebug;
-            string syncOther;
-            UnpackVersionNumber(syncVersion, out syncMajor, out syncMinor, out syncDebug, out syncOther);
-
+            UnpackVersionNumber(number, out int major, out _, out _, out _);
+            UnpackVersionNumber(syncVersion, out int syncMajor, out _, out _, out _);
             return major == syncMajor;
         }
     }

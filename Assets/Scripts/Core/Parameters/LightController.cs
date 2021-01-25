@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VRtist
 {
@@ -23,7 +21,7 @@ namespace VRtist
 
         public void SetLightEnable(bool enable)
         {
-            if(lightObject)
+            if (lightObject)
                 lightObject.gameObject.SetActive(enable);
         }
 
@@ -69,9 +67,13 @@ namespace VRtist
                 case LightType.Point:
                     return intensity * 10f;
                 case LightType.Directional:
-                    return intensity / 1.5f;  
+                    return intensity / 1.5f;
                 case LightType.Spot:
                     return intensity / (0.4f / 3f);
+                case LightType.Area:
+                    break;
+                case LightType.Disc:
+                    break;
             }
             return 0;
         }
@@ -125,7 +127,7 @@ namespace VRtist
             if (null == world)
                 GetWorldTransform();
 
-         
+
             lightObject.intensity = intensity;
             lightObject.range = range;
             lightObject.shadowNearPlane = near;
@@ -144,11 +146,10 @@ namespace VRtist
                 lightObject.intensity *= 0.05f;
             }
         }
+
         public override bool IsSnappable()
         {
             return false;
         }
-
     }
-
 }

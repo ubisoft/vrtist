@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -57,9 +58,11 @@ namespace VRtist
 
         public override void SetTooltips()
         {
-            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Pick Material");
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldHorizontal, "Brush Size");
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
+            Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Secondary, false);
         }
 
         protected override void OnEnable()
@@ -106,7 +109,7 @@ namespace VRtist
                 {
                     if (!selectionHasChanged && ColorOp.UpdateSelection == colorOp)
                     {
-                        CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.selection.Values.ToList());
+                        CommandRemoveFromSelection command = new CommandRemoveFromSelection(Selection.SelectedObjects.ToList());
                         command.Redo();
                         command.Submit();
                     }
@@ -122,7 +125,7 @@ namespace VRtist
 
             if (colorOp == ColorOp.UpdateSelection)
             {
-                ColorizeObjects(Selection.selection.Values.ToList());
+                ColorizeObjects(Selection.SelectedObjects.ToList());
             }
         }
 

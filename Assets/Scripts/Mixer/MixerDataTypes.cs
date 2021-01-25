@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -224,20 +225,10 @@ namespace VRtist
         public Vector3[] corners = new Vector3[4];
     }
 
-
-    // Material classes
-    public enum MaterialType
-    {
-        Opaque,
-        Transparent,
-        GreasePencil,
-        Paint,
-    }
-
     public class MaterialParameters
     {
         public string name;
-        public MaterialType materialType;
+        public MaterialID materialType;
         public float opacity;
         public string opacityTexturePath;
         public Color baseColor;

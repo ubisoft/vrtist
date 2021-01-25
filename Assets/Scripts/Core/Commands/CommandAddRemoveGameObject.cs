@@ -2,6 +2,9 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Base command class to add or remove an object to/from the scene.
+    /// </summary>
     public class CommandAddRemoveGameObject : ICommand
     {
         protected GameObject gObject = null;
@@ -22,16 +25,20 @@ namespace VRtist
 
         protected void SendLight()
         {
-            LightInfo lightInfo = new LightInfo();
-            lightInfo.transform = gObject.transform;
+            LightInfo lightInfo = new LightInfo
+            {
+                transform = gObject.transform
+            };
             CommandManager.SendEvent(MessageType.Light, lightInfo);
             MixerUtils.AddObjectToScene(gObject);
         }
 
         protected void SendCamera()
         {
-            CameraInfo cameraInfo = new CameraInfo();
-            cameraInfo.transform = gObject.transform;
+            CameraInfo cameraInfo = new CameraInfo
+            {
+                transform = gObject.transform
+            };
             CommandManager.SendEvent(MessageType.Camera, cameraInfo);
             CommandManager.SendEvent(MessageType.Transform, gObject.transform);
             MixerUtils.AddObjectToScene(gObject);
@@ -39,10 +46,12 @@ namespace VRtist
 
         protected void SendMesh()
         {
-            MeshInfos meshInfos = new MeshInfos();
-            meshInfos.meshFilter = gObject.GetComponent<MeshFilter>();
-            meshInfos.meshRenderer = gObject.GetComponent<MeshRenderer>();
-            meshInfos.meshTransform = gObject.transform;
+            MeshInfos meshInfos = new MeshInfos
+            {
+                meshFilter = gObject.GetComponent<MeshFilter>(),
+                meshRenderer = gObject.GetComponent<MeshRenderer>(),
+                meshTransform = gObject.transform
+            };
 
             foreach (Material mat in meshInfos.meshRenderer.materials)
             {

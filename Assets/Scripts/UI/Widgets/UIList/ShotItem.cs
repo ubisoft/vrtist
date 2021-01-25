@@ -1,4 +1,5 @@
 ﻿using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -20,11 +21,8 @@ namespace VRtist
         public UIButton endFrameButton = null;
         public UIButton setCameraButton = null;
 
-        private UnityAction<Shot, string> nameAction;
         private UnityAction<Shot, float> startAction;
         private UnityAction<Shot, float> endAction;
-        private UnityAction<Shot, Color> colorAction;
-        private UnityAction<Shot, bool> enabledAction;
         private UnityAction<Shot> setCameraAction;
 
         private void OnEnable()
@@ -46,11 +44,8 @@ namespace VRtist
             startFrameSpinner.onClickEvent.AddListener(InitSpinnerMinMax);
             endFrameSpinner.onClickEvent.AddListener(InitSpinnerMinMax);
 
-            this.nameAction = nameAction;
             this.startAction = startAction;
             this.endAction = endAction;
-            this.colorAction = colorAction;
-            this.enabledAction = enabledAction;
             this.setCameraAction = setCameraAction;
 
             startFrameSpinner.onReleaseEvent.AddListener(OnEndEditStartSpinner);
@@ -69,10 +64,13 @@ namespace VRtist
         private void TogglePickCamera(bool value)
         {
             // If there is already a selected camera, pick it
-            CameraController controller = Selection.GetSelectedCamera();
+            GameObject activeCamera = CameraManager.Instance.ActiveCamera;
+            CameraController controller = null;
+            if (null != activeCamera)
+                controller = activeCamera.GetComponent<CameraController>();
             if (null != controller)
             {
-                Selection.SetActiveCamera(controller);
+                CameraManager.Instance.ActiveCamera = controller.gameObject;
                 setCameraButton.Checked = false;
                 setCameraAction(shot);
             }
@@ -81,15 +79,15 @@ namespace VRtist
             else
             {
                 if (value)
-                    Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+                    CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
                 else
-                    Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+                    CameraManager.Instance.onActiveCameraChanged.RemoveListener(OnActiveCameraChanged);
             }
         }
 
-        private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
+        private void OnActiveCameraChanged(GameObject _, GameObject activeCamera)
         {
-            Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+            CameraManager.Instance.onActiveCameraChanged.RemoveListener(OnActiveCameraChanged);
             setCameraButton.Checked = false;
             setCameraAction(shot);
         }
@@ -150,25 +148,18 @@ namespace VRtist
                 CameraController camController = null;
                 if (null != shot.camera)
                     camController = shot.camera.GetComponent<CameraController>();
-                Selection.SetActiveCamera(camController);
+                CameraManager.Instance.ActiveCamera = camController.gameObject;
 
                 int currentFrame = GlobalState.Animation.CurrentFrame;
-                if(currentFrame < shot.start || currentFrame > shot.end)
+                if (currentFrame < shot.start || currentFrame > shot.end)
                     GlobalState.Animation.CurrentFrame = shot.start;
 
                 ShotManager.Instance.SetCurrentShot(shot);
             }
         }
 
-        public void Start()
-        {
-            Selection.OnSelectionChanged += OnSelectionChanged;
-        }
-
         public void OnDestroy()
         {
-            Selection.OnSelectionChanged -= OnSelectionChanged;
-
             currentShotLabel.onClickEvent.RemoveAllListeners();
 
             shotEnabledCheckbox.onCheckEvent.RemoveAllListeners();
@@ -196,11 +187,6 @@ namespace VRtist
 
             setCameraButton.onCheckEvent.RemoveAllListeners();
             setCameraButton.onClickEvent.RemoveAllListeners();
-        }
-
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
-        {
-            // select line depending on camera selected ???
         }
 
         public void SetShot(Shot shot)

@@ -1,11 +1,16 @@
 ﻿using System.Collections.Generic;
+
 using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Global states of the app.
+    /// </summary>
     public class GlobalState : MonoBehaviour
     {
         public Settings settings;
@@ -24,8 +29,8 @@ namespace VRtist
         // Connected users
         public UnityEvent onConnected = new UnityEvent();
         public static ConnectedUser networkUser = new ConnectedUser();
-        private Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
-        private Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
+        private readonly Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
+        private readonly Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
         private GameObject avatarPrefab;
         private Transform avatarsContainer;
 
@@ -33,7 +38,7 @@ namespace VRtist
         public bool selectionGripped = false;
 
         // FPS
-        public static int fps { get; private set; }
+        public static int Fps { get; private set; }
         private static int fpsFrameRange = 60;
         private static int[] fpsBuffer = null;
         private static int fpsBufferIndex = 0;
@@ -186,6 +191,8 @@ namespace VRtist
 
         private void Start()
         {
+            _ = OutlineManager.Instance;
+            _ = CameraManager.Instance;
             if (null != cameraFeedback)
             {
                 cameraFeedback.SetActive(settings.cameraFeedbackVisible);
@@ -208,7 +215,7 @@ namespace VRtist
             }
 
             // Bufferize
-            fpsBuffer[fpsBufferIndex] = (int) (1f / Time.unscaledDeltaTime);
+            fpsBuffer[fpsBufferIndex] = (int)(1f / Time.unscaledDeltaTime);
             ++fpsBufferIndex;
             if (fpsBufferIndex >= fpsFrameRange)
             {
@@ -221,7 +228,7 @@ namespace VRtist
             {
                 sum += fpsBuffer[i];
             }
-            fps = sum / fpsFrameRange;
+            Fps = sum / fpsFrameRange;
         }
 
         private void Update()
@@ -233,7 +240,7 @@ namespace VRtist
                 if (settings.DisplayFPS)
                 {
                     UpdateFps();
-                    infoText += $"\n\nFPS\n{fps}";
+                    infoText += $"\n\nFPS\n{Fps}";
                 }
                 secondaryControllerDisplay.text = infoText;
             }
@@ -303,7 +310,6 @@ namespace VRtist
         {
             settings.castShadows = value;
         }
-
 
         public void OnReleaseColor()
         {

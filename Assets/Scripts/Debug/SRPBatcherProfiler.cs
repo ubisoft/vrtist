@@ -1,5 +1,4 @@
-﻿
-using UnityEngine.Profiling;
+﻿using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering
@@ -37,10 +36,10 @@ namespace UnityEngine.Experimental.Rendering
             kPrepareBatchRendererGroupNodes,
         };
 
-        RecorderEntry[] recordersList =
+        readonly RecorderEntry[] recordersList =
         {
-			// Warning: Keep that list in the exact same order than SRPBMarkers enum
-			new RecorderEntry() { name="RenderLoop.Draw" },
+            // Warning: Keep that list in the exact same order than SRPBMarkers enum
+            new RecorderEntry() { name="RenderLoop.Draw" },
             new RecorderEntry() { name="Shadows.Draw" },
             new RecorderEntry() { name="SRPBatcher.Draw", oldName="RenderLoopNewBatcher.Draw" },
             new RecorderEntry() { name="SRPBatcherShadow.Draw", oldName="ShadowLoopNewBatcher.Draw" },
@@ -67,8 +66,10 @@ namespace UnityEngine.Experimental.Rendering
                 }
             }
 
-            m_style = new GUIStyle();
-            m_style.fontSize = 15;
+            m_style = new GUIStyle
+            {
+                fontSize = 15
+            };
             m_style.normal.textColor = Color.white;
             m_oldBatcherEnable = m_Enable;
 
@@ -100,7 +101,6 @@ namespace UnityEngine.Experimental.Rendering
 
         void Update()
         {
-
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 GraphicsSettings.useScriptableRenderPipelineBatching = !GraphicsSettings.useScriptableRenderPipelineBatching;
@@ -119,7 +119,6 @@ namespace UnityEngine.Experimental.Rendering
 
             if (m_Enable)
             {
-
                 bool SRPBatcher = GraphicsSettings.useScriptableRenderPipelineBatching;
 
                 m_AccDeltaTime += Time.unscaledDeltaTime;
@@ -137,28 +136,27 @@ namespace UnityEngine.Experimental.Rendering
 
                 if (m_AccDeltaTime >= kAverageStatDuration)
                 {
+                    float ooFrameCount = 1.0f / (float)m_frameCount;
 
-                    float ooFrameCount = 1.0f / (float) m_frameCount;
-
-                    float avgStdRender = recordersList[(int) SRPBMarkers.kStdRenderDraw].accTime * ooFrameCount;
-                    float avgStdShadow = recordersList[(int) SRPBMarkers.kStdShadowDraw].accTime * ooFrameCount;
-                    float avgSRPBRender = recordersList[(int) SRPBMarkers.kSRPBRenderDraw].accTime * ooFrameCount;
-                    float avgSRPBShadow = recordersList[(int) SRPBMarkers.kSRPBShadowDraw].accTime * ooFrameCount;
-                    float RTIdleTime = recordersList[(int) SRPBMarkers.kRenderThreadIdle].accTime * ooFrameCount;
-                    float avgPIRPrepareGroupNodes = recordersList[(int) SRPBMarkers.kPrepareBatchRendererGroupNodes].accTime * ooFrameCount;
+                    float avgStdRender = recordersList[(int)SRPBMarkers.kStdRenderDraw].accTime * ooFrameCount;
+                    float avgStdShadow = recordersList[(int)SRPBMarkers.kStdShadowDraw].accTime * ooFrameCount;
+                    float avgSRPBRender = recordersList[(int)SRPBMarkers.kSRPBRenderDraw].accTime * ooFrameCount;
+                    float avgSRPBShadow = recordersList[(int)SRPBMarkers.kSRPBShadowDraw].accTime * ooFrameCount;
+                    float RTIdleTime = recordersList[(int)SRPBMarkers.kRenderThreadIdle].accTime * ooFrameCount;
+                    float avgPIRPrepareGroupNodes = recordersList[(int)SRPBMarkers.kPrepareBatchRendererGroupNodes].accTime * ooFrameCount;
 
                     m_statsLabel = string.Format("Accumulated time for RenderLoop.Draw and ShadowLoop.Draw (all threads)\n{0:F2}ms CPU Rendering time ( incl {1:F2}ms RT idle )\n", avgStdRender + avgStdShadow + avgSRPBRender + avgSRPBShadow + avgPIRPrepareGroupNodes, RTIdleTime);
                     if (SRPBatcher)
                     {
                         m_statsLabel += string.Format("  {0:F2}ms SRP Batcher code path\n", avgSRPBRender + avgSRPBShadow);
-                        m_statsLabel += string.Format("    {0:F2}ms All objects ( {1} ApplyShader calls )\n", avgSRPBRender, recordersList[(int) SRPBMarkers.kSRPBRenderApplyShader].callCount / m_frameCount);
-                        m_statsLabel += string.Format("    {0:F2}ms Shadows ( {1} ApplyShader calls )\n", avgSRPBShadow, recordersList[(int) SRPBMarkers.kSRPBShadowApplyShader].callCount / m_frameCount);
+                        m_statsLabel += string.Format("    {0:F2}ms All objects ( {1} ApplyShader calls )\n", avgSRPBRender, recordersList[(int)SRPBMarkers.kSRPBRenderApplyShader].callCount / m_frameCount);
+                        m_statsLabel += string.Format("    {0:F2}ms Shadows ( {1} ApplyShader calls )\n", avgSRPBShadow, recordersList[(int)SRPBMarkers.kSRPBShadowApplyShader].callCount / m_frameCount);
                     }
                     m_statsLabel += string.Format("  {0:F2}ms Standard code path\n", avgStdRender + avgStdShadow);
-                    m_statsLabel += string.Format("    {0:F2}ms All objects ( {1} ApplyShader calls )\n", avgStdRender, recordersList[(int) SRPBMarkers.kStdRenderApplyShader].callCount / m_frameCount);
-                    m_statsLabel += string.Format("    {0:F2}ms Shadows ( {1} ApplyShader calls )\n", avgStdShadow, recordersList[(int) SRPBMarkers.kStdShadowApplyShader].callCount / m_frameCount);
-                    m_statsLabel += string.Format("  {0:F2}ms PIR Prepare Group Nodes ( {1} calls )\n", avgPIRPrepareGroupNodes, recordersList[(int) SRPBMarkers.kPrepareBatchRendererGroupNodes].callCount / m_frameCount);
-                    m_statsLabel += string.Format("Global Main Loop: {0:F2}ms ({1} FPS)\n", m_AccDeltaTime * 1000.0f * ooFrameCount, (int) (((float) m_frameCount) / m_AccDeltaTime));
+                    m_statsLabel += string.Format("    {0:F2}ms All objects ( {1} ApplyShader calls )\n", avgStdRender, recordersList[(int)SRPBMarkers.kStdRenderApplyShader].callCount / m_frameCount);
+                    m_statsLabel += string.Format("    {0:F2}ms Shadows ( {1} ApplyShader calls )\n", avgStdShadow, recordersList[(int)SRPBMarkers.kStdShadowApplyShader].callCount / m_frameCount);
+                    m_statsLabel += string.Format("  {0:F2}ms PIR Prepare Group Nodes ( {1} calls )\n", avgPIRPrepareGroupNodes, recordersList[(int)SRPBMarkers.kPrepareBatchRendererGroupNodes].callCount / m_frameCount);
+                    m_statsLabel += string.Format("Global Main Loop: {0:F2}ms ({1} FPS)\n", m_AccDeltaTime * 1000.0f * ooFrameCount, (int)(((float)m_frameCount) / m_AccDeltaTime));
 
                     RazCounters();
                 }
@@ -168,14 +166,12 @@ namespace UnityEngine.Experimental.Rendering
 
         void OnGUI()
         {
-            float offset = 50;
             if (m_Enable)
             {
                 bool SRPBatcher = GraphicsSettings.useScriptableRenderPipelineBatching;
 
                 GUI.color = new Color(1, 1, 1, 1);
                 float w = 700, h = 256;
-                offset += h + 50;
 
                 if (SRPBatcher)
                     GUILayout.BeginArea(new Rect(32, 50, w, h), "SRP batcher ON (F9)", GUI.skin.window);

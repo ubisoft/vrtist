@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -35,11 +36,6 @@ namespace VRtist
         //private NavigationMode currentNavigationMode = null;
 
         private const float deadZone = 0.3f; // for palette pop
-
-        private GameObject tooltipPalette = null;
-        private GameObject tooltipUndo = null;
-        private GameObject tooltipRedo = null;
-        private GameObject tooltipReset = null;
 
         private Vector3 previousPosition;
         private Vector3 previousForward;
@@ -175,10 +171,9 @@ namespace VRtist
             int bboxCount = 0;
 
             // parse selection
-            foreach (var item in Selection.selection)
+            foreach (var gobj in Selection.SelectedObjects)
             {
                 // get all meshes of selected object
-                GameObject gobj = item.Value;
                 MeshFilter[] meshFilters = gobj.GetComponentsInChildren<MeshFilter>();
                 foreach (MeshFilter meshFilter in meshFilters)
                 {
@@ -220,7 +215,7 @@ namespace VRtist
                 }
             }
 
-            center /= (float) bboxCount;
+            center /= (float)bboxCount;
 
             // compute distance to camera;
             float max = Mathf.Max(bmax.x - bmin.x, bmax.y - bmin.y);
@@ -259,7 +254,7 @@ namespace VRtist
             VRInput.ButtonEvent(VRInput.secondaryController, CommonUsages.primary2DAxisClick,
             () =>
             {
-                if (Selection.selection.Count == 0)
+                if (Selection.SelectedObjects.Count == 0)
                 {
                     ResetCameraClipPlanes();
                     transform.localPosition = Vector3.zero;

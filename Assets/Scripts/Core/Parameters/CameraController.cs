@@ -1,10 +1,14 @@
 ﻿using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Controller for camera.
+    /// </summary>
     public class CameraController : ParametersController
     {
         public Camera cameraObject = null;
@@ -13,10 +17,10 @@ namespace VRtist
         public float Focus
         {
             get { return focus; }
-            set 
-            { 
+            set
+            {
                 focus = value;
-                if(null != colimator)
+                if (null != colimator)
                 {
                     Vector3 direction = gameObject.transform.forward;
                     colimator.position = gameObject.transform.position - direction * focus;
@@ -29,7 +33,7 @@ namespace VRtist
         public bool EnableDOF
         {
             get { return enableDOF; }
-            set { enableDOF = value; parameterChanged.Invoke();  }
+            set { enableDOF = value; parameterChanged.Invoke(); }
         }
         public UnityEvent parameterChanged = new UnityEvent();
 
@@ -42,15 +46,6 @@ namespace VRtist
         private bool focalActionSelected;
         private CommandSetValue<float> focalValueCommand;
 
-        private UISlider focusSlider = null;
-        private bool focusActionSelected;
-        private CommandSetValue<float> focusValueCommand;
-
-        private UISlider apertureSlider = null;
-        private bool apertureActionSelected;
-        private CommandSetValue<float> apertureValueCommand;
-
-
         private UIButton inFrontButton = null;
         public bool inFront = false;
 
@@ -59,7 +54,7 @@ namespace VRtist
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
 
-        private float frustumLineWidth = 0.0020f;
+        private readonly float frustumLineWidth = 0.0020f;
 
         private void Awake()
         {
@@ -109,27 +104,6 @@ namespace VRtist
                 UIUtils.SetTMProStyle(focalSlider.gameObject, minSize: 1f, maxSize: 1.5f);
                 focalSlider.NeedsRebuild = true;
 
-                // TODO: put sliders on the camera gizmo
-                /*
-                // FOCUS
-                focusSlider = gameObject.GetComponentInChildren<UISlider>();
-                focusSlider.onSlideEventInt.AddListener(OnFocusSliderChange);
-                focusSlider.onClickEvent.AddListener(OnFocusClicked);
-                focusSlider.onReleaseEvent.AddListener(OnFocusReleased);
-                // Hack : force TMPro properties when component is enabled
-                UIUtils.SetTMProStyle(focusSlider.gameObject, minSize: 1f, maxSize: 1.5f);
-                focusSlider.NeedsRebuild = true;
-
-                // APERTURE
-                apertureSlider = gameObject.GetComponentInChildren<UISlider>();
-                apertureSlider.onSlideEventInt.AddListener(OnApertureSliderChange);
-                apertureSlider.onClickEvent.AddListener(OnApertureClicked);
-                apertureSlider.onReleaseEvent.AddListener(OnApertureReleased);
-                // Hack : force TMPro properties when component is enabled
-                UIUtils.SetTMProStyle(apertureSlider.gameObject, minSize: 1f, maxSize: 1.5f);
-                apertureSlider.NeedsRebuild = true;
-                */
-
                 inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>();
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
                 inFrontButton.NeedsRebuild = true;
@@ -142,10 +116,7 @@ namespace VRtist
         }
         public override void SetGizmoVisible(bool value)
         {
-            bool isDisabledLayerActive = disabledLayer.activeSelf;
-
             base.SetGizmoVisible(value);
-
             disabledLayer.SetActive(value);
         }
 
@@ -163,7 +134,7 @@ namespace VRtist
         private void OnSetInFront(bool value)
         {
             inFront = value;
-            UpdateCameraPreviewInFront(Selection.activeCamera == gameObject);
+            UpdateCameraPreviewInFront(CameraManager.Instance.ActiveCamera == gameObject);
         }
 
         public void UpdateCameraPreviewInFront(bool active)
@@ -216,66 +187,6 @@ namespace VRtist
             }
         }
 
-        //
-        // FOCUS
-        //
-
-        private void OnFocusSliderChange(int focus)
-        {
-            this.focus = focus;
-            CameraTool.SendCameraParams(gameObject);
-        }
-
-        private void OnFocusClicked()
-        {
-
-            focusActionSelected = Selection.IsSelected(gameObject);
-            if (!focusActionSelected)
-            {
-                Selection.AddToSelection(gameObject);
-            }
-            focusValueCommand = new CommandSetValue<float>("Camera Focus", "/CameraController/focus");
-        }
-
-        private void OnFocusReleased()
-        {
-            focusValueCommand.Submit();
-            if (!focusActionSelected)
-            {
-                Selection.RemoveFromSelection(gameObject);
-            }
-        }
-
-        //
-        // APERTURE
-        //
-
-        private void OnApertureSliderChange(int aperture)
-        {
-            this.aperture = aperture;
-            CameraTool.SendCameraParams(gameObject);
-        }
-
-        private void OnApertureClicked()
-        {
-
-            apertureActionSelected = Selection.IsSelected(gameObject);
-            if (!apertureActionSelected)
-            {
-                Selection.AddToSelection(gameObject);
-            }
-            apertureValueCommand = new CommandSetValue<float>("Camera Aperture", "/CameraController/aperture");
-        }
-
-        private void OnApertureReleased()
-        {
-            apertureValueCommand.Submit();
-            if (!apertureActionSelected)
-            {
-                Selection.RemoveFromSelection(gameObject);
-            }
-        }
-
         void Update()
         {
             if (null == cameraObject)
@@ -297,7 +208,7 @@ namespace VRtist
 
                         colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
 
-                        if (Selection.activeCamera == gameObject)
+                        if (CameraManager.Instance.ActiveCamera == gameObject)
                         {
                             if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
                             dof.focusDistance.value = focus;
@@ -310,14 +221,14 @@ namespace VRtist
                     }
                 }
 
-                if (!enableDOF && Selection.activeCamera == gameObject)
+                if (!enableDOF && CameraManager.Instance.ActiveCamera == gameObject)
                 {
                     if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
                     dof.active = false;
                 }
 
                 // Active camera
-                if (Selection.activeCamera == gameObject)
+                if (CameraManager.Instance.ActiveCamera == gameObject)
                 {
                     if (CameraTool.showCameraFrustum && GlobalState.Settings.DisplayGizmos)
                         DrawFrustum();
@@ -337,16 +248,6 @@ namespace VRtist
             if (null != focalSlider && focalSlider.Value != focal)
             {
                 focalSlider.Value = focal;
-            }
-
-            if (null != focusSlider && focusSlider.Value != focus)
-            {
-                focusSlider.Value = focus;
-            }
-
-            if (null != apertureSlider && apertureSlider.Value != aperture)
-            {
-                apertureSlider.Value = aperture;
             }
         }
 
@@ -413,7 +314,7 @@ namespace VRtist
             points[13] = new Vector3(-farHalfWidth, farHalfHeight, -far);
             points[14] = new Vector3(-farHalfWidth, -farHalfHeight, -far);
             points[15] = new Vector3(-nearHalfWidth, -nearHalfHeight, -near);
-           
+
             frustumRenderer.positionCount = points.Length;
             frustumRenderer.SetPositions(points);
             frustumRenderer.startWidth = frustumLineWidth / GlobalState.WorldScale;

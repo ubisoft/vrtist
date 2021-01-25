@@ -2,10 +2,13 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command manage shot manager.
+    /// </summary>
     public class CommandShotManager : ICommand
     {
-        private ShotManagerActionInfo oldData;
-        private ShotManagerActionInfo newData;
+        private readonly ShotManagerActionInfo oldData;
+        private readonly ShotManagerActionInfo newData;
         public CommandShotManager(ShotManagerActionInfo info)
         {
             newData = info;
@@ -71,7 +74,15 @@ namespace VRtist
                         GameObject cam = null;
                         if (info.cameraName.Length > 0)
                             cam = SyncData.nodes[info.cameraName].instances[0].Item1;
-                        Shot shot = new Shot() { name = info.shotName, camera = cam, color = info.shotColor, start = info.shotStart, end = info.shotEnd, enabled = info.shotEnabled == 1 ? true : false };
+                        Shot shot = new Shot()
+                        {
+                            name = info.shotName,
+                            camera = cam,
+                            color = info.shotColor,
+                            start = info.shotStart,
+                            end = info.shotEnd,
+                            enabled = info.shotEnabled == 1
+                        };
                         ShotManager.Instance.InsertShot(info.shotIndex + 1, shot);
                     }
                     break;
@@ -93,10 +104,6 @@ namespace VRtist
                     break;
                 case ShotManagerAction.UpdateShot:
                     {
-                        GameObject cam = null;
-                        if (info.cameraName.Length > 0)
-                            cam = SyncData.nodes[info.cameraName].instances[0].Item1;
-
                         Shot shot = ShotManager.Instance.shots[info.shotIndex];
                         if (info.shotName.Length > 0)
                             shot.name = info.shotName;
@@ -109,7 +116,7 @@ namespace VRtist
                         if (info.shotEnd != -1)
                             shot.end = info.shotEnd;
                         if (info.shotEnabled != -1)
-                            shot.enabled = info.shotEnabled == 1 ? true : false;
+                            shot.enabled = info.shotEnabled == 1;
                     }
                     break;
             }

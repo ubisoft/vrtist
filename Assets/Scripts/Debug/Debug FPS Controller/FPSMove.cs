@@ -1,13 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FPSMove : MonoBehaviour
 {
     public Transform rotateX;
     private float speed = 10f;
 
-    // Update is called once per frame
     void Update()
     {
         float x = Input.GetAxis("Horizontal") * speed * Time.deltaTime;

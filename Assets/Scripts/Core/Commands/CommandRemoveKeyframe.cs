@@ -2,11 +2,14 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to remove a keyframe of a property of an object.
+    /// </summary>
     public class CommandRemoveKeyframe : ICommand
     {
-        GameObject gObject;
-        AnimatableProperty property;
-        AnimationKey oldAnimationKey = null;
+        readonly GameObject gObject;
+        readonly AnimatableProperty property;
+        readonly AnimationKey oldAnimationKey = null;
 
         public CommandRemoveKeyframe(GameObject obj, AnimatableProperty property, int frame)
         {
@@ -35,6 +38,7 @@ namespace VRtist
             GlobalState.Animation.RemoveKeyframe(gObject, property, oldAnimationKey.frame);
             MixerClient.Instance.SendRemoveKeyframe(new SetKeyInfo { objectName = gObject.name, property = property, key = oldAnimationKey });
         }
+
         public override void Submit()
         {
             Redo();

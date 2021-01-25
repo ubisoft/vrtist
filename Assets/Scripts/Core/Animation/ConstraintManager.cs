@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -12,7 +12,10 @@ namespace VRtist
         Unknown,
     }
 
-    public class Constraint
+    /// <summary>
+    /// Internal constraint representation.
+    /// </summary>
+    class Constraint
     {
         public GameObject gobject;
         public Transform target;
@@ -21,9 +24,12 @@ namespace VRtist
         public LineRenderer lineRenderer = null;
     }
 
+    /// <summary>
+    /// Manage all constraints of the scene and their display.
+    /// </summary>
     public class ConstraintManager : MonoBehaviour
     {
-        public static List<Constraint> constraints = new List<Constraint>();
+        static readonly List<Constraint> constraints = new List<Constraint>();
 
         // Update is called once per frame
         void LateUpdate()
@@ -37,6 +43,7 @@ namespace VRtist
             {
                 case ConstraintType.Parent: return gobject.GetComponent<ParentConstraint>();
                 case ConstraintType.LookAt: return gobject.GetComponent<LookAtConstraint>();
+                case ConstraintType.Unknown: break;
             }
             return null;
         }
@@ -47,7 +54,7 @@ namespace VRtist
             return null != parentConstraint;
         }
 
-        public static void RemoveConstraint<T>(GameObject gobject) where T : UnityEngine.Object
+        public static void RemoveConstraint<T>(GameObject gobject) where T : UnityEngine.Component
         {
             T component = gobject.GetComponent<T>();
             IConstraint constraint = component as IConstraint;
@@ -79,7 +86,7 @@ namespace VRtist
 
             GameObject source = constraint.GetSource(0).sourceTransform.gameObject;
             ParametersController sourceParametersController = source.GetComponent<ParametersController>();
-            if(null != sourceParametersController)
+            if (null != sourceParametersController)
             {
                 sourceParametersController.RemoveConstraintHolder(gobject);
             }
@@ -94,7 +101,7 @@ namespace VRtist
             foreach (Constraint constraint in constraints)
             {
                 GameObject lineGameObject = constraint.lineGameObject;
-                if(null == lineGameObject)
+                if (null == lineGameObject)
                 {
                     constraint.lineGameObject = new GameObject();
                     lineGameObject = constraint.lineGameObject;
@@ -142,7 +149,7 @@ namespace VRtist
                 // update visual target for LineRenderer
                 foreach (Constraint c in constraints)
                 {
-                    if(c.gobject == gobject && c.constraintType == ConstraintType.Parent)
+                    if (c.gobject == gobject && c.constraintType == ConstraintType.Parent)
                     {
                         c.target = target.transform;
                         break;
@@ -219,7 +226,7 @@ namespace VRtist
             {
                 source = constraint.GetSource(0);
             }
-          
+
             source.sourceTransform = target.transform;
             source.weight = 1f;
             constraint.SetSource(0, source);

@@ -1,28 +1,29 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
-
+    /// <summary>
+    /// Display motion trails of animated objects.
+    /// </summary>
     public class Anim3DCurveManager : MonoBehaviour
     {
         private bool displaySelectedCurves = true;
-        private Dictionary<GameObject, GameObject> curves = new Dictionary<GameObject, GameObject>();
+        private readonly Dictionary<GameObject, GameObject> curves = new Dictionary<GameObject, GameObject>();
         public Transform curvesParent;
         public GameObject curvePrefab;
 
-        private float lineWidth = 0.001f;
+        private readonly float lineWidth = 0.001f;
 
-        // Start is called before the first frame update
         void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;
+            Selection.onSelectionChanged.AddListener(OnSelectionChanged);
             GlobalState.Animation.onAddAnimation.AddListener(OnAnimationAdded);
             GlobalState.Animation.onRemoveAnimation.AddListener(OnAnimationRemoved);
             GlobalState.Animation.onChangeCurve.AddListener(OnCurveChanged);
         }
 
-        // Update is called once per frame
         void Update()
         {
             if (displaySelectedCurves != GlobalState.Settings.Display3DCurves)
@@ -39,7 +40,7 @@ namespace VRtist
 
         void UpdateCurvesWidth()
         {
-            foreach(GameObject curve in curves.Values)
+            foreach (GameObject curve in curves.Values)
             {
                 LineRenderer line = curve.GetComponent<LineRenderer>();
                 line.startWidth = lineWidth / GlobalState.WorldScale;
@@ -47,7 +48,7 @@ namespace VRtist
             }
         }
 
-        void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        void OnSelectionChanged(HashSet<GameObject> previousSelectedObjects, HashSet<GameObject> selectedObjects)
         {
             if (GlobalState.Settings.Display3DCurves)
                 UpdateFromSelection();
@@ -56,7 +57,7 @@ namespace VRtist
         void UpdateFromSelection()
         {
             ClearCurves();
-            foreach (GameObject gObject in Selection.selection.Values)
+            foreach (GameObject gObject in Selection.SelectedObjects)
             {
                 AddCurve(gObject);
             }
@@ -152,7 +153,7 @@ namespace VRtist
 
             int count = positions.Count;
             GameObject curve = Instantiate(curvePrefab, curvesParent);
-            
+
             LineRenderer line = curve.GetComponent<LineRenderer>();
             line.positionCount = count;
             for (int index = 0; index < count; index++)
@@ -165,5 +166,4 @@ namespace VRtist
             curves.Add(gObject, curve);
         }
     }
-
 }

@@ -1,10 +1,14 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    /// <summary>
+    /// An animated property over time.
+    /// For optimizations the curve is baked.
+    /// </summary>
     public class Curve
     {
         public AnimatableProperty property;
@@ -48,7 +52,7 @@ namespace VRtist
 
             for (int i = startIndex; i <= endIndex; i++)
             {
-                _Evaluate(i + GlobalState.Animation.StartFrame, out cachedValues[i]);
+                EvaluateCache(i + GlobalState.Animation.StartFrame, out cachedValues[i]);
             }
         }
 
@@ -304,7 +308,7 @@ namespace VRtist
             return avg.y;
         }
 
-        public bool _Evaluate(int frame, out float value)
+        private bool EvaluateCache(int frame, out float value)
         {
             if (keys.Count == 0)
             {
@@ -344,7 +348,6 @@ namespace VRtist
                 case Interpolation.Bezier:
                     {
                         AnimationKey nextKey = keys[prevIndex + 1];
-                        float rangeDt = (float)(nextKey.frame - prevKey.frame);
 
                         Vector2 A = new Vector2(prevKey.frame, prevKey.value);
                         Vector2 B, C;
@@ -374,7 +377,6 @@ namespace VRtist
                             C = D - V * AD.magnitude / 3f;
                         }
 
-                        //float dt = (float) (frame - prevKey.frame) / rangeDt;
                         value = EvaluateBezier(A, B, C, D, frame);
                         return true;
                     }

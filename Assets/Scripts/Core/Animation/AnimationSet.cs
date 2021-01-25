@@ -1,10 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
-
+    /// <summary>
+    /// A set of animations for a given Transform. An animation is a curve on specific properties (location, rotation...).
+    /// </summary>
     public class AnimationSet
     {
         public Transform transform;

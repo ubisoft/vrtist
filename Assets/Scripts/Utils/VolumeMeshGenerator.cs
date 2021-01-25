@@ -53,15 +53,12 @@ namespace VRtist
             {
                 get
                 {
-                    switch (i)
+                    return i switch
                     {
-                        case 0:
-                            return a;
-                        case 1:
-                            return b;
-                        default:
-                            return c;
-                    }
+                        0 => a,
+                        1 => b,
+                        _ => c,
+                    };
                 }
             }
         }
@@ -243,9 +240,9 @@ namespace VRtist
             Vector3 originToBounds = bounds.center - bounds.extents - origin;
 
             Vector3Int newResPositive = new Vector3Int(
-                Mathf.FloorToInt((bounds.size.x-Mathf.Abs(originToBounds.x)) / stepSize),
-                Mathf.FloorToInt((bounds.size.y-Mathf.Abs(originToBounds.y)) / stepSize),
-                Mathf.FloorToInt((bounds.size.z-Mathf.Abs(originToBounds.z)) / stepSize)
+                Mathf.FloorToInt((bounds.size.x - Mathf.Abs(originToBounds.x)) / stepSize),
+                Mathf.FloorToInt((bounds.size.y - Mathf.Abs(originToBounds.y)) / stepSize),
+                Mathf.FloorToInt((bounds.size.z - Mathf.Abs(originToBounds.z)) / stepSize)
             );
 
             Vector3Int newResNegative = new Vector3Int(
@@ -260,7 +257,7 @@ namespace VRtist
             if (GridIsTooBig(newRes))
                 return;
 
-            origin = origin - new Vector3(newResNegative.x * stepSize, newResNegative.y * stepSize, newResNegative.z * stepSize);
+            origin -= new Vector3(newResNegative.x * stepSize, newResNegative.y * stepSize, newResNegative.z * stepSize);
 
             float[,,] newField = new float[newRes.z, newRes.y, newRes.x];
 
@@ -268,7 +265,7 @@ namespace VRtist
             float nz = field.GetLength(0);
             float ny = field.GetLength(1);
             float nx = field.GetLength(2);
-            
+
             int oz = newResNegative.z;
             int oy = newResNegative.y;
             int ox = newResNegative.x;
@@ -325,16 +322,10 @@ namespace VRtist
             int numVoxels = (resolution.x - 1) * (resolution.y - 1) * (resolution.z - 1);
             int maxTriangleCount = numVoxels * 5;
 
-            // Always create buffers in editor (since buffers are released immediately to prevent memory leak)
-            // Otherwise, only create if null or if size has changed
-            if (!Application.isPlaying || (fieldBuffer == null || numPoints != fieldBuffer.count))
+            if ((fieldBuffer == null || numPoints != fieldBuffer.count))
             {
-                if (Application.isPlaying)
-                {
-                    ReleaseComputeBuffers();
-                }
+                ReleaseComputeBuffers();
                 triangleBuffer = new ComputeBuffer(maxTriangleCount, sizeof(float) * 3 * 3, ComputeBufferType.Append);
-                //pointsBuffer = new ComputeBuffer(numPoints, sizeof(float) * 4);
                 fieldBuffer = new ComputeBuffer(numPoints, sizeof(float));
                 triCountBuffer = new ComputeBuffer(1, sizeof(int), ComputeBufferType.Raw);
             }

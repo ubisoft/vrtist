@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+
 using TMPro;
+
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.XR;
@@ -8,8 +10,6 @@ namespace VRtist
 {
     public class CameraTool : SelectorBase
     {
-        // Start is called before the first frame update
-        public GameObject cameraPrefab;
         public Transform rig;
         public Transform cameraContainer;
         public Material screenShotMaterial;
@@ -107,7 +107,7 @@ namespace VRtist
                     cameraControler.aperture = value;
                 }
             }
-        }        
+        }
 
         protected override void OnEnable()
         {
@@ -123,7 +123,7 @@ namespace VRtist
         protected override void OnDisable()
         {
             base.OnDisable();
-            foreach(CameraController cameraController in selectedCameraControllers)
+            foreach (CameraController cameraController in selectedCameraControllers)
             {
                 cameraController.parameterChanged.RemoveListener(OnCameraParameterChanged);
             }
@@ -192,8 +192,6 @@ namespace VRtist
 
 
             Init();
-
-            ToolsUIManager.Instance.OnToolParameterChangedEvent += OnChangeParameter;
 
             // Create tooltips
             SetTooltips();
@@ -417,7 +415,7 @@ namespace VRtist
         private List<Camera> SelectedCameras()
         {
             List<Camera> selectedCameras = new List<Camera>();
-            foreach (var selectedItem in Selection.GetGrippedOrSelection())
+            foreach (var selectedItem in Selection.ActiveObjects)
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
@@ -431,19 +429,19 @@ namespace VRtist
         {
             List<GameObject> selectedCameras = new List<GameObject>();
 
-            foreach (var selectedItem in Selection.GetGrippedOrSelection())
+            foreach (var selectedItem in Selection.ActiveObjects)
             {
                 Camera cam = selectedItem.GetComponentInChildren<Camera>();
                 if (!cam)
                     continue;
-                if (selectedItem != Selection.activeCamera)
+                if (selectedItem != CameraManager.Instance.ActiveCamera)
                     selectedCameras.Add(selectedItem);
             }
-            if (null != Selection.activeCamera)
-                selectedCameras.Add(Selection.activeCamera);
+            if (null != CameraManager.Instance.ActiveCamera)
+                selectedCameras.Add(CameraManager.Instance.ActiveCamera);
             return selectedCameras;
         }
-        
+
 
         protected override void DoUpdateGui()
         {
@@ -452,17 +450,18 @@ namespace VRtist
                 if (UIObject)
                 {
                     Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
-                    GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);                   
+                    GameObject cameraPrefab = ResourceManager.GetPrefab(PrefabID.Camera);
+                    GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
 
                     if (newCamera)
                     {
                         CommandGroup undoGroup = new CommandGroup("Instantiate Camera");
                         try
                         {
-                            ClearSelection();                           
+                            ClearSelection();
                             new CommandAddGameObject(newCamera).Submit();
                             AddToSelection(newCamera);
-                            Selection.SetHoveredObject(newCamera);
+                            Selection.HoveredObject = newCamera;
                         }
                         finally
                         {
@@ -593,9 +592,8 @@ namespace VRtist
         protected override void UpdateUI()
         {
             // updates the panel from selection
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
+            foreach (GameObject gobject in Selection.SelectedObjects)
             {
-                GameObject gobject = data.Value;
                 CameraController cameraController = gobject.GetComponent<CameraController>();
                 if (null == cameraController)
                     continue;
@@ -654,7 +652,7 @@ namespace VRtist
             }
 
             selectedCameraControllers.Clear();
-            foreach (GameObject item in Selection.selection.Values)
+            foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
@@ -665,11 +663,11 @@ namespace VRtist
             }
         }
 
-        protected override void OnSelectionChanged(object sender, SelectionChangedArgs args)
-        {           
-            base.OnSelectionChanged(sender, args);
+        protected override void OnSelectionChanged(HashSet<GameObject> previousSelection, HashSet<GameObject> currentSelection)
+        {
+            base.OnSelectionChanged(previousSelection, currentSelection);
             UpdateSelectedCameraControllers();
-            foreach (GameObject item in Selection.selection.Values)
+            foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
                 if (null != cameraController)
@@ -684,7 +682,7 @@ namespace VRtist
         }
 
         public void OnFocalSliderPressed()
-        {            
+        {
             OnSliderPressed("Camera Focal", "/CameraController/focal");
         }
 
@@ -693,7 +691,7 @@ namespace VRtist
             OnSliderPressed("Camera Focus", "/CameraController/Focus");
         }
         public void OnFocusSliderReleased()
-        {           
+        {
             OnReleased();
         }
         public void OnApertureSliderPressed()
@@ -704,10 +702,10 @@ namespace VRtist
         public void OnCheckEnableDepthOfField(bool value)
         {
             CommandGroup commangGroup = new CommandGroup();
-            foreach(GameObject item in Selection.selection.Values)
+            foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
-                if(null != cameraContainer)
+                if (null != cameraContainer)
                 {
                     new CommandEnableDOF(item, value).Submit();
                 }

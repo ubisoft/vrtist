@@ -105,7 +105,7 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            if(state == AnimationState.Playing && null == Selection.activeCamera)
+            if (state == AnimationState.Playing && null == CameraManager.Instance.ActiveCamera)
             {
                 // Set Camera Active on Play/Record
                 ShotManager.Instance.ActiveShotIndex = ShotManager.Instance.ActiveShotIndex;
@@ -174,11 +174,11 @@ namespace VRtist
             {
                 Shot selectedShot = sm.shots[shotList.CurrentIndex];
                 start = selectedShot.end + 1;
-                camera = Selection.activeCamera != null ? Selection.activeCamera : selectedShot.camera;
+                camera = CameraManager.Instance.ActiveCamera != null ? CameraManager.Instance.ActiveCamera : selectedShot.camera;
             }
             else
             {
-                camera = Selection.activeCamera;
+                camera = CameraManager.Instance.ActiveCamera;
             }
             int end = start + 50;  // arbitrary duration
             end = Mathf.Min(end, GlobalState.Animation.EndFrame);
@@ -440,8 +440,8 @@ namespace VRtist
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
-            info.cameraName = Selection.activeCamera == null ? "" : Selection.activeCamera.name;
-            shot.camera = Selection.activeCamera;
+            info.cameraName = CameraManager.Instance.ActiveCamera == null ? "" : CameraManager.Instance.ActiveCamera.name;
+            shot.camera = CameraManager.Instance.ActiveCamera;
 
             new CommandShotManager(oldInfo, info).Submit();
             MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);

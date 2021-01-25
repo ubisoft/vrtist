@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -28,7 +29,9 @@ namespace VRtist
 
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
+
         protected CommandGroup clearSelectionUndoGroup;
+        protected int selectionStateTimestamp = -1;
 
         const float deadZone = 0.3f;
 
@@ -40,10 +43,6 @@ namespace VRtist
 
         protected bool gripPrevented = false;
         protected bool gripInterrupted = false;
-
-        protected GameObject triggerTooltip;
-        protected GameObject gripTooltip;
-        protected GameObject joystickTooltip;
 
         protected Dopesheet dopesheet;
         protected UIShotManager shotManager;
@@ -106,7 +105,8 @@ namespace VRtist
         {
             base.OnEnable();
             OnSelectMode();
-            Selection.OnSelectionChanged += OnSelectionChanged;
+            SetTooltips();
+            Selection.onSelectionChanged.AddListener(OnSelectionChanged);
         }
 
         protected void ResetClearSelectionUndoGroup()
@@ -120,7 +120,7 @@ namespace VRtist
 
         protected override void OnDisable()
         {
-            Selection.OnSelectionChanged -= OnSelectionChanged;
+            Selection.onSelectionChanged.RemoveListener(OnSelectionChanged);
             if (Gripping)
                 OnEndGrip();
             EndUndoGroup(); // secu
@@ -187,8 +187,6 @@ namespace VRtist
 
             updateButtonsColor();
 
-            Selection.selectionMaterial = selectionMaterial;
-
             dopesheet = GameObject.FindObjectOfType<Dopesheet>();
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
 
@@ -251,14 +249,14 @@ namespace VRtist
             // Clear selection on trigger click on nothing
             VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
             {
-                Selection.ResetSelectionHasChanged();
+                selectionStateTimestamp = Selection.SelectionStateTimestamp;
                 clearSelectionUndoGroup = new CommandGroup("Clear Selector");
             },
             () =>
             {
                 try
                 {
-                    if (!Selection.selectionHasChanged && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
+                    if (selectionStateTimestamp == Selection.SelectionStateTimestamp && !VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton) && !VRInput.GetValue(VRInput.primaryController, CommonUsages.gripButton))
                     {
                         if (mode == SelectorBase.SelectorModes.Select)
                             ClearSelection();
@@ -302,7 +300,7 @@ namespace VRtist
         // Tell whether the current selection contains a hierarchical object (mesh somewhere in children) or not.
         // Camera and lights are known hierarchical objects.
         // TODO: check for multiselection of a light and and simple primitive for example
-        protected bool IsHierarchical(List<GameObject> objects)
+        protected bool IsHierarchical(HashSet<GameObject> objects)
         {
             foreach (GameObject gObject in objects)
             {
@@ -356,7 +354,7 @@ namespace VRtist
             initRotations.Clear();
             initScales.Clear();
             initFocals.Clear();
-            foreach (GameObject obj in Selection.GetGrippedOrSelection())
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
                 initParentMatrix[obj] = obj.transform.parent.localToWorldMatrix;
                 initPositions[obj] = obj.transform.localPosition;
@@ -400,6 +398,22 @@ namespace VRtist
             }
         }
 
+        public static bool IsHandleSelected()
+        {
+            bool handleSelected = false;
+
+            if (Selection.ActiveObjects.Count == 1)
+            {
+                foreach (GameObject obj in Selection.ActiveObjects)
+                {
+                    if (obj.GetComponent<UIHandle>())
+                        handleSelected = true;
+                }
+            }
+            return handleSelected;
+        }
+
+
         protected virtual void OnStartGrip()
         {
             EndUndoGroup(); // secu
@@ -411,8 +425,8 @@ namespace VRtist
 
             enableToggleTool = false; // NO secondary button tool switch while gripping.
 
-            Selection.SetGrippedObject(Selection.GetHoveredObject());
-            SetControllerVisible(Selection.GetGrippedOrSelection().Count == 0);
+            Selection.AuxiliarySelection = Selection.HoveredObject;
+            SetControllerVisible(Selection.ActiveObjects.Count == 0);
 
             ComputeSelectionBounds();
             InitControllerMatrix();
@@ -444,7 +458,7 @@ namespace VRtist
             }
 
             List<ParametersController> controllers = new List<ParametersController>();
-            foreach (var obj in Selection.GetGrippedOrSelection())
+            foreach (var obj in Selection.ActiveObjects)
             {
                 LightController lightController = obj.GetComponentInChildren<LightController>();
                 if (null != lightController)
@@ -464,7 +478,7 @@ namespace VRtist
                 GlobalState.SetGizmosVisible(controllers.ToArray(), GlobalState.Settings.DisplayGizmos);
             }
 
-            if (!Selection.IsHandleSelected())
+            if (!IsHandleSelected())
             {
                 ManageMoveObjectsUndo();
                 ManageCamerasFocalsUndo();
@@ -472,7 +486,7 @@ namespace VRtist
             }
 
             EndUndoGroup();
-            Selection.SetGrippedObject(null);
+            Selection.AuxiliarySelection = null;
         }
 
 
@@ -480,7 +494,7 @@ namespace VRtist
         {
             if (!GlobalState.Animation.autoKeyEnabled)
                 return;
-            foreach (GameObject obj in Selection.GetGrippedOrSelection())
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
                 if (!initPositions.ContainsKey(obj))
                     continue;
@@ -500,7 +514,7 @@ namespace VRtist
             List<Quaternion> endRotations = new List<Quaternion>();
             List<Vector3> endScales = new List<Vector3>();
 
-            foreach (GameObject obj in Selection.GetGrippedOrSelection())
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
                 if (!initPositions.ContainsKey(obj))
                     continue;
@@ -543,11 +557,11 @@ namespace VRtist
 
         }
 
-        protected virtual void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        protected virtual void OnSelectionChanged(HashSet<GameObject> previousSelection, HashSet<GameObject> currentSelection)
         {
             outOfDeadZone = false;
 
-            int numSelected = Selection.selection.Count;
+            int numSelected = Selection.SelectedObjects.Count;
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Joystick, numSelected > 0);
 
             // Update locked checkbox if anyone
@@ -555,7 +569,7 @@ namespace VRtist
             {
                 int numLocked = 0;
                 int numUnlocked = 0;
-                foreach (GameObject gobject in Selection.GetGrippedOrSelection())
+                foreach (GameObject gobject in Selection.SelectedObjects)
                 {
                     ParametersController parameters = gobject.GetComponent<ParametersController>();
                     if (null != parameters)
@@ -582,12 +596,11 @@ namespace VRtist
 
         protected CameraController GetSingleSelectedCamera()
         {
-            List<GameObject> objecs = Selection.GetGrippedOrSelection();
-            if (objecs.Count != 1)
+            if (Selection.ActiveObjects.Count != 1)
                 return null;
 
             CameraController controller = null;
-            foreach (GameObject gObject in objecs)
+            foreach (GameObject gObject in Selection.ActiveObjects)
             {
                 controller = gObject.GetComponent<CameraController>();
             }
@@ -599,11 +612,10 @@ namespace VRtist
             if (!Gripping)
                 return false;
 
-            List<GameObject> objecs = Selection.GetGrippedOrSelection();
-            if (objecs.Count != 1)
+            if (Selection.ActiveObjects.Count != 1)
                 return false;
 
-            foreach (GameObject gObject in objecs)
+            foreach (GameObject gObject in Selection.ActiveObjects)
             {
                 if (null == gObject.GetComponent<CameraController>())
                     return false;
@@ -642,7 +654,7 @@ namespace VRtist
             Vector3 positionSum = Vector3.zero;
             Quaternion rotationSum = Quaternion.identity;
             rotationSum.w = 0f;
-            float count = (float) damping.Count;
+            float count = (float)damping.Count;
             float factor = 1f / count;
             foreach (ControllerDamping dampingElem in damping)
             {
@@ -672,11 +684,9 @@ namespace VRtist
                         return;
                     }
 
-                    if (!Selection.IsHandleSelected())
+                    if (!IsHandleSelected())
                     {
-                        List<GameObject> objects = Selection.GetGrippedOrSelection();
-
-                        if (objects.Count > 0)
+                        if (Selection.ActiveObjects.Count > 0)
                         {
                             DuplicateSelection();
 
@@ -703,7 +713,7 @@ namespace VRtist
                     return;
 
                 // Joystick zoom only for non-handle objects
-                if (!Selection.IsHandleSelected())
+                if (!IsHandleSelected())
                 {
                     if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
                     {
@@ -759,7 +769,7 @@ namespace VRtist
                         SendCameraFocal(cameraController);
                     }
 
-                    foreach (GameObject obj in Selection.selection.Values)
+                    foreach (GameObject obj in Selection.SelectedObjects)
                     {
                         ParametersController controller = obj.GetComponent<ParametersController>();
                         if (null == controller)
@@ -805,17 +815,19 @@ namespace VRtist
             minBound = Vector3.positiveInfinity;
             maxBound = Vector3.negativeInfinity;
             hasBounds = false;
-            List<GameObject> selectedObjects = Selection.GetGrippedOrSelection();
-            int selectionCount = selectedObjects.Count;
+            int selectionCount = Selection.ActiveObjects.Count;
 
             bool foundHierarchicalObject = false;
             if (selectionCount == 1)
             {
-                foundHierarchicalObject = IsHierarchical(selectedObjects);
-            }            
+                foundHierarchicalObject = IsHierarchical(Selection.ActiveObjects);
+            }
 
-            foreach (GameObject obj in selectedObjects)
+            GameObject firstSelectedObject = null;
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
+                if (null == firstSelectedObject)
+                    firstSelectedObject = obj;
                 MeshFilter meshFilter = obj.GetComponentInChildren<MeshFilter>();
                 if (null != meshFilter)
                 {
@@ -863,7 +875,7 @@ namespace VRtist
                     hasBounds = true;
                 }
             }
-            if(hasBounds)
+            if (hasBounds)
             {
                 planePositions = new Vector3[6];
                 planePositions[0] = new Vector3((maxBound.x + minBound.x) * 0.5f, maxBound.y, (maxBound.z + minBound.z) * 0.5f);
@@ -876,7 +888,7 @@ namespace VRtist
 
             if (selectionCount == 1 && !foundHierarchicalObject)
             {
-                Transform transform = selectedObjects[0].GetComponentInChildren<MeshFilter>().transform;
+                Transform transform = firstSelectedObject.GetComponentInChildren<MeshFilter>().transform;
                 planeContainerMatrix = rightHanded.worldToLocalMatrix * transform.localToWorldMatrix;
             }
             else
@@ -893,7 +905,7 @@ namespace VRtist
             boundingBox.transform.localPosition = planePosition;
             boundingBox.transform.localRotation = planeRotation;
             boundingBox.transform.localScale = planeScale;
-            
+
             if (!hasBounds)
             {
                 snapUIContainer.SetActive(false);
@@ -953,7 +965,7 @@ namespace VRtist
             planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, g.z), new Vector3(delta.x, delta.y, g.z), new Vector3(-delta.x, delta.y, g.z), new Vector3(-delta.x, -delta.y, g.z));
             SetPlaneCollider(planes[5], new Vector3(0, 0, g.z), new Vector3(delta.x * 2f, delta.y * 2f, cs.z));
 
-            
+
         }
 
         protected void InitControllerMatrix()
@@ -962,10 +974,10 @@ namespace VRtist
         }
 
         protected void InitSnap()
-        { 
+        {
             if (!hasBounds)
                 return;
-            
+
             snapRays = new Ray[6];
             Vector3 worldPlanePosition;
 
@@ -990,7 +1002,7 @@ namespace VRtist
 
             if (!IsSelectionSnappable())
             {
-                foreach(Transform snapUI in snapTargets)
+                foreach (Transform snapUI in snapTargets)
                     snapUI.gameObject.SetActive(false);
                 return;
             }
@@ -1039,7 +1051,7 @@ namespace VRtist
                 line.SetPosition(1, hit.point);
                 line.material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hit.distance));
                 line.endWidth = line.startWidth = 0.001f / GlobalState.WorldScale;
-                
+
                 snapTarget.localScale = Vector3.one * 0.03f / GlobalState.WorldScale;
                 snapTarget.LookAt(hit.point - hit.normal);
                 snapTarget.position = hit.point + hit.normal * 0.001f / GlobalState.WorldScale;
@@ -1071,7 +1083,7 @@ namespace VRtist
         private bool IsSelectionSnappable()
         {
             int layersMask = LayerMask.NameToLayer("HoverCameraHidden");
-            foreach (GameObject obj in Selection.GetGrippedOrSelection())
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
                 if (obj.layer == layersMask)
                     return false;
@@ -1084,7 +1096,7 @@ namespace VRtist
 
         protected void TransformSelection(Matrix4x4 transformation)
         {
-            foreach (GameObject obj in Selection.GetGrippedOrSelection())
+            foreach (GameObject obj in Selection.ActiveObjects)
             {
                 // Check constraints
                 if (ConstraintManager.IsLocked(obj)) { continue; }
@@ -1193,7 +1205,7 @@ namespace VRtist
                 new CommandAddToSelection(gObject).Submit();
                 return res;
             }
-            else if (!Selection.IsHandleSelected()) // Dont select things if we have a window selected.
+            else if (!IsHandleSelected()) // Dont select things if we have a window selected.
             {
                 bool res = Selection.AddToSelection(gObject);
                 new CommandAddToSelection(gObject).Submit();
@@ -1251,13 +1263,7 @@ namespace VRtist
 
         public void ClearSelection()
         {
-            List<GameObject> objects = new List<GameObject>();
-            foreach (KeyValuePair<int, GameObject> data in Selection.selection)
-            {
-                objects.Add(data.Value);
-            }
-            new CommandRemoveFromSelection(objects).Submit();
-
+            new CommandRemoveFromSelection(new List<GameObject>(Selection.SelectedObjects)).Submit();
             Selection.ClearSelection();
         }
 
@@ -1284,9 +1290,9 @@ namespace VRtist
                 Selection.AddToSelection(clone);
                 new CommandAddToSelection(clone).Submit();
             }
-            if (source == Selection.GetGrippedObject())
+            if (source == Selection.AuxiliarySelection)
             {
-                Selection.SetGrippedObject(clone);
+                Selection.AuxiliarySelection = clone;
             }
 
             selectorTrigger.ClearCollidedObjects();
@@ -1298,8 +1304,8 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Duplicate Selection");
             try
             {
-                List<GameObject> objectsToBeDuplicated = Selection.GetGrippedOrSelection();
-                foreach (GameObject obj in objectsToBeDuplicated)
+                HashSet<GameObject> activeObjectsCopy = new HashSet<GameObject>(Selection.ActiveObjects);
+                foreach (GameObject obj in activeObjectsCopy)
                     DuplicateObject(obj);
                 ManageMoveObjectsUndo();
             }
@@ -1311,12 +1317,10 @@ namespace VRtist
 
         public void EraseSelection()
         {
-            List<GameObject> selectedObjects = Selection.GetGrippedOrSelection();
-
             CommandGroup group = new CommandGroup("Erase Selection");
             try
             {
-                foreach (GameObject o in selectedObjects)
+                foreach (GameObject o in Selection.ActiveObjects)
                 {
                     //RemoveCollidedObject(o);
                     RemoveSiblingsFromSelection(o, false);

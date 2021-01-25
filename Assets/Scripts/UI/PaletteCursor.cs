@@ -1,4 +1,5 @@
 ﻿using System;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -124,7 +125,7 @@ namespace VRtist
             int allLayersMask = -1; // ~0
 
             float scale = 1f / GlobalState.WorldScale;
-            if(!Physics.Raycast(r, out hitInfo, 3.0f * scale, allLayersMask, QueryTriggerInteraction.Collide))
+            if (!Physics.Raycast(r, out hitInfo, 3.0f * scale, allLayersMask, QueryTriggerInteraction.Collide))
             {
                 // Nothing hit
                 HandleHoverPhysicObject(null);
@@ -181,7 +182,6 @@ namespace VRtist
 
                 bool volumeIsHit = false;
                 bool widgetIsHit = false;
-                bool handleIsHit = false;
                 bool physicIsHit = false;
 
                 float closestVolumeDistance = Mathf.Infinity;
@@ -222,7 +222,6 @@ namespace VRtist
                     UIHandle handleHit = hit.GetComponent<UIHandle>();
                     if (handleHit != null)
                     {
-                        handleIsHit = true;
                         if (hits[i].distance < closestHandleDistance)
                         {
                             handle = handleHit;
@@ -492,11 +491,11 @@ namespace VRtist
                     }
                     else
                     {
-                        Selection.SetHoveredObject(null);
+                        Selection.HoveredObject = null;
                         hoveredObject = null;
                         ToolsManager.PopWindowTool();
                     }
-                    
+
                     // NOTE: problem here if the ray goes out of the titlebar, and we are GRIPPED on it. It will disable the tool and drop the window.
                     // TOOD: find a way here to know that we are gripped with the WindowTool.
                 }
@@ -505,7 +504,7 @@ namespace VRtist
             {
                 if (hoveredObject != gObj) // Only once for gObj
                 {
-                    Selection.SetHoveredObject(gObj); // will automatically switch with previously hovered object (UI or other).
+                    Selection.HoveredObject = gObj; // will automatically switch with previously hovered object (UI or other).
                     hoveredObject = gObj;
 
                     if (null != gObj.GetComponent<UIHandle>())

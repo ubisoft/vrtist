@@ -1,4 +1,7 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+
+using TMPro;
+
 using UnityEngine;
 
 namespace VRtist
@@ -10,17 +13,17 @@ namespace VRtist
 
         public void Start()
         {
-            Selection.OnSelectionChanged += OnSelectionChanged;
-            Selection.OnActiveCameraChanged += OnActiveCameraChanged;
+            Selection.onSelectionChanged.AddListener(OnSelectionChanged);
+            CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
         }
 
         public void OnDestroy()
         {
-            Selection.OnSelectionChanged -= OnSelectionChanged;
-            Selection.OnActiveCameraChanged -= OnActiveCameraChanged;
+            Selection.onSelectionChanged.RemoveListener(OnSelectionChanged);
+            CameraManager.Instance.onActiveCameraChanged.RemoveListener(OnActiveCameraChanged);
         }
 
-        private void OnSelectionChanged(object sender, SelectionChangedArgs args)
+        private void OnSelectionChanged(HashSet<GameObject> previousSelectedObjects, HashSet<GameObject> currentSelectedObjects)
         {
             if (Selection.IsSelected(cameraObject))
             {
@@ -32,9 +35,9 @@ namespace VRtist
             }
         }
 
-        private void OnActiveCameraChanged(object sender, ActiveCameraChangedArgs args)
+        private void OnActiveCameraChanged(GameObject _, GameObject activeCamera)
         {
-            if (args.activeCamera == cameraObject)
+            if (activeCamera == cameraObject)
             {
                 SetColor(UIOptions.SceneHoverColor);
             }

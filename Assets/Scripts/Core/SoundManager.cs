@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -17,7 +18,7 @@ namespace VRtist
         }
 
         private AudioSource audioSource;
-        private Dictionary<Sounds, AudioClip> clips = new Dictionary<Sounds, AudioClip>();
+        private readonly Dictionary<Sounds, AudioClip> clips = new Dictionary<Sounds, AudioClip>();
 
         public static SoundManager Instance { get; private set; }
 

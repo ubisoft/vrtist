@@ -2,9 +2,12 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to add keyframes to all supported properties of an object.
+    /// </summary>
     public class CommandAddKeyframes : CommandGroup
     {
-        GameObject gObject;
+        readonly GameObject gObject;
         public CommandAddKeyframes(GameObject obj) : base("Add Keyframes")
         {
             gObject = obj;

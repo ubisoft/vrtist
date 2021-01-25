@@ -3,9 +3,12 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to group multiple commands so it creates only one block of undo/redo.
+    /// </summary>
     public class CommandGroup : ICommand
     {
-        List<ICommand> commands = new List<ICommand>();
+        readonly List<ICommand> commands = new List<ICommand>();
         protected string groupName;
 
         public CommandGroup()
@@ -28,6 +31,7 @@ namespace VRtist
                 commands[i].Undo();
             }
         }
+
         public override void Redo()
         {
             foreach (var command in commands)

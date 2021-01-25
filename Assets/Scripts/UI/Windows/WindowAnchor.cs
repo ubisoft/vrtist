@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -26,7 +27,7 @@ namespace VRtist
         GameObject anchorObject;
         GameObject anchoredObject;
 
-        static HashSet<WindowAnchor> allAnchors = new HashSet<WindowAnchor>();
+        static readonly HashSet<WindowAnchor> allAnchors = new HashSet<WindowAnchor>();
 
         void Start()
         {
@@ -40,7 +41,7 @@ namespace VRtist
 
         private bool IsWindowAttached()
         {
-            foreach(WindowAnchor anchor in window.GetComponentsInChildren<WindowAnchor>())
+            foreach (WindowAnchor anchor in window.GetComponentsInChildren<WindowAnchor>())
             {
                 if (anchor.attached)
                     return true;
@@ -50,7 +51,7 @@ namespace VRtist
 
         private void Update()
         {
-            gripped = Selection.GetGrippedObject() == window.gameObject;
+            gripped = Selection.AuxiliarySelection == window.gameObject;
 
             // Window hidden
             if (window.localScale == Vector3.zero)

@@ -85,7 +85,7 @@ namespace VRtist
 
             if (target)
             {
-                Selection.RemoveFromHover(target.gameObject);
+                Selection.HoveredObject = null;
             }
             target = null;
 
@@ -121,14 +121,14 @@ namespace VRtist
                     ray.SetActiveColor();
                     if (target)
                     {
-                        Selection.AddToHoverLayer(target.gameObject);
+                        Selection.HoveredObject = target.gameObject;
                     }
                 }
                 else
                 {
                     if (target)
                     {
-                        Selection.RemoveFromHover(target.gameObject);
+                        Selection.HoveredObject = null;
                     }
                     target = null;
                     targetPosition = Vector3.zero;

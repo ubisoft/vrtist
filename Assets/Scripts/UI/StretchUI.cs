@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace VRtist
@@ -20,13 +18,6 @@ namespace VRtist
         [HideInInspector]
         public LineMode lineMode = LineMode.SINGLE;
 
-#if UNITY_EDITOR
-        Vector3 previousLeft = Vector3.zero;
-        Vector3 previousRight = Vector3.right;
-        Quaternion previousRotation = Quaternion.identity;
-        float previousScale = 1.0f;
-        bool needsUpdate = false;
-#endif
         LineRenderer line;
         Canvas canvas;
 
@@ -39,13 +30,6 @@ namespace VRtist
             canvas = GetComponent<Canvas>();
         }
 
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            needsUpdate = true;
-        }
-#endif
-
         public void Show(bool doShow, LineMode mode = LineMode.SINGLE)
         {
             lineMode = mode;
@@ -57,8 +41,6 @@ namespace VRtist
 
             gameObject.SetActive(doShow);
         }
-
-        
 
         public void UpdateLineUI(Vector3 left, Vector3 right, Quaternion rotation, float scale)
         {
@@ -96,7 +78,7 @@ namespace VRtist
                 Vector3 middlePoint = Vector3.Lerp(left, right, 0.5f);
                 canvasRT.localPosition = middlePoint;
                 canvasRT.rotation = rotation * Quaternion.Euler(localRotation);
-                canvasRT.sizeDelta = 
+                canvasRT.sizeDelta =
                     (lineMode == LineMode.SINGLE)
                     ? new Vector2(fullBarWidth, 1.0f)
                     : new Vector2(3.0f, 1.0f);

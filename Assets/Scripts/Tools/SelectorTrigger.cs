@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -7,26 +8,21 @@ namespace VRtist
     public class SelectorTrigger : MonoBehaviour
     {
         public SelectorBase selector = null;
-
-        private bool selectionHasChanged = false;
         private List<GameObject> collidedObjects = new List<GameObject>();
-
-        private Color highlightColorOffset = new Color(0.4f, 0.4f, 0.4f);
 
         private void OnDisable()
         {
             collidedObjects.Clear();
-            Selection.SetHoveredObject(null);
+            Selection.HoveredObject = null;
         }
 
         void Update()
-        {            
+        {
             switch (selector.mode)
             {
                 case SelectorBase.SelectorModes.Select: UpdateSelection(); break;
                 case SelectorBase.SelectorModes.Eraser: UpdateEraser(); break;
             }
-
         }
 
         GameObject GetRootIfCollectionInstance(GameObject gObject)
@@ -56,12 +52,12 @@ namespace VRtist
                 {
                     collidedObjects.Add(gObject);
                 }
-                if (Selection.GetHoveredObject() != gObject)
+                if (Selection.HoveredObject != gObject)
                 {
                     // when moving object, we don't want to hover other objects
                     if (!GlobalState.Instance.selectionGripped)
                     {
-                        Selection.SetHoveredObject(gObject);
+                        Selection.HoveredObject = gObject;
                         selector.OnSelectorTriggerEnter(other);
                     }
                 }
@@ -74,7 +70,7 @@ namespace VRtist
             {
                 GameObject gObject = GetRootIfCollectionInstance(other.gameObject);
 
-                if (gObject == Selection.GetHoveredObject())
+                if (gObject == Selection.HoveredObject)
                 {
                     selector.OnSelectorTriggerExit(other);
                 }
@@ -93,7 +89,7 @@ namespace VRtist
             collidedObjects.Remove(obj);
 
             // manage successive imbrication of objects
-            GameObject hoveredObject = Selection.GetHoveredObject();
+            GameObject hoveredObject = Selection.HoveredObject;
             if (hoveredObject == obj)
             {
                 hoveredObject = null;
@@ -106,7 +102,7 @@ namespace VRtist
                     collidedObjects.RemoveAt(index);
                     hoveredObject = null;
                 }
-                Selection.SetHoveredObject(hoveredObject);
+                Selection.HoveredObject = hoveredObject;
             }
         }
 
@@ -116,19 +112,18 @@ namespace VRtist
             bool primaryButtonState = VRInput.GetValue(VRInput.primaryController, CommonUsages.primaryButton);
             bool triggerState = VRInput.GetValue(VRInput.primaryController, CommonUsages.triggerButton);
 
-            GameObject hoveredObject = Selection.GetHoveredObject();
+            GameObject hoveredObject = Selection.HoveredObject;
 
             VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.grip,
                  () =>
                  {
-                     Selection.SetGrippedObject(hoveredObject);
+                     Selection.HoveredObject = hoveredObject;
                  },
-                 () => { Selection.SetGrippedObject(null); });
+                 () => { Selection.AuxiliarySelection = null; });
 
             // Multi-selection using the trigger button
-            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject)  
+            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject)
             {
-                selectionHasChanged = true;
                 if (!primaryButtonState)
                 {
                     foreach (GameObject obj in collidedObjects)
@@ -139,8 +134,8 @@ namespace VRtist
 
         private void UpdateEraser()
         {
-            GameObject hoveredObject = Selection.GetHoveredObject();
-            if (null == hoveredObject && Selection.IsEmpty())
+            GameObject hoveredObject = Selection.HoveredObject;
+            if (null == hoveredObject && Selection.SelectedObjects.Count == 0)
                 return;
 
             // If we have a hovered object, only destroy it
@@ -157,7 +152,7 @@ namespace VRtist
                     {
                         RemoveCollidedObject(hoveredObject);
                         selector.RemoveSiblingsFromSelection(hoveredObject, false);
-                        
+
                         new CommandRemoveGameObject(hoveredObject).Submit();
                     }
                     finally
@@ -175,10 +170,10 @@ namespace VRtist
                     CommandGroup group = new CommandGroup("Erase Selected Objects");
                     try
                     {
-                        foreach (GameObject gobject in Selection.GetSelectedObjects())
+                        foreach (GameObject gobject in Selection.SelectedObjects)
                         {
                             RemoveCollidedObject(gobject);
-                            selector.RemoveSiblingsFromSelection(gobject, false);                            
+                            selector.RemoveSiblingsFromSelection(gobject, false);
 
                             new CommandRemoveGameObject(gobject).Submit();
                         }

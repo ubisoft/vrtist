@@ -2,12 +2,15 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to move a keyframe of a property of an object.
+    /// </summary>
     public class CommandMoveKeyframe : ICommand
     {
-        GameObject gObject;
-        AnimatableProperty property;
-        int oldFrame;
-        int newFrame;
+        readonly GameObject gObject;
+        readonly AnimatableProperty property;
+        readonly int oldFrame;
+        readonly int newFrame;
 
         public CommandMoveKeyframe(GameObject obj, AnimatableProperty property, int frame, int newFrame)
         {

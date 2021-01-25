@@ -1,5 +1,7 @@
 ﻿using System;
+
 using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -74,7 +76,7 @@ namespace VRtist
         public RangeContent content = default_content;
         public RangeValueType valueType = default_value_type;
         public Vector2 currentRange = new Vector2(12, 15);
-        
+
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
         public RangeChangedEventFloat onSlideEvent = new RangeChangedEventFloat();
         public RangeChangedEventInt onSlideEventInt = new RangeChangedEventInt();
@@ -92,14 +94,13 @@ namespace VRtist
         public string Label { get { return labelContent; } set { SetLabel(value); } }
         public Vector2 CurrentRange { get { return currentRange; } set { SetCurrentRange(value); RebuildMesh(); UpdateValueText(); } }
 
-        private bool keyboardOpen = false;
         private RangeWidgetPart keyboardSourcePart = RangeWidgetPart.Background;
         private RangeWidgetPart grippedPart = RangeWidgetPart.Background;
 
         public void UpdateGlobalRange()
         {
             Vector2 range = new Vector2(GlobalState.Animation.StartFrame, GlobalState.Animation.EndFrame);
-            SetGlobalRange(range); 
+            SetGlobalRange(range);
             RebuildMesh();
             UpdateValueText();
         }
@@ -524,7 +525,7 @@ namespace VRtist
             float bigDepth = knobDepth * 1.2f;
 
             minKnob.transform.localPosition = new Vector3(posX - smallRadius, smallRadius - (height / 2.0f), -bigDepth);
-            maxKnob.transform.localPosition = new Vector3(posXE- smallRadius, smallRadius - (height / 2.0f), -bigDepth);
+            maxKnob.transform.localPosition = new Vector3(posXE - smallRadius, smallRadius - (height / 2.0f), -bigDepth);
             midKnob.transform.localPosition = new Vector3(posX - knobRadius, knobRadius - (height / 2.0f), -knobDepth);
         }
 
@@ -663,7 +664,7 @@ namespace VRtist
                     case RangeWidgetPart.LeftKnob:
                         {
                             if (joyRightJustClicked || joyRightLongPush)
-                            {                                
+                            {
                                 float newMin = Mathf.Clamp(currentRange.x + 1.0f, GlobalState.Animation.StartFrame, currentRange.y - 1.0f);
                                 CurrentRange = new Vector2(newMin, currentRange.y);
                             }
@@ -833,7 +834,6 @@ namespace VRtist
                             // SPAWN KEYBOARD
                             ToolsUIManager.Instance.OpenKeyboard(OnValidateKeyboard, transform);
                             keyboardSourcePart = hoveredPart;
-                            keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
                             return;
                         }
@@ -842,7 +842,6 @@ namespace VRtist
                             // SPAWN KEYBOARD
                             ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalState.Animation.EndFrame);
                             keyboardSourcePart = hoveredPart;
-                            keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
                             return;
                         }
@@ -851,7 +850,6 @@ namespace VRtist
                             // SPAWN KEYBOARD
                             ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateNumericKeyboard, transform, GlobalState.Animation.StartFrame);
                             keyboardSourcePart = hoveredPart;
-                            keyboardOpen = true;
                             rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
                             return;
                         }
@@ -964,8 +962,7 @@ namespace VRtist
         {
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);
-            float enter;
-            widgetPlane.Raycast(ray, out enter);
+            widgetPlane.Raycast(ray, out float enter);
             Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
 
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
@@ -1018,7 +1015,7 @@ namespace VRtist
                     return RangeWidgetPart.RightKnob;
                 }
             }
-            else 
+            else
             {
                 return RangeWidgetPart.GlobalMaxLabel;
             }
@@ -1048,7 +1045,7 @@ namespace VRtist
             public RangeValueType valueType = UIRange.default_value_type;
             public float currentMinValue = UIRange.default_current_min_value;
             public float currentMaxValue = UIRange.default_current_max_value;
-            
+
             public Material material = UIUtils.LoadMaterial(UIRange.default_material_name);
             public Material railMaterial = UIUtils.LoadMaterial(UIRange.default_rail_material_name);
             public Material knobCenterMaterial = UIUtils.LoadMaterial(UIRange.default_knob_center_material_name);
@@ -1067,8 +1064,10 @@ namespace VRtist
 
         public static UIRange Create(CreateArgs input)
         {
-            GameObject go = new GameObject(input.widgetName);
-            go.tag = "UICollider";
+            GameObject go = new GameObject(input.widgetName)
+            {
+                tag = "UICollider"
+            };
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -1259,7 +1258,7 @@ namespace VRtist
                 float posX = startX + pctBegin * (endX - startX);
                 float posXE = startX + pctEnd * (endX - startX);
                 float newWidth = posXE - posX;
-                
+
                 Vector3 knobPosition = new Vector3(posX - newKnobRadius, newKnobRadius - (uiRange.height / 2.0f), -newKnobDepth);
 
                 uiRange.midKnob = UIRangeKnob.Create(

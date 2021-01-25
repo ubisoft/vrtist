@@ -1,7 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
@@ -36,7 +34,7 @@ namespace VRtist
             GlobalState.colorReleasedEvent.AddListener(OnColorPickerReleased);
             GlobalState.colorClickedEvent.AddListener(OnColorPickerPressed);
             GlobalState.Instance.skyChangedEvent.AddListener(OnSkyChanged);
-            
+
 
             if (null == gradientList)
             {
@@ -58,7 +56,7 @@ namespace VRtist
                 GlobalState.colorClickedEvent.RemoveListener(OnColorPickerPressed);
                 GlobalState.Instance.skyChangedEvent.RemoveListener(OnSkyChanged);
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 // Nothing
             }

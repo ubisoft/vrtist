@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
     [System.Serializable]
-
     public class ParametersController : MonoBehaviour, IGizmo
     {
         protected Transform world = null;

@@ -2,14 +2,18 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to duplicate an object.
+    /// </summary>
     public class CommandDuplicateGameObject : ICommand
     {
-        GameObject srcObject;
+        readonly GameObject srcObject;
         protected GameObject gObject = null;
         protected Transform parent = null;
         protected Vector3 position;
         protected Quaternion rotation;
         protected Vector3 scale;
+
         public CommandDuplicateGameObject(GameObject copy, GameObject src)
         {
             srcObject = src;
@@ -19,9 +23,11 @@ namespace VRtist
 
         private void SendDuplicate()
         {
-            DuplicateInfos duplicateInfos = new DuplicateInfos();
-            duplicateInfos.srcObject = srcObject;
-            duplicateInfos.dstObject = gObject;
+            DuplicateInfos duplicateInfos = new DuplicateInfos
+            {
+                srcObject = srcObject,
+                dstObject = gObject
+            };
             CommandManager.SendEvent(MessageType.Duplicate, duplicateInfos);
         }
 

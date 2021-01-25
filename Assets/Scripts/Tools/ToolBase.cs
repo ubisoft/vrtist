@@ -23,8 +23,6 @@ namespace VRtist
         protected Transform rightMouthpieces;
         protected Transform rightController;
 
-        private bool hasListener = false;
-
         protected virtual void Awake()
         {
             ToolsManager.RegisterTool(gameObject);
@@ -44,7 +42,7 @@ namespace VRtist
         {
             if (null == mouthPiece) // some tools dont have mouthpieces (WindowTool)
                 return;
-            
+
             Transform container = mouthPiece.parent;
             for (int i = 0; i < container.childCount; i++)
             {

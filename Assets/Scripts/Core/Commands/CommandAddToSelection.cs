@@ -1,16 +1,22 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to add a list of objects to the current selection.
+    /// </summary>
     public class CommandAddToSelection : ICommand
     {
-        List<GameObject> objects = new List<GameObject>();
+        readonly List<GameObject> objects = new List<GameObject>();
 
         public CommandAddToSelection(GameObject selectedObject)
         {
-            objects = new List<GameObject>();
-            objects.Add(selectedObject);
+            objects = new List<GameObject>
+            {
+                selectedObject
+            };
         }
 
         public CommandAddToSelection(List<GameObject> selectedObjects)

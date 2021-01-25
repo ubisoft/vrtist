@@ -2,6 +2,9 @@
 
 namespace VRtist
 {
+    /// <summary>
+    /// Command to add an object into the scene. 
+    /// </summary>
     public class CommandAddGameObject : CommandAddRemoveGameObject
     {
         public CommandAddGameObject(GameObject o) : base(o)

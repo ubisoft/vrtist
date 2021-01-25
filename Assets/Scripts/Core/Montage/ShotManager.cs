@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace VRtist
 {
-
+    /// <summary>
+    /// Manage shots.
+    /// </summary>
     public class ShotManager : TimeHook
     {
         public static ShotManager Instance
@@ -42,7 +45,7 @@ namespace VRtist
                     if (null != shot.camera)
                     {
                         CameraController controller = shot.camera.GetComponent<CameraController>();
-                        if (null != controller) { Selection.SetActiveCamera(controller); }
+                        if (null != controller) { CameraManager.Instance.ActiveCamera = controller.gameObject; }
                     }
                 }
             }
@@ -89,7 +92,7 @@ namespace VRtist
             }
         }
 
-        public override int hookTime(int frame)
+        public override int HookTime(int frame)
         {
             if (!montageEnabled || shots.Count == 0)
                 return frame;
@@ -244,7 +247,7 @@ namespace VRtist
             }
         }
 
-        private static Regex shotNameRegex = new Regex(@"Sh(?<number>\d{4})", RegexOptions.Compiled);
+        private static readonly Regex shotNameRegex = new Regex(@"Sh(?<number>\d{4})", RegexOptions.Compiled);
         public string GetUniqueShotName()
         {
             int maxNumber = 0;
@@ -264,5 +267,4 @@ namespace VRtist
             return $"Sh{maxNumber + 10:D4}";
         }
     }
-
 }

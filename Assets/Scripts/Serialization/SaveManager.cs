@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+
 using UnityEngine;
 
 namespace VRtist.Serialization
@@ -34,16 +35,7 @@ namespace VRtist.Serialization
         private string saveFolder;
         private string currentProjectName;
 
-        private Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
-
-        private GameObject sunLightPrefab;
-        private GameObject pointLightPrefab;
-        private GameObject spotLightPrefab;
-
-        private GameObject cameraPrefab;
-
-        private static Material opaqueMaterial;
-        private static Material transparentMaterial;
+        private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
 
         private void Awake()
         {
@@ -53,21 +45,11 @@ namespace VRtist.Serialization
             }
 
             saveFolder = Application.persistentDataPath + "/saves/";
-
-            // Prefabs (we should have unique refs for the whole app somewhere)
-            sunLightPrefab = Resources.Load<GameObject>("Prefabs/Sun");
-            pointLightPrefab = Resources.Load<GameObject>("Prefabs/Point");
-            spotLightPrefab = Resources.Load<GameObject>("Prefabs/Spot");
-
-            cameraPrefab = Resources.Load<GameObject>("Prefabs/Camera");
-
-            opaqueMaterial = Resources.Load<Material>("Materials/ObjectOpaque");
-            transparentMaterial = Resources.Load<Material>("Materials/ObjectTransparent");
         }
 
         public static Material GetMaterial(bool opaque)
         {
-            return opaque ? opaqueMaterial : transparentMaterial;
+            return opaque ? ResourceManager.GetMaterial(MaterialID.ObjectOpaque) : ResourceManager.GetMaterial(MaterialID.ObjectTransparent);
         }
 
         private string ReplaceInvalidChars(string filename)
@@ -156,7 +138,7 @@ namespace VRtist.Serialization
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    SerializeChildren(child, childPath);
+                    _ = SerializeChildren(child, childPath);
                 }
             }
 
@@ -212,7 +194,7 @@ namespace VRtist.Serialization
             if (materialInfo.material.GetInt(useName) == 1)
             {
                 string path = materialInfo.materialPath + name + ".tex";
-                Texture2D texture = (Texture2D) materialInfo.material.GetTexture(textureName);
+                Texture2D texture = (Texture2D)materialInfo.material.GetTexture(textureName);
                 Utils.SavePNG(texture, path);
             }
         }
@@ -306,7 +288,7 @@ namespace VRtist.Serialization
 
             // Load data from file
             string path = GetScenePath(projectName);
-            SceneData saveData = (SceneData) SerializationManager.Load(path);
+            SceneData saveData = (SceneData)SerializationManager.Load(path);
 
             // Objects
             Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
@@ -363,7 +345,7 @@ namespace VRtist.Serialization
             string name = splitted[splitted.Length - 1];
             string parentPath = data.path.Substring(0, data.path.Length - name.Length - 1);  // -1: remove "/"
 
-            GameObject gobject = null;
+            GameObject gobject;
 
             // Check for import
             if (data.isImported)
@@ -390,7 +372,7 @@ namespace VRtist.Serialization
             {
                 if (!data.isImported)
                 {
-                    MeshData meshData = (MeshData) SerializationManager.Load(data.meshPath);
+                    MeshData meshData = (MeshData)SerializationManager.Load(data.meshPath);
                     gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
                     gobject.AddComponent<MeshRenderer>().materials = meshData.GetMaterials();
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
@@ -422,13 +404,13 @@ namespace VRtist.Serialization
             switch (data.lightType)
             {
                 case LightType.Directional:
-                    lightPrefab = sunLightPrefab;
+                    lightPrefab = ResourceManager.GetPrefab(PrefabID.SunLight);
                     break;
                 case LightType.Spot:
-                    lightPrefab = spotLightPrefab;
+                    lightPrefab = ResourceManager.GetPrefab(PrefabID.SpotLight);
                     break;
                 case LightType.Point:
-                    lightPrefab = pointLightPrefab;
+                    lightPrefab = ResourceManager.GetPrefab(PrefabID.PointLight);
                     break;
             }
 
@@ -457,6 +439,7 @@ namespace VRtist.Serialization
 
         private void LoadCamera(CameraData data)
         {
+            GameObject cameraPrefab = ResourceManager.GetPrefab(PrefabID.Camera);
             GameObject newPrefab = SyncData.CreateInstance(cameraPrefab, SyncData.prefab, isPrefab: true);
 
             LoadCommonData(newPrefab, data);

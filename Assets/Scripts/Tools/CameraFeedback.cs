@@ -12,7 +12,7 @@ namespace VRtist
 
         private void Awake()
         {
-            Selection.OnActiveCameraChanged += OnCameraChanged;
+            CameraManager.Instance.onActiveCameraChanged.AddListener(OnCameraChanged);
         }
 
         void Start()
@@ -43,9 +43,9 @@ namespace VRtist
 
         }
 
-        void OnCameraChanged(object sender, ActiveCameraChangedArgs args)
+        void OnCameraChanged(GameObject _, GameObject activeCamera)
         {
-            SetActiveCamera(args.activeCamera);
+            SetActiveCamera(activeCamera);
         }
 
         private void SetActiveCamera(GameObject activeCamera)
@@ -55,7 +55,7 @@ namespace VRtist
             feedbackCamera = activeCamera;
             if (null != feedbackCamera)
             {
-                Camera cam = feedbackCamera.GetComponentInChildren<Camera>();
+                Camera cam = feedbackCamera.GetComponentInChildren<Camera>(true);
                 cameraPlane.SetActive(true);
                 cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
             }

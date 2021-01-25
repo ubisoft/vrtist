@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: BlenderImportTransparent
+  m_Name: ObjectTransparent
   m_Shader: {fileID: -6465566751694194690, guid: 19d74b2c7c5c355448de10d77c1e7746,
     type: 3}
   m_ShaderKeywords: _DISABLE_DECALS _DISABLE_SSR_TRANSPARENT _DOUBLESIDED_ON _ENABLE_FOG_ON_TRANSPARENT
