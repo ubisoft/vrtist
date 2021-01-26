@@ -295,7 +295,6 @@ namespace VRtist.Serialization
             DeleteTransformChildren(root);
             DeleteTransformChildren(SyncData.prefab);
 
-            // TODO remove lights and camera items
             // TODO remove shotitems
             // TODO remove animations data
 

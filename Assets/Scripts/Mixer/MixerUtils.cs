@@ -688,12 +688,6 @@ namespace VRtist
 
         public static void ApplyMaterialParameters(Material material, MaterialParameters parameters)
         {
-            if (parameters.materialType == MaterialID.GreasePencil)
-            {
-                material.SetColor("_UnlitColor", parameters.baseColor);
-                return;
-            }
-
             //
             // OPACITY
             //
@@ -726,7 +720,6 @@ namespace VRtist
                     if (texturesFlipY.Contains(baseColorTexturePath))
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
-
             }
 
             //
@@ -2038,7 +2031,7 @@ namespace VRtist
             {
                 materialParameters = new MaterialParameters
                 {
-                    materialType = MaterialID.GreasePencil,
+                    materialType = MaterialID.ObjectOpaque,  // Check if we have to create an unlit material
                     name = materialName
                 };
                 materialsParameters[materialName] = materialParameters;

@@ -162,6 +162,7 @@ namespace VRtist
             AddBuiltinAsset("Rock", "Asteroid", "Prefabs/UI/ROCKS/UI_Asteroid", "Prefabs/Primitives/ROCKS/Asteroid_PRIM");
 
             AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Lapin", "Prefabs/Primitives/CHARACTERS/LAPIN_PRIM");
+            AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Rabbid_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Neutral_LOW");
 
             AddBuiltinAsset("Prop", "Barrel", "Prefabs/UI/JUNK/Barrel", "Prefabs/Primitives/JUNK/BARREL_PRIM");
             AddBuiltinAsset("Prop", "Bench", "Prefabs/UI/JUNK/Bench", "Prefabs/Primitives/JUNK/BENCH_PRIM");
@@ -384,25 +385,29 @@ namespace VRtist
                 newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
             }
 
-            // Is this still required?
-            MeshFilter meshFilter = newObject.GetComponentInChildren<MeshFilter>();
-            if (null != meshFilter)
-            {
-                meshFilter.mesh.name = newObject.name;
-            }
-
+            // Get the position of the mouthpiece into matrix
             Matrix4x4 matrix = rightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
-            if (!useDefaultInstantiationScale)
+            Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
+            Quaternion toRightHandedRotation = Quaternion.Euler(new Vector3(90f, 0f, 0f));
+            Vector3 scale = Vector3.one;
+            if (useDefaultInstantiationScale)
             {
-                SyncData.SetTransform(newObject.name, matrix * Matrix4x4.Scale(gobject.transform.localScale));
+                // The object keeps its real size independently of the user scale
+                // Nothing to do
             }
             else
             {
-                Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
-                // Cancel scale
-                Quaternion quarterRotation = Quaternion.Euler(new Vector3(-90f, 180f, 0));
-                SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, Vector3.one) * Matrix4x4.Rotate(quarterRotation));
+                // Set the object size to 20cm in the user space
+                Bounds bounds = new Bounds();
+                MeshFilter[] meshFilters = gobject.GetComponentsInChildren<MeshFilter>();
+                foreach (MeshFilter meshFilter in meshFilters)
+                {
+                    Mesh mesh = meshFilter.mesh;
+                    bounds.Encapsulate(mesh.bounds);
+                }
+                scale *= (0.2f / bounds.size.magnitude) / GlobalState.WorldScale;  // 0.2: 20cm
             }
+            SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, scale) * Matrix4x4.Rotate(toRightHandedRotation));
 
             CommandGroup group = new CommandGroup("Instantiate Bank Object");
             try

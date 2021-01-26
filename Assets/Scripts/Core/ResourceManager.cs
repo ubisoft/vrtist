@@ -17,8 +17,7 @@ namespace VRtist
     public enum MaterialID
     {
         ObjectOpaque,
-        ObjectTransparent,
-        GreasePencil
+        ObjectTransparent
     }
 
     public class ResourceManager
@@ -52,7 +51,6 @@ namespace VRtist
 
             materialsMap.Add(MaterialID.ObjectOpaque, "Materials/ObjectOpaque");
             materialsMap.Add(MaterialID.ObjectTransparent, "Materials/ObjectTransparent");
-            materialsMap.Add(MaterialID.GreasePencil, "Materials/GreasePencilMat");
         }
 
         public static GameObject GetPrefab(PrefabID resource)
