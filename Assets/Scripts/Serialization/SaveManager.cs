@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist.Serialization
 {
@@ -27,6 +28,8 @@ namespace VRtist.Serialization
     /// </summary>
     public class SaveManager : MonoBehaviour
     {
+        public static UnityEvent clearScene = new UnityEvent();
+
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -79,6 +82,8 @@ namespace VRtist.Serialization
         public void Save(string projectName)
         {
             currentProjectName = projectName;
+            meshes.Clear();
+            SceneData.Current.Clear();
 
             // Parse RightHanded transform
             Transform root = Utils.FindWorld().transform.Find("RightHanded");
@@ -153,8 +158,10 @@ namespace VRtist.Serialization
 
                 // Save animation data
 
+                // Save skybox
+
                 // Save scene
-                SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current);
+                SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
 
                 // Save meshes
                 foreach (var meshInfo in meshes.Values)
@@ -284,8 +291,13 @@ namespace VRtist.Serialization
             Transform root = GlobalState.Instance.world.Find("RightHanded");
 
             // Clear current scene
+            clearScene.Invoke();
             DeleteTransformChildren(root);
             DeleteTransformChildren(SyncData.prefab);
+
+            // TODO remove lights and camera items
+            // TODO remove shotitems
+            // TODO remove animations data
 
             // Load data from file
             string path = GetScenePath(projectName);

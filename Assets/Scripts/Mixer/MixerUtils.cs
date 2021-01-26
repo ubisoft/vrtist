@@ -688,12 +688,6 @@ namespace VRtist
 
         public static void ApplyMaterialParameters(Material material, MaterialParameters parameters)
         {
-            if (parameters.materialType == MaterialID.Paint)
-            {
-                material.SetColor("_BaseColor", parameters.baseColor);
-                return;
-            }
-
             if (parameters.materialType == MaterialID.GreasePencil)
             {
                 material.SetColor("_UnlitColor", parameters.baseColor);
@@ -791,7 +785,7 @@ namespace VRtist
             // EMISSION
             //
             Color emissionColor = parameters.emissionColor;
-            material.SetColor("_EmissiveColor", emissionColor);
+            material.SetColor("_Emissive", emissionColor);
             string emissionColorTexturePath = parameters.emissionColorTexturePath;
             if (emissionColorTexturePath.Length > 0)
             {
@@ -804,7 +798,6 @@ namespace VRtist
                         material.SetVector("_UvScale", new Vector4(1, -1, 0, 0));
                 }
             }
-
         }
 
         public static void BuildAssignMaterial(byte[] data)

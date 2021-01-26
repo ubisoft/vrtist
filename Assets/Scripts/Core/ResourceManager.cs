@@ -18,7 +18,6 @@ namespace VRtist
     {
         ObjectOpaque,
         ObjectTransparent,
-        Paint,
         GreasePencil
     }
 
@@ -53,7 +52,6 @@ namespace VRtist
 
             materialsMap.Add(MaterialID.ObjectOpaque, "Materials/ObjectOpaque");
             materialsMap.Add(MaterialID.ObjectTransparent, "Materials/ObjectTransparent");
-            materialsMap.Add(MaterialID.Paint, "Materials/Paint");
             materialsMap.Add(MaterialID.GreasePencil, "Materials/GreasePencilMat");
         }
 

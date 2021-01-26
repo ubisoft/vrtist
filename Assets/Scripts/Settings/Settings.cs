@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -143,6 +144,8 @@ namespace VRtist
 
         public string assetBankDirectory = "D:/VRtistData/";
 
+        public string projectName = "myScene";
+
         public static UnityEvent onSettingsChanged = new UnityEvent();
         public void Reset()
         {
@@ -165,7 +168,7 @@ namespace VRtist
 
             dopeSheetVisible = false;
             dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);
-            dopeSheetRotation = Quaternion.Euler(7,52,0);
+            dopeSheetRotation = Quaternion.Euler(7, 52, 0);
 
             shotManagerVisible = false;
             shotManagerPosition = new Vector3(0.3f, 1.2f, 0.7f);
@@ -201,6 +204,7 @@ namespace VRtist
             };
 
             assetBankDirectory = "D:/VRtistData/";
+            projectName = "myScene";
         }
 
         public void SaveWindowPosition(Transform window)
@@ -233,7 +237,7 @@ namespace VRtist
         }
 
         public void LoadWindowPosition(Transform window)
-        {            
+        {
         }
 
         private string GetJsonFilename()

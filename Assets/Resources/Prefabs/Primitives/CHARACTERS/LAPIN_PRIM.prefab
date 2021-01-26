@@ -69,19 +69,20 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -7029840447441160023, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: 4275613490712911747, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: -5640333140609887872, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: 3913029772599219383, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: 335288817600231099, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: -6977061392684843376, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: -5420206266204144192, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: -8321001066331341786, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: -6023586188245711573, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
-  - {fileID: 471040069010894343, guid: ad7ad9f404a907d41bdd5f75eb2a0464, type: 3}
+  - {fileID: 2100000, guid: ebfded0946dc66048ab799d4697381f6, type: 2}
+  - {fileID: 2100000, guid: a235610525d8e2a44bb5e1b82c8f9fc7, type: 2}
+  - {fileID: 2100000, guid: 69727b751e5b20844857b4aaea3c52b7, type: 2}
+  - {fileID: 2100000, guid: 03919e2c759b9df49b5350c819fc481a, type: 2}
+  - {fileID: 2100000, guid: 7406103618b3d804cbff48bdaf2d7952, type: 2}
+  - {fileID: 2100000, guid: eba8a8e0370078a4a8ae47de2e4cdeda, type: 2}
+  - {fileID: 2100000, guid: 481e5b1c5cae1e14aa93cd8565b30f8c, type: 2}
+  - {fileID: 2100000, guid: 8662e7f851fde4b4399a6b445ae04fec, type: 2}
+  - {fileID: 2100000, guid: 699e73bf6b12682488f943679d6d4c23, type: 2}
+  - {fileID: 2100000, guid: 377ce75149120524ca4e27ef17ea21f1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -102,3 +103,4 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}

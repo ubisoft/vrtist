@@ -109,14 +109,14 @@ namespace VRtist
             MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = paint.AddComponent<MeshRenderer>();
-            Material paintMaterial = ResourceManager.GetMaterial(MaterialID.Paint);
+            Material paintMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
             renderer.sharedMaterial = paintMaterial;
             renderer.material.SetColor("_BaseColor", color);
 
             // Update Mixer (TODO: have a VRtist API to do that, not directly Mixer)
             MaterialParameters parameters = new MaterialParameters
             {
-                materialType = MaterialID.Paint,
+                materialType = MaterialID.ObjectOpaque,
                 baseColor = color
             };
             MixerUtils.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
@@ -149,14 +149,14 @@ namespace VRtist
             MeshFilter meshFilter = volume.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = volume.AddComponent<MeshRenderer>();
-            Material volumeMaterial = ResourceManager.GetMaterial(MaterialID.Paint); // TODO: another specific material??
+            Material volumeMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque); // TODO: another specific material??
             renderer.sharedMaterial = volumeMaterial;
             renderer.material.SetColor("_BaseColor", color);
 
             // Update Mixer (TODO: have a VRtist API to do that, not directly Mixer)
             MaterialParameters parameters = new MaterialParameters
             {
-                materialType = MaterialID.Paint,
+                materialType = MaterialID.ObjectOpaque,
                 baseColor = color
             };
             MixerUtils.materialsParameters[SyncData.GetMaterialName(volume)] = parameters;

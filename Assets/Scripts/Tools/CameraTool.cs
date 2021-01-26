@@ -201,6 +201,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnCameraAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnCameraRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
+            Serialization.SaveManager.clearScene.AddListener(OnClearScene);
             if (null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }
@@ -266,7 +267,7 @@ namespace VRtist
 
         }
 
-        public void OnCameraRenamed(GameObject gObject)
+        private void OnCameraRenamed(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();
             if (null == cameraController)
@@ -281,7 +282,7 @@ namespace VRtist
             }
         }
 
-        public void OnCameraAdded(GameObject gObject)
+        private void OnCameraAdded(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();
             if (null == cameraController)
@@ -293,7 +294,7 @@ namespace VRtist
             item.UseColliderForUI = true;
         }
 
-        public void OnCameraRemoved(GameObject gObject)
+        private void OnCameraRemoved(GameObject gObject)
         {
             CameraController cameraController = gObject.GetComponent<CameraController>();
             if (null == cameraController)
@@ -307,6 +308,11 @@ namespace VRtist
                     return;
                 }
             }
+        }
+
+        private void OnClearScene()
+        {
+            cameraList.Clear();
         }
 
         public override void OnUIObjectEnter(int gohash)

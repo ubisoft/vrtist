@@ -48,6 +48,7 @@ namespace VRtist
         private UICheckbox rightHanded;
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
+        private UILabel ProjectNameLabel;
 
         private void Start()
         {
@@ -82,6 +83,7 @@ namespace VRtist
             displayFPS = advancedSubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
             showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
+            ProjectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
 
             Apply();
 
@@ -107,6 +109,7 @@ namespace VRtist
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
 
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
+            SetProjectName(GlobalState.Settings.projectName);
 
             OnRightHanded(GlobalState.Settings.rightHanded);
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
@@ -213,11 +216,6 @@ namespace VRtist
             assetBankDirectory.Text = value;
             assetBankDirectory.Image = UIUtils.LoadIcon(Directory.Exists(value) ? "validate-icon" : "error");
             GlobalState.Settings.assetBankDirectory = value;
-        }
-
-        public void OnEditProjectName()
-        {
-            //ToolsUIManager.Instance.OpenKeyboard(SetProjectName, )
         }
 
         private void ResetSubPanels()
@@ -335,15 +333,26 @@ namespace VRtist
         public void OnSaveProject()
         {
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
-            Serialization.SaveManager.Instance.Save("Plop");
+            Serialization.SaveManager.Instance.Save(GlobalState.Settings.projectName);
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         public void OnLoadProject()
         {
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
-            Serialization.SaveManager.Instance.Load("Plop");
+            Serialization.SaveManager.Instance.Load(GlobalState.Settings.projectName);
             GlobalState.Instance.messageBox.SetVisible(false);
+        }
+
+        public void OnEditProjectName()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(SetProjectName, ProjectNameLabel.transform, GlobalState.Settings.projectName);
+        }
+
+        private void SetProjectName(string value)
+        {
+            ProjectNameLabel.Text = value;
+            GlobalState.Settings.projectName = value;
         }
     }
 }
