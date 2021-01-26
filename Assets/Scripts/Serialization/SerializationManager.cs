@@ -1,19 +1,25 @@
 ﻿using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+
 using UnityEngine;
 
 namespace VRtist.Serialization
 {
     public class SerializationManager
     {
-        public static bool Save(string path, object data)
+        public static bool Save(string path, object data, bool deleteFolder = false)
         {
             BinaryFormatter formatter = GetBinaryFormatter();
 
             DirectoryInfo folder = Directory.GetParent(path);
             if (!folder.Exists)
             {
+                folder.Create();
+            }
+            else if (deleteFolder)
+            {
+                folder.Delete(true);
                 folder.Create();
             }
 

@@ -61,6 +61,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnLightAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnLightRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnLightRenamed);
+            Serialization.SaveManager.clearScene.AddListener(OnClearScene);
             if (null != lightList) { lightList.ItemClickedEvent += OnSelectLightItem; }
             lightItemPrefab = Resources.Load<GameObject>("Prefabs/UI/LightItem");
 
@@ -382,7 +383,7 @@ namespace VRtist
             }
         }
 
-        public void OnLightAdded(GameObject gObject)
+        private void OnLightAdded(GameObject gObject)
         {
             LightController controller = gObject.GetComponent<LightController>();
             if (null == controller)
@@ -394,7 +395,7 @@ namespace VRtist
             item.UseColliderForUI = true;
         }
 
-        public void OnLightRemoved(GameObject gObject)
+        private void OnLightRemoved(GameObject gObject)
         {
             LightController controller = gObject.GetComponent<LightController>();
             if (null == controller)
@@ -410,7 +411,7 @@ namespace VRtist
             }
         }
 
-        public void OnLightRenamed(GameObject gObject)
+        private void OnLightRenamed(GameObject gObject)
         {
             LightController controller = gObject.GetComponent<LightController>();
             if (null == controller)
@@ -423,6 +424,11 @@ namespace VRtist
                     lightItem.SetItemName(gObject.name);
                 }
             }
+        }
+
+        private void OnClearScene()
+        {
+            lightList.Clear();
         }
 
         public void OnSelectLightItem(object sender, IndexedGameObjectArgs args)

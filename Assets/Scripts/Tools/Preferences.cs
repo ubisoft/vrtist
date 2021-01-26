@@ -1,4 +1,5 @@
 ﻿using System.IO;
+
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -47,6 +48,7 @@ namespace VRtist
         private UICheckbox rightHanded;
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
+        private UILabel ProjectNameLabel;
 
         private void Start()
         {
@@ -58,13 +60,13 @@ namespace VRtist
             displayOptionsButton = panel.Find("DisplayOptionsButton").GetComponent<UIButton>();
             soundsOptionsButton = panel.Find("SoundsOptionsButton").GetComponent<UIButton>();
             advancedOptionsButton = panel.Find("AdvancedOptionsButton").GetComponent<UIButton>();
-            //saveOptionsButton = panel.Find("SaveOptionsButton").GetComponent<UIButton>();
+            saveOptionsButton = panel.Find("SaveOptionsButton").GetComponent<UIButton>();
             infoOptionsButton = panel.Find("InfoOptionsButton").GetComponent<UIButton>();
 
             displaySubPanel = panel.Find("DisplayOptions").gameObject;
             soundsSubPanel = panel.Find("SoundsOptions").gameObject;
             advancedSubPanel = panel.Find("AdvancedOptions").gameObject;
-            //saveSubPanel = panel.Find("SaveOptions").gameObject;
+            saveSubPanel = panel.Find("SaveOptions").gameObject;
             infoSubPanel = panel.Find("InfoOptions").gameObject;
 
             worldGridCheckbox = displaySubPanel.transform.Find("DisplayWorldGrid").GetComponent<UICheckbox>();
@@ -81,6 +83,7 @@ namespace VRtist
             displayFPS = advancedSubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
             showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
+            ProjectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
 
             Apply();
 
@@ -106,6 +109,7 @@ namespace VRtist
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
 
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
+            SetProjectName(GlobalState.Settings.projectName);
 
             OnRightHanded(GlobalState.Settings.rightHanded);
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
@@ -214,11 +218,6 @@ namespace VRtist
             GlobalState.Settings.assetBankDirectory = value;
         }
 
-        public void OnEditProjectName()
-        {
-            //ToolsUIManager.Instance.OpenKeyboard(SetProjectName, )
-        }
-
         private void ResetSubPanels()
         {
             displayOptionsButton.Checked = false;
@@ -227,8 +226,8 @@ namespace VRtist
             soundsSubPanel.SetActive(false);
             advancedOptionsButton.Checked = false;
             advancedSubPanel.SetActive(false);
-            //saveOptionsButton.Checked = false;
-            //saveSubPanel.SetActive(false);
+            saveOptionsButton.Checked = false;
+            saveSubPanel.SetActive(false);
             infoOptionsButton.Checked = false;
             infoSubPanel.SetActive(false);
         }
@@ -334,15 +333,26 @@ namespace VRtist
         public void OnSaveProject()
         {
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
-            Serialization.SaveManager.Instance.Save("Plop");
+            Serialization.SaveManager.Instance.Save(GlobalState.Settings.projectName);
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         public void OnLoadProject()
         {
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
-            Serialization.SaveManager.Instance.Load("Plop");
+            Serialization.SaveManager.Instance.Load(GlobalState.Settings.projectName);
             GlobalState.Instance.messageBox.SetVisible(false);
+        }
+
+        public void OnEditProjectName()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(SetProjectName, ProjectNameLabel.transform, GlobalState.Settings.projectName);
+        }
+
+        private void SetProjectName(string value)
+        {
+            ProjectNameLabel.Text = value;
+            GlobalState.Settings.projectName = value;
         }
     }
 }

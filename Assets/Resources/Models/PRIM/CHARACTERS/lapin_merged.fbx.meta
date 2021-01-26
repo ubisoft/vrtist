@@ -1,9 +1,59 @@
 fileFormatVersion: 2
 guid: ad7ad9f404a907d41bdd5f75eb2a0464
 ModelImporter:
-  serializedVersion: 19300
+  serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabBody
+    second: {fileID: 2100000, guid: ebfded0946dc66048ab799d4697381f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyeBall
+    second: {fileID: 2100000, guid: a235610525d8e2a44bb5e1b82c8f9fc7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyeCornea
+    second: {fileID: 2100000, guid: 69727b751e5b20844857b4aaea3c52b7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyeIris
+    second: {fileID: 2100000, guid: 03919e2c759b9df49b5350c819fc481a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyePupil
+    second: {fileID: 2100000, guid: 7406103618b3d804cbff48bdaf2d7952, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyeSpec
+    second: {fileID: 2100000, guid: eba8a8e0370078a4a8ae47de2e4cdeda, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyelidL
+    second: {fileID: 2100000, guid: 481e5b1c5cae1e14aa93cd8565b30f8c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabEyelidR
+    second: {fileID: 2100000, guid: 8662e7f851fde4b4399a6b445ae04fec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabTeeth
+    second: {fileID: 2100000, guid: 699e73bf6b12682488f943679d6d4c23, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_rabTongue
+    second: {fileID: 2100000, guid: 377ce75149120524ca4e27ef17ea21f1, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
@@ -43,11 +93,13 @@ ModelImporter:
     importBlendShapes: 1
     importCameras: 1
     importLights: 1
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
     preserveHierarchy: 0
     skinWeightsMode: 0
     maxBonesPerVertex: 4
@@ -57,6 +109,9 @@ ModelImporter:
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 0
   tangentSpace:
@@ -90,6 +145,7 @@ ModelImporter:
   animationType: 2
   humanoidOversampling: 1
   avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
   additionalBone: 0
   userData: 
   assetBundleName: 

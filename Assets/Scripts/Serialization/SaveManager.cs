@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist.Serialization
 {
@@ -21,8 +22,14 @@ namespace VRtist.Serialization
     }
 
 
+    /// <summary>
+    /// Save current scene.
+    /// Warning: this class has to be a monobehaviour in order to iterate transforms of the scene.
+    /// </summary>
     public class SaveManager : MonoBehaviour
     {
+        public static UnityEvent clearScene = new UnityEvent();
+
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -75,6 +82,8 @@ namespace VRtist.Serialization
         public void Save(string projectName)
         {
             currentProjectName = projectName;
+            meshes.Clear();
+            SceneData.Current.Clear();
 
             // Parse RightHanded transform
             Transform root = Utils.FindWorld().transform.Find("RightHanded");
@@ -91,7 +100,7 @@ namespace VRtist.Serialization
                 // We should only have [gameObjectName]_parent game objects
                 if (!emptyParent.name.EndsWith("_parent"))
                 {
-                    Debug.LogWarning("Ignoring the serialization of a non parent game object: " + transform.name);
+                    Debug.LogWarning("Ignoring the serialization of a non parent game object: " + emptyParent.name);
                     continue;
                 }
 
@@ -149,8 +158,10 @@ namespace VRtist.Serialization
 
                 // Save animation data
 
+                // Save skybox
+
                 // Save scene
-                SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current);
+                SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
 
                 // Save meshes
                 foreach (var meshInfo in meshes.Values)
@@ -171,12 +182,9 @@ namespace VRtist.Serialization
         private void SaveMaterial(MaterialInfo materialInfo)
         {
             string shaderName = materialInfo.material.shader.name;
-            if (shaderName != "VRtist/BlenderImport" &&
-                shaderName != "VRtist/BlenderImportTransparent" &&
-                shaderName != "VRtist/BlenderImportEditor" &&
-                shaderName != "VRtist/BlenderImportTransparentEditor")
+            if (shaderName != "VRtist/ObjectOpaque" && shaderName != "VRtist/ObjectTransparent")
             {
-                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/BlenderImport***.");
+                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/ObjectOpaque or VRtist/ObjectTransparent.");
                 return;
             }
 
@@ -283,8 +291,13 @@ namespace VRtist.Serialization
             Transform root = GlobalState.Instance.world.Find("RightHanded");
 
             // Clear current scene
+            clearScene.Invoke();
             DeleteTransformChildren(root);
             DeleteTransformChildren(SyncData.prefab);
+
+            // TODO remove lights and camera items
+            // TODO remove shotitems
+            // TODO remove animations data
 
             // Load data from file
             string path = GetScenePath(projectName);
@@ -313,8 +326,16 @@ namespace VRtist.Serialization
 
         private void DeleteTransformChildren(Transform trans)
         {
+            Debug.Log("Clearing scene for loading a new one");
+            Selection.ClearSelection();
             foreach (Transform child in trans)
             {
+                if (child.name.StartsWith("__VRtist_"))
+                {
+                    // There are some game objects that are not user objects and must remain
+                    continue;
+                }
+                Debug.Log("Destroying " + child.name);
                 Destroy(child.gameObject);
             }
         }
