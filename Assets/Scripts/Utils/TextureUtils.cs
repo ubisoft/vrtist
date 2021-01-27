@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
+
 using UnityEngine;
 
 namespace VRtist
@@ -182,6 +184,51 @@ namespace VRtist
                 return null;
 
             return tex;
+        }
+
+        public static Texture2D LoadRawTexture(string filePath, bool isLinear)
+        {
+            byte[] bytes = File.ReadAllBytes(filePath);
+            int index = 0;
+            TextureFormat format = (TextureFormat)BitConverter.ToInt32(bytes, index);
+            index += sizeof(int);
+            int width = BitConverter.ToInt32(bytes, index);
+            index += sizeof(int);
+            int height = BitConverter.ToInt32(bytes, index);
+            index += sizeof(int);
+            int dataLength = bytes.Length - 3 * sizeof(int);
+            byte[] data = new byte[dataLength];
+            Buffer.BlockCopy(bytes, index, data, 0, dataLength);
+
+            Texture2D texture = new Texture2D(width, height, format, true, isLinear);
+            texture.LoadRawTextureData(data);
+            texture.Apply();
+            return texture;
+        }
+
+        public static void WriteRawTexture(string filePath, Texture2D texture)
+        {
+            TextureFormat format = texture.format;
+            int width = texture.width;
+            int height = texture.height;
+            byte[] data = texture.GetRawTextureData();
+
+            byte[] bytes = new byte[sizeof(int) * 3 + data.Length];
+            int index = 0;
+            Buffer.BlockCopy(BitConverter.GetBytes((int)format), 0, bytes, index, sizeof(int));
+            index += sizeof(int);
+            Buffer.BlockCopy(BitConverter.GetBytes(width), 0, bytes, index, sizeof(int));
+            index += sizeof(int);
+            Buffer.BlockCopy(BitConverter.GetBytes(height), 0, bytes, index, sizeof(int));
+            index += sizeof(int);
+            Buffer.BlockCopy(data, 0, bytes, index, data.Length);
+
+            DirectoryInfo folder = Directory.GetParent(filePath);
+            if (!folder.Exists)
+            {
+                folder.Create();
+            }
+            File.WriteAllBytes(filePath, bytes);
         }
     }
 }

@@ -188,22 +188,22 @@ namespace VRtist.Serialization
                 return;
             }
 
-            SaveTexture("_ColorMap", "_UseColorMap", materialInfo);
-            SaveTexture("_NormalMap", "_UseNormalMap", materialInfo);
-            SaveTexture("_MetallicMap", "_UseMetallicMap", materialInfo);
-            SaveTexture("_RoughnessMap", "_UseRoughnessMap", materialInfo);
-            SaveTexture("_EmissiveMap", "_UseEmissiveMap", materialInfo);
-            SaveTexture("_AoMap", "_UseAoMap", materialInfo);
-            SaveTexture("_OpacityMap", "_UseOpacityMap", materialInfo);
+            SaveTexture("_ColorMap", "_UseColorMap", "color", materialInfo);
+            SaveTexture("_NormalMap", "_UseNormalMap", "normal", materialInfo);
+            SaveTexture("_MetallicMap", "_UseMetallicMap", "metallic", materialInfo);
+            SaveTexture("_RoughnessMap", "_UseRoughnessMap", "roughness", materialInfo);
+            SaveTexture("_EmissiveMap", "_UseEmissiveMap", "emissive", materialInfo);
+            SaveTexture("_AoMap", "_UseAoMap", "ao", materialInfo);
+            SaveTexture("_OpacityMap", "_UseOpacityMap", "opacity", materialInfo);
         }
 
-        private void SaveTexture(string textureName, string useName, MaterialInfo materialInfo)
+        private void SaveTexture(string textureName, string boolName, string baseName, MaterialInfo materialInfo)
         {
-            if (materialInfo.material.GetInt(useName) == 1)
+            if (materialInfo.material.GetInt(boolName) == 1)
             {
-                string path = materialInfo.materialPath + name + ".tex";
+                string path = materialInfo.materialPath + baseName + ".tex";
                 Texture2D texture = (Texture2D)materialInfo.material.GetTexture(textureName);
-                Utils.SavePNG(texture, path);
+                TextureUtils.WriteRawTexture(path, texture);
             }
         }
 
