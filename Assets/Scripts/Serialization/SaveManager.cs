@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace VRtist.Serialization
 {
@@ -28,8 +27,6 @@ namespace VRtist.Serialization
     /// </summary>
     public class SaveManager : MonoBehaviour
     {
-        public static UnityEvent clearScene = new UnityEvent();
-
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -288,12 +285,9 @@ namespace VRtist.Serialization
         public void Load(string projectName)
         {
             currentProjectName = projectName;
-            Transform root = GlobalState.Instance.world.Find("RightHanded");
 
             // Clear current scene
-            clearScene.Invoke();
-            DeleteTransformChildren(root);
-            DeleteTransformChildren(SyncData.prefab);
+            Utils.ClearScene();
 
             // TODO remove shotitems
             // TODO remove animations data
@@ -320,22 +314,6 @@ namespace VRtist.Serialization
             foreach (CameraData data in saveData.cameras)
             {
                 LoadCamera(data);
-            }
-        }
-
-        private void DeleteTransformChildren(Transform trans)
-        {
-            Debug.Log("Clearing scene for loading a new one");
-            Selection.ClearSelection();
-            foreach (Transform child in trans)
-            {
-                if (child.name.StartsWith("__VRtist_"))
-                {
-                    // There are some game objects that are not user objects and must remain
-                    continue;
-                }
-                Debug.Log("Destroying " + child.name);
-                Destroy(child.gameObject);
             }
         }
 

@@ -955,7 +955,7 @@ namespace VRtist
         {
             Vector3 controllerPosition = rightControllerPosition;
             Quaternion controllerRotation = rightControllerRotation;
-            controllerPosition = toolsController.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
+            controllerPosition = GlobalState.Instance.toolsController.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
             controllerPosition = Vector3.Scale(controllerPosition, activePlane.direction);              // apply direction (local to planeContainer)

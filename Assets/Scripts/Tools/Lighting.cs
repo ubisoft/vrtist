@@ -61,7 +61,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnLightAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnLightRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnLightRenamed);
-            Serialization.SaveManager.clearScene.AddListener(OnClearScene);
+            Utils.clearScene.AddListener(OnClearScene);
             if (null != lightList) { lightList.ItemClickedEvent += OnSelectLightItem; }
             lightItemPrefab = Resources.Load<GameObject>("Prefabs/UI/LightItem");
 

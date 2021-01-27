@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
 {
+    // TODO: create a real singleton instead of a MonoBehaviour
     public class ToolsManager : MonoBehaviour
     {
         private static ToolsManager instance = null;
@@ -82,41 +84,32 @@ namespace VRtist
 
         public static void RegisterTool(GameObject tool)
         {
-            Instance._RegisterTool(tool);
-        }
-
-        public void _RegisterTool(GameObject tool)
-        {
-            tools.Add(tool.name, tool);
-            tool.SetActive(false);
+            Instance.tools.Add(tool.name, tool);
+            tool.SetActive(tool == Instance.defaultTool);
+            tool.GetComponent<ToolBase>().ActivateMouthpiece(tool == Instance.defaultTool);
         }
 
         public static void ToggleTool()
         {
-            Instance._ToggleTool();
-        }
-
-        public void _ToggleTool()
-        {
             // Toggle to alt tool
-            if (currentToolRef.name != altTool.name)
+            if (Instance.currentToolRef.name != Instance.altTool.name)
             {
-                previousTool = previousTool = currentToolRef;
-                ToolsUIManager.Instance.ChangeTool(altTool.name);
-                ToolsUIManager.Instance.ChangeTab(altTool.name);
+                Instance.previousTool = Instance.currentToolRef;
+                ToolsUIManager.Instance.ChangeTool(Instance.altTool.name);
+                ToolsUIManager.Instance.ChangeTab(Instance.altTool.name);
             }
             // Toggle to previous tool or sub toggle alt tool
-            else if (currentToolRef.name == altTool.name)
+            else if (Instance.currentToolRef.name == Instance.altTool.name)
             {
-                ToolBase toolBase = altTool.GetComponent<ToolBase>();
+                ToolBase toolBase = Instance.altTool.GetComponent<ToolBase>();
                 if (!toolBase.SubToggleTool())
                 {
                     // Toggle to previous tool
-                    if (null != previousTool)
+                    if (null != Instance.previousTool)
                     {
-                        ToolsUIManager.Instance.ChangeTool(previousTool.name);
-                        ToolsUIManager.Instance.ChangeTab(previousTool.name);
-                        previousTool = null;
+                        ToolsUIManager.Instance.ChangeTool(Instance.previousTool.name);
+                        ToolsUIManager.Instance.ChangeTab(Instance.previousTool.name);
+                        Instance.previousTool = null;
                     }
                 }
             }
@@ -134,22 +127,13 @@ namespace VRtist
 
         public static ToolBase CurrentTool()
         {
-            return Instance._CurrentTool();
-        }
-        public ToolBase _CurrentTool()
-        {
-            if (null != currentToolRef) { return currentToolRef.GetComponent<ToolBase>(); }
+            if (null != Instance.currentToolRef) { return Instance.currentToolRef.GetComponent<ToolBase>(); }
             return null;
         }
 
         public static void SetCurrentTool(GameObject tool)
         {
-            Instance._SetCurrentTool(tool);
-        }
-
-        public void _SetCurrentTool(GameObject tool)
-        {
-            currentToolRef = tool;
+            Instance.currentToolRef = tool;
         }
 
         public static GameObject GetTool(string name)
@@ -164,11 +148,16 @@ namespace VRtist
             Instance.currentToolRef.GetComponent<ToolBase>().ActivateMouthpiece(value);
         }
 
-        public static void OnChangeTool(object sender, ToolChangedArgs args)
+        public static void ChangeTool(string toolName)
         {
             Instance.currentToolRef.SetActive(false);
-            Instance.currentToolRef = Instance.Tools[args.toolName];
+            Instance.currentToolRef = Instance.Tools[toolName];
             Instance.currentToolRef.SetActive(true);
+        }
+
+        public static void OnChangeTool(object sender, ToolChangedArgs args)
+        {
+            ChangeTool(args.toolName);
         }
 
         public static void OnChangeToolParameter(object sender, ToolParameterChangedArgs args)

@@ -187,10 +187,10 @@ namespace VRtist
 
             updateButtonsColor();
 
-            dopesheet = GameObject.FindObjectOfType<Dopesheet>();
+            dopesheet = GameObject.FindObjectOfType<Dopesheet>(true);
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
 
-            shotManager = GameObject.FindObjectOfType<UIShotManager>();
+            shotManager = GameObject.FindObjectOfType<UIShotManager>(true);
             UnityEngine.Assertions.Assert.IsNotNull(shotManager);
 
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
@@ -727,8 +727,8 @@ namespace VRtist
                 }
 
                 // right controller filtered matrix
-                Matrix4x4 mouthPieceLocalToWorld = toolsController.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
-                    Matrix4x4.TRS(rightMouthpieces.localPosition, rightMouthpieces.localRotation, Vector3.one * scale);
+                Matrix4x4 mouthPieceLocalToWorld = GlobalState.Instance.toolsController.parent.localToWorldMatrix * Matrix4x4.TRS(p, r, Vector3.one) *
+                    Matrix4x4.TRS(mouthpieces.localPosition, mouthpieces.localRotation, Vector3.one * scale);
 
                 Snap(ref mouthPieceLocalToWorld);
                 TransformSelection(mouthPieceLocalToWorld * initMouthPieceWorldToLocal);
@@ -970,7 +970,7 @@ namespace VRtist
 
         protected void InitControllerMatrix()
         {
-            initMouthPieceWorldToLocal = rightMouthpieces.worldToLocalMatrix;
+            initMouthPieceWorldToLocal = mouthpieces.worldToLocalMatrix;
         }
 
         protected void InitSnap()
@@ -982,17 +982,17 @@ namespace VRtist
             Vector3 worldPlanePosition;
 
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[0]);
-            snapRays[0] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(boundingBox.transform.up));
+            snapRays[0] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(boundingBox.transform.up));
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[1]);
-            snapRays[1] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-boundingBox.transform.up));
+            snapRays[1] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(-boundingBox.transform.up));
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[2]);
-            snapRays[2] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(boundingBox.transform.right));
+            snapRays[2] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(boundingBox.transform.right));
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[3]);
-            snapRays[3] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-boundingBox.transform.right));
+            snapRays[3] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(-boundingBox.transform.right));
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[4]);
-            snapRays[4] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(-boundingBox.transform.forward));
+            snapRays[4] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(-boundingBox.transform.forward));
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[5]);
-            snapRays[5] = new Ray(rightMouthpieces.transform.InverseTransformPoint(worldPlanePosition), rightMouthpieces.transform.InverseTransformDirection(boundingBox.transform.forward));
+            snapRays[5] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(boundingBox.transform.forward));
         }
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)

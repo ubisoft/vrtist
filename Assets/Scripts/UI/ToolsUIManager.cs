@@ -125,7 +125,8 @@ namespace VRtist
 
             string firstToolName = ToolsManager.CurrentToolName();
             ChangeTab(firstToolName);
-            ChangeTool(firstToolName);
+            currentToolName = firstToolName;
+            //ChangeTool(firstToolName);
 
             colorPanel = tabButtonsContainer.Find("ColorPanel").gameObject;
 

@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -245,6 +246,32 @@ namespace VRtist
             if (null == texture) { return null; }
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             return sprite;
+        }
+
+        public static UnityEvent clearScene = new UnityEvent();
+        public static void ClearScene()
+        {
+            clearScene.Invoke();
+
+            Transform root = GlobalState.Instance.world.Find("RightHanded");
+            DeleteTransformChildren(root);
+            DeleteTransformChildren(SyncData.prefab);
+        }
+
+        public static void DeleteTransformChildren(Transform trans)
+        {
+            Debug.Log("Clear scene");
+            Selection.ClearSelection();
+            foreach (Transform child in trans)
+            {
+                if (child.name.StartsWith("__VRtist_"))
+                {
+                    // There are some game objects that are not user objects and must remain
+                    continue;
+                }
+                Debug.Log("Destroying " + child.name);
+                GameObject.Destroy(child.gameObject);
+            }
         }
     }
 }
