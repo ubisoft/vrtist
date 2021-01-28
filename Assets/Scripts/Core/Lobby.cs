@@ -18,6 +18,7 @@ namespace VRtist
         UIDynamicList projectList;
         GameObject itemPrefab;
 
+        List<GameObject> projects = new List<GameObject>();
         GameObject currentProject;
 
         private void Awake()
@@ -54,13 +55,20 @@ namespace VRtist
 
         private void OnProjectClicked(object sender, IndexedGameObjectArgs args)
         {
+            foreach (GameObject project in projects)
+            {
+                project.transform.Find("Frame").gameObject.SetActive(false);
+            }
+
             // Set the current project
             currentProject = args.gobject;
+            currentProject.transform.Find("Frame").gameObject.SetActive(true);
             projectButtons.SetActive(true);
         }
 
         private void LoadProjectItems()
         {
+            projects.Clear();
             projectList.Clear();
             List<string> paths = Serialization.SaveManager.Instance.GetProjectThumbnailPaths();
             foreach (string path in paths)
@@ -70,6 +78,7 @@ namespace VRtist
                 ProjectItem projectItem = item.GetComponent<ProjectItem>();
                 UIDynamicListItem dlItem = projectList.AddItem(item.transform);
                 projectItem.SetListItem(dlItem, path);
+                projects.Add(item);
             }
         }
 

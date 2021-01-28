@@ -32,7 +32,7 @@ namespace VRtist
         {
             item = dlItem;
             Texture2D texture = Utils.LoadTexture(path);
-            GetComponentInChildren<MeshRenderer>().material.SetTexture("_EquiRect", texture);
+            transform.Find("Content").gameObject.GetComponent<MeshRenderer>().material.SetTexture("_EquiRect", texture);
             //gradientPreview.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             //copyButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             //deleteButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);

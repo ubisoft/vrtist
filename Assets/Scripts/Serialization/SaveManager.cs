@@ -88,6 +88,9 @@ namespace VRtist.Serialization
         public List<string> GetProjectThumbnailPaths()
         {
             List<string> paths = new List<string>();
+
+            if (!Directory.Exists(saveFolder)) { return paths; }
+
             foreach (string directory in Directory.GetDirectories(saveFolder))
             {
                 string thumbnail = Path.Combine(directory, "thumbnail.png");
