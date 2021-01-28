@@ -332,6 +332,8 @@ namespace VRtist.Serialization
             // TODO remove shotitems
             // TODO remove animations data
 
+            // TODO position user
+
             // Load data from file
             string path = GetScenePath(projectName);
             SceneData saveData = (SceneData)SerializationManager.Load(path);

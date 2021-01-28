@@ -13,9 +13,12 @@ namespace VRtist
         GameObject lobbyVolume;
 
         GameObject backToSceneButton;
+        GameObject projectButtons;
 
         UIDynamicList projectList;
         GameObject itemPrefab;
+
+        GameObject currentProject;
 
         private void Awake()
         {
@@ -26,7 +29,11 @@ namespace VRtist
             sceneVolume = volumes.Find("VolumePostProcess").gameObject;
             lobbyVolume = volumes.Find("VolumeLobby").gameObject;
 
-            backToSceneButton = transform.Find("UI/Panel/BackToScene Button").gameObject;
+            backToSceneButton = transform.Find("UI/Control Panel/Panel/BackToSceneButton").gameObject;
+            backToSceneButton.SetActive(false);
+
+            projectButtons = transform.Find("UI/Control Panel/Panel/Project").gameObject;
+            projectButtons.SetActive(false);
 
             projectList = transform.Find("UI/Projects Panel/List").GetComponent<UIDynamicList>();
             itemPrefab = Resources.Load<GameObject>("Prefabs/UI/ProjectItem");
@@ -42,6 +49,14 @@ namespace VRtist
             transform.localEulerAngles = new Vector3(0f, camY, 0f);
 
             LoadProjectItems();
+            projectList.ItemClickedEvent += OnProjectClicked;
+        }
+
+        private void OnProjectClicked(object sender, IndexedGameObjectArgs args)
+        {
+            // Set the current project
+            currentProject = args.gobject;
+            projectButtons.SetActive(true);
         }
 
         private void LoadProjectItems()
@@ -51,7 +66,7 @@ namespace VRtist
             foreach (string path in paths)
             {
                 GameObject item = Instantiate(itemPrefab);
-                item.name = Path.GetFileName(path);
+                item.name = Directory.GetParent(path).Name;
                 ProjectItem projectItem = item.GetComponent<ProjectItem>();
                 UIDynamicListItem dlItem = projectList.AddItem(item.transform);
                 projectItem.SetListItem(dlItem, path);
@@ -69,6 +84,7 @@ namespace VRtist
         public void OnSetVisible()
         {
             LoadProjectItems();
+            currentProject = null;
 
             GlobalState.Instance.playerController.IsInLobby = true;
             Utils.FindWorld().SetActive(false);
@@ -136,6 +152,45 @@ namespace VRtist
             Utils.ClearScene();
 
             // TODO set a valid name for the new project depending on existing "newProject" names
+        }
+
+        public void OnLaunchProject()
+        {
+            // Clear undo/redo stack
+            CommandManager.Clear();
+
+            Serialization.SaveManager.Instance.Load(currentProject.name);
+            OnBackToScene();
+        }
+
+        public void OnCloneProject()
+        {
+
+        }
+
+        public void OnDeleteProject()
+        {
+
+        }
+
+        public void OnNextPage()
+        {
+            projectList.OnNextPage();
+        }
+
+        public void OnPreviousPage()
+        {
+            projectList.OnPreviousPage();
+        }
+
+        public void OnFirstPage()
+        {
+            projectList.OnFirstPage();
+        }
+
+        public void OnLastPage()
+        {
+            projectList.OnLastPage();
         }
     }
 }
