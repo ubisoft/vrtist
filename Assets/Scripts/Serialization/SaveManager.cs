@@ -27,6 +27,10 @@ namespace VRtist.Serialization
     /// </summary>
     public class SaveManager : MonoBehaviour
     {
+        public Camera screenshotCamera;
+        public RenderTexture cubeMapRT;
+        public RenderTexture equiRectRT;
+
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -71,9 +75,28 @@ namespace VRtist.Serialization
             return saveFolder + projectName + "/" + ReplaceInvalidChars(meshName) + ".mesh";
         }
 
+        private string GetScreenshotPath(string projectName)
+        {
+            return saveFolder + projectName + "/thumbnail.png";
+        }
+
         private string GetMaterialPath(string projectName, string materialName)
         {
             return saveFolder + projectName + "/" + ReplaceInvalidChars(materialName) + "/";
+        }
+
+        public List<string> GetProjectThumbnailPaths()
+        {
+            List<string> paths = new List<string>();
+            foreach (string directory in Directory.GetDirectories(saveFolder))
+            {
+                string thumbnail = Path.Combine(directory, "thumbnail.png");
+                if (File.Exists(thumbnail))
+                {
+                    paths.Add(thumbnail);
+                }
+            }
+            return paths;
         }
 
         public void Save(string projectName)
@@ -160,6 +183,9 @@ namespace VRtist.Serialization
                 // Save scene
                 SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
 
+                // Scene screenshot
+                SaveScreenshot();
+
                 // Save meshes
                 foreach (var meshInfo in meshes.Values)
                 {
@@ -174,6 +200,20 @@ namespace VRtist.Serialization
                     }
                 }
             }
+        }
+
+        private void SaveScreenshot()
+        {
+            screenshotCamera.gameObject.SetActive(true);
+            screenshotCamera.RenderToCubemap(cubeMapRT, 63, Camera.MonoOrStereoscopicEye.Mono);
+            cubeMapRT.ConvertToEquirect(equiRectRT);
+            Texture2D texture = new Texture2D(equiRectRT.width, equiRectRT.height);
+            RenderTexture previousActiveRT = RenderTexture.active;
+            RenderTexture.active = equiRectRT;
+            texture.ReadPixels(new Rect(0, 0, equiRectRT.width, equiRectRT.height), 0, 0);
+            RenderTexture.active = previousActiveRT;
+            Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
+            screenshotCamera.gameObject.SetActive(false);
         }
 
         private void SaveMaterial(MaterialInfo materialInfo)

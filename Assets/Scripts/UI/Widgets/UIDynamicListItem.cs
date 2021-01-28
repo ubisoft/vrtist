@@ -48,11 +48,11 @@ namespace VRtist
             // TODO: handle resize/center content
             // bool autoResizeContent, bool autoCenterContent
 
-            if(content != null)
+            if (content != null)
             {
-                if(autoResizeContent)
+                if (autoResizeContent)
                 {
-                    Vector3 childExtents = content.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents; // TODO: what is many meshFilters?
+                    Vector3 childExtents = content.GetComponentInChildren<MeshFilter>().sharedMesh.bounds.extents; // TODO: what if many meshFilters?
                     float w = (width / 2.0f) / childExtents.x;
                     float h = (height / 2.0f) / childExtents.y;
                     float d = (depth / 2.0f) / childExtents.z;

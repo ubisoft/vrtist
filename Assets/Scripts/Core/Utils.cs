@@ -218,6 +218,7 @@ namespace VRtist
         public static void SavePNG(Texture2D texture, string path)
         {
             byte[] data = texture.EncodeToPNG();
+            CreatePath(path);
             File.WriteAllBytes(path, data);
         }
 
@@ -271,6 +272,20 @@ namespace VRtist
                 }
                 Debug.Log("Destroying " + child.name);
                 GameObject.Destroy(child.gameObject);
+            }
+        }
+
+        public static void CreatePath(string path)
+        {
+            string filename = Path.GetFileName(path);
+            DirectoryInfo folder;
+            if (filename.Length > 0)
+                folder = Directory.GetParent(path);
+            else
+                folder = new DirectoryInfo(path);
+            if (!folder.Exists)
+            {
+                folder.Create();
             }
         }
     }

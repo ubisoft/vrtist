@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.IO;
+
 using UnityEngine;
 
 namespace VRtist
@@ -11,6 +14,9 @@ namespace VRtist
 
         GameObject backToSceneButton;
 
+        UIDynamicList projectList;
+        GameObject itemPrefab;
+
         private void Awake()
         {
             palette = transform.parent.Find("Pivot/PaletteController/PaletteHandle").gameObject;
@@ -21,6 +27,9 @@ namespace VRtist
             lobbyVolume = volumes.Find("VolumeLobby").gameObject;
 
             backToSceneButton = transform.Find("UI/Panel/BackToScene Button").gameObject;
+
+            projectList = transform.Find("UI/Projects Panel/List").GetComponent<UIDynamicList>();
+            itemPrefab = Resources.Load<GameObject>("Prefabs/UI/ProjectItem");
         }
 
         private void Start()
@@ -31,18 +40,36 @@ namespace VRtist
             // Orient lobby
             float camY = Camera.main.transform.localEulerAngles.y;
             transform.localEulerAngles = new Vector3(0f, camY, 0f);
+
+            LoadProjectItems();
+        }
+
+        private void LoadProjectItems()
+        {
+            projectList.Clear();
+            List<string> paths = Serialization.SaveManager.Instance.GetProjectThumbnailPaths();
+            foreach (string path in paths)
+            {
+                GameObject item = Instantiate(itemPrefab);
+                item.name = Path.GetFileName(path);
+                ProjectItem projectItem = item.GetComponent<ProjectItem>();
+                UIDynamicListItem dlItem = projectList.AddItem(item.transform);
+                projectItem.SetListItem(dlItem, path);
+            }
         }
 
         private void Update()
         {
             float camY = Camera.main.transform.localEulerAngles.y;
             float lobbyY = transform.localEulerAngles.y;
-            if (Mathf.Abs(camY - lobbyY) > 45f)
+            if (Mathf.Abs(Mathf.DeltaAngle(camY, lobbyY)) > 45f)
                 transform.localEulerAngles = new Vector3(0f, camY, 0f);
         }
 
         public void OnSetVisible()
         {
+            LoadProjectItems();
+
             GlobalState.Instance.playerController.IsInLobby = true;
             Utils.FindWorld().SetActive(false);
             gameObject.SetActive(true);
