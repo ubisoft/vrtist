@@ -118,7 +118,9 @@ namespace VRtist
 
         public static bool IsSceneDirty()
         {
-            return undoStack.Count != 0 || cleanCommandRef != undoStack[undoStack.Count - 1];
+            if (undoStack.Count == 0)
+                return false;
+            return cleanCommandRef != undoStack[undoStack.Count - 1];
         }
 
         public static bool IsUndoGroupOpened()

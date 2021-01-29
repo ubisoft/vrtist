@@ -208,6 +208,22 @@ namespace VRtist.Serialization
             }
         }
 
+        /*
+            RenderTexture cubeMap = new RenderTexture(2048, 2048, 24, RenderTextureFormat.ARGBFloat);
+            RenderTexture equiRect = new RenderTexture(2048, 1024, 24, RenderTextureFormat.ARGBFloat);
+
+            screenshotCamera.gameObject.SetActive(true);
+            screenshotCamera.RenderToCubemap(cubeMap, 63, Camera.MonoOrStereoscopicEye.Mono);
+            cubeMap.ConvertToEquirect(equiRect);
+            Texture2D texture = new Texture2D(equiRect.width, equiRect.height);
+            RenderTexture previousActiveRT = RenderTexture.active;
+            RenderTexture.active = equiRect;
+            texture.ReadPixels(new Rect(0, 0, equiRect.width, equiRect.height), 0, 0);
+            RenderTexture.active = previousActiveRT;
+            Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
+
+            screenshotCamera.gameObject.SetActive(false);
+         */
         private void SaveScreenshot()
         {
             screenshotCamera.gameObject.SetActive(true);
@@ -219,6 +235,7 @@ namespace VRtist.Serialization
             texture.ReadPixels(new Rect(0, 0, equiRectRT.width, equiRectRT.height), 0, 0);
             RenderTexture.active = previousActiveRT;
             Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
+
             screenshotCamera.gameObject.SetActive(false);
         }
 

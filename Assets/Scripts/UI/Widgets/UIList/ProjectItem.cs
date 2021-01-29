@@ -31,7 +31,7 @@ namespace VRtist
         public void SetListItem(UIDynamicListItem dlItem, string path)
         {
             item = dlItem;
-            Texture2D texture = Utils.LoadTexture(path);
+            Texture2D texture = Utils.LoadTexture(path, true);
             transform.Find("Content").gameObject.GetComponent<MeshRenderer>().material.SetTexture("_EquiRect", texture);
             //gradientPreview.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             //copyButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);

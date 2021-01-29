@@ -222,7 +222,7 @@ namespace VRtist
             File.WriteAllBytes(path, data);
         }
 
-        public static Texture2D LoadTexture(string path)
+        public static Texture2D LoadTexture(string path, bool linear = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -236,7 +236,7 @@ namespace VRtist
             }
 
             byte[] bytes = File.ReadAllBytes(path);
-            Texture2D texture = new Texture2D(1, 1);
+            Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, true, linear);
             texture.LoadImage(bytes);
             return texture;
         }
