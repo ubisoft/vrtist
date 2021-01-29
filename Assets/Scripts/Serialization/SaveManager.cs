@@ -285,7 +285,7 @@ namespace VRtist.Serialization
                     }
 
                     // Mesh
-                    string meshPath = GetMeshPath(currentProjectName, meshFilter.mesh.name);
+                    string meshPath = GetMeshPath(currentProjectName, trans.name);
                     meshes[meshPath] = new MeshInfo { meshPath = meshPath, mesh = meshFilter.mesh, materialsInfo = materialsInfo };
                     data.meshPath = meshPath;
                 }
