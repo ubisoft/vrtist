@@ -77,3 +77,4 @@ $RECYCLE.BIN/
 *.rar
 
 /.vscode/settings.json
+/UserSettings/EditorUserSettings.asset
