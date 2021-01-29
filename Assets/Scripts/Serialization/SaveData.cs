@@ -200,6 +200,7 @@ namespace VRtist.Serialization
             mesh.vertices = vertices;
             mesh.normals = normals;
             mesh.uv = uvs;
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.subMeshCount = subMeshes.Length;
             for (int i = 0; i < subMeshes.Length; ++i)
             {

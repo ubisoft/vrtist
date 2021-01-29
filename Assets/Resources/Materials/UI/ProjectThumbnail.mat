@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ProjectThumbnail
-  m_Shader: {fileID: -6465566751694194690, guid: ccc899f42cb38bc4ab07dd70c3f124b3,
+  m_Shader: {fileID: -6465566751694194690, guid: 4d5ec36aae51b4b42935f7c2a071de79,
     type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -43,7 +43,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EquiRect:
-        m_Texture: {fileID: 2800000, guid: 1d66e1feca6d53744bf84a7fb8b0cbe5, type: 3}
+        m_Texture: {fileID: 2800000, guid: a44de534002c2104696bc082f434302c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SampleCubemap_2977a0e51dc7478f8d533ed6f2ab8f65_Cube_1:
@@ -89,6 +89,7 @@ Material:
     - _OpaqueCullMode: 2
     - _PI: 3.14159
     - _RenderQueueType: 1
+    - _SphereRadius: 0.5
     - _SrcBlend: 1
     - _StencilRef: 0
     - _StencilRefDepth: 0
