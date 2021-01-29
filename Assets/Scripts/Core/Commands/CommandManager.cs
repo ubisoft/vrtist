@@ -73,6 +73,7 @@ namespace VRtist
         static readonly List<ICommand> redoStack = new List<ICommand>();
         static readonly List<CommandGroup> groupStack = new List<CommandGroup>();
         static CommandGroup currentGroup = null;
+        static ICommand cleanCommandRef = null;
 
         public static void Undo()
         {
@@ -82,7 +83,9 @@ namespace VRtist
                 return;
             int count = undoStack.Count;
             if (count == 0)
+            {
                 return;
+            }
             ICommand undoCommand = undoStack[count - 1];
             undoStack.RemoveAt(count - 1);
             undoCommand.Undo();
@@ -103,6 +106,19 @@ namespace VRtist
             redoStack.RemoveAt(count - 1);
             redoCommand.Redo();
             undoStack.Add(redoCommand);
+        }
+
+        public static void SetSceneDirty(bool dirty)
+        {
+            if (undoStack.Count == 0)
+                cleanCommandRef = null;
+            else
+                cleanCommandRef = undoStack[undoStack.Count - 1];
+        }
+
+        public static bool IsSceneDirty()
+        {
+            return undoStack.Count != 0 || cleanCommandRef != undoStack[undoStack.Count - 1];
         }
 
         public static bool IsUndoGroupOpened()

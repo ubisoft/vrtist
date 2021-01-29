@@ -104,6 +104,9 @@ namespace VRtist.Serialization
 
         public void Save(string projectName)
         {
+            if (!CommandManager.IsSceneDirty()) { return; }
+            CommandManager.SetSceneDirty(false);
+
             currentProjectName = projectName;
             meshes.Clear();
             SceneData.Current.Clear();
