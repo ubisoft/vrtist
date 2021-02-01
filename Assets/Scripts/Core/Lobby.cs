@@ -92,9 +92,11 @@ namespace VRtist
 
             foreach (GameObject project in projects)
             {
-                project.transform.Find("Frame").gameObject.SetActive(false);
+                project.transform.Find("Frame").gameObject.SetActive(true);
+                project.transform.Find("SelectedFrame").gameObject.SetActive(false);
             }
-            currentProject.transform.Find("Frame").gameObject.SetActive(true);
+            currentProject.transform.Find("Frame").gameObject.SetActive(false);
+            currentProject.transform.Find("SelectedFrame").gameObject.SetActive(true);
         }
 
         private void OnProjectClicked(object sender, IndexedGameObjectArgs args)
@@ -134,8 +136,11 @@ namespace VRtist
 
         public void OnSetVisible(bool start = false)
         {
-            LoadProjectItems();
+            GlobalState.Instance.playerController.IsInLobby = true;
+            world.SetActive(false);
 
+            gameObject.SetActive(true);
+            LoadProjectItems();
             if (!start)
             {
                 HighlightSelectedProject();
@@ -145,10 +150,6 @@ namespace VRtist
             {
                 currentProject = null;
             }
-
-            GlobalState.Instance.playerController.IsInLobby = true;
-            world.SetActive(false);
-            gameObject.SetActive(true);
 
             // Stop play if playing
             AnimationEngine.Instance.Pause();
