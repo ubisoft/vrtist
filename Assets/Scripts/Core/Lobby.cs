@@ -57,12 +57,13 @@ namespace VRtist
         {
             foreach (GameObject project in projects)
             {
-                project.transform.Find("Frame").gameObject.SetActive(false);
+                project.transform.Find("Frame").gameObject.SetActive(true);
+                project.transform.Find("SelectedFrame").gameObject.SetActive(false);
             }
 
             // Set the current project
             currentProject = args.gobject;
-            currentProject.transform.Find("Frame").gameObject.SetActive(true);
+            currentProject.transform.Find("SelectedFrame").gameObject.SetActive(true);
             projectButtons.SetActive(true);
         }
 

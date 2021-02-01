@@ -1,4 +1,6 @@
 
+using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -33,6 +35,10 @@ namespace VRtist
             item = dlItem;
             Texture2D texture = Utils.LoadTexture(path, true);
             transform.Find("Content").gameObject.GetComponent<MeshRenderer>().material.SetTexture("_EquiRect", texture);
+
+            string projectName = Directory.GetParent(path).Name;
+            transform.Find("Canvas/Text").gameObject.GetComponent<TextMeshProUGUI>().text = projectName;
+
             //gradientPreview.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             //copyButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
             //deleteButton.onClickEvent.AddListener(dlItem.OnAnySubItemClicked);
