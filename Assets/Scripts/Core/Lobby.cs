@@ -93,12 +93,12 @@ namespace VRtist
 
         public void OnSetVisible()
         {
-            LoadProjectItems();
-            currentProject = null;
-
             GlobalState.Instance.playerController.IsInLobby = true;
             Utils.FindWorld().SetActive(false);
             gameObject.SetActive(true);
+
+            LoadProjectItems();
+            currentProject = null;
 
             // Stop play if playing
             AnimationEngine.Instance.Pause();
