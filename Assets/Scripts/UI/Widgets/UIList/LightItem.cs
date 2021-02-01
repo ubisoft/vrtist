@@ -52,7 +52,7 @@ namespace VRtist
             SetItemName(lightObject.name);
 
             Sprite sprite = null;
-            switch (controller.lightType)
+            switch (controller.Type)
             {
                 case LightType.Directional:
                     sprite = UIUtils.LoadIcon("sun");

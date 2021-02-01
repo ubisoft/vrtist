@@ -3,7 +3,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -249,10 +248,9 @@ namespace VRtist
             return sprite;
         }
 
-        public static UnityEvent clearScene = new UnityEvent();
         public static void ClearScene()
         {
-            clearScene.Invoke();
+            GlobalState.clearScene.Invoke();
 
             Transform root = GlobalState.Instance.world.Find("RightHanded");
             DeleteTransformChildren(root);

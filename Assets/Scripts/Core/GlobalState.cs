@@ -112,6 +112,10 @@ namespace VRtist
         public static BlenderBankListEvent blenderBankListEvent = new BlenderBankListEvent();
         public static BlenderBankImportObjectEvent blenderBankImportObjectEvent = new BlenderBankImportObjectEvent();
 
+        // Scene management
+        public static UnityEvent clearScene = new UnityEvent();
+        public static BoolChangedEvent castShadowsEvent = new BoolChangedEvent();
+
         // Geometry Importer
         private GeometryImporter geometryImporter;
         public static GeometryImporter GeometryImporter
@@ -309,6 +313,7 @@ namespace VRtist
         public void OnLightsCastShadows(bool value)
         {
             settings.castShadows = value;
+            castShadowsEvent.Invoke(value);
         }
 
         public void OnReleaseColor()

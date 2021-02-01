@@ -17,7 +17,7 @@ namespace VRtist.Serialization
     [System.Serializable]
     public class MaterialData
     {
-        string path;
+        readonly string path;
 
         public bool useColorMap;
         public Color baseColor;
@@ -187,21 +187,23 @@ namespace VRtist.Serialization
             }
         }
 
-        private string name;
-        private Vector3[] vertices;
-        private Vector3[] normals;
-        private Vector2[] uvs;
-        private SubMesh[] subMeshes;
+        private readonly string name;
+        private readonly Vector3[] vertices;
+        private readonly Vector3[] normals;
+        private readonly Vector2[] uvs;
+        private readonly SubMesh[] subMeshes;
 
         public Mesh CreateMesh()
         {
-            Mesh mesh = new Mesh();
-            mesh.name = name;
-            mesh.vertices = vertices;
-            mesh.normals = normals;
-            mesh.uv = uvs;
-            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-            mesh.subMeshCount = subMeshes.Length;
+            Mesh mesh = new Mesh
+            {
+                name = name,
+                vertices = vertices,
+                normals = normals,
+                uv = uvs,
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32,
+                subMeshCount = subMeshes.Length
+            };
             for (int i = 0; i < subMeshes.Length; ++i)
             {
                 mesh.SetIndices(subMeshes[i].indices, subMeshes[i].topology, i);

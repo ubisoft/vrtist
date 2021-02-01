@@ -4,25 +4,62 @@ namespace VRtist
 {
     public class LightController : ParametersController
     {
-        private Light lightObject = null;
+        public float minIntensity;
+        public float maxIntensity;
+        public float minRange;
+        public float maxRange;
 
-        public LightType lightType;
-        public float intensity = 50f;
-        public float minIntensity = 0f;
-        public float maxIntensity = 100f;
-        public Color color = Color.white;
-        public bool castShadows = false;
-        public float near = 0.01f;
-        public float range = 20f;
-        public float minRange = 0f;
-        public float maxRange = 100f;
-        public float outerAngle = 100f;
-        public float innerAngle = 80f;
+        private Light _lightObject = null;
+        private Light LightObject
+        {
+            get
+            {
+                Init();
+                return _lightObject;
+            }
+        }
+
+        public LightType Type { get { return LightObject.type; } set { LightObject.type = value; } }
+        private float _intensity;
+        private bool bugFixed = false;
+        public float Intensity
+        {
+            get
+            {
+                // There is a bug, so we have to store our intensity and to set it in the update method
+                return _intensity;
+                //return LightObject.intensity;
+            }
+            set
+            {
+                LightObject.intensity = value;
+                _intensity = value;
+            }
+        }
+        public Color Color { get { return LightObject.color; } set { LightObject.color = value; } }
+        private bool _castShadows = false;
+        public bool CastShadows
+        {
+            get
+            {
+                return _castShadows;
+            }
+            set
+            {
+                _castShadows = value;
+                LightShadows shadows = GlobalState.Settings.castShadows && value ? LightShadows.Soft : LightShadows.None;
+                if (shadows != LightObject.shadows)
+                    LightObject.shadows = shadows;
+            }
+        }
+        public float ShadowNearPlane { get { return LightObject.shadowNearPlane; } set { LightObject.shadowNearPlane = value; } }
+        public float Range { get { return LightObject.range; } set { LightObject.range = value; } }
+        public float OuterAngle { get { return LightObject.spotAngle; } set { LightObject.spotAngle = value; } }
+        public float InnerAngle { get { return LightObject.innerSpotAngle; } set { LightObject.innerSpotAngle = value; } }
 
         public void SetLightEnable(bool enable)
         {
-            if (lightObject)
-                lightObject.gameObject.SetActive(enable);
+            LightObject.gameObject.SetActive(enable);
         }
 
         public override void CopyParameters(ParametersController otherController)
@@ -30,46 +67,52 @@ namespace VRtist
             base.CopyParameters(otherController);
 
             LightController other = otherController as LightController;
-            lightType = other.lightType;
-            intensity = other.intensity;
+
+            Intensity = other.Intensity;
             minIntensity = other.minIntensity;
             maxIntensity = other.maxIntensity;
-            color = other.color;
-            castShadows = other.castShadows;
-            near = other.near;
-            range = other.range;
+            Color = other.Color;
+            CastShadows = other.CastShadows;
+            ShadowNearPlane = other.ShadowNearPlane;
+            Range = other.Range;
             minRange = other.minRange;
             maxRange = other.maxRange;
-            outerAngle = other.outerAngle;
-            innerAngle = other.innerAngle;
+            OuterAngle = other.OuterAngle;
+            InnerAngle = other.InnerAngle;
+        }
+
+        public void OnCastShadowsChanged(bool _)
+        {
+            // Binding set in the lightBuilder
+            CastShadows = _castShadows;
         }
 
         public void SetPower(float power)
         {
-            switch (lightType)
+            switch (Type)
             {
                 case LightType.Point:
-                    intensity = power * 0.1f;
+                    Intensity = power * 0.1f;
                     break;
                 case LightType.Directional:
-                    intensity = power * 1.5f;
+                    Intensity = power * 1.5f;
                     break;
                 case LightType.Spot:
-                    intensity = power * (0.4f / 3f);
+                    Intensity = power * (0.4f / 3f);
                     break;
             }
         }
 
         public float GetPower()
         {
-            switch (lightType)
+            switch (Type)
             {
                 case LightType.Point:
-                    return intensity * 10f;
+                    return Intensity * 10f;
                 case LightType.Directional:
-                    return intensity / 1.5f;
+                    return Intensity / 1.5f;
                 case LightType.Spot:
-                    return intensity / (0.4f / 3f);
+                    return Intensity / (0.4f / 3f);
                 case LightType.Area:
                     break;
                 case LightType.Disc:
@@ -78,73 +121,64 @@ namespace VRtist
             return 0;
         }
 
-        public void Init()
+        private void Init()
         {
-            Light l = transform.GetComponentInChildren<Light>(true);
-            lightType = l.type;
-            lightObject = l;
-            switch (lightType)
+            if (_lightObject == null)
             {
-                case LightType.Directional:
-                    intensity = 10.0f;
-                    minIntensity = 0.0f;
-                    maxIntensity = 100.0f;
-                    break;
-                case LightType.Point:
-                    intensity = 50.0f;
-                    minIntensity = 0.0f;
-                    maxIntensity = 100.0f;
-                    range = 10f;
-                    minRange = 0f;
-                    maxRange = 100f;
-                    break;
-                case LightType.Spot:
-                    intensity = 50.0f;
-                    minIntensity = 0.0f;
-                    maxIntensity = 100.0f;
-                    near = 0.01f;
-                    range = 20f;
-                    minRange = 0f;
-                    maxRange = 100f;
-                    outerAngle = 100f;
-                    innerAngle = 80;
-                    break;
+                _lightObject = transform.GetComponentInChildren<Light>(true);
+
+                // Init defaults
+                _lightObject.shadowNearPlane = 0.01f;
+                _lightObject.shadows = LightShadows.None;
+                _lightObject.color = Color.white;
+                switch (_lightObject.type)
+                {
+                    case LightType.Directional:
+                        _lightObject.intensity = 10.0f;
+                        minIntensity = 0.0f;
+                        maxIntensity = 100.0f;
+                        break;
+                    case LightType.Point:
+                        _lightObject.intensity = 0.5f;
+                        minIntensity = 0.0f;
+                        maxIntensity = 10.0f;
+                        _lightObject.range = 10f;
+                        minRange = 0f;
+                        maxRange = 100f;
+                        break;
+                    case LightType.Spot:
+                        _lightObject.intensity = 0.5f;
+                        minIntensity = 0.0f;
+                        maxIntensity = 10.0f;
+                        _lightObject.shadowNearPlane = 0.01f;
+                        _lightObject.range = 20f;
+                        minRange = 0f;
+                        maxRange = 100f;
+                        _lightObject.spotAngle = 100f;
+                        _lightObject.innerSpotAngle = 80;
+                        break;
+                }
             }
         }
 
-        // Start is called before the first frame update
-        void Awake()
+        private void Update()
         {
-            Init();
-        }
-
-        // Update is called once per frame
-        void LateUpdate()
-        {
-            if (!lightObject)
-                return;
-
-            if (null == world)
-                GetWorldTransform();
-
-
-            lightObject.intensity = intensity;
-            lightObject.range = range;
-            lightObject.shadowNearPlane = near;
-            lightObject.color = color;
-            LightShadows shadows = GlobalState.Settings.castShadows && castShadows ? LightShadows.Soft : LightShadows.None;
-            if (shadows != lightObject.shadows)
-                lightObject.shadows = shadows;
-
-            if (lightObject.type == LightType.Spot)
+            // At the first update Unity overwrites the intensity of the light with the one in the prefab...
+            if (!bugFixed)
             {
-                lightObject.spotAngle = outerAngle;
-                lightObject.intensity *= 4f;
+                Intensity = _intensity;
+                bugFixed = true;
             }
-            if (lightObject.type == LightType.Directional)
-            {
-                lightObject.intensity *= 0.05f;
-            }
+
+            //    if (lightObject.type == LightType.Spot)
+            //    {
+            //        lightObject.spotAngle = outerAngle;
+            //        lightObject.intensity *= 4f;
+            //    }
+            //    if (lightObject.type == LightType.Directional)
+            //    {
+            //        lightObject.intensity *= 0.05f;
+            //    }
         }
 
         public override bool IsSnappable()

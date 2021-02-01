@@ -267,15 +267,6 @@ namespace VRtist
             infoSubPanel.SetActive(true);
         }
 
-        public void OnExitApplication()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-        }
-
         public void OnRightHanded(bool value)
         {
             GlobalState.SetRightHanded(value);
@@ -332,16 +323,13 @@ namespace VRtist
 
         public void OnSaveProject()
         {
-            GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
             Serialization.SaveManager.Instance.Save(GlobalState.Settings.projectName);
-            GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         public void OnLoadProject()
         {
-            GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
+
             Serialization.SaveManager.Instance.Load(GlobalState.Settings.projectName);
-            GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         public void OnEditProjectName()

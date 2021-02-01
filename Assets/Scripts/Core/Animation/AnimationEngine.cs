@@ -305,8 +305,8 @@ namespace VRtist
                 if (lightIntensity != -1)
                 {
                     LightController controller = trans.GetComponent<LightController>();
-                    controller.intensity = lightIntensity;
-                    controller.color = color;
+                    controller.Intensity = lightIntensity;
+                    controller.Color = color;
                 }
 
                 if (cameraFocal != -1)
@@ -534,8 +534,8 @@ namespace VRtist
                     LightController lightController = selected.GetComponent<LightController>();
                     if (null != lightController)
                     {
-                        lightIntensity = lightController.intensity;
-                        color = lightController.color;
+                        lightIntensity = lightController.Intensity;
+                        color = lightController.Color;
                     }
 
                     float cameraFocal = -1;
