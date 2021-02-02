@@ -17,7 +17,7 @@ namespace VRtist.Serialization
     [System.Serializable]
     public class MaterialData
     {
-        readonly string path;
+        readonly string path;  // relative path
 
         public bool useColorMap;
         public Color baseColor;
@@ -57,54 +57,60 @@ namespace VRtist.Serialization
                 return;
             }
 
-            path = materialInfo.materialPath;
+            path = materialInfo.relativePath;
 
             useColorMap = materialInfo.material.GetInt("_UseColorMap") == 1f;
             baseColor = materialInfo.material.GetColor("_BaseColor");
-            if (useColorMap) { colorMapPath = materialInfo.materialPath + "color.tex"; }
+            if (useColorMap) { colorMapPath = materialInfo.relativePath + "color.tex"; }
 
             useNormalMap = materialInfo.material.GetInt("_UseNormalMap") == 1f;
-            if (useNormalMap) { normalMapPath = materialInfo.materialPath + "normal.tex"; }
+            if (useNormalMap) { normalMapPath = materialInfo.relativePath + "normal.tex"; }
 
             useMetallicMap = materialInfo.material.GetInt("_UseMetallicMap") == 1f;
             metallic = materialInfo.material.GetFloat("_Metallic");
-            if (useMetallicMap) { metallicMapPath = materialInfo.materialPath + "metallic.tex"; }
+            if (useMetallicMap) { metallicMapPath = materialInfo.relativePath + "metallic.tex"; }
 
             useRoughnessMap = materialInfo.material.GetInt("_UseRoughnessMap") == 1f;
             roughness = materialInfo.material.GetFloat("_Roughness");
-            if (useRoughnessMap) { roughnessMapPath = materialInfo.materialPath + "roughness.tex"; }
+            if (useRoughnessMap) { roughnessMapPath = materialInfo.relativePath + "roughness.tex"; }
 
             useEmissiveMap = materialInfo.material.GetInt("_UseEmissiveMap") == 1f;
             emissive = materialInfo.material.GetColor("_Emissive");
-            if (useEmissiveMap) { metallicMapPath = materialInfo.materialPath + "emissive.tex"; }
+            if (useEmissiveMap) { metallicMapPath = materialInfo.relativePath + "emissive.tex"; }
 
             useAoMap = materialInfo.material.GetInt("_UseAoMap") == 1f;
-            if (useAoMap) { aoMapPath = materialInfo.materialPath + "ao.tex"; }
+            if (useAoMap) { aoMapPath = materialInfo.relativePath + "ao.tex"; }
 
             useOpacityMap = materialInfo.material.GetInt("_UseOpacityMap") == 1f;
             opacity = materialInfo.material.GetFloat("_Opacity");
-            if (useOpacityMap) { opacityMapPath = materialInfo.materialPath + "opacity.tex"; }
+            if (useOpacityMap) { opacityMapPath = materialInfo.relativePath + "opacity.tex"; }
 
             uvOffset = materialInfo.material.GetVector("_UvOffset");
             uvScale = materialInfo.material.GetVector("_UvScale");
         }
 
-        public Material CreateMaterial()
+        public Material CreateMaterial(string rootPath)
         {
-            Material material = new Material(SaveManager.GetMaterial(opacity == 1f));
+            Material material = new Material(
+                opacity == 1f ?
+                ResourceManager.GetMaterial(MaterialID.ObjectOpaque) :
+                ResourceManager.GetMaterial(MaterialID.ObjectTransparent)
+            );
+
+            string fullPath = rootPath + path;
 
             material.SetFloat("_UseColorMap", useColorMap ? 1f : 0f);
             material.SetColor("_BaseColor", baseColor);
             if (useColorMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "color.tex", false);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "color.tex", false);
                 if (null != texture) { material.SetTexture("_ColorMap", texture); }
             }
 
             material.SetFloat("_UseNormalMap", useNormalMap ? 1f : 0f);
             if (useNormalMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "normal.tex", true);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "normal.tex", true);
                 if (null != texture) { material.SetTexture("_NormalMap", texture); }
             }
 
@@ -112,7 +118,7 @@ namespace VRtist.Serialization
             material.SetFloat("_Metallic", metallic);
             if (useMetallicMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "metallic.tex", true);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "metallic.tex", true);
                 if (null != texture) { material.SetTexture("_MetallicMap", texture); }
             }
 
@@ -120,7 +126,7 @@ namespace VRtist.Serialization
             material.SetFloat("_Roughness", roughness);
             if (useRoughnessMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "roughness.tex", true);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "roughness.tex", true);
                 if (null != texture) { material.SetTexture("_RoughnessMap", texture); }
             }
 
@@ -128,14 +134,14 @@ namespace VRtist.Serialization
             material.SetColor("_Emissive", emissive);
             if (useEmissiveMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "emissive.tex", true);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "emissive.tex", true);
                 if (null != texture) { material.SetTexture("_EmissiveMap", texture); }
             }
 
             material.SetFloat("_UseAoMap", useAoMap ? 1f : 0f);
             if (useAoMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "ao.tex", true);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "ao.tex", true);
                 if (null != texture) { material.SetTexture("_AoMap", texture); }
             }
 
@@ -143,7 +149,7 @@ namespace VRtist.Serialization
             material.SetFloat("_Opacity", opacity);
             if (useOpacityMap)
             {
-                Texture2D texture = TextureUtils.LoadRawTexture(path + "opacity.tex", true);
+                Texture2D texture = TextureUtils.LoadRawTexture(fullPath + "opacity.tex", true);
                 if (null != texture) { material.SetTexture("_OpacityMap", texture); }
             }
 
@@ -160,7 +166,6 @@ namespace VRtist.Serialization
     {
         public MeshTopology topology;
         public int[] indices;
-        public MaterialData materialData;
     }
 
 
@@ -181,8 +186,7 @@ namespace VRtist.Serialization
                 subMeshes[i] = new SubMesh
                 {
                     topology = meshInfo.mesh.GetSubMesh(i).topology,
-                    indices = meshInfo.mesh.GetIndices(i),
-                    materialData = new MaterialData(meshInfo.materialsInfo[i])
+                    indices = meshInfo.mesh.GetIndices(i)
                 };
             }
         }
@@ -211,23 +215,14 @@ namespace VRtist.Serialization
             mesh.RecalculateBounds();
             return mesh;
         }
-
-        public Material[] GetMaterials()
-        {
-            Material[] materials = new Material[subMeshes.Length];
-            for (int i = 0; i < subMeshes.Length; ++i)
-            {
-                materials[i] = subMeshes[i].materialData.CreateMaterial();
-            }
-            return materials;
-        }
     }
 
 
     [System.Serializable]
     public class ObjectData
     {
-        public string path;
+        public string name;
+        public string path;  // relative path
         public string tag;
 
         // Transform
@@ -238,6 +233,9 @@ namespace VRtist.Serialization
         // Mesh
         public string meshPath;
         public bool isImported;
+
+        // Materials
+        public List<MaterialData> materialsData = new List<MaterialData>();
 
         // Parameters
         public bool lockPosition;

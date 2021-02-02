@@ -20,7 +20,7 @@ namespace VRtist
         }
 
         public LightType Type { get { return LightObject.type; } set { LightObject.type = value; } }
-        private float _intensity;
+        private float _intensity = 0.5f;
         private bool bugFixed = false;
         public float Intensity
         {
@@ -32,6 +32,7 @@ namespace VRtist
             }
             set
             {
+                Debug.Log($"Light intensity: {value}");
                 LightObject.intensity = value;
                 _intensity = value;
             }
@@ -121,7 +122,7 @@ namespace VRtist
             return 0;
         }
 
-        private void Init()
+        public void Init()
         {
             if (_lightObject == null)
             {
@@ -158,6 +159,7 @@ namespace VRtist
                         _lightObject.innerSpotAngle = 80;
                         break;
                 }
+                _intensity = _lightObject.intensity;
             }
         }
 
@@ -166,6 +168,7 @@ namespace VRtist
             // At the first update Unity overwrites the intensity of the light with the one in the prefab...
             if (!bugFixed)
             {
+                Debug.Log($"In Update: {_intensity}");
                 Intensity = _intensity;
                 bugFixed = true;
             }

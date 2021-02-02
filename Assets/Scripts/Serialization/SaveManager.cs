@@ -9,7 +9,8 @@ namespace VRtist.Serialization
 {
     public class MeshInfo
     {
-        public string meshPath;
+        public string relativePath;
+        public string absolutePath;
         public Mesh mesh;
         public List<MaterialInfo> materialsInfo;
     }
@@ -17,7 +18,8 @@ namespace VRtist.Serialization
 
     public class MaterialInfo
     {
-        public string materialPath;
+        public string relativePath;
+        public string absolutePath;
         public Material material;
     }
 
@@ -36,10 +38,15 @@ namespace VRtist.Serialization
         private string currentProjectName;
 
         private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
+        private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
 
         private readonly string DEFAULT_PROJECT_NAME = "newProject";
 
         #region Singleton
+        // ----------------------------------------------------------------------------------------
+        // Singleton
+        // ----------------------------------------------------------------------------------------
+
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -61,10 +68,9 @@ namespace VRtist.Serialization
         #endregion
 
         #region Path Management
-        public static Material GetMaterial(bool opaque)
-        {
-            return opaque ? ResourceManager.GetMaterial(MaterialID.ObjectOpaque) : ResourceManager.GetMaterial(MaterialID.ObjectTransparent);
-        }
+        // ----------------------------------------------------------------------------------------
+        // Path Management
+        // ----------------------------------------------------------------------------------------
 
         private string ReplaceInvalidChars(string filename)
         {
@@ -81,9 +87,10 @@ namespace VRtist.Serialization
             return saveFolder + projectName + "/scene.vrtist";
         }
 
-        private string GetMeshPath(string projectName, string meshName)
+        private void GetMeshPath(string projectName, string meshName, out string absolutePath, out string relativePath)
         {
-            return saveFolder + projectName + "/" + ReplaceInvalidChars(meshName) + ".mesh";
+            relativePath = ReplaceInvalidChars(meshName) + ".mesh";
+            absolutePath = saveFolder + projectName + "/" + ReplaceInvalidChars(meshName) + ".mesh";
         }
 
         private string GetScreenshotPath(string projectName)
@@ -91,9 +98,15 @@ namespace VRtist.Serialization
             return saveFolder + projectName + "/thumbnail.png";
         }
 
-        private string GetMaterialPath(string projectName, string materialName)
+        private void GetMaterialPath(string projectName, string materialName, out string absolutePath, out string relativePath)
         {
-            return saveFolder + projectName + "/" + ReplaceInvalidChars(materialName) + "/";
+            relativePath = ReplaceInvalidChars(materialName) + "/";
+            absolutePath = saveFolder + projectName + "/" + ReplaceInvalidChars(materialName) + "/";
+        }
+
+        private string GetSaveFolderPath(string projectName)
+        {
+            return saveFolder + projectName + "/";
         }
 
         public List<string> GetProjectThumbnailPaths()
@@ -134,6 +147,10 @@ namespace VRtist.Serialization
         #endregion
 
         #region Save
+        // ----------------------------------------------------------------------------------------
+        // Save
+        // ----------------------------------------------------------------------------------------
+
         public void Save(string projectName)
         {
             if (!CommandManager.IsSceneDirty()) { return; }
@@ -200,7 +217,7 @@ namespace VRtist.Serialization
                 ParametersController controller = child.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
                 SetCommonData(child, childPath, controller, data);
-                SetMeshData(child, controller, data);
+                SetObjectData(child, controller, data);
                 SceneData.Current.objects.Add(data);
 
                 // Serialize children
@@ -230,15 +247,16 @@ namespace VRtist.Serialization
                 foreach (var meshInfo in meshes.Values)
                 {
                     yield return null;
-                    SerializationManager.Save(meshInfo.meshPath, new MeshData(meshInfo));
-
-                    // Save materials
-                    foreach (MaterialInfo materialInfo in meshInfo.materialsInfo)
-                    {
-                        yield return null;
-                        SaveMaterial(materialInfo);
-                    }
+                    SerializationManager.Save(meshInfo.absolutePath, new MeshData(meshInfo));
                 }
+
+                // Save materials
+                foreach (MaterialInfo materialInfo in materials.Values)
+                {
+                    yield return null;
+                    SaveMaterial(materialInfo);
+                }
+
                 GlobalState.Instance.messageBox.SetVisible(false);
             }
         }
@@ -279,13 +297,13 @@ namespace VRtist.Serialization
         {
             if (materialInfo.material.GetInt(boolName) == 1)
             {
-                string path = materialInfo.materialPath + baseName + ".tex";
+                string path = materialInfo.absolutePath + baseName + ".tex";
                 Texture2D texture = (Texture2D)materialInfo.material.GetTexture(textureName);
                 TextureUtils.WriteRawTexture(path, texture);
             }
         }
 
-        private void SetMeshData(Transform trans, ParametersController controller, ObjectData data)
+        private void SetObjectData(Transform trans, ParametersController controller, ObjectData data)
         {
             // Mesh for non-imported objects
             if (null == controller || !controller.isImported)
@@ -295,17 +313,18 @@ namespace VRtist.Serialization
                 if (null != meshFilter && null != meshRenderer)
                 {
                     // Materials
-                    List<MaterialInfo> materialsInfo = new List<MaterialInfo>();
                     foreach (Material material in meshRenderer.materials)
                     {
-                        string materialPath = GetMaterialPath(currentProjectName, material.name);
-                        materialsInfo.Add(new MaterialInfo { materialPath = materialPath, material = material });
+                        GetMaterialPath(currentProjectName, material.name, out string materialAbsolutePath, out string materialRelativePath);
+                        MaterialInfo materialInfo = new MaterialInfo { relativePath = materialRelativePath, absolutePath = materialAbsolutePath, material = material };
+                        materials.Add(material.name, materialInfo);
+                        data.materialsData.Add(new MaterialData(materialInfo));
                     }
 
                     // Mesh
-                    string meshPath = GetMeshPath(currentProjectName, trans.name);
-                    meshes[meshPath] = new MeshInfo { meshPath = meshPath, mesh = meshFilter.mesh, materialsInfo = materialsInfo };
-                    data.meshPath = meshPath;
+                    GetMeshPath(currentProjectName, meshFilter.mesh.name, out string meshAbsolutePath, out string meshRelativePath);
+                    meshes[meshRelativePath] = new MeshInfo { relativePath = meshRelativePath, absolutePath = meshAbsolutePath, mesh = meshFilter.mesh };
+                    data.meshPath = meshRelativePath;
                 }
                 data.isImported = false;
             }
@@ -318,6 +337,7 @@ namespace VRtist.Serialization
 
         private void SetCommonData(Transform trans, string path, ParametersController controller, ObjectData data)
         {
+            data.name = trans.name;
             data.path = path;
             data.tag = trans.gameObject.tag;
 
@@ -365,6 +385,10 @@ namespace VRtist.Serialization
         #endregion
 
         #region Load
+        // ----------------------------------------------------------------------------------------
+        // Load
+        // ----------------------------------------------------------------------------------------
+
         public void Load(string projectName)
         {
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
@@ -407,6 +431,8 @@ namespace VRtist.Serialization
 
         private void LoadCommonData(GameObject gobject, ObjectData data)
         {
+            gobject.name = data.name;
+
             if (null != data.tag && data.tag.Length > 0)
             {
                 gobject.tag = data.tag;
@@ -425,20 +451,27 @@ namespace VRtist.Serialization
             }
         }
 
+        private Material[] LoadMaterials(ObjectData data)
+        {
+            Material[] materials = new Material[data.materialsData.Count];
+            for (int i = 0; i < data.materialsData.Count; ++i)
+            {
+                materials[i] = data.materialsData[i].CreateMaterial(GetSaveFolderPath(currentProjectName));
+            }
+            return materials;
+        }
+
         private async void LoadObject(ObjectData data, Transform importedParent)
         {
-            string[] splitted = data.path.Split('/');
-            string name = splitted[splitted.Length - 1];
-            //string parentPath = data.path.Substring(0, data.path.Length - name.Length - 1);  // -1: remove "/"
-
             GameObject gobject;
+            string absoluteMeshPath = GetSaveFolderPath(currentProjectName) + data.meshPath;
 
             // Check for import
             if (data.isImported)
             {
                 try
                 {
-                    gobject = await GlobalState.GeometryImporter.ImportObjectAsync(data.meshPath, importedParent);
+                    gobject = await GlobalState.GeometryImporter.ImportObjectAsync(absoluteMeshPath, importedParent);
                 }
                 catch (System.Exception e)
                 {
@@ -448,7 +481,7 @@ namespace VRtist.Serialization
             }
             else
             {
-                gobject = new GameObject(name);
+                gobject = new GameObject(data.name);
             }
 
             LoadCommonData(gobject, data);
@@ -458,9 +491,9 @@ namespace VRtist.Serialization
             {
                 if (!data.isImported)
                 {
-                    MeshData meshData = (MeshData)SerializationManager.Load(data.meshPath);
+                    MeshData meshData = (MeshData)SerializationManager.Load(absoluteMeshPath);
                     gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
-                    gobject.AddComponent<MeshRenderer>().materials = meshData.GetMaterials();
+                    gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
                     collider.convex = true;
                     collider.isTrigger = true;
@@ -475,7 +508,10 @@ namespace VRtist.Serialization
             else
             {
                 // TODO node hierarchy
-                SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+                GameObject newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+
+                // Name the mesh
+                newObject.GetComponentInChildren<MeshFilter>().mesh.name = gobject.GetComponentInChildren<MeshFilter>().mesh.name;
             }
 
             // Then delete the original loaded object
@@ -507,6 +543,7 @@ namespace VRtist.Serialization
                 LoadCommonData(clone, data);
 
                 LightController controller = clone.GetComponent<LightController>();
+                Debug.Log($"From Load: {data.intensity}");
                 controller.Intensity = data.intensity;
                 controller.minIntensity = data.minIntensity;
                 controller.maxIntensity = data.maxIntensity;
@@ -542,6 +579,10 @@ namespace VRtist.Serialization
         #endregion
 
         #region Delete
+        // ----------------------------------------------------------------------------------------
+        // Delete
+        // ----------------------------------------------------------------------------------------
+
         public void Delete(string projectName)
         {
             string path = saveFolder + projectName;
@@ -559,6 +600,10 @@ namespace VRtist.Serialization
         #endregion
 
         #region Duplicate
+        // ----------------------------------------------------------------------------------------
+        // Load
+        // ----------------------------------------------------------------------------------------
+
         public void Duplicate(string projectName, string newName)
         {
             string srcPath = saveFolder + projectName;
