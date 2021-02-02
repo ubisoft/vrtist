@@ -13,6 +13,7 @@ namespace VRtist
         GameObject vehicleHUD;
         GameObject sceneVolume;
         GameObject lobbyVolume;
+        Transform cameraRig;
 
         UIButton backToSceneButton;
         GameObject projectButtons;
@@ -24,11 +25,17 @@ namespace VRtist
         readonly List<GameObject> projects = new List<GameObject>();
         GameObject currentProject;
 
+        // View parameters in scene
+        Vector3 viewPosition;
+        Quaternion viewRotation;
+        float viewScale;
+
         private void Awake()
         {
             world = Utils.FindWorld();
             palette = transform.parent.Find("Pivot/PaletteController/PaletteHandle").gameObject;
             vehicleHUD = transform.parent.Find("Vehicle_HUD").gameObject;
+            cameraRig = transform.parent;
 
             Transform volumes = Utils.FindRootGameObject("Volumes").transform;
             sceneVolume = volumes.Find("VolumePostProcess").gameObject;
@@ -134,29 +141,45 @@ namespace VRtist
                 transform.localEulerAngles = new Vector3(0f, camY, 0f);
         }
 
+        void StoreViewParameters()
+        {
+            viewPosition = cameraRig.localPosition;
+            viewRotation = cameraRig.localRotation;
+            viewScale = 1f / GlobalState.WorldScale;
+        }
+
+        void RestoreViewParameters()
+        {
+            cameraRig.localPosition = viewPosition;
+            cameraRig.localRotation = viewRotation;
+            GlobalState.WorldScale = 1f / viewScale;
+            cameraRig.localScale = Vector3.one * viewScale;
+            Camera.main.nearClipPlane = 0.1f * viewScale;
+            Camera.main.farClipPlane = 1000f * viewScale;
+        }
+
+        void ResetVRCamera()
+        {
+            StoreViewParameters();
+
+            cameraRig.localPosition = Vector3.zero;
+            cameraRig.localRotation = Quaternion.identity;
+            cameraRig.localScale = Vector3.one;
+            Camera.main.nearClipPlane = 0.1f;
+            Camera.main.farClipPlane = 1000f;
+            GlobalState.WorldScale = 1f;
+        }
+
         public void OnSetVisible(bool start = false)
         {
-            GlobalState.Instance.playerController.IsInLobby = true;
-            world.SetActive(false);
-
-            gameObject.SetActive(true);
-            LoadProjectItems();
-            if (!start)
-            {
-                HighlightSelectedProject();
-                launchProjectButton.Disabled = true;
-            }
-            else
-            {
-                currentProject = null;
-            }
-
             // Stop play if playing
             AnimationEngine.Instance.Pause();
 
-            // Orient lobby
-            float camY = Camera.main.transform.localEulerAngles.y;
-            transform.localEulerAngles = new Vector3(0f, camY, 0f);
+            ResetVRCamera();
+
+            GlobalState.Instance.playerController.IsInLobby = true;
+            world.SetActive(false);
+            gameObject.SetActive(true);
 
             // Change volume
             sceneVolume.SetActive(false);
@@ -174,6 +197,21 @@ namespace VRtist
             // Deactivate selection helper
             GlobalState.Instance.toolsController.Find("SelectionHelper").gameObject.SetActive(false);
 
+            // Orient lobby
+            float camY = Camera.main.transform.localEulerAngles.y;
+            transform.localEulerAngles = new Vector3(0f, camY, 0f);
+
+            LoadProjectItems();
+            if (!start)
+            {
+                HighlightSelectedProject();
+                launchProjectButton.Disabled = true;
+            }
+            else
+            {
+                currentProject = null;
+            }
+
             backToSceneButton.Disabled = start;
 
             // Set lobby tool active
@@ -182,6 +220,8 @@ namespace VRtist
 
         public void OnBackToScene()
         {
+            RestoreViewParameters();
+
             GlobalState.Instance.playerController.IsInLobby = false;
             world.SetActive(true);
             gameObject.SetActive(false);
