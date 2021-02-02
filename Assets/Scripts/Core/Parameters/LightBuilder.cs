@@ -10,11 +10,7 @@ namespace VRtist
             LightController lightController = source.GetComponentInChildren<LightController>();
             VRInput.DeepSetLayer(newLight, "CameraHidden");
 
-            if (isPrefab)
-            {
-                lightController.Init();
-            }
-            else
+            if (!isPrefab)
             {
                 LightController newController = newLight.GetComponentInChildren<LightController>();
                 newController.CopyParameters(lightController);
