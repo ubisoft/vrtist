@@ -308,6 +308,8 @@ namespace VRtist.Serialization
 
         public List<ShotData> shots = new List<ShotData>();
 
+        public SkySettings skyData;
+
         public void Clear()
         {
             objects.Clear();

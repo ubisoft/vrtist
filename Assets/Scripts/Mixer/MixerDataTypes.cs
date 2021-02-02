@@ -81,14 +81,6 @@ namespace VRtist
         public Transform transform;
     }
 
-    [Serializable]
-    public class SkySettings
-    {
-        public Color topColor;
-        public Color middleColor;
-        public Color bottomColor;
-    }
-
     public class RenameInfo
     {
         public Transform srcTransform;

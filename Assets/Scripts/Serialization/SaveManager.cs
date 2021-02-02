@@ -135,7 +135,8 @@ namespace VRtist.Serialization
             int number = 1;
             foreach (string directory in Directory.GetDirectories(saveFolder, $"{DEFAULT_PROJECT_NAME}*"))
             {
-                if (name == directory)
+                string dirname = Path.GetFileName(directory);
+                if (name == dirname)
                 {
                     name = $"{DEFAULT_PROJECT_NAME}_{number,0:D3}";
                     ++number;
@@ -154,6 +155,9 @@ namespace VRtist.Serialization
         public void Save(string projectName)
         {
             if (!CommandManager.IsSceneDirty()) { return; }
+
+            meshes.Clear();
+            materials.Clear();
 
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
             CommandManager.SetSceneDirty(false);
@@ -236,6 +240,7 @@ namespace VRtist.Serialization
                 // Save animation data
 
                 // Save skybox
+                SceneData.Current.skyData = GlobalState.Instance.SkySettings;
 
                 // Save scene
                 SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
@@ -264,7 +269,7 @@ namespace VRtist.Serialization
         private void SaveScreenshot()
         {
             screenshotCamera.gameObject.SetActive(true);
-            screenshotCamera.RenderToCubemap(cubeMapRT, 63, Camera.MonoOrStereoscopicEye.Left);
+            screenshotCamera.RenderToCubemap(cubeMapRT, 63, Camera.MonoOrStereoscopicEye.Mono);
             cubeMapRT.ConvertToEquirect(equiRectRT);
             Texture2D texture = new Texture2D(equiRectRT.width, equiRectRT.height);
             RenderTexture previousActiveRT = RenderTexture.active;
@@ -393,6 +398,7 @@ namespace VRtist.Serialization
         {
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
             currentProjectName = projectName;
+            GlobalState.Settings.projectName = projectName;
 
             // Clear current scene
             Utils.ClearScene();
@@ -405,6 +411,9 @@ namespace VRtist.Serialization
             // Load data from file
             string path = GetScenePath(projectName);
             SceneData saveData = (SceneData)SerializationManager.Load(path);
+
+            // Sky
+            GlobalState.Instance.SkySettings = saveData.skyData;
 
             // Objects
             Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
@@ -431,8 +440,6 @@ namespace VRtist.Serialization
 
         private void LoadCommonData(GameObject gobject, ObjectData data)
         {
-            gobject.name = data.name;
-
             if (null != data.tag && data.tag.Length > 0)
             {
                 gobject.tag = data.tag;
@@ -485,6 +492,7 @@ namespace VRtist.Serialization
             }
 
             LoadCommonData(gobject, data);
+            gobject.name = data.name;
 
             // Mesh
             if (null != data.meshPath && data.meshPath.Length > 0)
