@@ -20,21 +20,15 @@ namespace VRtist
         }
 
         public LightType Type { get { return LightObject.type; } set { LightObject.type = value; } }
-        private float _intensity = 0.5f;
-        private bool bugFixed = false;
         public float Intensity
         {
             get
             {
-                // There is a bug, so we have to store our intensity and to set it in the update method
-                return _intensity;
-                //return LightObject.intensity;
+                return LightObject.intensity;
             }
             set
             {
-                Debug.Log($"Light intensity: {value}");
                 LightObject.intensity = value;
-                _intensity = value;
             }
         }
         public Color Color { get { return LightObject.color; } set { LightObject.color = value; } }
@@ -122,7 +116,7 @@ namespace VRtist
             return 0;
         }
 
-        public void Init()
+        private void Init()
         {
             if (_lightObject == null)
             {
@@ -159,29 +153,7 @@ namespace VRtist
                         _lightObject.innerSpotAngle = 80;
                         break;
                 }
-                _intensity = _lightObject.intensity;
             }
-        }
-
-        private void Update()
-        {
-            // At the first update Unity overwrites the intensity of the light with the one in the prefab...
-            if (!bugFixed)
-            {
-                Debug.Log($"In Update: {_intensity}");
-                Intensity = _intensity;
-                bugFixed = true;
-            }
-
-            //    if (lightObject.type == LightType.Spot)
-            //    {
-            //        lightObject.spotAngle = outerAngle;
-            //        lightObject.intensity *= 4f;
-            //    }
-            //    if (lightObject.type == LightType.Directional)
-            //    {
-            //        lightObject.intensity *= 0.05f;
-            //    }
         }
 
         public override bool IsSnappable()
