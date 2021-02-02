@@ -144,7 +144,12 @@ namespace VRtist
 
         public string assetBankDirectory = "D:/VRtistData/";
 
-        public string projectName = "myScene";
+        private string projectName = "myScene";
+        public string ProjectName
+        {
+            get { return projectName; }
+            set { projectName = value; onSettingsChanged.Invoke(); }
+        }
 
         public static UnityEvent onSettingsChanged = new UnityEvent();
         public void Reset()

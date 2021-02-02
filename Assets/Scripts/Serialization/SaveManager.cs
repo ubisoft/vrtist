@@ -156,14 +156,12 @@ namespace VRtist.Serialization
         {
             if (!CommandManager.IsSceneDirty()) { return; }
 
-            meshes.Clear();
-            materials.Clear();
-
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
             CommandManager.SetSceneDirty(false);
 
             currentProjectName = projectName;
             meshes.Clear();
+            materials.Clear();
             SceneData.Current.Clear();
 
             // Parse RightHanded transform
@@ -245,9 +243,6 @@ namespace VRtist.Serialization
                 // Save scene
                 SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
 
-                // Scene screenshot
-                SaveScreenshot();
-
                 // Save meshes
                 foreach (var meshInfo in meshes.Values)
                 {
@@ -262,6 +257,8 @@ namespace VRtist.Serialization
                     SaveMaterial(materialInfo);
                 }
 
+                SaveScreenshot();
+
                 GlobalState.Instance.messageBox.SetVisible(false);
             }
         }
@@ -269,7 +266,7 @@ namespace VRtist.Serialization
         private void SaveScreenshot()
         {
             screenshotCamera.gameObject.SetActive(true);
-            screenshotCamera.RenderToCubemap(cubeMapRT, 63, Camera.MonoOrStereoscopicEye.Mono);
+            screenshotCamera.RenderToCubemap(cubeMapRT);
             cubeMapRT.ConvertToEquirect(equiRectRT);
             Texture2D texture = new Texture2D(equiRectRT.width, equiRectRT.height);
             RenderTexture previousActiveRT = RenderTexture.active;
@@ -322,7 +319,7 @@ namespace VRtist.Serialization
                     {
                         GetMaterialPath(currentProjectName, material.name, out string materialAbsolutePath, out string materialRelativePath);
                         MaterialInfo materialInfo = new MaterialInfo { relativePath = materialRelativePath, absolutePath = materialAbsolutePath, material = material };
-                        materials.Add(material.name, materialInfo);
+                        materials.Add(trans.name + "." + material.name, materialInfo);
                         data.materialsData.Add(new MaterialData(materialInfo));
                     }
 
@@ -398,7 +395,7 @@ namespace VRtist.Serialization
         {
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
             currentProjectName = projectName;
-            GlobalState.Settings.projectName = projectName;
+            GlobalState.Settings.ProjectName = projectName;
 
             // Clear current scene
             Utils.ClearScene();

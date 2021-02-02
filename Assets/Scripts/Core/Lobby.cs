@@ -86,7 +86,7 @@ namespace VRtist
             // Start the scene
             else
             {
-                GlobalState.Settings.projectName = projectName;
+                GlobalState.Settings.ProjectName = projectName;
                 OnBackToScene();
             }
 
@@ -251,7 +251,7 @@ namespace VRtist
         {
             OnBackToScene();
             Utils.ClearScene();
-            GlobalState.Settings.projectName = Serialization.SaveManager.Instance.GetNextValidProjectName();
+            GlobalState.Settings.ProjectName = Serialization.SaveManager.Instance.GetNextValidProjectName();
         }
 
         public void OnLaunchProject()
