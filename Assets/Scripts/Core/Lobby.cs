@@ -26,9 +26,9 @@ namespace VRtist
         GameObject currentProject;
 
         // View parameters in scene
-        Vector3 viewPosition;
-        Quaternion viewRotation;
-        float viewScale;
+        Vector3 viewPosition = Vector3.zero;
+        Quaternion viewRotation = Quaternion.identity;
+        float viewScale = 1f;
 
         private void Awake()
         {
