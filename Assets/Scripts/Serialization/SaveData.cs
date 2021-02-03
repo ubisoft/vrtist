@@ -4,9 +4,15 @@ using UnityEngine;
 
 namespace VRtist.Serialization
 {
-    public class MaterialData
+    public interface IBlob
     {
-        readonly string path;  // relative path
+        byte[] ToBytes();
+        void FromBytes(byte[] bytes, ref int index);
+    }
+
+    public class MaterialData : IBlob
+    {
+        string path;  // relative path
 
         public bool useColorMap;
         public Color baseColor;
@@ -36,6 +42,8 @@ namespace VRtist.Serialization
 
         public Vector4 uvOffset;
         public Vector4 uvScale;
+
+        public MaterialData() { }
 
         public MaterialData(MaterialInfo materialInfo)
         {
@@ -148,38 +156,38 @@ namespace VRtist.Serialization
             return material;
         }
 
-        public MaterialData(byte[] bytes, ref int offset)
+        public void FromBytes(byte[] bytes, ref int index)
         {
-            path = Converter.GetString(bytes, ref offset);
+            path = Converter.GetString(bytes, ref index);
 
-            useColorMap = Converter.GetBool(bytes, ref offset);
-            baseColor = Converter.GetColor(bytes, ref offset);
-            colorMapPath = Converter.GetString(bytes, ref offset);
+            useColorMap = Converter.GetBool(bytes, ref index);
+            baseColor = Converter.GetColor(bytes, ref index);
+            colorMapPath = Converter.GetString(bytes, ref index);
 
-            useNormalMap = Converter.GetBool(bytes, ref offset);
-            normalMapPath = Converter.GetString(bytes, ref offset);
+            useNormalMap = Converter.GetBool(bytes, ref index);
+            normalMapPath = Converter.GetString(bytes, ref index);
 
-            useMetallicMap = Converter.GetBool(bytes, ref offset);
-            metallic = Converter.GetFloat(bytes, ref offset);
-            metallicMapPath = Converter.GetString(bytes, ref offset);
+            useMetallicMap = Converter.GetBool(bytes, ref index);
+            metallic = Converter.GetFloat(bytes, ref index);
+            metallicMapPath = Converter.GetString(bytes, ref index);
 
-            useRoughnessMap = Converter.GetBool(bytes, ref offset);
-            roughness = Converter.GetFloat(bytes, ref offset);
-            roughnessMapPath = Converter.GetString(bytes, ref offset);
+            useRoughnessMap = Converter.GetBool(bytes, ref index);
+            roughness = Converter.GetFloat(bytes, ref index);
+            roughnessMapPath = Converter.GetString(bytes, ref index);
 
-            useEmissiveMap = Converter.GetBool(bytes, ref offset);
-            emissive = Converter.GetColor(bytes, ref offset);
-            emissiveMapPath = Converter.GetString(bytes, ref offset);
+            useEmissiveMap = Converter.GetBool(bytes, ref index);
+            emissive = Converter.GetColor(bytes, ref index);
+            emissiveMapPath = Converter.GetString(bytes, ref index);
 
-            useAoMap = Converter.GetBool(bytes, ref offset);
-            aoMapPath = Converter.GetString(bytes, ref offset);
+            useAoMap = Converter.GetBool(bytes, ref index);
+            aoMapPath = Converter.GetString(bytes, ref index);
 
-            useOpacityMap = Converter.GetBool(bytes, ref offset);
-            opacity = Converter.GetFloat(bytes, ref offset);
-            opacityMapPath = Converter.GetString(bytes, ref offset);
+            useOpacityMap = Converter.GetBool(bytes, ref index);
+            opacity = Converter.GetFloat(bytes, ref index);
+            opacityMapPath = Converter.GetString(bytes, ref index);
 
-            uvOffset = Converter.GetVector4(bytes, ref offset);
-            uvScale = Converter.GetVector4(bytes, ref offset);
+            uvOffset = Converter.GetVector4(bytes, ref index);
+            uvScale = Converter.GetVector4(bytes, ref index);
         }
 
         public byte[] ToBytes()
@@ -253,15 +261,17 @@ namespace VRtist.Serialization
     }
 
 
-    public class SubMesh
+    public class SubMesh : IBlob
     {
         public MeshTopology topology;
         public int[] indices;
 
-        public SubMesh(byte[] bytes, ref int offset)
+        public SubMesh() { }
+
+        public void FromBytes(byte[] bytes, ref int index)
         {
-            topology = (MeshTopology)Converter.GetInt(bytes, ref offset);
-            indices = Converter.GetInts(bytes, ref offset);
+            topology = (MeshTopology)Converter.GetInt(bytes, ref index);
+            indices = Converter.GetInts(bytes, ref index);
         }
 
         public byte[] ToBytes()
@@ -279,8 +289,7 @@ namespace VRtist.Serialization
     }
 
 
-    [System.Serializable]
-    public class MeshData
+    public class MeshData : IBlob
     {
         public MeshData() { }
 
@@ -325,10 +334,53 @@ namespace VRtist.Serialization
             mesh.RecalculateBounds();
             return mesh;
         }
+
+        public void FromBytes(byte[] bytes, ref int index)
+        {
+            name = Converter.GetString(bytes, ref index);
+            vertices = Converter.GetVectors3(bytes, ref index);
+            normals = Converter.GetVectors3(bytes, ref index);
+            uvs = Converter.GetVectors2(bytes, ref index);
+
+            int subMeshesCount = Converter.GetInt(bytes, ref index);
+            subMeshes = new SubMesh[subMeshesCount];
+            for (int i = 0; i < subMeshesCount; i++)
+            {
+                subMeshes[i] = new SubMesh();
+                subMeshes[i].FromBytes(bytes, ref index);
+            }
+        }
+
+        public byte[] ToBytes()
+        {
+            byte[] nameBuffer = Converter.StringToBytes(name);
+            byte[] verticesBuffer = Converter.Vectors3ToBytes(vertices);
+            byte[] normalsBuffer = Converter.Vectors3ToBytes(normals);
+            byte[] uvsBuffer = Converter.Vectors2ToBytes(uvs);
+
+            int subMeshesCount = subMeshes.Length;
+            byte[] subMeshesCountBuffer = Converter.IntToBytes(subMeshesCount);
+            List<byte[]> subMeshesBufferList = new List<byte[]>();
+            for (int i = 0; i < subMeshesCount; i++)
+            {
+                subMeshesBufferList.Add(subMeshes[i].ToBytes());
+            }
+            byte[] subMeshesBuffer = Converter.ConcatenateBuffers(subMeshesBufferList);
+
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
+                nameBuffer,
+                verticesBuffer,
+                normalsBuffer,
+                uvsBuffer,
+                subMeshesCountBuffer,
+                subMeshesBuffer
+            });
+            return bytes;
+        }
     }
 
 
-    public class ObjectData
+    public class ObjectData : IBlob
     {
         public string name;
         public string path;  // relative path
@@ -353,29 +405,31 @@ namespace VRtist.Serialization
 
         // Constraints
 
-        protected int readIndex = 0;
-        public ObjectData(byte[] bytes)
+
+        public virtual void FromBytes(byte[] bytes, ref int index)
         {
-            name = Converter.GetString(bytes, ref readIndex);
-            path = Converter.GetString(bytes, ref readIndex);
-            tag = Converter.GetString(bytes, ref readIndex);
+            name = Converter.GetString(bytes, ref index);
+            path = Converter.GetString(bytes, ref index);
+            tag = Converter.GetString(bytes, ref index);
 
-            position = Converter.GetVector3(bytes, ref readIndex);
-            rotation = Converter.GetQuaternion(bytes, ref readIndex);
-            scale = Converter.GetVector3(bytes, ref readIndex);
+            position = Converter.GetVector3(bytes, ref index);
+            rotation = Converter.GetQuaternion(bytes, ref index);
+            scale = Converter.GetVector3(bytes, ref index);
 
-            meshPath = Converter.GetString(bytes, ref readIndex);
-            isImported = Converter.GetBool(bytes, ref readIndex);
+            meshPath = Converter.GetString(bytes, ref index);
+            isImported = Converter.GetBool(bytes, ref index);
 
-            int materialCount = Converter.GetInt(bytes, ref readIndex);
+            int materialCount = Converter.GetInt(bytes, ref index);
             for (int i = 0; i < materialCount; i++)
             {
-                materialsData.Add(new MaterialData(bytes, ref readIndex));
+                MaterialData matData = new MaterialData();
+                matData.FromBytes(bytes, ref index);
+                materialsData.Add(matData);
             }
 
-            lockPosition = Converter.GetBool(bytes, ref readIndex);
-            lockRotation = Converter.GetBool(bytes, ref readIndex);
-            lockScale = Converter.GetBool(bytes, ref readIndex);
+            lockPosition = Converter.GetBool(bytes, ref index);
+            lockRotation = Converter.GetBool(bytes, ref index);
+            lockScale = Converter.GetBool(bytes, ref index);
         }
 
         public virtual byte[] ToBytes()
@@ -407,13 +461,17 @@ namespace VRtist.Serialization
                 nameBuffer,
                 pathBuffer,
                 tagBuffer,
+
                 positionBuffer,
                 rotationBuffer,
                 scaleBuffer,
+
                 meshPathBuffer,
                 isImportedBuffer,
+
                 materialCountBuffer,
                 materialsBuffer,
+
                 lockPositionBuffer,
                 lockRotationBuffer,
                 lockScaleBuffer
@@ -437,20 +495,21 @@ namespace VRtist.Serialization
         public float outerAngle;
         public float innerAngle;
 
-        LightData(byte[] buffer, ref int index) : base(buffer)
+        public override void FromBytes(byte[] buffer, ref int index)
         {
-            lightType = (LightType)Converter.GetInt(buffer, ref readIndex);
-            intensity = Converter.GetFloat(buffer, ref readIndex);
-            minIntensity = Converter.GetFloat(buffer, ref readIndex);
-            maxIntensity = Converter.GetFloat(buffer, ref readIndex);
-            color = Converter.GetColor(buffer, ref readIndex);
-            castShadows = Converter.GetBool(buffer, ref readIndex);
-            near = Converter.GetFloat(buffer, ref readIndex);
-            range = Converter.GetFloat(buffer, ref readIndex);
-            minRange = Converter.GetFloat(buffer, ref readIndex);
-            maxRange = Converter.GetFloat(buffer, ref readIndex);
-            outerAngle = Converter.GetFloat(buffer, ref readIndex);
-            innerAngle = Converter.GetFloat(buffer, ref readIndex);
+            base.FromBytes(buffer, ref index);
+            lightType = (LightType)Converter.GetInt(buffer, ref index);
+            intensity = Converter.GetFloat(buffer, ref index);
+            minIntensity = Converter.GetFloat(buffer, ref index);
+            maxIntensity = Converter.GetFloat(buffer, ref index);
+            color = Converter.GetColor(buffer, ref index);
+            castShadows = Converter.GetBool(buffer, ref index);
+            near = Converter.GetFloat(buffer, ref index);
+            range = Converter.GetFloat(buffer, ref index);
+            minRange = Converter.GetFloat(buffer, ref index);
+            maxRange = Converter.GetFloat(buffer, ref index);
+            outerAngle = Converter.GetFloat(buffer, ref index);
+            innerAngle = Converter.GetFloat(buffer, ref index);
         }
 
         public override byte[] ToBytes()
@@ -496,15 +555,16 @@ namespace VRtist.Serialization
         public float far;
         public float filmHeight;
 
-        CameraData(byte[] buffer, ref int index) : base(buffer)
+        public override void FromBytes(byte[] buffer, ref int index)
         {
-            focal = Converter.GetFloat(buffer, ref readIndex);
-            focus = Converter.GetFloat(buffer, ref readIndex);
-            aperture = Converter.GetFloat(buffer, ref readIndex);
-            enableDOF = Converter.GetBool(buffer, ref readIndex);
-            near = Converter.GetFloat(buffer, ref readIndex);
-            far = Converter.GetFloat(buffer, ref readIndex);
-            filmHeight = Converter.GetFloat(buffer, ref readIndex);
+            base.FromBytes(buffer, ref index);
+            focal = Converter.GetFloat(buffer, ref index);
+            focus = Converter.GetFloat(buffer, ref index);
+            aperture = Converter.GetFloat(buffer, ref index);
+            enableDOF = Converter.GetBool(buffer, ref index);
+            near = Converter.GetFloat(buffer, ref index);
+            far = Converter.GetFloat(buffer, ref index);
+            filmHeight = Converter.GetFloat(buffer, ref index);
         }
 
         public override byte[] ToBytes()
@@ -530,7 +590,7 @@ namespace VRtist.Serialization
         }
     }
 
-    public class ShotData
+    public class ShotData : IBlob
     {
         public string name;
         public int index;
@@ -538,7 +598,7 @@ namespace VRtist.Serialization
         public int end;
         public string cameraName;
 
-        ShotData(byte[] buffer, ref int index)
+        public void FromBytes(byte[] buffer, ref int index)
         {
             name = Converter.GetString(buffer, ref index);
             index = Converter.GetInt(buffer, ref index);
@@ -564,47 +624,134 @@ namespace VRtist.Serialization
                 cameraNameBuffer
             });
         }
+    }
 
-        public class SceneData
+    public class SceneData : IBlob
+    {
+        private static SceneData current;
+        public static SceneData Current
         {
-            private static SceneData current;
-            public static SceneData Current
+            get
             {
-                get
-                {
-                    if (null == current) { current = new SceneData(); }
-                    return current;
-                }
+                if (null == current) { current = new SceneData(); }
+                return current;
+            }
+        }
+
+        public List<ObjectData> objects = new List<ObjectData>();
+        public List<LightData> lights = new List<LightData>();
+        public List<CameraData> cameras = new List<CameraData>();
+
+        public List<ShotData> shots = new List<ShotData>();
+
+        public SkySettings skyData;
+
+        public void Clear()
+        {
+            objects.Clear();
+            lights.Clear();
+            cameras.Clear();
+            shots.Clear();
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            int objectsCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < objectsCount; i++)
+            {
+                ObjectData data = new ObjectData();
+                data.FromBytes(buffer, ref index);
+                objects.Add(data);
             }
 
-            public List<ObjectData> objects = new List<ObjectData>();
-            public List<LightData> lights = new List<LightData>();
-            public List<CameraData> cameras = new List<CameraData>();
-
-            public List<ShotData> shots = new List<ShotData>();
-
-            public SkySettings skyData;
-
-            public void Clear()
+            int lightsCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < lightsCount; i++)
             {
-                objects.Clear();
-                lights.Clear();
-                cameras.Clear();
-                shots.Clear();
+                LightData data = new LightData();
+                data.FromBytes(buffer, ref index);
+                lights.Add(data);
             }
 
-            public byte[] ToBytes()
+            int camerasCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < camerasCount; i++)
             {
-
-
-                byte[] bytes = new byte[456];
-                return bytes;
+                CameraData data = new CameraData();
+                data.FromBytes(buffer, ref index);
+                cameras.Add(data);
             }
 
-            public void Load()
+            skyData = new SkySettings
             {
+                topColor = Converter.GetColor(buffer, ref index),
+                middleColor = Converter.GetColor(buffer, ref index),
+                bottomColor = Converter.GetColor(buffer, ref index)
+            };
 
+            int shotsCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < shotsCount; i++)
+            {
+                ShotData data = new ShotData();
+                data.FromBytes(buffer, ref index);
+                shots.Add(data);
             }
+        }
+
+        public byte[] ToBytes()
+        {
+            byte[] objectsCountBuffer = Converter.IntToBytes(objects.Count);
+            List<byte[]> objectsBufferList = new List<byte[]>();
+            foreach (ObjectData data in objects)
+            {
+                objectsBufferList.Add(data.ToBytes());
+            }
+            byte[] objectsBuffer = Converter.ConcatenateBuffers(objectsBufferList);
+
+            byte[] lightsCountBuffer = Converter.IntToBytes(lights.Count);
+            List<byte[]> lightsBufferList = new List<byte[]>();
+            foreach (LightData data in lights)
+            {
+                lightsBufferList.Add(data.ToBytes());
+            }
+            byte[] lightsBuffer = Converter.ConcatenateBuffers(lightsBufferList);
+
+            byte[] camerasCountBuffer = Converter.IntToBytes(cameras.Count);
+            List<byte[]> camerasBufferList = new List<byte[]>();
+            foreach (CameraData data in cameras)
+            {
+                camerasBufferList.Add(data.ToBytes());
+            }
+            byte[] camerasBuffer = Converter.ConcatenateBuffers(camerasBufferList);
+
+            byte[] skyTopColorBuffer = Converter.ColorToBytes(skyData.topColor);
+            byte[] skyMiddleColorBuffer = Converter.ColorToBytes(skyData.middleColor);
+            byte[] skyBottomColorBuffer = Converter.ColorToBytes(skyData.bottomColor);
+
+            byte[] shotsCountBuffer = Converter.IntToBytes(shots.Count);
+            List<byte[]> shotsBufferList = new List<byte[]>();
+            foreach (ShotData data in shots)
+            {
+                shotsBufferList.Add(data.ToBytes());
+            }
+            byte[] shotsBuffer = Converter.ConcatenateBuffers(shotsBufferList);
+
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
+                objectsCountBuffer,
+                objectsBuffer,
+
+                lightsCountBuffer,
+                lightsBuffer,
+
+                camerasCountBuffer,
+                camerasBuffer,
+
+                skyTopColorBuffer,
+                skyMiddleColorBuffer,
+                skyBottomColorBuffer,
+
+                shotsCountBuffer,
+                shotsBuffer
+            });
+            return bytes;
         }
     }
 }

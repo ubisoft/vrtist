@@ -438,27 +438,28 @@ namespace VRtist.Serialization
 
             // Load data from file
             string path = GetScenePath(projectName);
-            SceneData saveData = (SceneData)SerializationManager.Load(path);
+            SceneData sceneData = new SceneData();
+            SerializationManager.Load(path, sceneData);
 
             // Sky
-            GlobalState.Instance.SkySettings = saveData.skyData;
+            GlobalState.Instance.SkySettings = sceneData.skyData;
 
             // Objects
             Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
-            foreach (ObjectData data in saveData.objects)
+            foreach (ObjectData data in sceneData.objects)
             {
                 LoadObject(data, importedParent);
             }
             Destroy(importedParent.gameObject);
 
             // Lights
-            foreach (LightData data in saveData.lights)
+            foreach (LightData data in sceneData.lights)
             {
                 LoadLight(data);
             }
 
             // Cameras
-            foreach (CameraData data in saveData.cameras)
+            foreach (CameraData data in sceneData.cameras)
             {
                 LoadCamera(data);
             }
@@ -527,7 +528,8 @@ namespace VRtist.Serialization
             {
                 if (!data.isImported)
                 {
-                    MeshData meshData = (MeshData)SerializationManager.Load(absoluteMeshPath);
+                    MeshData meshData = new MeshData();
+                    SerializationManager.Load(absoluteMeshPath, meshData);
                     gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();

@@ -39,6 +39,11 @@ namespace VRtist.Serialization
         // Converts string to byte buffer
         public static byte[] StringToBytes(string value)
         {
+            if (null == value)
+            {
+                return IntToBytes(0);
+            }
+
             byte[] bytes = new byte[sizeof(int) + value.Length];
             byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(value);
             Buffer.BlockCopy(BitConverter.GetBytes(utf8.Length), 0, bytes, 0, sizeof(int));
@@ -53,9 +58,11 @@ namespace VRtist.Serialization
 
         public static string GetString(byte[] data, ref int bufferIndex)
         {
-            int strLength = (int)BitConverter.ToUInt32(data, bufferIndex);
-            string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex + 4, strLength);
-            bufferIndex = bufferIndex + strLength + 4;
+            int strLength = GetInt(data, ref bufferIndex);
+            if (strLength == 0) { return ""; }
+
+            string str = System.Text.Encoding.UTF8.GetString(data, bufferIndex, strLength);
+            bufferIndex = bufferIndex + strLength;
             return str;
         }
 

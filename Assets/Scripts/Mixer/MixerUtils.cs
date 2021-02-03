@@ -1505,7 +1505,7 @@ namespace VRtist
             Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = Converter.GetString(data, ref currentIndex);
 
-            int baseMeshDataSize = Converter.GetInt(data, ref currentIndex);
+            int _ = Converter.GetInt(data, ref currentIndex);  // baseMeshDataSize
             int bakedMeshDataSize = Converter.GetInt(data, ref currentIndex);
             if (bakedMeshDataSize == 0)
                 return null;
