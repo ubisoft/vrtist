@@ -191,11 +191,11 @@ namespace VRtist.Serialization
             }
         }
 
-        private readonly string name;
-        private readonly Vector3[] vertices;
-        private readonly Vector3[] normals;
-        private readonly Vector2[] uvs;
-        private readonly SubMesh[] subMeshes;
+        private string name;
+        private Vector3[] vertices;
+        private Vector3[] normals;
+        private Vector2[] uvs;
+        private SubMesh[] subMeshes;
 
         public Mesh CreateMesh()
         {

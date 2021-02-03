@@ -8,9 +8,11 @@ namespace VRtist.Serialization
 {
     public class SerializationManager
     {
+        private static BinaryFormatter formatter = null;
+
         public static bool Save(string path, object data, bool deleteFolder = false)
         {
-            BinaryFormatter formatter = GetBinaryFormatter();
+            formatter = GetBinaryFormatter();
 
             DirectoryInfo folder = Directory.GetParent(path);
             if (!folder.Exists)
@@ -43,7 +45,7 @@ namespace VRtist.Serialization
         {
             if (!File.Exists(path)) { return null; }
 
-            BinaryFormatter formatter = GetBinaryFormatter();
+            formatter = GetBinaryFormatter();
 
             using FileStream file = File.OpenRead(path);
             object save = formatter.Deserialize(file);
@@ -52,7 +54,12 @@ namespace VRtist.Serialization
 
         public static BinaryFormatter GetBinaryFormatter()
         {
-            BinaryFormatter formatter = new BinaryFormatter();
+            if (formatter != null)
+            {
+                return formatter;
+            }
+
+            formatter = new BinaryFormatter();
 
             SurrogateSelector selector = new SurrogateSelector();
 
@@ -62,11 +69,15 @@ namespace VRtist.Serialization
             QuaternionSurrogate quaternionSurrogate = new QuaternionSurrogate();
             ColorSurrogate colorSurrogate = new ColorSurrogate();
 
+            Vector3ArraySurrogate v3as = new Vector3ArraySurrogate();
+
+            selector.AddSurrogate(typeof(Vector3[]), new StreamingContext(StreamingContextStates.All), v3as);
             selector.AddSurrogate(typeof(Vector2), new StreamingContext(StreamingContextStates.All), vector2Surrogate);
             selector.AddSurrogate(typeof(Vector3), new StreamingContext(StreamingContextStates.All), vector3Surrogate);
             selector.AddSurrogate(typeof(Vector4), new StreamingContext(StreamingContextStates.All), vector4Surrogate);
             selector.AddSurrogate(typeof(Quaternion), new StreamingContext(StreamingContextStates.All), quaternionSurrogate);
             selector.AddSurrogate(typeof(Color), new StreamingContext(StreamingContextStates.All), colorSurrogate);
+
 
             formatter.SurrogateSelector = selector;
 

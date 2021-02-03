@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -152,10 +151,24 @@ namespace VRtist.Serialization
         // Save
         // ----------------------------------------------------------------------------------------
 
+        System.Diagnostics.Stopwatch stopwatch;
+        System.Diagnostics.Stopwatch totalStopwatch;
+
+        private void LogElapsedTime(string what, System.Diagnostics.Stopwatch timer)
+        {
+            TimeSpan ts = timer.Elapsed;
+            string elapsedTime = String.Format("{0:00}m {1:00}s {2:00}ms", ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+            Debug.Log($"{what}: {elapsedTime}");
+        }
+
         public void Save(string projectName)
         {
             if (!CommandManager.IsSceneDirty()) { return; }
 
+            totalStopwatch = new System.Diagnostics.Stopwatch();
+            totalStopwatch.Start();
+
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
             CommandManager.SetSceneDirty(false);
 
@@ -164,18 +177,20 @@ namespace VRtist.Serialization
             materials.Clear();
             SceneData.Current.Clear();
 
+            stopwatch.Stop();
+            LogElapsedTime("Pre Save", stopwatch);
+
             // Parse RightHanded transform
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
             Transform root = Utils.FindWorld().transform.Find("RightHanded");
             string path = "";
-            StartCoroutine(SerializeChildren(root, path, save: true));
+            SerializeChildren(root, path, save: true);
         }
 
-        private IEnumerator SerializeChildren(Transform root, string path, bool save = false)
+        private void SerializeChildren(Transform root, string path, bool save = false)
         {
             foreach (Transform emptyParent in root)
             {
-                yield return null;
-
                 // We should only have [gameObjectName]_parent game objects
                 if (!emptyParent.name.EndsWith("_parent"))
                 {
@@ -226,13 +241,16 @@ namespace VRtist.Serialization
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    _ = SerializeChildren(child, childPath);
+                    SerializeChildren(child, childPath);
                 }
             }
 
             // Save
             if (save)
             {
+                stopwatch.Stop();
+                LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
+
                 // Save shot manager data
 
                 // Save animation data
@@ -241,23 +259,36 @@ namespace VRtist.Serialization
                 SceneData.Current.skyData = GlobalState.Instance.SkySettings;
 
                 // Save scene
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
+                stopwatch.Stop();
+                LogElapsedTime($"Write Scene", stopwatch);
 
                 // Save meshes
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 foreach (var meshInfo in meshes.Values)
                 {
-                    yield return null;
                     SerializationManager.Save(meshInfo.absolutePath, new MeshData(meshInfo));
                 }
+                stopwatch.Stop();
+                LogElapsedTime($"Write Meshes ({meshes.Count})", stopwatch);
 
                 // Save materials
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 foreach (MaterialInfo materialInfo in materials.Values)
                 {
-                    yield return null;
                     SaveMaterial(materialInfo);
                 }
+                stopwatch.Stop();
+                LogElapsedTime($"Write Materials ({materials.Count})", stopwatch);
 
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 SaveScreenshot();
+                stopwatch.Stop();
+                LogElapsedTime($"Snapshot", stopwatch);
+
+                totalStopwatch.Stop();
+                LogElapsedTime("Total Time", totalStopwatch);
 
                 GlobalState.Instance.messageBox.SetVisible(false);
             }

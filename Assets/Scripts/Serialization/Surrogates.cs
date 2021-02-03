@@ -46,6 +46,23 @@ namespace VRtist.Serialization
     }
 
 
+    public class Vector3ArraySurrogate : ISerializationSurrogate
+    {
+        public void GetObjectData(object obj, SerializationInfo info, StreamingContext context)
+        {
+            Vector3[] v = (Vector3[])obj;
+            info.AddValue("data", v);
+        }
+
+        public object SetObjectData(object obj, SerializationInfo info, StreamingContext context, ISurrogateSelector selector)
+        {
+            Vector3[] v = (Vector3[])info.GetValue("data", typeof(Vector3[]));
+            obj = v;
+            return obj;
+        }
+    }
+
+
     public class Vector4Surrogate : ISerializationSurrogate
     {
         public void GetObjectData(object obj, SerializationInfo info, StreamingContext context)
