@@ -533,8 +533,6 @@ namespace VRtist.Serialization
                     gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
-                    collider.convex = true;
-                    collider.isTrigger = true;
                 }
             }
 

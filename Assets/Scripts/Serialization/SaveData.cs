@@ -89,7 +89,7 @@ namespace VRtist.Serialization
         public Material CreateMaterial(string rootPath)
         {
             Material material = new Material(
-                opacity == 1f ?
+                opacity == 1f && !useOpacityMap ?
                 ResourceManager.GetMaterial(MaterialID.ObjectOpaque) :
                 ResourceManager.GetMaterial(MaterialID.ObjectTransparent)
             );
@@ -514,6 +514,7 @@ namespace VRtist.Serialization
 
         public override byte[] ToBytes()
         {
+            byte[] baseBuffer = base.ToBytes();
             byte[] lightTypeBuffer = Converter.IntToBytes((int)lightType);
             byte[] intensityBuffer = Converter.FloatToBytes(intensity);
             byte[] minIntensityBuffer = Converter.FloatToBytes(minIntensity);
@@ -529,6 +530,7 @@ namespace VRtist.Serialization
 
             return Converter.ConcatenateBuffers(new List<byte[]>()
             {
+                baseBuffer,
                 lightTypeBuffer,
                 intensityBuffer,
                 minIntensityBuffer,
@@ -569,6 +571,7 @@ namespace VRtist.Serialization
 
         public override byte[] ToBytes()
         {
+            byte[] baseBuffer = base.ToBytes();
             byte[] focalBuffer = Converter.FloatToBytes(focal);
             byte[] focusBuffer = Converter.FloatToBytes(focus);
             byte[] apertureBuffer = Converter.FloatToBytes(aperture);
@@ -579,6 +582,7 @@ namespace VRtist.Serialization
 
             return Converter.ConcatenateBuffers(new List<byte[]>()
             {
+                baseBuffer,
                 focalBuffer,
                 focusBuffer,
                 apertureBuffer,

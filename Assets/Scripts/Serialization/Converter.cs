@@ -155,17 +155,19 @@ namespace VRtist.Serialization
         // Convert byte buffer to Vector3
         public static Vector3[] GetVectors3(byte[] data, ref int currentIndex)
         {
-            int count = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += sizeof(int);
+            int count = GetInt(data, ref currentIndex);
+            int size = count * sizeof(float) * 3;
             Vector3[] vectors = new Vector3[count];
+            float[] float3Values = new float[count * 3];
+            Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
+            int idx = 0;
             for (int i = 0; i < count; i++)
             {
-                float[] buffer = new float[3];
-                int size = 3 * sizeof(float);
-                Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-                currentIndex += size;
-                vectors[i] = new Vector3(buffer[0], buffer[1], buffer[2]);
+                vectors[i].x = float3Values[idx++];
+                vectors[i].y = float3Values[idx++];
+                vectors[i].z = float3Values[idx++];
             }
+            currentIndex += size;
             return vectors;
         }
 
@@ -181,17 +183,20 @@ namespace VRtist.Serialization
 
         public static Vector4[] GetVectors4(byte[] data, ref int currentIndex)
         {
-            int count = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += sizeof(int);
+            int count = GetInt(data, ref currentIndex);
+            int size = count * sizeof(float) * 4;
             Vector4[] vectors = new Vector4[count];
+            float[] float4Values = new float[count * 4];
+            Buffer.BlockCopy(data, currentIndex, float4Values, 0, size);
+            int idx = 0;
             for (int i = 0; i < count; i++)
             {
-                float[] buffer = new float[4];
-                int size = 4 * sizeof(float);
-                Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-                currentIndex += size;
-                vectors[i] = new Vector4(buffer[0], buffer[1], buffer[2], buffer[3]);
+                vectors[i].x = float4Values[idx++];
+                vectors[i].y = float4Values[idx++];
+                vectors[i].z = float4Values[idx++];
+                vectors[i].w = float4Values[idx++];
             }
+            currentIndex += size;
             return vectors;
         }
 
@@ -219,17 +224,18 @@ namespace VRtist.Serialization
 
         public static Vector2[] GetVectors2(byte[] data, ref int currentIndex)
         {
-            int count = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += sizeof(int);
+            int count = GetInt(data, ref currentIndex);
+            int size = count * sizeof(float) * 2;
             Vector2[] vectors = new Vector2[count];
+            float[] float2Values = new float[count * 2];
+            Buffer.BlockCopy(data, currentIndex, float2Values, 0, size);
+            int idx = 0;
             for (int i = 0; i < count; i++)
             {
-                float[] buffer = new float[2];
-                int size = 2 * sizeof(float);
-                Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
-                currentIndex += size;
-                vectors[i] = new Vector2(buffer[0], buffer[1]);
+                vectors[i].x = float2Values[idx++];
+                vectors[i].y = float2Values[idx++];
             }
+            currentIndex += size;
             return vectors;
         }
 
@@ -338,8 +344,7 @@ namespace VRtist.Serialization
         // convert byte buffer to ints array
         public static int[] GetInts(byte[] data, ref int currentIndex)
         {
-            int count = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += sizeof(int);
+            int count = GetInt(data, ref currentIndex);
             int[] buffer = new int[count];
             Buffer.BlockCopy(data, currentIndex, buffer, 0, count * sizeof(int));
             currentIndex += count * sizeof(int);

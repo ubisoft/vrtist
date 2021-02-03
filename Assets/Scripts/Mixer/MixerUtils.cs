@@ -1514,8 +1514,13 @@ namespace VRtist
             Vector3[] normals = Converter.GetVectors3(data, ref currentIndex);
             Vector2[] uvs = Converter.GetVectors2(data, ref currentIndex);
             int[] materialIndices = Converter.GetInts(data, ref currentIndex);
-            int[] rawIndices = Converter.GetInts(data, ref currentIndex);
-            int rawIndicesCount = rawIndices.Length;
+
+            int rawIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex) * 3;
+            currentIndex += 4;
+            int[] rawIndices = new int[rawIndicesCount];
+            int size = rawIndicesCount * sizeof(int);
+            Buffer.BlockCopy(data, currentIndex, rawIndices, 0, size);
+            currentIndex += size;
 
             Vector3[] vertices = new Vector3[rawIndicesCount];
             for (int i = 0; i < rawIndicesCount; i++)
@@ -1523,7 +1528,9 @@ namespace VRtist
                 vertices[i] = rawVertices[rawIndices[i]];
             }
 
-            int materialCount = Converter.GetInt(data, ref currentIndex);
+            int materialCount = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += 4;
+
             List<MaterialParameters> meshMaterialParameters = new List<MaterialParameters>();
             if (materialCount == 0)
             {
