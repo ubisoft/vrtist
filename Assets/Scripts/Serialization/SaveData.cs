@@ -48,6 +48,11 @@ namespace VRtist.Serialization
         public Vector4 uvOffset;
         public Vector4 uvScale;
 
+        public MaterialData(byte[] bytes, ref int offset)
+        {
+
+        }
+
         public MaterialData(MaterialInfo materialInfo)
         {
             string shaderName = materialInfo.material.shader.name;
@@ -158,6 +163,43 @@ namespace VRtist.Serialization
 
             return material;
         }
+
+        public byte[] ToBytes()
+        {
+            byte[] pathBuffer;  // relative path
+
+            byte[] useColorMapBuffer;
+            byte[] baseColorBuffer;
+            byte[] colorMapPathBuffer;
+
+            byte[] useNormalMapBuffer;
+            byte[] normalMapPathBuffer;
+
+            byte[] useMetallicMapBuffer;
+            byte[] metallicBuffer;
+            byte[] metallicMapPathBuffer;
+
+            byte[] useRoughnessMapBuffer;
+            byte[] roughnessBuffer;
+            byte[] roughnessMapPathBuffer;
+
+            byte[] useEmissiveMapBuffer;
+            byte[] emissiveBuffer;
+            byte[] emissiveMapPathBuffer;
+
+            byte[] useAoMapBuffer;
+            byte[] aoMapPathBuffer;
+
+            byte[] useOpacityMapBuffer;
+            byte[] opacityBuffer;
+            byte[] opacityMapPathBuffer;
+
+            byte[] uvOffsetBuffer;
+            byte[] uvScaleBuffer;
+
+            byte[] bytes = new byte[45];
+            return bytes;
+        }
     }
 
 
@@ -218,7 +260,6 @@ namespace VRtist.Serialization
     }
 
 
-    [System.Serializable]
     public class ObjectData
     {
         public string name;
@@ -244,12 +285,84 @@ namespace VRtist.Serialization
 
         // Constraints
 
+        protected int readIndex = 0;
+        public ObjectData(byte[] bytes)
+        {
+            name = Converter.GetString(bytes, ref readIndex);
+            path = Converter.GetString(bytes, ref readIndex);
+            tag = Converter.GetString(bytes, ref readIndex);
+
+            position = Converter.GetVector3(bytes, ref readIndex);
+            rotation = Converter.GetQuaternion(bytes, ref readIndex);
+            scale = Converter.GetVector3(bytes, ref readIndex);
+
+            meshPath = Converter.GetString(bytes, ref readIndex);
+            isImported = Converter.GetBool(bytes, ref readIndex);
+
+            int materialCount = Converter.GetInt(bytes, ref readIndex);
+            for (int i = 0; i < materialCount; i++)
+            {
+                materialsData.Add(new MaterialData(bytes, ref readIndex));
+            }
+
+            lockPosition = Converter.GetBool(bytes, ref readIndex);
+            lockRotation = Converter.GetBool(bytes, ref readIndex);
+            lockScale = Converter.GetBool(bytes, ref readIndex);
+        }
+
+        public virtual byte[] ToBytes()
+        {
+            byte[] nameBuffer = Converter.StringToBytes(name);
+            byte[] pathBuffer = Converter.StringToBytes(path);
+            byte[] tagBuffer = Converter.StringToBytes(tag);
+
+            byte[] positionBuffer = Converter.Vector3ToBytes(position);
+            byte[] rotationBuffer = Converter.QuaternionToBytes(rotation);
+            byte[] scaleBuffer = Converter.Vector3ToBytes(scale);
+
+            byte[] meshPathBuffer = Converter.StringToBytes(meshPath);
+            byte[] isImportedBuffer = Converter.BoolToBytes(isImported);
+
+            byte[] materialCountBuffer = Converter.IntToBytes(materialsData.Count);
+            List<byte[]> matBuffers = new List<byte[]>();
+            foreach (MaterialData matData in materialsData)
+            {
+                matBuffers.Add(matData.ToBytes());
+            }
+            byte[] materialsBuffer = Converter.ConcatenateBuffers(matBuffers);
+
+            byte[] lockPositionBuffer = Converter.BoolToBytes(lockPosition);
+            byte[] lockRotationBuffer = Converter.BoolToBytes(lockRotation);
+            byte[] lockScaleBuffer = Converter.BoolToBytes(lockScale);
+
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
+                nameBuffer,
+                pathBuffer,
+                tagBuffer,
+                positionBuffer,
+                rotationBuffer,
+                scaleBuffer,
+                meshPathBuffer,
+                isImportedBuffer,
+                materialCountBuffer,
+                materialsBuffer,
+                lockPositionBuffer,
+                lockRotationBuffer,
+                lockScaleBuffer
+            });
+            return bytes;
+        }
     }
 
 
     [System.Serializable]
     public class LightData : ObjectData
     {
+        public LightData(byte[] bytes) : base(bytes)
+        {
+            //...
+        }
+
         public LightType lightType;
         public float intensity;
         public float minIntensity;
@@ -316,6 +429,19 @@ namespace VRtist.Serialization
             lights.Clear();
             cameras.Clear();
             shots.Clear();
+        }
+
+        public byte[] ToBytes()
+        {
+
+
+            byte[] bytes = new byte[456];
+            return bytes;
+        }
+
+        public void Load()
+        {
+
         }
     }
 }
