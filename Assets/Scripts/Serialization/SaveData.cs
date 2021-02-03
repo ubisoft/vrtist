@@ -422,15 +422,8 @@ namespace VRtist.Serialization
         }
     }
 
-
-    [System.Serializable]
     public class LightData : ObjectData
     {
-        public LightData(byte[] bytes) : base(bytes)
-        {
-            //...
-        }
-
         public LightType lightType;
         public float intensity;
         public float minIntensity;
@@ -443,10 +436,56 @@ namespace VRtist.Serialization
         public float maxRange;
         public float outerAngle;
         public float innerAngle;
+
+        LightData(byte[] buffer, ref int index) : base(buffer)
+        {
+            lightType = (LightType)Converter.GetInt(buffer, ref readIndex);
+            intensity = Converter.GetFloat(buffer, ref readIndex);
+            minIntensity = Converter.GetFloat(buffer, ref readIndex);
+            maxIntensity = Converter.GetFloat(buffer, ref readIndex);
+            color = Converter.GetColor(buffer, ref readIndex);
+            castShadows = Converter.GetBool(buffer, ref readIndex);
+            near = Converter.GetFloat(buffer, ref readIndex);
+            range = Converter.GetFloat(buffer, ref readIndex);
+            minRange = Converter.GetFloat(buffer, ref readIndex);
+            maxRange = Converter.GetFloat(buffer, ref readIndex);
+            outerAngle = Converter.GetFloat(buffer, ref readIndex);
+            innerAngle = Converter.GetFloat(buffer, ref readIndex);
+        }
+
+        public override byte[] ToBytes()
+        {
+            byte[] lightTypeBuffer = Converter.IntToBytes((int)lightType);
+            byte[] intensityBuffer = Converter.FloatToBytes(intensity);
+            byte[] minIntensityBuffer = Converter.FloatToBytes(minIntensity);
+            byte[] maxIntensityBuffer = Converter.FloatToBytes(maxIntensity);
+            byte[] colorBuffer = Converter.ColorToBytes(color);
+            byte[] castShadowsBuffer = Converter.BoolToBytes(castShadows);
+            byte[] nearBuffer = Converter.FloatToBytes(near);
+            byte[] rangeBuffer = Converter.FloatToBytes(range);
+            byte[] minRangeBuffer = Converter.FloatToBytes(minRange);
+            byte[] maxRangeBuffer = Converter.FloatToBytes(maxRange);
+            byte[] outerAngleBuffer = Converter.FloatToBytes(outerAngle);
+            byte[] innerAngleBuffer = Converter.FloatToBytes(innerAngle);
+
+            return Converter.ConcatenateBuffers(new List<byte[]>()
+            {
+                lightTypeBuffer,
+                intensityBuffer,
+                minIntensityBuffer,
+                maxIntensityBuffer,
+                colorBuffer,
+                castShadowsBuffer,
+                nearBuffer,
+                rangeBuffer,
+                minRangeBuffer,
+                maxRangeBuffer,
+                outerAngleBuffer,
+                innerAngleBuffer}
+            );
+        }
+
     }
-
-
-    [System.Serializable]
     public class CameraData : ObjectData
     {
         public float focal;
@@ -456,10 +495,41 @@ namespace VRtist.Serialization
         public float near;
         public float far;
         public float filmHeight;
+
+        CameraData(byte[] buffer, ref int index) : base(buffer)
+        {
+            focal = Converter.GetFloat(buffer, ref readIndex);
+            focus = Converter.GetFloat(buffer, ref readIndex);
+            aperture = Converter.GetFloat(buffer, ref readIndex);
+            enableDOF = Converter.GetBool(buffer, ref readIndex);
+            near = Converter.GetFloat(buffer, ref readIndex);
+            far = Converter.GetFloat(buffer, ref readIndex);
+            filmHeight = Converter.GetFloat(buffer, ref readIndex);
+        }
+
+        public override byte[] ToBytes()
+        {
+            byte[] focalBuffer = Converter.FloatToBytes(focal);
+            byte[] focusBuffer = Converter.FloatToBytes(focus);
+            byte[] apertureBuffer = Converter.FloatToBytes(aperture);
+            byte[] enableDOFBuffer = Converter.BoolToBytes(enableDOF);
+            byte[] nearBuffer = Converter.FloatToBytes(near);
+            byte[] farBuffer = Converter.FloatToBytes(far);
+            byte[] filmHeightBuffer = Converter.FloatToBytes(filmHeight);
+
+            return Converter.ConcatenateBuffers(new List<byte[]>()
+            {
+                focalBuffer,
+                focusBuffer,
+                apertureBuffer,
+                enableDOFBuffer,
+                nearBuffer,
+                farBuffer,
+                filmHeightBuffer
+            });
+        }
     }
 
-
-    [System.Serializable]
     public class ShotData
     {
         public string name;
@@ -467,49 +537,75 @@ namespace VRtist.Serialization
         public int start;
         public int end;
         public string cameraName;
-    }
 
-
-    [System.Serializable]
-    public class SceneData
-    {
-        private static SceneData current;
-        public static SceneData Current
+        ShotData(byte[] buffer, ref int index)
         {
-            get
-            {
-                if (null == current) { current = new SceneData(); }
-                return current;
-            }
-        }
-
-        public List<ObjectData> objects = new List<ObjectData>();
-        public List<LightData> lights = new List<LightData>();
-        public List<CameraData> cameras = new List<CameraData>();
-
-        public List<ShotData> shots = new List<ShotData>();
-
-        public SkySettings skyData;
-
-        public void Clear()
-        {
-            objects.Clear();
-            lights.Clear();
-            cameras.Clear();
-            shots.Clear();
+            name = Converter.GetString(buffer, ref index);
+            index = Converter.GetInt(buffer, ref index);
+            start = Converter.GetInt(buffer, ref index);
+            end = Converter.GetInt(buffer, ref index);
+            cameraName = Converter.GetString(buffer, ref index);
         }
 
         public byte[] ToBytes()
         {
+            byte[] nameBuffer = Converter.StringToBytes(name);
+            byte[] indexBuffer = Converter.IntToBytes(index);
+            byte[] startBuffer = Converter.IntToBytes(start);
+            byte[] endBuffer = Converter.IntToBytes(end);
+            byte[] cameraNameBuffer = Converter.StringToBytes(cameraName);
 
-
-            byte[] bytes = new byte[456];
-            return bytes;
+            return Converter.ConcatenateBuffers(new List<byte[]>()
+            {
+                nameBuffer,
+                indexBuffer,
+                startBuffer,
+                endBuffer,
+                cameraNameBuffer
+            });
         }
 
-        public void Load()
+        public class SceneData
         {
+            private static SceneData current;
+            public static SceneData Current
+            {
+                get
+                {
+                    if (null == current) { current = new SceneData(); }
+                    return current;
+                }
+            }
 
+            public List<ObjectData> objects = new List<ObjectData>();
+            public List<LightData> lights = new List<LightData>();
+            public List<CameraData> cameras = new List<CameraData>();
+
+            public List<ShotData> shots = new List<ShotData>();
+
+            public SkySettings skyData;
+
+            public void Clear()
+            {
+                objects.Clear();
+                lights.Clear();
+                cameras.Clear();
+                shots.Clear();
+            }
+
+            public byte[] ToBytes()
+            {
+
+
+                byte[] bytes = new byte[456];
+                return bytes;
+            }
+
+            public void Load()
+            {
+
+            }
         }
     }
 }
+

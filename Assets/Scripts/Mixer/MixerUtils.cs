@@ -1505,71 +1505,17 @@ namespace VRtist
             Transform transform = BuildPath(data, ref currentIndex, true);
             string meshName = Converter.GetString(data, ref currentIndex);
 
-            int baseMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4 + baseMeshDataSize;
-
-            int bakedMeshDataSize = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
+            int baseMeshDataSize = Converter.GetInt(data, ref currentIndex);
+            int bakedMeshDataSize = Converter.GetInt(data, ref currentIndex);
             if (bakedMeshDataSize == 0)
                 return null;
 
-            int rawVerticesCount = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
-            int size = rawVerticesCount * sizeof(float) * 3;
-            Vector3[] rawVertices = new Vector3[rawVerticesCount];
-            float[] float3Values = new float[rawVerticesCount * 3];
-            Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
-            int idx = 0;
-            for (int i = 0; i < rawVerticesCount; i++)
-            {
-                rawVertices[i].x = float3Values[idx++];
-                rawVertices[i].y = float3Values[idx++];
-                rawVertices[i].z = float3Values[idx++];
-            }
-            currentIndex += size;
-
-            int normalsCount = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
-            size = normalsCount * sizeof(float) * 3;
-            Vector3[] normals = new Vector3[normalsCount];
-            float3Values = new float[normalsCount * 3];
-            Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
-            idx = 0;
-            for (int i = 0; i < normalsCount; i++)
-            {
-                normals[i].x = float3Values[idx++];
-                normals[i].y = float3Values[idx++];
-                normals[i].z = float3Values[idx++];
-            }
-            currentIndex += size;
-
-            UInt32 UVsCount = BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
-
-            size = (int)UVsCount * sizeof(float) * 2;
-            Vector2[] uvs = new Vector2[UVsCount];
-            Buffer.BlockCopy(data, currentIndex, float3Values, 0, size);
-            idx = 0;
-            for (int i = 0; i < UVsCount; i++)
-            {
-                uvs[i].x = float3Values[idx++];
-                uvs[i].y = float3Values[idx++];
-            }
-            currentIndex += size;
-
-            int materialIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
-            int[] materialIndices = new int[materialIndicesCount];
-            size = materialIndicesCount * sizeof(int);
-            Buffer.BlockCopy(data, currentIndex, materialIndices, 0, size);
-            currentIndex += size;
-
-            int rawIndicesCount = (int)BitConverter.ToUInt32(data, currentIndex) * 3;
-            currentIndex += 4;
-            int[] rawIndices = new int[rawIndicesCount];
-            size = rawIndicesCount * sizeof(int);
-            Buffer.BlockCopy(data, currentIndex, rawIndices, 0, size);
-            currentIndex += size;
+            Vector3[] rawVertices = Converter.GetVectors3(data, ref currentIndex);
+            Vector3[] normals = Converter.GetVectors3(data, ref currentIndex);
+            Vector2[] uvs = Converter.GetVectors2(data, ref currentIndex);
+            int[] materialIndices = Converter.GetInts(data, ref currentIndex);
+            int[] rawIndices = Converter.GetInts(data, ref currentIndex);
+            int rawIndicesCount = rawIndices.Length;
 
             Vector3[] vertices = new Vector3[rawIndicesCount];
             for (int i = 0; i < rawIndicesCount; i++)
@@ -1577,8 +1523,7 @@ namespace VRtist
                 vertices[i] = rawVertices[rawIndices[i]];
             }
 
-            int materialCount = (int)BitConverter.ToUInt32(data, currentIndex);
-            currentIndex += 4;
+            int materialCount = Converter.GetInt(data, ref currentIndex);
             List<MaterialParameters> meshMaterialParameters = new List<MaterialParameters>();
             if (materialCount == 0)
             {
@@ -1631,7 +1576,7 @@ namespace VRtist
                     subIndicesArray[i] = new List<int>();
                 }
 
-                for (int i = 0; i < materialIndicesCount; i++)
+                for (int i = 0; i < materialIndices.Length; i++)
                 {
                     int materialIndex = materialIndices[i];
                     List<int> subIndices = subIndicesArray[materialIndex];
