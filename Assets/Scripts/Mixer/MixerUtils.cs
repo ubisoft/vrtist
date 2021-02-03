@@ -944,7 +944,7 @@ namespace VRtist
 
             byte[] baseMeshSize = Converter.IntToBytes(0);
 
-            byte[] positions = Converter.Vector3ToBytes(mesh.vertices);
+            byte[] positions = Converter.Vectors3ToBytes(mesh.vertices);
 
             int[] baseTriangles = mesh.triangles;
             Vector3[] baseNormals = mesh.normals;
@@ -955,7 +955,7 @@ namespace VRtist
                 splittedNormals[i] = baseNormals[id];
 
             }
-            byte[] normals = Converter.Vector3ToBytes(splittedNormals);
+            byte[] normals = Converter.Vectors3ToBytes(splittedNormals);
 
             Vector2[] baseUVs = mesh.uv;
             Vector2[] splittedUVs;

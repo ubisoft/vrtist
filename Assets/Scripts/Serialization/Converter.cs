@@ -85,23 +85,6 @@ namespace VRtist.Serialization
             return bytes;
         }
 
-        // Converts Vector3 array to byte buffer
-        public static byte[] Vector3ToBytes(Vector3[] vectors)
-        {
-            byte[] bytes = new byte[3 * sizeof(float) * vectors.Length + sizeof(int)];
-            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
-            int index = sizeof(int);
-            for (int i = 0; i < vectors.Length; i++)
-            {
-                Vector3 vector = vectors[i];
-                Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, index + 0, sizeof(float));
-                Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, index + sizeof(float), sizeof(float));
-                Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, index + 2 * sizeof(float), sizeof(float));
-                index += 3 * sizeof(float);
-            }
-            return bytes;
-        }
-
         // Converts byte buffer to Color
         public static Color GetColor(byte[] data, ref int currentIndex)
         {
@@ -145,7 +128,41 @@ namespace VRtist.Serialization
             return bytes;
         }
 
+        // Converts Vector3 array to byte buffer
+        public static byte[] Vectors3ToBytes(Vector3[] vectors)
+        {
+            byte[] bytes = new byte[3 * sizeof(float) * vectors.Length + sizeof(int)];
+            Buffer.BlockCopy(BitConverter.GetBytes(vectors.Length), 0, bytes, 0, sizeof(int));
+            int index = sizeof(int);
+            for (int i = 0; i < vectors.Length; i++)
+            {
+                Vector3 vector = vectors[i];
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.x), 0, bytes, index + 0, sizeof(float));
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.y), 0, bytes, index + sizeof(float), sizeof(float));
+                Buffer.BlockCopy(BitConverter.GetBytes(vector.z), 0, bytes, index + 2 * sizeof(float), sizeof(float));
+                index += 3 * sizeof(float);
+            }
+            return bytes;
+        }
+
         // Convert byte buffer to Vector3
+        public static Vector3[] GetVectors3(byte[] data, ref int currentIndex)
+        {
+            int count = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += sizeof(int);
+            Vector3[] vectors = new Vector3[count];
+            for (int i = 0; i < count; i++)
+            {
+                float[] buffer = new float[3];
+                int size = 3 * sizeof(float);
+                Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+                currentIndex += size;
+                vectors[i] = new Vector3(buffer[0], buffer[1], buffer[2]);
+            }
+            return vectors;
+        }
+
+        // Convert byte buffer to Vector4
         public static Vector4 GetVector4(byte[] data, ref int currentIndex)
         {
             float[] buffer = new float[4];
@@ -155,7 +172,23 @@ namespace VRtist.Serialization
             return new Vector4(buffer[0], buffer[1], buffer[2], buffer[3]);
         }
 
-        // Convert Vector3 to byte buffer
+        public static Vector4[] GetVectors4(byte[] data, ref int currentIndex)
+        {
+            int count = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += sizeof(int);
+            Vector4[] vectors = new Vector4[count];
+            for (int i = 0; i < count; i++)
+            {
+                float[] buffer = new float[4];
+                int size = 4 * sizeof(float);
+                Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+                currentIndex += size;
+                vectors[i] = new Vector4(buffer[0], buffer[1], buffer[2], buffer[3]);
+            }
+            return vectors;
+        }
+
+        // Convert Vector4 to byte buffer
         public static byte[] Vector4ToBytes(Vector4 vector)
         {
             byte[] bytes = new byte[4 * sizeof(float)];
@@ -175,6 +208,22 @@ namespace VRtist.Serialization
             Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
             currentIndex += size;
             return new Vector2(buffer[0], buffer[1]);
+        }
+
+        public static Vector2[] GetVectors2(byte[] data, ref int currentIndex)
+        {
+            int count = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += sizeof(int);
+            Vector2[] vectors = new Vector2[count];
+            for (int i = 0; i < count; i++)
+            {
+                float[] buffer = new float[2];
+                int size = 2 * sizeof(float);
+                Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
+                currentIndex += size;
+                vectors[i] = new Vector2(buffer[0], buffer[1]);
+            }
+            return vectors;
         }
 
         // Convert Vector2 to byte buffer
@@ -279,6 +328,17 @@ namespace VRtist.Serialization
             return buffer[0];
         }
 
+        // convert byte buffer to ints array
+        public static int[] GetInts(byte[] data, ref int currentIndex)
+        {
+            int count = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += sizeof(int);
+            int[] buffer = new int[count];
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, count * sizeof(int));
+            currentIndex += count * sizeof(int);
+            return buffer;
+        }
+
         // convert int to byte buffer
         public static byte[] IntToBytes(int value)
         {
@@ -307,6 +367,17 @@ namespace VRtist.Serialization
             Buffer.BlockCopy(data, currentIndex, buffer, 0, sizeof(float));
             currentIndex += sizeof(float);
             return buffer[0];
+        }
+
+        // convert byte buffer to floats array
+        public static float[] GetFloats(byte[] data, ref int currentIndex)
+        {
+            int count = (int)BitConverter.ToUInt32(data, currentIndex);
+            currentIndex += sizeof(int);
+            float[] buffer = new float[count];
+            Buffer.BlockCopy(data, currentIndex, buffer, 0, count * sizeof(float));
+            currentIndex += count * sizeof(float);
+            return buffer;
         }
 
         // convert float to byte buffer

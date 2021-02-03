@@ -6,8 +6,9 @@ using UnityEngine;
 
 namespace VRtist.Serialization
 {
-    public class SerializationManager
+    public static class SerializationManager
     {
+
         private static BinaryFormatter formatter = null;
 
         public static bool Save(string path, object data, bool deleteFolder = false)

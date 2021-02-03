@@ -4,17 +4,6 @@ using UnityEngine;
 
 namespace VRtist.Serialization
 {
-    [System.Serializable]
-    public enum ObjectType
-    {
-        Object,
-        Empty,
-        Light,
-        Camera
-    }
-
-
-    [System.Serializable]
     public class MaterialData
     {
         readonly string path;  // relative path
@@ -47,11 +36,6 @@ namespace VRtist.Serialization
 
         public Vector4 uvOffset;
         public Vector4 uvScale;
-
-        public MaterialData(byte[] bytes, ref int offset)
-        {
-
-        }
 
         public MaterialData(MaterialInfo materialInfo)
         {
@@ -164,50 +148,134 @@ namespace VRtist.Serialization
             return material;
         }
 
+        public MaterialData(byte[] bytes, ref int offset)
+        {
+            path = Converter.GetString(bytes, ref offset);
+
+            useColorMap = Converter.GetBool(bytes, ref offset);
+            baseColor = Converter.GetColor(bytes, ref offset);
+            colorMapPath = Converter.GetString(bytes, ref offset);
+
+            useNormalMap = Converter.GetBool(bytes, ref offset);
+            normalMapPath = Converter.GetString(bytes, ref offset);
+
+            useMetallicMap = Converter.GetBool(bytes, ref offset);
+            metallic = Converter.GetFloat(bytes, ref offset);
+            metallicMapPath = Converter.GetString(bytes, ref offset);
+
+            useRoughnessMap = Converter.GetBool(bytes, ref offset);
+            roughness = Converter.GetFloat(bytes, ref offset);
+            roughnessMapPath = Converter.GetString(bytes, ref offset);
+
+            useEmissiveMap = Converter.GetBool(bytes, ref offset);
+            emissive = Converter.GetColor(bytes, ref offset);
+            emissiveMapPath = Converter.GetString(bytes, ref offset);
+
+            useAoMap = Converter.GetBool(bytes, ref offset);
+            aoMapPath = Converter.GetString(bytes, ref offset);
+
+            useOpacityMap = Converter.GetBool(bytes, ref offset);
+            opacity = Converter.GetFloat(bytes, ref offset);
+            opacityMapPath = Converter.GetString(bytes, ref offset);
+
+            uvOffset = Converter.GetVector4(bytes, ref offset);
+            uvScale = Converter.GetVector4(bytes, ref offset);
+        }
+
         public byte[] ToBytes()
         {
-            byte[] pathBuffer;  // relative path
+            byte[] pathBuffer = Converter.StringToBytes(path);
 
-            byte[] useColorMapBuffer;
-            byte[] baseColorBuffer;
-            byte[] colorMapPathBuffer;
+            byte[] useColorMapBuffer = Converter.BoolToBytes(useColorMap);
+            byte[] baseColorBuffer = Converter.ColorToBytes(baseColor);
+            byte[] colorMapPathBuffer = Converter.StringToBytes(colorMapPath);
 
-            byte[] useNormalMapBuffer;
-            byte[] normalMapPathBuffer;
+            byte[] useNormalMapBuffer = Converter.BoolToBytes(useNormalMap);
+            byte[] normalMapPathBuffer = Converter.StringToBytes(normalMapPath);
 
-            byte[] useMetallicMapBuffer;
-            byte[] metallicBuffer;
-            byte[] metallicMapPathBuffer;
+            byte[] useMetallicMapBuffer = Converter.BoolToBytes(useMetallicMap);
+            byte[] metallicBuffer = Converter.FloatToBytes(metallic);
+            byte[] metallicMapPathBuffer = Converter.StringToBytes(metallicMapPath);
 
-            byte[] useRoughnessMapBuffer;
-            byte[] roughnessBuffer;
-            byte[] roughnessMapPathBuffer;
+            byte[] useRoughnessMapBuffer = Converter.BoolToBytes(useRoughnessMap);
+            byte[] roughnessBuffer = Converter.FloatToBytes(roughness);
+            byte[] roughnessMapPathBuffer = Converter.StringToBytes(roughnessMapPath);
 
-            byte[] useEmissiveMapBuffer;
-            byte[] emissiveBuffer;
-            byte[] emissiveMapPathBuffer;
+            byte[] useEmissiveMapBuffer = Converter.BoolToBytes(useEmissiveMap);
+            byte[] emissiveBuffer = Converter.ColorToBytes(emissive);
+            byte[] emissiveMapPathBuffer = Converter.StringToBytes(emissiveMapPath);
 
-            byte[] useAoMapBuffer;
-            byte[] aoMapPathBuffer;
+            byte[] useAoMapBuffer = Converter.BoolToBytes(useAoMap);
+            byte[] aoMapPathBuffer = Converter.StringToBytes(aoMapPath);
 
-            byte[] useOpacityMapBuffer;
-            byte[] opacityBuffer;
-            byte[] opacityMapPathBuffer;
+            byte[] useOpacityMapBuffer = Converter.BoolToBytes(useOpacityMap);
+            byte[] opacityBuffer = Converter.FloatToBytes(opacity);
+            byte[] opacityMapPathBuffer = Converter.StringToBytes(opacityMapPath);
 
-            byte[] uvOffsetBuffer;
-            byte[] uvScaleBuffer;
+            byte[] uvOffsetBuffer = Converter.Vector4ToBytes(uvOffset);
+            byte[] uvScaleBuffer = Converter.Vector4ToBytes(uvScale);
 
-            byte[] bytes = new byte[45];
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                pathBuffer,
+
+                useColorMapBuffer,
+                baseColorBuffer,
+                colorMapPathBuffer,
+
+                useNormalMapBuffer,
+                normalMapPathBuffer,
+
+                useMetallicMapBuffer,
+                metallicBuffer,
+                metallicMapPathBuffer,
+
+                useRoughnessMapBuffer,
+                roughnessBuffer,
+                roughnessMapPathBuffer,
+
+                useEmissiveMapBuffer,
+                emissiveBuffer,
+                emissiveMapPathBuffer,
+
+                useAoMapBuffer,
+                aoMapPathBuffer,
+
+                useOpacityMapBuffer,
+                opacityBuffer,
+                opacityMapPathBuffer,
+
+                uvOffsetBuffer,
+                uvScaleBuffer
+            });
             return bytes;
         }
     }
 
 
-    [System.Serializable]
     public class SubMesh
     {
         public MeshTopology topology;
         public int[] indices;
+
+        public SubMesh(byte[] bytes, ref int offset)
+        {
+            topology = (MeshTopology)Converter.GetInt(bytes, ref offset);
+            indices = Converter.GetInts(bytes, ref offset);
+        }
+
+        public byte[] ToBytes()
+        {
+            byte[] topologyBuffer = Converter.IntToBytes((int)topology);
+            byte[] indicesBuffer = Converter.IntsToBytes(indices);
+
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                topologyBuffer,
+                indicesBuffer
+            });
+            return bytes;
+        }
     }
 
 
