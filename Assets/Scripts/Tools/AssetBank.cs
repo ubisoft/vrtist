@@ -153,12 +153,10 @@ namespace VRtist
             AddBuiltinAsset("Vegetation", "Green Grass", "Prefabs/UI/VEGETATION/UI_green_grass", "Prefabs/Primitives/VEGETATION/green_grass");
             AddBuiltinAsset("Vegetation", "Yellow Grass", "Prefabs/UI/VEGETATION/UI_yellow_grass", "Prefabs/Primitives/VEGETATION/yellow_grass");
 
-            //AddBuiltinAsset("Vegetation", "Coconut Tree", "Prefabs/UI/VEGETATION/UI_Coconut_Tree", "Prefabs/Primitives/VEGETATION/COCONUT_TREE_PRIM");
-            //AddBuiltinAsset("Vegetation", "Grass", "Prefabs/UI/VEGETATION/UI_Grass", "Prefabs/Primitives/VEGETATION/GRASS_PRIM");
-            //AddBuiltinAsset("Vegetation", "Wood A", "Prefabs/UI/VEGETATION/Wood_A", "Prefabs/Primitives/VEGETATION/WOOD_A_PRIM");
-            //AddBuiltinAsset("Vegetation", "Wood B", "Prefabs/UI/VEGETATION/Wood_B", "Prefabs/Primitives/VEGETATION/WOOD_B_PRIM");
-            //AddBuiltinAsset("Vegetation", "Wood C", "Prefabs/UI/VEGETATION/Wood_C", "Prefabs/Primitives/VEGETATION/WOOD_C_PRIM");
-            //AddBuiltinAsset("Vegetation", "Log Wood", "Prefabs/UI/VEGETATION/LogWood", "Prefabs/Primitives/VEGETATION/LOG_WOOD_PRIM");
+            AddBuiltinAsset("Vegetation", "Wood A", "Prefabs/UI/VEGETATION/UI_wood_A", "Prefabs/Primitives/VEGETATION/wood_A");
+            AddBuiltinAsset("Vegetation", "Wood B", "Prefabs/UI/VEGETATION/UI_wood_B", "Prefabs/Primitives/VEGETATION/wood_B");
+            AddBuiltinAsset("Vegetation", "Wood C", "Prefabs/UI/VEGETATION/UI_wood_C", "Prefabs/Primitives/VEGETATION/wood_C");
+            AddBuiltinAsset("Vegetation", "Log Wood", "Prefabs/UI/VEGETATION/UI_log_wood", "Prefabs/Primitives/VEGETATION/log_wood");
 
             AddBuiltinAsset("Rock", "Rock A", "Prefabs/UI/ROCKS/Rock_A", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_A_PRIM");
             AddBuiltinAsset("Rock", "Rock B", "Prefabs/UI/ROCKS/Rock_B", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_B_PRIM");
