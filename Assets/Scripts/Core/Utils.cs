@@ -250,11 +250,12 @@ namespace VRtist
 
         public static void ClearScene()
         {
-            GlobalState.clearScene.Invoke();
-
             Transform root = GlobalState.Instance.world.Find("RightHanded");
             DeleteTransformChildren(root);
             DeleteTransformChildren(SyncData.prefab);
+            SyncData.nodes.Clear();
+
+            GlobalState.clearScene.Invoke();
         }
 
         public static void DeleteTransformChildren(Transform trans)

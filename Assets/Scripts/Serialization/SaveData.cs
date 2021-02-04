@@ -389,8 +389,14 @@ namespace VRtist.Serialization
     public class ObjectData : IBlob
     {
         public string name;
+        public string parent;
         public string path;  // relative path
         public string tag;
+
+        // Parent Transform
+        public Vector3 parentPosition;
+        public Quaternion parentRotation;
+        public Vector3 parentScale;
 
         // Transform
         public Vector3 position;
@@ -415,8 +421,13 @@ namespace VRtist.Serialization
         public virtual void FromBytes(byte[] bytes, ref int index)
         {
             name = Converter.GetString(bytes, ref index);
+            parent = Converter.GetString(bytes, ref index);
             path = Converter.GetString(bytes, ref index);
             tag = Converter.GetString(bytes, ref index);
+
+            parentPosition = Converter.GetVector3(bytes, ref index);
+            parentRotation = Converter.GetQuaternion(bytes, ref index);
+            parentScale = Converter.GetVector3(bytes, ref index);
 
             position = Converter.GetVector3(bytes, ref index);
             rotation = Converter.GetQuaternion(bytes, ref index);
@@ -441,8 +452,13 @@ namespace VRtist.Serialization
         public virtual byte[] ToBytes()
         {
             byte[] nameBuffer = Converter.StringToBytes(name);
+            byte[] parentBuffer = Converter.StringToBytes(parent);
             byte[] pathBuffer = Converter.StringToBytes(path);
             byte[] tagBuffer = Converter.StringToBytes(tag);
+
+            byte[] parentPositionBuffer = Converter.Vector3ToBytes(parentPosition);
+            byte[] parentRotationBuffer = Converter.QuaternionToBytes(parentRotation);
+            byte[] parentScaleBuffer = Converter.Vector3ToBytes(parentScale);
 
             byte[] positionBuffer = Converter.Vector3ToBytes(position);
             byte[] rotationBuffer = Converter.QuaternionToBytes(rotation);
@@ -465,8 +481,13 @@ namespace VRtist.Serialization
 
             byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
                 nameBuffer,
+                parentBuffer,
                 pathBuffer,
                 tagBuffer,
+
+                parentPositionBuffer,
+                parentRotationBuffer,
+                parentScaleBuffer,
 
                 positionBuffer,
                 rotationBuffer,
