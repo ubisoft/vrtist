@@ -147,6 +147,8 @@ namespace VRtist
             AddBuiltinAsset("Vegetation", "Big Big Tree", "Prefabs/UI/VEGETATION/UI_big_big_tree", "Prefabs/Primitives/VEGETATION/big_big_tree");
             //AddBuiltinAsset("Vegetation", "Banana Tree Smooth", "Prefabs/UI/VEGETATION/UI_banana_tree_smooth", "Prefabs/Primitives/VEGETATION/banana_tree_smooth");
             AddBuiltinAsset("Vegetation", "Banana Tree Hard", "Prefabs/UI/VEGETATION/UI_banana_tree_hard", "Prefabs/Primitives/VEGETATION/banana_tree_hard");
+            AddBuiltinAsset("Vegetation", "Coconut Tree Smooth", "Prefabs/UI/VEGETATION/UI_coconut_tree_smooth", "Prefabs/Primitives/VEGETATION/coconut_tree_smooth");
+
             //AddBuiltinAsset("Vegetation", "Coconut Tree", "Prefabs/UI/VEGETATION/UI_Coconut_Tree", "Prefabs/Primitives/VEGETATION/COCONUT_TREE_PRIM");
             //AddBuiltinAsset("Vegetation", "Grass", "Prefabs/UI/VEGETATION/UI_Grass", "Prefabs/Primitives/VEGETATION/GRASS_PRIM");
             //AddBuiltinAsset("Vegetation", "Wood A", "Prefabs/UI/VEGETATION/Wood_A", "Prefabs/Primitives/VEGETATION/WOOD_A_PRIM");
