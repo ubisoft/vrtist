@@ -350,6 +350,7 @@ namespace VRtist
 
         public static void ApplyMaterialParameters(Material material, MaterialParameters parameters)
         {
+            material.name = parameters.name;
             //
             // OPACITY
             //
@@ -1650,7 +1651,8 @@ namespace VRtist
                 materialParameters = new MaterialParameters
                 {
                     materialType = MaterialID.ObjectOpaque,  // Check if we have to create an unlit material
-                    name = materialName
+                    name = materialName,
+                    opacity = 1f
                 };
                 materialsParameters[materialName] = materialParameters;
             }

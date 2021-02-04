@@ -356,9 +356,11 @@ namespace VRtist.Serialization
                     // Materials
                     foreach (Material material in meshRenderer.materials)
                     {
-                        GetMaterialPath(currentProjectName, material.name, out string materialAbsolutePath, out string materialRelativePath);
+                        string materialId = trans.name + "_" + material.name;
+                        GetMaterialPath(currentProjectName, materialId, out string materialAbsolutePath, out string materialRelativePath);
                         MaterialInfo materialInfo = new MaterialInfo { relativePath = materialRelativePath, absolutePath = materialAbsolutePath, material = material };
-                        materials.Add(trans.name + "." + material.name, materialInfo);
+                        if (!materials.ContainsKey(materialId))
+                            materials.Add(materialId, materialInfo);
                         data.materialsData.Add(new MaterialData(materialInfo));
                     }
 
@@ -555,7 +557,7 @@ namespace VRtist.Serialization
                 GameObject newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
 
                 // Name the mesh
-                newObject.GetComponentInChildren<MeshFilter>().mesh.name = gobject.GetComponentInChildren<MeshFilter>().mesh.name;
+                newObject.GetComponentInChildren<MeshFilter>(true).mesh.name = gobject.GetComponentInChildren<MeshFilter>(true).mesh.name;
             }
 
             // Then delete the original loaded object
