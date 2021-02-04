@@ -61,7 +61,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnLightAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnLightRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnLightRenamed);
-            Utils.clearScene.AddListener(OnClearScene);
+            GlobalState.clearScene.AddListener(OnClearScene);
             if (null != lightList) { lightList.ItemClickedEvent += OnSelectLightItem; }
             lightItemPrefab = Resources.Load<GameObject>("Prefabs/UI/LightItem");
 
@@ -175,14 +175,14 @@ namespace VRtist
                 if (null == lightController)
                     continue;
 
-                GlobalState.CurrentColor = lightController.color;
+                GlobalState.CurrentColor = lightController.Color;
 
-                SetSliderValues(intensitySlider, lightController.intensity, lightController.minIntensity, lightController.maxIntensity);
-                SetSliderValues(rangeSlider, lightController.range, lightController.minRange, lightController.maxRange);
+                SetSliderValues(intensitySlider, lightController.Intensity, lightController.minIntensity, lightController.maxIntensity);
+                SetSliderValues(rangeSlider, lightController.Range, lightController.minRange, lightController.maxRange);
                 //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
-                SetSliderValues(outerAngleSlider, lightController.outerAngle, 0f, 180f);
+                SetSliderValues(outerAngleSlider, lightController.OuterAngle, 0f, 180f);
 
-                SetCheckboxValue(castShadowsCheckbox, lightController.castShadows);
+                SetCheckboxValue(castShadowsCheckbox, lightController.CastShadows);
                 SetCheckboxValue(enableCheckbox, gobject.activeSelf);
 
                 // Only the first light sets its parameters to the widgets
@@ -208,7 +208,7 @@ namespace VRtist
                     continue;
 
                 selectedLights.Add(gobject);
-                switch (lightController.lightType)
+                switch (lightController.Type)
                 {
                     case LightType.Directional:
                         sunCount++;
@@ -256,7 +256,7 @@ namespace VRtist
                 LightController lightingController = gobject.GetComponent<LightController>();
                 if (null == lightingController)
                     continue;
-                lightingController.color = color;
+                lightingController.Color = color;
                 SendLightParams(gobject);
             }
         }
@@ -280,7 +280,7 @@ namespace VRtist
                     continue;
                 if (param == "CastShadows")
                 {
-                    lightingController.castShadows = value;
+                    lightingController.CastShadows = value;
                 }
 
                 if (param == "Enable")
@@ -299,27 +299,27 @@ namespace VRtist
             LightController[] lightControllers = FindObjectsOfType<LightController>() as LightController[];
             foreach (LightController lightController in lightControllers)
             {
-                lightController.castShadows = value;
+                lightController.CastShadows = value;
                 SendLightParams(lightController.gameObject);
             }
         }
 
         public void OnIntensitySliderPressed()
         {
-            OnSliderPressed("Light Intensity", "/LightController/intensity");
+            OnSliderPressed("Light Intensity", "/LightController/Intensity");
         }
         public void OnRangeSliderPressed()
         {
-            OnSliderPressed("Light Range", "/LightController/range");
+            OnSliderPressed("Light Range", "/LightController/Range");
         }
         public void OnAngleSliderPressed()
         {
-            OnSliderPressed("Light Angle", "/LightController/outerAngle");
+            OnSliderPressed("Light Angle", "/LightController/OuterAngle");
         }
 
         public void OnCastShadowCheckboxPressed()
         {
-            OnCheckboxPressed("Light Cast Shadows", "/LightController/castShadows");
+            OnCheckboxPressed("Light Cast Shadows", "/LightController/CastShadows");
         }
 
         public void OnGlobalCastShadowCheckboxPressed()
@@ -333,13 +333,13 @@ namespace VRtist
             }
 
             // Create command for all the lights (not only selected ones)
-            parameterCommand = new CommandSetValue<bool>(lights, "Light Cast Shadows", "/LightController/castShadows");
+            parameterCommand = new CommandSetValue<bool>(lights, "Light Cast Shadows", "/LightController/CastShadows");
         }
 
         public void OnColorPickerPressed()
         {
             if (!gameObject.activeSelf) { return; }
-            OnColorPressed("Light Color", "/LightController/color");
+            OnColorPressed("Light Color", "/LightController/Color");
         }
 
 
@@ -372,13 +372,13 @@ namespace VRtist
                     continue;
 
                 if (param == "Intensity")
-                    lightingController.intensity = value;
+                    lightingController.Intensity = value;
                 if (param == "Range")
-                    lightingController.range = value;
+                    lightingController.Range = value;
                 if (param == "OuterAngle")
-                    lightingController.outerAngle = value;
+                    lightingController.OuterAngle = value;
                 if (param == "InnerAngle")
-                    lightingController.innerAngle = value;
+                    lightingController.InnerAngle = value;
                 SendLightParams(gobject);
             }
         }

@@ -201,7 +201,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnCameraAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnCameraRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
-            Utils.clearScene.AddListener(OnClearScene);
+            GlobalState.clearScene.AddListener(OnClearScene);
             if (null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }

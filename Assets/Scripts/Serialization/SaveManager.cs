@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -8,7 +8,8 @@ namespace VRtist.Serialization
 {
     public class MeshInfo
     {
-        public string meshPath;
+        public string relativePath;
+        public string absolutePath;
         public Mesh mesh;
         public List<MaterialInfo> materialsInfo;
     }
@@ -16,7 +17,8 @@ namespace VRtist.Serialization
 
     public class MaterialInfo
     {
-        public string materialPath;
+        public string relativePath;
+        public string absolutePath;
         public Material material;
     }
 
@@ -31,6 +33,19 @@ namespace VRtist.Serialization
         public RenderTexture cubeMapRT;
         public RenderTexture equiRectRT;
 
+        private string saveFolder;
+        private string currentProjectName;
+
+        private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
+        private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
+
+        private readonly string DEFAULT_PROJECT_NAME = "newProject";
+
+        #region Singleton
+        // ----------------------------------------------------------------------------------------
+        // Singleton
+        // ----------------------------------------------------------------------------------------
+
         private static SaveManager instance;
         public static SaveManager Instance
         {
@@ -39,11 +54,6 @@ namespace VRtist.Serialization
                 return instance;
             }
         }
-
-        private string saveFolder;
-        private string currentProjectName;
-
-        private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
 
         private void Awake()
         {
@@ -54,15 +64,21 @@ namespace VRtist.Serialization
 
             saveFolder = Application.persistentDataPath + "/saves/";
         }
+        #endregion
 
-        public static Material GetMaterial(bool opaque)
-        {
-            return opaque ? ResourceManager.GetMaterial(MaterialID.ObjectOpaque) : ResourceManager.GetMaterial(MaterialID.ObjectTransparent);
-        }
+        #region Path Management
+        // ----------------------------------------------------------------------------------------
+        // Path Management
+        // ----------------------------------------------------------------------------------------
 
         private string ReplaceInvalidChars(string filename)
         {
             return string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
+        }
+
+        public string NormalizeProjectName(string name)
+        {
+            return ReplaceInvalidChars(name);
         }
 
         private string GetScenePath(string projectName)
@@ -70,9 +86,10 @@ namespace VRtist.Serialization
             return saveFolder + projectName + "/scene.vrtist";
         }
 
-        private string GetMeshPath(string projectName, string meshName)
+        private void GetMeshPath(string projectName, string meshName, out string absolutePath, out string relativePath)
         {
-            return saveFolder + projectName + "/" + ReplaceInvalidChars(meshName) + ".mesh";
+            relativePath = ReplaceInvalidChars(meshName) + ".mesh";
+            absolutePath = saveFolder + projectName + "/" + ReplaceInvalidChars(meshName) + ".mesh";
         }
 
         private string GetScreenshotPath(string projectName)
@@ -80,9 +97,15 @@ namespace VRtist.Serialization
             return saveFolder + projectName + "/thumbnail.png";
         }
 
-        private string GetMaterialPath(string projectName, string materialName)
+        private void GetMaterialPath(string projectName, string materialName, out string absolutePath, out string relativePath)
         {
-            return saveFolder + projectName + "/" + ReplaceInvalidChars(materialName) + "/";
+            relativePath = ReplaceInvalidChars(materialName) + "/";
+            absolutePath = saveFolder + projectName + "/" + ReplaceInvalidChars(materialName) + "/";
+        }
+
+        private string GetSaveFolderPath(string projectName)
+        {
+            return saveFolder + projectName + "/";
         }
 
         public List<string> GetProjectThumbnailPaths()
@@ -102,27 +125,72 @@ namespace VRtist.Serialization
             return paths;
         }
 
+        public string GetNextValidProjectName()
+        {
+            string name = DEFAULT_PROJECT_NAME;
+
+            if (!Directory.Exists(saveFolder)) { return name; }
+
+            int number = 1;
+            foreach (string directory in Directory.GetDirectories(saveFolder, $"{DEFAULT_PROJECT_NAME}*"))
+            {
+                string dirname = Path.GetFileName(directory);
+                if (name == dirname)
+                {
+                    name = $"{DEFAULT_PROJECT_NAME}_{number,0:D3}";
+                    ++number;
+                }
+            }
+
+            return name;
+        }
+        #endregion
+
+        #region Save
+        // ----------------------------------------------------------------------------------------
+        // Save
+        // ----------------------------------------------------------------------------------------
+
+        System.Diagnostics.Stopwatch stopwatch;
+        System.Diagnostics.Stopwatch totalStopwatch;
+
+        private void LogElapsedTime(string what, System.Diagnostics.Stopwatch timer)
+        {
+            TimeSpan ts = timer.Elapsed;
+            string elapsedTime = String.Format("{0:00}m {1:00}s {2:00}ms", ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+            Debug.Log($"{what}: {elapsedTime}");
+        }
+
         public void Save(string projectName)
         {
             if (!CommandManager.IsSceneDirty()) { return; }
+
+            totalStopwatch = new System.Diagnostics.Stopwatch();
+            totalStopwatch.Start();
+
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
             CommandManager.SetSceneDirty(false);
 
             currentProjectName = projectName;
             meshes.Clear();
+            materials.Clear();
             SceneData.Current.Clear();
 
+            stopwatch.Stop();
+            LogElapsedTime("Pre Save", stopwatch);
+
             // Parse RightHanded transform
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
             Transform root = Utils.FindWorld().transform.Find("RightHanded");
             string path = "";
-            StartCoroutine(SerializeChildren(root, path, save: true));
+            SerializeChildren(root, path, save: true);
         }
 
-        private IEnumerator SerializeChildren(Transform root, string path, bool save = false)
+        private void SerializeChildren(Transform root, string path, bool save = false)
         {
             foreach (Transform emptyParent in root)
             {
-                yield return null;
-
                 // We should only have [gameObjectName]_parent game objects
                 if (!emptyParent.name.EndsWith("_parent"))
                 {
@@ -140,7 +208,7 @@ namespace VRtist.Serialization
                 {
                     LightData lightData = new LightData();
                     SetCommonData(child, childPath, lightController, lightData);
-                    SetLightData(child, lightController, lightData);
+                    SetLightData(lightController, lightData);
                     SceneData.Current.lights.Add(lightData);
                     continue;
                 }
@@ -150,7 +218,7 @@ namespace VRtist.Serialization
                 {
                     CameraData cameraData = new CameraData();
                     SetCommonData(child, childPath, cameraController, cameraData);
-                    SetCameraData(child, cameraController, cameraData);
+                    SetCameraData(cameraController, cameraData);
                     SceneData.Current.cameras.Add(cameraData);
                     continue;
                 }
@@ -166,68 +234,70 @@ namespace VRtist.Serialization
                 ParametersController controller = child.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
                 SetCommonData(child, childPath, controller, data);
-                SetMeshData(child, controller, data);
+                SetObjectData(child, controller, data);
                 SceneData.Current.objects.Add(data);
 
                 // Serialize children
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    _ = SerializeChildren(child, childPath);
+                    SerializeChildren(child, childPath);
                 }
             }
 
             // Save
             if (save)
             {
+                stopwatch.Stop();
+                LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
+
                 // Save shot manager data
 
                 // Save animation data
 
                 // Save skybox
+                SceneData.Current.skyData = GlobalState.Instance.SkySettings;
 
                 // Save scene
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
-
-                // Scene screenshot
-                SaveScreenshot();
+                stopwatch.Stop();
+                LogElapsedTime($"Write Scene", stopwatch);
 
                 // Save meshes
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
                 foreach (var meshInfo in meshes.Values)
                 {
-                    yield return null;
-                    SerializationManager.Save(meshInfo.meshPath, new MeshData(meshInfo));
-
-                    // Save materials
-                    foreach (MaterialInfo materialInfo in meshInfo.materialsInfo)
-                    {
-                        yield return null;
-                        SaveMaterial(materialInfo);
-                    }
+                    SerializationManager.Save(meshInfo.absolutePath, new MeshData(meshInfo));
                 }
+                stopwatch.Stop();
+                LogElapsedTime($"Write Meshes ({meshes.Count})", stopwatch);
+
+                // Save materials
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                foreach (MaterialInfo materialInfo in materials.Values)
+                {
+                    SaveMaterial(materialInfo);
+                }
+                stopwatch.Stop();
+                LogElapsedTime($"Write Materials ({materials.Count})", stopwatch);
+
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                SaveScreenshot();
+                stopwatch.Stop();
+                LogElapsedTime($"Snapshot", stopwatch);
+
+                totalStopwatch.Stop();
+                LogElapsedTime("Total Time", totalStopwatch);
+
+                GlobalState.Instance.messageBox.SetVisible(false);
             }
         }
 
-        /*
-            RenderTexture cubeMap = new RenderTexture(2048, 2048, 24, RenderTextureFormat.ARGBFloat);
-            RenderTexture equiRect = new RenderTexture(2048, 1024, 24, RenderTextureFormat.ARGBFloat);
-
-            screenshotCamera.gameObject.SetActive(true);
-            screenshotCamera.RenderToCubemap(cubeMap, 63, Camera.MonoOrStereoscopicEye.Mono);
-            cubeMap.ConvertToEquirect(equiRect);
-            Texture2D texture = new Texture2D(equiRect.width, equiRect.height);
-            RenderTexture previousActiveRT = RenderTexture.active;
-            RenderTexture.active = equiRect;
-            texture.ReadPixels(new Rect(0, 0, equiRect.width, equiRect.height), 0, 0);
-            RenderTexture.active = previousActiveRT;
-            Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
-
-            screenshotCamera.gameObject.SetActive(false);
-         */
         private void SaveScreenshot()
         {
             screenshotCamera.gameObject.SetActive(true);
-            screenshotCamera.RenderToCubemap(cubeMapRT, 63, Camera.MonoOrStereoscopicEye.Mono);
+            screenshotCamera.RenderToCubemap(cubeMapRT);
             cubeMapRT.ConvertToEquirect(equiRectRT);
             Texture2D texture = new Texture2D(equiRectRT.width, equiRectRT.height);
             RenderTexture previousActiveRT = RenderTexture.active;
@@ -235,7 +305,6 @@ namespace VRtist.Serialization
             texture.ReadPixels(new Rect(0, 0, equiRectRT.width, equiRectRT.height), 0, 0);
             RenderTexture.active = previousActiveRT;
             Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
-
             screenshotCamera.gameObject.SetActive(false);
         }
 
@@ -261,13 +330,13 @@ namespace VRtist.Serialization
         {
             if (materialInfo.material.GetInt(boolName) == 1)
             {
-                string path = materialInfo.materialPath + baseName + ".tex";
+                string path = materialInfo.absolutePath + baseName + ".tex";
                 Texture2D texture = (Texture2D)materialInfo.material.GetTexture(textureName);
                 TextureUtils.WriteRawTexture(path, texture);
             }
         }
 
-        private void SetMeshData(Transform trans, ParametersController controller, ObjectData data)
+        private void SetObjectData(Transform trans, ParametersController controller, ObjectData data)
         {
             // Mesh for non-imported objects
             if (null == controller || !controller.isImported)
@@ -277,17 +346,20 @@ namespace VRtist.Serialization
                 if (null != meshFilter && null != meshRenderer)
                 {
                     // Materials
-                    List<MaterialInfo> materialsInfo = new List<MaterialInfo>();
                     foreach (Material material in meshRenderer.materials)
                     {
-                        string materialPath = GetMaterialPath(currentProjectName, material.name);
-                        materialsInfo.Add(new MaterialInfo { materialPath = materialPath, material = material });
+                        string materialId = trans.name + "_" + material.name;
+                        GetMaterialPath(currentProjectName, materialId, out string materialAbsolutePath, out string materialRelativePath);
+                        MaterialInfo materialInfo = new MaterialInfo { relativePath = materialRelativePath, absolutePath = materialAbsolutePath, material = material };
+                        if (!materials.ContainsKey(materialId))
+                            materials.Add(materialId, materialInfo);
+                        data.materialsData.Add(new MaterialData(materialInfo));
                     }
 
                     // Mesh
-                    string meshPath = GetMeshPath(currentProjectName, trans.name);
-                    meshes[meshPath] = new MeshInfo { meshPath = meshPath, mesh = meshFilter.mesh, materialsInfo = materialsInfo };
-                    data.meshPath = meshPath;
+                    GetMeshPath(currentProjectName, meshFilter.mesh.name, out string meshAbsolutePath, out string meshRelativePath);
+                    meshes[meshRelativePath] = new MeshInfo { relativePath = meshRelativePath, absolutePath = meshAbsolutePath, mesh = meshFilter.mesh };
+                    data.meshPath = meshRelativePath;
                 }
                 data.isImported = false;
             }
@@ -300,6 +372,7 @@ namespace VRtist.Serialization
 
         private void SetCommonData(Transform trans, string path, ParametersController controller, ObjectData data)
         {
+            data.name = trans.name;
             data.path = path;
             data.tag = trans.gameObject.tag;
 
@@ -318,23 +391,23 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetLightData(Transform trans, LightController controller, LightData data)
+        private void SetLightData(LightController controller, LightData data)
         {
-            data.lightType = controller.lightType;
-            data.intensity = controller.intensity;
+            data.lightType = controller.Type;
+            data.intensity = controller.Intensity;
             data.minIntensity = controller.minIntensity;
             data.maxIntensity = controller.maxIntensity;
-            data.color = controller.color;
-            data.castShadows = controller.castShadows;
-            data.near = controller.near;
-            data.range = controller.range;
+            data.color = controller.Color;
+            data.castShadows = controller.CastShadows;
+            data.near = controller.ShadowNearPlane;
+            data.range = controller.Range;
             data.minRange = controller.minRange;
             data.maxRange = controller.maxRange;
-            data.outerAngle = controller.outerAngle;
-            data.innerAngle = controller.innerAngle;
+            data.outerAngle = controller.OuterAngle;
+            data.innerAngle = controller.InnerAngle;
         }
 
-        private void SetCameraData(Transform trans, CameraController controller, CameraData data)
+        private void SetCameraData(CameraController controller, CameraData data)
         {
             data.focal = controller.focal;
             data.focus = controller.focus;
@@ -344,10 +417,18 @@ namespace VRtist.Serialization
             data.far = controller.far;
             data.filmHeight = controller.filmHeight;
         }
+        #endregion
+
+        #region Load
+        // ----------------------------------------------------------------------------------------
+        // Load
+        // ----------------------------------------------------------------------------------------
 
         public void Load(string projectName)
         {
+            GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
             currentProjectName = projectName;
+            GlobalState.Settings.ProjectName = projectName;
 
             // Clear current scene
             Utils.ClearScene();
@@ -359,27 +440,33 @@ namespace VRtist.Serialization
 
             // Load data from file
             string path = GetScenePath(projectName);
-            SceneData saveData = (SceneData)SerializationManager.Load(path);
+            SceneData sceneData = new SceneData();
+            SerializationManager.Load(path, sceneData);
+
+            // Sky
+            GlobalState.Instance.SkySettings = sceneData.skyData;
 
             // Objects
             Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
-            foreach (ObjectData data in saveData.objects)
+            foreach (ObjectData data in sceneData.objects)
             {
                 LoadObject(data, importedParent);
             }
             Destroy(importedParent.gameObject);
 
             // Lights
-            foreach (LightData data in saveData.lights)
+            foreach (LightData data in sceneData.lights)
             {
                 LoadLight(data);
             }
 
             // Cameras
-            foreach (CameraData data in saveData.cameras)
+            foreach (CameraData data in sceneData.cameras)
             {
                 LoadCamera(data);
             }
+
+            GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         private void LoadCommonData(GameObject gobject, ObjectData data)
@@ -402,20 +489,27 @@ namespace VRtist.Serialization
             }
         }
 
+        private Material[] LoadMaterials(ObjectData data)
+        {
+            Material[] materials = new Material[data.materialsData.Count];
+            for (int i = 0; i < data.materialsData.Count; ++i)
+            {
+                materials[i] = data.materialsData[i].CreateMaterial(GetSaveFolderPath(currentProjectName));
+            }
+            return materials;
+        }
+
         private async void LoadObject(ObjectData data, Transform importedParent)
         {
-            string[] splitted = data.path.Split('/');
-            string name = splitted[splitted.Length - 1];
-            string parentPath = data.path.Substring(0, data.path.Length - name.Length - 1);  // -1: remove "/"
-
             GameObject gobject;
+            string absoluteMeshPath = GetSaveFolderPath(currentProjectName) + data.meshPath;
 
             // Check for import
             if (data.isImported)
             {
                 try
                 {
-                    gobject = await GlobalState.GeometryImporter.ImportObjectAsync(data.meshPath, importedParent);
+                    gobject = await GlobalState.GeometryImporter.ImportObjectAsync(absoluteMeshPath, importedParent);
                 }
                 catch (System.Exception e)
                 {
@@ -425,35 +519,37 @@ namespace VRtist.Serialization
             }
             else
             {
-                gobject = new GameObject(name);
+                gobject = new GameObject(data.name);
             }
 
             LoadCommonData(gobject, data);
+            gobject.name = data.name;
 
             // Mesh
             if (null != data.meshPath && data.meshPath.Length > 0)
             {
                 if (!data.isImported)
                 {
-                    MeshData meshData = (MeshData)SerializationManager.Load(data.meshPath);
+                    MeshData meshData = new MeshData();
+                    SerializationManager.Load(absoluteMeshPath, meshData);
                     gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
-                    gobject.AddComponent<MeshRenderer>().materials = meshData.GetMaterials();
+                    gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
-                    collider.convex = true;
-                    collider.isTrigger = true;
                 }
             }
 
             // Instantiate using the SyncData API
-            GameObject newObject = null;
             if (data.isImported)
             {
-                newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, "__VRtist_tmp_load__"));
+                SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, "__VRtist_tmp_load__"));
             }
             else
             {
                 // TODO node hierarchy
-                newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+                GameObject newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+
+                // Name the mesh
+                newObject.GetComponentInChildren<MeshFilter>(true).mesh.name = gobject.GetComponentInChildren<MeshFilter>(true).mesh.name;
             }
 
             // Then delete the original loaded object
@@ -480,23 +576,23 @@ namespace VRtist.Serialization
             if (lightPrefab)
             {
                 GameObject newPrefab = SyncData.CreateInstance(lightPrefab, SyncData.prefab, isPrefab: true);
+                GameObject clone = SyncData.InstantiatePrefab(newPrefab);
 
-                LoadCommonData(newPrefab, data);
+                LoadCommonData(clone, data);
 
-                LightController controller = newPrefab.GetComponent<LightController>();
-                controller.intensity = data.intensity;
+                LightController controller = clone.GetComponent<LightController>();
+                Debug.Log($"From Load: {data.intensity}");
+                controller.Intensity = data.intensity;
                 controller.minIntensity = data.minIntensity;
                 controller.maxIntensity = data.maxIntensity;
-                controller.color = data.color;
-                controller.castShadows = data.castShadows;
-                controller.near = data.near;
-                controller.range = data.range;
+                controller.Color = data.color;
+                controller.CastShadows = data.castShadows;
+                controller.ShadowNearPlane = data.near;
+                controller.Range = data.range;
                 controller.minRange = data.minRange;
                 controller.maxRange = data.maxRange;
-                controller.outerAngle = data.outerAngle;
-                controller.innerAngle = data.innerAngle;
-
-                GameObject instance = SyncData.InstantiatePrefab(newPrefab);
+                controller.OuterAngle = data.outerAngle;
+                controller.InnerAngle = data.innerAngle;
             }
         }
 
@@ -507,7 +603,9 @@ namespace VRtist.Serialization
 
             LoadCommonData(newPrefab, data);
 
-            CameraController controller = newPrefab.GetComponent<CameraController>();
+            GameObject clone = SyncData.InstantiatePrefab(newPrefab);
+
+            CameraController controller = clone.GetComponent<CameraController>();
             controller.focal = data.focal;
             controller.focus = data.focus;
             controller.aperture = data.aperture;
@@ -515,8 +613,75 @@ namespace VRtist.Serialization
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
-
-            GameObject instance = SyncData.InstantiatePrefab(newPrefab);
         }
+        #endregion
+
+        #region Delete
+        // ----------------------------------------------------------------------------------------
+        // Delete
+        // ----------------------------------------------------------------------------------------
+
+        public void Delete(string projectName)
+        {
+            string path = saveFolder + projectName;
+            if (!Directory.Exists(path)) { return; }
+
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Failed to delete project " + projectName + ": " + e.Message);
+            }
+        }
+        #endregion
+
+        #region Duplicate
+        // ----------------------------------------------------------------------------------------
+        // Load
+        // ----------------------------------------------------------------------------------------
+
+        public void Duplicate(string projectName, string newName)
+        {
+            string srcPath = saveFolder + projectName;
+            if (!Directory.Exists(srcPath))
+            {
+                Debug.LogError($"Failed to duplicate project {projectName}: project doesn't exist.");
+                return;
+            }
+
+            string dstPath = saveFolder + newName;
+            if (Directory.Exists(dstPath))
+            {
+                Debug.LogError($"Failed to duplicate project {projectName} as {newName}: a project already exists.");
+                return;
+            }
+
+            DirectoryCopy(srcPath, dstPath);
+        }
+
+        private void DirectoryCopy(string srcPath, string dstPath)
+        {
+            DirectoryInfo directory = new DirectoryInfo(srcPath);
+            Directory.CreateDirectory(dstPath);
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = directory.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string tempPath = Path.Combine(dstPath, file.Name);
+                file.CopyTo(tempPath, false);
+            }
+
+            // Copy subdirs
+            DirectoryInfo[] subdirs = directory.GetDirectories();
+            foreach (DirectoryInfo subdir in subdirs)
+            {
+                string tempPath = Path.Combine(dstPath, subdir.Name);
+                DirectoryCopy(subdir.FullName, tempPath);
+            }
+        }
+        #endregion
     }
 }

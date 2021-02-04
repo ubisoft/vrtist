@@ -391,6 +391,9 @@ namespace VRtist
             else
             {
                 newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+
+                // Name the mesh
+                newObject.GetComponentInChildren<MeshFilter>().mesh.name = gobject.GetComponentInChildren<MeshFilter>().mesh.name;
             }
 
             // Get the position of the mouthpiece into matrix

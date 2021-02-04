@@ -1,5 +1,15 @@
-﻿namespace VRtist
+﻿using UnityEngine;
+
+namespace VRtist
 {
+    [System.Serializable]
+    public class SkySettings
+    {
+        public Color topColor;
+        public Color middleColor;
+        public Color bottomColor;
+    }
+
     /// <summary>
     /// Command to change sky properties.
     /// </summary>

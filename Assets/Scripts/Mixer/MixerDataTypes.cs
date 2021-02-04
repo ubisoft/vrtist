@@ -81,14 +81,6 @@ namespace VRtist
         public Transform transform;
     }
 
-    [Serializable]
-    public class SkySettings
-    {
-        public Color topColor;
-        public Color middleColor;
-        public Color bottomColor;
-    }
-
     public class RenameInfo
     {
         public Transform srcTransform;
@@ -230,15 +222,15 @@ namespace VRtist
         public string name;
         public MaterialID materialType;
         public float opacity;
-        public string opacityTexturePath;
+        public string opacityTexturePath = "";
         public Color baseColor;
-        public string baseColorTexturePath;
+        public string baseColorTexturePath = "";
         public float metallic;
-        public string metallicTexturePath;
+        public string metallicTexturePath = "";
         public float roughness;
-        public string roughnessTexturePath;
-        public string normalTexturePath;
+        public string roughnessTexturePath = "";
+        public string normalTexturePath = "";
         public Color emissionColor;
-        public string emissionColorTexturePath;
+        public string emissionColorTexturePath = "";
     }
 }

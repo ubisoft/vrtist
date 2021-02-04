@@ -48,7 +48,7 @@ namespace VRtist
         private UICheckbox rightHanded;
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
-        private UILabel ProjectNameLabel;
+        private UILabel projectNameLabel;
 
         private void Start()
         {
@@ -83,7 +83,7 @@ namespace VRtist
             displayFPS = advancedSubPanel.transform.Find("DisplayFPS").GetComponent<UICheckbox>();
             showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
-            ProjectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
+            projectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
 
             Apply();
 
@@ -109,7 +109,7 @@ namespace VRtist
             OnChangeUIVolume(GlobalState.Settings.uiVolume);
 
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
-            SetProjectName(GlobalState.Settings.projectName);
+            projectNameLabel.Text = GlobalState.Settings.ProjectName;
 
             OnRightHanded(GlobalState.Settings.rightHanded);
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
@@ -160,6 +160,8 @@ namespace VRtist
             rightHanded.Checked = GlobalState.Settings.rightHanded;
             forcePaletteOpen.Checked = GlobalState.Settings.forcePaletteOpen;
             showConsoleWindow.Checked = GlobalState.Settings.ConsoleVisible;
+
+            projectNameLabel.Text = GlobalState.Settings.ProjectName;
         }
 
         private void OnConnected()
@@ -267,15 +269,6 @@ namespace VRtist
             infoSubPanel.SetActive(true);
         }
 
-        public void OnExitApplication()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
-        }
-
         public void OnRightHanded(bool value)
         {
             GlobalState.SetRightHanded(value);
@@ -332,27 +325,24 @@ namespace VRtist
 
         public void OnSaveProject()
         {
-            GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
-            Serialization.SaveManager.Instance.Save(GlobalState.Settings.projectName);
-            GlobalState.Instance.messageBox.SetVisible(false);
+            Serialization.SaveManager.Instance.Save(GlobalState.Settings.ProjectName);
         }
 
         public void OnLoadProject()
         {
-            GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
-            Serialization.SaveManager.Instance.Load(GlobalState.Settings.projectName);
-            GlobalState.Instance.messageBox.SetVisible(false);
+
+            Serialization.SaveManager.Instance.Load(GlobalState.Settings.ProjectName);
         }
 
         public void OnEditProjectName()
         {
-            ToolsUIManager.Instance.OpenKeyboard(SetProjectName, ProjectNameLabel.transform, GlobalState.Settings.projectName);
+            ToolsUIManager.Instance.OpenKeyboard(SetProjectName, projectNameLabel.transform, GlobalState.Settings.ProjectName);
         }
 
         private void SetProjectName(string value)
         {
-            ProjectNameLabel.Text = value;
-            GlobalState.Settings.projectName = value;
+            projectNameLabel.Text = value;
+            GlobalState.Settings.ProjectName = value;
         }
     }
 }
