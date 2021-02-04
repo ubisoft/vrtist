@@ -169,8 +169,12 @@ namespace VRtist
             AddBuiltinAsset("Rock", "Rock K", "Prefabs/UI/ROCKS/Rock_K", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_K_PRIM");
             AddBuiltinAsset("Rock", "Asteroid", "Prefabs/UI/ROCKS/UI_Asteroid", "Prefabs/Primitives/ROCKS/Asteroid_PRIM");
 
-            AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Lapin", "Prefabs/Primitives/CHARACTERS/LAPIN_PRIM");
-            AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Rabbid_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Neutral_LOW");
+            //AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Lapin", "Prefabs/Primitives/CHARACTERS/LAPIN_PRIM");
+            //AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Rabbid_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Neutral_LOW");
+            AddBuiltinAsset("Character", "Rabbid Gen Rest Neutral", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Neutral");
+            AddBuiltinAsset("Character", "Rabbid Gen Rest Bwaa", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Bwaa", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Bwaa");
+            AddBuiltinAsset("Character", "Rabbid Gen Rest Smile", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Smile", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Smile");
+            AddBuiltinAsset("Character", "Rabbid Gen T-Pose Neutral", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_T_Pose_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_T_Pose_Neutral");
 
             AddBuiltinAsset("Prop", "Barrel", "Prefabs/UI/JUNK/Barrel", "Prefabs/Primitives/JUNK/BARREL_PRIM");
             AddBuiltinAsset("Prop", "Bench", "Prefabs/UI/JUNK/Bench", "Prefabs/Primitives/JUNK/BENCH_PRIM");
