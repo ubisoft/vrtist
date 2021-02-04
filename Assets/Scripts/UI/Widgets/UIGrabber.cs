@@ -82,6 +82,7 @@ namespace VRtist
         // Handles multi-mesh and multi-material per mesh.
         public override void SetColor(Color color)
         {
+#if !UNITY_EDITOR // only at runtime, otherwise it leaks materials, that keep disappearing.
             MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
             foreach (MeshRenderer meshRenderer in meshRenderers)
             {
@@ -91,6 +92,7 @@ namespace VRtist
                     material.SetColor("_BaseColor", color);
                 }
             }
+#endif
         }
 
         #region Create Thumbnail helpers
