@@ -373,8 +373,15 @@ namespace VRtist.Serialization
         private void SetCommonData(Transform trans, string path, ParametersController controller, ObjectData data)
         {
             data.name = trans.name;
+            string parentName = trans.parent.parent.name;
+            data.parent = parentName == "RightHanded" ? "" : parentName;
             data.path = path;
             data.tag = trans.gameObject.tag;
+
+            // Parent Transform
+            data.parentPosition = trans.parent.localPosition;
+            data.parentRotation = trans.parent.localRotation;
+            data.parentScale = trans.parent.localScale;
 
             // Transform
             data.position = trans.localPosition;
@@ -545,15 +552,33 @@ namespace VRtist.Serialization
             }
             else
             {
-                // TODO node hierarchy
-                GameObject newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
+                GameObject prefab = SyncData.CreateInstance(gobject, SyncData.prefab, data.name);
+                InitPrefab(prefab, data);
+                GameObject newObject = SyncData.InstantiatePrefab(prefab);
 
                 // Name the mesh
-                newObject.GetComponentInChildren<MeshFilter>(true).mesh.name = gobject.GetComponentInChildren<MeshFilter>(true).mesh.name;
+                MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
+                if (null != srcMeshFilter && null != srcMeshFilter.mesh)
+                {
+                    MeshFilter dstMeshFilter = newObject.GetComponentInChildren<MeshFilter>(true);
+                    dstMeshFilter.mesh.name = srcMeshFilter.mesh.name;
+                }
             }
 
             // Then delete the original loaded object
             Destroy(gobject);
+        }
+
+        void InitPrefab(GameObject newPrefab, ObjectData data)
+        {
+            newPrefab.transform.parent.localPosition = data.parentPosition;
+            newPrefab.transform.parent.localRotation = data.parentRotation;
+            newPrefab.transform.parent.localScale = data.parentScale;
+
+            if (data.parent == "")
+                return;
+            Node node = SyncData.CreateNode(newPrefab.name, SyncData.nodes[data.parent]);
+            node.prefab = newPrefab;
         }
 
         private void LoadLight(LightData data)
@@ -575,7 +600,8 @@ namespace VRtist.Serialization
 
             if (lightPrefab)
             {
-                GameObject newPrefab = SyncData.CreateInstance(lightPrefab, SyncData.prefab, isPrefab: true);
+                GameObject newPrefab = SyncData.CreateInstance(lightPrefab, SyncData.prefab, data.name, isPrefab: true);
+                InitPrefab(newPrefab, data);
                 GameObject clone = SyncData.InstantiatePrefab(newPrefab);
 
                 LoadCommonData(clone, data);
@@ -599,7 +625,8 @@ namespace VRtist.Serialization
         private void LoadCamera(CameraData data)
         {
             GameObject cameraPrefab = ResourceManager.GetPrefab(PrefabID.Camera);
-            GameObject newPrefab = SyncData.CreateInstance(cameraPrefab, SyncData.prefab, isPrefab: true);
+            GameObject newPrefab = SyncData.CreateInstance(cameraPrefab, SyncData.prefab, data.name, isPrefab: true);
+            InitPrefab(newPrefab, data);
 
             LoadCommonData(newPrefab, data);
 
