@@ -12,6 +12,7 @@ namespace VRtist.Serialization
 
     public class MaterialData : IBlob
     {
+        string name;
         string path;  // relative path
 
         public bool useColorMap;
@@ -54,6 +55,7 @@ namespace VRtist.Serialization
                 return;
             }
 
+            name = materialInfo.material.name;
             path = materialInfo.relativePath;
 
             useColorMap = materialInfo.material.GetInt("_UseColorMap") == 1f;
@@ -96,6 +98,7 @@ namespace VRtist.Serialization
 
             string fullPath = rootPath + path;
 
+            material.name = name;
             material.SetFloat("_UseColorMap", useColorMap ? 1f : 0f);
             material.SetColor("_BaseColor", baseColor);
             if (useColorMap)
@@ -158,6 +161,7 @@ namespace VRtist.Serialization
 
         public void FromBytes(byte[] bytes, ref int index)
         {
+            name = Converter.GetString(bytes, ref index);
             path = Converter.GetString(bytes, ref index);
 
             useColorMap = Converter.GetBool(bytes, ref index);
@@ -192,6 +196,7 @@ namespace VRtist.Serialization
 
         public byte[] ToBytes()
         {
+            byte[] nameBuffer = Converter.StringToBytes(name);
             byte[] pathBuffer = Converter.StringToBytes(path);
 
             byte[] useColorMapBuffer = Converter.BoolToBytes(useColorMap);
@@ -225,6 +230,7 @@ namespace VRtist.Serialization
 
             byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
             {
+                nameBuffer,
                 pathBuffer,
 
                 useColorMapBuffer,
