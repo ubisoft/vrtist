@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 6557492152388741516}
   - component: {fileID: 7831548421864810025}
   - component: {fileID: 5425650637651383011}
+  - component: {fileID: 6641847357634941873}
   m_Layer: 0
   m_Name: coconut_tree
-  m_TagString: Untagged
+  m_TagString: PhysicObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -83,3 +84,16 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &6641847357634941873
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5785776360311665462}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 3.3750396, y: 6.907221, z: 3.5749726}
+  m_Center: {x: -0.04466164, y: 3.455593, z: -0.009465039}
