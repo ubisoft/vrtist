@@ -657,6 +657,168 @@ namespace VRtist.Serialization
         }
     }
 
+
+    public class KeyframeData : IBlob
+    {
+        public int frame;
+        public float value;
+        public Interpolation interpolation;
+
+        public byte[] ToBytes()
+        {
+            byte[] frameBuffer = Converter.IntToBytes(frame);
+            byte[] valueBuffer = Converter.FloatToBytes(value);
+            byte[] interpolationBuffer = Converter.IntToBytes((int)interpolation);
+            return Converter.ConcatenateBuffers(new List<byte[]> {
+                frameBuffer,
+                valueBuffer,
+                interpolationBuffer
+            });
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            frame = Converter.GetInt(buffer, ref index);
+            value = Converter.GetFloat(buffer, ref index);
+            interpolation = (Interpolation)Converter.GetInt(buffer, ref index);
+        }
+    }
+
+
+    public class CurveData : IBlob
+    {
+        public AnimatableProperty property;
+        public List<KeyframeData> keyframes = new List<KeyframeData>();
+
+        public byte[] ToBytes()
+        {
+            byte[] propertyBuffer = Converter.IntToBytes((int)property);
+            byte[] keyCountBuffer = Converter.IntToBytes(keyframes.Count);
+            List<byte[]> keysBufferList = new List<byte[]>();
+            foreach (KeyframeData keyframe in keyframes)
+            {
+                keysBufferList.Add(keyframe.ToBytes());
+            }
+            byte[] keyframesBuffer = Converter.ConcatenateBuffers(keysBufferList);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                propertyBuffer,
+                keyCountBuffer,
+                keyframesBuffer
+            });
+            return bytes;
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            property = (AnimatableProperty)Converter.GetInt(buffer, ref index);
+            int count = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < count; ++i)
+            {
+                KeyframeData keyframe = new KeyframeData();
+                keyframe.FromBytes(buffer, ref index);
+                keyframes.Add(keyframe);
+            }
+        }
+    }
+
+
+    public class AnimationData : IBlob
+    {
+        public string objectName;
+        public List<CurveData> curves = new List<CurveData>();
+
+        public byte[] ToBytes()
+        {
+            byte[] nameBuffer = Converter.StringToBytes(objectName);
+            byte[] curveCountBuffer = Converter.IntToBytes(curves.Count);
+            List<byte[]> curvesBufferList = new List<byte[]>();
+            foreach (CurveData curve in curves)
+            {
+                curvesBufferList.Add(curve.ToBytes());
+            }
+            byte[] curvesBuffer = Converter.ConcatenateBuffers(curvesBufferList);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                nameBuffer,
+                curveCountBuffer,
+                curvesBuffer
+            });
+            return bytes;
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            objectName = Converter.GetString(buffer, ref index);
+            int curvesCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < curvesCount; ++i)
+            {
+                CurveData curveData = new CurveData();
+                curveData.FromBytes(buffer, ref index);
+                curves.Add(curveData);
+            }
+        }
+    }
+
+
+    public class ConstraintData : IBlob
+    {
+        public string source;
+        public string target;
+        public ConstraintType type;
+
+        public byte[] ToBytes()
+        {
+            byte[] sourceBuffer = Converter.StringToBytes(source);
+            byte[] targetBuffer = Converter.StringToBytes(target);
+            byte[] typeBuffer = Converter.IntToBytes((int)type);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                sourceBuffer,
+                targetBuffer,
+                typeBuffer
+            });
+            return bytes;
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            source = Converter.GetString(buffer, ref index);
+            target = Converter.GetString(buffer, ref index);
+            type = (ConstraintType)Converter.GetInt(buffer, ref index);
+        }
+    }
+
+
+    public class PlayerData : IBlob
+    {
+        public Vector3 position;
+        public Quaternion rotation;
+        public float scale;
+
+        public byte[] ToBytes()
+        {
+            byte[] positionBuffer = Converter.Vector3ToBytes(position);
+            byte[] rotationBuffer = Converter.QuaternionToBytes(rotation);
+            byte[] scaleBuffer = Converter.FloatToBytes(scale);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                positionBuffer,
+                rotationBuffer,
+                scaleBuffer
+            });
+            return bytes;
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            position = Converter.GetVector3(buffer, ref index);
+            rotation = Converter.GetQuaternion(buffer, ref index);
+            scale = Converter.GetFloat(buffer, ref index);
+        }
+    }
+
+
     public class SceneData : IBlob
     {
         private static SceneData current;
@@ -674,8 +836,17 @@ namespace VRtist.Serialization
         public List<CameraData> cameras = new List<CameraData>();
 
         public List<ShotData> shots = new List<ShotData>();
+        public List<AnimationData> animations = new List<AnimationData>();
+        public float fps;
+        public int startFrame;
+        public int endFrame;
+        public int currentFrame;
+
+        public List<ConstraintData> constraints = new List<ConstraintData>();
 
         public SkySettings skyData;
+
+        public PlayerData playerData;
 
         public void Clear()
         {
@@ -718,6 +889,27 @@ namespace VRtist.Serialization
                 bottomColor = Converter.GetColor(buffer, ref index)
             };
 
+            int animationsCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < animationsCount; i++)
+            {
+                AnimationData data = new AnimationData();
+                data.FromBytes(buffer, ref index);
+                animations.Add(data);
+            }
+
+            fps = Converter.GetFloat(buffer, ref index);
+            startFrame = Converter.GetInt(buffer, ref index);
+            endFrame = Converter.GetInt(buffer, ref index);
+            currentFrame = Converter.GetInt(buffer, ref index);
+
+            int constraintsCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < constraintsCount; i++)
+            {
+                ConstraintData data = new ConstraintData();
+                data.FromBytes(buffer, ref index);
+                constraints.Add(data);
+            }
+
             int shotsCount = Converter.GetInt(buffer, ref index);
             for (int i = 0; i < shotsCount; i++)
             {
@@ -725,6 +917,9 @@ namespace VRtist.Serialization
                 data.FromBytes(buffer, ref index);
                 shots.Add(data);
             }
+
+            playerData = new PlayerData();
+            playerData.FromBytes(buffer, ref index);
         }
 
         public byte[] ToBytes()
@@ -757,6 +952,27 @@ namespace VRtist.Serialization
             byte[] skyMiddleColorBuffer = Converter.ColorToBytes(skyData.middleColor);
             byte[] skyBottomColorBuffer = Converter.ColorToBytes(skyData.bottomColor);
 
+            byte[] animationsCountBuffer = Converter.IntToBytes(animations.Count);
+            List<byte[]> animationsBufferList = new List<byte[]>();
+            foreach (AnimationData data in animations)
+            {
+                animationsBufferList.Add(data.ToBytes());
+            }
+            byte[] animationsBuffer = Converter.ConcatenateBuffers(animationsBufferList);
+
+            byte[] fpsBuffer = Converter.FloatToBytes(fps);
+            byte[] startFrameBuffer = Converter.IntToBytes(startFrame);
+            byte[] endFrameBuffer = Converter.IntToBytes(endFrame);
+            byte[] currentFrameBuffer = Converter.IntToBytes(currentFrame);
+
+            byte[] constraintsCountBuffer = Converter.IntToBytes(constraints.Count);
+            List<byte[]> constraintsBufferList = new List<byte[]>();
+            foreach (ConstraintData data in constraints)
+            {
+                constraintsBufferList.Add(data.ToBytes());
+            }
+            byte[] constraintsBuffer = Converter.ConcatenateBuffers(constraintsBufferList);
+
             byte[] shotsCountBuffer = Converter.IntToBytes(shots.Count);
             List<byte[]> shotsBufferList = new List<byte[]>();
             foreach (ShotData data in shots)
@@ -764,6 +980,8 @@ namespace VRtist.Serialization
                 shotsBufferList.Add(data.ToBytes());
             }
             byte[] shotsBuffer = Converter.ConcatenateBuffers(shotsBufferList);
+
+            byte[] playerBuffer = playerData.ToBytes();
 
             byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
                 objectsCountBuffer,
@@ -779,8 +997,20 @@ namespace VRtist.Serialization
                 skyMiddleColorBuffer,
                 skyBottomColorBuffer,
 
+                animationsCountBuffer,
+                animationsBuffer,
+                fpsBuffer,
+                startFrameBuffer,
+                endFrameBuffer,
+                currentFrameBuffer,
+
+                constraintsCountBuffer,
+                constraintsBuffer,
+
                 shotsCountBuffer,
-                shotsBuffer
+                shotsBuffer,
+
+                playerBuffer
             });
             return bytes;
         }

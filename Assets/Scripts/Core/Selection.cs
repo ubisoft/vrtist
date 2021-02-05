@@ -155,6 +155,13 @@ namespace VRtist
             onSelectionChanged.Invoke(previousSelectedObjects, selectedObjects);
         }
 
+        public static void Clear()
+        {
+            ClearSelection();
+            AuxiliarySelection = null;
+            HoveredObject = null;
+        }
+
         public static bool IsHovered(GameObject gObject)
         {
             return gObject == hoveredObject;

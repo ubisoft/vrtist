@@ -258,6 +258,9 @@ namespace VRtist
         {
             // Clear undo/redo stack
             CommandManager.Clear();
+            AnimationEngine.Instance.Clear();
+            Selection.Clear();
+            ConstraintManager.Clear();
 
             OnBackToScene();
             Serialization.SaveManager.Instance.Load(currentProject.name);

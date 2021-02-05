@@ -15,7 +15,7 @@ namespace VRtist
     /// <summary>
     /// Internal constraint representation.
     /// </summary>
-    class Constraint
+    public class Constraint
     {
         public GameObject gobject;
         public Transform target;
@@ -52,6 +52,11 @@ namespace VRtist
         {
             ParentConstraint parentConstraint = gobject.GetComponent<ParentConstraint>();
             return null != parentConstraint;
+        }
+
+        public static List<Constraint> GetAllConstraints()
+        {
+            return constraints;
         }
 
         public static void RemoveConstraint<T>(GameObject gobject) where T : UnityEngine.Component
@@ -122,6 +127,15 @@ namespace VRtist
                 lineRenderer.SetPosition(1, constraint.target.position);
                 lineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
                 lineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
+            }
+        }
+
+        public static void AddConstraint(GameObject source, GameObject target, ConstraintType type)
+        {
+            switch (type)
+            {
+                case ConstraintType.Parent: AddParentConstraint(source, target); break;
+                case ConstraintType.LookAt: AddLookAtConstraint(source, target); break;
             }
         }
 
@@ -235,6 +249,19 @@ namespace VRtist
             constraint.constraintActive = true;
 
             GlobalState.FireObjectConstraint(gobject);
+        }
+
+        public static void Clear()
+        {
+            for (int i = constraints.Count - 1; i >= 0; --i)
+            {
+                Constraint constraint = constraints[i];
+                switch (constraint.constraintType)
+                {
+                    case ConstraintType.Parent: RemoveConstraint<ParentConstraint>(constraint.gobject); break;
+                    case ConstraintType.LookAt: RemoveConstraint<LookAtConstraint>(constraint.gobject); break;
+                }
+            }
         }
     }
 }
