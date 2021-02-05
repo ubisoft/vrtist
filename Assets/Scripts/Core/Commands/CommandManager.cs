@@ -114,6 +114,7 @@ namespace VRtist
                 cleanCommandRef = null;
             else
                 cleanCommandRef = undoStack[undoStack.Count - 1];
+            GlobalState.sceneDirtyEvent.Invoke(dirty);
         }
 
         public static bool IsSceneDirty()

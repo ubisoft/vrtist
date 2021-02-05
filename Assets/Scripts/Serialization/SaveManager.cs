@@ -171,7 +171,6 @@ namespace VRtist.Serialization
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
-            CommandManager.SetSceneDirty(false);
 
             currentProjectName = projectName;
             meshes.Clear();
@@ -205,6 +204,7 @@ namespace VRtist.Serialization
             totalStopwatch.Stop();
             LogElapsedTime("Total Time", totalStopwatch);
 
+            CommandManager.SetSceneDirty(false);
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
@@ -446,7 +446,7 @@ namespace VRtist.Serialization
             GlobalState.Settings.ProjectName = projectName;
 
             // Clear current scene
-            Utils.ClearScene();
+            GlobalState.ClearScene();
 
             // TODO remove shotitems
             // TODO remove animations data

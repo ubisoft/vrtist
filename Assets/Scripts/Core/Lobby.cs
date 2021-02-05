@@ -250,7 +250,7 @@ namespace VRtist
         public void OnCreateNewProject()
         {
             OnBackToScene();
-            Utils.ClearScene();
+            GlobalState.ClearScene();
             GlobalState.Settings.ProjectName = Serialization.SaveManager.Instance.GetNextValidProjectName();
         }
 
