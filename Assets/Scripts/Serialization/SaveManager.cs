@@ -37,6 +37,7 @@ namespace VRtist.Serialization
 
         private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
         private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
+        private readonly Dictionary<string, GameObject> loadedObjects = new Dictionary<string, GameObject>();  // all loaded objects
 
         private readonly string DEFAULT_PROJECT_NAME = "newProject";
 
@@ -191,6 +192,7 @@ namespace VRtist.Serialization
             // Retrieve shot manager data
 
             // Retrieve animation data
+            SetAnimationData();
 
             // Retrieve skybox
             SceneData.Current.skyData = GlobalState.Instance.SkySettings;
@@ -345,6 +347,41 @@ namespace VRtist.Serialization
             }
         }
 
+        private void SetAnimationData()
+        {
+            SceneData.Current.fps = AnimationEngine.Instance.fps;
+            SceneData.Current.startFrame = AnimationEngine.Instance.StartFrame;
+            SceneData.Current.endFrame = AnimationEngine.Instance.EndFrame;
+            SceneData.Current.currentFrame = AnimationEngine.Instance.CurrentFrame;
+
+            foreach (AnimationSet animSet in AnimationEngine.Instance.GetAllAnimations().Values)
+            {
+                AnimationData animData = new AnimationData
+                {
+                    objectName = animSet.transform.name
+                };
+                foreach (Curve curve in animSet.curves.Values)
+                {
+                    CurveData curveData = new CurveData
+                    {
+                        property = curve.property
+                    };
+                    foreach (AnimationKey key in curve.keys)
+                    {
+                        KeyframeData keyData = new KeyframeData
+                        {
+                            frame = key.frame,
+                            value = key.value,
+                            interpolation = key.interpolation
+                        };
+                        curveData.keyframes.Add(keyData);
+                    }
+                    animData.curves.Add(curveData);
+                }
+                SceneData.Current.animations.Add(animData);
+            }
+        }
+
         private void SetObjectData(Transform trans, ParametersController controller, ObjectData data)
         {
             // Mesh for non-imported objects
@@ -445,6 +482,7 @@ namespace VRtist.Serialization
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
             currentProjectName = projectName;
             GlobalState.Settings.ProjectName = projectName;
+            loadedObjects.Clear();
 
             // Clear current scene
             GlobalState.ClearScene();
@@ -481,6 +519,18 @@ namespace VRtist.Serialization
             {
                 LoadCamera(data);
             }
+
+            // Load animations
+            AnimationEngine.Instance.fps = sceneData.fps;
+            AnimationEngine.Instance.StartFrame = sceneData.startFrame;
+            AnimationEngine.Instance.EndFrame = sceneData.endFrame;
+
+            foreach (AnimationData data in sceneData.animations)
+            {
+                LoadAnimation(data);
+            }
+
+            AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
 
             GlobalState.Instance.messageBox.SetVisible(false);
         }
@@ -565,6 +615,8 @@ namespace VRtist.Serialization
                 InitPrefab(prefab, data);
                 GameObject newObject = SyncData.InstantiatePrefab(prefab);
 
+                loadedObjects.Add(newObject.name, newObject);
+
                 // Name the mesh
                 MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
                 if (null != srcMeshFilter && null != srcMeshFilter.sharedMesh)
@@ -611,11 +663,11 @@ namespace VRtist.Serialization
             {
                 GameObject newPrefab = SyncData.CreateInstance(lightPrefab, SyncData.prefab, data.name, isPrefab: true);
                 InitPrefab(newPrefab, data);
-                GameObject clone = SyncData.InstantiatePrefab(newPrefab);
+                GameObject newObject = SyncData.InstantiatePrefab(newPrefab);
 
-                LoadCommonData(clone, data);
+                LoadCommonData(newObject, data);
 
-                LightController controller = clone.GetComponent<LightController>();
+                LightController controller = newObject.GetComponent<LightController>();
                 Debug.Log($"From Load: {data.intensity}");
                 controller.Intensity = data.intensity;
                 controller.minIntensity = data.minIntensity;
@@ -628,6 +680,8 @@ namespace VRtist.Serialization
                 controller.maxRange = data.maxRange;
                 controller.OuterAngle = data.outerAngle;
                 controller.InnerAngle = data.innerAngle;
+
+                loadedObjects.Add(newObject.name, newObject);
             }
         }
 
@@ -639,9 +693,9 @@ namespace VRtist.Serialization
 
             LoadCommonData(newPrefab, data);
 
-            GameObject clone = SyncData.InstantiatePrefab(newPrefab);
+            GameObject newObject = SyncData.InstantiatePrefab(newPrefab);
 
-            CameraController controller = clone.GetComponent<CameraController>();
+            CameraController controller = newObject.GetComponent<CameraController>();
             controller.focal = data.focal;
             controller.focus = data.focus;
             controller.aperture = data.aperture;
@@ -649,6 +703,31 @@ namespace VRtist.Serialization
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
+
+            loadedObjects.Add(newObject.name, newObject);
+        }
+
+        private void LoadAnimation(AnimationData data)
+        {
+            // Retrieve GameObject from object name
+            if (!loadedObjects.TryGetValue(data.objectName, out GameObject gobject))
+            {
+                Debug.LogWarning($"Object name not found for animation: {data.objectName}");
+                return;
+            }
+
+            // Create animation
+            AnimationSet animSet = new AnimationSet(gobject);
+            foreach (CurveData curve in data.curves)
+            {
+                List<AnimationKey> keys = new List<AnimationKey>();
+                foreach (KeyframeData keyData in curve.keyframes)
+                {
+                    keys.Add(new AnimationKey(keyData.frame, keyData.value, keyData.interpolation));
+                }
+                animSet.SetCurve(curve.property, keys);
+            }
+            AnimationEngine.Instance.SetObjectAnimation(gobject, animSet);
         }
         #endregion
 
