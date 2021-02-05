@@ -146,9 +146,7 @@ namespace VRtist
             AddBuiltinAsset("Vegetation", "Big Tree", "Prefabs/UI/VEGETATION/UI_big_tree", "Prefabs/Primitives/VEGETATION/big_tree");
             AddBuiltinAsset("Vegetation", "Small Tree", "Prefabs/UI/VEGETATION/UI_small_tree", "Prefabs/Primitives/VEGETATION/small_tree");
             AddBuiltinAsset("Vegetation", "Big Big Tree", "Prefabs/UI/VEGETATION/UI_big_big_tree", "Prefabs/Primitives/VEGETATION/big_big_tree");
-            //AddBuiltinAsset("Vegetation", "Banana Tree Smooth", "Prefabs/UI/VEGETATION/UI_banana_tree_smooth", "Prefabs/Primitives/VEGETATION/banana_tree_smooth");
             AddBuiltinAsset("Vegetation", "Banana Tree Hard", "Prefabs/UI/VEGETATION/UI_banana_tree_hard", "Prefabs/Primitives/VEGETATION/banana_tree_hard");
-            AddBuiltinAsset("Vegetation", "Coconut Tree Smooth", "Prefabs/UI/VEGETATION/UI_coconut_tree_smooth", "Prefabs/Primitives/VEGETATION/coconut_tree_smooth");
             AddBuiltinAsset("Vegetation", "Coconut Tree Hard", "Prefabs/UI/VEGETATION/UI_coconut_tree_hard", "Prefabs/Primitives/VEGETATION/coconut_tree_hard");
             AddBuiltinAsset("Vegetation", "Green Grass", "Prefabs/UI/VEGETATION/UI_green_grass", "Prefabs/Primitives/VEGETATION/green_grass");
             AddBuiltinAsset("Vegetation", "Yellow Grass", "Prefabs/UI/VEGETATION/UI_yellow_grass", "Prefabs/Primitives/VEGETATION/yellow_grass");
@@ -158,24 +156,21 @@ namespace VRtist
             AddBuiltinAsset("Vegetation", "Wood C", "Prefabs/UI/VEGETATION/UI_wood_C", "Prefabs/Primitives/VEGETATION/wood_C");
             AddBuiltinAsset("Vegetation", "Log Wood", "Prefabs/UI/VEGETATION/UI_log_wood", "Prefabs/Primitives/VEGETATION/log_wood");
 
-            AddBuiltinAsset("Rock", "Rock A", "Prefabs/UI/ROCKS/Rock_A", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_A_PRIM");
-            AddBuiltinAsset("Rock", "Rock B", "Prefabs/UI/ROCKS/Rock_B", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_B_PRIM");
-            AddBuiltinAsset("Rock", "Rock C", "Prefabs/UI/ROCKS/Rock_C", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_C_PRIM");
-            AddBuiltinAsset("Rock", "Rock D", "Prefabs/UI/ROCKS/Rock_D", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_D_PRIM");
-            AddBuiltinAsset("Rock", "Rock E", "Prefabs/UI/ROCKS/Rock_E", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_E_PRIM");
-            AddBuiltinAsset("Rock", "Rock F", "Prefabs/UI/ROCKS/Rock_F", "Prefabs/Primitives/ROCKS/ROCKS_SHARP_F_PRIM");
-            AddBuiltinAsset("Rock", "Rock G", "Prefabs/UI/ROCKS/Rock_G", "Prefabs/Primitives/ROCKS/ROCKS_SHARP_G_PRIM");
-            AddBuiltinAsset("Rock", "Rock J", "Prefabs/UI/ROCKS/Rock_J", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_J_PRIM");
-            AddBuiltinAsset("Rock", "Rock K", "Prefabs/UI/ROCKS/Rock_K", "Prefabs/Primitives/ROCKS/ROCKS_ROUND_K_PRIM");
-            AddBuiltinAsset("Rock", "Asteroid", "Prefabs/UI/ROCKS/UI_Asteroid", "Prefabs/Primitives/ROCKS/Asteroid_PRIM");
+            AddBuiltinAsset("Rock", "Rock A", "Prefabs/UI/ROCKS/UI_rocks_round_A", "Prefabs/Primitives/ROCKS/rocks_round_A");
+            AddBuiltinAsset("Rock", "Rock B", "Prefabs/UI/ROCKS/UI_rocks_round_B", "Prefabs/Primitives/ROCKS/rocks_round_B");
+            AddBuiltinAsset("Rock", "Rock C", "Prefabs/UI/ROCKS/UI_rocks_round_C", "Prefabs/Primitives/ROCKS/rocks_round_C");
+            AddBuiltinAsset("Rock", "Rock D", "Prefabs/UI/ROCKS/UI_rocks_round_D", "Prefabs/Primitives/ROCKS/rocks_round_D");
+            AddBuiltinAsset("Rock", "Rock E", "Prefabs/UI/ROCKS/UI_rocks_round_E", "Prefabs/Primitives/ROCKS/rocks_round_E");
+            AddBuiltinAsset("Rock", "Rock F", "Prefabs/UI/ROCKS/UI_rocks_sharp_F", "Prefabs/Primitives/ROCKS/rocks_sharp_F");
+            AddBuiltinAsset("Rock", "Rock G", "Prefabs/UI/ROCKS/UI_rocks_sharp_G", "Prefabs/Primitives/ROCKS/rocks_sharp_G");
+            AddBuiltinAsset("Rock", "Rock J", "Prefabs/UI/ROCKS/UI_rocks_round_J", "Prefabs/Primitives/ROCKS/rocks_round_J");
+            AddBuiltinAsset("Rock", "Rock K", "Prefabs/UI/ROCKS/UI_rocks_round_K", "Prefabs/Primitives/ROCKS/rocks_round_K");
+            AddBuiltinAsset("Rock", "Asteroid", "Prefabs/UI/ROCKS/UI_asteroid", "Prefabs/Primitives/ROCKS/asteroid");
 
-            //AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Lapin", "Prefabs/Primitives/CHARACTERS/LAPIN_PRIM");
-            //AddBuiltinAsset("Character", "Rabbid", "Prefabs/UI/CHARACTERS/UI_Rabbid_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Neutral_LOW");
             AddBuiltinAsset("Character", "Rabbid Gen Rest Neutral", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Neutral");
             AddBuiltinAsset("Character", "Rabbid Gen Rest Bwaa", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Bwaa", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Bwaa");
             AddBuiltinAsset("Character", "Rabbid Gen Rest Smile", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Smile", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Smile");
-            AddBuiltinAsset("Character", "Rabbid Gen T-Pose Neutral", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_T_Pose_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_T_Pose_Neutral");
-
+            
             AddBuiltinAsset("Prop", "Barrel", "Prefabs/UI/JUNK/Barrel", "Prefabs/Primitives/JUNK/BARREL_PRIM");
             AddBuiltinAsset("Prop", "Bench", "Prefabs/UI/JUNK/Bench", "Prefabs/Primitives/JUNK/BENCH_PRIM");
             AddBuiltinAsset("Prop", "Bottle", "Prefabs/UI/JUNK/Bottle", "Prefabs/Primitives/JUNK/BOTTLE_PRIM");
