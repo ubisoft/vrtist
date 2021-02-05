@@ -248,16 +248,6 @@ namespace VRtist
             return sprite;
         }
 
-        public static void ClearScene()
-        {
-            Transform root = GlobalState.Instance.world.Find("RightHanded");
-            DeleteTransformChildren(root);
-            DeleteTransformChildren(SyncData.prefab);
-            SyncData.nodes.Clear();
-
-            GlobalState.clearScene.Invoke();
-        }
-
         public static void DeleteTransformChildren(Transform trans)
         {
             Debug.Log("Clear scene");
@@ -269,7 +259,6 @@ namespace VRtist
                     // There are some game objects that are not user objects and must remain
                     continue;
                 }
-                Debug.Log("Destroying " + child.name);
                 GameObject.Destroy(child.gameObject);
             }
         }

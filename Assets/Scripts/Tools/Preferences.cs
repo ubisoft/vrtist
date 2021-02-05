@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
 
 using UnityEngine;
 using UnityEngine.Audio;
@@ -20,7 +21,8 @@ namespace VRtist
         public ConsoleWindow consoleWindow;
         public UIButton showGizmosShortcut;
         public UIButton showLocatorsShortcut;
-        public UIButton playShortcut;
+        public UIButton playShortcutButton;
+        public UIButton saveShortcutButton;
 
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
@@ -49,6 +51,7 @@ namespace VRtist
         private UICheckbox forcePaletteOpen;
         private UILabel versionLabel;
         private UILabel projectNameLabel;
+        private UILabel saveInfoLabel;
 
         private void Start()
         {
@@ -84,6 +87,10 @@ namespace VRtist
             showConsoleWindow = advancedSubPanel.transform.Find("ShowConsoleWindow").GetComponent<UICheckbox>();
             versionLabel = infoSubPanel.transform.Find("Version").GetComponent<UILabel>();
             projectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
+            saveInfoLabel = saveSubPanel.transform.Find("InfoLabel").GetComponent<UILabel>();
+            saveInfoLabel.gameObject.SetActive(false);
+
+            GlobalState.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
 
             Apply();
 
@@ -137,7 +144,7 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            playShortcut.Checked = state == AnimationState.Playing || state == AnimationState.Recording;
+            playShortcutButton.Checked = state == AnimationState.Playing || state == AnimationState.Recording;
         }
 
         protected void UpdateUIFromPreferences()
@@ -323,6 +330,20 @@ namespace VRtist
             showConsoleWindow.Checked = false;
         }
 
+        public void OnQuickSaveProject()
+        {
+            if (GlobalState.Instance.firstSave)
+            {
+                GlobalState.Instance.firstSave = false;
+                ToolsUIManager.Instance.ChangeTab("Preferences");
+                OnSetSaveSubPanel();
+            }
+            else
+            {
+                OnSaveProject();
+            }
+        }
+
         public void OnSaveProject()
         {
             Serialization.SaveManager.Instance.Save(GlobalState.Settings.ProjectName);
@@ -343,6 +364,22 @@ namespace VRtist
         {
             projectNameLabel.Text = value;
             GlobalState.Settings.ProjectName = value;
+        }
+
+        private void OnSceneDirtyChanged(bool dirty)
+        {
+            saveShortcutButton.Checked = dirty;
+            if (!dirty)
+            {
+                StartCoroutine(ShowSaveInfo(2));
+            }
+        }
+
+        private IEnumerator ShowSaveInfo(float seconds)
+        {
+            saveInfoLabel.gameObject.SetActive(true);
+            yield return new WaitForSecondsRealtime(seconds);
+            saveInfoLabel.gameObject.SetActive(false);
         }
     }
 }

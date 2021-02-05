@@ -11,7 +11,6 @@ namespace VRtist.Serialization
         public string relativePath;
         public string absolutePath;
         public Mesh mesh;
-        public List<MaterialInfo> materialsInfo;
     }
 
 
@@ -168,9 +167,10 @@ namespace VRtist.Serialization
             totalStopwatch = new System.Diagnostics.Stopwatch();
             totalStopwatch.Start();
 
+            // Pre save
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
             GlobalState.Instance.messageBox.ShowMessage("Saving scene, please wait...");
-            CommandManager.SetSceneDirty(false);
 
             currentProjectName = projectName;
             meshes.Clear();
@@ -180,14 +180,35 @@ namespace VRtist.Serialization
             stopwatch.Stop();
             LogElapsedTime("Pre Save", stopwatch);
 
-            // Parse RightHanded transform
+            // Scene traversal
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
             Transform root = Utils.FindWorld().transform.Find("RightHanded");
             string path = "";
-            SerializeChildren(root, path, save: true);
+            TraverseScene(root, path);
+            stopwatch.Stop();
+            LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
+
+            // Retrieve shot manager data
+
+            // Retrieve animation data
+
+            // Retrieve skybox
+            SceneData.Current.skyData = GlobalState.Instance.SkySettings;
+
+            // Save scene on disk
+            SaveScene();
+            SaveMeshes();
+            SaveMaterials();
+            SaveScreenshot();
+
+            totalStopwatch.Stop();
+            LogElapsedTime("Total Time", totalStopwatch);
+
+            CommandManager.SetSceneDirty(false);
+            GlobalState.Instance.messageBox.SetVisible(false);
         }
 
-        private void SerializeChildren(Transform root, string path, bool save = false)
+        private void TraverseScene(Transform root, string path)
         {
             foreach (Transform emptyParent in root)
             {
@@ -241,61 +262,45 @@ namespace VRtist.Serialization
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    SerializeChildren(child, childPath);
+                    TraverseScene(child, childPath);
                 }
             }
+        }
 
-            // Save
-            if (save)
+        private void SaveScene()
+        {
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
+            stopwatch.Stop();
+            LogElapsedTime($"Write Scene", stopwatch);
+        }
+
+        private void SaveMeshes()
+        {
+            System.Diagnostics.Stopwatch timer = System.Diagnostics.Stopwatch.StartNew();
+            foreach (var meshInfo in meshes.Values)
             {
-                stopwatch.Stop();
-                LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
-
-                // Save shot manager data
-
-                // Save animation data
-
-                // Save skybox
-                SceneData.Current.skyData = GlobalState.Instance.SkySettings;
-
-                // Save scene
-                stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                SerializationManager.Save(GetScenePath(currentProjectName), SceneData.Current, deleteFolder: true);
-                stopwatch.Stop();
-                LogElapsedTime($"Write Scene", stopwatch);
-
-                // Save meshes
-                stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                foreach (var meshInfo in meshes.Values)
-                {
-                    SerializationManager.Save(meshInfo.absolutePath, new MeshData(meshInfo));
-                }
-                stopwatch.Stop();
-                LogElapsedTime($"Write Meshes ({meshes.Count})", stopwatch);
-
-                // Save materials
-                stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                foreach (MaterialInfo materialInfo in materials.Values)
-                {
-                    SaveMaterial(materialInfo);
-                }
-                stopwatch.Stop();
-                LogElapsedTime($"Write Materials ({materials.Count})", stopwatch);
-
-                stopwatch = System.Diagnostics.Stopwatch.StartNew();
-                SaveScreenshot();
-                stopwatch.Stop();
-                LogElapsedTime($"Snapshot", stopwatch);
-
-                totalStopwatch.Stop();
-                LogElapsedTime("Total Time", totalStopwatch);
-
-                GlobalState.Instance.messageBox.SetVisible(false);
+                SerializationManager.Save(meshInfo.absolutePath, new MeshData(meshInfo));
             }
+            timer.Stop();
+            LogElapsedTime($"Write Meshes ({meshes.Count})", timer);
+        }
+
+        private void SaveMaterials()
+        {
+            System.Diagnostics.Stopwatch timer = System.Diagnostics.Stopwatch.StartNew();
+            foreach (MaterialInfo materialInfo in materials.Values)
+            {
+                SaveMaterial(materialInfo);
+            }
+            timer.Stop();
+            LogElapsedTime($"Write Materials ({meshes.Count})", timer);
         }
 
         private void SaveScreenshot()
         {
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
             screenshotCamera.gameObject.SetActive(true);
             screenshotCamera.RenderToCubemap(cubeMapRT);
             cubeMapRT.ConvertToEquirect(equiRectRT);
@@ -306,6 +311,9 @@ namespace VRtist.Serialization
             RenderTexture.active = previousActiveRT;
             Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
             screenshotCamera.gameObject.SetActive(false);
+
+            stopwatch.Stop();
+            LogElapsedTime($"Snapshot", stopwatch);
         }
 
         private void SaveMaterial(MaterialInfo materialInfo)
@@ -357,8 +365,8 @@ namespace VRtist.Serialization
                     }
 
                     // Mesh
-                    GetMeshPath(currentProjectName, meshFilter.mesh.name, out string meshAbsolutePath, out string meshRelativePath);
-                    meshes[meshRelativePath] = new MeshInfo { relativePath = meshRelativePath, absolutePath = meshAbsolutePath, mesh = meshFilter.mesh };
+                    GetMeshPath(currentProjectName, meshFilter.sharedMesh.name, out string meshAbsolutePath, out string meshRelativePath);
+                    meshes[meshRelativePath] = new MeshInfo { relativePath = meshRelativePath, absolutePath = meshAbsolutePath, mesh = meshFilter.sharedMesh };
                     data.meshPath = meshRelativePath;
                 }
                 data.isImported = false;
@@ -438,7 +446,7 @@ namespace VRtist.Serialization
             GlobalState.Settings.ProjectName = projectName;
 
             // Clear current scene
-            Utils.ClearScene();
+            GlobalState.ClearScene();
 
             // TODO remove shotitems
             // TODO remove animations data
@@ -539,7 +547,7 @@ namespace VRtist.Serialization
                 {
                     MeshData meshData = new MeshData();
                     SerializationManager.Load(absoluteMeshPath, meshData);
-                    gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
+                    gobject.AddComponent<MeshFilter>().sharedMesh = meshData.CreateMesh();
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
                 }
@@ -558,10 +566,10 @@ namespace VRtist.Serialization
 
                 // Name the mesh
                 MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
-                if (null != srcMeshFilter && null != srcMeshFilter.mesh)
+                if (null != srcMeshFilter && null != srcMeshFilter.sharedMesh)
                 {
                     MeshFilter dstMeshFilter = newObject.GetComponentInChildren<MeshFilter>(true);
-                    dstMeshFilter.mesh.name = srcMeshFilter.mesh.name;
+                    dstMeshFilter.sharedMesh.name = srcMeshFilter.sharedMesh.name;
                 }
             }
 

@@ -645,6 +645,7 @@ namespace VRtist
 
                 DateTime before = DateTime.Now;
                 bool prematuredExit = false;
+                bool sceneModified = true;
                 foreach (NetCommand command in commands)
                 {
                     commandProcessedCount++;
@@ -657,6 +658,7 @@ namespace VRtist
                         {
                             case MessageType.ClientId:
                                 MixerUtils.BuildClientId(command.data);
+                                sceneModified = false;
                                 break;
                             case MessageType.Mesh:
                                 MixerUtils.BuildMesh(command.data);
@@ -784,9 +786,11 @@ namespace VRtist
 
                             case MessageType.ClientUpdate:
                                 MixerUtils.BuildClientAttribute(command.data);
+                                sceneModified = false;
                                 break;
                             case MessageType.ListAllClients:
                                 MixerUtils.BuildListAllClients(command.data);
+                                sceneModified = false;
                                 break;
                         }
                     }
@@ -806,6 +810,12 @@ namespace VRtist
                         break;
                     }
                 }
+
+                if (sceneModified)
+                {
+                    CommandManager.SetSceneDirty(true);
+                }
+
                 if (!prematuredExit)
                     commands.Clear();
                 commandProcessedCount = 0;
