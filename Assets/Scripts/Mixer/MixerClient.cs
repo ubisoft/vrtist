@@ -645,6 +645,7 @@ namespace VRtist
 
                 DateTime before = DateTime.Now;
                 bool prematuredExit = false;
+                bool sceneModified = true;
                 foreach (NetCommand command in commands)
                 {
                     commandProcessedCount++;
@@ -653,7 +654,6 @@ namespace VRtist
 
                     try
                     {
-                        bool sceneModified = true;
                         switch (command.messageType)
                         {
                             case MessageType.ClientId:
@@ -793,11 +793,6 @@ namespace VRtist
                                 sceneModified = false;
                                 break;
                         }
-
-                        if (sceneModified)
-                        {
-                            CommandManager.SetSceneDirty(true);
-                        }
                     }
                     catch (Exception e)
                     {
@@ -815,6 +810,12 @@ namespace VRtist
                         break;
                     }
                 }
+
+                if (sceneModified)
+                {
+                    CommandManager.SetSceneDirty(true);
+                }
+
                 if (!prematuredExit)
                     commands.Clear();
                 commandProcessedCount = 0;
