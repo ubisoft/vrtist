@@ -95,6 +95,7 @@ namespace VRtist
             saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
             GlobalState.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
+            GlobalState.sceneSavedEvent.AddListener(() => StartCoroutine(ShowSaveInfo(2)));
 
             Apply();
 
@@ -351,7 +352,6 @@ namespace VRtist
         public void OnSaveProject()
         {
             Serialization.SaveManager.Instance.Save(GlobalState.Settings.ProjectName);
-            StartCoroutine(ShowSaveInfo(2));
         }
 
         public void OnLoadProject()

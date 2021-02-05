@@ -116,6 +116,7 @@ namespace VRtist
         public static UnityEvent clearSceneEvent = new UnityEvent();
         public static BoolChangedEvent sceneDirtyEvent = new BoolChangedEvent();
         public static BoolChangedEvent castShadowsEvent = new BoolChangedEvent();
+        public static UnityEvent sceneSavedEvent = new UnityEvent();
         public bool firstSave = true;
 
         // Geometry Importer

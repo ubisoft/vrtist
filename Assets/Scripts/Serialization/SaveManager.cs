@@ -204,6 +204,7 @@ namespace VRtist.Serialization
             totalStopwatch.Stop();
             LogElapsedTime("Total Time", totalStopwatch);
 
+            GlobalState.sceneSavedEvent.Invoke();
             CommandManager.SetSceneDirty(false);
             GlobalState.Instance.messageBox.SetVisible(false);
         }
