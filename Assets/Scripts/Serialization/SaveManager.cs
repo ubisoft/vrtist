@@ -32,6 +32,8 @@ namespace VRtist.Serialization
         public RenderTexture cubeMapRT;
         public RenderTexture equiRectRT;
 
+        private Transform cameraRig;
+
         private string saveFolder;
         private string currentProjectName;
 
@@ -63,6 +65,7 @@ namespace VRtist.Serialization
             }
 
             saveFolder = Application.persistentDataPath + "/saves/";
+            cameraRig = Utils.FindRootGameObject("Camera Rig").transform;
         }
         #endregion
 
@@ -192,10 +195,16 @@ namespace VRtist.Serialization
             // Retrieve shot manager data
 
             // Retrieve animation data
-            SetAnimationData();
+            SetAnimationsData();
+
+            // Set constraints data
+            SetConstraintsData();
 
             // Retrieve skybox
             SceneData.Current.skyData = GlobalState.Instance.SkySettings;
+
+            // Set player data
+            SetPlayerData();
 
             // Save scene on disk
             SaveScene();
@@ -347,7 +356,17 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetAnimationData()
+        private void SetPlayerData()
+        {
+            SceneData.Current.playerData = new PlayerData
+            {
+                position = cameraRig.localPosition,
+                rotation = cameraRig.localRotation,
+                scale = GlobalState.WorldScale
+            };
+        }
+
+        private void SetAnimationsData()
         {
             SceneData.Current.fps = AnimationEngine.Instance.fps;
             SceneData.Current.startFrame = AnimationEngine.Instance.StartFrame;
@@ -379,6 +398,20 @@ namespace VRtist.Serialization
                     animData.curves.Add(curveData);
                 }
                 SceneData.Current.animations.Add(animData);
+            }
+        }
+
+        private void SetConstraintsData()
+        {
+            foreach (Constraint constraint in ConstraintManager.GetAllConstraints())
+            {
+                ConstraintData constraintData = new ConstraintData
+                {
+                    source = constraint.gobject.name,
+                    target = constraint.target.name,
+                    type = constraint.constraintType
+                };
+                SceneData.Current.constraints.Add(constraintData);
             }
         }
 
@@ -488,14 +521,14 @@ namespace VRtist.Serialization
             GlobalState.ClearScene();
 
             // TODO remove shotitems
-            // TODO remove animations data
-
-            // TODO position user
 
             // Load data from file
             string path = GetScenePath(projectName);
             SceneData sceneData = new SceneData();
             SerializationManager.Load(path, sceneData);
+
+            // Position user
+            LoadPlayerData(sceneData.playerData);
 
             // Sky
             GlobalState.Instance.SkySettings = sceneData.skyData;
@@ -520,7 +553,7 @@ namespace VRtist.Serialization
                 LoadCamera(data);
             }
 
-            // Load animations
+            // Load animations & constraints
             AnimationEngine.Instance.fps = sceneData.fps;
             AnimationEngine.Instance.StartFrame = sceneData.startFrame;
             AnimationEngine.Instance.EndFrame = sceneData.endFrame;
@@ -529,10 +562,24 @@ namespace VRtist.Serialization
             {
                 LoadAnimation(data);
             }
+            foreach (ConstraintData data in sceneData.constraints)
+            {
+                LoadConstraint(data);
+            }
 
             AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
 
             GlobalState.Instance.messageBox.SetVisible(false);
+        }
+
+        private void LoadPlayerData(PlayerData data)
+        {
+            cameraRig.localPosition = data.position;
+            cameraRig.localRotation = data.rotation;
+            GlobalState.WorldScale = data.scale;
+            cameraRig.localScale = Vector3.one * (1f / data.scale);
+            Camera.main.nearClipPlane = 0.1f * cameraRig.localScale.x;
+            Camera.main.farClipPlane = 1000f * cameraRig.localScale.x;
         }
 
         private void LoadCommonData(GameObject gobject, ObjectData data)
@@ -728,6 +775,24 @@ namespace VRtist.Serialization
                 animSet.SetCurve(curve.property, keys);
             }
             AnimationEngine.Instance.SetObjectAnimation(gobject, animSet);
+        }
+
+        private void LoadConstraint(ConstraintData data)
+        {
+            // Retrieve GameObject from object name
+            if (!loadedObjects.TryGetValue(data.source, out GameObject source))
+            {
+                Debug.LogWarning($"Object name not found for animation: {data.source}");
+                return;
+            }
+            if (!loadedObjects.TryGetValue(data.target, out GameObject target))
+            {
+                Debug.LogWarning($"Object name not found for animation: {data.target}");
+                return;
+            }
+
+            // Create constraint
+            ConstraintManager.AddConstraint(source, target, data.type);
         }
         #endregion
 

@@ -761,6 +761,64 @@ namespace VRtist.Serialization
     }
 
 
+    public class ConstraintData : IBlob
+    {
+        public string source;
+        public string target;
+        public ConstraintType type;
+
+        public byte[] ToBytes()
+        {
+            byte[] sourceBuffer = Converter.StringToBytes(source);
+            byte[] targetBuffer = Converter.StringToBytes(target);
+            byte[] typeBuffer = Converter.IntToBytes((int)type);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                sourceBuffer,
+                targetBuffer,
+                typeBuffer
+            });
+            return bytes;
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            source = Converter.GetString(buffer, ref index);
+            target = Converter.GetString(buffer, ref index);
+            type = (ConstraintType)Converter.GetInt(buffer, ref index);
+        }
+    }
+
+
+    public class PlayerData : IBlob
+    {
+        public Vector3 position;
+        public Quaternion rotation;
+        public float scale;
+
+        public byte[] ToBytes()
+        {
+            byte[] positionBuffer = Converter.Vector3ToBytes(position);
+            byte[] rotationBuffer = Converter.QuaternionToBytes(rotation);
+            byte[] scaleBuffer = Converter.FloatToBytes(scale);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                positionBuffer,
+                rotationBuffer,
+                scaleBuffer
+            });
+            return bytes;
+        }
+
+        public void FromBytes(byte[] buffer, ref int index)
+        {
+            position = Converter.GetVector3(buffer, ref index);
+            rotation = Converter.GetQuaternion(buffer, ref index);
+            scale = Converter.GetFloat(buffer, ref index);
+        }
+    }
+
+
     public class SceneData : IBlob
     {
         private static SceneData current;
@@ -784,7 +842,11 @@ namespace VRtist.Serialization
         public int endFrame;
         public int currentFrame;
 
+        public List<ConstraintData> constraints = new List<ConstraintData>();
+
         public SkySettings skyData;
+
+        public PlayerData playerData;
 
         public void Clear()
         {
@@ -840,6 +902,14 @@ namespace VRtist.Serialization
             endFrame = Converter.GetInt(buffer, ref index);
             currentFrame = Converter.GetInt(buffer, ref index);
 
+            int constraintsCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < constraintsCount; i++)
+            {
+                ConstraintData data = new ConstraintData();
+                data.FromBytes(buffer, ref index);
+                constraints.Add(data);
+            }
+
             int shotsCount = Converter.GetInt(buffer, ref index);
             for (int i = 0; i < shotsCount; i++)
             {
@@ -847,6 +917,9 @@ namespace VRtist.Serialization
                 data.FromBytes(buffer, ref index);
                 shots.Add(data);
             }
+
+            playerData = new PlayerData();
+            playerData.FromBytes(buffer, ref index);
         }
 
         public byte[] ToBytes()
@@ -892,6 +965,14 @@ namespace VRtist.Serialization
             byte[] endFrameBuffer = Converter.IntToBytes(endFrame);
             byte[] currentFrameBuffer = Converter.IntToBytes(currentFrame);
 
+            byte[] constraintsCountBuffer = Converter.IntToBytes(constraints.Count);
+            List<byte[]> constraintsBufferList = new List<byte[]>();
+            foreach (ConstraintData data in constraints)
+            {
+                constraintsBufferList.Add(data.ToBytes());
+            }
+            byte[] constraintsBuffer = Converter.ConcatenateBuffers(constraintsBufferList);
+
             byte[] shotsCountBuffer = Converter.IntToBytes(shots.Count);
             List<byte[]> shotsBufferList = new List<byte[]>();
             foreach (ShotData data in shots)
@@ -899,6 +980,8 @@ namespace VRtist.Serialization
                 shotsBufferList.Add(data.ToBytes());
             }
             byte[] shotsBuffer = Converter.ConcatenateBuffers(shotsBufferList);
+
+            byte[] playerBuffer = playerData.ToBytes();
 
             byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
                 objectsCountBuffer,
@@ -921,8 +1004,13 @@ namespace VRtist.Serialization
                 endFrameBuffer,
                 currentFrameBuffer,
 
+                constraintsCountBuffer,
+                constraintsBuffer,
+
                 shotsCountBuffer,
-                shotsBuffer
+                shotsBuffer,
+
+                playerBuffer
             });
             return bytes;
         }

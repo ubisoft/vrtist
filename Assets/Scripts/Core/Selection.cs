@@ -155,7 +155,7 @@ namespace VRtist
             onSelectionChanged.Invoke(previousSelectedObjects, selectedObjects);
         }
 
-        public static void ClearAll()
+        public static void Clear()
         {
             ClearSelection();
             AuxiliarySelection = null;
