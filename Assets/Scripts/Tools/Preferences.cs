@@ -3,6 +3,7 @@ using System.IO;
 
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -52,6 +53,7 @@ namespace VRtist
         private UILabel versionLabel;
         private UILabel projectNameLabel;
         private UILabel saveInfoLabel;
+        private Image saveImage;
 
         private void Start()
         {
@@ -89,6 +91,8 @@ namespace VRtist
             projectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
             saveInfoLabel = saveSubPanel.transform.Find("InfoLabel").GetComponent<UILabel>();
             saveInfoLabel.gameObject.SetActive(false);
+
+            saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
             GlobalState.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
 
@@ -347,6 +351,7 @@ namespace VRtist
         public void OnSaveProject()
         {
             Serialization.SaveManager.Instance.Save(GlobalState.Settings.ProjectName);
+            StartCoroutine(ShowSaveInfo(2));
         }
 
         public void OnLoadProject()
@@ -368,11 +373,7 @@ namespace VRtist
 
         private void OnSceneDirtyChanged(bool dirty)
         {
-            saveShortcutButton.Checked = dirty;
-            if (!dirty)
-            {
-                StartCoroutine(ShowSaveInfo(2));
-            }
+            saveImage.sprite = dirty ? UIUtils.LoadIcon("unsaved") : UIUtils.LoadIcon("save");
         }
 
         private IEnumerator ShowSaveInfo(float seconds)
