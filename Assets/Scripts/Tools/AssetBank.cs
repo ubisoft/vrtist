@@ -142,6 +142,10 @@ namespace VRtist
             AddBuiltinAsset("Primitive", "Stairs", "Prefabs/UI/PRIMITIVES/STRAIGHT_STAIRS_UI", "Prefabs/Primitives/PRIMITIVES/STRAIGHT_STAIRS_PRIM");
             AddBuiltinAsset("Primitive", "Circle Stairs", "Prefabs/UI/PRIMITIVES/CIRCLE_SQUARE_STAIRS_UI", "Prefabs/Primitives/PRIMITIVES/CIRCLE_SQUARE_STAIRS_PRIM");
 
+            AddBuiltinAsset("Character", "Rabbid Gen Rest Neutral", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Neutral");
+            AddBuiltinAsset("Character", "Rabbid Gen Rest Bwaa", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Bwaa", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Bwaa");
+            AddBuiltinAsset("Character", "Rabbid Gen Rest Smile", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Smile", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Smile");
+
             AddBuiltinAsset("Vegetation", "Aloe Vera", "Prefabs/UI/VEGETATION/UI_aloevera", "Prefabs/Primitives/VEGETATION/aloevera");
             AddBuiltinAsset("Vegetation", "Big Tree", "Prefabs/UI/VEGETATION/UI_big_tree", "Prefabs/Primitives/VEGETATION/big_tree");
             AddBuiltinAsset("Vegetation", "Small Tree", "Prefabs/UI/VEGETATION/UI_small_tree", "Prefabs/Primitives/VEGETATION/small_tree");
@@ -168,10 +172,16 @@ namespace VRtist
             AddBuiltinAsset("Rock", "Rock K", "Prefabs/UI/ROCKS/UI_rocks_round_K", "Prefabs/Primitives/ROCKS/rocks_round_K");
             AddBuiltinAsset("Rock", "Asteroid", "Prefabs/UI/ROCKS/UI_asteroid", "Prefabs/Primitives/ROCKS/asteroid");
 
-            AddBuiltinAsset("Character", "Rabbid Gen Rest Neutral", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Neutral", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Neutral");
-            AddBuiltinAsset("Character", "Rabbid Gen Rest Bwaa", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Bwaa", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Bwaa");
-            AddBuiltinAsset("Character", "Rabbid Gen Rest Smile", "Prefabs/UI/CHARACTERS/UI_Rabbid_Gen_Rest_Smile", "Prefabs/Primitives/CHARACTERS/Rabbid_Gen_Rest_Smile");
-            
+            AddBuiltinAsset("Furniture", "Small Crate", "Prefabs/UI/FURNITURE/UI_small_crate", "Prefabs/Primitives/FURNITURE/small_crate");
+            AddBuiltinAsset("Furniture", "Big Crate", "Prefabs/UI/FURNITURE/UI_big_crate", "Prefabs/Primitives/FURNITURE/big_crate");
+            AddBuiltinAsset("Furniture", "Cactus pot", "Prefabs/UI/FURNITURE/UI_cactus_pot", "Prefabs/Primitives/FURNITURE/cactus_pot");
+            AddBuiltinAsset("Furniture", "Escabeau", "Prefabs/UI/FURNITURE/UI_escabeau", "Prefabs/Primitives/FURNITURE/escabeau");
+            AddBuiltinAsset("Furniture", "Fauteuil", "Prefabs/UI/FURNITURE/UI_fauteuil", "Prefabs/Primitives/FURNITURE/fauteuil");
+            AddBuiltinAsset("Furniture", "Fishing Chair", "Prefabs/UI/FURNITURE/UI_fishing_chair", "Prefabs/Primitives/FURNITURE/fishing_chair");
+            AddBuiltinAsset("Furniture", "Fridge", "Prefabs/UI/FURNITURE/UI_fridge", "Prefabs/Primitives/FURNITURE/fridge");
+            AddBuiltinAsset("Furniture", "TV", "Prefabs/UI/FURNITURE/UI_tv", "Prefabs/Primitives/FURNITURE/tv");
+            AddBuiltinAsset("Furniture", "Washing Machine", "Prefabs/UI/FURNITURE/UI_washing_machine", "Prefabs/Primitives/FURNITURE/washing_machine");
+
             AddBuiltinAsset("Prop", "Barrel", "Prefabs/UI/JUNK/Barrel", "Prefabs/Primitives/JUNK/BARREL_PRIM");
             AddBuiltinAsset("Prop", "Bench", "Prefabs/UI/JUNK/Bench", "Prefabs/Primitives/JUNK/BENCH_PRIM");
             AddBuiltinAsset("Prop", "Bottle", "Prefabs/UI/JUNK/Bottle", "Prefabs/Primitives/JUNK/BOTTLE_PRIM");

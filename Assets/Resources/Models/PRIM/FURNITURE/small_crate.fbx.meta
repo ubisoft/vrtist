@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c0c2770462b55d442b137d7242fd4450
+guid: c6cb6e0c9852f1e4daedfb9702436310
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
@@ -7,23 +7,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Default_Material.001
-    second: {fileID: 2100000, guid: 4587c0361299886459fcc58b90730766, type: 2}
+      name: sla_container.004
+    second: {fileID: 2100000, guid: 967bd924da602d647bdbd1cd8d0defec, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_black.001
-    second: {fileID: 2100000, guid: 720224ba9159d9a4da7dd2a68614e1b9, type: 2}
+      name: sla_containerStructureA_3.004
+    second: {fileID: 2100000, guid: d4386d3012443fe47b92a5b390512447, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_brown.001
-    second: {fileID: 2100000, guid: b3e8374ea5f8d234588d8afc2b6296f9, type: 2}
+      name: sla_crateCoin_3.004
+    second: {fileID: 2100000, guid: 22f80b6d9365a6b40a710aa0c7215a06, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_metal.002
-    second: {fileID: 2100000, guid: 61d343df9520e0948945aa22d3cc2300, type: 2}
+      name: sla_crateFixationC_2.004
+    second: {fileID: 2100000, guid: f32f1e83387447046976b7fd1733f9ca, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

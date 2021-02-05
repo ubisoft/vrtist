@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f0681c71e34a8e5478e4c456f518eba4
+guid: d4b6f11adb0f5d146b59dbfd71d6a6bc
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
@@ -7,23 +7,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_cactus.001
-    second: {fileID: 2100000, guid: 51f62aaa5c921374eb74f3b7b6203730, type: 2}
+      name: sla_container.003
+    second: {fileID: 2100000, guid: 1ccabea1386024b4f931a1d07381b9b4, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_soil.001
-    second: {fileID: 2100000, guid: e913a69ad0f8efd468651d071e0314d4, type: 2}
+      name: sla_containerStructureA_3.003
+    second: {fileID: 2100000, guid: 8d7f2661f54055949aad5b1be881792a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_thorn.001
-    second: {fileID: 2100000, guid: f1bc111ed8e09d84c9fe643b0ab07575, type: 2}
+      name: sla_crateCoin_3.003
+    second: {fileID: 2100000, guid: 4cd41d6308f3e944aba5c9c237dbbb04, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: shd_vase.001
-    second: {fileID: 2100000, guid: 59799e37ac18dba4fbc374ca525b048e, type: 2}
+      name: sla_crateFixationC_2.003
+    second: {fileID: 2100000, guid: c50bb78614bbbe249b67859d2a1ccbe2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

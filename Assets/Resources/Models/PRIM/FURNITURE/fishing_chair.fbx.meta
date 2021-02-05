@@ -3,7 +3,22 @@ guid: 65dee0eb36e992048820e600f1a509a6
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_backBase.001
+    second: {fileID: 2100000, guid: 4f235617301fe47489b69290ac9fd965, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_backFabric.001
+    second: {fileID: 2100000, guid: 4f68398ae2267124a95ebad7926f002c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_baseTip_2.001
+    second: {fileID: 2100000, guid: ac61efbd2dd0f324386071aae87337a1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
