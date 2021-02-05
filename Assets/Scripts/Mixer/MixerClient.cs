@@ -653,10 +653,12 @@ namespace VRtist
 
                     try
                     {
+                        bool sceneModified = true;
                         switch (command.messageType)
                         {
                             case MessageType.ClientId:
                                 MixerUtils.BuildClientId(command.data);
+                                sceneModified = false;
                                 break;
                             case MessageType.Mesh:
                                 MixerUtils.BuildMesh(command.data);
@@ -784,10 +786,17 @@ namespace VRtist
 
                             case MessageType.ClientUpdate:
                                 MixerUtils.BuildClientAttribute(command.data);
+                                sceneModified = false;
                                 break;
                             case MessageType.ListAllClients:
                                 MixerUtils.BuildListAllClients(command.data);
+                                sceneModified = false;
                                 break;
+                        }
+
+                        if (sceneModified)
+                        {
+                            CommandManager.SetSceneDirty(true);
                         }
                     }
                     catch (Exception e)
