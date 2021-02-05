@@ -365,8 +365,8 @@ namespace VRtist.Serialization
                     }
 
                     // Mesh
-                    GetMeshPath(currentProjectName, meshFilter.mesh.name, out string meshAbsolutePath, out string meshRelativePath);
-                    meshes[meshRelativePath] = new MeshInfo { relativePath = meshRelativePath, absolutePath = meshAbsolutePath, mesh = meshFilter.mesh };
+                    GetMeshPath(currentProjectName, meshFilter.sharedMesh.name, out string meshAbsolutePath, out string meshRelativePath);
+                    meshes[meshRelativePath] = new MeshInfo { relativePath = meshRelativePath, absolutePath = meshAbsolutePath, mesh = meshFilter.sharedMesh };
                     data.meshPath = meshRelativePath;
                 }
                 data.isImported = false;
@@ -547,7 +547,7 @@ namespace VRtist.Serialization
                 {
                     MeshData meshData = new MeshData();
                     SerializationManager.Load(absoluteMeshPath, meshData);
-                    gobject.AddComponent<MeshFilter>().mesh = meshData.CreateMesh();
+                    gobject.AddComponent<MeshFilter>().sharedMesh = meshData.CreateMesh();
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     MeshCollider collider = gobject.AddComponent<MeshCollider>();
                 }
@@ -566,10 +566,10 @@ namespace VRtist.Serialization
 
                 // Name the mesh
                 MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
-                if (null != srcMeshFilter && null != srcMeshFilter.mesh)
+                if (null != srcMeshFilter && null != srcMeshFilter.sharedMesh)
                 {
                     MeshFilter dstMeshFilter = newObject.GetComponentInChildren<MeshFilter>(true);
-                    dstMeshFilter.mesh.name = srcMeshFilter.mesh.name;
+                    dstMeshFilter.sharedMesh.name = srcMeshFilter.sharedMesh.name;
                 }
             }
 
