@@ -25,6 +25,16 @@ namespace VRtist
             {
                 GameObject previousActiveCamera = activeCamera;
                 activeCamera = value;
+                if (null != previousActiveCamera)
+                {
+                    previousActiveCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
+                    previousActiveCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
+                }
+                if (null != activeCamera)
+                {
+                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
+                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(true);
+                }
                 onActiveCameraChanged.Invoke(previousActiveCamera, activeCamera);
             }
         }
@@ -74,7 +84,7 @@ namespace VRtist
                 // Disable previous active camera
                 if (null != activeCamera)
                 {
-                    activeCamera.GetComponentInChildren<Camera>().gameObject.SetActive(false);
+                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
                     activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
                 }
 
@@ -94,7 +104,7 @@ namespace VRtist
                 // Disable previous selected camera
                 if (null != activeCamera)
                 {
-                    activeCamera.GetComponentInChildren<Camera>().gameObject.SetActive(false);
+                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
                     activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
                 }
 
@@ -109,7 +119,7 @@ namespace VRtist
             {
                 if (null != activeCamera)
                 {
-                    activeCamera.GetComponentInChildren<Camera>().gameObject.SetActive(false);
+                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
                     activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
                 }
                 ActiveCamera = null;

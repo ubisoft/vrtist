@@ -193,6 +193,7 @@ namespace VRtist.Serialization
             LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
 
             // Retrieve shot manager data
+            SetShotManagerData();
 
             // Retrieve animation data
             SetAnimationsData();
@@ -366,6 +367,21 @@ namespace VRtist.Serialization
             };
         }
 
+        private void SetShotManagerData()
+        {
+            foreach (Shot shot in ShotManager.Instance.shots)
+            {
+                SceneData.Current.shots.Add(new ShotData
+                {
+                    name = shot.name,
+                    start = shot.start,
+                    end = shot.end,
+                    cameraName = shot.camera.name,
+                    enabled = shot.enabled
+                });
+            }
+        }
+
         private void SetAnimationsData()
         {
             SceneData.Current.fps = AnimationEngine.Instance.fps;
@@ -519,8 +535,10 @@ namespace VRtist.Serialization
 
             // Clear current scene
             GlobalState.ClearScene();
-
-            // TODO remove shotitems
+            AnimationEngine.Instance.Clear();
+            Selection.Clear();
+            ConstraintManager.Clear();
+            ShotManager.Instance.Clear();
 
             // Load data from file
             string path = GetScenePath(projectName);
@@ -533,13 +551,11 @@ namespace VRtist.Serialization
             // Sky
             GlobalState.Instance.SkySettings = sceneData.skyData;
 
-            // Objects
-            Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
+            // Objects            
             foreach (ObjectData data in sceneData.objects)
             {
-                LoadObject(data, importedParent);
+                LoadObject(data);
             }
-            Destroy(importedParent.gameObject);
 
             // Lights
             foreach (LightData data in sceneData.lights)
@@ -562,12 +578,22 @@ namespace VRtist.Serialization
             {
                 LoadAnimation(data);
             }
+
             foreach (ConstraintData data in sceneData.constraints)
             {
                 LoadConstraint(data);
             }
 
+            // Load shot manager
+            foreach (ShotData data in sceneData.shots)
+            {
+                LoadShot(data);
+            }
+            ShotManager.Instance.FireChanged();
+
             AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
+
+
 
             GlobalState.Instance.messageBox.SetVisible(false);
         }
@@ -612,16 +638,19 @@ namespace VRtist.Serialization
             return materials;
         }
 
-        private async void LoadObject(ObjectData data, Transform importedParent)
+        private async void LoadObject(ObjectData data)
         {
             GameObject gobject;
-            string absoluteMeshPath = GetSaveFolderPath(currentProjectName) + data.meshPath;
+            string absoluteMeshPath;
+            Transform importedParent = null;
 
             // Check for import
             if (data.isImported)
             {
                 try
                 {
+                    importedParent = new GameObject("__VRtist_tmp_load__").transform;
+                    absoluteMeshPath = data.meshPath;
                     gobject = await GlobalState.GeometryImporter.ImportObjectAsync(absoluteMeshPath, importedParent);
                 }
                 catch (System.Exception e)
@@ -632,6 +661,7 @@ namespace VRtist.Serialization
             }
             else
             {
+                absoluteMeshPath = GetSaveFolderPath(currentProjectName) + data.meshPath;
                 gobject = new GameObject(data.name);
             }
 
@@ -647,7 +677,7 @@ namespace VRtist.Serialization
                     SerializationManager.Load(absoluteMeshPath, meshData);
                     gobject.AddComponent<MeshFilter>().sharedMesh = meshData.CreateMesh();
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
-                    MeshCollider collider = gobject.AddComponent<MeshCollider>();
+                    gobject.AddComponent<MeshCollider>();
                 }
             }
 
@@ -655,6 +685,8 @@ namespace VRtist.Serialization
             if (data.isImported)
             {
                 SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, "__VRtist_tmp_load__"));
+                if (null != importedParent)
+                    Destroy(importedParent.gameObject);
             }
             else
             {
@@ -793,6 +825,25 @@ namespace VRtist.Serialization
 
             // Create constraint
             ConstraintManager.AddConstraint(source, target, data.type);
+        }
+
+        private void LoadShot(ShotData data)
+        {
+            // Retrieve camera from object name
+            if (!loadedObjects.TryGetValue(data.cameraName, out GameObject camera))
+            {
+                Debug.LogWarning($"Object name not found for camera: {data.cameraName}");
+                return;
+            }
+
+            ShotManager.Instance.AddShot(new Shot
+            {
+                name = data.name,
+                start = data.start,
+                end = data.end,
+                enabled = data.enabled,
+                camera = camera
+            });
         }
         #endregion
 
