@@ -77,6 +77,7 @@ namespace VRtist
                 volumeSky.top.value = value.topColor;
                 volumeSky.middle.value = value.middleColor;
                 volumeSky.bottom.value = value.bottomColor;
+                GlobalState.Settings.sky = value;
                 skyChangedEvent.Invoke(new SkySettings { topColor = volumeSky.top.value, middleColor = volumeSky.middle.value, bottomColor = volumeSky.bottom.value });
             }
         }
