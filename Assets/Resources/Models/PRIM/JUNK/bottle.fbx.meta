@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c453ad81bde043542a611adac12c6988
+guid: 22d4df9db281c9644b03c4abfd25ce9e
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
@@ -7,8 +7,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: sla_lambert_mod.001
-    second: {fileID: 2100000, guid: f1145ee7608d85b4f88e7416f0260fca, type: 2}
+      name: shd_bottle
+    second: {fileID: 2100000, guid: c8063a43fdf25ca48bc1e101872f9428, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_cap
+    second: {fileID: 2100000, guid: db264684daa49c3419c2168d3825c612, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_sticker
+    second: {fileID: 2100000, guid: eaf64e7cb5dcab8448b63b818bfd56fd, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

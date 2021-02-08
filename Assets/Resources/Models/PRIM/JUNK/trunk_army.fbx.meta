@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c453ad81bde043542a611adac12c6988
+guid: 6b5ea23beed97544eb0bac3e9790031d
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
@@ -7,8 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: sla_lambert_mod.001
-    second: {fileID: 2100000, guid: f1145ee7608d85b4f88e7416f0260fca, type: 2}
+      name: sla_cantineHandle.001
+    second: {fileID: 2100000, guid: 08ad4b77f85346b4eb75ec2056c1984b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sla_cantineLid.001
+    second: {fileID: 2100000, guid: 9b00ae195693c7c40a235228b3af08a6, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
