@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+
 using UnityEngine;
 
 namespace VRtist
@@ -122,16 +123,23 @@ namespace VRtist
                     if (currentTask.IsCompleted)
                     {
                         // Convert assimp structures into unity
-                        var scene = currentTask.Result;
-                        if (scene == null)
+                        if (!currentTask.IsFaulted)
+                        {
+                            var scene = currentTask.Result;
+                            if (scene == null)
+                            {
+                                importerState = ImporterState.Error;
+                                break;
+                            }
+                            ImportTaskData d = taskData[0];
+                            StartCoroutine(CreateUnityDataFromAssimp(d.fileName, scene, d.root.transform));
+                            importerState = ImporterState.Processing;
+                            progress = 0.5f;
+                        }
+                        else
                         {
                             importerState = ImporterState.Error;
-                            break;
                         }
-                        ImportTaskData d = taskData[0];
-                        StartCoroutine(CreateUnityDataFromAssimp(d.fileName, scene, d.root.transform));
-                        importerState = ImporterState.Processing;
-                        progress = 0.5f;
                     }
                     break;
 

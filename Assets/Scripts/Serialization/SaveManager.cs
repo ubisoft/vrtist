@@ -551,13 +551,11 @@ namespace VRtist.Serialization
             // Sky
             GlobalState.Instance.SkySettings = sceneData.skyData;
 
-            // Objects
-            Transform importedParent = new GameObject("__VRtist_tmp_load__").transform;
+            // Objects            
             foreach (ObjectData data in sceneData.objects)
             {
-                LoadObject(data, importedParent);
+                LoadObject(data);
             }
-            Destroy(importedParent.gameObject);
 
             // Lights
             foreach (LightData data in sceneData.lights)
@@ -640,16 +638,19 @@ namespace VRtist.Serialization
             return materials;
         }
 
-        private async void LoadObject(ObjectData data, Transform importedParent)
+        private async void LoadObject(ObjectData data)
         {
             GameObject gobject;
-            string absoluteMeshPath = GetSaveFolderPath(currentProjectName) + data.meshPath;
+            string absoluteMeshPath;
+            Transform importedParent = null;
 
             // Check for import
             if (data.isImported)
             {
                 try
                 {
+                    importedParent = new GameObject("__VRtist_tmp_load__").transform;
+                    absoluteMeshPath = data.meshPath;
                     gobject = await GlobalState.GeometryImporter.ImportObjectAsync(absoluteMeshPath, importedParent);
                 }
                 catch (System.Exception e)
@@ -660,6 +661,7 @@ namespace VRtist.Serialization
             }
             else
             {
+                absoluteMeshPath = GetSaveFolderPath(currentProjectName) + data.meshPath;
                 gobject = new GameObject(data.name);
             }
 
@@ -683,6 +685,8 @@ namespace VRtist.Serialization
             if (data.isImported)
             {
                 SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, "__VRtist_tmp_load__"));
+                if (null != importedParent)
+                    Destroy(importedParent.gameObject);
             }
             else
             {
