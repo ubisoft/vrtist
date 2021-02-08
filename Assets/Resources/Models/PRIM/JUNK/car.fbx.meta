@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c453ad81bde043542a611adac12c6988
+guid: cfe7a88e252dd694bb70c4ada2c944c4
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
@@ -7,8 +7,48 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: sla_lambert_mod.001
-    second: {fileID: 2100000, guid: f1145ee7608d85b4f88e7416f0260fca, type: 2}
+      name: Default_Material.002
+    second: {fileID: 2100000, guid: 43069a676cee6cf43a6b0a3a5f27d36f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: car_feux
+    second: {fileID: 2100000, guid: d9ff33db472c11f4293872988ad0e12b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lambert1.002
+    second: {fileID: 2100000, guid: 76feea25f503b5a429e350e7cd945888, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_black.002
+    second: {fileID: 2100000, guid: 9805aa1afdd7d1a468f4235c9d4d303a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_car.001
+    second: {fileID: 2100000, guid: b19ae11b4e4e7c143aa14aa3d53bc05d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_metal.001
+    second: {fileID: 2100000, guid: dcfcb9dc1ba3c3e4899e9c00507dc7f5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_red.001
+    second: {fileID: 2100000, guid: 267d9e5124b0231468346224ef422855, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_window.001
+    second: {fileID: 2100000, guid: 66b635d80a619e642bd1e43efacfce5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: shd_yellow.001
+    second: {fileID: 2100000, guid: 7e2c94556daf39a4a8062c48d6338a69, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

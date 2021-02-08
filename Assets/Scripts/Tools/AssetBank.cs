@@ -182,26 +182,34 @@ namespace VRtist
             AddBuiltinAsset("Furniture", "TV", "Prefabs/UI/FURNITURE/UI_tv", "Prefabs/Primitives/FURNITURE/tv");
             AddBuiltinAsset("Furniture", "Washing Machine", "Prefabs/UI/FURNITURE/UI_washing_machine", "Prefabs/Primitives/FURNITURE/washing_machine");
 
-            AddBuiltinAsset("Prop", "Barrel", "Prefabs/UI/JUNK/Barrel", "Prefabs/Primitives/JUNK/BARREL_PRIM");
-            AddBuiltinAsset("Prop", "Bench", "Prefabs/UI/JUNK/Bench", "Prefabs/Primitives/JUNK/BENCH_PRIM");
-            AddBuiltinAsset("Prop", "Bottle", "Prefabs/UI/JUNK/Bottle", "Prefabs/Primitives/JUNK/BOTTLE_PRIM");
-            AddBuiltinAsset("Prop", "Box", "Prefabs/UI/JUNK/UI_Box", "Prefabs/Primitives/JUNK/BOX_PRIM");
-            AddBuiltinAsset("Prop", "Bucket", "Prefabs/UI/JUNK/Bucket", "Prefabs/Primitives/JUNK/BUCKET_PRIM");
-            AddBuiltinAsset("Prop", "Caddie", "Prefabs/UI/JUNK/Caddie", "Prefabs/Primitives/JUNK/CADDIE_PRIM");
-            AddBuiltinAsset("Prop", "Dumpster", "Prefabs/UI/JUNK/Dumpster", "Prefabs/Primitives/JUNK/DUMPSTER_PRIM");
-            AddBuiltinAsset("Prop", "Fence", "Prefabs/UI/JUNK/Fence", "Prefabs/Primitives/JUNK/FENCE_PRIM");
-            AddBuiltinAsset("Prop", "Fridge", "Prefabs/UI/JUNK/Fridge", "Prefabs/Primitives/JUNK/FRIDGE_PRIM");
-            AddBuiltinAsset("Prop", "Hydrant", "Prefabs/UI/JUNK/Hydrant", "Prefabs/Primitives/JUNK/HYDRANT_PRIM");
-            AddBuiltinAsset("Prop", "Paint", "Prefabs/UI/JUNK/Paint", "Prefabs/Primitives/JUNK/PAINT_PRIM");
-            AddBuiltinAsset("Prop", "Plank", "Prefabs/UI/JUNK/Plank", "Prefabs/Primitives/JUNK/PLANK_PRIM");
-            AddBuiltinAsset("Prop", "Ticket", "Prefabs/UI/JUNK/Ticket", "Prefabs/Primitives/JUNK/TICKET_PRIM");
-            AddBuiltinAsset("Prop", "Tire", "Prefabs/UI/JUNK/Tire", "Prefabs/Primitives/JUNK/TIRE_PRIM");
-            AddBuiltinAsset("Prop", "Tole", "Prefabs/UI/JUNK/Tole", "Prefabs/Primitives/JUNK/TOLE_PRIM");
-            AddBuiltinAsset("Prop", "Trunk Army", "Prefabs/UI/JUNK/TrunkArmy", "Prefabs/Primitives/JUNK/TRUNK_ARMY_PRIM");
-            AddBuiltinAsset("Prop", "Warn Cone", "Prefabs/UI/JUNK/WarnCone", "Prefabs/Primitives/JUNK/WARN_CONE_PRIM");
-            AddBuiltinAsset("Prop", "Washing Machine", "Prefabs/UI/JUNK/WashingMachine", "Prefabs/Primitives/JUNK/WASHING_MACHINE_PRIM");
+            AddBuiltinAsset("Prop", "Barricade", "Prefabs/UI/JUNK/UI_barricade", "Prefabs/Primitives/JUNK/barricade");
+            AddBuiltinAsset("Prop", "Metalsheet", "Prefabs/UI/JUNK/UI_metalsheet", "Prefabs/Primitives/JUNK/metalsheet");
+            AddBuiltinAsset("Prop", "Bottle", "Prefabs/UI/JUNK/UI_bottle", "Prefabs/Primitives/JUNK/bottle");
+            AddBuiltinAsset("Prop", "Tire", "Prefabs/UI/JUNK/UI_tire", "Prefabs/Primitives/JUNK/tire");
+            AddBuiltinAsset("Prop", "Trunk Army", "Prefabs/UI/JUNK/UI_trunk_army", "Prefabs/Primitives/JUNK/trunk_army");
 
-            AddBuiltinAsset("Vehicle", "Submarine", "Prefabs/UI/JUNK/Submarine", "Prefabs/Primitives/JUNK/SUBMARINE_PRIM");
+            AddBuiltinAsset("Vehicle", "Car", "Prefabs/UI/JUNK/UI_car", "Prefabs/Primitives/JUNK/car");
+
+            //AddBuiltinAsset("Prop", "Barrel", "Prefabs/UI/JUNK/Barrel", "Prefabs/Primitives/JUNK/BARREL_PRIM");
+            //AddBuiltinAsset("Prop", "Bench", "Prefabs/UI/JUNK/Bench", "Prefabs/Primitives/JUNK/BENCH_PRIM");
+            //AddBuiltinAsset("Prop", "Bottle", "Prefabs/UI/JUNK/Bottle", "Prefabs/Primitives/JUNK/BOTTLE_PRIM");
+            //AddBuiltinAsset("Prop", "Box", "Prefabs/UI/JUNK/UI_Box", "Prefabs/Primitives/JUNK/BOX_PRIM");
+            //AddBuiltinAsset("Prop", "Bucket", "Prefabs/UI/JUNK/Bucket", "Prefabs/Primitives/JUNK/BUCKET_PRIM");
+            //AddBuiltinAsset("Prop", "Caddie", "Prefabs/UI/JUNK/Caddie", "Prefabs/Primitives/JUNK/CADDIE_PRIM");
+            //AddBuiltinAsset("Prop", "Dumpster", "Prefabs/UI/JUNK/Dumpster", "Prefabs/Primitives/JUNK/DUMPSTER_PRIM");
+            //AddBuiltinAsset("Prop", "Fence", "Prefabs/UI/JUNK/Fence", "Prefabs/Primitives/JUNK/FENCE_PRIM");
+            //AddBuiltinAsset("Prop", "Fridge", "Prefabs/UI/JUNK/Fridge", "Prefabs/Primitives/JUNK/FRIDGE_PRIM");
+            //AddBuiltinAsset("Prop", "Hydrant", "Prefabs/UI/JUNK/Hydrant", "Prefabs/Primitives/JUNK/HYDRANT_PRIM");
+            //AddBuiltinAsset("Prop", "Paint", "Prefabs/UI/JUNK/Paint", "Prefabs/Primitives/JUNK/PAINT_PRIM");
+            //AddBuiltinAsset("Prop", "Plank", "Prefabs/UI/JUNK/Plank", "Prefabs/Primitives/JUNK/PLANK_PRIM");
+            //AddBuiltinAsset("Prop", "Ticket", "Prefabs/UI/JUNK/Ticket", "Prefabs/Primitives/JUNK/TICKET_PRIM");
+            //AddBuiltinAsset("Prop", "Tire", "Prefabs/UI/JUNK/Tire", "Prefabs/Primitives/JUNK/TIRE_PRIM");
+            //AddBuiltinAsset("Prop", "Tole", "Prefabs/UI/JUNK/Tole", "Prefabs/Primitives/JUNK/TOLE_PRIM");
+            //AddBuiltinAsset("Prop", "Trunk Army", "Prefabs/UI/JUNK/TrunkArmy", "Prefabs/Primitives/JUNK/TRUNK_ARMY_PRIM");
+            //AddBuiltinAsset("Prop", "Warn Cone", "Prefabs/UI/JUNK/WarnCone", "Prefabs/Primitives/JUNK/WARN_CONE_PRIM");
+            //AddBuiltinAsset("Prop", "Washing Machine", "Prefabs/UI/JUNK/WashingMachine", "Prefabs/Primitives/JUNK/WASHING_MACHINE_PRIM");
+
+            //AddBuiltinAsset("Vehicle", "Submarine", "Prefabs/UI/JUNK/Submarine", "Prefabs/Primitives/JUNK/SUBMARINE_PRIM");
         }
 
         private IEnumerator ScanDirectory(string path, Action onEndScan = null)
