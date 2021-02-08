@@ -496,6 +496,8 @@ namespace VRtist
                 AudioSource audioSource = audioTransform.GetComponent<AudioSource>();
                 if (null != audioSource)
                 {
+                    audioSource.maxDistance = 10f / GlobalState.WorldScale;
+                    audioSource.minDistance = 1f / GlobalState.WorldScale;
                     SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.OpenWindow);
                 }
             }
@@ -510,6 +512,8 @@ namespace VRtist
                 AudioSource audioSource = audioTransform.GetComponent<AudioSource>();
                 if (null != audioSource)
                 {
+                    audioSource.maxDistance = 10f / GlobalState.WorldScale;
+                    audioSource.minDistance = 1f / GlobalState.WorldScale;
                     SoundManager.Instance.Play3DSound(audioSource, SoundManager.Sounds.CloseWindow);
                 }
             }
