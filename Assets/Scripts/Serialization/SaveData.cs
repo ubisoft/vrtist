@@ -624,35 +624,35 @@ namespace VRtist.Serialization
     public class ShotData : IBlob
     {
         public string name;
-        public int index;
         public int start;
         public int end;
         public string cameraName;
+        public bool enabled;
 
         public void FromBytes(byte[] buffer, ref int index)
         {
             name = Converter.GetString(buffer, ref index);
-            index = Converter.GetInt(buffer, ref index);
             start = Converter.GetInt(buffer, ref index);
             end = Converter.GetInt(buffer, ref index);
             cameraName = Converter.GetString(buffer, ref index);
+            enabled = Converter.GetBool(buffer, ref index);
         }
 
         public byte[] ToBytes()
         {
             byte[] nameBuffer = Converter.StringToBytes(name);
-            byte[] indexBuffer = Converter.IntToBytes(index);
             byte[] startBuffer = Converter.IntToBytes(start);
             byte[] endBuffer = Converter.IntToBytes(end);
             byte[] cameraNameBuffer = Converter.StringToBytes(cameraName);
+            byte[] enabledBuffer = Converter.BoolToBytes(enabled);
 
             return Converter.ConcatenateBuffers(new List<byte[]>()
             {
                 nameBuffer,
-                indexBuffer,
                 startBuffer,
                 endBuffer,
-                cameraNameBuffer
+                cameraNameBuffer,
+                enabledBuffer
             });
         }
     }
