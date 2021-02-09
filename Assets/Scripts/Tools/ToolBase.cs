@@ -19,34 +19,23 @@ namespace VRtist
 
         public Transform mouthpiece;
 
-        protected Transform toolsController;
-        protected Transform rightMouthpieces;
-        protected Transform rightController;
+        protected static Transform mouthpieces;
 
         protected virtual void Awake()
         {
             ToolsManager.RegisterTool(gameObject);
+            mouthpieces = GlobalState.Instance.toolsController.Find("mouthpieces");
         }
 
         protected virtual void Init()
         {
-            rightController = transform.parent.parent.Find("right_controller");
-            UnityEngine.Assertions.Assert.IsNotNull(rightController);
-            toolsController = rightController.parent;
-            UnityEngine.Assertions.Assert.IsNotNull(toolsController);
-            rightMouthpieces = toolsController.Find("mouthpieces");
-            UnityEngine.Assertions.Assert.IsNotNull(rightMouthpieces);
+
         }
 
         public static void ToggleMouthpiece(Transform mouthPiece, bool activate)
         {
-            if (null == mouthPiece) // some tools dont have mouthpieces (WindowTool)
-                return;
-
-            Transform container = mouthPiece.parent;
-            for (int i = 0; i < container.childCount; i++)
+            foreach (Transform child in mouthpieces)
             {
-                Transform child = container.GetChild(i);
                 child.gameObject.SetActive(activate && child == mouthPiece);
             }
         }
@@ -127,6 +116,7 @@ namespace VRtist
         protected virtual void OnEnable()
         {
             Settings.onSettingsChanged.AddListener(OnSettingsChanged);
+            SetTooltips();
         }
 
         protected virtual void OnDisable()
@@ -168,13 +158,13 @@ namespace VRtist
             ToggleMouthpiece(mouthpiece, show);
         }
 
-        protected virtual void ShowController(bool show)
-        {
-            if (rightController != null)
-            {
-                rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
-            }
-        }
+        //protected virtual void ShowController(bool show)
+        //{
+        //    if (rightController != null)
+        //    {
+        //        rightController.gameObject.transform.localScale = show ? Vector3.one : Vector3.zero;
+        //    }
+        //}
 
         public virtual void OnUIObjectEnter(int gohash) { }
         public virtual void OnUIObjectExit(int gohash) { }

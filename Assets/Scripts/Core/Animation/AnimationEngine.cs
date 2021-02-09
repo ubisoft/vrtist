@@ -257,6 +257,27 @@ namespace VRtist
             return animationState == AnimationState.Playing || animationState == AnimationState.Recording;
         }
 
+        public void Clear()
+        {
+            foreach (GameObject gobject in animations.Keys)
+            {
+                onRemoveAnimation.Invoke(gobject);
+            }
+            animations.Clear();
+            disabledAnimations.Clear();
+            recordingObjects.Clear();
+            oldAnimations.Clear();
+            fps = 24f;
+            StartFrame = 1;
+            EndFrame = 250;
+            CurrentFrame = 1;
+        }
+
+        public Dictionary<GameObject, AnimationSet> GetAllAnimations()
+        {
+            return animations;
+        }
+
         private void EvaluateAnimations()
         {
             foreach (AnimationSet animationSet in animations.Values)
@@ -305,8 +326,8 @@ namespace VRtist
                 if (lightIntensity != -1)
                 {
                     LightController controller = trans.GetComponent<LightController>();
-                    controller.intensity = lightIntensity;
-                    controller.color = color;
+                    controller.Intensity = lightIntensity;
+                    controller.Color = color;
                 }
 
                 if (cameraFocal != -1)
@@ -534,8 +555,8 @@ namespace VRtist
                     LightController lightController = selected.GetComponent<LightController>();
                     if (null != lightController)
                     {
-                        lightIntensity = lightController.intensity;
-                        color = lightController.color;
+                        lightIntensity = lightController.Intensity;
+                        color = lightController.Color;
                     }
 
                     float cameraFocal = -1;

@@ -17,7 +17,9 @@ namespace VRtist
     public enum MaterialID
     {
         ObjectOpaque,
-        ObjectTransparent
+        ObjectTransparent,
+        ObjectOpaqueUnlit,
+        ObjectTransparentUnlit,
     }
 
     public class ResourceManager
@@ -51,6 +53,8 @@ namespace VRtist
 
             materialsMap.Add(MaterialID.ObjectOpaque, "Materials/ObjectOpaque");
             materialsMap.Add(MaterialID.ObjectTransparent, "Materials/ObjectTransparent");
+            materialsMap.Add(MaterialID.ObjectOpaqueUnlit, "Materials/ObjectOpaqueUnlit");
+            materialsMap.Add(MaterialID.ObjectTransparentUnlit, "Materials/ObjectTransparentUnlit");
         }
 
         public static GameObject GetPrefab(PrefabID resource)

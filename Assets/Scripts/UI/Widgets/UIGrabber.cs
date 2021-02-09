@@ -1,4 +1,5 @@
 ﻿using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -82,13 +83,20 @@ namespace VRtist
         // Handles multi-mesh and multi-material per mesh.
         public override void SetColor(Color color)
         {
-            MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
-            foreach (MeshRenderer meshRenderer in meshRenderers)
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+#else
+            if (Application.isPlaying)
+#endif
             {
-                Material[] materials = meshRenderer.materials;
-                foreach (Material material in meshRenderer.materials)
+                MeshRenderer[] meshRenderers = GetComponentsInChildren<MeshRenderer>();
+                foreach (MeshRenderer meshRenderer in meshRenderers)
                 {
-                    material.SetColor("_BaseColor", color);
+                    Material[] materials = meshRenderer.materials;
+                    foreach (Material material in meshRenderer.materials)
+                    {
+                        material.SetColor("_BaseColor", color);
+                    }
                 }
             }
         }

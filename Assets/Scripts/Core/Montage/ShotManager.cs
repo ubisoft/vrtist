@@ -7,6 +7,21 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
+    public class Shot
+    {
+        public string name;
+        public GameObject camera = null; // TODO, manage game object destroy
+        public int start = -1;
+        public int end = -1;
+        public bool enabled = true;
+        public Color color = Color.black;
+
+        public Shot Copy()
+        {
+            return new Shot { name = name, camera = camera, start = start, end = end, enabled = enabled, color = color };
+        }
+    }
+
     /// <summary>
     /// Manage shots.
     /// </summary>

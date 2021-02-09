@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -46,7 +47,7 @@ namespace VRtist
 
         public void ForceUpdate()
         {
-            int mappedFrame = (int) (frame * data.frameScale) + data.frameOffset;
+            int mappedFrame = (int)(frame * data.frameScale) + data.frameOffset;
             if (data.hasCustomRange)
             {
                 if (mappedFrame >= data.rangeStartFrame)
@@ -64,6 +65,7 @@ namespace VRtist
             if (null == meshFilter)
                 meshFilter = gameObject.AddComponent<MeshFilter>();
             meshFilter.mesh = meshData.Item1;
+            meshFilter.mesh.name = gameObject.name;
 
             MeshCollider collider = gameObject.GetComponent<MeshCollider>();
             if (null != collider)

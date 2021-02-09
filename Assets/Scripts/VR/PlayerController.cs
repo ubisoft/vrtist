@@ -41,6 +41,20 @@ namespace VRtist
         private Vector3 previousForward;
         private Transform rightHanded;
 
+        private bool isInLobby = true;
+        public bool IsInLobby
+        {
+            get { return isInLobby; }
+            set
+            {
+                isInLobby = value;
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Trigger, !isInLobby);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Primary, !isInLobby);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Secondary, !isInLobby);
+                Tooltips.SetVisible(VRDevice.SecondaryController, Tooltips.Location.Joystick, !isInLobby);
+            }
+        }
+
         void Start()
         {
             if (!VRInput.TryGetDevices())
@@ -63,6 +77,7 @@ namespace VRtist
             Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo");
             Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo");
             Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset");
+            IsInLobby = true;  // hide tooltips
 
             OnChangeNavigationMode("BiManual");
 
@@ -75,6 +90,12 @@ namespace VRtist
         {
             if (VRInput.TryGetDevices())
             {
+                // CONTROLLERS
+                HandleControllers();
+
+                if (IsInLobby) { return; }
+
+                // Only in "scene mode" (not in lobby)
                 // NAVIGATION
                 HandleNavigation();
 
@@ -144,17 +165,20 @@ namespace VRtist
             }
         }
 
-        private void HandleNavigation()
+        private void HandleControllers()
         {
             if (!paletteController.gameObject.activeSelf)
             {
                 paletteController.gameObject.SetActive(true);
             }
 
-            // Update left controller transform
+            // Update controllers transform
             VRInput.UpdateTransformFromVRDevice(paletteController, VRInput.secondaryController);
             VRInput.UpdateTransformFromVRDevice(toolsController, VRInput.primaryController);
+        }
 
+        private void HandleNavigation()
+        {
             if (null != options.currentNavigationMode)
                 options.currentNavigationMode.Update();
         }
@@ -347,7 +371,7 @@ namespace VRtist
 
             if (IsCompatibleWithReset(options.currentNavigationMode))
             {
-                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset", !isInLobby);
             }
             else
             {
@@ -356,7 +380,7 @@ namespace VRtist
 
             if (IsCompatibleWithPalette(options.currentNavigationMode))
             {
-                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Open Palette");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Trigger, Tooltips.Action.Push, "Open Palette", !isInLobby);
             }
             else
             {
@@ -365,8 +389,8 @@ namespace VRtist
 
             if (IsCompatibleWithUndoRedo(options.currentNavigationMode))
             {
-                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo");
-                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo");
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo", !isInLobby);
+                Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo", !isInLobby);
             }
             else
             {

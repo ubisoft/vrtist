@@ -217,10 +217,11 @@ namespace VRtist
         public static void SavePNG(Texture2D texture, string path)
         {
             byte[] data = texture.EncodeToPNG();
+            CreatePath(path);
             File.WriteAllBytes(path, data);
         }
 
-        public static Texture2D LoadTexture(string path)
+        public static Texture2D LoadTexture(string path, bool linear = false)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -234,7 +235,7 @@ namespace VRtist
             }
 
             byte[] bytes = File.ReadAllBytes(path);
-            Texture2D texture = new Texture2D(1, 1);
+            Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, true, linear);
             texture.LoadImage(bytes);
             return texture;
         }
@@ -245,6 +246,35 @@ namespace VRtist
             if (null == texture) { return null; }
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             return sprite;
+        }
+
+        public static void DeleteTransformChildren(Transform trans)
+        {
+            Debug.Log("Clear scene");
+            Selection.ClearSelection();
+            foreach (Transform child in trans)
+            {
+                if (child.name.StartsWith("__VRtist_"))
+                {
+                    // There are some game objects that are not user objects and must remain
+                    continue;
+                }
+                GameObject.Destroy(child.gameObject);
+            }
+        }
+
+        public static void CreatePath(string path)
+        {
+            string filename = Path.GetFileName(path);
+            DirectoryInfo folder;
+            if (filename.Length > 0)
+                folder = Directory.GetParent(path);
+            else
+                folder = new DirectoryInfo(path);
+            if (!folder.Exists)
+            {
+                folder.Create();
+            }
         }
     }
 }

@@ -6,18 +6,13 @@ namespace VRtist
     public class GradientItem : ListItemContent
     {
         [HideInInspector] public UIDynamicListItem item;
-        
+
         public SkySettings Colors { get { return gradientPreview.Colors; } set { gradientPreview.Colors = value; } }
 
         public UIGradientPreview gradientPreview = null;
         public UIButton copyButton = null;
         public UIButton deleteButton = null;
         public UIPanel backgroundPanel = null;
-
-        public void Start()
-        {
-
-        }
 
         public void OnDestroy()
         {

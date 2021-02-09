@@ -1,17 +1,13 @@
 ﻿using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
 using UnityEngine;
 
 namespace VRtist.Serialization
 {
-    public class SerializationManager
+    public static class SerializationManager
     {
-        public static bool Save(string path, object data, bool deleteFolder = false)
+        public static void Save(string path, IBlob data, bool deleteFolder = false)
         {
-            BinaryFormatter formatter = GetBinaryFormatter();
-
             DirectoryInfo folder = Directory.GetParent(path);
             if (!folder.Exists)
             {
@@ -23,58 +19,19 @@ namespace VRtist.Serialization
                 folder.Create();
             }
 
-            using (FileStream file = File.Create(path))
-            {
-                try
-                {
-                    formatter.Serialize(file, data);
-                }
-                catch (SerializationException e)
-                {
-                    Debug.LogError("Failed to serialize: " + e.Message);
-                    return false;
-                }
-            }
-
-            return true;
+            File.WriteAllBytes(path, data.ToBytes());
         }
 
-        public static object Load(string path)
+        public static void Load(string path, IBlob data)
         {
-            if (!File.Exists(path)) { return null; }
-
-            BinaryFormatter formatter = GetBinaryFormatter();
-
-            using (FileStream file = File.OpenRead(path))
+            if (!File.Exists(path))
             {
-                object save = formatter.Deserialize(file);
-                return save;
+                Debug.LogWarning($"Cannot load {path}: no such file.");
+                return;
             }
-        }
 
-        public static BinaryFormatter GetBinaryFormatter()
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-
-            SurrogateSelector selector = new SurrogateSelector();
-
-            Vector2Surrogate vector2Surrogate = new Vector2Surrogate();
-            Vector3Surrogate vector3Surrogate = new Vector3Surrogate();
-            Vector4Surrogate vector4Surrogate = new Vector4Surrogate();
-            QuaternionSurrogate quaternionSurrogate = new QuaternionSurrogate();
-            ColorSurrogate colorSurrogate = new ColorSurrogate();
-            MeshSurrogate meshSurrogate = new MeshSurrogate();
-
-            selector.AddSurrogate(typeof(Vector2), new StreamingContext(StreamingContextStates.All), vector2Surrogate);
-            selector.AddSurrogate(typeof(Vector3), new StreamingContext(StreamingContextStates.All), vector3Surrogate);
-            selector.AddSurrogate(typeof(Vector4), new StreamingContext(StreamingContextStates.All), vector4Surrogate);
-            selector.AddSurrogate(typeof(Quaternion), new StreamingContext(StreamingContextStates.All), quaternionSurrogate);
-            selector.AddSurrogate(typeof(Color), new StreamingContext(StreamingContextStates.All), colorSurrogate);
-            selector.AddSurrogate(typeof(Mesh), new StreamingContext(StreamingContextStates.All), meshSurrogate);
-
-            formatter.SurrogateSelector = selector;
-
-            return formatter;
+            int index = 0;
+            data.FromBytes(File.ReadAllBytes(path), ref index);
         }
     }
 }

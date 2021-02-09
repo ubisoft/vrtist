@@ -73,6 +73,8 @@ namespace VRtist
         static readonly List<ICommand> redoStack = new List<ICommand>();
         static readonly List<CommandGroup> groupStack = new List<CommandGroup>();
         static CommandGroup currentGroup = null;
+        static ICommand cleanCommandRef = null;
+        static bool forceDirty = false;
 
         public static void Undo()
         {
@@ -82,11 +84,15 @@ namespace VRtist
                 return;
             int count = undoStack.Count;
             if (count == 0)
+            {
                 return;
+            }
             ICommand undoCommand = undoStack[count - 1];
             undoStack.RemoveAt(count - 1);
             undoCommand.Undo();
             redoStack.Add(undoCommand);
+
+            GlobalState.sceneDirtyEvent.Invoke(IsSceneDirty());
         }
 
         public static void Redo()
@@ -103,6 +109,29 @@ namespace VRtist
             redoStack.RemoveAt(count - 1);
             redoCommand.Redo();
             undoStack.Add(redoCommand);
+
+            GlobalState.sceneDirtyEvent.Invoke(IsSceneDirty());
+        }
+
+        public static void SetSceneDirty(bool dirty)
+        {
+            forceDirty = dirty;
+            if (!dirty)
+            {
+                if (undoStack.Count == 0)
+                    cleanCommandRef = null;
+                else
+                    cleanCommandRef = undoStack[undoStack.Count - 1];
+            }
+            GlobalState.sceneDirtyEvent.Invoke(dirty);
+        }
+
+        public static bool IsSceneDirty()
+        {
+            if (forceDirty) { return true; }
+            if (undoStack.Count == 0)
+                return false;
+            return cleanCommandRef != undoStack[undoStack.Count - 1];
         }
 
         public static bool IsUndoGroupOpened()
@@ -121,6 +150,7 @@ namespace VRtist
                 undoStack.Add(command);
                 redoStack.Clear();
             }
+            GlobalState.sceneDirtyEvent.Invoke(IsSceneDirty());
 
             /*
             int count = undoStack.Count;

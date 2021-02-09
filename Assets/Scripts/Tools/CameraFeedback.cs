@@ -32,7 +32,7 @@ namespace VRtist
             float far = Camera.main.farClipPlane * GlobalState.WorldScale * 0.7f;
             float fov = Camera.main.fieldOfView;
 
-            Camera cam = feedbackCamera.GetComponentInChildren<Camera>();
+            Camera cam = feedbackCamera.GetComponentInChildren<Camera>(true);
             float aspect = cam.aspect;
 
             float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
@@ -40,7 +40,6 @@ namespace VRtist
             transform.localPosition = direction.normalized * far;
             transform.localRotation = Quaternion.LookRotation(-direction) * Quaternion.Euler(0, 180, 0);
             transform.localScale = new Vector3(scale * aspect, scale, scale);
-
         }
 
         void OnCameraChanged(GameObject _, GameObject activeCamera)
