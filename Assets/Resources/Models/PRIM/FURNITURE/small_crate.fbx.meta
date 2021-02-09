@@ -8,22 +8,22 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_container.004
-    second: {fileID: 2100000, guid: 967bd924da602d647bdbd1cd8d0defec, type: 2}
+    second: {fileID: 2100000, guid: 1ccabea1386024b4f931a1d07381b9b4, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_containerStructureA_3.004
-    second: {fileID: 2100000, guid: d4386d3012443fe47b92a5b390512447, type: 2}
+    second: {fileID: 2100000, guid: 8d7f2661f54055949aad5b1be881792a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_crateCoin_3.004
-    second: {fileID: 2100000, guid: 22f80b6d9365a6b40a710aa0c7215a06, type: 2}
+    second: {fileID: 2100000, guid: 4cd41d6308f3e944aba5c9c237dbbb04, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_crateFixationC_2.004
-    second: {fileID: 2100000, guid: f32f1e83387447046976b7fd1733f9ca, type: 2}
+    second: {fileID: 2100000, guid: c50bb78614bbbe249b67859d2a1ccbe2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

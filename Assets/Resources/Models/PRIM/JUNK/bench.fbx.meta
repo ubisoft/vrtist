@@ -14,11 +14,6 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: BenchNails
     second: {fileID: 2100000, guid: b7221e021e1380a479969f9767f44182, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: No Name
-    second: {fileID: 2100000, guid: 6e0c792ead082254a8c99bc50cc8c8c1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

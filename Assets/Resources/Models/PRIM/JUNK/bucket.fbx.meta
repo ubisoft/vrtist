@@ -19,11 +19,6 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: BucketHandleMetal
     second: {fileID: 2100000, guid: 98c88a613b4ffe34ab3547be78fcee1b, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: No Name
-    second: {fileID: 2100000, guid: e4f00c99007ba3c4bac5c55cf118ddb7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

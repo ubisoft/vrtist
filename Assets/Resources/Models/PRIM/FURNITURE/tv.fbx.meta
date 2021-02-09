@@ -8,22 +8,22 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.001
-    second: {fileID: 2100000, guid: d86b70dcefac0c943a1817fe5fc35401, type: 2}
+    second: {fileID: 2100000, guid: 6c15f79fc370f0b42a2f5992a599cda5, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.002
-    second: {fileID: 2100000, guid: ea0ead6a99cbc6b43adfa2c4da05c11b, type: 2}
+    second: {fileID: 2100000, guid: 21cdde8bb1ce41140b4378465fc77004, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.003
-    second: {fileID: 2100000, guid: 4faafa65359c68d4ea4db372b614d63d, type: 2}
+    second: {fileID: 2100000, guid: 277454d460976724dbbe47fa28fdac07, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_coconutFruitExt9.001
-    second: {fileID: 2100000, guid: 3395fdca41e3cd947aa5cb128e8ac963, type: 2}
+    second: {fileID: 2100000, guid: 6419aca0a2ea1f644bed15cbb7c3e5cd, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

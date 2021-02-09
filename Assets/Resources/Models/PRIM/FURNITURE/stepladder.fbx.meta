@@ -8,22 +8,22 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Default_Material.001
-    second: {fileID: 2100000, guid: 41bc3c9ed14d96e41832bd35fe1712a0, type: 2}
+    second: {fileID: 2100000, guid: 4587c0361299886459fcc58b90730766, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: shd_black.001
-    second: {fileID: 2100000, guid: 4f0457ba2a50fb542930128cd1477b10, type: 2}
+    second: {fileID: 2100000, guid: 720224ba9159d9a4da7dd2a68614e1b9, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: shd_brown.001
-    second: {fileID: 2100000, guid: 657d48a1204d26b4fa17d6c58cc49daa, type: 2}
+    second: {fileID: 2100000, guid: b3e8374ea5f8d234588d8afc2b6296f9, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: shd_metal.002
-    second: {fileID: 2100000, guid: f4554fcb3aabf834d8d01a8e2c0caeed, type: 2}
+    second: {fileID: 2100000, guid: 61d343df9520e0948945aa22d3cc2300, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

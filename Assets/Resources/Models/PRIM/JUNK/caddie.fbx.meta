@@ -29,11 +29,6 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: CaddieWheelsInterior
     second: {fileID: 2100000, guid: d1a7bed8b99ea7f46b1046b864b8b5ab, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: No Name
-    second: {fileID: 2100000, guid: 4b2c5e90eeacce34ba03d154042ef274, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
