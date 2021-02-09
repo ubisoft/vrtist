@@ -175,8 +175,8 @@ namespace VRtist
             AddBuiltinAsset("Furniture", "Small Crate", "Prefabs/UI/FURNITURE/UI_small_crate", "Prefabs/Primitives/FURNITURE/small_crate");
             AddBuiltinAsset("Furniture", "Big Crate", "Prefabs/UI/FURNITURE/UI_big_crate", "Prefabs/Primitives/FURNITURE/big_crate");
             AddBuiltinAsset("Furniture", "Cactus pot", "Prefabs/UI/FURNITURE/UI_cactus_pot", "Prefabs/Primitives/FURNITURE/cactus_pot");
-            AddBuiltinAsset("Furniture", "Escabeau", "Prefabs/UI/FURNITURE/UI_escabeau", "Prefabs/Primitives/FURNITURE/escabeau");
-            AddBuiltinAsset("Furniture", "Fauteuil", "Prefabs/UI/FURNITURE/UI_fauteuil", "Prefabs/Primitives/FURNITURE/fauteuil");
+            AddBuiltinAsset("Furniture", "Stepladder", "Prefabs/UI/FURNITURE/UI_stepladder", "Prefabs/Primitives/FURNITURE/stepladder");
+            AddBuiltinAsset("Furniture", "Armchair", "Prefabs/UI/FURNITURE/UI_armchair", "Prefabs/Primitives/FURNITURE/armchair");
             AddBuiltinAsset("Furniture", "Fishing Chair", "Prefabs/UI/FURNITURE/UI_fishing_chair", "Prefabs/Primitives/FURNITURE/fishing_chair");
             AddBuiltinAsset("Furniture", "Fridge", "Prefabs/UI/FURNITURE/UI_fridge", "Prefabs/Primitives/FURNITURE/fridge");
             AddBuiltinAsset("Furniture", "TV", "Prefabs/UI/FURNITURE/UI_tv", "Prefabs/Primitives/FURNITURE/tv");
