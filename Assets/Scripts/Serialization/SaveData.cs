@@ -15,6 +15,8 @@ namespace VRtist.Serialization
         string name;
         string path;  // relative path
 
+        bool unlit;
+
         public bool useColorMap;
         public Color baseColor;
         public string colorMapPath;
@@ -49,14 +51,19 @@ namespace VRtist.Serialization
         public MaterialData(MaterialInfo materialInfo)
         {
             string shaderName = materialInfo.material.shader.name;
-            if (shaderName != "VRtist/ObjectOpaque" && shaderName != "VRtist/ObjectTransparent")
+            if (shaderName != "VRtist/ObjectOpaque" &&
+                shaderName != "VRtist/ObjectTransparent" &&
+                shaderName != "VRtist/ObjectOpaqueUnlit" &&
+                shaderName != "VRtist/ObjectTransparentUnlit")
             {
-                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/ObjectOpaque or VRtist/ObjectTransparent.");
+                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/Object*.");
                 return;
             }
 
             name = materialInfo.material.name;
             path = materialInfo.relativePath;
+
+            unlit = shaderName.Contains("Unlit");
 
             useColorMap = materialInfo.material.GetInt("_UseColorMap") == 1f;
             baseColor = materialInfo.material.GetColor("_BaseColor");
@@ -90,11 +97,22 @@ namespace VRtist.Serialization
 
         public Material CreateMaterial(string rootPath)
         {
-            Material material = new Material(
+            Material material = null;
+
+            if (!unlit)
+            {
+                material = new Material(
                 opacity == 1f && !useOpacityMap ?
                 ResourceManager.GetMaterial(MaterialID.ObjectOpaque) :
-                ResourceManager.GetMaterial(MaterialID.ObjectTransparent)
-            );
+                ResourceManager.GetMaterial(MaterialID.ObjectTransparent));
+            }
+            else
+            {
+                material = new Material(
+                opacity == 1f && !useOpacityMap ?
+                ResourceManager.GetMaterial(MaterialID.ObjectOpaqueUnlit) :
+                ResourceManager.GetMaterial(MaterialID.ObjectTransparentUnlit));
+            }
 
             string fullPath = rootPath + path;
 
@@ -164,6 +182,8 @@ namespace VRtist.Serialization
             name = Converter.GetString(bytes, ref index);
             path = Converter.GetString(bytes, ref index);
 
+            unlit = Converter.GetBool(bytes, ref index);
+
             useColorMap = Converter.GetBool(bytes, ref index);
             baseColor = Converter.GetColor(bytes, ref index);
             colorMapPath = Converter.GetString(bytes, ref index);
@@ -199,6 +219,8 @@ namespace VRtist.Serialization
             byte[] nameBuffer = Converter.StringToBytes(name);
             byte[] pathBuffer = Converter.StringToBytes(path);
 
+            byte[] unlitBuffer = Converter.BoolToBytes(unlit);
+
             byte[] useColorMapBuffer = Converter.BoolToBytes(useColorMap);
             byte[] baseColorBuffer = Converter.ColorToBytes(baseColor);
             byte[] colorMapPathBuffer = Converter.StringToBytes(colorMapPath);
@@ -232,6 +254,8 @@ namespace VRtist.Serialization
             {
                 nameBuffer,
                 pathBuffer,
+
+                unlitBuffer,
 
                 useColorMapBuffer,
                 baseColorBuffer,

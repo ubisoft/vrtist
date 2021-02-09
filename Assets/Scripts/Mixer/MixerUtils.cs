@@ -864,18 +864,14 @@ namespace VRtist
 
             SyncData.mixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float innerAngle, out float outerAngle);
 
-            byte[] paramsBuffer = new byte[2 * sizeof(int) + 7 * sizeof(float)];
-            Buffer.BlockCopy(BitConverter.GetBytes((int)lightType), 0, paramsBuffer, 0 * sizeof(int), sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(castShadows ? 1 : 0), 0, paramsBuffer, 1 * sizeof(int), sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.r), 0, paramsBuffer, 2 * sizeof(int), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.g), 0, paramsBuffer, 2 * sizeof(int) + 1 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.b), 0, paramsBuffer, 2 * sizeof(int) + 2 * sizeof(float), sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.a), 0, paramsBuffer, 2 * sizeof(int) + 3 * sizeof(float), sizeof(int));
-            Buffer.BlockCopy(BitConverter.GetBytes(power), 0, paramsBuffer, 2 * sizeof(int) + 4 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(innerAngle), 0, paramsBuffer, 2 * sizeof(int) + 5 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(outerAngle), 0, paramsBuffer, 2 * sizeof(int) + 6 * sizeof(float), sizeof(float));
+            byte[] lightTypeBuffer = Converter.IntToBytes((int)lightType);
+            byte[] castShadowsBuffer = Converter.BoolToBytes(castShadows);
+            byte[] colorBuffer = Converter.ColorToBytes(color);
+            byte[] powerBuffer = Converter.FloatToBytes(power);
+            byte[] innerAngleBuffer = Converter.FloatToBytes(innerAngle);
+            byte[] outerAngleBuffer = Converter.FloatToBytes(outerAngle);
 
-            List<byte[]> buffers = new List<byte[]> { bpath, bname, paramsBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, lightTypeBuffer, castShadowsBuffer, colorBuffer, powerBuffer, innerAngleBuffer, outerAngleBuffer };
             NetCommand command = new NetCommand(Converter.ConcatenateBuffers(buffers), MessageType.Light);
             return command;
         }
@@ -1237,8 +1233,7 @@ namespace VRtist
             }
             Converter.GetString(data, ref currentIndex);
 
-            LightType lightType = (LightType)BitConverter.ToInt32(data, currentIndex);
-            currentIndex += sizeof(Int32);
+            LightType lightType = (LightType)Converter.GetInt(data, ref currentIndex);
 
             GameObject lightGameObject;
             Node node;
@@ -1268,22 +1263,12 @@ namespace VRtist
             }
 
             // Read data
-            bool castShadows = BitConverter.ToInt32(data, currentIndex) != 0;
-            currentIndex += sizeof(Int32);
+            bool castShadows = Converter.GetBool(data, ref currentIndex);
 
-            float ColorR = BitConverter.ToSingle(data, currentIndex);
-            float ColorG = BitConverter.ToSingle(data, currentIndex + sizeof(float));
-            float ColorB = BitConverter.ToSingle(data, currentIndex + 2 * sizeof(float));
-            float ColorA = BitConverter.ToSingle(data, currentIndex + 3 * sizeof(float));
-            Color lightColor = new Color(ColorR, ColorG, ColorB, ColorA);
-            currentIndex += 4 * sizeof(float);
-
-            float power = BitConverter.ToSingle(data, currentIndex);
-            currentIndex += sizeof(float);
-            float spotSize = BitConverter.ToSingle(data, currentIndex);
-            currentIndex += sizeof(float);
-            float spotBlend = BitConverter.ToSingle(data, currentIndex);
-            currentIndex += sizeof(float);
+            Color lightColor = Converter.GetColor(data, ref currentIndex);
+            float power = Converter.GetFloat(data, ref currentIndex);
+            float spotSize = Converter.GetFloat(data, ref currentIndex);
+            float spotBlend = Converter.GetFloat(data, ref currentIndex);
 
             // Set data to all instances
             float range = 5f;
@@ -1650,7 +1635,7 @@ namespace VRtist
             {
                 materialParameters = new MaterialParameters
                 {
-                    materialType = MaterialID.ObjectOpaque,  // Check if we have to create an unlit material
+                    materialType = MaterialID.ObjectOpaqueUnlit,  // Check if we have to create an unlit material
                     name = materialName,
                     opacity = 1f
                 };

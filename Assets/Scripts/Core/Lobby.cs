@@ -56,7 +56,7 @@ namespace VRtist
         {
             // Read command line arguments to know if we start in the lobby or directly into a scene
             string[] args = System.Environment.GetCommandLineArgs();
-            string projectName = null;
+            string projectName = "toto";
             for (int i = 0; i < args.Length; ++i)
             {
                 if (args[i] == "--startScene")

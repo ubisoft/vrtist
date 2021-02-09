@@ -99,7 +99,7 @@ namespace VRtist.Serialization
             int size = 4 * sizeof(float);
             Buffer.BlockCopy(data, currentIndex, buffer, 0, size);
             currentIndex += size;
-            return new Color(buffer[0], buffer[1], buffer[2], buffer[3]);
+            return new Color(buffer[0], buffer[1], buffer[2], buffer[3]).gamma;
         }
 
         // Converts Color to byte buffer
@@ -107,10 +107,12 @@ namespace VRtist.Serialization
         {
             byte[] bytes = new byte[4 * sizeof(float)];
 
-            Buffer.BlockCopy(BitConverter.GetBytes(color.r), 0, bytes, 0, sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.g), 0, bytes, sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.b), 0, bytes, 2 * sizeof(float), sizeof(float));
-            Buffer.BlockCopy(BitConverter.GetBytes(color.a), 0, bytes, 3 * sizeof(float), sizeof(float));
+            Color linearColor = color.linear;
+
+            Buffer.BlockCopy(BitConverter.GetBytes(linearColor.r), 0, bytes, 0, sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(linearColor.g), 0, bytes, sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(linearColor.b), 0, bytes, 2 * sizeof(float), sizeof(float));
+            Buffer.BlockCopy(BitConverter.GetBytes(linearColor.a), 0, bytes, 3 * sizeof(float), sizeof(float));
             return bytes;
         }
 

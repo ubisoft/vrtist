@@ -332,9 +332,12 @@ namespace VRtist.Serialization
         private void SaveMaterial(MaterialInfo materialInfo)
         {
             string shaderName = materialInfo.material.shader.name;
-            if (shaderName != "VRtist/ObjectOpaque" && shaderName != "VRtist/ObjectTransparent")
+            if (shaderName != "VRtist/ObjectOpaque" &&
+                shaderName != "VRtist/ObjectTransparent" &&
+                shaderName != "VRtist/ObjectOpaqueUnlit" &&
+                shaderName != "VRtist/ObjectTransparentUnlit")
             {
-                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/ObjectOpaque or VRtist/ObjectTransparent.");
+                Debug.LogWarning($"Unsupported material {shaderName}. Expected VRtist/Object*.");
                 return;
             }
 
