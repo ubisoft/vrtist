@@ -254,13 +254,13 @@ namespace VRtist
             outerAngle = 0;
 #else
             LightController lightController = obj.GetComponentInChildren<LightController>();
-            lightType = lightController.lightType;
-            castShadows = lightController.castShadows;
+            lightType = lightController.Type;
+            castShadows = lightController.CastShadows;
             power = lightController.GetPower();
-            color = lightController.color;
-            range = lightController.range;
-            innerAngle = lightController.innerAngle;
-            outerAngle = lightController.outerAngle;
+            color = lightController.Color;
+            range = lightController.Range;
+            innerAngle = lightController.InnerAngle;
+            outerAngle = lightController.OuterAngle;
 #endif
         }
 
@@ -273,26 +273,26 @@ namespace VRtist
             if (recording && Selection.IsSelected(obj))
                 return;
             LightController controller = obj.GetComponent<LightController>();
-            controller.lightType = lightType;
+            controller.Type = lightType;
             controller.SetPower(power);
-            controller.color = color;
-            controller.castShadows = castShadows;
-            controller.range = range;
-            controller.outerAngle = outerAngle;
-            controller.innerAngle = innerAngle;
+            controller.Color = color;
+            controller.CastShadows = castShadows;
+            controller.Range = range;
+            controller.OuterAngle = outerAngle;
+            controller.InnerAngle = innerAngle;
 
             Node lightNode = SyncData.nodes[obj.name];
             foreach (var instanceItem in lightNode.instances)
             {
                 GameObject instance = instanceItem.Item1;
                 LightController instanceController = instance.GetComponent<LightController>();
-                instanceController.lightType = lightType;
+                instanceController.Type = lightType;
                 instanceController.SetPower(power);
-                instanceController.color = color;
-                instanceController.castShadows = castShadows;
-                instanceController.range = range;
-                instanceController.outerAngle = outerAngle;
-                instanceController.innerAngle = innerAngle;
+                instanceController.Color = color;
+                instanceController.CastShadows = castShadows;
+                instanceController.Range = range;
+                instanceController.OuterAngle = outerAngle;
+                instanceController.InnerAngle = innerAngle;
             }
 
 #endif

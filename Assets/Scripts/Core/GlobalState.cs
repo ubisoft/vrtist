@@ -77,6 +77,7 @@ namespace VRtist
                 volumeSky.top.value = value.topColor;
                 volumeSky.middle.value = value.middleColor;
                 volumeSky.bottom.value = value.bottomColor;
+                GlobalState.Settings.sky = value;
                 skyChangedEvent.Invoke(new SkySettings { topColor = volumeSky.top.value, middleColor = volumeSky.middle.value, bottomColor = volumeSky.bottom.value });
             }
         }
@@ -111,6 +112,13 @@ namespace VRtist
 
         public static BlenderBankListEvent blenderBankListEvent = new BlenderBankListEvent();
         public static BlenderBankImportObjectEvent blenderBankImportObjectEvent = new BlenderBankImportObjectEvent();
+
+        // Scene management
+        public static UnityEvent clearSceneEvent = new UnityEvent();
+        public static BoolChangedEvent sceneDirtyEvent = new BoolChangedEvent();
+        public static BoolChangedEvent castShadowsEvent = new BoolChangedEvent();
+        public static UnityEvent sceneSavedEvent = new UnityEvent();
+        public bool firstSave = true;
 
         // Geometry Importer
         private GeometryImporter geometryImporter;
@@ -309,6 +317,7 @@ namespace VRtist
         public void OnLightsCastShadows(bool value)
         {
             settings.castShadows = value;
+            castShadowsEvent.Invoke(value);
         }
 
         public void OnReleaseColor()
@@ -460,6 +469,17 @@ namespace VRtist
                 palette.localPosition = new Vector3(-0.02f, currentPalettePosition.y, currentPalettePosition.z);
             else
                 palette.localPosition = new Vector3(-0.2f, currentPalettePosition.y, currentPalettePosition.z);
+        }
+
+        public static void ClearScene()
+        {
+            Transform root = Instance.world.Find("RightHanded");
+            Utils.DeleteTransformChildren(root);
+            Utils.DeleteTransformChildren(SyncData.prefab);
+            Instance.firstSave = true;
+            CommandManager.SetSceneDirty(false);
+            SyncData.nodes.Clear();
+            clearSceneEvent.Invoke();
         }
     }
 }

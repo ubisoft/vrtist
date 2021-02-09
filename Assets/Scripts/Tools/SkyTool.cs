@@ -1,4 +1,5 @@
 ﻿using System;
+
 using UnityEngine;
 
 namespace VRtist
@@ -45,6 +46,8 @@ namespace VRtist
                 RebuildGradientList();
                 gradientList.CurrentIndex = -1;
             }
+
+            OnSkyChanged(GlobalState.Instance.SkySettings);
         }
 
         protected override void OnDisable()

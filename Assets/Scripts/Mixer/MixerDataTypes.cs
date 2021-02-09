@@ -81,14 +81,6 @@ namespace VRtist
         public Transform transform;
     }
 
-    [Serializable]
-    public class SkySettings
-    {
-        public Color topColor;
-        public Color middleColor;
-        public Color bottomColor;
-    }
-
     public class RenameInfo
     {
         public Transform srcTransform;
@@ -166,20 +158,6 @@ namespace VRtist
             };
         }
     }
-    public class Shot
-    {
-        public string name;
-        public GameObject camera = null; // TODO, manage game object destroy
-        public int start = -1;
-        public int end = -1;
-        public bool enabled = true;
-        public Color color = Color.black;
-
-        public Shot Copy()
-        {
-            return new Shot { name = name, camera = camera, start = start, end = end, enabled = enabled, color = color };
-        }
-    }
 
     // Blender Asset Bank
     public enum BlenderBankAction
@@ -230,15 +208,15 @@ namespace VRtist
         public string name;
         public MaterialID materialType;
         public float opacity;
-        public string opacityTexturePath;
+        public string opacityTexturePath = "";
         public Color baseColor;
-        public string baseColorTexturePath;
+        public string baseColorTexturePath = "";
         public float metallic;
-        public string metallicTexturePath;
+        public string metallicTexturePath = "";
         public float roughness;
-        public string roughnessTexturePath;
-        public string normalTexturePath;
+        public string roughnessTexturePath = "";
+        public string normalTexturePath = "";
         public Color emissionColor;
-        public string emissionColorTexturePath;
+        public string emissionColorTexturePath = "";
     }
 }

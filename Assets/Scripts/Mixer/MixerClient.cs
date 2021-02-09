@@ -7,6 +7,8 @@ using System.Threading;
 
 using UnityEngine;
 
+using VRtist.Serialization;
+
 namespace VRtist
 {
     // Message types
@@ -320,7 +322,7 @@ namespace VRtist
             byte[] typeBuffer = BitConverter.GetBytes((Int16)command.messageType);
             List<byte[]> buffers = new List<byte[]> { sizeBuffer, commandId, typeBuffer, command.data };
 
-            socket.Send(MixerUtils.ConcatenateBuffers(buffers));
+            socket.Send(Converter.ConcatenateBuffers(buffers));
 
             //Debug.Log($"Sending command: {command.messageType}");
         }
@@ -526,17 +528,17 @@ namespace VRtist
 
         public void JoinRoom(string roomName)
         {
-            byte[] nameBuffer = MixerUtils.StringToBytes(roomName);
-            byte[] mockVersionBuffer = MixerUtils.StringToBytes("ignored");
-            byte[] versionCheckBuffer = MixerUtils.BoolToBytes(true);
-            byte[] buffer = MixerUtils.ConcatenateBuffers(new List<byte[]> { nameBuffer, mockVersionBuffer, mockVersionBuffer, versionCheckBuffer });
+            byte[] nameBuffer = Converter.StringToBytes(roomName);
+            byte[] mockVersionBuffer = Converter.StringToBytes("ignored");
+            byte[] versionCheckBuffer = Converter.BoolToBytes(true);
+            byte[] buffer = Converter.ConcatenateBuffers(new List<byte[]> { nameBuffer, mockVersionBuffer, mockVersionBuffer, versionCheckBuffer });
             NetCommand command = new NetCommand(buffer, MessageType.JoinRoom);
             AddCommand(command);
 
             string json = SyncData.mixer.CreateClientNameAndColor();
             if (null == json)
                 return;
-            NetCommand commandClientInfo = new NetCommand(MixerUtils.StringToBytes(json), MessageType.SetClientCustomAttribute);
+            NetCommand commandClientInfo = new NetCommand(Converter.StringToBytes(json), MessageType.SetClientCustomAttribute);
             AddCommand(commandClientInfo);
         }
 
@@ -584,7 +586,7 @@ namespace VRtist
         public bool UnpackFromClientId(NetCommand command, ref List<NetCommand> commands)
         {
             int index = 0;
-            string masterId = MixerUtils.GetString(command.data, ref index);
+            string masterId = Converter.GetString(command.data, ref index);
 
             // For debug purpose (unity in editor mode when networkSettings.master is empty)
             string currentMasterId = SyncData.mixer.GetMasterId();
@@ -597,11 +599,11 @@ namespace VRtist
             int remainingData = command.data.Length - index;
             while (remainingData > 0)
             {
-                int dataLength = MixerUtils.GetInt(command.data, ref index);
+                int dataLength = Converter.GetInt(command.data, ref index);
                 remainingData -= dataLength + sizeof(int);
 
                 dataLength -= sizeof(int);
-                int messageType = MixerUtils.GetInt(command.data, ref index);
+                int messageType = Converter.GetInt(command.data, ref index);
                 byte[] newBuffer = new byte[dataLength];
 
                 Buffer.BlockCopy(command.data, index, newBuffer, 0, dataLength);
@@ -651,10 +653,12 @@ namespace VRtist
 
                     try
                     {
+                        bool sceneModified = true;
                         switch (command.messageType)
                         {
                             case MessageType.ClientId:
                                 MixerUtils.BuildClientId(command.data);
+                                sceneModified = false;
                                 break;
                             case MessageType.Mesh:
                                 MixerUtils.BuildMesh(command.data);
@@ -782,10 +786,16 @@ namespace VRtist
 
                             case MessageType.ClientUpdate:
                                 MixerUtils.BuildClientAttribute(command.data);
+                                sceneModified = false;
                                 break;
                             case MessageType.ListAllClients:
                                 MixerUtils.BuildListAllClients(command.data);
+                                sceneModified = false;
                                 break;
+                        }
+                        if (sceneModified)
+                        {
+                            CommandManager.SetSceneDirty(true);
                         }
                     }
                     catch (Exception e)
@@ -804,6 +814,8 @@ namespace VRtist
                         break;
                     }
                 }
+
+
                 if (!prematuredExit)
                     commands.Clear();
                 commandProcessedCount = 0;

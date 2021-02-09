@@ -73,6 +73,12 @@ MonoBehaviour:
     reference:
       isHdr: 0
       value: {r: 0, g: 0, b: 0, a: 0}
+  disabledTextColor:
+    useConstant: 1
+    constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    reference:
+      isHdr: 0
+      value: {r: 0, g: 0, b: 0, a: 0}
   disabledColor:
     useConstant: 1
     constant: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -103,6 +109,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
         m_MethodName: OnUI3DObjectEnter
         m_Mode: 0
         m_Arguments:
@@ -117,6 +124,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
         m_MethodName: OnUI3DObjectExit
         m_Mode: 0
         m_Arguments:
@@ -134,6 +142,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
         m_MethodName: PushCursorShape
         m_Mode: 3
         m_Arguments:
@@ -148,6 +157,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: 
         m_MethodName: PopCursorShape
         m_Mode: 1
         m_Arguments:
@@ -158,6 +168,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  isValid: 1
 --- !u!1 &4078262801769576026
 GameObject:
   m_ObjectHideFlags: 0
@@ -244,7 +255,8 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
-  m_RenderingLayerMask: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 430de13d1229a1f4ea9dd073290f6fd1, type: 2}
@@ -268,3 +280,4 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
