@@ -1372,6 +1372,11 @@ namespace VRtist
             return command;
         }
 
+        public static NetCommand BuildSendBlenderSave()
+        {
+            return new NetCommand(new byte[0], MessageType.BlenderSave);
+        }
+
         public static void ReceiveBlenderBank(byte[] data)
         {
             int index = 0;

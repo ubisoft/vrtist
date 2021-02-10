@@ -27,6 +27,7 @@ namespace VRtist
         public static AnimationEngine Animation { get { return AnimationEngine.Instance; } }
 
         // Connected users
+        public bool mixerConnected = false;
         public UnityEvent onConnected = new UnityEvent();
         public static ConnectedUser networkUser = new ConnectedUser();
         private readonly Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
@@ -333,6 +334,7 @@ namespace VRtist
         // Connected users
         public static void SetClientId(string id)
         {
+            Instance.mixerConnected = true;
             networkUser.id = id;
             Instance.onConnected.Invoke();
             RemoveConnectedUser(id);
