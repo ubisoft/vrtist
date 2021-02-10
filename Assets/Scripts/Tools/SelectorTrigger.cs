@@ -33,7 +33,7 @@ namespace VRtist
             Transform obj = gObject.transform.parent;
             while (null != obj)
             {
-                if (obj.name == "__Offset")
+                if (obj.name == Utils.blenderCollectionInstanceOffset)
                 {
                     return GetRootIfCollectionInstance(obj.parent.gameObject);
                 }

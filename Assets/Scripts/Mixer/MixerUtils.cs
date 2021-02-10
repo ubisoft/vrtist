@@ -118,7 +118,7 @@ namespace VRtist
             int bufferIndex = 0;
             string objectName = Converter.GetString(data, ref bufferIndex);
             Transform parent = FindPath(root, data, ref bufferIndex);
-            Transform trf = SyncData.GetTrash().transform.Find(objectName + "_parent");
+            Transform trf = SyncData.GetTrash().transform.Find(objectName + Utils.blenderHiddenParent);
             if (null != trf)
             {
                 trf.parent = parent;

@@ -417,6 +417,12 @@ namespace VRtist.Serialization
         public string path;  // relative path
         public string tag;
 
+        public bool visible;
+
+        // Instance
+        public string instanceName;
+        public Vector3 instanceOffset;
+
         // Parent Transform
         public Vector3 parentPosition;
         public Quaternion parentRotation;
@@ -439,15 +445,17 @@ namespace VRtist.Serialization
         public bool lockRotation;
         public bool lockScale;
 
-        // Constraints
-
-
         public virtual void FromBytes(byte[] bytes, ref int index)
         {
             name = Converter.GetString(bytes, ref index);
             parent = Converter.GetString(bytes, ref index);
             path = Converter.GetString(bytes, ref index);
             tag = Converter.GetString(bytes, ref index);
+
+            visible = Converter.GetBool(bytes, ref index);
+
+            instanceName = Converter.GetString(bytes, ref index);
+            instanceOffset = Converter.GetVector3(bytes, ref index);
 
             parentPosition = Converter.GetVector3(bytes, ref index);
             parentRotation = Converter.GetQuaternion(bytes, ref index);
@@ -480,6 +488,11 @@ namespace VRtist.Serialization
             byte[] pathBuffer = Converter.StringToBytes(path);
             byte[] tagBuffer = Converter.StringToBytes(tag);
 
+            byte[] visibleBuffer = Converter.BoolToBytes(visible);
+
+            byte[] instanceNameBuffer = Converter.StringToBytes(instanceName);
+            byte[] instanceOffsetBuffer = Converter.Vector3ToBytes(instanceOffset);
+
             byte[] parentPositionBuffer = Converter.Vector3ToBytes(parentPosition);
             byte[] parentRotationBuffer = Converter.QuaternionToBytes(parentRotation);
             byte[] parentScaleBuffer = Converter.Vector3ToBytes(parentScale);
@@ -508,6 +521,11 @@ namespace VRtist.Serialization
                 parentBuffer,
                 pathBuffer,
                 tagBuffer,
+
+                visibleBuffer,
+
+                instanceNameBuffer,
+                instanceOffsetBuffer,
 
                 parentPositionBuffer,
                 parentRotationBuffer,
@@ -749,12 +767,12 @@ namespace VRtist.Serialization
 
     public class AnimationData : IBlob
     {
-        public string objectName;
+        public string objectPath;
         public List<CurveData> curves = new List<CurveData>();
 
         public byte[] ToBytes()
         {
-            byte[] nameBuffer = Converter.StringToBytes(objectName);
+            byte[] nameBuffer = Converter.StringToBytes(objectPath);
             byte[] curveCountBuffer = Converter.IntToBytes(curves.Count);
             List<byte[]> curvesBufferList = new List<byte[]>();
             foreach (CurveData curve in curves)
@@ -773,7 +791,7 @@ namespace VRtist.Serialization
 
         public void FromBytes(byte[] buffer, ref int index)
         {
-            objectName = Converter.GetString(buffer, ref index);
+            objectPath = Converter.GetString(buffer, ref index);
             int curvesCount = Converter.GetInt(buffer, ref index);
             for (int i = 0; i < curvesCount; ++i)
             {
