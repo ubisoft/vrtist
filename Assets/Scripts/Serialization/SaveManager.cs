@@ -228,15 +228,14 @@ namespace VRtist.Serialization
             {
                 Transform currentTransform = emptyParent;
                 Vector3 instanceOffset = Vector3.zero;
-                string parentName = null;
 
                 // Get instance data and go to its child
                 if (currentTransform.name == Utils.blenderCollectionInstanceOffset)
                 {
                     instanceOffset = currentTransform.localPosition;
-                    parentName = currentTransform.parent.name;
                     instanceName = path;
-                    currentTransform = currentTransform.GetChild(0);
+                    TraverseScene(currentTransform, path, instanceName);
+                    return;
                 }
 
                 // We should only have _parent game objects from here
@@ -247,10 +246,9 @@ namespace VRtist.Serialization
                 }
 
                 // Bypass _parent game object
-                if (null == parentName)
-                {
-                    parentName = currentTransform.parent.name;
-                }
+                string parentName = currentTransform.parent.name;
+                if (parentName == Utils.blenderCollectionInstanceOffset) { parentName = currentTransform.parent.parent.name; }
+
                 Transform child = currentTransform.GetChild(0);
                 string childPath = path + "/" + child.name;
 
@@ -742,7 +740,7 @@ namespace VRtist.Serialization
                         Utils.Reparent(offset.transform, parentObject.transform);
                         Utils.Reparent(newObject.transform.parent, offset.transform);
 
-                        loadedInstances.Add(data.instanceName, newObject);
+                        loadedInstances.Add(data.instanceName, offset);
                     }
                     else
                     {

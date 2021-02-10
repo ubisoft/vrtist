@@ -255,7 +255,7 @@ namespace VRtist
             materialsParameters[name] = materialParameters;
             materialParameters.name = name;
             materialParameters.materialType = materialType;
-            materialParameters.opacity = 0;
+            materialParameters.opacity = 1f;
             materialParameters.opacityTexturePath = "";
             materialParameters.baseColor = new Color(0.8f, 0.8f, 0.8f);
             materialParameters.baseColorTexturePath = "";
@@ -264,7 +264,7 @@ namespace VRtist
             materialParameters.roughness = 0.5f;
             materialParameters.roughnessTexturePath = "";
             materialParameters.normalTexturePath = "";
-            materialParameters.emissionColor = new Color(0, 0, 0); ;
+            materialParameters.emissionColor = new Color(0, 0, 0);
             materialParameters.emissionColorTexturePath = "";
 
             return materialParameters;
