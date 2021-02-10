@@ -94,6 +94,7 @@ namespace VRtist
         AddConstraint,
         RemoveConstraint,
         BlenderBank,
+        BlenderSave,
 
         Optimized_Commands = 200,
         Transform,
@@ -520,6 +521,12 @@ namespace VRtist
             AddCommand(command);
         }
 
+        public void SendBlenderSave()
+        {
+            NetCommand command = MixerUtils.BuildSendBlenderSave();
+            AddCommand(command);
+        }
+
         public void SendPlayerTransform(ConnectedUser info)
         {
             NetCommand command = MixerUtils.BuildSendPlayerTransform(info);
@@ -875,6 +882,8 @@ namespace VRtist
                     SendShotManagerAction(data as ShotManagerActionInfo); break;
                 case MessageType.BlenderBank:
                     SendBlenderBank(data as BlenderBankInfo); break;
+                case MessageType.BlenderSave:
+                    SendBlenderSave(); break;
             }
         }
     }

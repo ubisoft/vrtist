@@ -8,17 +8,17 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_backBase.001
-    second: {fileID: 2100000, guid: 4f235617301fe47489b69290ac9fd965, type: 2}
+    second: {fileID: 2100000, guid: 37ac7eae637d021438410d45ae6ab024, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_backFabric.001
-    second: {fileID: 2100000, guid: 4f68398ae2267124a95ebad7926f002c, type: 2}
+    second: {fileID: 2100000, guid: b8cbb4c46fcb31d4abc842cff0c25d5f, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: sla_baseTip_2.001
-    second: {fileID: 2100000, guid: ac61efbd2dd0f324386071aae87337a1, type: 2}
+    second: {fileID: 2100000, guid: dff770dc32f24a44a8d8de662fc58e9b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
