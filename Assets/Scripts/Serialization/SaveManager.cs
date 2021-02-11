@@ -222,10 +222,11 @@ namespace VRtist.Serialization
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
-        private void TraverseScene(Transform root, string path, string instanceName = "")
+        private void TraverseScene(Transform root, string parentPath, string instanceName = "")
         {
             foreach (Transform emptyParent in root)
             {
+                string path = parentPath;
                 Transform currentTransform = emptyParent;
                 Vector3 instanceOffset = Vector3.zero;
 
@@ -233,7 +234,8 @@ namespace VRtist.Serialization
                 if (currentTransform.name == Utils.blenderCollectionInstanceOffset)
                 {
                     instanceOffset = currentTransform.localPosition;
-                    instanceName = path;
+                    instanceName = parentPath;
+                    path += "/" + currentTransform.name;
                     TraverseScene(currentTransform, path, instanceName);
                     return;
                 }
@@ -246,18 +248,16 @@ namespace VRtist.Serialization
                 }
 
                 // Bypass _parent game object
-                string parentName = currentTransform.parent.name;
-                if (parentName == Utils.blenderCollectionInstanceOffset) { parentName = currentTransform.parent.parent.name; }
-
+                path += "/" + currentTransform.name;  // _parent
                 Transform child = currentTransform.GetChild(0);
-                string childPath = path + "/" + child.name;
+                path += "/" + child.name;
 
                 // Depending on its type (which controller we can find on it) create data objects to be serialized
                 LightController lightController = child.GetComponent<LightController>();
                 if (null != lightController)
                 {
                     LightData lightData = new LightData();
-                    SetCommonData(child, parentName, instanceOffset, instanceName, childPath, lightController, lightData);
+                    SetCommonData(child, parentPath, instanceOffset, instanceName, path, lightController, lightData);
                     SetLightData(lightController, lightData);
                     SceneData.Current.lights.Add(lightData);
                     continue;
@@ -267,7 +267,7 @@ namespace VRtist.Serialization
                 if (null != cameraController)
                 {
                     CameraData cameraData = new CameraData();
-                    SetCommonData(child, parentName, instanceOffset, instanceName, childPath, cameraController, cameraData);
+                    SetCommonData(child, parentPath, instanceOffset, instanceName, path, cameraController, cameraData);
                     SetCameraData(cameraController, cameraData);
                     SceneData.Current.cameras.Add(cameraData);
                     continue;
@@ -283,7 +283,7 @@ namespace VRtist.Serialization
                 // Do this one at the end, because other controllers inherits from ParametersController
                 ParametersController controller = child.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
-                SetCommonData(child, parentName, instanceOffset, instanceName, childPath, controller, data);
+                SetCommonData(child, parentPath, instanceOffset, instanceName, path, controller, data);
                 SetObjectData(child, controller, data);
                 SceneData.Current.objects.Add(data);
 
@@ -291,7 +291,7 @@ namespace VRtist.Serialization
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    TraverseScene(child, childPath, instanceName);
+                    TraverseScene(child, path, instanceName);
                 }
             }
         }
@@ -486,8 +486,8 @@ namespace VRtist.Serialization
         private void SetCommonData(Transform trans, string parentName, Vector3 instanceOffset, string instanceName, string path, ParametersController controller, ObjectData data)
         {
             data.name = trans.name;
-            data.parent = parentName == "RightHanded" ? "" : parentName;
-            data.path = path;
+            data.parent = parentName == "" ? "" : parentName.Substring(1);
+            data.path = path.Substring(1);
             data.tag = trans.gameObject.tag;
 
             data.visible = trans.gameObject.activeSelf;
@@ -557,11 +557,11 @@ namespace VRtist.Serialization
             loadedInstances.Clear();
 
             // Clear current scene
-            GlobalState.ClearScene();
             AnimationEngine.Instance.Clear();
             Selection.Clear();
             ConstraintManager.Clear();
             ShotManager.Instance.Clear();
+            GlobalState.ClearScene();
 
             // Load data from file
             string path = GetScenePath(projectName);
@@ -744,13 +744,13 @@ namespace VRtist.Serialization
                     }
                     else
                     {
-                        Utils.Reparent(newObject.transform.parent, instance.transform);
+                        // Reparent
+                        Transform parent = rootTransform.Find(data.parent);
+                        Utils.Reparent(newObject.transform.parent, parent);
                     }
                 }
 
-                string objectPath = data.path;
-                if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
-                loadedObjects.Add(objectPath, newObject);
+                loadedObjects.Add(data.path, newObject);
 
                 // Name the mesh
                 MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
@@ -773,7 +773,10 @@ namespace VRtist.Serialization
 
             if (data.parent == "")
                 return;
-            Node node = SyncData.CreateNode(newPrefab.name, SyncData.nodes[data.parent]);
+            string[] splitted = data.parent.Split('/');
+            int index = 1;
+            while (splitted[splitted.Length - index] == Utils.blenderCollectionInstanceOffset) { ++index; }
+            Node node = SyncData.CreateNode(newPrefab.name, SyncData.nodes[splitted[splitted.Length - index]]);
             node.prefab = newPrefab;
         }
 

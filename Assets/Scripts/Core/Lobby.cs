@@ -84,7 +84,7 @@ namespace VRtist
 
                 //// DEBUG Auto-load
                 //OnBackToScene();
-                //Serialization.SaveManager.Instance.Load("plip2");
+                //Serialization.SaveManager.Instance.Load("london");
                 //// END DEBUG
             }
 
