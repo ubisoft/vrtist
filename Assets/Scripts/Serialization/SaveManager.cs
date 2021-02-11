@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -212,7 +213,7 @@ namespace VRtist.Serialization
             SaveScene();
             SaveMeshes();
             SaveMaterials();
-            SaveScreenshot();
+            StartCoroutine(SaveScreenshot());
 
             totalStopwatch.Stop();
             LogElapsedTime("Total Time", totalStopwatch);
@@ -326,23 +327,28 @@ namespace VRtist.Serialization
             LogElapsedTime($"Write Materials ({meshes.Count})", timer);
         }
 
-        private void SaveScreenshot()
+        private IEnumerator SaveScreenshot()
         {
-            stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
+            yield return new WaitForEndOfFrame();
             screenshotCamera.gameObject.SetActive(true);
+
+            // -- FIX ------------------------------
+            // FIRST Render to RenderTarget is black. Do a fake render before the real render.
+            RenderTexture fixRT = new RenderTexture(16, 16, 24);
+            screenshotCamera.targetTexture = fixRT;
+            screenshotCamera.Render();
+            // -- ENDFIX ----------------------------
+
             screenshotCamera.RenderToCubemap(cubeMapRT);
             cubeMapRT.ConvertToEquirect(equiRectRT);
             Texture2D texture = new Texture2D(equiRectRT.width, equiRectRT.height);
             RenderTexture previousActiveRT = RenderTexture.active;
             RenderTexture.active = equiRectRT;
             texture.ReadPixels(new Rect(0, 0, equiRectRT.width, equiRectRT.height), 0, 0);
+            texture.Apply();
             RenderTexture.active = previousActiveRT;
             Utils.SavePNG(texture, GetScreenshotPath(currentProjectName));
             screenshotCamera.gameObject.SetActive(false);
-
-            stopwatch.Stop();
-            LogElapsedTime($"Snapshot", stopwatch);
         }
 
         private void SaveMaterial(MaterialInfo materialInfo)
