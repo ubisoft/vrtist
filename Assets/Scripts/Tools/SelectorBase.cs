@@ -1098,6 +1098,8 @@ namespace VRtist
         {
             foreach (GameObject obj in Selection.ActiveObjects)
             {
+                if (!initParentMatrix.ContainsKey(obj)) { continue; }
+
                 // Check constraints
                 if (ConstraintManager.IsLocked(obj)) { continue; }
 

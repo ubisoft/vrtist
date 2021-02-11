@@ -11,6 +11,9 @@ namespace VRtist
 {
     public class Utils
     {
+        public static string blenderHiddenParent = "__Blender_Hidden_Parent_Matrix";
+        public static string blenderCollectionInstanceOffset = "__Blender_Collection_Instance_Offset";
+
         public static GameObject FindRootGameObject(string name)
         {
             Scene scene = SceneManager.GetActiveScene();
@@ -59,6 +62,18 @@ namespace VRtist
             return null;
         }
 
+        public static bool GetTransformRelativePathTo(Transform child, Transform root, out string path)
+        {
+            path = "";
+            Transform current = child;
+            while (null != current.parent && current.name != root.name)
+            {
+                path = current.name + "/" + path;
+                current = current.parent;
+            }
+            if (path.Length > 0) { path = path.Substring(0, path.Length - 1); }  // remove trailing slash
+            return current != null;
+        }
 
         public static string BuildTransformPath(GameObject gobject)
         {
@@ -98,7 +113,7 @@ namespace VRtist
             GameObject paint = new GameObject();
             paint.transform.parent = intermediateParent.transform;
             paint.name = SyncData.CreateUniqueName("Paint");
-            intermediateParent.name = paint.name + "_parent";
+            intermediateParent.name = paint.name + blenderHiddenParent;
 
             paint.transform.localPosition = Vector3.zero;
             paint.transform.localRotation = Quaternion.identity;
@@ -135,7 +150,7 @@ namespace VRtist
             GameObject volume = new GameObject();
             volume.transform.parent = intermediateParent.transform;
             volume.name = SyncData.CreateUniqueName("Volume");
-            intermediateParent.name = volume.name + "_parent";
+            intermediateParent.name = volume.name + blenderHiddenParent;
 
             volume.transform.localPosition = Vector3.zero;
             volume.transform.localRotation = Quaternion.identity;
@@ -275,6 +290,18 @@ namespace VRtist
             {
                 folder.Create();
             }
+        }
+
+        public static void Reparent(Transform t, Transform parent)
+        {
+            Vector3 position = t.localPosition;
+            Quaternion rotation = t.localRotation;
+            Vector3 scale = t.localScale;
+
+            t.parent = parent;
+            t.localPosition = position;
+            t.localRotation = rotation;
+            t.localScale = scale;
         }
     }
 }

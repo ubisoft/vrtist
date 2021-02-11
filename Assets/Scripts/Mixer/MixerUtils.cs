@@ -118,7 +118,7 @@ namespace VRtist
             int bufferIndex = 0;
             string objectName = Converter.GetString(data, ref bufferIndex);
             Transform parent = FindPath(root, data, ref bufferIndex);
-            Transform trf = SyncData.GetTrash().transform.Find(objectName + "_parent");
+            Transform trf = SyncData.GetTrash().transform.Find(objectName + Utils.blenderHiddenParent);
             if (null != trf)
             {
                 trf.parent = parent;
@@ -255,7 +255,7 @@ namespace VRtist
             materialsParameters[name] = materialParameters;
             materialParameters.name = name;
             materialParameters.materialType = materialType;
-            materialParameters.opacity = 0;
+            materialParameters.opacity = 1f;
             materialParameters.opacityTexturePath = "";
             materialParameters.baseColor = new Color(0.8f, 0.8f, 0.8f);
             materialParameters.baseColorTexturePath = "";
@@ -264,7 +264,7 @@ namespace VRtist
             materialParameters.roughness = 0.5f;
             materialParameters.roughnessTexturePath = "";
             materialParameters.normalTexturePath = "";
-            materialParameters.emissionColor = new Color(0, 0, 0); ;
+            materialParameters.emissionColor = new Color(0, 0, 0);
             materialParameters.emissionColorTexturePath = "";
 
             return materialParameters;
@@ -1370,6 +1370,11 @@ namespace VRtist
                     break;
             }
             return command;
+        }
+
+        public static NetCommand BuildSendBlenderSave()
+        {
+            return new NetCommand(new byte[0], MessageType.BlenderSave);
         }
 
         public static void ReceiveBlenderBank(byte[] data)

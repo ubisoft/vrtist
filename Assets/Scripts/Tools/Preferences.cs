@@ -55,6 +55,7 @@ namespace VRtist
         private UILabel saveInfoLabel;
         private Image saveImage;
 
+
         private void Start()
         {
             // tmp
@@ -337,6 +338,12 @@ namespace VRtist
 
         public void OnQuickSaveProject()
         {
+            if (GlobalState.Instance.mixerConnected)
+            {
+                OnRemoteSave();
+                return;
+            }
+
             if (GlobalState.Instance.firstSave)
             {
                 GlobalState.Instance.firstSave = false;
@@ -381,6 +388,13 @@ namespace VRtist
             saveInfoLabel.gameObject.SetActive(true);
             yield return new WaitForSecondsRealtime(seconds);
             saveInfoLabel.gameObject.SetActive(false);
+        }
+
+        public void OnRemoteSave()
+        {
+            MixerClient.Instance.SendBlenderSave();
+            CommandManager.SetSceneDirty(false);
+            GlobalState.sceneSavedEvent.Invoke();
         }
     }
 }

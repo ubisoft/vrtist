@@ -33,6 +33,7 @@ namespace VRtist.Serialization
         public RenderTexture equiRectRT;
 
         private Transform cameraRig;
+        private Transform rootTransform;
 
         private string saveFolder;
         private string currentProjectName;
@@ -40,6 +41,8 @@ namespace VRtist.Serialization
         private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
         private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
         private readonly Dictionary<string, GameObject> loadedObjects = new Dictionary<string, GameObject>();  // all loaded objects
+        private readonly Dictionary<string, GameObject> loadedPrefabs = new Dictionary<string, GameObject>();  // all loaded prefabs
+        private readonly Dictionary<string, GameObject> loadedInstances = new Dictionary<string, GameObject>();  // all loaded instances
 
         private readonly string DEFAULT_PROJECT_NAME = "newProject";
 
@@ -66,6 +69,7 @@ namespace VRtist.Serialization
 
             saveFolder = Application.persistentDataPath + "/saves/";
             cameraRig = Utils.FindRootGameObject("Camera Rig").transform;
+            rootTransform = Utils.FindWorld().transform.Find("RightHanded");
         }
         #endregion
 
@@ -166,8 +170,6 @@ namespace VRtist.Serialization
 
         public void Save(string projectName)
         {
-            if (!CommandManager.IsSceneDirty()) { return; }
-
             totalStopwatch = new System.Diagnostics.Stopwatch();
             totalStopwatch.Start();
 
@@ -186,9 +188,8 @@ namespace VRtist.Serialization
 
             // Scene traversal
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            Transform root = Utils.FindWorld().transform.Find("RightHanded");
             string path = "";
-            TraverseScene(root, path);
+            TraverseScene(rootTransform, path);
             stopwatch.Stop();
             LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
 
@@ -221,19 +222,34 @@ namespace VRtist.Serialization
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
-        private void TraverseScene(Transform root, string path)
+        private void TraverseScene(Transform root, string path, string instanceName = "")
         {
             foreach (Transform emptyParent in root)
             {
-                // We should only have [gameObjectName]_parent game objects
-                if (!emptyParent.name.EndsWith("_parent"))
+                Transform currentTransform = emptyParent;
+                Vector3 instanceOffset = Vector3.zero;
+
+                // Get instance data and go to its child
+                if (currentTransform.name == Utils.blenderCollectionInstanceOffset)
                 {
-                    Debug.LogWarning("Ignoring the serialization of a non parent game object: " + emptyParent.name);
+                    instanceOffset = currentTransform.localPosition;
+                    instanceName = path;
+                    TraverseScene(currentTransform, path, instanceName);
+                    return;
+                }
+
+                // We should only have _parent game objects from here
+                if (!currentTransform.name.EndsWith(Utils.blenderHiddenParent))
+                {
+                    Debug.LogWarning("Ignoring the serialization of a non parent game object: " + currentTransform.name);
                     continue;
                 }
 
-                // All the children should be an empty parent container, so get its child
-                Transform child = emptyParent.GetChild(0);
+                // Bypass _parent game object
+                string parentName = currentTransform.parent.name;
+                if (parentName == Utils.blenderCollectionInstanceOffset) { parentName = currentTransform.parent.parent.name; }
+
+                Transform child = currentTransform.GetChild(0);
                 string childPath = path + "/" + child.name;
 
                 // Depending on its type (which controller we can find on it) create data objects to be serialized
@@ -241,7 +257,7 @@ namespace VRtist.Serialization
                 if (null != lightController)
                 {
                     LightData lightData = new LightData();
-                    SetCommonData(child, childPath, lightController, lightData);
+                    SetCommonData(child, parentName, instanceOffset, instanceName, childPath, lightController, lightData);
                     SetLightData(lightController, lightData);
                     SceneData.Current.lights.Add(lightData);
                     continue;
@@ -251,7 +267,7 @@ namespace VRtist.Serialization
                 if (null != cameraController)
                 {
                     CameraData cameraData = new CameraData();
-                    SetCommonData(child, childPath, cameraController, cameraData);
+                    SetCommonData(child, parentName, instanceOffset, instanceName, childPath, cameraController, cameraData);
                     SetCameraData(cameraController, cameraData);
                     SceneData.Current.cameras.Add(cameraData);
                     continue;
@@ -267,7 +283,7 @@ namespace VRtist.Serialization
                 // Do this one at the end, because other controllers inherits from ParametersController
                 ParametersController controller = child.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
-                SetCommonData(child, childPath, controller, data);
+                SetCommonData(child, parentName, instanceOffset, instanceName, childPath, controller, data);
                 SetObjectData(child, controller, data);
                 SceneData.Current.objects.Add(data);
 
@@ -275,7 +291,7 @@ namespace VRtist.Serialization
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    TraverseScene(child, childPath);
+                    TraverseScene(child, childPath, instanceName);
                 }
             }
         }
@@ -374,14 +390,15 @@ namespace VRtist.Serialization
         {
             foreach (Shot shot in ShotManager.Instance.shots)
             {
-                SceneData.Current.shots.Add(new ShotData
+                ShotData shotData = new ShotData
                 {
                     name = shot.name,
                     start = shot.start,
                     end = shot.end,
-                    cameraName = shot.camera.name,
                     enabled = shot.enabled
-                });
+                };
+                Utils.GetTransformRelativePathTo(shot.camera.transform, rootTransform, out shotData.cameraName);
+                SceneData.Current.shots.Add(shotData);
             }
         }
 
@@ -394,10 +411,8 @@ namespace VRtist.Serialization
 
             foreach (AnimationSet animSet in AnimationEngine.Instance.GetAllAnimations().Values)
             {
-                AnimationData animData = new AnimationData
-                {
-                    objectName = animSet.transform.name
-                };
+                AnimationData animData = new AnimationData();
+                Utils.GetTransformRelativePathTo(animSet.transform, rootTransform, out animData.objectPath);
                 foreach (Curve curve in animSet.curves.Values)
                 {
                     CurveData curveData = new CurveData
@@ -426,10 +441,10 @@ namespace VRtist.Serialization
             {
                 ConstraintData constraintData = new ConstraintData
                 {
-                    source = constraint.gobject.name,
-                    target = constraint.target.name,
                     type = constraint.constraintType
                 };
+                Utils.GetTransformRelativePathTo(constraint.gobject.transform, rootTransform, out constraintData.source);
+                Utils.GetTransformRelativePathTo(constraint.target.transform, rootTransform, out constraintData.target);
                 SceneData.Current.constraints.Add(constraintData);
             }
         }
@@ -468,13 +483,18 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetCommonData(Transform trans, string path, ParametersController controller, ObjectData data)
+        private void SetCommonData(Transform trans, string parentName, Vector3 instanceOffset, string instanceName, string path, ParametersController controller, ObjectData data)
         {
             data.name = trans.name;
-            string parentName = trans.parent.parent.name;
             data.parent = parentName == "RightHanded" ? "" : parentName;
             data.path = path;
             data.tag = trans.gameObject.tag;
+
+            data.visible = trans.gameObject.activeSelf;
+
+            // Instance
+            data.instanceName = instanceName;
+            data.instanceOffset = instanceOffset;
 
             // Parent Transform
             data.parentPosition = trans.parent.localPosition;
@@ -485,8 +505,6 @@ namespace VRtist.Serialization
             data.position = trans.localPosition;
             data.rotation = trans.localRotation;
             data.scale = trans.localScale;
-
-            // TODO constraints
 
             if (null != controller)
             {
@@ -535,6 +553,8 @@ namespace VRtist.Serialization
             currentProjectName = projectName;
             GlobalState.Settings.ProjectName = projectName;
             loadedObjects.Clear();
+            loadedPrefabs.Clear();
+            loadedInstances.Clear();
 
             // Clear current scene
             GlobalState.ClearScene();
@@ -618,6 +638,8 @@ namespace VRtist.Serialization
                 gobject.tag = data.tag;
             }
 
+            gobject.SetActive(data.visible);
+
             gobject.transform.localPosition = data.position;
             gobject.transform.localRotation = data.rotation;
             gobject.transform.localScale = data.scale;
@@ -693,11 +715,42 @@ namespace VRtist.Serialization
             }
             else
             {
-                GameObject prefab = SyncData.CreateInstance(gobject, SyncData.prefab, data.name);
-                InitPrefab(prefab, data);
-                GameObject newObject = SyncData.InstantiatePrefab(prefab);
+                if (!loadedPrefabs.TryGetValue(data.name, out GameObject prefab))
+                {
+                    prefab = SyncData.CreateInstance(gobject, SyncData.prefab, data.name);
+                    InitPrefab(prefab, data);
+                    loadedPrefabs.Add(prefab.name, prefab);
+                }
+                string instanceName = data.instanceName == "" ? "/" : data.instanceName;
+                GameObject newObject = SyncData.InstantiatePrefab(prefab, instanceName);
 
-                loadedObjects.Add(newObject.name, newObject);
+                // Manage instances
+                if (data.instanceName != "")
+                {
+                    if (!loadedInstances.TryGetValue(data.instanceName, out GameObject instance))
+                    {
+                        // Insert the __Offset game object (used by the selection)
+                        GameObject offset = new GameObject(Utils.blenderCollectionInstanceOffset);
+                        offset.transform.localPosition = data.instanceOffset;
+
+                        // Reparent
+                        string objectInstanceName = data.instanceName;
+                        if (objectInstanceName.StartsWith("/")) { objectInstanceName = objectInstanceName.Substring(1); }
+                        GameObject parentObject = loadedObjects[objectInstanceName];
+                        Utils.Reparent(offset.transform, parentObject.transform);
+                        Utils.Reparent(newObject.transform.parent, offset.transform);
+
+                        loadedInstances.Add(data.instanceName, offset);
+                    }
+                    else
+                    {
+                        Utils.Reparent(newObject.transform.parent, instance.transform);
+                    }
+                }
+
+                string objectPath = data.path;
+                if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
+                loadedObjects.Add(objectPath, newObject);
 
                 // Name the mesh
                 MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
@@ -763,7 +816,9 @@ namespace VRtist.Serialization
                 controller.OuterAngle = data.outerAngle;
                 controller.InnerAngle = data.innerAngle;
 
-                loadedObjects.Add(newObject.name, newObject);
+                string objectPath = data.path;
+                if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
+                loadedObjects.Add(objectPath, newObject);
             }
         }
 
@@ -786,17 +841,20 @@ namespace VRtist.Serialization
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
 
-            loadedObjects.Add(newObject.name, newObject);
+            string objectPath = data.path;
+            if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
+            loadedObjects.Add(objectPath, newObject);
         }
 
         private void LoadAnimation(AnimationData data)
         {
-            // Retrieve GameObject from object name
-            if (!loadedObjects.TryGetValue(data.objectName, out GameObject gobject))
+            Transform animTransform = rootTransform.Find(data.objectPath);
+            if (null == animTransform)
             {
-                Debug.LogWarning($"Object name not found for animation: {data.objectName}");
+                Debug.LogWarning($"Object name not found for animation: {data.objectPath}");
                 return;
             }
+            GameObject gobject = animTransform.gameObject;
 
             // Create animation
             AnimationSet animSet = new AnimationSet(gobject);
@@ -814,26 +872,27 @@ namespace VRtist.Serialization
 
         private void LoadConstraint(ConstraintData data)
         {
-            // Retrieve GameObject from object name
-            if (!loadedObjects.TryGetValue(data.source, out GameObject source))
+            Transform sourceTransform = rootTransform.Find(data.source);
+            if (null == sourceTransform)
             {
                 Debug.LogWarning($"Object name not found for animation: {data.source}");
                 return;
             }
-            if (!loadedObjects.TryGetValue(data.target, out GameObject target))
+            Transform targetTransform = rootTransform.Find(data.target);
+            if (null == targetTransform)
             {
                 Debug.LogWarning($"Object name not found for animation: {data.target}");
                 return;
             }
 
             // Create constraint
-            ConstraintManager.AddConstraint(source, target, data.type);
+            ConstraintManager.AddConstraint(sourceTransform.gameObject, targetTransform.gameObject, data.type);
         }
 
         private void LoadShot(ShotData data)
         {
-            // Retrieve camera from object name
-            if (!loadedObjects.TryGetValue(data.cameraName, out GameObject camera))
+            Transform cameraTransform = rootTransform.Find(data.cameraName);
+            if (null == cameraTransform)
             {
                 Debug.LogWarning($"Object name not found for camera: {data.cameraName}");
                 return;
@@ -845,7 +904,7 @@ namespace VRtist.Serialization
                 start = data.start,
                 end = data.end,
                 enabled = data.enabled,
-                camera = camera
+                camera = cameraTransform.gameObject
             });
         }
         #endregion

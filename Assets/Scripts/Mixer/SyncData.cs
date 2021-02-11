@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+
 using UnityEngine;
 
 namespace VRtist
@@ -152,7 +153,6 @@ namespace VRtist
         public static Dictionary<string, Transform> instanceRoot = new Dictionary<string, Transform>();
         public static Node prefabNode = new Node();
         public static Node rootNode = new Node();
-        public static string OffsetTransformName = "__Offset";
 
         public static string currentSceneName = "";
         public static HashSet<string> sceneCollections = new HashSet<string>();
@@ -296,7 +296,7 @@ namespace VRtist
                 foreach (Tuple<GameObject, string> t in prefabInstanceNode.instances)
                 {
                     GameObject obj = t.Item1;
-                    Transform offsetObject = obj.transform.Find(OffsetTransformName);
+                    Transform offsetObject = obj.transform.Find(Utils.blenderCollectionInstanceOffset);
                     if (null == offsetObject)
                         continue;
                     RemoveObjectFromScene(offsetObject, objectName, obj.name);
@@ -360,7 +360,7 @@ namespace VRtist
                 foreach (Tuple<GameObject, string> t in prefabInstanceNode.instances)
                 {
                     GameObject obj = t.Item1;
-                    Transform offsetObject = obj.transform.Find(OffsetTransformName);
+                    Transform offsetObject = obj.transform.Find(Utils.blenderCollectionInstanceOffset);
                     if (null == offsetObject)
                         continue;
 
@@ -440,7 +440,7 @@ namespace VRtist
                 foreach (Tuple<GameObject, string> item in prefabInstanceNode.instances)
                 {
                     ApplyVisibility(item.Item1);
-                    GameObject offsetObject = item.Item1.transform.Find(OffsetTransformName).gameObject;
+                    GameObject offsetObject = item.Item1.transform.Find(Utils.blenderCollectionInstanceOffset).gameObject;
                     offsetObject.transform.localPosition = offset;
                 }
             }
@@ -478,7 +478,7 @@ namespace VRtist
 
                 if (null != node && null != node.collectionInstance)
                 {
-                    GameObject offset = gobj.transform.Find(OffsetTransformName).gameObject;
+                    GameObject offset = gobj.transform.Find(Utils.blenderCollectionInstanceOffset).gameObject;
                     for (int i = offset.transform.childCount - 1; i >= 0; i--)
                     {
                         Transform child = offset.transform.GetChild(i);
@@ -490,7 +490,7 @@ namespace VRtist
 
                     for (int j = 0; j < gobj.transform.childCount; j++)
                     {
-                        Reparent(gobj.transform.GetChild(j), gobj.transform.parent);
+                        Utils.Reparent(gobj.transform.GetChild(j).parent, gobj.transform.parent);
                     }
 
                     GameObject.Destroy(node.prefab);
@@ -502,7 +502,7 @@ namespace VRtist
                     RemoveInstanceFromNode(gobj);
 
                     for (int j = 0; j < gobj.transform.childCount; j++)
-                        Reparent(gobj.transform.GetChild(j), gobj.transform.parent);
+                        Utils.Reparent(gobj.transform.GetChild(j).parent, gobj.transform.parent);
 
                     GameObject.Destroy(gobj);
                 }
@@ -621,7 +621,7 @@ namespace VRtist
             {
                 appliedName = name;
             }
-            intermediateParent.name = appliedName + "_parent";
+            intermediateParent.name = appliedName + Utils.blenderHiddenParent;
 
             GameObject res;
             GameObjectBuilder builder = gObject.GetComponent<GameObjectBuilder>();
@@ -648,7 +648,7 @@ namespace VRtist
             return res;
         }
 
-        public static GameObject AddObjectToDocument(Transform transform, string objectName, string collectionInstanceName = "/")
+        public static GameObject AddObjectToDocument(Transform transform, string objectName, string collectionInstanceName = "/", bool skipParentCheck = false)
         {
             if (!nodes.ContainsKey(objectName))
                 return null;
@@ -659,22 +659,25 @@ namespace VRtist
             // Check if parent of this Object has been instantiated
             // If not, add parent to document (instantiate)
             ////////////////////////////////////////////////////////////////
-            Node parentNode = objectNode.parent;
-            if (null != parentNode)
+            if (!skipParentCheck)
             {
-                bool found = false;
-                foreach (Tuple<GameObject, string> item in parentNode.instances)
+                Node parentNode = objectNode.parent;
+                if (null != parentNode)
                 {
-                    if (item.Item2 == collectionInstanceName)
+                    bool found = false;
+                    foreach (Tuple<GameObject, string> item in parentNode.instances)
                     {
-                        found = true;
-                        break;
+                        if (item.Item2 == collectionInstanceName)
+                        {
+                            found = true;
+                            break;
+                        }
                     }
-                }
-                if (!found)
-                {
-                    transform = AddObjectToDocument(transform, parentNode.prefab.name, collectionInstanceName).transform;
-                    Debug.LogWarning("Adding object to Document but parent object has not been instantiated : " + objectName);
+                    if (!found)
+                    {
+                        transform = AddObjectToDocument(transform, parentNode.prefab.name, collectionInstanceName).transform;
+                        Debug.LogWarning("Adding object to Document but parent object has not been instantiated : " + objectName);
+                    }
                 }
             }
             ////////////////////////////////////////////////////////////////
@@ -702,7 +705,7 @@ namespace VRtist
                     }
                 }
             }
-            Reparent(instance.transform, parent);
+            Utils.Reparent(instance.transform.parent, parent);
 
             // Reparent children
             List<Node> childrenNodes = objectNode.children;
@@ -715,14 +718,14 @@ namespace VRtist
             }
             foreach (GameObject childObject in children)
             {
-                Reparent(childObject.transform, instance.transform);
+                Utils.Reparent(childObject.transform.parent, instance.transform);
             }
 
             if (null != objectNode.collectionInstance)
             {
                 CollectionNode collectionNode = objectNode.collectionInstance;
 
-                GameObject offsetObject = new GameObject(SyncData.OffsetTransformName);
+                GameObject offsetObject = new GameObject(Utils.blenderCollectionInstanceOffset);
                 offsetObject.transform.parent = instance.transform;
                 offsetObject.transform.localPosition = -collectionNode.offset;
                 offsetObject.transform.localRotation = Quaternion.identity;
@@ -778,18 +781,7 @@ namespace VRtist
             }
         }
 
-        public static void Reparent(Transform t, Transform parent)
-        {
-            Transform parentTransform = t.parent;
-            Vector3 position = parentTransform.localPosition;
-            Quaternion rotation = parentTransform.localRotation;
-            Vector3 scale = parentTransform.localScale;
 
-            parentTransform.parent = parent;
-            parentTransform.localPosition = position;
-            parentTransform.localRotation = rotation;
-            parentTransform.localScale = scale;
-        }
 
         public static void ApplyReparent(Node parent, Node node)
         {
@@ -813,7 +805,7 @@ namespace VRtist
                 {
                     if (!children.ContainsKey(instanceElem.Item2))
                         continue;
-                    Reparent(children[instanceElem.Item2], instanceElem.Item1.transform);
+                    Utils.Reparent(children[instanceElem.Item2].parent, instanceElem.Item1.transform);
                 }
             }
             else // reparent to null (root)
@@ -822,14 +814,14 @@ namespace VRtist
                 {
                     Transform t = instanceElem.Item1.transform;
                     string instanceName = instanceElem.Item2;
-                    Reparent(t, instanceRoot[instanceName]);
+                    Utils.Reparent(t.parent, instanceRoot[instanceName]);
                 }
             }
         }
 
         public static GameObject CreateGameObject(string name)
         {
-            GameObject gObjectParent = new GameObject(name + "_parent");
+            GameObject gObjectParent = new GameObject(name + Utils.blenderHiddenParent);
             GameObject gObject = new GameObject(name);
             gObject.transform.parent = gObjectParent.transform;
             return gObject;
@@ -864,7 +856,7 @@ namespace VRtist
                 {
                     parentNode = CreateNode(parentName);
                     GameObject parentObject = CreateGameObject(parentName);
-                    Reparent(parentObject.transform, prefab);
+                    Utils.Reparent(parentObject.transform.parent, prefab);
                     parentNode.prefab = parentObject;
                 }
             }
@@ -881,7 +873,7 @@ namespace VRtist
             if (null == transform)
             {
                 transform = CreateGameObject(objectName).transform;
-                Reparent(transform, prefab);
+                Utils.Reparent(transform.parent, prefab);
                 node = CreateNode(objectName, parentNode);
                 node.prefab = transform.gameObject;
             }
@@ -945,7 +937,7 @@ namespace VRtist
                 }
 
                 ApplyCollectionVisibility(collectionNode, instanceName, collectionNode.visible && collectionNode.tempVisible && node.visible && node.tempVisible && inheritVisible);
-                obj = obj.transform.Find(OffsetTransformName).gameObject;
+                obj = obj.transform.Find(Utils.blenderCollectionInstanceOffset).gameObject;
             }
 
             EnableComponents(obj, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
@@ -960,7 +952,7 @@ namespace VRtist
             Transform parentObject = instance.transform.parent.parent;
             while (parentObject && parentIsVisible && parentObject != root)
             {
-                if (parentObject.name == "__Offset")
+                if (parentObject.name == Utils.blenderCollectionInstanceOffset)
                     parentObject = parentObject.parent;
                 nodes.TryGetValue(parentObject.name, out Node parentNode);
                 if (null == parentNode)
@@ -1055,10 +1047,10 @@ namespace VRtist
         /// </summary>
         /// <param name="newPrefab">Prefab</param>
         /// <returns>Instantiated prefab</returns>
-        public static GameObject InstantiatePrefab(GameObject newPrefab)
+        public static GameObject InstantiatePrefab(GameObject newPrefab, string instanceName = "/")
         {
             GetOrCreateNode(newPrefab);
-            GameObject instance = AddObjectToDocument(root, newPrefab.name);
+            GameObject instance = AddObjectToDocument(root, newPrefab.name, collectionInstanceName: instanceName, skipParentCheck: true);
             return instance;
         }
 

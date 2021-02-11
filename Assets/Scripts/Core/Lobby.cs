@@ -83,6 +83,11 @@ namespace VRtist
             if (projectName is null)
             {
                 OnSetVisible(start: true);
+
+                //// DEBUG Auto-load
+                //OnBackToScene();
+                //Serialization.SaveManager.Instance.Load("plip2");
+                //// END DEBUG
             }
 
             // Start the scene
