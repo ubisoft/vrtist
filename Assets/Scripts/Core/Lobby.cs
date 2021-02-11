@@ -138,7 +138,29 @@ namespace VRtist
             float camY = Camera.main.transform.localEulerAngles.y;
             float lobbyY = transform.localEulerAngles.y;
             if (Mathf.Abs(Mathf.DeltaAngle(camY, lobbyY)) > 45f)
+            {
                 transform.localEulerAngles = new Vector3(0f, camY, 0f);
+                ResetCamRefForItems();
+            }
+        }
+
+        private void ResetCamRefForItems()
+        {
+            Debug.Log("MainCamPos: " + Camera.main.transform.position);
+            bool firstOnly = true;
+            foreach (var pi in projectList.GetItems())
+            {
+                if (firstOnly)
+                {
+                    Vector3 fakeCamPosition = pi.Content.TransformPoint(new Vector3(0, 0, -1.5f));
+                    Debug.Log("  ThumbnailPos: " + pi.Content.position);
+                    Debug.Log("  FakeCamPos: " + fakeCamPosition);
+                    firstOnly = false;
+                }
+
+                ProjectItem projectItem = pi.Content.GetComponent<ProjectItem>();
+                projectItem.SetCameraRef(Camera.main.transform.position);
+            }
         }
 
         void StoreViewParameters()
