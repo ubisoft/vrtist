@@ -10,6 +10,9 @@ namespace VRtist
     {
         [HideInInspector] public UIDynamicListItem item;
 
+        private float rotation = 0.0f;
+        public float rotationSpeedAnglesPerSecond = 2.0f;
+
         public void OnDestroy()
         {
         }
@@ -35,6 +38,19 @@ namespace VRtist
         {
             Material mat = transform.Find("Content").gameObject.GetComponent<MeshRenderer>().material;
             mat.SetVector("_CamInitWorldPos", cameraPosition);
+        }
+
+        public void Rotate()
+        {
+            rotation += Time.unscaledDeltaTime * rotationSpeedAnglesPerSecond * Mathf.PI / 180.0f;
+            Material mat = transform.Find("Content").gameObject.GetComponent<MeshRenderer>().material;
+            mat.SetFloat("_Rotation", rotation);
+        }
+        public void ResetRotation(float lobbyRotation)
+        {
+            rotation = -lobbyRotation * Mathf.PI / 180.0f;
+            Material mat = transform.Find("Content").gameObject.GetComponent<MeshRenderer>().material;
+            mat.SetFloat("_Rotation", rotation);
         }
 
         public void AddListeners(UnityAction duplicateAction, UnityAction deleteAction)

@@ -30,6 +30,8 @@ namespace VRtist
         Quaternion viewRotation = Quaternion.identity;
         float viewScale = 1f;
 
+        bool needToSetCameraRef = true;
+
         private void Awake()
         {
             world = Utils.FindWorld();
@@ -135,31 +137,43 @@ namespace VRtist
 
         private void Update()
         {
+            // ROTATE 45
             float camY = Camera.main.transform.localEulerAngles.y;
             float lobbyY = transform.localEulerAngles.y;
-            if (Mathf.Abs(Mathf.DeltaAngle(camY, lobbyY)) > 45f)
+            bool headHasRotated = Mathf.Abs(Mathf.DeltaAngle(camY, lobbyY)) > 45f;
+            if (headHasRotated)
             {
                 transform.localEulerAngles = new Vector3(0f, camY, 0f);
-                ResetCamRefForItems();
+                needToSetCameraRef = true;
             }
-        }
 
-        private void ResetCamRefForItems()
-        {
-            Debug.Log("MainCamPos: " + Camera.main.transform.position);
-            bool firstOnly = true;
+            // ROTATE while HOVER
             foreach (var pi in projectList.GetItems())
             {
-                if (firstOnly)
-                {
-                    Vector3 fakeCamPosition = pi.Content.TransformPoint(new Vector3(0, 0, -1.5f));
-                    Debug.Log("  ThumbnailPos: " + pi.Content.position);
-                    Debug.Log("  FakeCamPos: " + fakeCamPosition);
-                    firstOnly = false;
-                }
-
                 ProjectItem projectItem = pi.Content.GetComponent<ProjectItem>();
-                projectItem.SetCameraRef(Camera.main.transform.position);
+                if(headHasRotated)
+                {
+                    projectItem.ResetRotation(camY);
+                }
+                if (pi.Hovered)
+                {
+                    projectItem.Rotate();
+                }
+            }
+
+            // SET Camera Ref position
+            if (needToSetCameraRef)
+            {
+                Vector3 currentCamPos = Camera.main.transform.position;
+                if (currentCamPos.sqrMagnitude > 1e-5)
+                {
+                    foreach (var pi in projectList.GetItems())
+                    {
+                        ProjectItem projectItem = pi.Content.GetComponent<ProjectItem>();
+                        projectItem.SetCameraRef(Camera.main.transform.position);
+                    }
+                    needToSetCameraRef = false; // only reset it if cam not null.
+                }
             }
         }
 
@@ -238,6 +252,8 @@ namespace VRtist
 
             // Set lobby tool active
             ToolsManager.ChangeTool("Lobby");
+
+            needToSetCameraRef = true;
         }
 
         public void OnBackToScene()
