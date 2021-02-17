@@ -34,10 +34,6 @@ namespace VRtist
 
             ColimatorController colimatorController = colimator.GetComponent<ColimatorController>();
             colimatorController.isVRtist = true;
-
-            MixerClient.Instance.SendEmpty(colimator.transform);
-            MixerClient.Instance.SendTransform(colimator.transform);
-            MixerUtils.AddObjectToScene(colimator);
         }
 
         private void DestroyColimator(GameObject camera)

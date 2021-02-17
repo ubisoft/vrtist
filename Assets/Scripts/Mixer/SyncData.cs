@@ -1032,9 +1032,79 @@ namespace VRtist
             return node;
         }
 
+        public static void SendLight(GameObject gObject)
+        {
+            LightInfo lightInfo = new LightInfo
+            {
+                transform = gObject.transform
+            };
+            CommandManager.SendEvent(MessageType.Light, lightInfo);
+            MixerUtils.AddObjectToScene(gObject);
+        }
+
+        public static void SendCamera(GameObject gObject)
+        {
+            CameraInfo cameraInfo = new CameraInfo
+            {
+                transform = gObject.transform
+            };
+            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+            CommandManager.SendEvent(MessageType.Transform, gObject.transform);
+            MixerUtils.AddObjectToScene(gObject);
+        }
+
+        public static void SendMesh(GameObject gObject)
+        {
+            MeshInfos meshInfos = new MeshInfos
+            {
+                meshFilter = gObject.GetComponent<MeshFilter>(),
+                meshRenderer = gObject.GetComponent<MeshRenderer>(),
+                meshTransform = gObject.transform
+            };
+
+            foreach (Material mat in meshInfos.meshRenderer.materials)
+            {
+                CommandManager.SendEvent(MessageType.Material, mat);
+            }
+
+            CommandManager.SendEvent(MessageType.Mesh, meshInfos);
+            CommandManager.SendEvent(MessageType.Transform, gObject.transform);
+
+            MixerUtils.AddObjectToScene(gObject);
+        }
+
+        public static void SendEmpty(GameObject gObject)
+        {
+            MixerClient.Instance.SendEmpty(gObject.transform);
+            MixerClient.Instance.SendTransform(gObject.transform);
+            MixerUtils.AddObjectToScene(gObject);
+        }
+
         public static GameObject AddFullHierarchyObjectToDocument(GameObject prefab)
         {
             GameObject instance = AddObjectToDocument(root, prefab.name, collectionInstanceName: "/", skipParentCheck: true);
+
+            if (instance.GetComponent<LightController>() != null)
+            {
+                SendLight(instance);
+            }
+            else if (instance.GetComponent<CameraController>() != null)
+            {
+                SendCamera(instance);
+            }
+            else if (null != instance.GetComponent<LocatorController>())
+            {
+                SendEmpty(instance);
+            }
+            else if (instance.GetComponent<MeshFilter>() != null)
+            {
+                SendMesh(instance);
+            }
+            else
+            {
+                // For fbx import
+                SendEmpty(instance);
+            }
 
             Node node = nodes[prefab.name];
             foreach (var child in node.children)

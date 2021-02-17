@@ -158,7 +158,15 @@ namespace VRtist
         }
         public static GameObject CreatePaint(Color color)
         {
+            GameObject rootPaint = new GameObject();
+            rootPaint.transform.parent = SceneManager.RightHanded;
+            rootPaint.transform.localPosition = Vector3.zero;
+            rootPaint.transform.localRotation = Quaternion.identity;
+            rootPaint.transform.localScale = Vector3.one;
+
             GameObject paint = new GameObject();
+            paint.transform.parent = rootPaint.transform;
+
             paint.name = CreateUniqueName("Paint");
 
             paint.transform.localPosition = Vector3.zero;
@@ -190,7 +198,14 @@ namespace VRtist
 
         public static GameObject CreateVolume(Color color)
         {
+            GameObject rootVolume = new GameObject();
+            rootVolume.transform.parent = SceneManager.RightHanded;
+            rootVolume.transform.localPosition = Vector3.zero;
+            rootVolume.transform.localRotation = Quaternion.identity;
+            rootVolume.transform.localScale = Vector3.one;
+
             GameObject volume = new GameObject();
+            volume.transform.parent = rootVolume.transform;
             volume.name = CreateUniqueName("Volume");
 
             volume.transform.localPosition = Vector3.zero;

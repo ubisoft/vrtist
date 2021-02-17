@@ -235,10 +235,7 @@ namespace VRtist
                 case PaintTools.ConvexHull:
                     {
                         // Create an empty game object with a mesh
-                        GameObject paintPrefab = Utils.CreatePaint(GlobalState.CurrentColor);
-                        GameObject paintObject = SceneManager.InstantiateUnityPrefab(paintPrefab);
-                        GameObject.Destroy(paintPrefab);
-                        currentPaint = SceneManager.AddObject(paintObject);
+                        currentPaint = Utils.CreatePaint(GlobalState.CurrentColor);
                         ++paintId;
                         freeDraw = new FreeDraw();
                         freeDraw.matrix = currentPaint.transform.worldToLocalMatrix;
@@ -248,10 +245,7 @@ namespace VRtist
                 case PaintTools.Volume:
                     if (volumeEditionMode == VolumeEditionMode.Create)
                     {
-                        GameObject volumePrefab = Utils.CreateVolume(GlobalState.CurrentColor);
-                        GameObject volumeObject = SceneManager.InstantiateUnityPrefab(volumePrefab);
-                        GameObject.Destroy(volumePrefab);
-                        currentVolume = SceneManager.AddObject(volumeObject);
+                        currentVolume = Utils.CreateVolume(GlobalState.CurrentColor);
                         currentVolume.transform.position = mouthpiece.position; // real-world position
                         volumeGenerator.Reset();
                         volumeGenerator.stepSize = stepSize / GlobalState.WorldScale; // viewer scale -> world scale.
@@ -277,12 +271,17 @@ namespace VRtist
                         if (currentPaint != null)
                         {
                             TranslatePaintToItsCenter();
-                            PaintController controller = currentPaint.GetComponent<PaintController>();
+
+                            GameObject paintObject = SceneManager.InstantiateUnityPrefab(currentPaint);
+                            GameObject.Destroy(currentPaint.transform.parent.gameObject);
+                            currentPaint = null;
+
+                            GameObject paintInstance = SceneManager.AddObject(paintObject);
+                            PaintController controller = paintInstance.GetComponent<PaintController>();
                             controller.color = GlobalState.CurrentColor;
                             controller.controlPoints = freeDraw.controlPoints;
                             controller.controlPointsRadius = freeDraw.controlPointsRadius;
-                            new CommandAddGameObject(currentPaint).Submit();
-                            currentPaint = null;
+                            new CommandAddGameObject(paintInstance).Submit();
                         }
                         break;
                     }
@@ -293,14 +292,20 @@ namespace VRtist
                         {
                             if (volumeEditionMode == VolumeEditionMode.Create)
                             {
-                                VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                                GameObject volumeObject = SceneManager.InstantiateUnityPrefab(currentVolume);
+                                GameObject.Destroy(currentVolume.transform.parent.gameObject);
+                                currentVolume = null;
+
+                                GameObject volumeInstance = SceneManager.AddObject(volumeObject);
+
+                                VolumeController controller = volumeInstance.GetComponent<VolumeController>();
                                 controller.color = GlobalState.CurrentColor;
                                 controller.origin = volumeGenerator.origin;
                                 controller.bounds = volumeGenerator.bounds;
                                 controller.field = volumeGenerator.field;
                                 controller.resolution = volumeGenerator.resolution;
                                 controller.stepSize = volumeGenerator.stepSize;
-                                new CommandAddGameObject(currentVolume).Submit();
+                                new CommandAddGameObject(volumeInstance).Submit();
                                 currentVolume = null;
                             }
                             else // EDIT

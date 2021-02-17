@@ -349,6 +349,12 @@ namespace VRtist
                 return;
             }
 
+            // Get the position of the mouthpiece into matrix
+            Matrix4x4 matrix = SceneManager.RightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
+            Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
+            Quaternion toRightHandedRotation = Quaternion.Euler(new Vector3(90f, 0f, 0f));
+            Vector3 scale = Vector3.one;
+
             // Add the object to scene
             GameObject newObject = SceneManager.AddObject(gobject);
             if (item.imported)
@@ -357,12 +363,6 @@ namespace VRtist
                 controller.isImported = true;
                 controller.importPath = item.assetName;
             }
-
-            // Get the position of the mouthpiece into matrix
-            Matrix4x4 matrix = SceneManager.RightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
-            Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
-            Quaternion toRightHandedRotation = Quaternion.Euler(new Vector3(90f, 0f, 0f));
-            Vector3 scale = Vector3.one;
 
             CommandGroup group = new CommandGroup("Instantiate Bank Object");
             try

@@ -24,27 +24,6 @@ namespace VRtist
         public override void Submit()
         {
             CommandManager.AddCommand(this);
-            if (gObject.GetComponent<LightController>() != null)
-            {
-                SendLight();
-            }
-            else if (gObject.GetComponent<CameraController>() != null)
-            {
-                SendCamera();
-            }
-            else if (null != gObject.GetComponent<LocatorController>())
-            {
-                SendEmpty();
-            }
-            else if (gObject.GetComponent<MeshFilter>() != null)
-            {
-                SendMesh();
-            }
-            else
-            {
-                // For fbx import
-                SendEmpty();
-            }
         }
     }
 }
