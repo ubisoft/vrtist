@@ -664,8 +664,13 @@ namespace VRtist
                         switch (command.messageType)
                         {
                             case MessageType.ClientId:
-                                MixerUtils.BuildClientId(command.data);
-                                sceneModified = false;
+                                {
+                                    MixerScene mixerScene = new MixerScene();
+                                    SceneManager.SetSceneImpl(mixerScene);
+
+                                    MixerUtils.BuildClientId(command.data);
+                                    sceneModified = false;
+                                }
                                 break;
                             case MessageType.Mesh:
                                 MixerUtils.BuildMesh(command.data);

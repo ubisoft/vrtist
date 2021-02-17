@@ -9,7 +9,7 @@ namespace VRtist
     /// </summary>
     public class CommandMoveObjects : ICommand
     {
-        List<string> objectNames;
+        List<GameObject> objects;
 
         List<Vector3> beginPositions;
         List<Quaternion> beginRotations;
@@ -24,9 +24,9 @@ namespace VRtist
 
         }
 
-        public CommandMoveObjects(List<string> o, List<Vector3> bp, List<Quaternion> br, List<Vector3> bs, List<Vector3> ep, List<Quaternion> er, List<Vector3> es)
+        public CommandMoveObjects(List<GameObject> o, List<Vector3> bp, List<Quaternion> br, List<Vector3> bs, List<Vector3> ep, List<Quaternion> er, List<Vector3> es)
         {
-            objectNames = o;
+            objects = o;
             beginPositions = bp;
             beginRotations = br;
             beginScales = bs;
@@ -40,7 +40,7 @@ namespace VRtist
         {
             if (null == beginPositions)
             {
-                objectNames = new List<string>();
+                objects = new List<GameObject>();
                 beginPositions = new List<Vector3>();
                 endPositions = new List<Vector3>();
                 beginRotations = new List<Quaternion>();
@@ -49,7 +49,7 @@ namespace VRtist
                 endScales = new List<Vector3>();
             }
 
-            objectNames.Add(gobject.name);
+            objects.Add(gobject);
             beginPositions.Add(gobject.transform.localPosition);
             endPositions.Add(endPosition);
             beginRotations.Add(gobject.transform.localRotation);
@@ -60,31 +60,25 @@ namespace VRtist
 
         public override void Undo()
         {
-            int count = objectNames.Count;
+            int count = objects.Count;
             for (int i = 0; i < count; i++)
             {
-                string objectName = objectNames[i];
-                SyncData.SetTransform(objectName, beginPositions[i], beginRotations[i], beginScales[i]);
-                foreach (var instance in SyncData.nodes[objectName].instances)
-                    GlobalState.FireObjectMoving(instance.Item1);
-                CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
+                GameObject ob = objects[i];
+                SceneManager.SetObjectTransform(ob, beginPositions[i], beginRotations[i], beginScales[i]);
             }
         }
         public override void Redo()
         {
-            int count = objectNames.Count;
+            int count = objects.Count;
             for (int i = 0; i < count; i++)
             {
-                string objectName = objectNames[i];
-                SyncData.SetTransform(objectName, endPositions[i], endRotations[i], endScales[i]);
-                foreach (var instance in SyncData.nodes[objectName].instances)
-                    GlobalState.FireObjectMoving(instance.Item1);
-                CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
+                GameObject ob = objects[i];
+                SceneManager.SetObjectTransform(ob, endPositions[i], endRotations[i], endScales[i]);
             }
         }
         public override void Submit()
         {
-            if (objectNames.Count > 0)
+            if (objects.Count > 0)
             {
                 Redo();
                 CommandManager.AddCommand(this);

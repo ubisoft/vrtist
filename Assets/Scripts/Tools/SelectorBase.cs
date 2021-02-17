@@ -63,7 +63,6 @@ namespace VRtist
         private float snapDistance = 0.03f;
         private float epsilonDistance = 0.0001f;
         private float snapVisibleRayFactor = 3f;
-        protected Transform rightHanded;
         private Transform[] planes;
         private LineRenderer[] planeLines;
         protected GameObject boundingBox;
@@ -196,8 +195,7 @@ namespace VRtist
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
 
             // bounding box
-            rightHanded = Utils.FindWorld().transform.Find("RightHanded");
-            boundingBox = rightHanded.Find("__VRtist_BoundingBox__").gameObject;
+            boundingBox = SceneManager.BoundingBox.gameObject;
             planes = new Transform[6];
             planes[0] = boundingBox.transform.Find("Top");
             planes[1] = boundingBox.transform.Find("Bottom");
@@ -506,7 +504,6 @@ namespace VRtist
 
         protected void ManageMoveObjectsUndo()
         {
-            List<string> objects = new List<string>();
             List<Vector3> beginPositions = new List<Vector3>();
             List<Quaternion> beginRotations = new List<Quaternion>();
             List<Vector3> beginScales = new List<Vector3>();
@@ -514,13 +511,14 @@ namespace VRtist
             List<Quaternion> endRotations = new List<Quaternion>();
             List<Vector3> endScales = new List<Vector3>();
 
+            List<GameObject> objects = new List<GameObject>();
             foreach (GameObject obj in Selection.ActiveObjects)
             {
                 if (!initPositions.ContainsKey(obj))
                     continue;
                 if (initPositions[obj] == obj.transform.localPosition && initRotations[obj] == obj.transform.localRotation && initScales[obj] == obj.transform.localScale)
                     continue;
-                objects.Add(obj.name);
+                objects.Add(obj);
                 beginPositions.Add(initPositions[obj]);
                 beginRotations.Add(initRotations[obj]);
                 beginScales.Add(initScales[obj]);
@@ -836,11 +834,11 @@ namespace VRtist
                     {
                         if (meshFilter.gameObject != obj)
                         {
-                            transformMatrix = rightHanded.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
+                            transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
                         }
                         else
                         {
-                            transformMatrix = rightHanded.worldToLocalMatrix * obj.transform.localToWorldMatrix;
+                            transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * obj.transform.localToWorldMatrix;
                         }
                     }
                     else
@@ -889,7 +887,7 @@ namespace VRtist
             if (selectionCount == 1 && !foundHierarchicalObject)
             {
                 Transform transform = firstSelectedObject.GetComponentInChildren<MeshFilter>().transform;
-                planeContainerMatrix = rightHanded.worldToLocalMatrix * transform.localToWorldMatrix;
+                planeContainerMatrix = SceneManager.RightHanded.worldToLocalMatrix * transform.localToWorldMatrix;
             }
             else
             {
@@ -1130,7 +1128,7 @@ namespace VRtist
 
                         OnPreTransformSelection(obj.transform, ref mat);
                         // Set matrix
-                        SyncData.SetTransform(obj.name, mat);
+                        SceneManager.SetObjectMatrix(obj, mat);
 
                         // Send a live sync while moving
                         CommandManager.SendEvent(MessageType.Transform, obj.transform);
@@ -1274,7 +1272,7 @@ namespace VRtist
             if (source.GetComponent<UIHandle>())
                 return null;
 
-            GameObject clone = SyncData.Duplicate(source);
+            GameObject clone = SceneManager.DuplicateObject(source);
             if (null == clone)
                 return null;
             new CommandDuplicateGameObject(clone, source).Submit();

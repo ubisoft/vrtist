@@ -42,25 +42,6 @@ namespace VRtist
             CommandManager.SendEvent(MessageType.Delete, deleteInfo);
         }
 
-        protected void SendToTrash(GameObject gObject)
-        {
-            SendToTrashInfo trashInfo = new SendToTrashInfo
-            {
-                transform = gObject.transform
-            };
-            CommandManager.SendEvent(MessageType.SendToTrash, trashInfo);
-        }
-
-        protected void RestoreFromTrash(GameObject gObject, Transform parent)
-        {
-            RestoreFromTrashInfo trashInfo = new RestoreFromTrashInfo
-            {
-                transform = gObject.transform,
-                parent = parent
-            };
-            CommandManager.SendEvent(MessageType.RestoreFromTrash, trashInfo);
-        }
-
         protected string name;
     }
 
@@ -92,7 +73,7 @@ namespace VRtist
             undoCommand.Undo();
             redoStack.Add(undoCommand);
 
-            GlobalState.sceneDirtyEvent.Invoke(IsSceneDirty());
+            SceneManager.sceneDirtyEvent.Invoke(IsSceneDirty());
         }
 
         public static void Redo()
@@ -110,7 +91,7 @@ namespace VRtist
             redoCommand.Redo();
             undoStack.Add(redoCommand);
 
-            GlobalState.sceneDirtyEvent.Invoke(IsSceneDirty());
+            SceneManager.sceneDirtyEvent.Invoke(IsSceneDirty());
         }
 
         public static void SetSceneDirty(bool dirty)
@@ -123,7 +104,7 @@ namespace VRtist
                 else
                     cleanCommandRef = undoStack[undoStack.Count - 1];
             }
-            GlobalState.sceneDirtyEvent.Invoke(dirty);
+            SceneManager.sceneDirtyEvent.Invoke(dirty);
         }
 
         public static bool IsSceneDirty()
@@ -150,7 +131,7 @@ namespace VRtist
                 undoStack.Add(command);
                 redoStack.Clear();
             }
-            GlobalState.sceneDirtyEvent.Invoke(IsSceneDirty());
+            SceneManager.sceneDirtyEvent.Invoke(IsSceneDirty());
 
             /*
             int count = undoStack.Count;

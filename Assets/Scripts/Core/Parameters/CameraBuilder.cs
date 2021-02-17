@@ -36,64 +36,72 @@ namespace VRtist
             {
                 Transform uiRoot = newCamera.transform.Find("Rotate/Name");
 
-                UILabel nameLabel = UILabel.Create(new UILabel.CreateLabelParams
+                if (null == uiRoot.Find("Name"))
                 {
-                    parent = uiRoot,
-                    widgetName = "Name",
-                    caption = "Camera",
-                    width = 1.4f,
-                    height = 0.25f,
-                    labelContent = UILabel.LabelContent.TextOnly,
-                });
-                {
-                    TextMeshProUGUI text = nameLabel.gameObject.GetComponentInChildren<TextMeshProUGUI>();
-                    text.enableAutoSizing = true;
-                    text.fontSizeMin = 6f;
-                    text.fontSizeMax = 72f;
-                    text.alignment = TextAlignmentOptions.Center;
+                    UILabel nameLabel = UILabel.Create(new UILabel.CreateLabelParams
+                    {
+                        parent = uiRoot,
+                        widgetName = "Name",
+                        caption = "Camera",
+                        width = 1.4f,
+                        height = 0.25f,
+                        labelContent = UILabel.LabelContent.TextOnly,
+                    });
+                    {
+                        TextMeshProUGUI text = nameLabel.gameObject.GetComponentInChildren<TextMeshProUGUI>();
+                        text.enableAutoSizing = true;
+                        text.fontSizeMin = 6f;
+                        text.fontSizeMax = 72f;
+                        text.alignment = TextAlignmentOptions.Center;
+                    }
+                    nameLabel.baseColor.useConstant = true;
+                    nameLabel.baseColor.constant = new Color(0, 0, 0, 0);
+                    nameLabel.SetLightLayer(2);
                 }
-                nameLabel.baseColor.useConstant = true;
-                nameLabel.baseColor.constant = new Color(0, 0, 0, 0);
-                nameLabel.SetLightLayer(2);
 
                 uiRoot = newCamera.transform.Find("Rotate/UI");
-
-                // Focal slider
-                UISlider focalSlider = UISlider.Create(new UISlider.CreateArgs
+                if (null == uiRoot.Find("Focal"))
                 {
-                    parent = uiRoot,
-                    widgetName = "Focal",
-                    caption = "Focal",
-                    currentValue = 35f,
-                    sliderBegin = 0.15f,
-                    sliderEnd = 0.86f,
-                    relativeLocation = new Vector3(-0.30f, -0.03f, -UISlider.default_thickness),
-                    width = 0.3f,
-                    height = 0.02f,
-                    railMargin = 0.002f,
-                    knobRadius = 0.007f
-                });
-                focalSlider.DataCurve = GlobalState.Settings.focalCurve;
-                focalSlider.SetLightLayer(2);
+                    // Focal slider
+                    UISlider focalSlider = UISlider.Create(new UISlider.CreateArgs
+                    {
+                        parent = uiRoot,
+                        widgetName = "Focal",
+                        caption = "Focal",
+                        currentValue = 35f,
+                        sliderBegin = 0.15f,
+                        sliderEnd = 0.86f,
+                        relativeLocation = new Vector3(-0.30f, -0.03f, -UISlider.default_thickness),
+                        width = 0.3f,
+                        height = 0.02f,
+                        railMargin = 0.002f,
+                        knobRadius = 0.007f
+                    });
+                    focalSlider.DataCurve = GlobalState.Settings.focalCurve;
+                    focalSlider.SetLightLayer(2);
+                }
 
                 // In front button
-                UIButton inFrontButton = UIButton.Create(new UIButton.CreateButtonParams
+                if (null == uiRoot.Find("InFront"))
                 {
-                    parent = uiRoot,
-                    widgetName = "InFront",
-                    caption = "Always in Front",
-                    buttonContent = UIButton.ButtonContent.ImageOnly,
-                    icon = UIUtils.LoadIcon("back"),
-                    width = 0.02f,
-                    height = 0.02f,
-                    iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
-                    iconMargin = 0.002f,
-                    relativeLocation = new Vector3(-0.30f, -0.005f, -UIButton.default_thickness)
-                });
-                inFrontButton.isCheckable = true;
-                inFrontButton.baseSprite = UIUtils.LoadIcon("back");
-                inFrontButton.checkedSprite = UIUtils.LoadIcon("front");
-                inFrontButton.SetLightLayer(2);
+                    UIButton inFrontButton = UIButton.Create(new UIButton.CreateButtonParams
+                    {
+                        parent = uiRoot,
+                        widgetName = "InFront",
+                        caption = "Always in Front",
+                        buttonContent = UIButton.ButtonContent.ImageOnly,
+                        icon = UIUtils.LoadIcon("back"),
+                        width = 0.02f,
+                        height = 0.02f,
+                        iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
+                        iconMargin = 0.002f,
+                        relativeLocation = new Vector3(-0.30f, -0.005f, -UIButton.default_thickness)
+                    });
+                    inFrontButton.isCheckable = true;
+                    inFrontButton.baseSprite = UIUtils.LoadIcon("back");
+                    inFrontButton.checkedSprite = UIUtils.LoadIcon("front");
+                    inFrontButton.SetLightLayer(2);
+                }
             }
 
             return newCamera;

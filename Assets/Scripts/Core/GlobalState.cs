@@ -114,12 +114,7 @@ namespace VRtist
         public static BlenderBankListEvent blenderBankListEvent = new BlenderBankListEvent();
         public static BlenderBankImportObjectEvent blenderBankImportObjectEvent = new BlenderBankImportObjectEvent();
 
-        // Scene management
-        public static UnityEvent clearSceneEvent = new UnityEvent();
-        public static BoolChangedEvent sceneDirtyEvent = new BoolChangedEvent();
         public static BoolChangedEvent castShadowsEvent = new BoolChangedEvent();
-        public static UnityEvent sceneSavedEvent = new UnityEvent();
-        public bool firstSave = true;
 
         // Geometry Importer
         private GeometryImporter geometryImporter;
@@ -471,17 +466,6 @@ namespace VRtist
                 palette.localPosition = new Vector3(-0.02f, currentPalettePosition.y, currentPalettePosition.z);
             else
                 palette.localPosition = new Vector3(-0.2f, currentPalettePosition.y, currentPalettePosition.z);
-        }
-
-        public static void ClearScene()
-        {
-            Transform root = Instance.world.Find("RightHanded");
-            Utils.DeleteTransformChildren(root);
-            Utils.DeleteTransformChildren(SyncData.prefab);
-            Instance.firstSave = true;
-            CommandManager.SetSceneDirty(false);
-            SyncData.nodes.Clear();
-            clearSceneEvent.Invoke();
         }
     }
 }

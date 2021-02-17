@@ -95,8 +95,8 @@ namespace VRtist
 
             saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
-            GlobalState.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
-            GlobalState.sceneSavedEvent.AddListener(() => StartCoroutine(ShowSaveInfo(2)));
+            SceneManager.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
+            SceneManager.sceneSavedEvent.AddListener(() => StartCoroutine(ShowSaveInfo(2)));
 
             Apply();
 
@@ -344,9 +344,9 @@ namespace VRtist
                 return;
             }
 
-            if (GlobalState.Instance.firstSave)
+            if (SceneManager.firstSave)
             {
-                GlobalState.Instance.firstSave = false;
+                SceneManager.firstSave = false;
                 ToolsUIManager.Instance.ChangeTab("Preferences");
                 OnSetSaveSubPanel();
             }
@@ -394,7 +394,7 @@ namespace VRtist
         {
             MixerClient.Instance.SendBlenderSave();
             CommandManager.SetSceneDirty(false);
-            GlobalState.sceneSavedEvent.Invoke();
+            SceneManager.sceneSavedEvent.Invoke();
         }
     }
 }

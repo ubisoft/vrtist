@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 
 using UnityEngine;
 
@@ -143,10 +142,6 @@ namespace VRtist
 
     public static class SyncData
     {
-        static int gameObjectNameId = 0;
-        static readonly long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
-        static GameObject trash = null;
-
         public static Dictionary<GameObject, Node> instancesToNodes = new Dictionary<GameObject, Node>();
         public static Dictionary<string, Node> nodes = new Dictionary<string, Node>();
         public static Dictionary<string, CollectionNode> collectionNodes = new Dictionary<string, CollectionNode>();
@@ -175,24 +170,6 @@ namespace VRtist
             nodes.Add(root.name, rootNode);
 
             instanceRoot["/"] = root;
-        }
-
-        public static GameObject GetTrash()
-        {
-            if (trash == null)
-            {
-                trash = new GameObject("__Trash__");
-                trash.SetActive(false);
-            }
-            return trash;
-        }
-
-        public static bool IsInTrash(GameObject obj)
-        {
-            GameObject trash = GetTrash();
-            if (obj.transform.parent.parent.gameObject == trash)
-                return true;
-            return false;
         }
 
         public static CollectionNode CreateCollectionNode(CollectionNode parent, string name)
@@ -547,29 +524,16 @@ namespace VRtist
             }
         }
 
-        public static string CreateUniqueName(string baseName)
+        public static GameObject CreateFullHierarchyPrefab(GameObject original)
         {
-            if (baseName.Length > 48)
-                baseName = baseName.Substring(0, 48);
+            string rootPath = Utils.GetPath(original.transform.parent);
 
-            string name = baseName + "." + String.Format("{0:X}", (Dns.GetHostName() + timestamp.ToString()).GetHashCode()) + "." + gameObjectNameId.ToString();
-            gameObjectNameId++;
-            return name;
-        }
-
-        public static string GetMaterialName(GameObject gobject)
-        {
-            return "Mat_" + gobject.name;
-        }
-
-        public static GameObject CreateFullHierarchyPrefab(GameObject original, string rootPath)
-        {
             GameObject root = null;
             foreach (var originalTransform in original.GetComponentsInChildren<Transform>())
             {
-                originalTransform.gameObject.name = CreateUniqueName(originalTransform.gameObject.name);
+                originalTransform.gameObject.name = Utils.CreateUniqueName(originalTransform.gameObject.name);
                 string path = originalTransform.parent != null ? originalTransform.parent.name + "/" + originalTransform.name : originalTransform.name;
-                if (path.StartsWith(rootPath))
+                if (rootPath.Length > 0 && path.StartsWith(rootPath))
                 {
                     path = path.Substring(rootPath.Length + 1);
                 }
@@ -592,10 +556,11 @@ namespace VRtist
                     if (null != dstMeshRenderer)
                     {
                         dstMeshRenderer.sharedMaterials = meshRenderer.sharedMaterials;
-                        dstMeshRenderer.material.name = GetMaterialName(prefabTransform.gameObject);
+                        dstMeshRenderer.material.name = Utils.GetMaterialName(prefabTransform.gameObject);
                     }
                 }
             }
+
             return root;
         }
 
@@ -614,8 +579,8 @@ namespace VRtist
             string appliedName;
             if (null == name)
             {
-                string baseName = gObject.name.Split('.')[0];
-                appliedName = CreateUniqueName(baseName);
+                string baseName = Utils.GetBaseName(gObject.name);
+                appliedName = Utils.CreateUniqueName(baseName);
             }
             else
             {
@@ -641,7 +606,7 @@ namespace VRtist
             MeshRenderer meshRenderer = res.GetComponentInChildren<MeshRenderer>(true);
             if (null != meshRenderer)
             {
-                meshRenderer.material.name = GetMaterialName(res);
+                meshRenderer.material.name = Utils.GetMaterialName(res);
                 // TODO: ALSO rename materials after the first one.
             }
 
@@ -996,7 +961,7 @@ namespace VRtist
             }
         }
 
-        public static GameObject Duplicate(GameObject srcInstance, string name = null)
+        public static GameObject DuplicatePrefab(GameObject srcInstance, string name = null)
         {
             string srcname = srcInstance.name;
             if (!nodes.ContainsKey(srcname))
@@ -1017,9 +982,14 @@ namespace VRtist
 
             Node prefabCloneNode = CreateNode(prefabClone.name, null);
             prefabCloneNode.prefab = prefabClone;
-            GameObject clone = AddObjectToDocument(root, prefabClone.name, "/");
 
-            return clone;
+            return prefabClone;
+        }
+
+        public static GameObject Duplicate(GameObject srcInstance, string name = null)
+        {
+            GameObject prefabClone = DuplicatePrefab(srcInstance, name);
+            return AddObjectToDocument(root, prefabClone.name, "/");
         }
 
         public static void RemovePrefab(string objectName)
@@ -1031,55 +1001,53 @@ namespace VRtist
             nodes.Remove(objectName);
         }
 
-        public static Node GetOrCreateNode(GameObject newPrefab)
+
+        public static Node CreatePrefabNodeHierarchy(GameObject newPrefab)
         {
             if (!nodes.TryGetValue(newPrefab.name, out Node node))
             {
                 node = CreateNode(newPrefab.name);
                 node.prefab = newPrefab;
+                if (null == newPrefab.transform.parent || SyncData.prefab != newPrefab.transform.parent.parent)
+                {
+                    GameObject gObjectParent = new GameObject(newPrefab.name + Utils.blenderHiddenParent);
+                    newPrefab.transform.SetParent(gObjectParent.transform, true);
+                    Utils.Reparent(gObjectParent.transform, prefab);
+                }
+
+                // loop from end to start because children will be removed from parent during process
+                for (int i = newPrefab.transform.childCount - 1; i >= 0; i--)
+                {
+                    Transform child = newPrefab.transform.GetChild(i);
+                    Node childNode = CreatePrefabNodeHierarchy(child.gameObject);
+                    node.AddChild(childNode);
+                }
             }
+
+            foreach (var child in node.children)
+            {
+                CreatePrefabNodeHierarchy(child.prefab);
+            }
+
             return node;
         }
 
-        /// <summary>
-        /// Create a new prefab node using the given GameObject as the prefab then instantiate it into the scene.
-        /// Note that this function does not put the given prefab game object into the prefabs.
-        /// </summary>
-        /// <param name="newPrefab">Prefab</param>
-        /// <returns>Instantiated prefab</returns>
-        public static GameObject InstantiatePrefab(GameObject newPrefab, string instanceName = "/")
+        public static GameObject AddFullHierarchyObjectToDocument(GameObject prefab)
         {
-            GetOrCreateNode(newPrefab);
-            GameObject instance = AddObjectToDocument(root, newPrefab.name, collectionInstanceName: instanceName, skipParentCheck: true);
+            GameObject instance = AddObjectToDocument(root, prefab.name, collectionInstanceName: "/", skipParentCheck: true);
+
+            Node node = nodes[prefab.name];
+            foreach (var child in node.children)
+            {
+                AddFullHierarchyObjectToDocument(child.prefab);
+            }
             return instance;
         }
 
         public static GameObject InstantiateFullHierarchyPrefab(GameObject prefab)
         {
-            GameObject res = InstantiatePrefab(prefab);
-            Node node = nodes[prefab.name];
-            foreach (var child in node.children)
-            {
-                InstantiateFullHierarchyPrefab(child.prefab);
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="unityPrefab"></param>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public static GameObject InstantiateUnityPrefab(GameObject unityPrefab, Matrix4x4 matrix)
-        {
-            GameObject newPrefab = SyncData.CreateInstance(unityPrefab, prefab, isPrefab: true);
-
-            newPrefab.transform.localPosition = matrix.GetColumn(3);
-            newPrefab.transform.localRotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
-            newPrefab.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
-
-            return InstantiatePrefab(newPrefab);
+            Node node = CreatePrefabNodeHierarchy(prefab);
+            return AddFullHierarchyObjectToDocument(prefab);
         }
 
         /// <summary>

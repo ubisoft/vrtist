@@ -108,7 +108,7 @@ namespace VRtist
             Transform objectPath = FindPath(root, data, ref bufferIndex);
             if (null == objectPath)
                 return;
-            objectPath.parent.parent = SyncData.GetTrash().transform;
+            objectPath.parent.parent = SceneManager.Trash.transform;
 
             Node node = SyncData.nodes[objectPath.name];
             node.RemoveInstance(objectPath.gameObject);
@@ -118,7 +118,7 @@ namespace VRtist
             int bufferIndex = 0;
             string objectName = Converter.GetString(data, ref bufferIndex);
             Transform parent = FindPath(root, data, ref bufferIndex);
-            Transform trf = SyncData.GetTrash().transform.Find(objectName + Utils.blenderHiddenParent);
+            Transform trf = SceneManager.Trash.transform.Find(objectName + Utils.blenderHiddenParent);
             if (null != trf)
             {
                 trf.parent = parent;

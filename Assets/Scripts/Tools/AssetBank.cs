@@ -14,7 +14,7 @@ namespace VRtist
         public int uid;               // uid
         public string assetName;      // item name or filename
         public HashSet<string> tags = new HashSet<string>();  // list of tags for filtering
-        public GameObject original;   // original object (loaded from disk or Unity.Resources)
+        public GameObject prefab;   // original object (loaded from disk or Unity.Resources)
         public GameObject thumbnail;  // may be an image or 3D thumbnail
         public bool builtin = false;
         public Func<AssetBankItem, Task<GameObject>> importFunction = null;
@@ -46,9 +46,6 @@ namespace VRtist
         private int selectedItem = -1;
         private bool loadingAsset = false;
 
-        private TaskCompletionSource<GameObject> blenderImportTask = null;
-        private string requestedBlenderImportName;
-
         private UIDynamicList uiList;
         private UILabel filterLabel;
 
@@ -71,11 +68,7 @@ namespace VRtist
             // Add user defined objects
             StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () =>
             {
-                // Add Blender asset bank assets
-                GlobalState.blenderBankImportObjectEvent.AddListener(OnBlenderBankObjectImported);
-                GlobalState.blenderBankListEvent.AddListener(OnBlenderBank);
-                BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ListRequest };
-                MixerClient.Instance.SendBlenderBank(info);
+                SceneManager.ListImportableObjects();
             }));
         }
 
@@ -103,7 +96,7 @@ namespace VRtist
             {
                 if (!item.builtin)
                 {
-                    if (item.original) { Destroy(item.original); }
+                    if (item.prefab) { Destroy(item.prefab); }
                     if (item.thumbnail) { Destroy(item.thumbnail); }
                     items.Remove(item.uid);
                 }
@@ -201,7 +194,7 @@ namespace VRtist
             AddBuiltinAsset("Prop", "Warn Cone", "Prefabs/UI/JUNK/UI_warn_cone", "Prefabs/Primitives/JUNK/warn_cone");
 
             AddBuiltinAsset("Vehicle", "Car", "Prefabs/UI/JUNK/UI_car", "Prefabs/Primitives/JUNK/car");
-            
+
             //AddBuiltinAsset("Prop", "Box", "Prefabs/UI/JUNK/UI_Box", "Prefabs/Primitives/JUNK/BOX_PRIM");
             //AddBuiltinAsset("Prop", "Ticket", "Prefabs/UI/JUNK/Ticket", "Prefabs/Primitives/JUNK/TICKET_PRIM");
             //AddBuiltinAsset("Vehicle", "Submarine", "Prefabs/UI/JUNK/Submarine", "Prefabs/Primitives/JUNK/SUBMARINE_PRIM");
@@ -233,12 +226,12 @@ namespace VRtist
             if (null != onEndScan) { onEndScan(); }
         }
 
-        private void AddBuiltinAsset(string tags, string name, string uiPath, string originalPath)
+        private void AddBuiltinAsset(string tags, string name, string uiPath, string prefabPath)
         {
-            GameObject original = Instantiate(Resources.Load<GameObject>(originalPath));
-            original.transform.parent = bank.transform;
+            GameObject prefab = Resources.Load<GameObject>(prefabPath);
+
             GameObject thumbnail = UIGrabber.Create3DThumbnail(Instantiate(Resources.Load<GameObject>(uiPath)), OnUIObjectEnter, OnUIObjectExit);
-            AssetBankItem item = AddAsset(name, thumbnail, original, tags);
+            AssetBankItem item = AddAsset(name, thumbnail, prefab, tags);
             item.builtin = true;
         }
 
@@ -251,29 +244,7 @@ namespace VRtist
             AddAsset(filename, thumbnail, null, tags, importFunction: ImportObjectAsync);
         }
 
-        public void OnBlenderBank(List<string> names, List<string> tags, List<string> thumbnails)
-        {
-            // Load only once the whole asset bank data base from Blender
-            GlobalState.blenderBankListEvent.RemoveListener(OnBlenderBank);
-            StartCoroutine(AddBlenderAssets(names, tags, thumbnails));
-        }
-
-        public IEnumerator AddBlenderAssets(List<string> names, List<string> tags, List<string> thumbnails)
-        {
-            for (int i = 0; i < names.Count; i++)
-            {
-                AddBlenderAsset(names[i], tags[i], thumbnails[i]);
-                yield return null;
-            }
-        }
-
-        private void AddBlenderAsset(string name, string tags, string thumbnailPath)
-        {
-            GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(thumbnailPath, OnUIObjectEnter, OnUIObjectExit);
-            AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
-        }
-
-        public AssetBankItem AddAsset(string name, GameObject thumbnail, GameObject original, string tags, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool skipInstantiation = false)
+        public AssetBankItem AddAsset(string name, GameObject thumbnail, GameObject prefab, string tags, Func<AssetBankItem, Task<GameObject>> importFunction = null, bool skipInstantiation = false)
         {
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
             if (null == uiGrabber)
@@ -289,7 +260,7 @@ namespace VRtist
             item.assetName = name;
             item.gameObject.name = name;
             item.thumbnail = thumbnail;
-            item.original = original;
+            item.prefab = prefab;
             item.thumbnail.transform.parent = root.transform;
             item.thumbnail.transform.localPosition += new Vector3(0, 0, -0.001f);
             item.builtin = false;
@@ -334,22 +305,22 @@ namespace VRtist
             if (!item.thumbnail.GetComponent<UIGrabber>().isValid) { return; }
 
             // If the original doesn't exist, load it
-            if (null == item.original)
+            if (null == item.prefab)
             {
                 loadingAsset = true;
                 GlobalState.Instance.messageBox.ShowMessage("Loading asset, please wait...");
                 Selection.ClearSelection();
-                item.original = await item.importFunction(item);
+                item.prefab = await item.importFunction(item);
                 item.imported = true;
 
                 // For blender assets, we don't want to instantiate objects, we will receive them
                 if (!item.skipInstantiation)
                 {
-                    InstantiateObject(item.original);
+                    AddObject(item.prefab);
                 }
                 else
                 {
-                    item.original = null;
+                    item.prefab = null;
                 }
                 GlobalState.Instance.messageBox.SetVisible(false);
                 loadingAsset = false;
@@ -358,7 +329,8 @@ namespace VRtist
             {
                 if (!item.skipInstantiation)
                 {
-                    InstantiateObject(item.original);
+                    GameObject instance = SceneManager.InstantiateObject(item.prefab);
+                    AddObject(instance);
                 }
             }
             selectedItem = -1;
@@ -369,27 +341,7 @@ namespace VRtist
             return GlobalState.GeometryImporter.ImportObjectAsync(item.assetName, bank.transform);
         }
 
-        private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
-        {
-            requestedBlenderImportName = item.assetName;
-            blenderImportTask = new TaskCompletionSource<GameObject>();
-            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
-            MixerClient.Instance.SendBlenderBank(info);
-            return blenderImportTask.Task;
-        }
-
-        // Used for blender bank to know if a blender asset has been imported
-        private void OnBlenderBankObjectImported(string objectName, string niceName)
-        {
-            if (niceName == requestedBlenderImportName && null != blenderImportTask && !blenderImportTask.Task.IsCompleted)
-            {
-                GameObject instance = SyncData.nodes[objectName].instances[0].Item1;
-                blenderImportTask.TrySetResult(instance);
-                Selection.AddToSelection(instance);
-            }
-        }
-
-        private void InstantiateObject(GameObject gobject)
+        private void AddObject(GameObject gobject)
         {
             if (!items.TryGetValue(selectedItem, out AssetBankItem item))
             {
@@ -397,46 +349,20 @@ namespace VRtist
                 return;
             }
 
-            // Create the prefab and instantiate it
-            GameObject newObject;
+            // Add the object to scene
+            GameObject newObject = SceneManager.AddObject(gobject);
             if (item.imported)
             {
-                newObject = SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, ASSET_BANK_NAME));
                 ParametersController controller = newObject.AddComponent<ParametersController>();
                 controller.isImported = true;
                 controller.importPath = item.assetName;
             }
-            else
-            {
-                newObject = SyncData.InstantiatePrefab(SyncData.CreateInstance(gobject, SyncData.prefab));
-
-                // Name the mesh
-                newObject.GetComponentInChildren<MeshFilter>().mesh.name = gobject.GetComponentInChildren<MeshFilter>().mesh.name;
-            }
 
             // Get the position of the mouthpiece into matrix
-            Matrix4x4 matrix = rightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
+            Matrix4x4 matrix = SceneManager.RightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
             Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
             Quaternion toRightHandedRotation = Quaternion.Euler(new Vector3(90f, 0f, 0f));
             Vector3 scale = Vector3.one;
-            if (useDefaultInstantiationScale)
-            {
-                // The object keeps its real size independently of the user scale
-                // Nothing to do
-            }
-            else
-            {
-                // Set the object size to 20cm in the user space
-                Bounds bounds = new Bounds();
-                MeshFilter[] meshFilters = gobject.GetComponentsInChildren<MeshFilter>();
-                foreach (MeshFilter meshFilter in meshFilters)
-                {
-                    Mesh mesh = meshFilter.mesh;
-                    bounds.Encapsulate(mesh.bounds);
-                }
-                scale *= (0.2f / bounds.size.magnitude) / GlobalState.WorldScale;  // 0.2: 20cm
-            }
-            SyncData.SetTransform(newObject.name, Matrix4x4.TRS(t, Quaternion.identity, scale) * Matrix4x4.Rotate(toRightHandedRotation));
 
             CommandGroup group = new CommandGroup("Instantiate Bank Object");
             try
@@ -447,11 +373,22 @@ namespace VRtist
                     // Send transform
                     new CommandAddGameObject(newObject).Submit();
                 }
+
+                // Set the object size to 20cm in the user space
+                Bounds bounds = new Bounds();
                 foreach (var subMeshFilter in newObject.GetComponentsInChildren<MeshFilter>())
                 {
                     new CommandAddGameObject(subMeshFilter.gameObject).Submit();
+                    if (!useDefaultInstantiationScale)
+                    {
+                        bounds.Encapsulate(subMeshFilter.mesh.bounds);
+                    }
                 }
+                if (bounds.size.magnitude > 0)
+                    scale *= (0.2f / bounds.size.magnitude) / GlobalState.WorldScale;  // 0.2: 20cm
+
                 AddToSelection(newObject);
+                SceneManager.SetObjectMatrix(newObject, Matrix4x4.TRS(t, Quaternion.identity, scale) * Matrix4x4.Rotate(toRightHandedRotation));
                 Selection.HoveredObject = newObject;
             }
             finally

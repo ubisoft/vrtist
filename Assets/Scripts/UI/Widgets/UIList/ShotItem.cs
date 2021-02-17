@@ -87,9 +87,12 @@ namespace VRtist
 
         private void OnActiveCameraChanged(GameObject _, GameObject activeCamera)
         {
-            CameraManager.Instance.onActiveCameraChanged.RemoveListener(OnActiveCameraChanged);
-            setCameraButton.Checked = false;
-            setCameraAction(shot);
+            if (null != activeCamera)
+            {
+                CameraManager.Instance.onActiveCameraChanged.RemoveListener(OnActiveCameraChanged);
+                setCameraButton.Checked = false;
+                setCameraAction(shot);
+            }
         }
 
         private void OnSetStartEndFromCurrentFrame(UnityAction<Shot, float> action, UISpinner spinner)
@@ -147,8 +150,10 @@ namespace VRtist
             {
                 CameraController camController = null;
                 if (null != shot.camera)
+                {
                     camController = shot.camera.GetComponent<CameraController>();
-                CameraManager.Instance.ActiveCamera = camController.gameObject;
+                    CameraManager.Instance.ActiveCamera = camController.gameObject;
+                }
 
                 int currentFrame = GlobalState.Animation.CurrentFrame;
                 if (currentFrame < shot.start || currentFrame > shot.end)

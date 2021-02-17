@@ -419,15 +419,6 @@ namespace VRtist.Serialization
 
         public bool visible;
 
-        // Instance
-        public string instanceName;
-        public Vector3 instanceOffset;
-
-        // Parent Transform
-        public Vector3 parentPosition;
-        public Quaternion parentRotation;
-        public Vector3 parentScale;
-
         // Transform
         public Vector3 position;
         public Quaternion rotation;
@@ -453,13 +444,6 @@ namespace VRtist.Serialization
             tag = Converter.GetString(bytes, ref index);
 
             visible = Converter.GetBool(bytes, ref index);
-
-            instanceName = Converter.GetString(bytes, ref index);
-            instanceOffset = Converter.GetVector3(bytes, ref index);
-
-            parentPosition = Converter.GetVector3(bytes, ref index);
-            parentRotation = Converter.GetQuaternion(bytes, ref index);
-            parentScale = Converter.GetVector3(bytes, ref index);
 
             position = Converter.GetVector3(bytes, ref index);
             rotation = Converter.GetQuaternion(bytes, ref index);
@@ -490,13 +474,6 @@ namespace VRtist.Serialization
 
             byte[] visibleBuffer = Converter.BoolToBytes(visible);
 
-            byte[] instanceNameBuffer = Converter.StringToBytes(instanceName);
-            byte[] instanceOffsetBuffer = Converter.Vector3ToBytes(instanceOffset);
-
-            byte[] parentPositionBuffer = Converter.Vector3ToBytes(parentPosition);
-            byte[] parentRotationBuffer = Converter.QuaternionToBytes(parentRotation);
-            byte[] parentScaleBuffer = Converter.Vector3ToBytes(parentScale);
-
             byte[] positionBuffer = Converter.Vector3ToBytes(position);
             byte[] rotationBuffer = Converter.QuaternionToBytes(rotation);
             byte[] scaleBuffer = Converter.Vector3ToBytes(scale);
@@ -523,13 +500,6 @@ namespace VRtist.Serialization
                 tagBuffer,
 
                 visibleBuffer,
-
-                instanceNameBuffer,
-                instanceOffsetBuffer,
-
-                parentPositionBuffer,
-                parentRotationBuffer,
-                parentScaleBuffer,
 
                 positionBuffer,
                 rotationBuffer,

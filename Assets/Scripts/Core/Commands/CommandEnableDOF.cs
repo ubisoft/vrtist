@@ -7,7 +7,7 @@ namespace VRtist
     /// </summary>
     public class CommandEnableDOF : ICommand
     {
-        private static GameObject cameraColimator = null;
+        private static GameObject colimatorPrefab = null;
         readonly GameObject camera;
         readonly bool enable;
 
@@ -19,28 +19,25 @@ namespace VRtist
 
         private void CreateColimator(GameObject camera)
         {
-            if (null == cameraColimator)
+            if (null == colimatorPrefab)
             {
-                cameraColimator = Resources.Load<GameObject>("Prefabs/UI/Colimator");
+                colimatorPrefab = Resources.Load<GameObject>("Prefabs/UI/Colimator");
             }
-            CameraController cameraController = camera.GetComponent<CameraController>();
 
-            GameObject colimator = SyncData.CreateInstance(cameraColimator, SyncData.prefab, isPrefab: true);
-            colimator.transform.localPosition = new Vector3(0, 0, -cameraController.Focus);
+            GameObject colimator = SceneManager.InstantiateUnityPrefab(colimatorPrefab);
+            colimator = SceneManager.AddObject(colimator);
+
+            SceneManager.SetParent(colimator, camera);
+
+            CameraController cameraController = camera.GetComponent<CameraController>();
+            cameraController.colimator = colimator.transform;
 
             ColimatorController colimatorController = colimator.GetComponent<ColimatorController>();
             colimatorController.isVRtist = true;
 
-            Node cameraNode = SyncData.nodes[camera.name];
-            Node colimatorNode = SyncData.GetOrCreateNode(colimator);
-            cameraNode.AddChild(colimatorNode);
-            GameObject colimatorInstance = SyncData.InstantiatePrefab(colimator);
-            cameraController.colimator = colimatorInstance.transform;
-
             MixerClient.Instance.SendEmpty(colimator.transform);
             MixerClient.Instance.SendTransform(colimator.transform);
             MixerUtils.AddObjectToScene(colimator);
-            MixerClient.Instance.SendCamera(new CameraInfo { transform = camera.transform });
         }
 
         private void DestroyColimator(GameObject camera)
@@ -48,8 +45,7 @@ namespace VRtist
             CameraController controller = camera.GetComponent<CameraController>();
             if (null != controller.colimator)
             {
-                GameObject.Destroy(controller.colimator.gameObject);
-                MixerClient.Instance.SendDelete(new DeleteInfo { meshTransform = controller.colimator });
+                SceneManager.RemoveObject(controller.colimator.gameObject);
             }
         }
 
@@ -57,29 +53,33 @@ namespace VRtist
         {
             CameraController cameraController = camera.GetComponent<CameraController>();
             cameraController.EnableDOF = value;
-            Transform colimator = cameraController.colimator;
-            if (null == colimator)
+            if (null == cameraController.colimator)
             {
                 if (value)
                 {
                     CreateColimator(camera);
+                    SceneManager.SetObjectTransform(cameraController.colimator.gameObject, new Vector3(0, 0, -cameraController.Focus), cameraController.colimator.localRotation, cameraController.colimator.localScale);
+                    MixerClient.Instance.SendCamera(new CameraInfo { transform = camera.transform });
                 }
             }
             else
             {
                 if (value)
                 {
-                    colimator.gameObject.SetActive(true);
-                    colimator.transform.localPosition = new Vector3(0, 0, -cameraController.Focus);
-                    MixerClient.Instance.SendTransform(colimator.transform);
+                    cameraController.colimator.gameObject.SetActive(true);
+                    SceneManager.RestoreObject(cameraController.colimator.gameObject, camera.transform);
+                    SceneManager.SetObjectTransform(cameraController.colimator.gameObject, new Vector3(0, 0, -cameraController.Focus), cameraController.colimator.localRotation, cameraController.colimator.localScale);
+                    MixerClient.Instance.SendCamera(new CameraInfo { transform = camera.transform });
                 }
                 else
                 {
-                    ColimatorController colimatorController = colimator.GetComponent<ColimatorController>();
+                    ColimatorController colimatorController = cameraController.colimator.GetComponent<ColimatorController>();
+                    colimatorController.gameObject.SetActive(false);
                     if (colimatorController.isVRtist)
                     {
                         DestroyColimator(camera);
                     }
+                    MixerClient.Instance.SendCamera(new CameraInfo { transform = camera.transform });
                 }
             }
         }

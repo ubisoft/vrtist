@@ -201,7 +201,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnCameraAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnCameraRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
-            GlobalState.clearSceneEvent.AddListener(OnClearScene);
+            SceneManager.clearSceneEvent.AddListener(OnClearScene);
             if (null != cameraList) { cameraList.ItemClickedEvent += OnSelectCameraItem; }
             cameraItemPrefab = Resources.Load<GameObject>("Prefabs/UI/CameraItem");
         }
@@ -457,7 +457,12 @@ namespace VRtist
                 {
                     Matrix4x4 matrix = cameraContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(5f, 5f, 5f));
                     GameObject cameraPrefab = ResourceManager.GetPrefab(PrefabID.Camera);
-                    GameObject newCamera = SyncData.InstantiateUnityPrefab(cameraPrefab, matrix);
+
+                    GameObject instance = SceneManager.InstantiateUnityPrefab(cameraPrefab);
+                    Vector3 position = matrix.GetColumn(3);
+                    Quaternion rotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+                    Vector3 scale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
+                    GameObject newCamera = SceneManager.AddObject(instance);
 
                     if (newCamera)
                     {
@@ -467,6 +472,7 @@ namespace VRtist
                             ClearSelection();
                             new CommandAddGameObject(newCamera).Submit();
                             AddToSelection(newCamera);
+                            SceneManager.SetObjectTransform(instance, position, rotation, scale);
                             Selection.HoveredObject = newCamera;
                         }
                         finally

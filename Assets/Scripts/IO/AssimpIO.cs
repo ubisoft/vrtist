@@ -445,15 +445,15 @@ namespace VRtist
             Quaternion rotation;
             Maths.DecomposeMatrix(mat, out position, out rotation, out scale);
 
+            AssignMeshes(node, go);
+
             if (node.Parent != null)
             {
                 go.transform.localPosition = position;
                 go.transform.localRotation = rotation;
                 go.transform.localScale = scale;
-                go.name = node.Name;
+                go.name = Utils.CreateUniqueName(node.Name);
             }
-
-            AssignMeshes(node, go);
 
             foreach (Assimp.Node assimpChild in node.Children)
             {
@@ -482,7 +482,7 @@ namespace VRtist
 
             objectRoot = new GameObject();
             // Right handed to Left Handed
-            objectRoot.name = Path.GetFileNameWithoutExtension(fileName);
+            objectRoot.name = Utils.CreateUniqueName(Path.GetFileNameWithoutExtension(fileName));
             objectRoot.transform.parent = root;
             objectRoot.transform.localPosition = Vector3.zero;
             objectRoot.transform.localScale = new Vector3(-1, 1, 1);

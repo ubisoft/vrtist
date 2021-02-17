@@ -156,7 +156,7 @@ namespace VRtist
             foreach (var pi in projectList.GetItems())
             {
                 ProjectItem projectItem = pi.Content.GetComponent<ProjectItem>();
-                if(headHasRotated)
+                if (headHasRotated)
                 {
                     projectItem.ResetRotation(camY);
                 }
@@ -293,7 +293,7 @@ namespace VRtist
         public void OnCreateNewProject()
         {
             OnBackToScene();
-            GlobalState.ClearScene();
+            SceneManager.ClearScene();
             GlobalState.Settings.ProjectName = Serialization.SaveManager.Instance.GetNextValidProjectName();
         }
 

@@ -12,25 +12,13 @@ namespace VRtist
         public override void Undo()
         {
             if (null == gObject) { return; }
-            gObject.transform.parent.parent = parent;
-            gObject.transform.parent.localPosition = position;
-            gObject.transform.parent.localRotation = rotation;
-            gObject.transform.parent.localScale = scale;
-
-            Node node = SyncData.nodes[gObject.name];
-            node.AddInstance(gObject);
-
-            RestoreFromTrash(gObject, parent);
+            SceneManager.RestoreObject(gObject, parent);
         }
 
         public override void Redo()
         {
             if (null == gObject) { return; }
-            SendToTrash(gObject);
-            gObject.transform.parent.parent = SyncData.GetTrash().transform;
-
-            Node node = SyncData.nodes[gObject.name];
-            node.RemoveInstance(gObject);
+            SceneManager.RemoveObject(gObject);
         }
 
         public override void Submit()
@@ -41,9 +29,6 @@ namespace VRtist
 
             ToolsUIManager.Instance.SpawnDeleteInstanceVFX(gObject);
 
-            position = gObject.transform.parent.localPosition;
-            rotation = gObject.transform.parent.localRotation;
-            scale = gObject.transform.parent.localScale;
             Redo();
             CommandManager.AddCommand(this);
         }

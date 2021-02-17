@@ -9,9 +9,6 @@ namespace VRtist
     {
         protected GameObject gObject = null;
         protected Transform parent = null;
-        protected Vector3 position;
-        protected Quaternion rotation;
-        protected Vector3 scale;
 
         public override void Undo() { }
         public override void Redo() { }
@@ -20,7 +17,7 @@ namespace VRtist
         public CommandAddRemoveGameObject(GameObject o)
         {
             gObject = o;
-            parent = o.transform.parent.parent;
+            parent = SceneManager.GetParent(o).transform;
         }
 
         protected void SendLight()

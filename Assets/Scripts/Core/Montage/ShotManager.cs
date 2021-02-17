@@ -216,18 +216,6 @@ namespace VRtist
             shots.Insert(newIndex, shot);
         }
 
-        public void SetShotCamera(Shot shot, string value)
-        {
-            GameObject cam = null;
-            if (SyncData.nodes.ContainsKey(value))
-            {
-                Node node = SyncData.nodes[value];
-                if (node.instances.Count > 0)
-                    cam = node.instances[0].Item1;
-            }
-            shot.camera = cam;
-        }
-
         public void UpdateShot(int index, Shot shot)
         {
             try

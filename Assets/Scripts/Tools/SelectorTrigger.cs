@@ -97,7 +97,7 @@ namespace VRtist
                 {
                     int index = collidedObjects.Count - 1;
                     hoveredObject = collidedObjects[index];
-                    if (!SyncData.IsInTrash(hoveredObject))
+                    if (!SceneManager.IsInTrash(hoveredObject))
                         break;
                     collidedObjects.RemoveAt(index);
                     hoveredObject = null;

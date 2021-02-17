@@ -1,22 +1,30 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
 
 namespace VRtist
 {
+    public struct MaterialValue
+    {
+        public Color color;
+        public float roughness;
+        public float metallic;
+    }
     public class Utils
     {
         public static string blenderHiddenParent = "__Blender_Hidden_Parent_Matrix";
         public static string blenderCollectionInstanceOffset = "__Blender_Collection_Instance_Offset";
+        static int gameObjectNameId = 0;
+        static readonly long timestamp = System.DateTime.Now.Ticks / System.TimeSpan.TicksPerMillisecond;
 
         public static GameObject FindRootGameObject(string name)
         {
-            Scene scene = SceneManager.GetActiveScene();
+            UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             GameObject[] roots = scene.GetRootGameObjects();
             for (int i = 0; i < roots.Length; i++)
             {
@@ -105,15 +113,53 @@ namespace VRtist
             return readableName;
         }
 
-        public static GameObject CreatePaint(Transform parent, Color color)
+        public static string GetPath(Transform t)
         {
-            GameObject intermediateParent = new GameObject();
-            intermediateParent.transform.parent = parent;
+            if (null == t)
+                return "";
 
+            string path = t.name;
+            Transform parent = t.parent;
+            while (null != parent)
+            {
+                path = parent.name + "/" + path;
+                parent = parent.parent;
+            }
+            return path;
+        }
+
+        public static string GetBaseName(string name)
+        {
+            string res = name;
+            for (int i = 0; i < 2; i++)
+            {
+                int index = res.LastIndexOf('.');
+                if (index >= 0)
+                    res = res.Substring(0, index);
+            }
+
+            return res;
+        }
+
+        public static string CreateUniqueName(string baseName)
+        {
+            baseName = GetBaseName(baseName);
+
+            if (baseName.Length > 48)
+                baseName = baseName.Substring(0, 48);
+
+            string name = baseName + "." + String.Format("{0:X}", (Dns.GetHostName() + timestamp.ToString()).GetHashCode()) + "." + gameObjectNameId.ToString();
+            gameObjectNameId++;
+            return name;
+        }
+        public static string GetMaterialName(GameObject gobject)
+        {
+            return "Mat_" + gobject.name;
+        }
+        public static GameObject CreatePaint(Color color)
+        {
             GameObject paint = new GameObject();
-            paint.transform.parent = intermediateParent.transform;
-            paint.name = SyncData.CreateUniqueName("Paint");
-            intermediateParent.name = paint.name + blenderHiddenParent;
+            paint.name = CreateUniqueName("Paint");
 
             paint.transform.localPosition = Vector3.zero;
             paint.transform.localRotation = Quaternion.identity;
@@ -134,7 +180,7 @@ namespace VRtist
                 materialType = MaterialID.ObjectOpaque,
                 baseColor = color
             };
-            MixerUtils.materialsParameters[SyncData.GetMaterialName(paint)] = parameters;
+            MixerUtils.materialsParameters[GetMaterialName(paint)] = parameters;
 
             paint.AddComponent<MeshCollider>();
             paint.AddComponent<PaintController>();
@@ -142,15 +188,10 @@ namespace VRtist
             return paint;
         }
 
-        public static GameObject CreateVolume(Transform parent, Color color)
+        public static GameObject CreateVolume(Color color)
         {
-            GameObject intermediateParent = new GameObject();
-            intermediateParent.transform.parent = parent;
-
             GameObject volume = new GameObject();
-            volume.transform.parent = intermediateParent.transform;
-            volume.name = SyncData.CreateUniqueName("Volume");
-            intermediateParent.name = volume.name + blenderHiddenParent;
+            volume.name = CreateUniqueName("Volume");
 
             volume.transform.localPosition = Vector3.zero;
             volume.transform.localRotation = Quaternion.identity;
@@ -174,7 +215,7 @@ namespace VRtist
                 materialType = MaterialID.ObjectOpaque,
                 baseColor = color
             };
-            MixerUtils.materialsParameters[SyncData.GetMaterialName(volume)] = parameters;
+            MixerUtils.materialsParameters[GetMaterialName(volume)] = parameters;
 
             volume.AddComponent<MeshCollider>();
             volume.AddComponent<VolumeController>();
@@ -195,6 +236,63 @@ namespace VRtist
         {
             return CreateRenderTexture(source.width, source.height, 0, source.format, true);
         }
+
+        public static MaterialValue GetMaterialValue(GameObject gobject)
+        {
+            MeshRenderer renderer = gobject.GetComponentInChildren<MeshRenderer>();
+            MaterialValue value = new MaterialValue();
+            if (null != renderer)
+            {
+                value.color = renderer.material.GetColor("_BaseColor");
+                if (renderer.material.HasProperty("_Smoothness")) { value.roughness = 1f - renderer.material.GetFloat("_Smoothness"); }
+                else { value.roughness = renderer.material.GetFloat("_Roughness"); }
+                value.metallic = renderer.material.GetFloat("_Metallic");
+            }
+            return value;
+        }
+
+        public static void SetMaterialValue(GameObject gobject, MaterialValue value)
+        {
+            Material opaqueMat = Resources.Load<Material>("Materials/ObjectOpaque");
+            Material transpMat = Resources.Load<Material>("Materials/ObjectTransparent");
+            MeshRenderer[] renderers = gobject.GetComponentsInChildren<MeshRenderer>();
+            foreach (MeshRenderer renderer in renderers)
+            {
+                int i = 0;
+                Material[] newMaterials = renderer.materials;
+                foreach (Material oldMaterial in renderer.materials)
+                {
+                    bool previousMaterialWasTransparent = oldMaterial.HasProperty("_Opacity") && oldMaterial.GetFloat("_Opacity") < 0.99f;
+                    bool newMaterialIsTransparent = value.color.a < 1.0f;
+                    if (previousMaterialWasTransparent != newMaterialIsTransparent)
+                    {
+                        // swap material type
+                        if (newMaterialIsTransparent)
+                        {
+                            newMaterials[i] = new Material(transpMat);
+                        }
+                        else
+                        {
+                            newMaterials[i] = new Material(opaqueMat);
+                        }
+                    }
+                    //else
+                    //{
+                    //    newMaterials[i] = oldMaterial;
+                    //}
+
+                    Material newMaterial = newMaterials[i++];
+
+                    newMaterial.SetColor("_BaseColor", value.color);
+                    if (newMaterial.HasProperty("_Opacity")) { newMaterial.SetFloat("_Opacity", value.color.a); }
+                    if (newMaterial.HasProperty("_Smoothness")) { newMaterial.SetFloat("_Smoothness", 1f - value.roughness); }
+                    else { newMaterial.SetFloat("_Roughness", value.roughness); }
+                    newMaterial.SetFloat("_Metallic", value.metallic);
+                }
+                renderer.materials = newMaterials; // set array
+            }
+        }
+
 
         public static void TryDispose(IDisposable obj)
         {
@@ -267,15 +365,17 @@ namespace VRtist
         {
             Debug.Log("Clear scene");
             Selection.ClearSelection();
+
+            // sync reparent before async destroy
+            GameObject tmp = new GameObject();
             foreach (Transform child in trans)
             {
                 if (child.name.StartsWith("__VRtist_"))
-                {
-                    // There are some game objects that are not user objects and must remain
                     continue;
-                }
-                GameObject.Destroy(child.gameObject);
+
+                child.parent = tmp.transform;
             }
+            GameObject.Destroy(tmp);
         }
 
         public static void CreatePath(string path)

@@ -30,7 +30,7 @@ namespace VRtist
 
         // Paint tool
         Vector3 paintPrevPosition;
-        GameObject currentPaintLine;
+        GameObject currentPaint;
         float brushSize = 0.01f;
         enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume }
         PaintTools paintTool = PaintTools.Pencil;
@@ -214,9 +214,9 @@ namespace VRtist
             }
             Vector3 center = (max + min) * 0.5f;
 
-            currentPaintLine.transform.localPosition += center;
+            currentPaint.transform.localPosition += center;
 
-            MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
+            MeshFilter meshFilter = currentPaint.GetComponent<MeshFilter>();
             Mesh mesh = meshFilter.mesh;
             for (int i = 0; i < freeDraw.vertices.Length; i++)
             {
@@ -233,17 +233,25 @@ namespace VRtist
                 case PaintTools.Pencil:
                 case PaintTools.FlatPencil:
                 case PaintTools.ConvexHull:
-                    // Create an empty game object with a mesh
-                    currentPaintLine = SyncData.InstantiatePrefab(Utils.CreatePaint(SyncData.prefab, GlobalState.CurrentColor));
-                    ++paintId;
-                    freeDraw = new FreeDraw();
-                    freeDraw.matrix = currentPaintLine.transform.worldToLocalMatrix;
+                    {
+                        // Create an empty game object with a mesh
+                        GameObject paintPrefab = Utils.CreatePaint(GlobalState.CurrentColor);
+                        GameObject paintObject = SceneManager.InstantiateUnityPrefab(paintPrefab);
+                        GameObject.Destroy(paintPrefab);
+                        currentPaint = SceneManager.AddObject(paintObject);
+                        ++paintId;
+                        freeDraw = new FreeDraw();
+                        freeDraw.matrix = currentPaint.transform.worldToLocalMatrix;
+                    }
                     break;
 
                 case PaintTools.Volume:
                     if (volumeEditionMode == VolumeEditionMode.Create)
                     {
-                        currentVolume = SyncData.InstantiatePrefab(Utils.CreateVolume(SyncData.prefab, GlobalState.CurrentColor));
+                        GameObject volumePrefab = Utils.CreateVolume(GlobalState.CurrentColor);
+                        GameObject volumeObject = SceneManager.InstantiateUnityPrefab(volumePrefab);
+                        GameObject.Destroy(volumePrefab);
+                        currentVolume = SceneManager.AddObject(volumeObject);
                         currentVolume.transform.position = mouthpiece.position; // real-world position
                         volumeGenerator.Reset();
                         volumeGenerator.stepSize = stepSize / GlobalState.WorldScale; // viewer scale -> world scale.
@@ -266,15 +274,15 @@ namespace VRtist
                 case PaintTools.ConvexHull:
                     {
                         // Bake line renderer into a mesh so we can raycast on it
-                        if (currentPaintLine != null)
+                        if (currentPaint != null)
                         {
                             TranslatePaintToItsCenter();
-                            PaintController controller = currentPaintLine.GetComponent<PaintController>();
+                            PaintController controller = currentPaint.GetComponent<PaintController>();
                             controller.color = GlobalState.CurrentColor;
                             controller.controlPoints = freeDraw.controlPoints;
                             controller.controlPointsRadius = freeDraw.controlPointsRadius;
-                            new CommandAddGameObject(currentPaintLine).Submit();
-                            currentPaintLine = null;
+                            new CommandAddGameObject(currentPaint).Submit();
+                            currentPaint = null;
                         }
                         break;
                     }
@@ -404,7 +412,7 @@ namespace VRtist
             float deadZone = VRInput.deadZoneIn;
             if (triggerValue >= deadZone &&
                 (
-                  (position != paintPrevPosition && currentPaintLine != null) || currentVolume != null)
+                  (position != paintPrevPosition && currentPaint != null) || currentVolume != null)
                 )
             {
                 // Add a point (the current world position) to the line renderer
@@ -427,7 +435,7 @@ namespace VRtist
                     case PaintTools.ConvexHull:
                         {
                             // set mesh components
-                            MeshFilter meshFilter = currentPaintLine.GetComponent<MeshFilter>();
+                            MeshFilter meshFilter = currentPaint.GetComponent<MeshFilter>();
                             Mesh mesh = meshFilter.mesh;
                             mesh.Clear();
                             mesh.vertices = freeDraw.vertices;

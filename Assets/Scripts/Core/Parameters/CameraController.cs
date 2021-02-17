@@ -58,7 +58,7 @@ namespace VRtist
 
         private void Awake()
         {
-            Init();
+            //Init();
         }
 
         void Start()
@@ -96,7 +96,7 @@ namespace VRtist
                 nameLabel.NeedsRebuild = true;
 
                 // FOCAL
-                focalSlider = gameObject.GetComponentInChildren<UISlider>();
+                focalSlider = gameObject.GetComponentInChildren<UISlider>(true);
                 focalSlider.onSlideEventInt.AddListener(OnFocalSliderChange);
                 focalSlider.onClickEvent.AddListener(OnFocalClicked);
                 focalSlider.onReleaseEvent.AddListener(OnFocalReleased);
@@ -104,7 +104,7 @@ namespace VRtist
                 UIUtils.SetTMProStyle(focalSlider.gameObject, minSize: 1f, maxSize: 1.5f);
                 focalSlider.NeedsRebuild = true;
 
-                inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>();
+                inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>(true);
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
                 inFrontButton.NeedsRebuild = true;
             }

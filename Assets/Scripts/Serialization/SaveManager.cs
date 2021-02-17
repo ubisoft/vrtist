@@ -41,9 +41,6 @@ namespace VRtist.Serialization
 
         private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
         private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
-        private readonly Dictionary<string, GameObject> loadedObjects = new Dictionary<string, GameObject>();  // all loaded objects
-        private readonly Dictionary<string, GameObject> loadedPrefabs = new Dictionary<string, GameObject>();  // all loaded prefabs
-        private readonly Dictionary<string, GameObject> loadedInstances = new Dictionary<string, GameObject>();  // all loaded instances
 
         private readonly string DEFAULT_PROJECT_NAME = "newProject";
 
@@ -218,63 +215,42 @@ namespace VRtist.Serialization
             totalStopwatch.Stop();
             LogElapsedTime("Total Time", totalStopwatch);
 
-            GlobalState.sceneSavedEvent.Invoke();
+            SceneManager.sceneSavedEvent.Invoke();
             CommandManager.SetSceneDirty(false);
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
-        private void TraverseScene(Transform root, string parentPath, string instanceName = "")
+        private void TraverseScene(Transform root, string parentPath)
         {
-            foreach (Transform emptyParent in root)
+            foreach (Transform currentTransform in root)
             {
-                string path = parentPath;
-                Transform currentTransform = emptyParent;
-                Vector3 instanceOffset = Vector3.zero;
-
-                // Get instance data and go to its child
-                if (currentTransform.name == Utils.blenderCollectionInstanceOffset)
-                {
-                    instanceOffset = currentTransform.localPosition;
-                    instanceName = parentPath;
-                    path += "/" + currentTransform.name;
-                    TraverseScene(currentTransform, path, instanceName);
-                    return;
-                }
-
-                // We should only have _parent game objects from here
-                if (!currentTransform.name.EndsWith(Utils.blenderHiddenParent))
-                {
-                    Debug.LogWarning("Ignoring the serialization of a non parent game object: " + currentTransform.name);
+                if (currentTransform == SceneManager.BoundingBox)
                     continue;
-                }
-
-                // Bypass _parent game object
-                path += "/" + currentTransform.name;  // _parent
-                Transform child = currentTransform.GetChild(0);
-                path += "/" + child.name;
+                string path = parentPath;
+                path += "/" + currentTransform.name;
 
                 // Depending on its type (which controller we can find on it) create data objects to be serialized
-                LightController lightController = child.GetComponent<LightController>();
+                LightController lightController = currentTransform.GetComponent<LightController>();
                 if (null != lightController)
                 {
                     LightData lightData = new LightData();
-                    SetCommonData(child, parentPath, instanceOffset, instanceName, path, lightController, lightData);
+                    SetCommonData(currentTransform, parentPath, path, lightController, lightData);
                     SetLightData(lightController, lightData);
                     SceneData.Current.lights.Add(lightData);
                     continue;
                 }
 
-                CameraController cameraController = child.GetComponent<CameraController>();
+                CameraController cameraController = currentTransform.GetComponent<CameraController>();
                 if (null != cameraController)
                 {
                     CameraData cameraData = new CameraData();
-                    SetCommonData(child, parentPath, instanceOffset, instanceName, path, cameraController, cameraData);
+                    SetCommonData(currentTransform, parentPath, path, cameraController, cameraData);
                     SetCameraData(cameraController, cameraData);
                     SceneData.Current.cameras.Add(cameraData);
                     continue;
                 }
 
-                ColimatorController colimatorController = child.GetComponent<ColimatorController>();
+                ColimatorController colimatorController = currentTransform.GetComponent<ColimatorController>();
                 if (null != colimatorController)
                 {
                     // Nothing to do here, ignore the object
@@ -282,17 +258,17 @@ namespace VRtist.Serialization
                 }
 
                 // Do this one at the end, because other controllers inherits from ParametersController
-                ParametersController controller = child.GetComponent<ParametersController>();
+                ParametersController controller = currentTransform.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
-                SetCommonData(child, parentPath, instanceOffset, instanceName, path, controller, data);
-                SetObjectData(child, controller, data);
+                SetCommonData(currentTransform, parentPath, path, controller, data);
+                SetObjectData(currentTransform, controller, data);
                 SceneData.Current.objects.Add(data);
 
                 // Serialize children
                 if (!data.isImported)
                 {
                     // We consider here that we can't change objects hierarchy
-                    TraverseScene(child, path, instanceName);
+                    TraverseScene(currentTransform, path);
                 }
             }
         }
@@ -489,23 +465,19 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetCommonData(Transform trans, string parentName, Vector3 instanceOffset, string instanceName, string path, ParametersController controller, ObjectData data)
+        private void SetCommonData(Transform trans, string parentName, string path, ParametersController controller, ObjectData data)
         {
             data.name = trans.name;
             data.parent = parentName == "" ? "" : parentName.Substring(1);
             data.path = path.Substring(1);
             data.tag = trans.gameObject.tag;
 
-            data.visible = trans.gameObject.activeSelf;
-
-            // Instance
-            data.instanceName = instanceName;
-            data.instanceOffset = instanceOffset;
-
-            // Parent Transform
-            data.parentPosition = trans.parent.localPosition;
-            data.parentRotation = trans.parent.localRotation;
-            data.parentScale = trans.parent.localScale;
+            data.visible = true;
+            MeshRenderer mesh = trans.GetComponent<MeshRenderer>();
+            if (null != mesh && !mesh.enabled)
+                data.visible = false;
+            if (trans.gameObject.activeSelf == false)
+                data.visible = false;
 
             // Transform
             data.position = trans.localPosition;
@@ -555,19 +527,19 @@ namespace VRtist.Serialization
 
         public void Load(string projectName)
         {
+            VRtistScene scene = new VRtistScene();
+            SceneManager.SetSceneImpl(scene);
+
             GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
             currentProjectName = projectName;
             GlobalState.Settings.ProjectName = projectName;
-            loadedObjects.Clear();
-            loadedPrefabs.Clear();
-            loadedInstances.Clear();
 
             // Clear current scene
             AnimationEngine.Instance.Clear();
             Selection.Clear();
             ConstraintManager.Clear();
             ShotManager.Instance.Clear();
-            GlobalState.ClearScene();
+            SceneManager.ClearScene();
 
             // Load data from file
             string path = GetScenePath(projectName);
@@ -644,8 +616,6 @@ namespace VRtist.Serialization
                 gobject.tag = data.tag;
             }
 
-            gobject.SetActive(data.visible);
-
             gobject.transform.localPosition = data.position;
             gobject.transform.localRotation = data.rotation;
             gobject.transform.localScale = data.scale;
@@ -710,80 +680,36 @@ namespace VRtist.Serialization
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     gobject.AddComponent<MeshCollider>();
                 }
+
+                if (!data.visible)
+                {
+                    foreach (Component component in gobject.GetComponents<Component>())
+                    {
+                        Type componentType = component.GetType();
+                        var prop = componentType.GetProperty("enabled");
+                        if (null != prop)
+                        {
+                            prop.SetValue(component, data.visible);
+                        }
+                    }
+                }
+
             }
 
-            // Instantiate using the SyncData API
+            SceneManager.AddObject(gobject);
+
+            if (data.parent.Length > 0)
+                SceneManager.SetParent(gobject, rootTransform.Find(data.parent).gameObject);
+
             if (data.isImported)
             {
-                SyncData.InstantiateFullHierarchyPrefab(SyncData.CreateFullHierarchyPrefab(gobject, "__VRtist_tmp_load__"));
+                ParametersController controller = gobject.AddComponent<ParametersController>();
+                controller.isImported = true;
+                controller.importPath = data.meshPath;
+
                 if (null != importedParent)
                     Destroy(importedParent.gameObject);
             }
-            else
-            {
-                if (!loadedPrefabs.TryGetValue(data.name, out GameObject prefab))
-                {
-                    prefab = SyncData.CreateInstance(gobject, SyncData.prefab, data.name);
-                    InitPrefab(prefab, data);
-                    loadedPrefabs.Add(prefab.name, prefab);
-                }
-                string instanceName = data.instanceName == "" ? "/" : data.instanceName;
-                GameObject newObject = SyncData.InstantiatePrefab(prefab, instanceName);
-
-                // Manage instances
-                if (data.instanceName != "")
-                {
-                    if (!loadedInstances.TryGetValue(data.instanceName, out GameObject instance))
-                    {
-                        // Insert the __Offset game object (used by the selection)
-                        GameObject offset = new GameObject(Utils.blenderCollectionInstanceOffset);
-                        offset.transform.localPosition = data.instanceOffset;
-
-                        // Reparent
-                        string objectInstanceName = data.instanceName;
-                        if (objectInstanceName.StartsWith("/")) { objectInstanceName = objectInstanceName.Substring(1); }
-                        GameObject parentObject = loadedObjects[objectInstanceName];
-                        Utils.Reparent(offset.transform, parentObject.transform);
-                        Utils.Reparent(newObject.transform.parent, offset.transform);
-
-                        loadedInstances.Add(data.instanceName, offset);
-                    }
-                    else
-                    {
-                        // Reparent
-                        Transform parent = rootTransform.Find(data.parent);
-                        Utils.Reparent(newObject.transform.parent, parent);
-                    }
-                }
-
-                loadedObjects.Add(data.path, newObject);
-
-                // Name the mesh
-                MeshFilter srcMeshFilter = gobject.GetComponentInChildren<MeshFilter>(true);
-                if (null != srcMeshFilter && null != srcMeshFilter.sharedMesh)
-                {
-                    MeshFilter dstMeshFilter = newObject.GetComponentInChildren<MeshFilter>(true);
-                    dstMeshFilter.sharedMesh.name = srcMeshFilter.sharedMesh.name;
-                }
-            }
-
-            // Then delete the original loaded object
-            Destroy(gobject);
-        }
-
-        void InitPrefab(GameObject newPrefab, ObjectData data)
-        {
-            newPrefab.transform.parent.localPosition = data.parentPosition;
-            newPrefab.transform.parent.localRotation = data.parentRotation;
-            newPrefab.transform.parent.localScale = data.parentScale;
-
-            if (data.parent == "")
-                return;
-            string[] splitted = data.parent.Split('/');
-            int index = 1;
-            while (splitted[splitted.Length - index] == Utils.blenderCollectionInstanceOffset) { ++index; }
-            Node node = SyncData.CreateNode(newPrefab.name, SyncData.nodes[splitted[splitted.Length - index]]);
-            node.prefab = newPrefab;
         }
 
         private void LoadLight(LightData data)
@@ -805,9 +731,11 @@ namespace VRtist.Serialization
 
             if (lightPrefab)
             {
-                GameObject newPrefab = SyncData.CreateInstance(lightPrefab, SyncData.prefab, data.name, isPrefab: true);
-                InitPrefab(newPrefab, data);
-                GameObject newObject = SyncData.InstantiatePrefab(newPrefab);
+                GameObject newPrefab = SceneManager.InstantiateUnityPrefab(lightPrefab);
+                GameObject newObject = SceneManager.AddObject(newPrefab);
+
+                if (data.parent.Length > 0)
+                    SceneManager.SetParent(newObject, rootTransform.Find(data.parent).gameObject);
 
                 LoadCommonData(newObject, data);
 
@@ -827,19 +755,20 @@ namespace VRtist.Serialization
 
                 string objectPath = data.path;
                 if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
-                loadedObjects.Add(objectPath, newObject);
             }
         }
 
         private void LoadCamera(CameraData data)
         {
             GameObject cameraPrefab = ResourceManager.GetPrefab(PrefabID.Camera);
-            GameObject newPrefab = SyncData.CreateInstance(cameraPrefab, SyncData.prefab, data.name, isPrefab: true);
-            InitPrefab(newPrefab, data);
 
-            LoadCommonData(newPrefab, data);
+            GameObject newPrefab = SceneManager.InstantiateUnityPrefab(cameraPrefab);
+            GameObject newObject = SceneManager.AddObject(newPrefab);
 
-            GameObject newObject = SyncData.InstantiatePrefab(newPrefab);
+            if (data.parent.Length > 0)
+                SceneManager.SetParent(newObject, rootTransform.Find(data.parent).gameObject);
+
+            LoadCommonData(newObject, data);
 
             CameraController controller = newObject.GetComponent<CameraController>();
             controller.focal = data.focal;
@@ -852,7 +781,6 @@ namespace VRtist.Serialization
 
             string objectPath = data.path;
             if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
-            loadedObjects.Add(objectPath, newObject);
         }
 
         private void LoadAnimation(AnimationData data)

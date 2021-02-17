@@ -73,7 +73,7 @@ namespace VRtist
                     {
                         GameObject cam = null;
                         if (info.cameraName.Length > 0)
-                            cam = SyncData.nodes[info.cameraName].instances[0].Item1;
+                            cam = info.cam;
                         Shot shot = new Shot()
                         {
                             name = info.shotName,
@@ -108,7 +108,7 @@ namespace VRtist
                         if (info.shotName.Length > 0)
                             shot.name = info.shotName;
                         if (info.cameraName.Length > 0)
-                            shot.camera = SyncData.nodes[info.cameraName].instances[0].Item1;
+                            shot.camera = info.cam;
                         if (info.shotColor.r != -1)
                             shot.color = info.shotColor;
                         if (info.shotStart != -1)

@@ -21,14 +21,12 @@ namespace VRtist
 
         public override void Undo()
         {
-            CommandManager.SendEvent(MessageType.Rename, new RenameInfo { srcTransform = transform, newName = oldName });
-            SyncData.Rename(newName, oldName);
+            SceneManager.RenameObject(transform.gameObject, oldName);
         }
 
         public override void Redo()
         {
-            CommandManager.SendEvent(MessageType.Rename, new RenameInfo { srcTransform = transform, newName = newName });
-            SyncData.Rename(oldName, newName);
+            SceneManager.RenameObject(transform.gameObject, newName);
         }
 
         public override void Submit()

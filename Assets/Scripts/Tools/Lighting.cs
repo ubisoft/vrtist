@@ -61,7 +61,7 @@ namespace VRtist
             GlobalState.ObjectAddedEvent.AddListener(OnLightAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnLightRemoved);
             GlobalState.ObjectRenamedEvent.AddListener(OnLightRenamed);
-            GlobalState.clearSceneEvent.AddListener(OnClearScene);
+            SceneManager.clearSceneEvent.AddListener(OnClearScene);
             if (null != lightList) { lightList.ItemClickedEvent += OnSelectLightItem; }
             lightItemPrefab = Resources.Load<GameObject>("Prefabs/UI/LightItem");
 
@@ -111,7 +111,12 @@ namespace VRtist
             if (light)
             {
                 Matrix4x4 matrix = parentContainer.worldToLocalMatrix * mouthpiece.localToWorldMatrix * Matrix4x4.Scale(new Vector3(10f, 10f, 10f));
-                GameObject instance = SyncData.InstantiateUnityPrefab(light, matrix);
+
+                GameObject instance = SceneManager.InstantiateUnityPrefab(light);
+                Vector3 position = matrix.GetColumn(3);
+                Quaternion rotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
+                Vector3 scale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
+                instance = SceneManager.AddObject(instance);
 
                 CommandGroup undoGroup = new CommandGroup("Instantiate Light");
                 try
@@ -119,6 +124,7 @@ namespace VRtist
                     ClearSelection();
                     new CommandAddGameObject(instance).Submit();
                     AddToSelection(instance);
+                    SceneManager.SetObjectTransform(instance, position, rotation, scale);
                     Selection.HoveredObject = instance;
                 }
                 finally
