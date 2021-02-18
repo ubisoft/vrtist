@@ -14,11 +14,11 @@ namespace VRtist
         void RenameObject(GameObject gobject, string newName);
         void SetObjectMatrix(GameObject gobject, Matrix4x4 matrix);
         void SetObjectTransform(GameObject gobject, Vector3 position, Quaternion rotation, Vector3 scale);
-        GameObject GetParent(GameObject gobject);
-        void SetParent(GameObject gobject, GameObject parent);
+        GameObject GetObjectParent(GameObject gobject);
+        void SetObjectParent(GameObject gobject, GameObject parent);
         void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue);
         void ClearObjectAnimations(GameObject gobject);
-        void SetObjectAnimation(GameObject gobject, AnimationSet animationSet);
+        void SetObjectAnimations(GameObject gobject, AnimationSet animationSet);
         void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key);
         void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key);
         void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime);

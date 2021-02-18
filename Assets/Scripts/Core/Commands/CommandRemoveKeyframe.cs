@@ -29,7 +29,7 @@ namespace VRtist
 
         public override void Undo()
         {
-            SceneManager.AddKeyframe(gObject, property, oldAnimationKey);
+            SceneManager.AddObjectKeyframe(gObject, property, oldAnimationKey);
         }
 
         public override void Redo()

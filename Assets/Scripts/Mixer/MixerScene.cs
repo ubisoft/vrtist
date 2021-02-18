@@ -116,14 +116,14 @@ namespace VRtist
                 GlobalState.FireObjectMoving(instance.Item1);
             MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
         }
-        public GameObject GetParent(GameObject gobject)
+        public GameObject GetObjectParent(GameObject gobject)
         {
             Transform parentTransform = gobject.transform.parent.parent;
             if (null == parentTransform)
                 return null;
             return parentTransform.gameObject;
         }
-        public void SetParent(GameObject gobject, GameObject parent)
+        public void SetObjectParent(GameObject gobject, GameObject parent)
         {
             Node parentNode = SyncData.nodes[parent.name];
             Node childNode = SyncData.nodes[gobject.name];
@@ -192,7 +192,7 @@ namespace VRtist
             MixerClient.Instance.SendClearAnimations(new ClearAnimationInfo { gObject = gobject });
         }
 
-        public void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
             foreach (Curve curve in animationSet.curves.Values)
             {

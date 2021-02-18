@@ -73,14 +73,14 @@ namespace VRtist
             gobject.transform.localScale = scale;
             GlobalState.FireObjectMoving(gobject);
         }
-        public GameObject GetParent(GameObject gobject)
+        public GameObject GetObjectParent(GameObject gobject)
         {
             Transform parentTransform = gobject.transform.parent;
             if (null == parentTransform)
                 return null;
             return parentTransform.gameObject;
         }
-        public void SetParent(GameObject gobject, GameObject parent)
+        public void SetObjectParent(GameObject gobject, GameObject parent)
         {
             gobject.transform.SetParent(parent.transform, false);
         }
@@ -92,7 +92,7 @@ namespace VRtist
         public void ClearObjectAnimations(GameObject gobject)
         {
         }
-        public void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
         }
         public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)

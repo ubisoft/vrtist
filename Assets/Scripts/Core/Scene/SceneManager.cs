@@ -121,13 +121,13 @@ namespace VRtist
         {
             Instance.scene.SetObjectTransform(gobject, position, rotation, scale);
         }
-        public static GameObject GetParent(GameObject gobject)
+        public static GameObject GetObjectParent(GameObject gobject)
         {
-            return Instance.scene.GetParent(gobject);
+            return Instance.scene.GetObjectParent(gobject);
         }
-        public static void SetParent(GameObject gobject, GameObject parent)
+        public static void SetObjectParent(GameObject gobject, GameObject parent)
         {
-            Instance.scene.SetParent(gobject, parent);
+            Instance.scene.SetObjectParent(gobject, parent);
         }
         public static void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue)
         {
@@ -140,12 +140,12 @@ namespace VRtist
             GlobalState.Animation.ClearAnimations(gobject);
             Instance.scene.ClearObjectAnimations(gobject);
         }
-        public static void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        public static void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
-            GlobalState.Animation.SetObjectAnimation(gobject, animationSet);
-            Instance.scene.SetObjectAnimation(gobject, animationSet);
+            GlobalState.Animation.SetObjectAnimations(gobject, animationSet);
+            Instance.scene.SetObjectAnimations(gobject, animationSet);
         }
-        public static void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        public static void AddObjectKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
             GlobalState.Animation.AddFilteredKeyframe(gobject, property, key);
             Instance.scene.AddKeyframe(gobject, property, key);

@@ -27,7 +27,7 @@ namespace VRtist
             GameObject colimator = SceneManager.InstantiateUnityPrefab(colimatorPrefab);
             colimator = SceneManager.AddObject(colimator);
 
-            SceneManager.SetParent(colimator, camera);
+            SceneManager.SetObjectParent(colimator, camera);
 
             CameraController cameraController = camera.GetComponent<CameraController>();
             cameraController.colimator = colimator.transform;

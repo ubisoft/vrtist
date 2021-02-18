@@ -354,7 +354,7 @@ namespace VRtist
             return animationSet;
         }
 
-        public void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
             animations[gobject] = animationSet;
             onAddAnimation.Invoke(gobject);

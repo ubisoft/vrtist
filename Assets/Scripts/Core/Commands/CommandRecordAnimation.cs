@@ -32,12 +32,12 @@ namespace VRtist
                 SceneManager.ClearObjectAnimations(gObject);
                 return;
             }
-            SceneManager.SetObjectAnimation(gObject, oldAnimationSet);
+            SceneManager.SetObjectAnimations(gObject, oldAnimationSet);
         }
 
         public override void Redo()
         {
-            SceneManager.SetObjectAnimation(gObject, newAnimationSet);
+            SceneManager.SetObjectAnimations(gObject, newAnimationSet);
         }
 
         public override void Submit()

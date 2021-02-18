@@ -623,6 +623,7 @@ namespace VRtist.Serialization
             gobject.transform.localPosition = data.position;
             gobject.transform.localRotation = data.rotation;
             gobject.transform.localScale = data.scale;
+            gobject.name = data.name;
 
             if (data.lockPosition || data.lockRotation || data.lockScale)
             {
@@ -703,7 +704,7 @@ namespace VRtist.Serialization
             SceneManager.AddObject(gobject);
 
             if (data.parent.Length > 0)
-                SceneManager.SetParent(gobject, rootTransform.Find(data.parent).gameObject);
+                SceneManager.SetObjectParent(gobject, rootTransform.Find(data.parent).gameObject);
 
             if (data.isImported)
             {
@@ -739,7 +740,7 @@ namespace VRtist.Serialization
                 GameObject newObject = SceneManager.AddObject(newPrefab);
 
                 if (data.parent.Length > 0)
-                    SceneManager.SetParent(newObject, rootTransform.Find(data.parent).gameObject);
+                    SceneManager.SetObjectParent(newObject, rootTransform.Find(data.parent).gameObject);
 
                 LoadCommonData(newObject, data);
 
@@ -770,7 +771,7 @@ namespace VRtist.Serialization
             GameObject newObject = SceneManager.AddObject(newPrefab);
 
             if (data.parent.Length > 0)
-                SceneManager.SetParent(newObject, rootTransform.Find(data.parent).gameObject);
+                SceneManager.SetObjectParent(newObject, rootTransform.Find(data.parent).gameObject);
 
             LoadCommonData(newObject, data);
 
@@ -808,7 +809,7 @@ namespace VRtist.Serialization
                 }
                 animSet.SetCurve(curve.property, keys);
             }
-            AnimationEngine.Instance.SetObjectAnimation(gobject, animSet);
+            AnimationEngine.Instance.SetObjectAnimations(gobject, animSet);
         }
 
         private void LoadConstraint(ConstraintData data)

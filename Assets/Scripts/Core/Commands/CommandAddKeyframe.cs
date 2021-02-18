@@ -35,13 +35,13 @@ namespace VRtist
 
             if (null != oldAnimationKey)
             {
-                SceneManager.AddKeyframe(gObject, property, oldAnimationKey);
+                SceneManager.AddObjectKeyframe(gObject, property, oldAnimationKey);
             }
         }
 
         public override void Redo()
         {
-            SceneManager.AddKeyframe(gObject, property, newAnimationKey);
+            SceneManager.AddObjectKeyframe(gObject, property, newAnimationKey);
         }
 
         public override void Submit()

@@ -19,7 +19,7 @@ namespace VRtist
         {
             if (null != animationSet)
             {
-                SceneManager.SetObjectAnimation(gObject, animationSet);
+                SceneManager.SetObjectAnimations(gObject, animationSet);
             }
         }
         public override void Redo()

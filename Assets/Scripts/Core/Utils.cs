@@ -383,13 +383,15 @@ namespace VRtist
 
             // sync reparent before async destroy
             GameObject tmp = new GameObject();
-            foreach (Transform child in trans)
+            for (int i = trans.childCount - 1; i >= 0; i--)
             {
+                Transform child = trans.GetChild(i);
                 if (child.name.StartsWith("__VRtist_"))
                     continue;
 
                 child.parent = tmp.transform;
             }
+
             GameObject.Destroy(tmp);
         }
 
