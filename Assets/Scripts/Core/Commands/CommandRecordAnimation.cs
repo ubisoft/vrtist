@@ -29,24 +29,15 @@ namespace VRtist
         {
             if (null == oldAnimationSet)
             {
-                GlobalState.Animation.ClearAnimations(gObject);
-                MixerClient.Instance.SendClearAnimations(new ClearAnimationInfo { gObject = gObject });
+                SceneManager.ClearObjectAnimations(gObject);
                 return;
             }
-            GlobalState.Animation.SetObjectAnimation(gObject, oldAnimationSet);
-            foreach (Curve curve in oldAnimationSet.curves.Values)
-            {
-                MixerClient.Instance.SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
-            }
+            SceneManager.SetObjectAnimation(gObject, oldAnimationSet);
         }
 
         public override void Redo()
         {
-            GlobalState.Animation.SetObjectAnimation(gObject, newAnimationSet);
-            foreach (Curve curve in newAnimationSet.curves.Values)
-            {
-                MixerClient.Instance.SendAnimationCurve(new CurveInfo { objectName = gObject.name, curve = curve });
-            }
+            SceneManager.SetObjectAnimation(gObject, newAnimationSet);
         }
 
         public override void Submit()

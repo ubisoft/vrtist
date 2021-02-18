@@ -17,6 +17,15 @@ namespace VRtist
         GameObject GetParent(GameObject gobject);
         void SetParent(GameObject gobject, GameObject parent);
         void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue);
+        void ClearObjectAnimations(GameObject gobject);
+        void SetObjectAnimation(GameObject gobject, AnimationSet animationSet);
+        void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key);
+        void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key);
+        void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime);
+        void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target);
+        void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType);
+        void SetSky(SkySettings sky);
+        void ApplyShotManagerAction(ShotManagerActionInfo info);
         void ListImportableObjects();
     }
 }

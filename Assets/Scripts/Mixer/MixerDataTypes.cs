@@ -137,8 +137,7 @@ namespace VRtist
         public string shotName = "";
         public int shotStart = -1;
         public int shotEnd = -1;
-        public string cameraName = "";
-        public GameObject cam;
+        public GameObject camera;
         public Color shotColor = Color.black;
         public int moveOffset = 0;
         public int shotEnabled = -1;
@@ -152,8 +151,7 @@ namespace VRtist
                 shotName = shotName,
                 shotStart = shotStart,
                 shotEnd = shotEnd,
-                cameraName = cameraName,
-                cam = cam,
+                camera = camera,
                 shotColor = shotColor,
                 moveOffset = moveOffset,
                 shotEnabled = shotEnabled

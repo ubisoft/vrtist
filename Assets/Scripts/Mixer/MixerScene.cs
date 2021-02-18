@@ -56,7 +56,7 @@ namespace VRtist
             {
                 transform = gobject.transform
             };
-            CommandManager.SendEvent(MessageType.SendToTrash, trashInfo);
+            MixerClient.Instance.SendEvent<SendToTrashInfo>(MessageType.SendToTrash, trashInfo);
 
             gobject.transform.parent.SetParent(SceneManager.Trash.transform, false);
 
@@ -76,7 +76,7 @@ namespace VRtist
                 transform = gobject.transform,
                 parent = parent
             };
-            CommandManager.SendEvent(MessageType.RestoreFromTrash, trashInfo);
+            MixerClient.Instance.SendEvent<RestoreFromTrashInfo>(MessageType.RestoreFromTrash, trashInfo);
 
         }
 
@@ -88,14 +88,14 @@ namespace VRtist
                 srcObject = gobject,
                 dstObject = res
             };
-            CommandManager.SendEvent(MessageType.Duplicate, duplicateInfos);
+            MixerClient.Instance.SendEvent<DuplicateInfos>(MessageType.Duplicate, duplicateInfos);
 
             return res;
         }
 
         public void RenameObject(GameObject gobject, string newName)
         {
-            CommandManager.SendEvent(MessageType.Rename, new RenameInfo { srcTransform = gobject.transform, newName = gobject.name });
+            MixerClient.Instance.SendEvent<RenameInfo>(MessageType.Rename, new RenameInfo { srcTransform = gobject.transform, newName = gobject.name });
             SyncData.Rename(newName, gobject.name);
         }
 
@@ -105,7 +105,7 @@ namespace VRtist
             SyncData.SetTransform(gobject.name, matrix);
             foreach (var instance in SyncData.nodes[objectName].instances)
                 GlobalState.FireObjectMoving(instance.Item1);
-            CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
+            MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
         }
 
         public void SetObjectTransform(GameObject gobject, Vector3 position, Quaternion rotation, Vector3 scale)
@@ -114,7 +114,7 @@ namespace VRtist
             SyncData.SetTransform(objectName, position, rotation, scale);
             foreach (var instance in SyncData.nodes[objectName].instances)
                 GlobalState.FireObjectMoving(instance.Item1);
-            CommandManager.SendEvent(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
+            MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
         }
         public GameObject GetParent(GameObject gobject)
         {
@@ -137,8 +137,8 @@ namespace VRtist
         {
             MeshRenderer renderer = gobject.GetComponentInChildren<MeshRenderer>();
             renderer.material.name = $"Mat_{gobject.name}";
-            CommandManager.SendEvent(MessageType.Material, renderer.material);
-            CommandManager.SendEvent(MessageType.AssignMaterial, new AssignMaterialInfo { objectName = gobject.name, materialName = renderer.material.name });
+            MixerClient.Instance.SendEvent<Material>(MessageType.Material, renderer.material);
+            MixerClient.Instance.SendEvent<AssignMaterialInfo>(MessageType.AssignMaterial, new AssignMaterialInfo { objectName = gobject.name, materialName = renderer.material.name });
         }
 
         public void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue)
@@ -180,11 +180,77 @@ namespace VRtist
                 AddBlenderAsset(names[i], tags[i], thumbnails[i]);
             }
         }
+
         private void AddBlenderAsset(string name, string tags, string thumbnailPath)
         {
             GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(thumbnailPath, assetBank.OnUIObjectEnter, assetBank.OnUIObjectExit);
             assetBank.AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
         }
+
+        public void ClearObjectAnimations(GameObject gobject)
+        {
+            MixerClient.Instance.SendClearAnimations(new ClearAnimationInfo { gObject = gobject });
+        }
+
+        public void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        {
+            foreach (Curve curve in animationSet.curves.Values)
+            {
+                MixerClient.Instance.SendAnimationCurve(new CurveInfo { objectName = gobject.name, curve = curve });
+            }
+        }
+
+        public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        {
+            MixerClient.Instance.SendAddKeyframe(new SetKeyInfo { objectName = gobject.name, property = property, key = key });
+        }
+
+        public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        {
+            MixerClient.Instance.SendRemoveKeyframe(new SetKeyInfo { objectName = gobject.name, property = property, key = key });
+        }
+
+        public void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime)
+        {
+            MixerClient.Instance.SendMoveKeyframe(new MoveKeyInfo { objectName = gobject.name, property = property, frame = oldTime, newFrame = newTime });
+        }
+
+        public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
+        {
+            switch (constraintType)
+            {
+                case ConstraintType.Parent:
+                    MixerClient.Instance.SendAddParentConstraint(gobject, target);
+                    break;
+                case ConstraintType.LookAt:
+                    MixerClient.Instance.SendAddLookAtConstraint(gobject, target);
+                    break;
+            }
+        }
+
+        public void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType)
+        {
+            switch (constraintType)
+            {
+                case ConstraintType.Parent:
+                    MixerClient.Instance.SendRemoveParentConstraint(gobject);
+                    break;
+                case ConstraintType.LookAt:
+                    MixerClient.Instance.SendRemoveLookAtConstraint(gobject);
+                    break;
+            }
+        }
+
+        public void SetSky(SkySettings sky)
+        {
+            MixerClient.Instance.SendEvent<SkySettings>(MessageType.Sky, sky);
+        }
+
+        public void ApplyShotManagerAction(ShotManagerActionInfo info)
+        {
+            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+        }
+
         private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
         {
             requestedBlenderImportName = item.assetName;

@@ -26,15 +26,12 @@ namespace VRtist
 
         public override void Undo()
         {
-            GlobalState.Instance.SkySettings = oldSky;
-            MixerClient.Instance.SendEvent<SkySettings>(MessageType.Sky, oldSky);
-
+            SceneManager.SetSky(oldSky);
         }
 
         public override void Redo()
         {
-            GlobalState.Instance.SkySettings = newSky;
-            MixerClient.Instance.SendEvent<SkySettings>(MessageType.Sky, newSky);
+            SceneManager.SetSky(newSky);
         }
 
         public override void Submit()

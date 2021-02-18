@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace VRtist
+﻿namespace VRtist
 {
     /// <summary>
     /// Command manage shot manager.
@@ -40,7 +38,7 @@ namespace VRtist
                         data.shotStart = newData.shotStart;
                         data.shotEnd = newData.shotEnd;
                         data.shotColor = newData.shotColor;
-                        data.cameraName = newData.cameraName;
+                        data.camera = newData.camera;
                         data.shotEnabled = newData.shotEnabled;
                     }
                     break;
@@ -67,61 +65,7 @@ namespace VRtist
 
         private void Apply(ShotManagerActionInfo info)
         {
-            switch (info.action)
-            {
-                case ShotManagerAction.AddShot:
-                    {
-                        GameObject cam = null;
-                        if (info.cameraName.Length > 0)
-                            cam = info.cam;
-                        Shot shot = new Shot()
-                        {
-                            name = info.shotName,
-                            camera = cam,
-                            color = info.shotColor,
-                            start = info.shotStart,
-                            end = info.shotEnd,
-                            enabled = info.shotEnabled == 1
-                        };
-                        ShotManager.Instance.InsertShot(info.shotIndex + 1, shot);
-                    }
-                    break;
-                case ShotManagerAction.DeleteShot:
-                    {
-                        ShotManager.Instance.RemoveShot(info.shotIndex);
-                    }
-                    break;
-                case ShotManagerAction.DuplicateShot:
-                    {
-                        ShotManager.Instance.DuplicateShot(info.shotIndex);
-                    }
-                    break;
-                case ShotManagerAction.MoveShot:
-                    {
-                        ShotManager.Instance.SetCurrentShotIndex(info.shotIndex);
-                        ShotManager.Instance.MoveShot(info.shotIndex, info.moveOffset);
-                    }
-                    break;
-                case ShotManagerAction.UpdateShot:
-                    {
-                        Shot shot = ShotManager.Instance.shots[info.shotIndex];
-                        if (info.shotName.Length > 0)
-                            shot.name = info.shotName;
-                        if (info.cameraName.Length > 0)
-                            shot.camera = info.cam;
-                        if (info.shotColor.r != -1)
-                            shot.color = info.shotColor;
-                        if (info.shotStart != -1)
-                            shot.start = info.shotStart;
-                        if (info.shotEnd != -1)
-                            shot.end = info.shotEnd;
-                        if (info.shotEnabled != -1)
-                            shot.enabled = info.shotEnabled == 1;
-                    }
-                    break;
-            }
-            ShotManager.Instance.FireChanged();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
+            SceneManager.ApplyShotManagegrAction(info);
         }
 
         public override void Undo()
@@ -137,6 +81,7 @@ namespace VRtist
         public override void Submit()
         {
             CommandManager.AddCommand(this);
+            Redo();
         }
     }
 }

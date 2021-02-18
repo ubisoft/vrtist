@@ -193,7 +193,7 @@ namespace VRtist
             ShotManagerActionInfo info = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.AddShot,
-                cameraName = null != camera ? camera.name : "",
+                camera = camera,
                 shotIndex = shotIndex,
                 shotName = shot.name,
                 shotStart = start,
@@ -202,11 +202,8 @@ namespace VRtist
                 shotColor = Color.blue  // TODO: find a unique color
             };
             new CommandShotManager(info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
-
             // Add the shot to ShotManager singleton
             shotIndex++;
-            sm.InsertShot(shotIndex, shot);
             sm.SetCurrentShotIndex(shotIndex);
 
             // Rebuild UI
@@ -229,7 +226,7 @@ namespace VRtist
             {
                 action = ShotManagerAction.DeleteShot,
                 shotName = shot.name,
-                cameraName = shot.camera ? shot.camera.name : "",
+                camera = shot.camera,
                 shotStart = shot.start,
                 shotEnd = shot.end,
                 shotColor = shot.color,
@@ -240,8 +237,6 @@ namespace VRtist
             new CommandShotManager(info).Submit();
 
             sm.RemoveShot(shotIndex);
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
-
             // Rebuild UI
             OnShotManagerChanged();
         }
@@ -264,7 +259,7 @@ namespace VRtist
             ShotManagerActionInfo info = new ShotManagerActionInfo
             {
                 action = ShotManagerAction.AddShot,
-                cameraName = null != shot.camera ? shot.camera.name : "",
+                camera = shot.camera,
                 shotIndex = shotIndex,
                 shotName = shot.name,
                 shotStart = shot.start,
@@ -273,11 +268,9 @@ namespace VRtist
                 shotColor = Color.blue  // TODO: find a unique color
             };
             new CommandShotManager(info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Add the shot to ShotManager singleton
             shotIndex++;
-            sm.InsertShot(shotIndex, shot);
             sm.SetCurrentShotIndex(shotIndex);
 
             // Rebuild UI
@@ -295,7 +288,6 @@ namespace VRtist
                 return;
             if (offset > 0 && shotIndex >= (sm.shots.Count - 1))
                 return;
-            sm.MoveShot(shotIndex, offset);
 
             // Send network message
             ShotManagerActionInfo info = new ShotManagerActionInfo
@@ -305,8 +297,7 @@ namespace VRtist
                 moveOffset = offset
             };
             new CommandShotManager(info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
-
+            shotList.CurrentIndex = shotIndex + offset;
             // Rebuild UI
             OnShotManagerChanged();
         }
@@ -332,7 +323,6 @@ namespace VRtist
             shot.start = intValue;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             UpdateShotItemsColors(GlobalState.Animation.CurrentFrame);
         }
@@ -359,7 +349,6 @@ namespace VRtist
             shot.end = intValue;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             UpdateShotItemsColors(GlobalState.Animation.CurrentFrame);
         }
@@ -381,7 +370,6 @@ namespace VRtist
             shot.name = value;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
             OnShotManagerChanged();
         }
 
@@ -402,8 +390,6 @@ namespace VRtist
             shot.color = value;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
-
         }
 
         public void OnUpdateShotEnabled(Shot shot, bool value)
@@ -425,7 +411,6 @@ namespace VRtist
             shot.enabled = value;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
         public void OnSetCamera(Shot shot)
@@ -436,19 +421,20 @@ namespace VRtist
             {
                 action = ShotManagerAction.UpdateShot,
                 shotIndex = shotIndex,
-                cameraName = shot.camera == null ? "" : shot.camera.name
+                camera = shot.camera,
             };
 
             ShotManagerActionInfo info = oldInfo.Copy();
-            info.cameraName = CameraManager.Instance.ActiveCamera == null ? "" : CameraManager.Instance.ActiveCamera.name;
-            shot.camera = CameraManager.Instance.ActiveCamera;
+            info.camera = CameraManager.Instance.ActiveCamera;
 
             new CommandShotManager(oldInfo, info).Submit();
-            MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
 
             // Update Camera UI Button
             ShotItem uiItem = GetShotItem(shotIndex);
-            uiItem.cameraNameLabel.Text = info.cameraName;
+            if (null != info.camera)
+                uiItem.cameraNameLabel.Text = info.camera.name;
+            else
+                uiItem.cameraNameLabel.Text = "";
         }
     }
 }

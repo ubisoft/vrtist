@@ -21,32 +21,12 @@ namespace VRtist
 
         public override void Undo()
         {
-            switch (constraintType)
-            {
-                case ConstraintType.Parent:
-                    ConstraintManager.RemoveConstraint<ParentConstraint>(gobject);
-                    MixerClient.Instance.SendRemoveParentConstraint(gobject);
-                    break;
-                case ConstraintType.LookAt:
-                    ConstraintManager.RemoveConstraint<LookAtConstraint>(gobject);
-                    MixerClient.Instance.SendRemoveLookAtConstraint(gobject);
-                    break;
-            }
+            SceneManager.RemoveObjectConstraint(gobject, constraintType);
         }
 
         public override void Redo()
         {
-            switch (constraintType)
-            {
-                case ConstraintType.Parent:
-                    ConstraintManager.AddParentConstraint(gobject, target);
-                    MixerClient.Instance.SendAddParentConstraint(gobject, target);
-                    break;
-                case ConstraintType.LookAt:
-                    ConstraintManager.AddLookAtConstraint(gobject, target);
-                    MixerClient.Instance.SendAddLookAtConstraint(gobject, target);
-                    break;
-            }
+            SceneManager.AddObjectConstraint(gobject, constraintType, target);
         }
 
         public override void Submit()
@@ -80,32 +60,12 @@ namespace VRtist
 
         public override void Redo()
         {
-            switch (constraintType)
-            {
-                case ConstraintType.Parent:
-                    ConstraintManager.RemoveConstraint<ParentConstraint>(gobject);
-                    MixerClient.Instance.SendRemoveParentConstraint(gobject);
-                    break;
-                case ConstraintType.LookAt:
-                    ConstraintManager.RemoveConstraint<LookAtConstraint>(gobject);
-                    MixerClient.Instance.SendRemoveLookAtConstraint(gobject);
-                    break;
-            }
+            SceneManager.RemoveObjectConstraint(gobject, constraintType);
         }
 
         public override void Undo()
         {
-            switch (constraintType)
-            {
-                case ConstraintType.Parent:
-                    ConstraintManager.AddParentConstraint(gobject, target);
-                    MixerClient.Instance.SendAddParentConstraint(gobject, target);
-                    break;
-                case ConstraintType.LookAt:
-                    ConstraintManager.AddLookAtConstraint(gobject, target);
-                    MixerClient.Instance.SendAddLookAtConstraint(gobject, target);
-                    break;
-            }
+            SceneManager.AddObjectConstraint(gobject, constraintType, target);
         }
 
         public override void Submit()

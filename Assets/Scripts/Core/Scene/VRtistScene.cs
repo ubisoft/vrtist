@@ -89,6 +89,34 @@ namespace VRtist
         {
             Utils.SetMaterialValue(gobject, materialValue);
         }
+        public void ClearObjectAnimations(GameObject gobject)
+        {
+        }
+        public void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        {
+        }
+        public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        {
+        }
+        public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        {
+        }
+        public void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime)
+        {
+        }
+
+        public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
+        {
+        }
+        public void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType)
+        {
+        }
+        public void SetSky(SkySettings sky)
+        {
+        }
+        public void ApplyShotManagerAction(ShotManagerActionInfo info)
+        {
+        }
 
         public void ListImportableObjects()
         {

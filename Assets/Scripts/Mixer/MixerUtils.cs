@@ -713,13 +713,13 @@ namespace VRtist
                 collectionName = "VRtistCollection",
                 transform = gObject.transform
             };
-            CommandManager.SendEvent(MessageType.AddObjectToCollection, addObjectToCollection);
+            MixerClient.Instance.SendEvent<AddToCollectionInfo>(MessageType.AddObjectToCollection, addObjectToCollection);
 
             AddObjectToSceneInfo addObjectToScene = new AddObjectToSceneInfo
             {
                 transform = gObject.transform
             };
-            CommandManager.SendEvent(MessageType.AddObjectToScene, addObjectToScene);
+            MixerClient.Instance.SendEvent<AddObjectToSceneInfo>(MessageType.AddObjectToScene, addObjectToScene);
         }
         public static NetCommand BuildEmptyCommand(Transform root, Transform transform)
         {
@@ -1320,7 +1320,7 @@ namespace VRtist
                         shotName = Converter.StringToBytes(info.shotName);
                         start = Converter.IntToBytes(info.shotStart);
                         end = Converter.IntToBytes(info.shotEnd);
-                        camera = Converter.StringToBytes(info.cameraName);
+                        camera = Converter.StringToBytes(info.camera.name);
                         color = Converter.ColorToBytes(info.shotColor);
                         buffers = new List<byte[]> { action, nextShotIndex, shotName, start, end, camera, color };
                         command = new NetCommand(Converter.ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
@@ -1343,7 +1343,7 @@ namespace VRtist
                 case ShotManagerAction.UpdateShot:
                     start = Converter.IntToBytes(info.shotStart);
                     end = Converter.IntToBytes(info.shotEnd);
-                    camera = Converter.StringToBytes(info.cameraName);
+                    camera = Converter.StringToBytes(info.camera.name);
                     color = Converter.ColorToBytes(info.shotColor);
                     enabled = Converter.IntToBytes(info.shotEnabled);
                     buffers = new List<byte[]> { action, shotIndex, start, end, camera, color, enabled };

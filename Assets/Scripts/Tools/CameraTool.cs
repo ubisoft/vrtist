@@ -497,7 +497,7 @@ namespace VRtist
         {
             CameraInfo cameraInfo = new CameraInfo();
             cameraInfo.transform = camera.transform;
-            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+            MixerClient.Instance.SendEvent<CameraInfo>(MessageType.Camera, cameraInfo);
         }
 
         protected override void DoUpdate()

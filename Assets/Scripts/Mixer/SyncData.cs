@@ -1038,7 +1038,8 @@ namespace VRtist
             {
                 transform = gObject.transform
             };
-            CommandManager.SendEvent(MessageType.Light, lightInfo);
+            MixerClient.Instance.SendEvent<LightInfo>(MessageType.Light, lightInfo);
+            MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, gObject.transform);
             MixerUtils.AddObjectToScene(gObject);
         }
 
@@ -1048,8 +1049,8 @@ namespace VRtist
             {
                 transform = gObject.transform
             };
-            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
-            CommandManager.SendEvent(MessageType.Transform, gObject.transform);
+            MixerClient.Instance.SendEvent<CameraInfo>(MessageType.Camera, cameraInfo);
+            MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, gObject.transform);
             MixerUtils.AddObjectToScene(gObject);
         }
 
@@ -1064,11 +1065,11 @@ namespace VRtist
 
             foreach (Material mat in meshInfos.meshRenderer.materials)
             {
-                CommandManager.SendEvent(MessageType.Material, mat);
+                MixerClient.Instance.SendEvent<Material>(MessageType.Material, mat);
             }
 
-            CommandManager.SendEvent(MessageType.Mesh, meshInfos);
-            CommandManager.SendEvent(MessageType.Transform, gObject.transform);
+            MixerClient.Instance.SendEvent<MeshInfos>(MessageType.Mesh, meshInfos);
+            MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, gObject.transform);
 
             MixerUtils.AddObjectToScene(gObject);
         }

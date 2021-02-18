@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Events;
 
 namespace VRtist
@@ -133,6 +134,127 @@ namespace VRtist
             Instance.scene.SetObjectMaterialValue(gobject, materialValue);
         }
 
+        // Animation
+        public static void ClearObjectAnimations(GameObject gobject)
+        {
+            GlobalState.Animation.ClearAnimations(gobject);
+            Instance.scene.ClearObjectAnimations(gobject);
+        }
+        public static void SetObjectAnimation(GameObject gobject, AnimationSet animationSet)
+        {
+            GlobalState.Animation.SetObjectAnimation(gobject, animationSet);
+            Instance.scene.SetObjectAnimation(gobject, animationSet);
+        }
+        public static void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        {
+            GlobalState.Animation.AddFilteredKeyframe(gobject, property, key);
+            Instance.scene.AddKeyframe(gobject, property, key);
+        }
+        public static void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        {
+            GlobalState.Animation.RemoveKeyframe(gobject, property, key.frame);
+            Instance.scene.RemoveKeyframe(gobject, property, key);
+        }
+        public static void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime)
+        {
+            GlobalState.Animation.MoveKeyframe(gobject, property, oldTime, newTime);
+            Instance.scene.MoveKeyframe(gobject, property, oldTime, newTime);
+        }
+
+        // Constraints
+        public static void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
+        {
+            switch (constraintType)
+            {
+                case ConstraintType.Parent:
+                    ConstraintManager.AddParentConstraint(gobject, target);
+                    break;
+                case ConstraintType.LookAt:
+                    ConstraintManager.AddLookAtConstraint(gobject, target);
+                    break;
+            }
+
+            Instance.scene.AddObjectConstraint(gobject, constraintType, target);
+        }
+        public static void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType)
+        {
+            switch (constraintType)
+            {
+                case ConstraintType.Parent:
+                    ConstraintManager.RemoveConstraint<ParentConstraint>(gobject);
+                    break;
+                case ConstraintType.LookAt:
+                    ConstraintManager.RemoveConstraint<LookAtConstraint>(gobject);
+                    break;
+            }
+
+            Instance.scene.RemoveObjectConstraint(gobject, constraintType);
+        }
+
+        // Sky
+        public static void SetSky(SkySettings sky)
+        {
+            GlobalState.Instance.SkySettings = sky;
+            Instance.scene.SetSky(sky);
+        }
+
+        // Shot Manager
+        public static void ApplyShotManagegrAction(ShotManagerActionInfo info)
+        {
+            switch (info.action)
+            {
+                case ShotManagerAction.AddShot:
+                    {
+                        GameObject cam = info.camera;
+                        Shot shot = new Shot()
+                        {
+                            name = info.shotName,
+                            camera = cam,
+                            color = info.shotColor,
+                            start = info.shotStart,
+                            end = info.shotEnd,
+                            enabled = info.shotEnabled == 1
+                        };
+                        ShotManager.Instance.InsertShot(info.shotIndex + 1, shot);
+                    }
+                    break;
+                case ShotManagerAction.DeleteShot:
+                    {
+                        ShotManager.Instance.RemoveShot(info.shotIndex);
+                    }
+                    break;
+                case ShotManagerAction.DuplicateShot:
+                    {
+                        ShotManager.Instance.DuplicateShot(info.shotIndex);
+                    }
+                    break;
+                case ShotManagerAction.MoveShot:
+                    {
+                        ShotManager.Instance.SetCurrentShotIndex(info.shotIndex);
+                        ShotManager.Instance.MoveShot(info.shotIndex, info.moveOffset);
+                    }
+                    break;
+                case ShotManagerAction.UpdateShot:
+                    {
+                        Shot shot = ShotManager.Instance.shots[info.shotIndex];
+                        if (info.shotName.Length > 0)
+                            shot.name = info.shotName;
+                        if (null != info.camera)
+                            shot.camera = info.camera;
+                        if (info.shotColor.r != -1)
+                            shot.color = info.shotColor;
+                        if (info.shotStart != -1)
+                            shot.start = info.shotStart;
+                        if (info.shotEnd != -1)
+                            shot.end = info.shotEnd;
+                        if (info.shotEnabled != -1)
+                            shot.enabled = info.shotEnabled == 1;
+                    }
+                    break;
+            }
+            ShotManager.Instance.FireChanged();
+            Instance.scene.ApplyShotManagerAction(info);
+        }
         public static void ListImportableObjects()
         {
             Instance.scene.ListImportableObjects();

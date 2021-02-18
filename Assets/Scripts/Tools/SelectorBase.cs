@@ -537,7 +537,7 @@ namespace VRtist
         {
             CameraInfo cameraInfo = new CameraInfo();
             cameraInfo.transform = cameraController.gameObject.transform;
-            CommandManager.SendEvent(MessageType.Camera, cameraInfo);
+            MixerClient.Instance.SendEvent<CameraInfo>(MessageType.Camera, cameraInfo);
         }
 
         protected void ManageCamerasFocalsUndo()
@@ -1131,7 +1131,7 @@ namespace VRtist
                         SceneManager.SetObjectMatrix(obj, mat);
 
                         // Send a live sync while moving
-                        CommandManager.SendEvent(MessageType.Transform, obj.transform);
+                        MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, obj.transform);
                         GlobalState.FireObjectMoving(obj);
                     }
                 }

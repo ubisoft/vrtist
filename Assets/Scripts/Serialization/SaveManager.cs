@@ -379,7 +379,11 @@ namespace VRtist.Serialization
                     end = shot.end,
                     enabled = shot.enabled
                 };
-                Utils.GetTransformRelativePathTo(shot.camera.transform, rootTransform, out shotData.cameraName);
+
+                shotData.cameraName = "";
+                if (null != shot.camera)
+                    Utils.GetTransformRelativePathTo(shot.camera.transform, rootTransform, out shotData.cameraName);
+
                 SceneData.Current.shots.Add(shotData);
             }
         }
@@ -828,11 +832,16 @@ namespace VRtist.Serialization
 
         private void LoadShot(ShotData data)
         {
-            Transform cameraTransform = rootTransform.Find(data.cameraName);
-            if (null == cameraTransform)
+            GameObject cam = null;
+            if (data.cameraName.Length > 0)
             {
-                Debug.LogWarning($"Object name not found for camera: {data.cameraName}");
-                return;
+                Transform cameraTransform = rootTransform.Find(data.cameraName);
+                if (null == cameraTransform)
+                {
+                    Debug.LogWarning($"Object name not found for camera: {data.cameraName}");
+                    return;
+                }
+                cam = cameraTransform.gameObject;
             }
 
             ShotManager.Instance.AddShot(new Shot
@@ -841,7 +850,7 @@ namespace VRtist.Serialization
                 start = data.start,
                 end = data.end,
                 enabled = data.enabled,
-                camera = cameraTransform.gameObject
+                camera = cam
             });
         }
         #endregion

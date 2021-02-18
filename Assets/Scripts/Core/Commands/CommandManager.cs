@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using UnityEngine;
-
 namespace VRtist
 {
     /// <summary>
@@ -31,15 +29,6 @@ namespace VRtist
 
             componentName = values[count - 2];
             fieldName = values[count - 1];
-        }
-
-        protected void SendDelete(GameObject gObject)
-        {
-            DeleteInfo deleteInfo = new DeleteInfo
-            {
-                meshTransform = gObject.transform
-            };
-            CommandManager.SendEvent(MessageType.Delete, deleteInfo);
         }
 
         protected string name;
@@ -165,11 +154,6 @@ namespace VRtist
             groupStack.Clear();
             Selection.ClearSelection();
             currentGroup = null;
-        }
-
-        public static void SendEvent<T>(MessageType messageType, T data)
-        {
-            MixerClient.Instance.SendEvent<T>(messageType, data);
         }
     }
 }

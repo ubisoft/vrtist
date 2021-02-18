@@ -59,14 +59,6 @@ namespace VRtist
             newValue.metallic = metallic;
         }
 
-        private void InformModification(GameObject gobject)
-        {
-            MeshRenderer renderer = gobject.GetComponentInChildren<MeshRenderer>();
-            renderer.material.name = $"Mat_{gobject.name}";
-            CommandManager.SendEvent(MessageType.Material, renderer.material);
-            CommandManager.SendEvent(MessageType.AssignMaterial, new AssignMaterialInfo { objectName = gobject.name, materialName = renderer.material.name });
-        }
-
         public override void Redo()
         {
             foreach (GameObject gobject in oldValues.Keys)
