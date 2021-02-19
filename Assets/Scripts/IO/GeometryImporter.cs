@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+
 using UnityEngine;
 
 namespace VRtist
@@ -30,9 +31,9 @@ namespace VRtist
             objectLoaded.Invoke(e.Root.gameObject);
         }
 
-        public void ImportObject(string filename, Transform parent)
+        public void ImportObject(string filename, Transform parent, bool synchronous = false)
         {
-            importer.Import(filename, parent);
+            importer.Import(filename, parent, synchronous);
         }
 
         public Task<GameObject> ImportObjectAsync(string filename, Transform parent)

@@ -357,6 +357,8 @@ namespace VRtist
         public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
             animations[gobject] = animationSet;
+            foreach (Curve curve in animationSet.curves.Values)
+                curve.ComputeCache();
             onAddAnimation.Invoke(gobject);
         }
 

@@ -644,7 +644,7 @@ namespace VRtist.Serialization
             return materials;
         }
 
-        private async void LoadObject(ObjectData data)
+        private void LoadObject(ObjectData data)
         {
             GameObject gobject;
             string absoluteMeshPath;
@@ -657,7 +657,10 @@ namespace VRtist.Serialization
                 {
                     importedParent = new GameObject("__VRtist_tmp_load__").transform;
                     absoluteMeshPath = data.meshPath;
-                    gobject = await GlobalState.GeometryImporter.ImportObjectAsync(absoluteMeshPath, importedParent);
+                    GlobalState.GeometryImporter.ImportObject(absoluteMeshPath, importedParent, true);
+                    if (importedParent.childCount == 0)
+                        return;
+                    gobject = importedParent.GetChild(0).gameObject; // Get first child .
                 }
                 catch (System.Exception e)
                 {
@@ -807,9 +810,10 @@ namespace VRtist.Serialization
                 {
                     keys.Add(new AnimationKey(keyData.frame, keyData.value, keyData.interpolation));
                 }
+
                 animSet.SetCurve(curve.property, keys);
             }
-            AnimationEngine.Instance.SetObjectAnimations(gobject, animSet);
+            SceneManager.SetObjectAnimations(gobject, animSet);
         }
 
         private void LoadConstraint(ConstraintData data)

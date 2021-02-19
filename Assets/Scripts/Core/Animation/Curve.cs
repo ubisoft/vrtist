@@ -114,6 +114,13 @@ namespace VRtist
                 lastKeyIndex = i;
             }
 
+            if (keys.Count == 1)
+            {
+                int frame = keys[0].frame;
+                if (frame <= GlobalState.Animation.EndFrame)
+                    firstKeyFoundInRange = true;
+            }
+
             // found no key in range
             if (!firstKeyFoundInRange)
             {
