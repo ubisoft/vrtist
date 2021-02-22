@@ -248,8 +248,7 @@ namespace VRtist
 
         public void SendLightParams(GameObject light)
         {
-            LightInfo lightInfo = new LightInfo { transform = light.transform };
-            MixerClient.Instance.SendEvent<LightInfo>(MessageType.Light, lightInfo);
+            SceneManager.SendLight(light.transform);
         }
 
         public void OnLightColor(Color color)

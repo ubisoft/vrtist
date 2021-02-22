@@ -157,6 +157,16 @@ namespace VRtist
             MixerUtils.materialsParameters[materialName] = materialParameters;
         }
 
+        public void SendCamera(Transform camera)
+        {
+            MixerClient.Instance.SendEvent(MessageType.Camera, new CameraInfo { transform = camera });
+        }
+
+        public void SendLight(Transform light)
+        {
+            MixerClient.Instance.SendEvent(MessageType.Light, new LightInfo { transform = light });
+        }
+
         public void ListImportableObjects()
         {
             assetBank = ToolsManager.GetTool("AssetBank").GetComponent<AssetBank>();
@@ -194,6 +204,15 @@ namespace VRtist
             assetBank.AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
         }
 
+        private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
+        {
+            requestedBlenderImportName = item.assetName;
+            blenderImportTask = new TaskCompletionSource<GameObject>();
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
+            MixerClient.Instance.SendBlenderBank(info);
+            return blenderImportTask.Task;
+        }
+
         public void ClearObjectAnimations(GameObject gobject)
         {
             MixerClient.Instance.SendClearAnimations(new ClearAnimationInfo { gObject = gobject });
@@ -220,6 +239,12 @@ namespace VRtist
         public void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime)
         {
             MixerClient.Instance.SendMoveKeyframe(new MoveKeyInfo { objectName = gobject.name, property = property, frame = oldTime, newFrame = newTime });
+        }
+
+        public void SetFrameRange(int start, int end)
+        {
+            FrameStartEnd info = new FrameStartEnd() { start = start, end = end };
+            MixerClient.Instance.SendEvent(MessageType.FrameStartEnd, info);
         }
 
         public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
@@ -258,14 +283,14 @@ namespace VRtist
             MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
-        private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
+        public void SendUserInfo()
         {
-            requestedBlenderImportName = item.assetName;
-            blenderImportTask = new TaskCompletionSource<GameObject>();
-            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
-            MixerClient.Instance.SendBlenderBank(info);
-            return blenderImportTask.Task;
+            MixerClient.Instance.SendPlayerTransform(GlobalState.networkUser);
         }
 
+        public void RemoteSave()
+        {
+            MixerClient.Instance.SendBlenderSave();
+        }
     }
 }

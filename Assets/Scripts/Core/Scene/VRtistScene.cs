@@ -97,6 +97,10 @@ namespace VRtist
 
         public void AddMaterialParameters(string materialName, MaterialParameters materialParameters) { }
 
+        public void SendCamera(Transform camera) { }
+
+        public void SendLight(Transform light) { }
+
         public void ClearObjectAnimations(GameObject gobject)
         {
         }
@@ -117,6 +121,8 @@ namespace VRtist
         {
         }
 
+        public void SetFrameRange(int start, int end) { }
+
         public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
         {
         }
@@ -136,5 +142,9 @@ namespace VRtist
         public void ListImportableObjects()
         {
         }
+
+        public void SendUserInfo() { }
+
+        public void RemoteSave() { }
     }
 }

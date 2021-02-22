@@ -52,23 +52,20 @@ namespace VRtist
         private CommandSetValue<float> cameraFocalCommand = null;
         private bool joystickScaling = false;
 
-        private GameObject ATooltip = null;
-        private string prevATooltipText;
-
         // snap parameters
         [Header("Snap Parameters")]
         protected Ray[] snapRays;
         static protected bool isSnapping = false;
         static protected bool isSnappingToGround = false;
-        private float snapDistance = 0.03f;
-        private float epsilonDistance = 0.0001f;
-        private float snapVisibleRayFactor = 3f;
+        private readonly float snapDistance = 0.03f;
+        private readonly float epsilonDistance = 0.0001f;
+        private readonly float snapVisibleRayFactor = 3f;
         private Transform[] planes;
         private LineRenderer[] planeLines;
         protected GameObject boundingBox;
         protected GameObject snapUIContainer;
         private Transform[] snapTargets;
-        private float cameraSpaceGap = 0.0001f;
+        private readonly float cameraSpaceGap = 0.0001f;
         [CentimeterFloat] public float collidersThickness = 0.05f;
         private Vector3 minBound = Vector3.positiveInfinity;
         private Vector3 maxBound = Vector3.negativeInfinity;
@@ -91,7 +88,7 @@ namespace VRtist
             public Vector3 position;
             public Quaternion rotation;
         }
-        List<ControllerDamping> damping = new List<ControllerDamping>();
+        readonly List<ControllerDamping> damping = new List<ControllerDamping>();
         protected Vector3 rightControllerPosition;
         protected Quaternion rightControllerRotation;
 
@@ -184,7 +181,7 @@ namespace VRtist
             mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
             selectorTrigger = mouthpiece.GetComponent<SelectorTrigger>();
 
-            updateButtonsColor();
+            UpdateButtonsColor();
 
             dopesheet = GameObject.FindObjectOfType<Dopesheet>(true);
             UnityEngine.Assertions.Assert.IsNotNull(dopesheet);
@@ -217,9 +214,6 @@ namespace VRtist
         }
         private void OnAnimationStateChanged(AnimationState state)
         {
-            if (null == ATooltip)
-                return;
-
             if (state == AnimationState.Recording)
             {
                 Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Stop Record");
@@ -330,10 +324,12 @@ namespace VRtist
             uvs[3] = new Vector2(0, 1);
 
             int[] indices = { 0, 1, 2, 0, 2, 3 };
-            Mesh mesh = new Mesh();
-            mesh.vertices = vertices;
-            mesh.uv = uvs;
-            mesh.triangles = indices;
+            Mesh mesh = new Mesh
+            {
+                vertices = vertices,
+                uv = uvs,
+                triangles = indices
+            };
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
@@ -487,7 +483,6 @@ namespace VRtist
             Selection.AuxiliarySelection = null;
         }
 
-
         protected void ManageAutoKeyframe()
         {
             if (!GlobalState.Animation.autoKeyEnabled)
@@ -535,9 +530,7 @@ namespace VRtist
 
         protected void SendCameraFocal(CameraController cameraController)
         {
-            CameraInfo cameraInfo = new CameraInfo();
-            cameraInfo.transform = cameraController.gameObject.transform;
-            MixerClient.Instance.SendEvent<CameraInfo>(MessageType.Camera, cameraInfo);
+            SceneManager.SendCamera(cameraController.gameObject.transform);
         }
 
         protected void ManageCamerasFocalsUndo()
@@ -623,9 +616,7 @@ namespace VRtist
 
         private void GetControllerPositionRotation()
         {
-            Vector3 position;
-            Quaternion rotation;
-            VRInput.GetControllerTransform(VRInput.primaryController, out position, out rotation);
+            VRInput.GetControllerTransform(VRInput.primaryController, out Vector3 position, out Quaternion rotation);
 
             if (!HasDamping())
             {
@@ -636,14 +627,14 @@ namespace VRtist
             }
 
             // Compute damping
-            float curretnTime = Time.time;
-            ControllerDamping dampingElement = new ControllerDamping(curretnTime, position, rotation);
+            float currentTime = Time.time;
+            ControllerDamping dampingElement = new ControllerDamping(currentTime, position, rotation);
             damping.Add(dampingElement);
 
             // remove too old values
             ControllerDamping elem = damping[0];
             float dampingDuration = GlobalState.Settings.cameraDamping / 100f * 0.5f;
-            while (curretnTime - elem.time > dampingDuration)
+            while (currentTime - elem.time > dampingDuration)
             {
                 damping.RemoveAt(0);
                 elem = damping[0];
@@ -652,7 +643,7 @@ namespace VRtist
             Vector3 positionSum = Vector3.zero;
             Quaternion rotationSum = Quaternion.identity;
             rotationSum.w = 0f;
-            float count = (float)damping.Count;
+            float count = damping.Count;
             float factor = 1f / count;
             foreach (ControllerDamping dampingElem in damping)
             {
@@ -1102,7 +1093,7 @@ namespace VRtist
                 if (ConstraintManager.IsLocked(obj)) { continue; }
 
                 var meshParentTransform = obj.transform.parent;
-                Matrix4x4 meshParentMatrixInverse = new Matrix4x4();
+                Matrix4x4 meshParentMatrixInverse;
                 if (meshParentTransform)
                     meshParentMatrixInverse = meshParentTransform.worldToLocalMatrix;
                 else
@@ -1127,12 +1118,7 @@ namespace VRtist
                         // TODO
 
                         OnPreTransformSelection(obj.transform, ref mat);
-                        // Set matrix
                         SceneManager.SetObjectMatrix(obj, mat);
-
-                        // Send a live sync while moving
-                        MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, obj.transform);
-                        GlobalState.FireObjectMoving(obj);
                     }
                 }
             }
@@ -1337,14 +1323,14 @@ namespace VRtist
         {
             mode = SelectorModes.Select;
             mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", selectionColor);
-            updateButtonsColor();
+            UpdateButtonsColor();
         }
 
         public void OnEraserMode()
         {
             mode = SelectorModes.Eraser;
             mouthpiece.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", eraseColor);
-            updateButtonsColor();
+            UpdateButtonsColor();
         }
 
         public Color GetModeColor()
@@ -1353,7 +1339,7 @@ namespace VRtist
             return eraseColor;
         }
 
-        void updateButtonsColor()
+        void UpdateButtonsColor()
         {
             if (!panel)
                 return;

@@ -155,11 +155,7 @@ namespace VRtist
                     GlobalState.networkUser.corners[2] = rightHanded.InverseTransformPoint(bottomRight);
                     GlobalState.networkUser.corners[3] = rightHanded.InverseTransformPoint(bottomLeft);
 
-                    // TODO: fix this. Instance is sometimes null, even if retrieved in Awake.
-                    if (MixerClient.Instance)
-                    {
-                        MixerClient.Instance.SendPlayerTransform(GlobalState.networkUser);
-                    }
+                    SceneManager.SendUserInfo();
                 }
                 yield return new WaitForSeconds(1f / 15f);
             }
@@ -430,43 +426,55 @@ namespace VRtist
         public void OnNavMode_BiManual()
         {
             // TODO: Scriptable NEW ou CreateInstance(SO), ou avoir une liste de SO dans PlayerController.
-            options.currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale);
-            options.currentNavigationMode.options = options;
+            options.currentNavigationMode = new NavigationMode_BiManual(lineUI, minPlayerScale, maxPlayerScale)
+            {
+                options = options
+            };
             options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Teleport()
         {
-            options.currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams);
-            options.currentNavigationMode.options = options;
+            options.currentNavigationMode = new NavigationMode_Teleport(teleport, trajectoryParams)
+            {
+                options = options
+            };
             options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Orbit()
         {
-            options.currentNavigationMode = new NavigationMode_Orbit(ray, options.orbitRotationalSpeed, options.orbitScaleSpeed, options.orbitMoveSpeed, minPlayerScale, maxPlayerScale);
-            options.currentNavigationMode.options = options;
+            options.currentNavigationMode = new NavigationMode_Orbit(ray, options.orbitRotationalSpeed, options.orbitScaleSpeed, options.orbitMoveSpeed, minPlayerScale, maxPlayerScale)
+            {
+                options = options
+            };
             options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fps()
         {
-            options.currentNavigationMode = new NavigationMode_FPS();
-            options.currentNavigationMode.options = options;
+            options.currentNavigationMode = new NavigationMode_FPS
+            {
+                options = options
+            };
             options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Drone()
         {
-            options.currentNavigationMode = new NavigationMode_Drone();
-            options.currentNavigationMode.options = options;
+            options.currentNavigationMode = new NavigationMode_Drone
+            {
+                options = options
+            };
             options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
         public void OnNavMode_Fly()
         {
-            options.currentNavigationMode = new NavigationMode_Fly(options.flySpeed, minPlayerScale, maxPlayerScale);
-            options.currentNavigationMode.options = options;
+            options.currentNavigationMode = new NavigationMode_Fly(options.flySpeed, minPlayerScale, maxPlayerScale)
+            {
+                options = options
+            };
             options.currentNavigationMode.Init(transform, world, paletteController, toolsController, pivot, vrCamera, navigationParametersContainer);
         }
 
@@ -542,10 +550,10 @@ namespace VRtist
 
         #endregion
 
-        private bool IsCompatibleWithPalette(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_TRIGGER); }
-        private bool IsCompatibleWithUndoRedo(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_PRIMARY | NavigationMode.UsedControls.LEFT_SECONDARY); }
-        private bool IsCompatibleWithReset(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_JOYSTICK_CLICK); }
-        private bool IsCompatibleWithResetScale(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK_CLICK); }
-        private bool IsCompatibleWithTimeManipulation(NavigationMode n) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_JOYSTICK); }
+        private bool IsCompatibleWithPalette(NavigationMode _) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_TRIGGER); }
+        private bool IsCompatibleWithUndoRedo(NavigationMode _) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_PRIMARY | NavigationMode.UsedControls.LEFT_SECONDARY); }
+        private bool IsCompatibleWithReset(NavigationMode _) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_JOYSTICK_CLICK); }
+        private bool IsCompatibleWithResetScale(NavigationMode _) { return options.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK_CLICK); }
+        private bool IsCompatibleWithTimeManipulation(NavigationMode _) { return options.CanUseControls(NavigationMode.UsedControls.LEFT_JOYSTICK); }
     }
 }

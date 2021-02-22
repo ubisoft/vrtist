@@ -49,7 +49,7 @@ namespace VRtist
             public Interpolation interpolation;
         }
 
-        private SortedList<int, List<AnimKey>> keys = new SortedList<int, List<AnimKey>>();
+        private readonly SortedList<int, List<AnimKey>> keys = new SortedList<int, List<AnimKey>>();
         private bool listenerAdded = false;
 
         void Start()
@@ -121,10 +121,7 @@ namespace VRtist
 
         public void OnGlobalRangeChanged(Vector2Int globalBounds)
         {
-            GlobalState.Animation.StartFrame = globalBounds.x;
-            GlobalState.Animation.EndFrame = globalBounds.y;
-            FrameStartEnd info = new FrameStartEnd() { start = globalBounds.x, end = globalBounds.y };
-            MixerClient.Instance.SendEvent<FrameStartEnd>(MessageType.FrameStartEnd, info);
+            SceneManager.SetFrameRange(globalBounds.x, globalBounds.y);
         }
 
         public void OnLocalRangeChanged(Vector2Int bounds)
@@ -252,8 +249,7 @@ namespace VRtist
             // Take only one curve (the first one) to add keys
             foreach (AnimationKey key in animationSet.curves[0].keys)
             {
-                List<AnimKey> keyList = null;
-                if (!keys.TryGetValue(key.frame, out keyList))
+                if (!keys.TryGetValue(key.frame, out List<AnimKey> keyList))
                 {
                     keyList = new List<AnimKey>();
                     keys[key.frame] = keyList;

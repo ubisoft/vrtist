@@ -148,6 +148,16 @@ namespace VRtist
             Instance.scene.AddMaterialParameters(materialName, materialParameters);
         }
 
+        public static void SendCamera(Transform camera)
+        {
+            Instance.scene.SendCamera(camera);
+        }
+
+        public static void SendLight(Transform light)
+        {
+            Instance.scene.SendLight(light);
+        }
+
         // Animation
         public static void ClearObjectAnimations(GameObject gobject)
         {
@@ -177,6 +187,13 @@ namespace VRtist
         {
             GlobalState.Animation.MoveKeyframe(gobject, property, oldTime, newTime);
             Instance.scene.MoveKeyframe(gobject, property, oldTime, newTime);
+        }
+
+        public static void SetFrameRange(int start, int end)
+        {
+            GlobalState.Animation.StartFrame = start;
+            GlobalState.Animation.EndFrame = end;
+            Instance.scene.SetFrameRange(start, end);
         }
 
         // Constraints
@@ -272,17 +289,34 @@ namespace VRtist
             ShotManager.Instance.FireChanged();
             Instance.scene.ApplyShotManagerAction(info);
         }
+
         public static void ListImportableObjects()
         {
             Instance.scene.ListImportableObjects();
         }
 
+        // User
+        public static void SendUserInfo()
+        {
+            Instance.scene.SendUserInfo();
+        }
+
+        public static void RemoteSave()
+        {
+            CommandManager.SetSceneDirty(false);
+            sceneSavedEvent.Invoke();
+            Instance.scene.RemoteSave();
+        }
+
         // helper functions
         public static bool IsInTrash(GameObject obj)
         {
-            if (obj.transform.parent.parent.gameObject == Trash)
-                return true;
-            return false;
+            Transform parent = obj.transform;
+            while (parent != Trash && parent != null)
+            {
+                parent = parent.parent;
+            }
+            return parent == Trash;
         }
     }
 }

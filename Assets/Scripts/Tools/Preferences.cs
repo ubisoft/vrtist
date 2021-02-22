@@ -392,9 +392,7 @@ namespace VRtist
 
         public void OnRemoteSave()
         {
-            MixerClient.Instance.SendBlenderSave();
-            CommandManager.SetSceneDirty(false);
-            SceneManager.sceneSavedEvent.Invoke();
+            SceneManager.RemoteSave();
         }
     }
 }

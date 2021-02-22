@@ -37,7 +37,7 @@ namespace VRtist
         private UICheckbox showCameraFeedbackCheckbox = null;
         private UICheckbox feedbackPositionningCheckbox = null;
         private bool feedbackPositioning = false;
-        private float cameraFeedbackScaleFactor = 1.05f;
+        private readonly float cameraFeedbackScaleFactor = 1.05f;
 
         private UICheckbox showDopesheetCheckbox = null;
         private UICheckbox showShotManagerCheckbox = null;
@@ -48,16 +48,12 @@ namespace VRtist
         private UICheckbox showCameraFrustumCheckbox = null;
 
         public float deadZone = 0.8f;
-
-        private Transform controller;
-
         public UIDynamicList cameraList;
         private GameObject cameraItemPrefab;
 
         public bool montage = false;
 
-        private UnityEngine.Rendering.HighDefinition.DepthOfField dof;
-        private List<CameraController> selectedCameraControllers = new List<CameraController>();
+        private readonly List<CameraController> selectedCameraControllers = new List<CameraController>();
 
         public float Focal
         {
@@ -149,13 +145,13 @@ namespace VRtist
                 focalSlider = panel.Find("Focal");
                 focusSlider = panel.Find("Focus");
                 apertureSlider = panel.Find("Aperture");
-                enableDepthOfFieldCheckbox = panel.Find("EnableDepthOfField")?.gameObject.GetComponent<UICheckbox>();
-                showCameraFeedbackCheckbox = panel.Find("ShowFeedback")?.gameObject.GetComponent<UICheckbox>();
-                feedbackPositionningCheckbox = panel.Find("Feedback")?.gameObject.GetComponent<UICheckbox>();
-                showDopesheetCheckbox = panel.Find("ShowDopesheet")?.gameObject.GetComponent<UICheckbox>();
-                showShotManagerCheckbox = panel.Find("ShowShotManager")?.gameObject.GetComponent<UICheckbox>();
-                showCameraPreviewCheckbox = panel.Find("ShowCameraPreview")?.gameObject.GetComponent<UICheckbox>();
-                showCameraFrustumCheckbox = panel.Find("ShowFrustum")?.gameObject.GetComponent<UICheckbox>();
+                enableDepthOfFieldCheckbox = panel.Find("EnableDepthOfField").gameObject.GetComponent<UICheckbox>();
+                showCameraFeedbackCheckbox = panel.Find("ShowFeedback").gameObject.GetComponent<UICheckbox>();
+                feedbackPositionningCheckbox = panel.Find("Feedback").gameObject.GetComponent<UICheckbox>();
+                showDopesheetCheckbox = panel.Find("ShowDopesheet").gameObject.GetComponent<UICheckbox>();
+                showShotManagerCheckbox = panel.Find("ShowShotManager").gameObject.GetComponent<UICheckbox>();
+                showCameraPreviewCheckbox = panel.Find("ShowCameraPreview").gameObject.GetComponent<UICheckbox>();
+                showCameraFrustumCheckbox = panel.Find("ShowFrustum").gameObject.GetComponent<UICheckbox>();
             }
 
             if (!dopesheetHandle)
@@ -495,9 +491,7 @@ namespace VRtist
 
         public static void SendCameraParams(GameObject camera)
         {
-            CameraInfo cameraInfo = new CameraInfo();
-            cameraInfo.transform = camera.transform;
-            MixerClient.Instance.SendEvent<CameraInfo>(MessageType.Camera, cameraInfo);
+            SceneManager.SendCamera(camera.transform);
         }
 
         protected override void DoUpdate()
@@ -713,11 +707,12 @@ namespace VRtist
 
         public void OnCheckEnableDepthOfField(bool value)
         {
+            enableDepthOfField = value;
             CommandGroup commangGroup = new CommandGroup();
             foreach (GameObject item in Selection.SelectedObjects)
             {
                 CameraController cameraController = item.GetComponent<CameraController>();
-                if (null != cameraContainer)
+                if (null != cameraController)
                 {
                     new CommandEnableDOF(item, value).Submit();
                 }
