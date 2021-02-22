@@ -85,9 +85,8 @@ namespace Assimp
                     break;
                 case RuntimePlatform.WindowsPlayer:
                     {
-                        //Seems like windows they are not added to any specific folder, just dropped inside Plugins folder
-                        native64LibPath = pluginsFolder;
-                        native32LibPath = pluginsFolder;
+                        native64LibPath = Path.Combine(pluginsFolder, "x86_64");
+                        native32LibPath = Path.Combine(pluginsFolder, "x86");
                     }
                     break;
                 case RuntimePlatform.LinuxEditor:
