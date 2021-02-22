@@ -152,90 +152,10 @@ namespace VRtist
             gameObjectNameId++;
             return name;
         }
+
         public static string GetMaterialName(GameObject gobject)
         {
             return "Mat_" + gobject.name;
-        }
-        public static GameObject CreatePaint(Color color)
-        {
-            GameObject rootPaint = new GameObject();
-            rootPaint.transform.parent = SceneManager.RightHanded;
-            rootPaint.transform.localPosition = Vector3.zero;
-            rootPaint.transform.localRotation = Quaternion.identity;
-            rootPaint.transform.localScale = Vector3.one;
-
-            GameObject paint = new GameObject();
-            paint.transform.parent = rootPaint.transform;
-
-            paint.name = CreateUniqueName("Paint");
-
-            paint.transform.localPosition = Vector3.zero;
-            paint.transform.localRotation = Quaternion.identity;
-            paint.transform.localScale = Vector3.one;
-            paint.tag = "PhysicObject";
-
-            Mesh mesh = new Mesh();
-            MeshFilter meshFilter = paint.AddComponent<MeshFilter>();
-            meshFilter.mesh = mesh;
-            MeshRenderer renderer = paint.AddComponent<MeshRenderer>();
-            Material paintMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
-            renderer.sharedMaterial = paintMaterial;
-            renderer.material.SetColor("_BaseColor", color);
-
-            // Update Mixer (TODO: have a VRtist API to do that, not directly Mixer)
-            MaterialParameters parameters = new MaterialParameters
-            {
-                materialType = MaterialID.ObjectOpaque,
-                baseColor = color
-            };
-            MixerUtils.materialsParameters[GetMaterialName(paint)] = parameters;
-
-            paint.AddComponent<MeshCollider>();
-            paint.AddComponent<PaintController>();
-
-            return paint;
-        }
-
-        public static GameObject CreateVolume(Color color)
-        {
-            GameObject rootVolume = new GameObject();
-            rootVolume.transform.parent = SceneManager.RightHanded;
-            rootVolume.transform.localPosition = Vector3.zero;
-            rootVolume.transform.localRotation = Quaternion.identity;
-            rootVolume.transform.localScale = Vector3.one;
-
-            GameObject volume = new GameObject();
-            volume.transform.parent = rootVolume.transform;
-            volume.name = CreateUniqueName("Volume");
-
-            volume.transform.localPosition = Vector3.zero;
-            volume.transform.localRotation = Quaternion.identity;
-            volume.transform.localScale = Vector3.one;
-            volume.tag = "PhysicObject";
-
-            Mesh mesh = new Mesh
-            {
-                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
-            };
-            MeshFilter meshFilter = volume.AddComponent<MeshFilter>();
-            meshFilter.mesh = mesh;
-            MeshRenderer renderer = volume.AddComponent<MeshRenderer>();
-            Material volumeMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque); // TODO: another specific material??
-            renderer.sharedMaterial = volumeMaterial;
-            renderer.material.SetColor("_BaseColor", color);
-
-            // Update Mixer (TODO: have a VRtist API to do that, not directly Mixer)
-            MaterialParameters parameters = new MaterialParameters
-            {
-                materialType = MaterialID.ObjectOpaque,
-                baseColor = color
-            };
-            MixerUtils.materialsParameters[GetMaterialName(volume)] = parameters;
-
-            volume.AddComponent<MeshCollider>();
-            volume.AddComponent<VolumeController>();
-
-            return volume;
         }
 
         public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite)

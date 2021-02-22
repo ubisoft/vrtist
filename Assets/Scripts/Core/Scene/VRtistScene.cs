@@ -50,16 +50,19 @@ namespace VRtist
         {
             gobject.transform.SetParent(parent, true);
         }
+
         public GameObject DuplicateObject(GameObject gobject)
         {
             GameObject copy = InstantiateUnityPrefab(gobject);
             copy.transform.SetParent(SceneManager.RightHanded, false);
             return copy;
         }
+
         public void RenameObject(GameObject gobject, string newName)
         {
             gobject.name = newName;
         }
+
         public void SetObjectMatrix(GameObject gobject, Matrix4x4 matrix)
         {
             Maths.DecomposeMatrix(matrix, out Vector3 position, out Quaternion rotation, out Vector3 scale);
@@ -73,6 +76,7 @@ namespace VRtist
             gobject.transform.localScale = scale;
             GlobalState.FireObjectMoving(gobject);
         }
+
         public GameObject GetObjectParent(GameObject gobject)
         {
             Transform parentTransform = gobject.transform.parent;
@@ -80,6 +84,7 @@ namespace VRtist
                 return null;
             return parentTransform.gameObject;
         }
+
         public void SetObjectParent(GameObject gobject, GameObject parent)
         {
             gobject.transform.SetParent(parent.transform, false);
@@ -89,18 +94,25 @@ namespace VRtist
         {
             Utils.SetMaterialValue(gobject, materialValue);
         }
+
+        public void AddMaterialParameters(string materialName, MaterialParameters materialParameters) { }
+
         public void ClearObjectAnimations(GameObject gobject)
         {
         }
+
         public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
         }
+
         public void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
         }
+
         public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
         }
+
         public void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime)
         {
         }
@@ -108,12 +120,15 @@ namespace VRtist
         public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
         {
         }
+
         public void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType)
         {
         }
+
         public void SetSky(SkySettings sky)
         {
         }
+
         public void ApplyShotManagerAction(ShotManagerActionInfo info)
         {
         }

@@ -35,7 +35,6 @@ namespace VRtist
         enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume }
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
-        int paintId = 0;
         bool paintOnSurface = false;
 
         FreeDraw freeDraw; // used for pencil, flat pencil and hull
@@ -191,10 +190,7 @@ namespace VRtist
 
         protected override void DoUpdate()
         {
-            Vector3 position;
-            Quaternion rotation;
-            VRInput.GetControllerTransform(VRInput.primaryController, out position, out rotation);
-
+            VRInput.GetControllerTransform(VRInput.primaryController, out Vector3 position, out Quaternion rotation);
             UpdateToolPaint(position, rotation);
         }
 
@@ -235,17 +231,18 @@ namespace VRtist
                 case PaintTools.ConvexHull:
                     {
                         // Create an empty game object with a mesh
-                        currentPaint = Utils.CreatePaint(GlobalState.CurrentColor);
-                        ++paintId;
-                        freeDraw = new FreeDraw();
-                        freeDraw.matrix = currentPaint.transform.worldToLocalMatrix;
+                        currentPaint = Create(PaintTools.Pencil, GlobalState.CurrentColor);
+                        freeDraw = new FreeDraw
+                        {
+                            matrix = currentPaint.transform.worldToLocalMatrix
+                        };
                     }
                     break;
 
                 case PaintTools.Volume:
                     if (volumeEditionMode == VolumeEditionMode.Create)
                     {
-                        currentVolume = Utils.CreateVolume(GlobalState.CurrentColor);
+                        currentVolume = Create(PaintTools.Volume, GlobalState.CurrentColor);
                         currentVolume.transform.position = mouthpiece.position; // real-world position
                         volumeGenerator.Reset();
                         volumeGenerator.stepSize = stepSize / GlobalState.WorldScale; // viewer scale -> world scale.
@@ -318,7 +315,57 @@ namespace VRtist
             }
         }
 
-        private void UpdateToolPaint(Vector3 position, Quaternion rotation)
+        private static GameObject Create(PaintTools what, Color color)
+        {
+            GameObject rootObject = new GameObject();
+            rootObject.transform.parent = SceneManager.RightHanded;
+            rootObject.transform.localPosition = Vector3.zero;
+            rootObject.transform.localRotation = Quaternion.identity;
+            rootObject.transform.localScale = Vector3.one;
+
+            GameObject gobject = new GameObject();
+            gobject.transform.parent = rootObject.transform;
+            gobject.name = Utils.CreateUniqueName(what == PaintTools.Volume ? "Volume" : "Paint");
+
+            gobject.transform.localPosition = Vector3.zero;
+            gobject.transform.localRotation = Quaternion.identity;
+            gobject.transform.localScale = Vector3.one;
+            gobject.tag = "PhysicObject";
+
+            Mesh mesh = new Mesh
+            {
+                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+            };
+            MeshFilter meshFilter = gobject.AddComponent<MeshFilter>();
+            meshFilter.mesh = mesh;
+            MeshRenderer renderer = gobject.AddComponent<MeshRenderer>();
+            Material paintMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
+            renderer.sharedMaterial = paintMaterial;
+            renderer.material.SetColor("_BaseColor", color);
+
+            // Update scene data for live sync
+            MaterialParameters parameters = new MaterialParameters
+            {
+                materialType = MaterialID.ObjectOpaque,
+                baseColor = color
+            };
+            SceneManager.AddMaterialParameters(Utils.GetMaterialName(gobject), parameters);
+
+            gobject.AddComponent<MeshCollider>();
+
+            if (what == PaintTools.Volume)
+            {
+                gobject.AddComponent<VolumeController>();
+            }
+            else
+            {
+                gobject.AddComponent<PaintController>();
+            }
+
+            return gobject;
+        }
+
+        private void UpdateToolPaint(Vector3 position, Quaternion _)
         {
             // ON TRIGGER
             VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.trigger, () =>
@@ -373,8 +420,7 @@ namespace VRtist
                 paintLineRenderer.SetPosition(1, endRay);
                 paintLineRenderer.startWidth = 0.005f / GlobalState.WorldScale;
                 paintLineRenderer.endWidth = paintLineRenderer.startWidth;
-                RaycastHit hitInfo;
-                bool hit = Physics.Raycast(startRay, direction, out hitInfo, Mathf.Infinity);
+                bool hit = Physics.Raycast(startRay, direction, out RaycastHit hitInfo, Mathf.Infinity);
                 if (!hit)
                     return;
                 penPosition = hitInfo.point - 0.001f * direction;

@@ -17,6 +17,7 @@ namespace VRtist
         GameObject GetObjectParent(GameObject gobject);
         void SetObjectParent(GameObject gobject, GameObject parent);
         void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue);
+        void AddMaterialParameters(string materialName, MaterialParameters materialParameters);
         void ClearObjectAnimations(GameObject gobject);
         void SetObjectAnimations(GameObject gobject, AnimationSet animationSet);
         void AddKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key);

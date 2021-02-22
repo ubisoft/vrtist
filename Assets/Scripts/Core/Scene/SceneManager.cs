@@ -7,9 +7,13 @@ namespace VRtist
 {
     public class SceneManager
     {
+        IScene scene;
+
         public static UnityEvent clearSceneEvent = new UnityEvent();
         public static BoolChangedEvent sceneDirtyEvent = new BoolChangedEvent();
         public static UnityEvent sceneSavedEvent = new UnityEvent();
+
+        public static bool firstSave = true;
 
         private static SceneManager instance;
         public static SceneManager Instance
@@ -26,7 +30,6 @@ namespace VRtist
             }
         }
 
-        IScene scene;
         static GameObject trash = null;
         public static GameObject Trash
         {
@@ -67,9 +70,6 @@ namespace VRtist
             }
         }
 
-
-        public static bool firstSave = true;
-
         public static void SetSceneImpl(IScene scene)
         {
             Instance.scene = scene;
@@ -80,8 +80,6 @@ namespace VRtist
             firstSave = true;
             CommandManager.SetSceneDirty(false);
             clearSceneEvent.Invoke();
-
-
             Instance.scene.ClearScene();
         }
 
@@ -89,49 +87,65 @@ namespace VRtist
         {
             return Instance.scene.InstantiateObject(prefab);
         }
+
         public static GameObject InstantiateUnityPrefab(GameObject prefab)
         {
             return Instance.scene.InstantiateUnityPrefab(prefab);
         }
+
         public static GameObject AddObject(GameObject gobject)
         {
             return Instance.scene.AddObject(gobject);
         }
+
         public static void RemoveObject(GameObject gobject)
         {
             Instance.scene.RemoveObject(gobject);
         }
+
         public static void RestoreObject(GameObject gobject, Transform parent)
         {
             Instance.scene.RestoreObject(gobject, parent);
         }
+
         public static GameObject DuplicateObject(GameObject gobject)
         {
             return Instance.scene.DuplicateObject(gobject);
         }
+
         public static void RenameObject(GameObject gobject, string newName)
         {
             Instance.scene.RenameObject(gobject, newName);
         }
+
         public static void SetObjectMatrix(GameObject gobject, Matrix4x4 matrix)
         {
             Instance.scene.SetObjectMatrix(gobject, matrix);
         }
+
         public static void SetObjectTransform(GameObject gobject, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             Instance.scene.SetObjectTransform(gobject, position, rotation, scale);
         }
+
         public static GameObject GetObjectParent(GameObject gobject)
         {
             return Instance.scene.GetObjectParent(gobject);
         }
+
         public static void SetObjectParent(GameObject gobject, GameObject parent)
         {
             Instance.scene.SetObjectParent(gobject, parent);
         }
+
         public static void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue)
         {
             Instance.scene.SetObjectMaterialValue(gobject, materialValue);
+        }
+
+        public static void AddMaterialParameters(string materialName, MaterialParameters materialParameters)
+        {
+            Instance.scene.AddMaterialParameters(materialName, materialParameters);
         }
 
         // Animation
@@ -140,21 +154,25 @@ namespace VRtist
             GlobalState.Animation.ClearAnimations(gobject);
             Instance.scene.ClearObjectAnimations(gobject);
         }
+
         public static void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
         {
             GlobalState.Animation.SetObjectAnimations(gobject, animationSet);
             Instance.scene.SetObjectAnimations(gobject, animationSet);
         }
+
         public static void AddObjectKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
             GlobalState.Animation.AddFilteredKeyframe(gobject, property, key);
             Instance.scene.AddKeyframe(gobject, property, key);
         }
+
         public static void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
         {
             GlobalState.Animation.RemoveKeyframe(gobject, property, key.frame);
             Instance.scene.RemoveKeyframe(gobject, property, key);
         }
+
         public static void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime)
         {
             GlobalState.Animation.MoveKeyframe(gobject, property, oldTime, newTime);
@@ -173,9 +191,9 @@ namespace VRtist
                     ConstraintManager.AddLookAtConstraint(gobject, target);
                     break;
             }
-
             Instance.scene.AddObjectConstraint(gobject, constraintType, target);
         }
+
         public static void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType)
         {
             switch (constraintType)
@@ -187,7 +205,6 @@ namespace VRtist
                     ConstraintManager.RemoveConstraint<LookAtConstraint>(gobject);
                     break;
             }
-
             Instance.scene.RemoveObjectConstraint(gobject, constraintType);
         }
 
@@ -267,6 +284,5 @@ namespace VRtist
                 return true;
             return false;
         }
-
     }
 }

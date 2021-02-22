@@ -37,6 +37,7 @@ namespace VRtist
             }
             return newPrefab;
         }
+
         public GameObject InstantiateUnityPrefab(GameObject unityPrefab)
         {
             GameObject prefab = SyncData.CreateInstance(unityPrefab, SyncData.prefab, isPrefab: true);
@@ -77,7 +78,6 @@ namespace VRtist
                 parent = parent
             };
             MixerClient.Instance.SendEvent<RestoreFromTrashInfo>(MessageType.RestoreFromTrash, trashInfo);
-
         }
 
         public GameObject DuplicateObject(GameObject gobject)
@@ -116,6 +116,7 @@ namespace VRtist
                 GlobalState.FireObjectMoving(instance.Item1);
             MixerClient.Instance.SendEvent<Transform>(MessageType.Transform, SyncData.nodes[objectName].prefab.transform);
         }
+
         public GameObject GetObjectParent(GameObject gobject)
         {
             Transform parentTransform = gobject.transform.parent.parent;
@@ -123,6 +124,7 @@ namespace VRtist
                 return null;
             return parentTransform.gameObject;
         }
+
         public void SetObjectParent(GameObject gobject, GameObject parent)
         {
             Node parentNode = SyncData.nodes[parent.name];
@@ -148,6 +150,11 @@ namespace VRtist
             Utils.SetMaterialValue(gobject, materialValue);
 
             InformModification(gobject);
+        }
+
+        public void AddMaterialParameters(string materialName, MaterialParameters materialParameters)
+        {
+            MixerUtils.materialsParameters[materialName] = materialParameters;
         }
 
         public void ListImportableObjects()
