@@ -97,6 +97,7 @@ namespace VRtist
             }
             else
             {
+                unityDataInCoroutineCreated = false;
                 ImportTaskData d = new ImportTaskData();
                 d.fileName = fileName;
                 d.root = root;
@@ -522,11 +523,14 @@ namespace VRtist
             directoryName = Path.GetDirectoryName(fileName);
 
             if (blocking)
+            {
                 ImportScene(fileName, root).MoveNext();
+            }
             else
+            {
                 yield return StartCoroutine(ImportScene(fileName, root));
-
-            unityDataInCoroutineCreated = true;
+                unityDataInCoroutineCreated = true;
+            }
         }
     }
 }
