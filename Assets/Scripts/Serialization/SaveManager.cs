@@ -186,8 +186,7 @@ namespace VRtist.Serialization
 
             // Scene traversal
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            string path = "";
-            TraverseScene(rootTransform, path);
+            TraverseScene(rootTransform, "");
             stopwatch.Stop();
             LogElapsedTime($"Scene Traversal ({SceneData.Current.objects.Count} objects)", stopwatch);
 
@@ -220,12 +219,14 @@ namespace VRtist.Serialization
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
-        private void TraverseScene(Transform root, string parentPath)
+        private void TraverseScene(Transform root, string parentPath, bool isSubImport = false)
         {
+            int childIndex = 0;
             foreach (Transform currentTransform in root)
             {
                 if (currentTransform == SceneManager.BoundingBox)
                     continue;
+
                 string path = parentPath;
                 path += "/" + currentTransform.name;
 
@@ -261,15 +262,13 @@ namespace VRtist.Serialization
                 ParametersController controller = currentTransform.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
                 SetCommonData(currentTransform, parentPath, path, controller, data);
-                SetObjectData(currentTransform, controller, data);
+                SetObjectData(currentTransform, controller, isSubImport, childIndex, data);
                 SceneData.Current.objects.Add(data);
 
                 // Serialize children
-                if (!data.isImported)
-                {
-                    // We consider here that we can't change objects hierarchy
-                    TraverseScene(currentTransform, path);
-                }
+                TraverseScene(currentTransform, path, isSubImport: isSubImport || data.isImported);
+
+                ++childIndex;
             }
         }
 
@@ -435,8 +434,19 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetObjectData(Transform trans, ParametersController controller, ObjectData data)
+        private void SetObjectData(Transform trans, ParametersController controller, bool isSubImport, int childIndex, ObjectData data)
         {
+            data.isSubImport = isSubImport;
+            data.childIndex = childIndex;
+
+            if (isSubImport)
+            {
+                // TODO store material if there is a diff with the original imported sub object
+                data.isImported = false;  // only the root of the object is flagged as imported
+                data.meshPath = "";       // not used in this case
+                return;
+            }
+
             // Mesh for non-imported objects
             if (null == controller || !controller.isImported)
             {
@@ -469,10 +479,10 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetCommonData(Transform trans, string parentName, string path, ParametersController controller, ObjectData data)
+        private void SetCommonData(Transform trans, string parentPath, string path, ParametersController controller, ObjectData data)
         {
             data.name = trans.name;
-            data.parent = parentName == "" ? "" : parentName.Substring(1);
+            data.parentPath = parentPath == "" ? "" : parentPath.Substring(1);
             data.path = path.Substring(1);
             data.tag = trans.gameObject.tag;
 
@@ -657,16 +667,31 @@ namespace VRtist.Serialization
                 {
                     importedParent = new GameObject("__VRtist_tmp_load__").transform;
                     absoluteMeshPath = data.meshPath;
+                    // Don't use async import since we may reference the game object for animations or constraints
+                    // and the object must be loaded before we do so
                     GlobalState.GeometryImporter.ImportObject(absoluteMeshPath, importedParent, true);
                     if (importedParent.childCount == 0)
                         return;
-                    gobject = importedParent.GetChild(0).gameObject; // Get first child .
+                    gobject = importedParent.GetChild(0).gameObject;
                 }
                 catch (System.Exception e)
                 {
                     Debug.LogError("Failed to load external object: " + e.Message);
                     return;
                 }
+            }
+            else if (data.isSubImport)
+            {
+                // The imported object and all of its sub objects have been imported.
+                // Names between the saved ones and the imported ones may differ.
+                // We use the parent name which is always the good one and the child index to retrieve
+                // the object. Since we set the new object name (to the saved one), all its children can
+                // refer to their parent by name.
+                Transform parent = rootTransform.Find(data.parentPath);
+                gobject = parent.GetChild(data.childIndex).gameObject;
+                gobject.name = data.name;
+                LoadCommonData(gobject, data);
+                return;
             }
             else
             {
@@ -706,8 +731,8 @@ namespace VRtist.Serialization
 
             SceneManager.AddObject(gobject);
 
-            if (data.parent.Length > 0)
-                SceneManager.SetObjectParent(gobject, rootTransform.Find(data.parent).gameObject);
+            if (data.parentPath.Length > 0)
+                SceneManager.SetObjectParent(gobject, rootTransform.Find(data.parentPath).gameObject);
 
             if (data.isImported)
             {
@@ -742,8 +767,8 @@ namespace VRtist.Serialization
                 GameObject newPrefab = SceneManager.InstantiateUnityPrefab(lightPrefab);
                 GameObject newObject = SceneManager.AddObject(newPrefab);
 
-                if (data.parent.Length > 0)
-                    SceneManager.SetObjectParent(newObject, rootTransform.Find(data.parent).gameObject);
+                if (data.parentPath.Length > 0)
+                    SceneManager.SetObjectParent(newObject, rootTransform.Find(data.parentPath).gameObject);
 
                 LoadCommonData(newObject, data);
 
@@ -760,9 +785,6 @@ namespace VRtist.Serialization
                 controller.maxRange = data.maxRange;
                 controller.OuterAngle = data.outerAngle;
                 controller.InnerAngle = data.innerAngle;
-
-                string objectPath = data.path;
-                if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
             }
         }
 
@@ -773,8 +795,8 @@ namespace VRtist.Serialization
             GameObject newPrefab = SceneManager.InstantiateUnityPrefab(cameraPrefab);
             GameObject newObject = SceneManager.AddObject(newPrefab);
 
-            if (data.parent.Length > 0)
-                SceneManager.SetObjectParent(newObject, rootTransform.Find(data.parent).gameObject);
+            if (data.parentPath.Length > 0)
+                SceneManager.SetObjectParent(newObject, rootTransform.Find(data.parentPath).gameObject);
 
             LoadCommonData(newObject, data);
 
@@ -786,9 +808,6 @@ namespace VRtist.Serialization
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
-
-            string objectPath = data.path;
-            if (objectPath.StartsWith("/")) { objectPath = objectPath.Substring(1); }
         }
 
         private void LoadAnimation(AnimationData data)

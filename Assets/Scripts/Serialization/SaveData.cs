@@ -413,7 +413,7 @@ namespace VRtist.Serialization
     public class ObjectData : IBlob
     {
         public string name;
-        public string parent;
+        public string parentPath;
         public string path;  // relative path
         public string tag;
 
@@ -427,6 +427,8 @@ namespace VRtist.Serialization
         // Mesh
         public string meshPath;
         public bool isImported;
+        public bool isSubImport;  // something inside the hierarchy of an imported object
+        public int childIndex;    // transform child index
 
         // Materials
         public List<MaterialData> materialsData = new List<MaterialData>();
@@ -439,7 +441,7 @@ namespace VRtist.Serialization
         public virtual void FromBytes(byte[] bytes, ref int index)
         {
             name = Converter.GetString(bytes, ref index);
-            parent = Converter.GetString(bytes, ref index);
+            parentPath = Converter.GetString(bytes, ref index);
             path = Converter.GetString(bytes, ref index);
             tag = Converter.GetString(bytes, ref index);
 
@@ -451,6 +453,8 @@ namespace VRtist.Serialization
 
             meshPath = Converter.GetString(bytes, ref index);
             isImported = Converter.GetBool(bytes, ref index);
+            isSubImport = Converter.GetBool(bytes, ref index);
+            childIndex = Converter.GetInt(bytes, ref index);
 
             int materialCount = Converter.GetInt(bytes, ref index);
             for (int i = 0; i < materialCount; i++)
@@ -468,7 +472,7 @@ namespace VRtist.Serialization
         public virtual byte[] ToBytes()
         {
             byte[] nameBuffer = Converter.StringToBytes(name);
-            byte[] parentBuffer = Converter.StringToBytes(parent);
+            byte[] parentBuffer = Converter.StringToBytes(parentPath);
             byte[] pathBuffer = Converter.StringToBytes(path);
             byte[] tagBuffer = Converter.StringToBytes(tag);
 
@@ -480,6 +484,8 @@ namespace VRtist.Serialization
 
             byte[] meshPathBuffer = Converter.StringToBytes(meshPath);
             byte[] isImportedBuffer = Converter.BoolToBytes(isImported);
+            byte[] isSubImportBuffer = Converter.BoolToBytes(isSubImport);
+            byte[] childIndexBuffer = Converter.IntToBytes(childIndex);
 
             byte[] materialCountBuffer = Converter.IntToBytes(materialsData.Count);
             List<byte[]> matBuffers = new List<byte[]>();
@@ -507,6 +513,8 @@ namespace VRtist.Serialization
 
                 meshPathBuffer,
                 isImportedBuffer,
+                isSubImportBuffer,
+                childIndexBuffer,
 
                 materialCountBuffer,
                 materialsBuffer,
