@@ -1,19 +1,52 @@
 # VRtist
 
-VR scene exploration and set dressing.
+VRtist is a Virtual Reality tool for storytelling.
 
-## How to install
+Directors and artists can setup a 3D scene being immersed into the virtual world. That will allow them to have a better understanding of the 3D scene.
 
-### Install VRtist
+## Main Features
 
-- Build the Main scene in Unity Editor
-- Copy the VRtist folder in any location you want (Here we will use the path d:/vrtist)
+- Set dressing: import 3D objects and compose the virtual set.
+- Camera: naturally move around and find the best camera angles and depth of field.
+- Animation: use the record mode or key frames to create animations.
+- Live link: Blender and VRtist live scene sync.
+- Lighting: use gradient sky or fine-tune the lighting using lights (directional, point and cone).
+- Nonlinear editing: nonlinear editing using multi-camera footages.
 
-Right now VRtist can't load or save any scene as a standalone software so the use of Blender & Mixer are required.
+## Supported VR Devices
+
+For now, VRtist has been only tested with the Oculus Rift S and Oculus Quest devices.
+
+## How to Install & Launch
+
+Just unzip the release file. Then launch the VRtist.exe and put your headset.
+
+## How to Build
+
+Unity version: 2020.2.1f1
+
+For now, VRtist has been tested on Windows 64bit only. Build the "Main" scene in the Unity editor.
+
+### Dependencies
+
+VRtist uses the following libraries as DLLs:
+
+- Assimp
+- OpenImageIO
+
+### Settings & Logs
+
+On Windows OS, VRtist writes settings to the %appdata%/Roaming/Ubisoft/VRtist/ directory.
+
+Logs and saves are written to the %appdata%/LocalLow/Ubisoft/VRtist/ directory.
+
+## Live Link with Blender
+
+It's possible to sync a Blender scene with a VRtist one via the Mixer add-on. A typical use case is to have a working Blender scene and to explore and modify it in VR with VRtist.
 
 ### Install Blender
 
-Download Blender 2.83 or above from blender.org (either install version or portable version).
+Download Blender 2.91 or above from blender.org (either install version or portable version).
 
 ### Install Mixer
 
@@ -27,9 +60,9 @@ Mixer is a standard Blender addon. Install it like any other addon.
 - Click the install... button and search "mixer.zip"
 - Activate the add-on by checking the "Collaboration Mixer" item
 
-## How to launch
+### How to Launch the Live Link
 
-Open your scene in Blender. In 3D Viewport, press "N" to open the Mixer addon. Ener the VRtist.exe path.
+Open your scene in Blender. In the 3D Viewport, press "N" to open the Mixer addon. Enter the VRtist.exe path.
 
 Launch or join a server, create or join a room and press "Launch VRtist". Put your headset and enjoy!
 
