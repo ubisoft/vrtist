@@ -36,9 +36,7 @@ VRtist uses the following libraries as DLLs:
 
 ### Settings & Logs
 
-On Windows OS, VRtist writes settings to the %appdata%/Roaming/Ubisoft/VRtist/ directory.
-
-Logs and saves are written to the %appdata%/LocalLow/Ubisoft/VRtist/ directory.
+On Windows OS, VRtist writes settings, logs and saves to the %userprofile%/AppData/LocalLow/Ubisoft/VRtist/ directory (Unity.Application.persistentDataPath).
 
 ## Live Link with Blender
 

@@ -1,5 +1,5 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
+
 using UnityEngine;
 
 namespace VRtist
@@ -16,9 +16,7 @@ namespace VRtist
 
         private string GetJsonFilename()
         {
-            string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string filename = appdata + @"\VRtistNetworkSettings.json";
-            return filename;
+            return Application.persistentDataPath + "/VRtistNetworkSettings.json";
         }
 
         public void Load()

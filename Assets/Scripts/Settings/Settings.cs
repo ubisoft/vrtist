@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
@@ -247,9 +246,7 @@ namespace VRtist
 
         private string GetJsonFilename()
         {
-            string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string filename = appdata + @"\VRtist.json";
-            return filename;
+            return Application.persistentDataPath + "/VRtist.json";
         }
 
         public void Load()
