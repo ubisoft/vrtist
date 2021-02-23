@@ -148,14 +148,14 @@ namespace VRtist
             Instance.scene.AddMaterialParameters(materialName, materialParameters);
         }
 
-        public static void SendCamera(Transform camera)
+        public static void SendCameraInfo(Transform camera)
         {
-            Instance.scene.SendCamera(camera);
+            Instance.scene.SendCameraInfo(camera);
         }
 
-        public static void SendLight(Transform light)
+        public static void SendLightInfo(Transform light)
         {
-            Instance.scene.SendLight(light);
+            Instance.scene.SendLightInfo(light);
         }
 
         // Animation

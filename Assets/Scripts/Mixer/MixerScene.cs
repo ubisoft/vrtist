@@ -157,12 +157,12 @@ namespace VRtist
             MixerUtils.materialsParameters[materialName] = materialParameters;
         }
 
-        public void SendCamera(Transform camera)
+        public void SendCameraInfo(Transform camera)
         {
             MixerClient.Instance.SendEvent(MessageType.Camera, new CameraInfo { transform = camera });
         }
 
-        public void SendLight(Transform light)
+        public void SendLightInfo(Transform light)
         {
             MixerClient.Instance.SendEvent(MessageType.Light, new LightInfo { transform = light });
         }

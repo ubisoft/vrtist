@@ -15,7 +15,7 @@ namespace VRtist
         [CentimeterVector3] public Vector3 relativeLocation = Vector3.zero; // location of this object relative to its parent anchor
         [CentimeterFloat] public float width = 1.0f;
         [CentimeterFloat] public float height = 1.0f;
-        
+
         public ColorReference baseColor = new ColorReference();
         public ColorReference textColor = new ColorReference();
         public ColorReference disabledTextColor = new ColorReference();
@@ -44,6 +44,7 @@ namespace VRtist
         public Color BaseColor { get { return baseColor.Value; } }
         public Color TextColor { get { return textColor.Value; } }
         public Color DisabledColor { get { return disabledColor.Value; } }
+        public Color DisabledTextColor { get { return disabledTextColor.Value; } }
         public Color PushedColor { get { return pushedColor.Value; } }
         public Color SelectedColor { get { return selectedColor.Value; } }
         public Color HoveredColor { get { return hoveredColor.Value; } }
@@ -103,10 +104,14 @@ namespace VRtist
 
         public virtual void SetColor(Color color)
         {
-            Material material = GetComponent<MeshRenderer>()?.sharedMaterial;
-            if (null != material)
+            MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+            if (null != meshRenderer)
             {
-                material.SetColor("_BaseColor", color);
+                Material material = meshRenderer.sharedMaterial;
+                if (null != material)
+                {
+                    material.SetColor("_BaseColor", color);
+                }
             }
         }
 
@@ -155,7 +160,7 @@ namespace VRtist
         // Most common code implemented here.
 
         public virtual void OnRayEnter()
-        {            
+        {
             Hovered = true;
             Pushed = false;
             ResetColor();
@@ -182,14 +187,14 @@ namespace VRtist
             ResetColor();
         }
 
-        public virtual void OnRayExit() 
+        public virtual void OnRayExit()
         {
             Hovered = false;
             Pushed = false;
             ResetColor();
         }
 
-        public virtual void OnRayExitClicked() 
+        public virtual void OnRayExitClicked()
         {
             Hovered = true; // exiting while clicking shows a hovered button.
             Pushed = false;

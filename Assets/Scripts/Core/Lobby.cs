@@ -20,6 +20,10 @@ namespace VRtist
         UIButton launchProjectButton;
 
         UIDynamicList projectList;
+        UIButton firstPageButton;
+        UIButton lastPageButton;
+        UIButton previousPageButton;
+        UIButton nextPageButton;
         GameObject itemPrefab;
 
         readonly List<GameObject> projects = new List<GameObject>();
@@ -51,6 +55,10 @@ namespace VRtist
             launchProjectButton = projectButtons.transform.Find("LaunchProjectButton").GetComponent<UIButton>();
 
             projectList = transform.Find("UI/Projects Panel/List").GetComponent<UIDynamicList>();
+            firstPageButton = transform.Find("UI/Control Panel/List Panel/FirstPageButton").GetComponent<UIButton>();
+            lastPageButton = transform.Find("UI/Control Panel/List Panel/LastPageButton").GetComponent<UIButton>();
+            previousPageButton = transform.Find("UI/Control Panel/List Panel/PreviousPageButton").GetComponent<UIButton>();
+            nextPageButton = transform.Find("UI/Control Panel/List Panel/NextPageButton").GetComponent<UIButton>();
             itemPrefab = Resources.Load<GameObject>("Prefabs/UI/ProjectItem");
         }
 
@@ -138,6 +146,8 @@ namespace VRtist
                 projectItem.SetListItem(dlItem, path);
                 projects.Add(item);
             }
+
+            UpdateButtons();
         }
 
         private void Update()
@@ -327,21 +337,33 @@ namespace VRtist
         public void OnNextPage()
         {
             projectList.OnNextPage();
+            UpdateButtons();
         }
 
         public void OnPreviousPage()
         {
             projectList.OnPreviousPage();
+            UpdateButtons();
         }
 
         public void OnFirstPage()
         {
             projectList.OnFirstPage();
+            UpdateButtons();
         }
 
         public void OnLastPage()
         {
             projectList.OnLastPage();
+            UpdateButtons();
+        }
+
+        private void UpdateButtons()
+        {
+            firstPageButton.Disabled = projectList.currentPage == 0;
+            previousPageButton.Disabled = projectList.currentPage == 0;
+            lastPageButton.Disabled = projectList.currentPage == projectList.pagesCount - 1;
+            nextPageButton.Disabled = projectList.currentPage == projectList.pagesCount - 1;
         }
 
         public void OnExitApplication()

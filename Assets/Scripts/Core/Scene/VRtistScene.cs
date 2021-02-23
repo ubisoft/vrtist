@@ -97,9 +97,9 @@ namespace VRtist
 
         public void AddMaterialParameters(string materialName, MaterialParameters materialParameters) { }
 
-        public void SendCamera(Transform camera) { }
+        public void SendCameraInfo(Transform camera) { }
 
-        public void SendLight(Transform light) { }
+        public void SendLightInfo(Transform light) { }
 
         public void ClearObjectAnimations(GameObject gobject)
         {

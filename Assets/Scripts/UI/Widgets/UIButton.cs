@@ -1,4 +1,5 @@
 ﻿using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -66,8 +67,10 @@ namespace VRtist
             {
                 Image image = transform.GetComponentInChildren<Image>(true);
                 image.color = value;
+                imageColorFixed = true;
             }
         }
+        private bool imageColorFixed = false;
 
         private bool isChecked = false;
         public bool Checked
@@ -88,6 +91,8 @@ namespace VRtist
                   : (Hovered ? HoveredColor
                   : BaseColor)))));
 
+            SetForegroundColor(Disabled ? DisabledTextColor : TextColor);
+
             // Make the canvas pop front if Hovered.
             Canvas c = GetComponentInChildren<Canvas>();
             if (c != null)
@@ -96,6 +101,30 @@ namespace VRtist
                 if (rt != null)
                 {
                     rt.localPosition = Hovered ? new Vector3(0, 0, -0.003f) : Vector3.zero;
+                }
+            }
+        }
+
+        public override void SetForegroundColor(Color color)
+        {
+            Canvas canvas = gameObject.GetComponentInChildren<Canvas>();
+            if (canvas != null)
+            {
+                // IMAGE
+                if (!imageColorFixed)
+                {
+                    Image image = canvas.GetComponentInChildren<Image>();
+                    if (image != null)
+                    {
+                        image.color = color;
+                    }
+                }
+
+                // TEXT
+                TextMeshProUGUI text = canvas.GetComponentInChildren<TextMeshProUGUI>();
+                if (text != null)
+                {
+                    text.color = color;
                 }
             }
         }
@@ -408,8 +437,7 @@ namespace VRtist
 
             // Project ray on the widget plane.
             Plane widgetPlane = new Plane(-transform.forward, transform.position);
-            float enter;
-            widgetPlane.Raycast(ray, out enter);
+            widgetPlane.Raycast(ray, out float enter);
             Vector3 worldCollisionOnWidgetPlane = ray.GetPoint(enter);
 
             Vector3 localWidgetPosition = transform.InverseTransformPoint(worldCollisionOnWidgetPlane);
@@ -472,8 +500,10 @@ namespace VRtist
 
         public static UIButton Create(CreateButtonParams input)
         {
-            GameObject go = new GameObject(input.widgetName);
-            go.tag = "UICollider";
+            GameObject go = new GameObject(input.widgetName)
+            {
+                tag = "UICollider"
+            };
 
             // Find the anchor of the parent if it is a UIElement
             Vector3 parentAnchor = Vector3.zero;
@@ -544,7 +574,6 @@ namespace VRtist
             {
                 // Clone the material.
                 meshRenderer.sharedMaterial = Instantiate(uiButton.source_material);
-                Material sharedMaterial = meshRenderer.sharedMaterial;
                 meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 meshRenderer.renderingLayerMask = 2; // "LightLayer 1"
 

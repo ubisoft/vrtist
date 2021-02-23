@@ -530,7 +530,7 @@ namespace VRtist
 
         protected void SendCameraFocal(CameraController cameraController)
         {
-            SceneManager.SendCamera(cameraController.gameObject.transform);
+            SceneManager.SendCameraInfo(cameraController.gameObject.transform);
         }
 
         protected void ManageCamerasFocalsUndo()

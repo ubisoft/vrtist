@@ -248,7 +248,7 @@ namespace VRtist
 
         public void SendLightParams(GameObject light)
         {
-            SceneManager.SendLight(light.transform);
+            SceneManager.SendLightInfo(light.transform);
         }
 
         public void OnLightColor(Color color)

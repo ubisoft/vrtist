@@ -491,7 +491,7 @@ namespace VRtist
 
         public static void SendCameraParams(GameObject camera)
         {
-            SceneManager.SendCamera(camera.transform);
+            SceneManager.SendCameraInfo(camera.transform);
         }
 
         protected override void DoUpdate()

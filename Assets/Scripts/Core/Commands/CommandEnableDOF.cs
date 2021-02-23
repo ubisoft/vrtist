@@ -55,7 +55,7 @@ namespace VRtist
                 {
                     CreateColimator(camera);
                     SceneManager.SetObjectTransform(cameraController.colimator.gameObject, new Vector3(0, 0, -cameraController.Focus), cameraController.colimator.localRotation, cameraController.colimator.localScale);
-                    SceneManager.SendCamera(camera.transform);
+                    SceneManager.SendCameraInfo(camera.transform);
                 }
             }
             else
@@ -65,7 +65,7 @@ namespace VRtist
                     cameraController.colimator.gameObject.SetActive(true);
                     SceneManager.RestoreObject(cameraController.colimator.gameObject, camera.transform);
                     SceneManager.SetObjectTransform(cameraController.colimator.gameObject, new Vector3(0, 0, -cameraController.Focus), cameraController.colimator.localRotation, cameraController.colimator.localScale);
-                    SceneManager.SendCamera(camera.transform);
+                    SceneManager.SendCameraInfo(camera.transform);
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace VRtist
                     {
                         DestroyColimator(camera);
                     }
-                    SceneManager.SendCamera(camera.transform);
+                    SceneManager.SendCameraInfo(camera.transform);
                 }
             }
         }

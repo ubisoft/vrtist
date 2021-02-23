@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TMPro;
+
 using UnityEngine;
 
 namespace VRtist
@@ -38,8 +38,8 @@ namespace VRtist
 
         [SerializeField] private int nbItemsPerPage = 1;
         [SerializeField] private int nbItemsInLastPage = 0;
-        [SerializeField] private int pagesCount = 0;
-        [SerializeField] private int currentPage = 0;
+        public int pagesCount = 0;
+        public int currentPage = 0;
 
         private string filter = null;
 
@@ -198,11 +198,7 @@ namespace VRtist
             }
 
             IndexedGameObjectArgs args = new IndexedGameObjectArgs { gobject = t.gameObject, index = currentIndex };
-            EventHandler<IndexedGameObjectArgs> handler = ItemClickedEvent;
-            if (null != handler)
-            {
-                handler(null, args);
-            }
+            ItemClickedEvent?.Invoke(null, args);
         }
 
         public string GetFilter()
@@ -212,7 +208,7 @@ namespace VRtist
 
         public void OnFilterList(string filter)
         {
-            this.filter = null != filter ? filter.ToLower() : null;
+            this.filter = filter?.ToLower();
             currentPage = 0;
             NeedsRebuild = true;
         }
@@ -251,7 +247,7 @@ namespace VRtist
                 var tmp = items[currentIndex - 1];
                 items[currentIndex - 1] = items[currentIndex];
                 items[currentIndex] = tmp;
-                currentIndex = currentIndex - 1;
+                --currentIndex;
                 NeedsRebuild = true;
             }
         }
@@ -266,7 +262,7 @@ namespace VRtist
                 var tmp = items[currentIndex + 1];
                 items[currentIndex + 1] = items[currentIndex];
                 items[currentIndex] = tmp;
-                currentIndex = currentIndex + 1;
+                ++currentIndex;
                 NeedsRebuild = true;
             }
         }
@@ -326,16 +322,16 @@ namespace VRtist
             maxNbItemRows = Mathf.FloorToInt(innerTotalHeight / itemHeight);
             if (maxNbItemRows * itemHeight + (maxNbItemRows - 1) * margin > innerTotalHeight) // add margins and check if it fits
                 maxNbItemRows--;
-            itemVMargin = maxNbItemRows > 1 ? ((innerTotalHeight - ((float) maxNbItemRows * itemHeight)) / (maxNbItemRows - 1)) : 0.0f;
-            itemHMargin = maxNbItemCols > 1 ? ((innerTotalWidth - ((float) maxNbItemCols * itemWidth)) / (maxNbItemCols - 1)) : 0.0f;
+            itemVMargin = maxNbItemRows > 1 ? ((innerTotalHeight - ((float)maxNbItemRows * itemHeight)) / (maxNbItemRows - 1)) : 0.0f;
+            itemHMargin = maxNbItemCols > 1 ? ((innerTotalWidth - ((float)maxNbItemCols * itemWidth)) / (maxNbItemCols - 1)) : 0.0f;
             nbItemsPerPage = maxNbItemCols * maxNbItemRows;
 
             pagesCount = ((filteredItems.Count > 0) && (nbItemsPerPage > 0)) ? (filteredItems.Count - 1) / nbItemsPerPage + 1 : 0;
 
             nbItemsInLastPage = pagesCount == 0 ? 0 : Math.Min(filteredItems.Count - nbItemsPerPage * (pagesCount - 1), nbItemsPerPage);
 
-            float itemWidth2 = (float) itemWidth / 2.0f;
-            float itemHeight2 = (float) itemHeight / 2.0f;
+            float itemWidth2 = (float)itemWidth / 2.0f;
+            float itemHeight2 = (float)itemHeight / 2.0f;
 
             //
             // Update items visibility, position, scale and collider.
