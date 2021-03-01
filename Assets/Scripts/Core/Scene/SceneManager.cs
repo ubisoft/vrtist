@@ -143,9 +143,9 @@ namespace VRtist
             Instance.scene.SetObjectMaterialValue(gobject, materialValue);
         }
 
-        public static void AddMaterialParameters(string materialName, MaterialParameters materialParameters)
+        public static void AddMaterialParameters(string materialName, MaterialID materialID, Color color)
         {
-            Instance.scene.AddMaterialParameters(materialName, materialParameters);
+            Instance.scene.AddMaterialParameters(materialName, materialID, color);
         }
 
         public static void SendCameraInfo(Transform camera)
@@ -296,9 +296,14 @@ namespace VRtist
         }
 
         // User
-        public static void SendUserInfo()
+        public static void SendUserInfo(Vector3 cameraPosition, Vector3 cameraForward, Vector3 cameraUp, Vector3 cameraRight)
         {
-            Instance.scene.SendUserInfo();
+            Vector3 target = cameraPosition + cameraForward * 2f;
+
+            GlobalState.networkUser.position = RightHanded.InverseTransformPoint(cameraPosition);
+            GlobalState.networkUser.target = RightHanded.InverseTransformPoint(target);
+
+            Instance.scene.SendUserInfo(cameraPosition, cameraForward, cameraUp, cameraRight);
         }
 
         public static void RemoteSave()

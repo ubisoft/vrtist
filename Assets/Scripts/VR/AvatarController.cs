@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+
 using TMPro;
+
 using UnityEngine;
 
 namespace VRtist
@@ -8,11 +10,11 @@ namespace VRtist
     {
         RectTransform canvas;
         TextMeshProUGUI text;
-        List<Material> materials = new List<Material>();
+        readonly List<Material> materials = new List<Material>();
 
         private void Start()
         {
-            canvas = (RectTransform) transform.Find("Canvas");
+            canvas = (RectTransform)transform.Find("Canvas");
             if (null == text) { text = gameObject.GetComponentInChildren<TextMeshProUGUI>(); }
             FetchMaterials();
         }
@@ -59,7 +61,7 @@ namespace VRtist
             }
         }
 
-        public void SetUser(ConnectedUser user)
+        public void SetUser(User user)
         {
             if (null == text) { text = gameObject.GetComponentInChildren<TextMeshProUGUI>(); }
             if (text.text != user.name) { text.text = user.name; }
@@ -78,7 +80,7 @@ namespace VRtist
 
             // TODO bounding boxes of selected objects
 
-            transform.localPosition = user.eye;
+            transform.localPosition = user.position;
             transform.LookAt(transform.parent.TransformPoint(user.target));
         }
     }

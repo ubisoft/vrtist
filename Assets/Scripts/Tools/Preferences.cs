@@ -181,8 +181,7 @@ namespace VRtist
         {
             versionLabel.Text = $"<color=#0079FF>VRtist Version</color>: {Version.VersionString}\n" +
                 $"<color=#0079FF>Sync Version</color>: {Version.syncVersion}\n\n" +
-                $"<color=#0079FF>Client ID</color>: {GlobalState.networkUser.id}\n" +
-                $"<color=#0079FF>Master ID</color>: {GlobalState.networkUser.masterId}";
+                $"<color=#0079FF>Client ID</color>: {GlobalState.networkUser.id}\n";
         }
 
         public void OnReset()

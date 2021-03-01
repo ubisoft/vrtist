@@ -9,7 +9,7 @@ using UnityEngine;
 
 using VRtist.Serialization;
 
-namespace VRtist
+namespace VRtist.Mixer
 {
     // Message types
     public enum MessageType
@@ -168,9 +168,6 @@ namespace VRtist
 
         void Start()
         {
-            if (null == SyncData.mixer)
-                SyncData.mixer = new VRtistMixerImpl();
-
             Connect();
 
             GameObject prefabGameObject = new GameObject("__Prefab__");
@@ -220,7 +217,7 @@ namespace VRtist
         {
             connected = false;
             string[] args = System.Environment.GetCommandLineArgs();
-            SyncData.mixer.GetNetworkData(ref hostname, ref room, ref port, ref master, ref userName, ref userColor);
+            VRtistMixer.GetNetworkData(ref hostname, ref room, ref port, ref master, ref userName, ref userColor);
 
             // Read command line
             for (int i = 0; i < args.Length; i++)
@@ -233,7 +230,7 @@ namespace VRtist
                 if (args[i] == "--usercolor") { ColorUtility.TryParseHtmlString(args[i + 1], out userColor); }
             }
 
-            SyncData.mixer.SetNetworkData(room, master, userName, userColor);
+            VRtistMixer.SetNetworkData(room, master, userName, userColor);
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
             if (null == ipAddress)
@@ -527,7 +524,7 @@ namespace VRtist
             AddCommand(command);
         }
 
-        public void SendPlayerTransform(ConnectedUser info)
+        public void SendPlayerTransform(MixerUser info)
         {
             NetCommand command = MixerUtils.BuildSendPlayerTransform(info);
             if (null != command) { AddCommand(command); }
@@ -542,7 +539,7 @@ namespace VRtist
             NetCommand command = new NetCommand(buffer, MessageType.JoinRoom);
             AddCommand(command);
 
-            string json = SyncData.mixer.CreateClientNameAndColor();
+            string json = VRtistMixer.CreateClientNameAndColor();
             if (null == json)
                 return;
             NetCommand commandClientInfo = new NetCommand(Converter.StringToBytes(json), MessageType.SetClientCustomAttribute);
@@ -596,11 +593,11 @@ namespace VRtist
             string masterId = Converter.GetString(command.data, ref index);
 
             // For debug purpose (unity in editor mode when networkSettings.master is empty)
-            string currentMasterId = SyncData.mixer.GetMasterId();
+            string currentMasterId = VRtistMixer.GetMasterId();
             if (null == currentMasterId || currentMasterId.Length == 0)
-                SyncData.mixer.SetMasterId(masterId);
+                VRtistMixer.SetMasterId(masterId);
 
-            if (masterId != SyncData.mixer.GetMasterId())
+            if (masterId != VRtistMixer.GetMasterId())
                 return false;
 
             int remainingData = command.data.Length - index;

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Mixer
 {
     public class MixerScene : IScene
     {
@@ -152,9 +152,14 @@ namespace VRtist
             InformModification(gobject);
         }
 
-        public void AddMaterialParameters(string materialName, MaterialParameters materialParameters)
+        public void AddMaterialParameters(string materialName, MaterialID materialID, Color color)
         {
-            MixerUtils.materialsParameters[materialName] = materialParameters;
+            MaterialParameters parameters = new MaterialParameters
+            {
+                materialType = materialID,
+                baseColor = color
+            };
+            MixerUtils.materialsParameters[materialName] = parameters;
         }
 
         public void SendCameraInfo(Transform camera)
@@ -283,9 +288,21 @@ namespace VRtist
             MixerClient.Instance.SendEvent<ShotManagerActionInfo>(MessageType.ShotManagerAction, info);
         }
 
-        public void SendUserInfo()
+        public void SendUserInfo(Vector3 cameraPosition, Vector3 cameraForward, Vector3 cameraUp, Vector3 cameraRight)
         {
-            MixerClient.Instance.SendPlayerTransform(GlobalState.networkUser);
+            MixerUser user = (MixerUser)GlobalState.networkUser;
+            if (null == user) { return; }
+
+            Vector3 upRight = cameraPosition + cameraForward + cameraUp + cameraRight;
+            Vector3 upLeft = cameraPosition + cameraForward + cameraUp - cameraRight;
+            Vector3 bottomRight = cameraPosition + cameraForward - cameraUp + cameraRight;
+            Vector3 bottomLeft = cameraPosition + cameraForward - cameraUp - cameraRight;
+
+            user.corners[0] = SceneManager.RightHanded.InverseTransformPoint(upLeft);
+            user.corners[1] = SceneManager.RightHanded.InverseTransformPoint(upRight);
+            user.corners[2] = SceneManager.RightHanded.InverseTransformPoint(bottomRight);
+            user.corners[3] = SceneManager.RightHanded.InverseTransformPoint(bottomLeft);
+            MixerClient.Instance.SendPlayerTransform(user);
         }
 
         public void RemoteSave()

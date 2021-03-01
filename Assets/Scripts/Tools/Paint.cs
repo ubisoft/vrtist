@@ -344,12 +344,7 @@ namespace VRtist
             renderer.material.SetColor("_BaseColor", color);
 
             // Update scene data for live sync
-            MaterialParameters parameters = new MaterialParameters
-            {
-                materialType = MaterialID.ObjectOpaque,
-                baseColor = color
-            };
-            SceneManager.AddMaterialParameters(Utils.GetMaterialName(gobject), parameters);
+            SceneManager.AddMaterialParameters(Utils.GetMaterialName(gobject), MaterialID.ObjectOpaque, color);
 
             gobject.AddComponent<MeshCollider>();
 

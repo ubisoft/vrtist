@@ -142,20 +142,7 @@ namespace VRtist
                     previousPosition = vrCamera.position;
                     previousForward = forward;
 
-                    Vector3 upRight = vrCamera.position + vrCamera.forward + vrCamera.up + vrCamera.right;
-                    Vector3 upLeft = vrCamera.position + vrCamera.forward + vrCamera.up - vrCamera.right;
-                    Vector3 bottomRight = vrCamera.position + vrCamera.forward - vrCamera.up + vrCamera.right;
-                    Vector3 bottomLeft = vrCamera.position + vrCamera.forward - vrCamera.up - vrCamera.right;
-                    Vector3 target = vrCamera.position + vrCamera.forward * 2f;
-
-                    GlobalState.networkUser.eye = rightHanded.InverseTransformPoint(vrCamera.position);
-                    GlobalState.networkUser.target = rightHanded.InverseTransformPoint(target);
-                    GlobalState.networkUser.corners[0] = rightHanded.InverseTransformPoint(upLeft);
-                    GlobalState.networkUser.corners[1] = rightHanded.InverseTransformPoint(upRight);
-                    GlobalState.networkUser.corners[2] = rightHanded.InverseTransformPoint(bottomRight);
-                    GlobalState.networkUser.corners[3] = rightHanded.InverseTransformPoint(bottomLeft);
-
-                    SceneManager.SendUserInfo();
+                    SceneManager.SendUserInfo(vrCamera.position, vrCamera.forward, vrCamera.up, vrCamera.right);
                 }
                 yield return new WaitForSeconds(1f / 15f);
             }

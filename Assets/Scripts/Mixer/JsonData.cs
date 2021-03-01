@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Mixer
 {
     // WARNING: Unity and its version of C# is not able to deserialize a Dictionary<string, object>.
     // System.Text.Json or Newtonsoft.Json don't work :( in this case. So the following classes are
@@ -170,15 +171,15 @@ namespace VRtist
             return clients;
         }
 
-        private static Regex idRegex = new Regex("^{?\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex ipRegex = new Regex("\"ip\":\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex portRegex = new Regex("\"port\":\\s*(?<value>\\d+)", RegexOptions.Compiled);
-        private static Regex roomRegex = new Regex("\"room\":\\s*(\"(?<value>(.+?))\")|(?<value>null)", RegexOptions.Compiled);
-        private static Regex userNameRegex = new Regex("\"user_name\":\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex viewRegex = new Regex("\"views\":\\s*{\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
-        private static Regex eyeRegex = new Regex("\"eye\":\\s*\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
-        private static Regex targetRegex = new Regex("\"target\":\\s*\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
-        private static Regex userColorRegex = new Regex("\"user_color\":\\s*\\[(?<r>[-+]?([0-9]*[.])?[0-9]+),\\s(?<g>[-+]?([0-9]*[.])?[0-9]+),\\s(?<b>[-+]?([0-9]*[.])?[0-9]+)(,\\s(?<a>[-+]?([0-9]*[.])?[0-9]+))?]", RegexOptions.Compiled);
+        private static readonly Regex idRegex = new Regex("^{?\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static readonly Regex ipRegex = new Regex("\"ip\":\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static readonly Regex portRegex = new Regex("\"port\":\\s*(?<value>\\d+)", RegexOptions.Compiled);
+        private static readonly Regex roomRegex = new Regex("\"room\":\\s*(\"(?<value>(.+?))\")|(?<value>null)", RegexOptions.Compiled);
+        private static readonly Regex userNameRegex = new Regex("\"user_name\":\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static readonly Regex viewRegex = new Regex("\"views\":\\s*{\\s*\"(?<value>.+?)\"", RegexOptions.Compiled);
+        private static readonly Regex eyeRegex = new Regex("\"eye\":\\s*\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
+        private static readonly Regex targetRegex = new Regex("\"target\":\\s*\\[(?<x>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<y>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?),\\s(?<z>[-+]?([0-9]*[.])?[0-9]+([eE][-+]?[0-9]+)?)]", RegexOptions.Compiled);
+        private static readonly Regex userColorRegex = new Regex("\"user_color\":\\s*\\[(?<r>[-+]?([0-9]*[.])?[0-9]+),\\s(?<g>[-+]?([0-9]*[.])?[0-9]+),\\s(?<b>[-+]?([0-9]*[.])?[0-9]+)(,\\s(?<a>[-+]?([0-9]*[.])?[0-9]+))?]", RegexOptions.Compiled);
 
         private static JsonValue<string> ExtractStringInfo(string json, Regex regex)
         {
@@ -267,16 +268,18 @@ namespace VRtist
 
         public static ClientInfo GetClientInfo(string json)
         {
-            ClientInfo clientInfo = new ClientInfo();
-            clientInfo.id = ExtractStringInfo(json, idRegex);
-            clientInfo.ip = ExtractStringInfo(json, ipRegex);
-            clientInfo.port = ExtractIntInfo(json, portRegex);
-            clientInfo.room = ExtractStringInfo(json, roomRegex);
-            clientInfo.userName = ExtractStringInfo(json, userNameRegex);
-            clientInfo.userColor = ExtractColorInfo(json, userColorRegex);
-            clientInfo.viewId = ExtractStringInfo(json, viewRegex);
-            clientInfo.eye = ExtractVector3Info(json, eyeRegex);
-            clientInfo.target = ExtractVector3Info(json, targetRegex);
+            ClientInfo clientInfo = new ClientInfo
+            {
+                id = ExtractStringInfo(json, idRegex),
+                ip = ExtractStringInfo(json, ipRegex),
+                port = ExtractIntInfo(json, portRegex),
+                room = ExtractStringInfo(json, roomRegex),
+                userName = ExtractStringInfo(json, userNameRegex),
+                userColor = ExtractColorInfo(json, userColorRegex),
+                viewId = ExtractStringInfo(json, viewRegex),
+                eye = ExtractVector3Info(json, eyeRegex),
+                target = ExtractVector3Info(json, targetRegex)
+            };
             return clientInfo;
         }
 
@@ -311,7 +314,7 @@ namespace VRtist
         //         }
         //     }
         // }
-        public static string CreateJsonPlayerInfo(ConnectedUser user)
+        public static string CreateJsonPlayerInfo(MixerUser user)
         {
             if (null == user.id || null == user.viewId) { return null; }
             string json = "{\"user_scenes\": {" +
@@ -320,7 +323,7 @@ namespace VRtist
                 "\"selected_objects\": []," +
                 "\"views\": {" +
                 $"\"{user.viewId}\": {{" +
-                $"\"eye\": [{user.eye.ToString().Substring(1, user.eye.ToString().Length - 2)}]," +
+                $"\"eye\": [{user.position.ToString().Substring(1, user.position.ToString().Length - 2)}]," +
                 $"\"target\": [{user.target.ToString().Substring(1, user.target.ToString().Length - 2)}]," +
                 "\"screen_corners\": [" +
                 $"[{user.corners[0].ToString().Substring(1, user.corners[0].ToString().Length - 2)}]" +

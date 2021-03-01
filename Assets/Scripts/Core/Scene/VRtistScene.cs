@@ -95,7 +95,7 @@ namespace VRtist
             Utils.SetMaterialValue(gobject, materialValue);
         }
 
-        public void AddMaterialParameters(string materialName, MaterialParameters materialParameters) { }
+        public void AddMaterialParameters(string materialName, MaterialID materialID, Color color) { }
 
         public void SendCameraInfo(Transform camera) { }
 
@@ -143,7 +143,7 @@ namespace VRtist
         {
         }
 
-        public void SendUserInfo() { }
+        public void SendUserInfo(Vector3 cameraPosition, Vector3 cameraForward, Vector3 cameraUp, Vector3 cameraRight) { }
 
         public void RemoteSave() { }
     }

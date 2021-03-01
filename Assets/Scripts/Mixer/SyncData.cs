@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace VRtist
+namespace VRtist.Mixer
 {
     public class Node
     {
@@ -21,6 +21,7 @@ namespace VRtist
         {
             prefab = null;
         }
+
         public Node(GameObject gObject)
         {
             prefab = gObject;
@@ -62,6 +63,7 @@ namespace VRtist
             collections.Add(collectionNode);
             ComputeContainerVisibility();
         }
+
         public void RemoveCollection(CollectionNode collectionNode)
         {
             collections.Remove(collectionNode);
@@ -71,8 +73,9 @@ namespace VRtist
         public void AddInstance(GameObject obj, string collectionInstanceName = "/")
         {
             instances.Add(new Tuple<GameObject, string>(obj, collectionInstanceName));
-            SyncData.mixer.OnInstanceAdded(obj);
+            VRtistMixer.OnInstanceAdded(obj);
         }
+
         public void RemoveInstance(GameObject obj)
         {
             foreach (Tuple<GameObject, string> item in instances)
@@ -80,12 +83,14 @@ namespace VRtist
                 if (item.Item1 == obj)
                 {
                     instances.Remove(item);
-                    SyncData.mixer.OnInstanceRemoved(obj);
+                    VRtistMixer.OnInstanceRemoved(obj);
                     break;
                 }
             }
         }
     }
+
+
     public class CollectionNode
     {
         public CollectionNode parent = null;                                // Parent collection
@@ -110,35 +115,42 @@ namespace VRtist
         {
             name = collectionName;
         }
+
         public void AddChild(CollectionNode node)
         {
             node.parent = this;
             children.Add(node);
         }
+
         public void RemoveChild(CollectionNode node)
         {
             node.parent = null;
             children.Remove(node);
         }
+
         public void AddObject(Node node)
         {
             objects.Add(node);
             node.AddCollection(this);
         }
+
         public void RemoveObject(Node node)
         {
             node.RemoveCollection(this);
             objects.Remove(node);
         }
+
         public void AddPrefabInstanceNode(Node obj)
         {
             prefabInstanceNodes.Add(obj);
         }
+
         public void RemovePrefabInstanceNode(Node obj)
         {
             prefabInstanceNodes.Remove(obj);
         }
     }
+
 
     public static class SyncData
     {
@@ -156,8 +168,6 @@ namespace VRtist
 
         public static Transform root = null;
         public static Transform prefab = null;
-
-        public static MixerInterface mixer;
 
         public static void Init(Transform p, Transform r)
         {
@@ -495,7 +505,7 @@ namespace VRtist
                 foreach (Tuple<GameObject, string> obj in node.instances)
                 {
                     obj.Item1.name = dstName;
-                    mixer.OnObjectRenamed(obj.Item1);
+                    VRtistMixer.OnObjectRenamed(obj.Item1);
                 }
                 nodes[dstName] = node;
                 nodes.Remove(srcName);
@@ -908,7 +918,7 @@ namespace VRtist
             EnableComponents(obj, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
 
             // Enable/Disable light
-            mixer.SetLightEnabled(obj, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
+            VRtistMixer.SetLightEnabled(obj, node.containerVisible & node.visible & node.tempVisible & inheritVisible);
         }
 
         public static bool IsInstanceParentVisible(Transform root, GameObject instance)
@@ -1000,7 +1010,6 @@ namespace VRtist
                 node.parent.RemoveChild(node);
             nodes.Remove(objectName);
         }
-
 
         public static Node CreatePrefabNodeHierarchy(GameObject newPrefab)
         {
@@ -1117,7 +1126,7 @@ namespace VRtist
 
         public static GameObject InstantiateFullHierarchyPrefab(GameObject prefab)
         {
-            Node node = CreatePrefabNodeHierarchy(prefab);
+            CreatePrefabNodeHierarchy(prefab);
             return AddFullHierarchyObjectToDocument(prefab);
         }
 
@@ -1139,6 +1148,7 @@ namespace VRtist
             node.prefab.transform.localScale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
             ApplyTransformToInstances(node.prefab.transform);
         }
+
         public static void SetTransform(string objectName, Vector3 position, Quaternion rotation, Vector3 scale)
         {
             Node node = nodes[objectName];
@@ -1149,4 +1159,3 @@ namespace VRtist
         }
     }
 }
-

@@ -7,7 +7,7 @@ using UnityEngine.Rendering;
 
 using VRtist.Serialization;
 
-namespace VRtist
+namespace VRtist.Mixer
 {
     public class ImageData
     {
@@ -47,7 +47,7 @@ namespace VRtist
         public static void BuildClientId(byte[] data)
         {
             string clientId = Converter.ConvertToString(data);
-            SyncData.mixer.SetClientId(clientId);
+            VRtistMixer.SetClientId(clientId);
         }
 
         public static void Rename(Transform _, byte[] data)
@@ -283,7 +283,7 @@ namespace VRtist
             if (textureData.TryGetValue(filePath, out ImageData imageData))
             {
                 textureData.Remove(filePath);
-                return SyncData.mixer.LoadTexture(filePath, imageData, isLinear);
+                return VRtistMixer.LoadTexture(filePath, imageData, isLinear);
             }
             if (textures.ContainsKey(filePath))
             {
@@ -589,7 +589,7 @@ namespace VRtist
                 foreach (Tuple<GameObject, string> instance in node.instances)
                 {
                     GameObject obj = instance.Item1;
-                    if (SyncData.mixer.IsObjectInUse(obj))
+                    if (VRtistMixer.IsObjectInUse(obj))
                         continue;
                     obj.transform.localPosition = transform.localPosition;
                     obj.transform.localRotation = transform.localRotation;
@@ -830,7 +830,7 @@ namespace VRtist
             }
             byte[] bpath = Converter.StringToBytes(path);
 
-            SyncData.mixer.GetCameraInfo(cameraInfo.transform.gameObject, out float focal, out float near, out float far, out bool dofEnabled, out float aperture, out Transform colimator);
+            VRtistMixer.GetCameraInfo(cameraInfo.transform.gameObject, out float focal, out float near, out float far, out bool dofEnabled, out float aperture, out Transform colimator);
             byte[] bname = Converter.StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
@@ -862,7 +862,7 @@ namespace VRtist
             byte[] bpath = Converter.StringToBytes(path);
             byte[] bname = Converter.StringToBytes(lightInfo.transform.name);
 
-            SyncData.mixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float innerAngle, out float outerAngle);
+            VRtistMixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float innerAngle, out float outerAngle);
 
             byte[] lightTypeBuffer = Converter.IntToBytes((int)lightType);
             byte[] castShadowsBuffer = Converter.BoolToBytes(castShadows);
@@ -1102,7 +1102,7 @@ namespace VRtist
             Converter.GetInt(data, ref currentIndex);
             Buffer.BlockCopy(data, currentIndex + (keyCount * sizeof(int)) + (keyCount * sizeof(float)), interpolationBuffer, 0, keyCount * sizeof(int));
 
-            SyncData.mixer.CreateAnimationCurve(objectName, animationChannel, channelIndex, intBuffer, floatBuffer, interpolationBuffer);
+            VRtistMixer.CreateAnimationCurve(objectName, animationChannel, channelIndex, intBuffer, floatBuffer, interpolationBuffer);
         }
 
         public static void BuildAddKeyframe(byte[] data)
@@ -1115,7 +1115,7 @@ namespace VRtist
             float value = Converter.GetFloat(data, ref currentIndex);
             int interpolation = Converter.GetInt(data, ref currentIndex);
 
-            SyncData.mixer.CreateAnimationKey(objectName, channelName, channelIndex, frame, value, interpolation);
+            VRtistMixer.CreateAnimationKey(objectName, channelName, channelIndex, frame, value, interpolation);
         }
 
         public static void BuildRemoveKeyframe(byte[] data)
@@ -1126,7 +1126,7 @@ namespace VRtist
             int channelIndex = Converter.GetInt(data, ref currentIndex);
             int frame = Converter.GetInt(data, ref currentIndex);
 
-            SyncData.mixer.RemoveAnimationKey(objectName, channelName, channelIndex, frame);
+            VRtistMixer.RemoveAnimationKey(objectName, channelName, channelIndex, frame);
         }
 
         public static void BuildMoveKeyframe(byte[] data)
@@ -1138,7 +1138,7 @@ namespace VRtist
             int frame = Converter.GetInt(data, ref currentIndex);
             int newFrame = Converter.GetInt(data, ref currentIndex);
 
-            SyncData.mixer.MoveAnimationKey(objectName, channelName, channelIndex, frame, newFrame);
+            VRtistMixer.MoveAnimationKey(objectName, channelName, channelIndex, frame, newFrame);
         }
 
         public static void BuildClearAnimations(byte[] data)
@@ -1149,7 +1149,7 @@ namespace VRtist
             Node node = SyncData.nodes[objectName];
             foreach (Tuple<GameObject, string> t in node.instances)
             {
-                SyncData.mixer.ClearAnimations(t.Item1);
+                VRtistMixer.ClearAnimations(t.Item1);
             }
         }
 
@@ -1159,17 +1159,17 @@ namespace VRtist
             string lightName = Converter.GetString(data, ref currentIndex);
 
             Node node = SyncData.nodes[lightName];
-            SyncData.mixer.GetLightInfo(node.prefab, out LightType lightType, out bool castShadows, out float _, out Color _, out float range, out float innerAngle, out float outerAngle);
+            VRtistMixer.GetLightInfo(node.prefab, out LightType lightType, out bool castShadows, out float _, out Color _, out float range, out float innerAngle, out float outerAngle);
 
             float power = Converter.GetFloat(data, ref currentIndex);
             Color color = Converter.GetColor(data, ref currentIndex);
 
-            SyncData.mixer.SetLightInfo(node.prefab, lightType, castShadows, power, color, range, innerAngle, outerAngle);
+            VRtistMixer.SetLightInfo(node.prefab, lightType, castShadows, power, color, range, innerAngle, outerAngle);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
-                SyncData.mixer.SetLightInfo(t.Item1, lightType, castShadows, power, color, range, innerAngle, outerAngle);
+                VRtistMixer.SetLightInfo(t.Item1, lightType, castShadows, power, color, range, innerAngle, outerAngle);
             }
         }
 
@@ -1214,7 +1214,7 @@ namespace VRtist
                 gateFit = Camera.GateFitMode.Horizontal;
             Vector2 sensorSize = Converter.GetVector2(data, ref currentIndex);
 
-            SyncData.mixer.SetCameraInfo(camGameObject, focal, near, far, dofEnabled, aperture, colimatorName, gateFit, sensorSize);
+            VRtistMixer.SetCameraInfo(camGameObject, focal, near, far, dofEnabled, aperture, colimatorName, gateFit, sensorSize);
         }
 
         public static void BuildLight(Transform root, byte[] data)
@@ -1274,11 +1274,11 @@ namespace VRtist
             float range = 5f;
             float innerAngle = (1f - spotBlend) * 100f;
             float outerAngle = spotSize * 180f / 3.14f;
-            SyncData.mixer.SetLightInfo(lightGameObject, lightType, castShadows, power, lightColor, range, innerAngle, outerAngle);
+            VRtistMixer.SetLightInfo(lightGameObject, lightType, castShadows, power, lightColor, range, innerAngle, outerAngle);
 
             foreach (Tuple<GameObject, string> t in node.instances)
             {
-                SyncData.mixer.SetLightInfo(t.Item1, lightType, castShadows, power, lightColor, 5f, innerAngle, outerAngle);
+                VRtistMixer.SetLightInfo(t.Item1, lightType, castShadows, power, lightColor, 5f, innerAngle, outerAngle);
             }
         }
 
@@ -1289,7 +1289,7 @@ namespace VRtist
             Color topColor = Converter.GetColor(data, ref currentIndex);
             Color middleColor = Converter.GetColor(data, ref currentIndex);
             Color bottomColor = Converter.GetColor(data, ref currentIndex);
-            SyncData.mixer.SetSkyColors(topColor, middleColor, bottomColor);
+            VRtistMixer.SetSkyColors(topColor, middleColor, bottomColor);
         }
 
         public static NetCommand BuildSendClearAnimations(ClearAnimationInfo info)
@@ -1401,11 +1401,9 @@ namespace VRtist
             }
         }
 
-        public static NetCommand BuildSendPlayerTransform(ConnectedUser playerInfo)
+        public static NetCommand BuildSendPlayerTransform(MixerUser playerInfo)
         {
-            if (null == SyncData.mixer)
-                return null;
-            string json = SyncData.mixer.CreateJsonPlayerInfo(playerInfo);
+            string json = VRtistMixer.CreateJsonPlayerInfo(playerInfo);
             if (null == json) { return null; }
             byte[] buffer = Converter.StringToBytes(json);
             NetCommand command = new NetCommand(buffer, MessageType.SetClientCustomAttribute);
@@ -1442,7 +1440,7 @@ namespace VRtist
         {
             GameObject gobject = transform.gameObject;
 
-            SyncData.mixer.UpdateTag(gobject);
+            VRtistMixer.UpdateTag(gobject);
 
             MeshFilter filter = GetOrCreateMeshFilter(gobject);
             string meshName = mesh.name;
@@ -1711,7 +1709,7 @@ namespace VRtist
             {
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
-                SyncData.mixer.CreateStroke(points, numPoints, lineWidth, offset, ref subMesh);
+                VRtistMixer.CreateStroke(points, numPoints, lineWidth, offset, ref subMesh);
                 subMesh.materialParameters = materialsParameters[materialNames[materialIndex] + "_stroke"];
                 frame.strokes.Add(subMesh);
             }
@@ -1720,7 +1718,7 @@ namespace VRtist
             {
                 Vector3 offset = new Vector3(0.0f, -(strokeOffset + layerOffset), 0.0f);
                 GPStroke subMesh = new GPStroke();
-                SyncData.mixer.CreateFill(points, numPoints, offset, ref subMesh);
+                VRtistMixer.CreateFill(points, numPoints, offset, ref subMesh);
                 subMesh.materialParameters = materialsParameters[materialNames[materialIndex] + "_fill"];
                 frame.strokes.Add(subMesh);
             }
@@ -1900,7 +1898,7 @@ namespace VRtist
 
             GreasePencilData gpdata = greasePencils[greasePencilName];
 
-            SyncData.mixer.BuildGreasePencilConnection(transform.gameObject, gpdata);
+            VRtistMixer.BuildGreasePencilConnection(transform.gameObject, gpdata);
         }
 
         public static void BuildGreasePencilTimeOffset(byte[] data)
@@ -1914,16 +1912,6 @@ namespace VRtist
             gpData.rangeStartFrame = Converter.GetInt(data, ref currentIndex);
             gpData.rangeEndFrame = Converter.GetInt(data, ref currentIndex);
 
-        }
-
-        public static void BuildPlay()
-        {
-            SyncData.mixer.SetPlaying(true);
-        }
-
-        public static void BuildPause()
-        {
-            SyncData.mixer.SetPlaying(false);
         }
 
         public static NetCommand BuildSendFrameStartEndCommand(int start, int end)
@@ -2057,7 +2045,7 @@ namespace VRtist
             int index = 0;
             int start = Converter.GetInt(data, ref index);
             int end = Converter.GetInt(data, ref index);
-            SyncData.mixer.SetFrameRange(start, end);
+            VRtistMixer.SetFrameRange(start, end);
         }
 
         public static void BuildCurrentCamera(byte[] data)
@@ -2070,7 +2058,7 @@ namespace VRtist
                 Node prefabNode = SyncData.nodes[cameraName];
                 cameraObject = prefabNode.instances[0].Item1;
             }
-            SyncData.mixer.SetActiveCamera(cameraObject);
+            VRtistMixer.SetActiveCamera(cameraObject);
         }
 
         public static void BuildShotManager(byte[] data)
@@ -2093,7 +2081,7 @@ namespace VRtist
                 Shot shot = new Shot { name = shotName, camera = camera, start = start, end = end, enabled = enabled };
                 shots.Add(shot);
             }
-            SyncData.mixer.UpdateShotManager(shots);
+            VRtistMixer.UpdateShotManager(shots);
         }
 
         public static void BuildShotManagerAction(byte[] data)
@@ -2115,22 +2103,22 @@ namespace VRtist
                         if (cameraName.Length > 0)
                             cam = SyncData.nodes[cameraName].instances[0].Item1;
                         Shot shot = new Shot { name = shotName, camera = cam, color = color, start = start, end = end };
-                        SyncData.mixer.ShotManagerInsertShot(shot, shotIndex);
+                        VRtistMixer.ShotManagerInsertShot(shot, shotIndex);
                     }
                     break;
                 case ShotManagerAction.DeleteShot:
-                    SyncData.mixer.ShotManagerDeleteShot(shotIndex);
+                    VRtistMixer.ShotManagerDeleteShot(shotIndex);
                     break;
                 case ShotManagerAction.DuplicateShot:
                     {
                         Converter.GetString(data, ref index);
-                        SyncData.mixer.ShotManagerDuplicateShot(shotIndex);
+                        VRtistMixer.ShotManagerDuplicateShot(shotIndex);
                     }
                     break;
                 case ShotManagerAction.MoveShot:
                     {
                         int offset = Converter.GetInt(data, ref index);
-                        SyncData.mixer.ShotManagerMoveShot(shotIndex, offset);
+                        VRtistMixer.ShotManagerMoveShot(shotIndex, offset);
                     }
                     break;
                 case ShotManagerAction.UpdateShot:
@@ -2140,7 +2128,7 @@ namespace VRtist
                         string cameraName = Converter.GetString(data, ref index);
                         Color color = Converter.GetColor(data, ref index);
                         int enabled = Converter.GetInt(data, ref index);
-                        SyncData.mixer.ShotManagerUpdateShot(shotIndex, start, end, cameraName, color, enabled);
+                        VRtistMixer.ShotManagerUpdateShot(shotIndex, start, end, cameraName, color, enabled);
                     }
                     break;
             }
@@ -2150,14 +2138,14 @@ namespace VRtist
         {
             int index = 0;
             string json = Converter.GetString(data, ref index);
-            SyncData.mixer.UpdateClient(json);
+            VRtistMixer.UpdateClient(json);
         }
 
         public static void BuildListAllClients(byte[] data)
         {
             int index = 0;
             string json = Converter.GetString(data, ref index);
-            SyncData.mixer.ListAllClients(json);
+            VRtistMixer.ListAllClients(json);
         }
     }
 }

@@ -7,6 +7,44 @@ using UnityEngine.Events;
 
 namespace VRtist
 {
+    public enum ShotManagerAction
+    {
+        AddShot = 0,
+        DeleteShot,
+        DuplicateShot,
+        MoveShot,
+        UpdateShot
+    }
+
+    public class ShotManagerActionInfo
+    {
+        public ShotManagerAction action;
+        public int shotIndex = 0;
+        public string shotName = "";
+        public int shotStart = -1;
+        public int shotEnd = -1;
+        public GameObject camera;
+        public Color shotColor = Color.black;
+        public int moveOffset = 0;
+        public int shotEnabled = -1;
+
+        public ShotManagerActionInfo Copy()
+        {
+            return new ShotManagerActionInfo()
+            {
+                action = action,
+                shotIndex = shotIndex,
+                shotName = shotName,
+                shotStart = shotStart,
+                shotEnd = shotEnd,
+                camera = camera,
+                shotColor = shotColor,
+                moveOffset = moveOffset,
+                shotEnabled = shotEnabled
+            };
+        }
+    }
+
     public class Shot
     {
         public string name;

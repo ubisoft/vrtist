@@ -29,8 +29,8 @@ namespace VRtist
         // Connected users
         public bool mixerConnected = false;
         public UnityEvent onConnected = new UnityEvent();
-        public static ConnectedUser networkUser = new ConnectedUser();
-        private readonly Dictionary<string, ConnectedUser> connectedUsers = new Dictionary<string, ConnectedUser>();
+        public static User networkUser = new User();
+        private readonly Dictionary<string, User> connectedUsers = new Dictionary<string, User>();
         private readonly Dictionary<string, AvatarController> connectedAvatars = new Dictionary<string, AvatarController>();
         private GameObject avatarPrefab;
         private Transform avatarsContainer;
@@ -340,7 +340,7 @@ namespace VRtist
             return Instance.connectedUsers.ContainsKey(userId);
         }
 
-        public static void AddConnectedUser(ConnectedUser user)
+        public static void AddConnectedUser(User user)
         {
             Instance.connectedUsers[user.id] = user;
             GameObject avatar = Instantiate(Instance.avatarPrefab, Instance.avatarsContainer);
@@ -360,12 +360,12 @@ namespace VRtist
             }
         }
 
-        public static ConnectedUser GetConnectedUser(string userId)
+        public static User GetConnectedUser(string userId)
         {
             return Instance.connectedUsers[userId];
         }
 
-        public static void UpdateConnectedUser(ConnectedUser user)
+        public static void UpdateConnectedUser(User user)
         {
             if (Instance.connectedAvatars.ContainsKey(user.id))
             {

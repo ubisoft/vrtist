@@ -17,7 +17,7 @@ namespace VRtist
         GameObject GetObjectParent(GameObject gobject);
         void SetObjectParent(GameObject gobject, GameObject parent);
         void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue);
-        void AddMaterialParameters(string materialName, MaterialParameters materialParameters);
+        void AddMaterialParameters(string materialName, MaterialID materialID, Color color);
         void SendCameraInfo(Transform camera);
         void SendLightInfo(Transform light);
         void ClearObjectAnimations(GameObject gobject);
@@ -31,7 +31,7 @@ namespace VRtist
         void SetSky(SkySettings sky);
         void ApplyShotManagerAction(ShotManagerActionInfo info);
         void ListImportableObjects();
-        void SendUserInfo();
+        void SendUserInfo(Vector3 cameraPosition, Vector3 cameraForward, Vector3 cameraUp, Vector3 cameraRight);
         void RemoteSave();
     }
 }
