@@ -8,7 +8,7 @@ namespace VRtist
     public class SelectorTrigger : MonoBehaviour
     {
         public SelectorBase selector = null;
-        private List<GameObject> collidedObjects = new List<GameObject>();
+        private readonly List<GameObject> collidedObjects = new List<GameObject>();
 
         private void OnDisable()
         {
@@ -102,9 +102,27 @@ namespace VRtist
                     collidedObjects.RemoveAt(index);
                     hoveredObject = null;
                 }
-                Selection.HoveredObject = hoveredObject;
+                if (!GlobalState.Instance.selectionGripped)
+                    Selection.HoveredObject = hoveredObject;
             }
         }
+
+        public void OnEndGrip()
+        {
+            // manage successive imbrication of objects
+            GameObject hoveredObject = null;
+            while (collidedObjects.Count > 0)
+            {
+                int index = collidedObjects.Count - 1;
+                hoveredObject = collidedObjects[index];
+                if (!SceneManager.IsInTrash(hoveredObject))
+                    break;
+                collidedObjects.RemoveAt(index);
+                hoveredObject = null;
+            }
+            Selection.HoveredObject = hoveredObject;
+        }
+
 
         private void UpdateSelection()
         {

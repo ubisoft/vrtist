@@ -439,6 +439,8 @@ namespace VRtist
             SetControllerVisible(true);
             enableToggleTool = true; // TODO: put back the original value, not always true (atm all tools have it to true).
 
+            selectorTrigger.OnEndGrip();
+
             if (gripPrevented)
             {
                 gripPrevented = false;
@@ -1279,6 +1281,10 @@ namespace VRtist
             if (source == Selection.AuxiliarySelection)
             {
                 Selection.AuxiliarySelection = clone;
+            }
+            if (source == Selection.HoveredObject)
+            {
+                Selection.HoveredObject = clone;
             }
 
             selectorTrigger.ClearCollidedObjects();

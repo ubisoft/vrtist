@@ -36,9 +36,9 @@ namespace VRtist
         UILabel selectedObjectNameLabel;
 
         // Transform
-        UISpinner posXSpinner;
-        UISpinner posYSpinner;
-        UISpinner posZSpinner;
+        UIButton posXButton;
+        UIButton posYButton;
+        UIButton posZButton;
 
         UIButton posResetButton;
         UIButton posLockButton;
@@ -46,9 +46,9 @@ namespace VRtist
         UIButton posYLockButton;
         UIButton posZLockButton;
 
-        UISpinner rotXSpinner;
-        UISpinner rotYSpinner;
-        UISpinner rotZSpinner;
+        UIButton rotXButton;
+        UIButton rotYButton;
+        UIButton rotZButton;
 
         UIButton rotResetButton;
         UIButton rotLockButton;
@@ -56,9 +56,9 @@ namespace VRtist
         UIButton rotYLockButton;
         UIButton rotZLockButton;
 
-        UISpinner scaleXSpinner;
-        UISpinner scaleYSpinner;
-        UISpinner scaleZSpinner;
+        UIButton scaleXButton;
+        UIButton scaleYButton;
+        UIButton scaleZButton;
 
         UIButton scaleResetButton;
         UIButton scaleLockButton;
@@ -165,9 +165,9 @@ namespace VRtist
             deleteLookAtButton.onReleaseEvent.AddListener(RemoveLookAtConstraint);
 
             // Transforms
-            posXSpinner = inspectorPanel.transform.Find("Transform/Position/X/Value").GetComponent<UISpinner>();
-            posYSpinner = inspectorPanel.transform.Find("Transform/Position/Y/Value").GetComponent<UISpinner>();
-            posZSpinner = inspectorPanel.transform.Find("Transform/Position/Z/Value").GetComponent<UISpinner>();
+            posXButton = inspectorPanel.transform.Find("Transform/Position/X/Value").GetComponent<UIButton>();
+            posYButton = inspectorPanel.transform.Find("Transform/Position/Y/Value").GetComponent<UIButton>();
+            posZButton = inspectorPanel.transform.Find("Transform/Position/Z/Value").GetComponent<UIButton>();
 
             posResetButton = inspectorPanel.transform.Find("Transform/Position/Reset").GetComponent<UIButton>();
             posLockButton = inspectorPanel.transform.Find("Transform/Position/Global Lock").GetComponent<UIButton>();
@@ -175,9 +175,9 @@ namespace VRtist
             posYLockButton = inspectorPanel.transform.Find("Transform/Position/Y/Lock").GetComponent<UIButton>();
             posZLockButton = inspectorPanel.transform.Find("Transform/Position/Z/Lock").GetComponent<UIButton>();
 
-            rotXSpinner = inspectorPanel.transform.Find("Transform/Rotation/X/Value").GetComponent<UISpinner>();
-            rotYSpinner = inspectorPanel.transform.Find("Transform/Rotation/Y/Value").GetComponent<UISpinner>();
-            rotZSpinner = inspectorPanel.transform.Find("Transform/Rotation/Z/Value").GetComponent<UISpinner>();
+            rotXButton = inspectorPanel.transform.Find("Transform/Rotation/X/Value").GetComponent<UIButton>();
+            rotYButton = inspectorPanel.transform.Find("Transform/Rotation/Y/Value").GetComponent<UIButton>();
+            rotZButton = inspectorPanel.transform.Find("Transform/Rotation/Z/Value").GetComponent<UIButton>();
 
             rotResetButton = inspectorPanel.transform.Find("Transform/Position/Reset").GetComponent<UIButton>();
             rotLockButton = inspectorPanel.transform.Find("Transform/Rotation/Global Lock").GetComponent<UIButton>();
@@ -185,9 +185,9 @@ namespace VRtist
             rotYLockButton = inspectorPanel.transform.Find("Transform/Rotation/Y/Lock").GetComponent<UIButton>();
             rotZLockButton = inspectorPanel.transform.Find("Transform/Rotation/Z/Lock").GetComponent<UIButton>();
 
-            scaleXSpinner = inspectorPanel.transform.Find("Transform/Scale/X/Value").GetComponent<UISpinner>();
-            scaleYSpinner = inspectorPanel.transform.Find("Transform/Scale/Y/Value").GetComponent<UISpinner>();
-            scaleZSpinner = inspectorPanel.transform.Find("Transform/Scale/Z/Value").GetComponent<UISpinner>();
+            scaleXButton = inspectorPanel.transform.Find("Transform/Scale/X/Value").GetComponent<UIButton>();
+            scaleYButton = inspectorPanel.transform.Find("Transform/Scale/Y/Value").GetComponent<UIButton>();
+            scaleZButton = inspectorPanel.transform.Find("Transform/Scale/Z/Value").GetComponent<UIButton>();
 
             scaleResetButton = inspectorPanel.transform.Find("Transform/Position/Reset").GetComponent<UIButton>();
             scaleLockButton = inspectorPanel.transform.Find("Transform/Scale/Global Lock").GetComponent<UIButton>();
@@ -195,17 +195,17 @@ namespace VRtist
             scaleYLockButton = inspectorPanel.transform.Find("Transform/Scale/Y/Lock").GetComponent<UIButton>();
             scaleZLockButton = inspectorPanel.transform.Find("Transform/Scale/Z/Lock").GetComponent<UIButton>();
 
-            posXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(posXSpinner.FloatValue, "px"));
-            posYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(posYSpinner.FloatValue, "py"));
-            posZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(posZSpinner.FloatValue, "pz"));
+            posXButton.onReleaseEvent.AddListener(() => OnStartEditTransform(posXButton.Text, "px"));
+            posYButton.onReleaseEvent.AddListener(() => OnStartEditTransform(posYButton.Text, "py"));
+            posZButton.onReleaseEvent.AddListener(() => OnStartEditTransform(posZButton.Text, "pz"));
 
-            rotXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(rotXSpinner.FloatValue, "rx"));
-            rotYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(rotYSpinner.FloatValue, "ry"));
-            rotZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(rotZSpinner.FloatValue, "rz"));
+            rotXButton.onReleaseEvent.AddListener(() => OnStartEditTransform(rotXButton.Text, "rx"));
+            rotYButton.onReleaseEvent.AddListener(() => OnStartEditTransform(rotYButton.Text, "ry"));
+            rotZButton.onReleaseEvent.AddListener(() => OnStartEditTransform(rotZButton.Text, "rz"));
 
-            scaleXSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleXSpinner.FloatValue, "sx"));
-            scaleYSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleYSpinner.FloatValue, "sy"));
-            scaleZSpinner.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleZSpinner.FloatValue, "sz"));
+            scaleXButton.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleXButton.Text, "sx"));
+            scaleYButton.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleYButton.Text, "sy"));
+            scaleZButton.onReleaseEvent.AddListener(() => OnStartEditTransform(scaleZButton.Text, "sz"));
 
             posLockButton.onCheckEvent.AddListener(SetLockPosition);
             posXLockButton.onCheckEvent.AddListener((bool value) => SetMoveOnX(!value));
@@ -231,10 +231,10 @@ namespace VRtist
             Init();
         }
 
-        void OnStartEditTransform(float currentValue, string attr)
+        void OnStartEditTransform(string currentValue, string attr)
         {
             if (Selection.SelectedObjects.Count == 0) { return; }
-            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnEndEditTransform(value, attr), panel, currentValue);
+            ToolsUIManager.Instance.OpenNumericKeyboard((float value) => OnEndEditTransform(value, attr), panel, float.Parse(currentValue));
         }
 
         void OnEndEditTransform(float value, string attr)
@@ -446,19 +446,19 @@ namespace VRtist
 
             // Transform
             Vector3 localPosition = selected.transform.localPosition;
-            posXSpinner.FloatValue = localPosition.x;
-            posYSpinner.FloatValue = localPosition.y;
-            posZSpinner.FloatValue = localPosition.z;
+            posXButton.Text = localPosition.x.ToString();
+            posYButton.Text = localPosition.y.ToString();
+            posZButton.Text = localPosition.z.ToString();
 
             Vector3 localRotation = selected.transform.localEulerAngles;
-            rotXSpinner.FloatValue = localRotation.x;
-            rotYSpinner.FloatValue = localRotation.y;
-            rotZSpinner.FloatValue = localRotation.z;
+            rotXButton.Text = localRotation.x.ToString();
+            rotYButton.Text = localRotation.y.ToString();
+            rotZButton.Text = localRotation.z.ToString();
 
             Vector3 localScale = selected.transform.localScale;
-            scaleXSpinner.FloatValue = localScale.x;
-            scaleYSpinner.FloatValue = localScale.y;
-            scaleZSpinner.FloatValue = localScale.z;
+            scaleXButton.Text = localScale.x.ToString();
+            scaleYButton.Text = localScale.y.ToString();
+            scaleZButton.Text = localScale.z.ToString();
 
             ParametersController parametersController = selected.GetComponent<ParametersController>();
             if (null != parametersController)
@@ -520,8 +520,9 @@ namespace VRtist
             CommandGroup group = new CommandGroup("Delete All Selection");
             try
             {
+                HashSet<GameObject> copy = new HashSet<GameObject>(Selection.SelectedObjects);
                 ClearSelection();
-                foreach (GameObject selected in Selection.SelectedObjects)
+                foreach (GameObject selected in copy)
                 {
                     new CommandRemoveGameObject(selected).Submit();
                 }
@@ -950,7 +951,6 @@ namespace VRtist
             UpdateGrid();
         }
 
-
         protected Vector3 FilterControllerDirection()
         {
             Vector3 controllerPosition = rightControllerPosition;
@@ -1028,7 +1028,17 @@ namespace VRtist
             if (deformEnabled)
             {
                 ComputeSelectionBounds();
-                boundingBox.SetActive(Selection.ActiveObjects.Count != 0);
+                bool enable = Selection.ActiveObjects.Count != 0;
+                if (Selection.ActiveObjects.Count == 1)
+                {
+                    foreach (GameObject gobject in Selection.ActiveObjects)
+                    {
+                        ParametersController controller = gobject.GetComponent<ParametersController>();
+                        if (null != controller && !controller.IsDeformable())
+                            enable = false;
+                    }
+                }
+                boundingBox.SetActive(enable);
             }
 
             // Move grid with object(s), enable/disable it.
@@ -1055,6 +1065,9 @@ namespace VRtist
         }
         public void SetActivePLane(DeformerPlane plane)
         {
+            if (!deformEnabled)
+                return;
+
             if (!deforming)
             {
                 if (activePlane)

@@ -1320,7 +1320,10 @@ namespace VRtist.Mixer
                         shotName = Converter.StringToBytes(info.shotName);
                         start = Converter.IntToBytes(info.shotStart);
                         end = Converter.IntToBytes(info.shotEnd);
-                        camera = Converter.StringToBytes(info.camera.name);
+                        if (null == info.camera)
+                            camera = Converter.StringToBytes("");
+                        else
+                            camera = Converter.StringToBytes(info.camera.name);
                         color = Converter.ColorToBytes(info.shotColor);
                         buffers = new List<byte[]> { action, nextShotIndex, shotName, start, end, camera, color };
                         command = new NetCommand(Converter.ConcatenateBuffers(buffers), MessageType.ShotManagerAction);
@@ -1343,7 +1346,10 @@ namespace VRtist.Mixer
                 case ShotManagerAction.UpdateShot:
                     start = Converter.IntToBytes(info.shotStart);
                     end = Converter.IntToBytes(info.shotEnd);
-                    camera = Converter.StringToBytes(info.camera.name);
+                    if (null == info.camera)
+                        camera = Converter.StringToBytes("");
+                    else
+                        camera = Converter.StringToBytes(info.camera.name);
                     color = Converter.ColorToBytes(info.shotColor);
                     enabled = Converter.IntToBytes(info.shotEnabled);
                     buffers = new List<byte[]> { action, shotIndex, start, end, camera, color, enabled };

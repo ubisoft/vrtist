@@ -69,11 +69,14 @@ namespace VRtist
                 }
                 else
                 {
-                    ColimatorController colimatorController = cameraController.colimator.GetComponent<ColimatorController>();
-                    colimatorController.gameObject.SetActive(false);
-                    if (colimatorController.isVRtist)
+                    if (null != cameraController.colimator)
                     {
-                        DestroyColimator(camera);
+                        ColimatorController colimatorController = cameraController.colimator.GetComponent<ColimatorController>();
+                        colimatorController.gameObject.SetActive(false);
+                        if (colimatorController.isVRtist)
+                        {
+                            DestroyColimator(camera);
+                        }
                     }
                     SceneManager.SendCameraInfo(camera.transform);
                 }

@@ -544,73 +544,89 @@ namespace VRtist.Serialization
             VRtistScene scene = new VRtistScene();
             SceneManager.SetSceneImpl(scene);
 
-            GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
-            currentProjectName = projectName;
-            GlobalState.Settings.ProjectName = projectName;
+            bool gizmoVisible = GlobalState.Settings.DisplayGizmos;
+            bool errorLoading = false;
 
-            // Clear current scene
-            AnimationEngine.Instance.Clear();
-            Selection.Clear();
-            ConstraintManager.Clear();
-            ShotManager.Instance.Clear();
-            SceneManager.ClearScene();
-
-            // Load data from file
-            string path = GetScenePath(projectName);
-            SceneData sceneData = new SceneData();
-            SerializationManager.Load(path, sceneData);
-
-            // Position user
-            LoadPlayerData(sceneData.playerData);
-
-            // Sky
-            GlobalState.Instance.SkySettings = sceneData.skyData;
-
-            // Objects            
-            foreach (ObjectData data in sceneData.objects)
+            try
             {
-                LoadObject(data);
-            }
+                GlobalState.Instance.messageBox.ShowMessage("Loading scene, please wait...");
+                GlobalState.SetDisplayGizmos(true);
 
-            // Lights
-            foreach (LightData data in sceneData.lights)
+                currentProjectName = projectName;
+                GlobalState.Settings.ProjectName = projectName;
+
+                // Clear current scene
+                AnimationEngine.Instance.Clear();
+                Selection.Clear();
+                ConstraintManager.Clear();
+                ShotManager.Instance.Clear();
+                SceneManager.ClearScene();
+
+                // Load data from file
+                string path = GetScenePath(projectName);
+                SceneData sceneData = new SceneData();
+                SerializationManager.Load(path, sceneData);
+
+                // Position user
+                LoadPlayerData(sceneData.playerData);
+
+                // Sky
+                GlobalState.Instance.SkySettings = sceneData.skyData;
+
+                // Objects            
+                foreach (ObjectData data in sceneData.objects)
+                {
+                    LoadObject(data);
+                }
+
+                // Lights
+                foreach (LightData data in sceneData.lights)
+                {
+                    LoadLight(data);
+                }
+
+                // Cameras
+                foreach (CameraData data in sceneData.cameras)
+                {
+                    LoadCamera(data);
+                }
+
+                // Load animations & constraints
+                AnimationEngine.Instance.fps = sceneData.fps;
+                AnimationEngine.Instance.StartFrame = sceneData.startFrame;
+                AnimationEngine.Instance.EndFrame = sceneData.endFrame;
+
+                foreach (AnimationData data in sceneData.animations)
+                {
+                    LoadAnimation(data);
+                }
+
+                foreach (ConstraintData data in sceneData.constraints)
+                {
+                    LoadConstraint(data);
+                }
+
+                // Load shot manager
+                foreach (ShotData data in sceneData.shots)
+                {
+                    LoadShot(data);
+                }
+                ShotManager.Instance.FireChanged();
+
+                AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
+            }
+            catch (Exception e)
             {
-                LoadLight(data);
+                GlobalState.Instance.messageBox.ShowMessage("Error loading file", 5f);
+                errorLoading = true;
             }
-
-            // Cameras
-            foreach (CameraData data in sceneData.cameras)
+            finally
             {
-                LoadCamera(data);
+                if (!gizmoVisible)
+                    GlobalState.SetDisplayGizmos(false);
+                if (!errorLoading)
+                    GlobalState.Instance.messageBox.SetVisible(false);
             }
-
-            // Load animations & constraints
-            AnimationEngine.Instance.fps = sceneData.fps;
-            AnimationEngine.Instance.StartFrame = sceneData.startFrame;
-            AnimationEngine.Instance.EndFrame = sceneData.endFrame;
-
-            foreach (AnimationData data in sceneData.animations)
-            {
-                LoadAnimation(data);
-            }
-
-            foreach (ConstraintData data in sceneData.constraints)
-            {
-                LoadConstraint(data);
-            }
-
-            // Load shot manager
-            foreach (ShotData data in sceneData.shots)
-            {
-                LoadShot(data);
-            }
-            ShotManager.Instance.FireChanged();
-
-            AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
-
-
-
-            GlobalState.Instance.messageBox.SetVisible(false);
         }
 
         private void LoadPlayerData(PlayerData data)

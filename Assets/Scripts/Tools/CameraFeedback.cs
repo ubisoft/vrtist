@@ -13,12 +13,13 @@ namespace VRtist
         private void Awake()
         {
             CameraManager.Instance.onActiveCameraChanged.AddListener(OnCameraChanged);
-        }
-
-        void Start()
-        {
             Assert.IsTrue(transform.GetChild(0).name == "CameraFeedbackPlane");
             cameraPlane = transform.GetChild(0).gameObject;
+        }
+
+        private void OnEnable()
+        {
+            SetActiveCamera(CameraManager.Instance.ActiveCamera);
         }
 
         protected void Update()

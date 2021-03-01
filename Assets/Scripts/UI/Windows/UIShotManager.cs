@@ -235,8 +235,6 @@ namespace VRtist
             };
 
             new CommandShotManager(info).Submit();
-
-            sm.RemoveShot(shotIndex);
             // Rebuild UI
             OnShotManagerChanged();
         }

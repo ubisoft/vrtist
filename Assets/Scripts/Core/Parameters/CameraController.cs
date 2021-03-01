@@ -56,9 +56,20 @@ namespace VRtist
 
         private readonly float frustumLineWidth = 0.0020f;
 
-        private void Awake()
+
+        private bool hacked = false;
+        private void Hack()
         {
-            //Init();
+            if (hacked)
+                return;
+            hacked = true;
+            // Hack : force TMPro properties when component is enabled
+            UIUtils.SetTMProStyle(nameLabel.gameObject, minSize: 6f, maxSize: 72f, alignment: TextAlignmentOptions.Center);
+            nameLabel.NeedsRebuild = true;
+
+            // Hack : force TMPro properties when component is enabled
+            UIUtils.SetTMProStyle(focalSlider.gameObject, minSize: 1f, maxSize: 1.5f);
+            focalSlider.NeedsRebuild = true;
         }
 
         void Start()
@@ -114,10 +125,17 @@ namespace VRtist
         {
             return false;
         }
+
+        public override bool IsDeformable()
+        {
+            return false;
+        }
+
         public override void SetGizmoVisible(bool value)
         {
             base.SetGizmoVisible(value);
-            disabledLayer.SetActive(value);
+            if (null != disabledLayer)
+                disabledLayer.SetActive(value);
         }
 
         private void OnNameClicked()
@@ -189,8 +207,11 @@ namespace VRtist
 
         void Update()
         {
+            Hack();
+
             if (null == cameraObject)
                 cameraObject = gameObject.GetComponentInChildren<Camera>(true);
+
             if (null != cameraObject)
             {
                 if (gameObject.name != nameLabel.Text)

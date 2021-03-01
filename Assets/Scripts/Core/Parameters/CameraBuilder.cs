@@ -78,6 +78,7 @@ namespace VRtist
                         knobRadius = 0.007f
                     });
                     focalSlider.DataCurve = GlobalState.Settings.focalCurve;
+
                     focalSlider.SetLightLayer(2);
                 }
 

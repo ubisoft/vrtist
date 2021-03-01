@@ -63,7 +63,7 @@ namespace VRtist
         {
             foreach (GameObject o in objects)
             {
-                if (null != o.GetComponent<CameraController>())
+                if (null != o && null != o.GetComponent<CameraController>())
                     return o;
             }
             return null;

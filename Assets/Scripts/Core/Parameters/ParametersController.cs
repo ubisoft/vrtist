@@ -87,6 +87,10 @@ namespace VRtist
                 return false;
             return true;
         }
+        public virtual bool IsDeformable()
+        {
+            return true;
+        }
 
         public void AddConstraintHolder(GameObject gobject)
         {
@@ -97,5 +101,6 @@ namespace VRtist
         {
             constraintHolders.Remove(gobject);
         }
+
     }
 }

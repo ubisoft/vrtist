@@ -14,5 +14,11 @@ namespace VRtist
             MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
             meshRenderer.enabled = value;
         }
+
+        public override bool IsDeformable()
+        {
+            return false;
+        }
+
     }
 }

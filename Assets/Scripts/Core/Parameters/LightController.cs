@@ -160,5 +160,9 @@ namespace VRtist
         {
             return false;
         }
+        public override bool IsDeformable()
+        {
+            return false;
+        }
     }
 }
