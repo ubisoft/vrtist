@@ -9,7 +9,7 @@ namespace VRtist
             GlobalState.Settings.LoadWindowPosition(transform);
         }
 
-        private void OnApplicationQuit()
+        private void OnDisable()
         {
             GlobalState.Settings.SaveWindowPosition(transform);
         }
