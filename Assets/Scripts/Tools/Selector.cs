@@ -115,7 +115,6 @@ namespace VRtist
 
         private bool deformEnabled = false;
 
-        private Vector3 initControllerPositionRelativeToHead;
         private Matrix4x4 inverseHeadMatrix;
 
         private CommandGroup undoGroup = null;
@@ -787,6 +786,7 @@ namespace VRtist
                 InitUIPanel();
             }
         }
+
         public void SetScaleOnZ(bool value)
         {
             if (value != scaleOnZ)
@@ -795,6 +795,7 @@ namespace VRtist
                 InitUIPanel();
             }
         }
+
         public void EnableDeformMode(bool enabled)
         {
             deformEnabled = enabled;
@@ -802,6 +803,7 @@ namespace VRtist
             {
                 boundingBox.SetActive(false);
             }
+            uniformScaleCheckbox.Disabled = !enabled;
         }
 
         public void SetUniformScale(bool value)
@@ -822,6 +824,11 @@ namespace VRtist
 
         protected virtual void InitUIPanel()
         {
+            if (null != uniformScaleCheckbox)
+            {
+                uniformScaleCheckbox.Disabled = !deformEnabled;
+                uniformScaleCheckbox.Checked = uniformScale;
+            }
             if (null != snapCheckbox) snapCheckbox.Checked = isSnapping;
             if (null != snapToGroundCheckbox)
             {
@@ -891,12 +898,8 @@ namespace VRtist
             base.OnStartGrip();
 
             // Get head position
-            Vector3 HeadPosition;
-            Quaternion headRotation;
-            VRInput.GetControllerTransform(VRInput.head, out HeadPosition, out headRotation);
+            VRInput.GetControllerTransform(VRInput.head, out Vector3 HeadPosition, out Quaternion headRotation);
             inverseHeadMatrix = Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
-
-            initControllerPositionRelativeToHead = inverseHeadMatrix.MultiplyPoint(initControllerPosition);
         }
 
         public override void OnSelectorTriggerEnter(Collider other)
@@ -954,7 +957,6 @@ namespace VRtist
         protected Vector3 FilterControllerDirection()
         {
             Vector3 controllerPosition = rightControllerPosition;
-            Quaternion controllerRotation = rightControllerRotation;
             controllerPosition = GlobalState.Instance.toolsController.parent.TransformPoint(controllerPosition); // controller in absolute coordinates
 
             controllerPosition = initInversePlaneContainerMatrix.MultiplyPoint(controllerPosition);     //controller in planesContainer coordinates
