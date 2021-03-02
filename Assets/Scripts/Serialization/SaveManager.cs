@@ -556,10 +556,6 @@ namespace VRtist.Serialization
                 GlobalState.Settings.ProjectName = projectName;
 
                 // Clear current scene
-                AnimationEngine.Instance.Clear();
-                Selection.Clear();
-                ConstraintManager.Clear();
-                ShotManager.Instance.Clear();
                 SceneManager.ClearScene();
 
                 // Load data from file

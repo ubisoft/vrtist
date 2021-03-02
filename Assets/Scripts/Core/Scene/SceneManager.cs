@@ -79,6 +79,12 @@ namespace VRtist
         {
             firstSave = true;
             CommandManager.SetSceneDirty(false);
+
+            AnimationEngine.Instance.Clear();
+            Selection.Clear();
+            ConstraintManager.Clear();
+            ShotManager.Instance.Clear();
+
             clearSceneEvent.Invoke();
             Instance.scene.ClearScene();
         }
