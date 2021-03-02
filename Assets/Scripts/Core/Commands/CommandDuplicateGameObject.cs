@@ -7,18 +7,13 @@ namespace VRtist
     /// </summary>
     public class CommandDuplicateGameObject : ICommand
     {
-        readonly GameObject srcObject;
         protected GameObject gObject = null;
         protected Transform parent = null;
-        protected Vector3 position;
-        protected Quaternion rotation;
-        protected Vector3 scale;
 
-        public CommandDuplicateGameObject(GameObject copy, GameObject src)
+        public CommandDuplicateGameObject(GameObject copy)
         {
-            srcObject = src;
             gObject = copy;
-            parent = copy.transform.parent.parent;
+            parent = SceneManager.GetObjectParent(copy).transform;
         }
 
         public override void Undo()
@@ -33,9 +28,6 @@ namespace VRtist
         }
         public override void Submit()
         {
-            position = gObject.transform.parent.localPosition;
-            rotation = gObject.transform.parent.localRotation;
-            scale = gObject.transform.parent.localScale;
             CommandManager.AddCommand(this);
         }
     }

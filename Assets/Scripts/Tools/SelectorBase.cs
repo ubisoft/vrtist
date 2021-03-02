@@ -1263,7 +1263,7 @@ namespace VRtist
             GameObject clone = SceneManager.DuplicateObject(source);
             if (null == clone)
                 return null;
-            new CommandDuplicateGameObject(clone, source).Submit();
+            new CommandDuplicateGameObject(clone).Submit();
 
             // Add a selectionVFX instance on the duplicated objects
             if (withVFX)

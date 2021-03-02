@@ -1,5 +1,7 @@
 ﻿using TMPro;
+
 using UnityEditor;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -154,8 +156,8 @@ namespace VRtist
         private void LoadThumbnail(string path)
         {
             Sprite sprite = Utils.LoadSprite(path);
-            if (null == sprite) 
-            { 
+            if (null == sprite)
+            {
                 sprite = UIUtils.LoadIcon("warning");
                 isValid = false;
             }
@@ -174,6 +176,13 @@ namespace VRtist
             uiGrabber.onEnterUI3DObject.AddListener(onEnter);
             uiGrabber.onExitUI3DObject.AddListener(onExit);
             thumbnail.transform.localRotation = thumbnailRotation;
+
+            MeshRenderer[] meshRenderers = thumbnail.GetComponentsInChildren<MeshRenderer>();
+            foreach (MeshRenderer meshRenderer in meshRenderers)
+            {
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+
             return thumbnail;
         }
         #endregion
@@ -187,7 +196,7 @@ namespace VRtist
 
             if (uid != null)
             {
-                onEnterUI3DObject.Invoke((int) uid);
+                onEnterUI3DObject.Invoke((int)uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -201,7 +210,7 @@ namespace VRtist
 
             if (uid != null)
             {
-                onEnterUI3DObject.Invoke((int) uid);
+                onEnterUI3DObject.Invoke((int)uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -235,7 +244,7 @@ namespace VRtist
 
             if (uid != null)
             {
-                onExitUI3DObject.Invoke((int) uid);
+                onExitUI3DObject.Invoke((int)uid);
             }
 
             WidgetBorderHapticFeedback();
@@ -249,7 +258,7 @@ namespace VRtist
 
             if (uid != null)
             {
-                onExitUI3DObject.Invoke((int) uid);
+                onExitUI3DObject.Invoke((int)uid);
             }
 
             WidgetBorderHapticFeedback();

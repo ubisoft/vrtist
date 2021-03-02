@@ -43,23 +43,27 @@ namespace VRtist
         public GameObject AddObject(GameObject gobject)
         {
             gobject.transform.SetParent(SceneManager.RightHanded, false);
+            GlobalState.FireObjectAdded(gobject);
             return gobject;
         }
 
         public void RemoveObject(GameObject gobject)
         {
             gobject.transform.SetParent(SceneManager.Trash.transform, true);
+            GlobalState.FireObjectRemoved(gobject);
         }
 
         public void RestoreObject(GameObject gobject, Transform parent)
         {
             gobject.transform.SetParent(parent, true);
+            GlobalState.FireObjectAdded(gobject);
         }
 
         public GameObject DuplicateObject(GameObject gobject)
         {
             GameObject copy = InstantiateUnityPrefab(gobject);
             copy.transform.SetParent(SceneManager.RightHanded, false);
+            GlobalState.FireObjectAdded(copy);
             return copy;
         }
 
