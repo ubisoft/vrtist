@@ -166,13 +166,13 @@ namespace VRtist
             foreach (var pi in projectList.GetItems())
             {
                 ProjectItem projectItem = pi.Content.GetComponent<ProjectItem>();
-                if (headHasRotated)
-                {
-                    projectItem.ResetRotation(camY);
-                }
                 if (pi.Hovered)
                 {
                     projectItem.Rotate();
+                }
+                else
+                {
+                    projectItem.ResetRotation(camY);
                 }
             }
 
