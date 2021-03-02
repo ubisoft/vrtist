@@ -4,6 +4,11 @@ namespace VRtist
 {
     public class VRtistScene : IScene
     {
+        public string GetSceneType()
+        {
+            return "VRtist";
+        }
+
         public void ClearScene()
         {
             Utils.DeleteTransformChildren(SceneManager.RightHanded);

@@ -75,6 +75,11 @@ namespace VRtist
             Instance.scene = scene;
         }
 
+        public static string GetSceneType()
+        {
+            return Instance.scene.GetSceneType();
+        }
+
         public static void ClearScene()
         {
             firstSave = true;
