@@ -11,6 +11,11 @@ namespace VRtist.Mixer
         private TaskCompletionSource<GameObject> blenderImportTask = null;
         private AssetBank assetBank;
 
+        public string GetSceneType()
+        {
+            return "Mixer";
+        }
+
         public void ClearScene()
         {
             Utils.DeleteTransformChildren(SceneManager.RightHanded);

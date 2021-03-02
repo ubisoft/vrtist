@@ -4,6 +4,7 @@ namespace VRtist
 {
     public interface IScene
     {
+        string GetSceneType();
         void ClearScene();
         GameObject InstantiateObject(GameObject prefab);
         GameObject InstantiateUnityPrefab(GameObject unityPrefab);

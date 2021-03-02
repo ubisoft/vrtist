@@ -611,7 +611,7 @@ namespace VRtist.Serialization
 
                 AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 GlobalState.Instance.messageBox.ShowMessage("Error loading file", 5f);
                 errorLoading = true;
@@ -785,7 +785,6 @@ namespace VRtist.Serialization
                 LoadCommonData(newObject, data);
 
                 LightController controller = newObject.GetComponent<LightController>();
-                Debug.Log($"From Load: {data.intensity}");
                 controller.Intensity = data.intensity;
                 controller.minIntensity = data.minIntensity;
                 controller.maxIntensity = data.maxIntensity;

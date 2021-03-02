@@ -102,7 +102,9 @@ namespace VRtist
 
             if (null != versionLabel && versionLabel.Text.Length == 0)
             {
-                versionLabel.Text = $"<color=#0079FF>VRtist Version</color>: {Version.VersionString}\n<color=#0079FF>Sync Version</color>: {Version.syncVersion}";
+                versionLabel.Text = $"<color=#0079FF>VRtist Version</color>: {Version.VersionString}\n" +
+                    $"<color=#0079FF>Sync Version</color>: {Version.syncVersion}\n" +
+                    $"<color=#0079FF>Scene Type</color>: {SceneManager.GetSceneType()}";
             }
 
             OnSetDisplaySubPanel();
@@ -181,7 +183,8 @@ namespace VRtist
         {
             versionLabel.Text = $"<color=#0079FF>VRtist Version</color>: {Version.VersionString}\n" +
                 $"<color=#0079FF>Sync Version</color>: {Version.syncVersion}\n\n" +
-                $"<color=#0079FF>Client ID</color>: {GlobalState.networkUser.id}\n";
+                $"<color=#0079FF>Client ID</color>: {GlobalState.networkUser.id}\n" +
+                $"<color=#0079FF>Scene Type</color>: {SceneManager.GetSceneType()}";
         }
 
         public void OnReset()
