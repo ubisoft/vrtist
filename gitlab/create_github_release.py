@@ -11,16 +11,15 @@ import os
 import sys
 from github import Github
 
-access_token = os.environ.get("K8S_SECRET_GITHUB_ACCESS_TOKEN", None)
+access_token = os.environ.get("K8S_SECRET_GITHUB_ACCESS_TOKEN")
 if access_token is None:
     sys.exit("Unable to retrieve GitHub access token from environment variables.")
 
-github = Github(access_token)
-repo = github.get_repo("ubisoft/vrtist")
-release = repo.create_git_release(args.tag, args.name, args.message)
-if release is None:
-    sys.exit("Failed to create release")
+repo_name = os.environ.get("GITHUB_MIRROR")
+if repo_name is None:
+    sys.exit("Unable to retrieve Github repository name")
 
-asset = release.upload_asset(args.zip, label="", content_type="application/zip", name=f"VRtist_Win64_{args.tag}.zip")
-if asset is None:
-    sys.exit("Failed to upload asset")
+github = Github(access_token)
+repo = github.get_repo(repo_name)
+release = repo.create_git_release(args.tag, args.name, args.message)
+release.upload_asset(args.zip, label="", content_type="application/zip", name=f"VRtist_Win64_{args.tag}.zip")
