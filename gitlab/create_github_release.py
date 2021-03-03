@@ -4,7 +4,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--tag", "-t", help="tag name", required=True)
 parser.add_argument("--name", "-n", help="release name", required=True)
 parser.add_argument("--zip", "-z", help="zip path to upload", required=True)
-parser.add_argument("--message", "-m", help="Release message")
+parser.add_argument("--message", "-m", help="Release message", default="")
 args = parser.parse_args()
 
 import os
