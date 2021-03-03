@@ -1,5 +1,9 @@
 # VRtist
 
+**Disclaimer**: This project is in alpha state and actively developed. Do not use it to edit your production assets without a backup or you might break them.
+
+## Introduction
+
 VRtist is a Virtual Reality tool for storytelling.
 
 Directors and artists can setup a 3D scene being immersed into the virtual world. That will allow them to have a better understanding of the 3D scene.
@@ -9,13 +13,13 @@ Directors and artists can setup a 3D scene being immersed into the virtual world
 - Set dressing: import 3D objects and compose the virtual set.
 - Camera: naturally move around and find the best camera angles and depth of field.
 - Animation: use the record mode or key frames to create animations.
-- Live link: Blender and VRtist live scene sync.
 - Lighting: use gradient sky or fine-tune the lighting using lights (directional, point and cone).
 - Nonlinear editing: nonlinear editing using multi-camera footages.
+- Live link: Blender and VRtist scene live link.
 
 ## Supported VR Devices
 
-For now, VRtist has been only tested with the Oculus Rift S and Oculus Quest devices.
+For now, VRtist has only been tested with the Oculus Rift S and Oculus Quest devices.
 
 ## How to Install & Launch
 
@@ -23,7 +27,7 @@ Just unzip the release file. Then launch the VRtist.exe and put your headset.
 
 ## How to Build
 
-Unity version: 2020.2.1f1
+VRtist is using Unity version: 2020.2.1f1
 
 For now, VRtist has been tested on Windows 64bit only. Build the "Main" scene in the Unity editor.
 
