@@ -11,7 +11,8 @@ build:
   extends: .tag_only
   stage: build
   script:
-    - echo %UNITY_EXE%
+    - echo "$UNITY_EXE"
+    - echo "$UAS_DEPLOY_FOLDER"
     - .\.gitlab\build.bat "${UNITY_EXE}" --buildDir "${CI_COMMIT_TAG}"
     - echo ${CI_COMMIT_TAG} > "Build\${CI_COMMIT_TAG}\version.txt"
   artifacts:
