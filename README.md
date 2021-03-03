@@ -1,5 +1,9 @@
 # VRtist
 
+**Disclaimer**: This project is in alpha state and actively developed. Do not use it to edit your production assets without a backup or you might break them.
+
+## Introduction
+
 VRtist is a Virtual Reality tool for storytelling.
 
 Directors and artists can setup a 3D scene being immersed into the virtual world. That will allow them to have a better understanding of the 3D scene.
