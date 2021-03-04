@@ -362,12 +362,14 @@ namespace VRtist
             MeshFilter meshFilter = gobject.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
             MeshRenderer renderer = gobject.AddComponent<MeshRenderer>();
-            Material paintMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
+            MaterialID materialId = color.a == 1f ? MaterialID.ObjectOpaque : MaterialID.ObjectTransparent;
+            Material paintMaterial = ResourceManager.GetMaterial(materialId);
             renderer.sharedMaterial = paintMaterial;
             renderer.material.SetColor("_BaseColor", color);
+            renderer.material.SetFloat("_Opacity", color.a);
 
             // Update scene data for live sync
-            SceneManager.AddMaterialParameters(Utils.GetMaterialName(gobject), MaterialID.ObjectOpaque, color);
+            SceneManager.AddMaterialParameters(Utils.GetMaterialName(gobject), materialId, color);
 
             gobject.AddComponent<MeshCollider>();
 

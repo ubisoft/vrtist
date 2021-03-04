@@ -1021,6 +1021,9 @@ namespace VRtist
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
         {
+            foreach (Transform snapUI in snapTargets)
+                snapUI.gameObject.SetActive(false);
+
             VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.secondaryButton, () =>
             {
             },
@@ -1034,8 +1037,6 @@ namespace VRtist
             if (!snapping || !IsSelectionSnappable())
             {
                 boundingBox.SetActive(false);
-                foreach (Transform snapUI in snapTargets)
-                    snapUI.gameObject.SetActive(false);
                 return;
             }
 
@@ -1085,7 +1086,7 @@ namespace VRtist
                 line.endWidth = line.startWidth = 0.001f / GlobalState.WorldScale;
 
                 snapTarget.localScale = Vector3.one * 0.03f / GlobalState.WorldScale;
-                snapTarget.LookAt(hit.point - hit.normal);
+                snapTarget.LookAt(hit.point - 1000f * hit.normal);
                 snapTarget.position = hit.point + hit.normal * 0.001f / GlobalState.WorldScale;
 
                 if (hit.distance <= snapDistance / GlobalState.WorldScale)
