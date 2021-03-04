@@ -398,6 +398,8 @@ namespace VRtist
             float pct = HasCurveData() ? invDataCurve.Evaluate(currentValue)
                 : (currentValue - minValue) / (maxValue - minValue);
 
+            pct = Mathf.Clamp01(pct); // now that Value is unclamped.
+
             float widthWithoutMargins = width - 2.0f * margin;
             float startX = margin + widthWithoutMargins * sliderPositionBegin + railMargin;
             float endX = margin + widthWithoutMargins * sliderPositionEnd - railMargin;
@@ -469,7 +471,7 @@ namespace VRtist
 
         private void SetValue(float floatValue)
         {
-            currentValue = Mathf.Clamp(floatValue, minValue, maxValue);
+            currentValue = floatValue; // NOTE: no auto-clamp of the value here.
         }
 
         public override bool IgnoreRayInteraction()
@@ -601,12 +603,6 @@ namespace VRtist
                 ToolsUIManager.Instance.OpenNumericKeyboard(OnValidateKeyboard, transform, (float) Value);
                 rayEndPoint = transform.TransformPoint(localProjectedWidgetPosition);
                 return;
-            }
-
-            float currentValuePct = (Value - minValue) / (maxValue - minValue);
-            if (HasCurveData())
-            {
-                currentValuePct = invDataCurve.Evaluate(Value);
             }
 
             // DRAG
