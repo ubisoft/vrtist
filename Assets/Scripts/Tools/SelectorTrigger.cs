@@ -163,7 +163,7 @@ namespace VRtist
                  () => { Selection.AuxiliarySelection = null; });
 
             // Multi-selection using the trigger button
-            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject)
+            if (triggerState && !GlobalState.Instance.selectionGripped && null != hoveredObject && !selector.Deforming)
             {
                 if (!primaryButtonState)
                 {

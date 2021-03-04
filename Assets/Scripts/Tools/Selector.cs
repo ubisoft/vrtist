@@ -132,13 +132,11 @@ namespace VRtist
         public UICheckbox snapToGroundCheckbox = null;
 
         private DeformerPlane activePlane = null;
-        private bool deforming = false;
+
         private float initMagnitude;
         private Vector3 planeControllerDelta;
 
         private bool deformEnabled = false;
-
-        private Matrix4x4 inverseHeadMatrix;
 
         private CommandGroup undoGroup = null;
 
@@ -914,15 +912,6 @@ namespace VRtist
             if (null != turnAroundXCheckbox) { turnAroundXCheckbox.Checked = turnAroundX; }
             if (null != turnAroundYCheckbox) { turnAroundYCheckbox.Checked = turnAroundY; }
             if (null != turnAroundZCheckbox) { turnAroundZCheckbox.Checked = turnAroundZ; }
-        }
-
-        protected override void OnStartGrip()
-        {
-            base.OnStartGrip();
-
-            // Get head position
-            VRInput.GetControllerTransform(VRInput.head, out Vector3 HeadPosition, out Quaternion headRotation);
-            inverseHeadMatrix = Matrix4x4.TRS(HeadPosition, headRotation, Vector3.one).inverse;
         }
 
         public override void OnSelectorTriggerEnter(Collider other)

@@ -53,6 +53,13 @@ namespace VRtist
         public enum SelectorModes { Select = 0, Eraser }
         public SelectorModes mode = SelectorModes.Select;
 
+        protected bool deforming = false;
+        public bool Deforming
+        {
+            get { return deforming; }
+        }
+
+
         protected CommandGroup clearSelectionUndoGroup;
         protected int selectionStateTimestamp = -1;
 
@@ -78,8 +85,9 @@ namespace VRtist
         // snap parameters
         [Header("Snap Parameters")]
         protected Ray[] snapRays;
-        static protected bool isSnapping = false;
+        static protected bool isSnapping = true;
         static protected bool isSnappingToGround = false;
+        private bool snapSwitch = false;
         private readonly float snapDistance = 0.03f;
         private readonly float epsilonDistance = 0.0001f;
         private readonly float snapVisibleRayFactor = 3f;
@@ -433,6 +441,8 @@ namespace VRtist
 
         protected virtual void OnStartGrip()
         {
+            snapSwitch = false;
+
             EndUndoGroup(); // secu
             if (GlobalState.IsGrippingWorld)
             {
@@ -1011,11 +1021,19 @@ namespace VRtist
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
         {
-            if (!isSnapping)
-                return;
-
-            if (!IsSelectionSnappable())
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.secondaryButton, () =>
             {
+            },
+            () =>
+            {
+                snapSwitch = !snapSwitch;
+            });
+
+            bool snapping = snapSwitch ? !isSnapping : isSnapping;
+
+            if (!snapping || !IsSelectionSnappable())
+            {
+                boundingBox.SetActive(false);
                 foreach (Transform snapUI in snapTargets)
                     snapUI.gameObject.SetActive(false);
                 return;
