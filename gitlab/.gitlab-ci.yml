@@ -29,7 +29,3 @@ deploy:
     - python -m gitlab.create_github_release --tag ${CI_COMMIT_TAG} --name ${CI_COMMIT_TAG} --zip vrtist-${CI_COMMIT_REF_NAME}.zip
   tags:
     - uas
-  artifacts:
-    name: "VRtist_win64_${CI_COMMIT_TAG}"
-    paths:
-      - vrtist-${CI_COMMIT_REF_NAME}.zip

@@ -84,8 +84,13 @@ namespace VRtist
 
         public GameObject DuplicateObject(GameObject gobject)
         {
+            // Instantiate with the current transfrom
             GameObject copy = InstantiateUnityPrefab(gobject);
-            copy.transform.SetParent(SceneManager.RightHanded, false);
+            copy.transform.SetParent(gobject.transform.parent, false);
+
+            // Then put it to righthanded
+            copy.transform.SetParent(SceneManager.RightHanded, true);
+
             GlobalState.FireObjectAdded(copy);
             return copy;
         }
