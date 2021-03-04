@@ -177,14 +177,14 @@ namespace VRtist
                 switch (_lightObject.type)
                 {
                     case LightType.Directional:
-                        Intensity = 5f;
+                        Intensity = 50f;
                         minIntensity = 0.0f;
-                        maxIntensity = 10.0f;
+                        maxIntensity = 100.0f;
                         break;
                     case LightType.Point:
-                        Intensity = 5f;
+                        Intensity = 50f;
                         minIntensity = 0.0f;
-                        maxIntensity = 10.0f;
+                        maxIntensity = 100.0f;
                         Range = 10f;
                         minRange = 0f;
                         maxRange = 100f;

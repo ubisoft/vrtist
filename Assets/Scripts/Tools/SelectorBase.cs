@@ -1059,6 +1059,19 @@ namespace VRtist
             }
         }
 
+        protected int GetOppositePlaneIndex(int planeIndex)
+        {
+            switch (planeIndex)
+            {
+                case 0: return 1;
+                case 1: return 0;
+                case 2: return 3;
+                case 3: return 2;
+                case 4: return 5;
+                case 5: return 4;
+            }
+            return -1;
+        }
 
         protected bool SnapPlane(ref Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)
         {
@@ -1068,31 +1081,35 @@ namespace VRtist
             int layersMask = LayerMask.GetMask(new string[] { "Default" });
 
             Vector3 origin = currentMouthPieceLocalToWorld.MultiplyPoint(snapRays[planeIndex].origin);
-            Ray ray = new Ray(origin, currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized);
+            Vector3 originOppositePlane = currentMouthPieceLocalToWorld.MultiplyPoint(snapRays[GetOppositePlaneIndex(planeIndex)].origin);
+
+            Ray ray = new Ray(originOppositePlane, currentMouthPieceLocalToWorld.MultiplyVector(snapRays[planeIndex].direction).normalized);
 
             LineRenderer line = planeLines[planeIndex];
             Transform snapTarget = snapTargets[planeIndex];
             bool enableSnapUI = false;
 
-            if (Physics.Raycast(ray, out RaycastHit hit, snapVisibleRayFactor * snapDistance / GlobalState.WorldScale, layersMask))
+            float plansDistance = Vector3.Distance(originOppositePlane, origin);
+            if (Physics.Raycast(ray, out RaycastHit hit, plansDistance + snapVisibleRayFactor * snapDistance / GlobalState.WorldScale, layersMask))
             {
-                snapUIContainer.SetActive(true);
+                float hitDistance = hit.distance - plansDistance;
+                snapUIContainer.SetActive(hitDistance > 0);
                 boundingBox.SetActive(true);
                 enableSnapUI = true;
                 line.positionCount = 2;
                 line.SetPosition(0, origin);
                 line.SetPosition(1, hit.point);
-                line.material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hit.distance));
+                line.material.SetFloat("_Threshold", 1f - (snapDistance / GlobalState.WorldScale / hitDistance));
                 line.endWidth = line.startWidth = 0.001f / GlobalState.WorldScale;
 
                 snapTarget.localScale = Vector3.one * 0.03f / GlobalState.WorldScale;
                 snapTarget.LookAt(hit.point - 1000f * hit.normal);
                 snapTarget.position = hit.point + hit.normal * 0.001f / GlobalState.WorldScale;
 
-                if (hit.distance <= snapDistance / GlobalState.WorldScale)
+                if (Mathf.Abs(hitDistance) <= snapDistance / GlobalState.WorldScale)
                 {
                     snapTarget.gameObject.SetActive(false);
-                    if (hit.distance > epsilonDistance / GlobalState.WorldScale)
+                    if (Mathf.Abs(hitDistance) > epsilonDistance / GlobalState.WorldScale)
                     {
                         Vector3 hitPoint = currentMouthPieceLocalToWorld.MultiplyPoint(currentMouthPieceLocalToWorld.inverse.MultiplyPoint(hit.point) - snapRays[planeIndex].origin);
                         // set position to hit point

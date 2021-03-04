@@ -880,6 +880,12 @@ namespace VRtist.Serialization
 
         public List<ShotData> shots = new List<ShotData>();
         public List<AnimationData> animations = new List<AnimationData>();
+
+        /*
+        private char[] header = new char[6] { 'V', 'R', 't', 'i', 's', 't' };
+        public int version = 0;
+        */
+
         public float fps;
         public int startFrame;
         public int endFrame;
@@ -901,6 +907,17 @@ namespace VRtist.Serialization
 
         public void FromBytes(byte[] buffer, ref int index)
         {
+            /*
+            index += 6;
+
+            int fileVersion = Converter.GetInt(buffer, ref index);
+            if (fileVersion > version)
+            {
+                // throw  
+                return;
+            }
+            */
+
             int objectsCount = Converter.GetInt(buffer, ref index);
             for (int i = 0; i < objectsCount; i++)
             {
@@ -967,6 +984,10 @@ namespace VRtist.Serialization
 
         public byte[] ToBytes()
         {
+            /*
+            byte[] versionBuffer = Converter.IntToBytes(version);
+            */
+
             byte[] objectsCountBuffer = Converter.IntToBytes(objects.Count);
             List<byte[]> objectsBufferList = new List<byte[]>();
             foreach (ObjectData data in objects)
