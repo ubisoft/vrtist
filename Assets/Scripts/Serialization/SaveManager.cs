@@ -542,7 +542,7 @@ namespace VRtist.Serialization
             data.minRange = controller.minRange;
             data.maxRange = controller.maxRange;
             data.outerAngle = controller.OuterAngle;
-            data.innerAngle = controller.InnerAngle;
+            data.sharpness = controller.Sharpness;
         }
 
         private void SetCameraData(CameraController controller, CameraData data)
@@ -818,7 +818,7 @@ namespace VRtist.Serialization
                 controller.minRange = data.minRange;
                 controller.maxRange = data.maxRange;
                 controller.OuterAngle = data.outerAngle;
-                controller.InnerAngle = data.innerAngle;
+                controller.Sharpness = data.sharpness;
             }
         }
 

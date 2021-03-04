@@ -207,7 +207,7 @@ namespace VRtist.Mixer
             }
         }
 
-        public static void GetLightInfo(GameObject obj, out LightType lightType, out bool castShadows, out float power, out Color color, out float range, out float innerAngle, out float outerAngle)
+        public static void GetLightInfo(GameObject obj, out LightType lightType, out bool castShadows, out float power, out Color color, out float range, out float sharpness, out float outerAngle)
         {
             LightController lightController = obj.GetComponentInChildren<LightController>();
             lightType = lightController.Type;
@@ -215,11 +215,11 @@ namespace VRtist.Mixer
             power = lightController.GetPower();
             color = lightController.Color;
             range = lightController.Range;
-            innerAngle = lightController.InnerAngle;
+            sharpness = lightController.Sharpness;
             outerAngle = lightController.OuterAngle;
         }
 
-        public static void SetLightInfo(GameObject obj, LightType lightType, bool castShadows, float power, Color color, float range, float innerAngle, float outerAngle)
+        public static void SetLightInfo(GameObject obj, LightType lightType, bool castShadows, float power, Color color, float range, float sharpness, float outerAngle)
         {
             bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
             if (recording && Selection.IsSelected(obj))
@@ -231,7 +231,7 @@ namespace VRtist.Mixer
             controller.CastShadows = castShadows;
             controller.Range = range;
             controller.OuterAngle = outerAngle;
-            controller.InnerAngle = innerAngle;
+            controller.Sharpness = sharpness;
 
             Node lightNode = SyncData.nodes[obj.name];
             foreach (var instanceItem in lightNode.instances)
@@ -244,7 +244,7 @@ namespace VRtist.Mixer
                 instanceController.CastShadows = castShadows;
                 instanceController.Range = range;
                 instanceController.OuterAngle = outerAngle;
-                instanceController.InnerAngle = innerAngle;
+                instanceController.Sharpness = sharpness;
             }
         }
 

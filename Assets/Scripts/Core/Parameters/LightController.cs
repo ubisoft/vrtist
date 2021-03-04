@@ -22,6 +22,7 @@
  */
 
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
@@ -33,6 +34,18 @@ namespace VRtist
         public float maxRange;
 
         private Light _lightObject = null;
+        private HDAdditionalLightData lightData = null;
+        private HDAdditionalLightData LightData
+        {
+            get
+            {
+                if (null == lightData)
+                {
+                    Init();
+                }
+                return lightData;
+            }
+        }
         private Light LightObject
         {
             get
@@ -47,14 +60,24 @@ namespace VRtist
         {
             get
             {
-                return LightObject.intensity;
+                return LightData.intensity;
             }
             set
             {
-                LightObject.intensity = value;
+                LightData.SetIntensity(value);
             }
         }
-        public Color Color { get { return LightObject.color; } set { LightObject.color = value; } }
+        public Color Color
+        {
+            get
+            {
+                return LightData.color;
+            }
+            set
+            {
+                LightData.color = value;
+            }
+        }
         private bool _castShadows = false;
         public bool CastShadows
         {
@@ -65,15 +88,16 @@ namespace VRtist
             set
             {
                 _castShadows = value;
-                LightShadows shadows = GlobalState.Settings.castShadows && value ? LightShadows.Soft : LightShadows.None;
-                if (shadows != LightObject.shadows)
-                    LightObject.shadows = shadows;
+                LightData.EnableShadows(value);
             }
         }
-        public float ShadowNearPlane { get { return LightObject.shadowNearPlane; } set { LightObject.shadowNearPlane = value; } }
-        public float Range { get { return LightObject.range; } set { LightObject.range = value; } }
-        public float OuterAngle { get { return LightObject.spotAngle; } set { LightObject.spotAngle = value; } }
-        public float InnerAngle { get { return LightObject.innerSpotAngle; } set { LightObject.innerSpotAngle = value; } }
+        public float ShadowNearPlane { get { return LightData.shadowNearPlane; } set { LightData.shadowNearPlane = value; } }
+        public float Range { get { return LightData.range; } set { LightData.SetRange(value); } }
+
+        private float _outerAngle = 100f;
+        private float _sharpness = 80f;
+        public float OuterAngle { get { return _outerAngle; } set { _outerAngle = value; LightData.SetSpotAngle(value, _sharpness); } }
+        public float Sharpness { get { return _sharpness; } set { _sharpness = value; LightData.SetSpotAngle(_outerAngle, value); } }
 
         public void SetLightEnable(bool enable)
         {
@@ -96,7 +120,7 @@ namespace VRtist
             minRange = other.minRange;
             maxRange = other.maxRange;
             OuterAngle = other.OuterAngle;
-            InnerAngle = other.InnerAngle;
+            Sharpness = other.Sharpness;
         }
 
         public void OnCastShadowsChanged(bool _)
@@ -141,39 +165,39 @@ namespace VRtist
 
         private void Init()
         {
-            if (_lightObject == null)
+            if (lightData == null)
             {
                 _lightObject = transform.GetComponentInChildren<Light>(true);
+                lightData = transform.GetComponentInChildren<HDAdditionalLightData>(true);
 
                 // Init defaults
-                _lightObject.shadowNearPlane = 0.01f;
-                _lightObject.shadows = LightShadows.None;
-                _lightObject.color = Color.white;
+                lightData.shadowNearPlane = 0.01f;
+                CastShadows = false;
+                Color = Color.white;
                 switch (_lightObject.type)
                 {
                     case LightType.Directional:
-                        _lightObject.intensity = 10.0f;
-                        minIntensity = 0.0f;
-                        maxIntensity = 100.0f;
-                        break;
-                    case LightType.Point:
-                        _lightObject.intensity = 0.5f;
+                        Intensity = 5f;
                         minIntensity = 0.0f;
                         maxIntensity = 10.0f;
-                        _lightObject.range = 10f;
+                        break;
+                    case LightType.Point:
+                        Intensity = 5f;
+                        minIntensity = 0.0f;
+                        maxIntensity = 10.0f;
+                        Range = 10f;
                         minRange = 0f;
                         maxRange = 100f;
                         break;
                     case LightType.Spot:
-                        _lightObject.intensity = 0.5f;
+                        Intensity = 5f;
                         minIntensity = 0.0f;
                         maxIntensity = 10.0f;
-                        _lightObject.shadowNearPlane = 0.01f;
-                        _lightObject.range = 20f;
+                        Range = 2f;
                         minRange = 0f;
                         maxRange = 100f;
-                        _lightObject.spotAngle = 100f;
-                        _lightObject.innerSpotAngle = 80;
+                        Sharpness = 80f;
+                        OuterAngle = 100f;
                         break;
                 }
             }

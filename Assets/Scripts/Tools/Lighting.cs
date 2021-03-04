@@ -38,7 +38,7 @@ namespace VRtist
         private Transform globalCastShadows;
         private Transform intensitySlider;
         private Transform rangeSlider;
-        //private Transform innerAngleSlider;
+        private Transform sharpnessSlider;
         private Transform outerAngleSlider;
         private Transform castShadowsCheckbox;
         private Transform enableCheckbox;
@@ -52,7 +52,7 @@ namespace VRtist
         {
             intensitySlider.gameObject.SetActive(false);
             rangeSlider.gameObject.SetActive(false);
-            //innerAngleSlider.gameObject.SetActive(false);
+            sharpnessSlider.gameObject.SetActive(false);
             outerAngleSlider.gameObject.SetActive(false);
             castShadowsCheckbox.gameObject.SetActive(false);
             enableCheckbox.gameObject.SetActive(false);
@@ -70,7 +70,7 @@ namespace VRtist
 
             intensitySlider = panel.Find("Intensity");
             rangeSlider = panel.Find("Range");
-            //innerAngleSlider = panel.Find("InnerAngle");
+            sharpnessSlider = panel.Find("Sharpness");
             outerAngleSlider = panel.Find("Angle");
             castShadowsCheckbox = panel.Find("CastShadows");
             enableCheckbox = panel.Find("Enable");
@@ -208,7 +208,7 @@ namespace VRtist
 
                 SetSliderValues(intensitySlider, lightController.Intensity, lightController.minIntensity, lightController.maxIntensity);
                 SetSliderValues(rangeSlider, lightController.Range, lightController.minRange, lightController.maxRange);
-                //SetSliderValue(innerAngleSlider, lightingParameters.GetInnerAngle());
+                SetSliderValues(sharpnessSlider, lightController.Sharpness, 0f, 100f);
                 SetSliderValues(outerAngleSlider, lightController.OuterAngle, 0f, 180f);
 
                 SetCheckboxValue(castShadowsCheckbox, lightController.CastShadows);
@@ -260,7 +260,7 @@ namespace VRtist
             intensitySlider.gameObject.SetActive(true);
             rangeSlider.gameObject.SetActive(sunCount == 0);
 
-            //innerAngleSlider.gameObject.SetActive(sunCount == 0 && pointCount == 0);
+            sharpnessSlider.gameObject.SetActive(sunCount == 0 && pointCount == 0);
             outerAngleSlider.gameObject.SetActive(sunCount == 0 && pointCount == 0);
 
             castShadowsCheckbox.gameObject.SetActive(true);
@@ -344,6 +344,10 @@ namespace VRtist
         {
             OnSliderPressed("Light Angle", "/LightController/OuterAngle");
         }
+        public void OnSharpnessSliderPressed()
+        {
+            OnSliderPressed("Light Sharpness", "/LightController/Sharpness");
+        }
 
         public void OnCastShadowCheckboxPressed()
         {
@@ -386,9 +390,9 @@ namespace VRtist
             OnFloatChangeParameter("OuterAngle", value);
         }
 
-        public void OnChangeInnerAngle(float value)
+        public void OnChangeSharpness(float value)
         {
-            OnFloatChangeParameter("InnerAngle", value);
+            OnFloatChangeParameter("Sharpness", value);
         }
 
         private void OnFloatChangeParameter(string param, float value)
@@ -405,8 +409,8 @@ namespace VRtist
                     lightingController.Range = value;
                 if (param == "OuterAngle")
                     lightingController.OuterAngle = value;
-                if (param == "InnerAngle")
-                    lightingController.InnerAngle = value;
+                if (param == "Sharpness")
+                    lightingController.Sharpness = value;
                 SendLightParams(gobject);
             }
         }

@@ -563,7 +563,7 @@ namespace VRtist.Serialization
         public float minRange;
         public float maxRange;
         public float outerAngle;
-        public float innerAngle;
+        public float sharpness;
 
         public override void FromBytes(byte[] buffer, ref int index)
         {
@@ -579,7 +579,7 @@ namespace VRtist.Serialization
             minRange = Converter.GetFloat(buffer, ref index);
             maxRange = Converter.GetFloat(buffer, ref index);
             outerAngle = Converter.GetFloat(buffer, ref index);
-            innerAngle = Converter.GetFloat(buffer, ref index);
+            sharpness = Converter.GetFloat(buffer, ref index);
         }
 
         public override byte[] ToBytes()
@@ -596,7 +596,7 @@ namespace VRtist.Serialization
             byte[] minRangeBuffer = Converter.FloatToBytes(minRange);
             byte[] maxRangeBuffer = Converter.FloatToBytes(maxRange);
             byte[] outerAngleBuffer = Converter.FloatToBytes(outerAngle);
-            byte[] innerAngleBuffer = Converter.FloatToBytes(innerAngle);
+            byte[] sharpnessBuffer = Converter.FloatToBytes(sharpness);
 
             return Converter.ConcatenateBuffers(new List<byte[]>()
             {
@@ -612,7 +612,7 @@ namespace VRtist.Serialization
                 minRangeBuffer,
                 maxRangeBuffer,
                 outerAngleBuffer,
-                innerAngleBuffer}
+                sharpnessBuffer}
             );
         }
 

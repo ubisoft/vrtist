@@ -195,7 +195,7 @@ namespace VRtist
                 }
                 else
                 {
-                    projectItem.ResetRotation(camY);
+                    projectItem.ResetRotation(0f);
                 }
             }
 

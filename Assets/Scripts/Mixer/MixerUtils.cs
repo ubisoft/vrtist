@@ -885,16 +885,16 @@ namespace VRtist.Mixer
             byte[] bpath = Converter.StringToBytes(path);
             byte[] bname = Converter.StringToBytes(lightInfo.transform.name);
 
-            VRtistMixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float innerAngle, out float outerAngle);
+            VRtistMixer.GetLightInfo(lightInfo.transform.gameObject, out LightType lightType, out bool castShadows, out float power, out Color color, out float _, out float sharpness, out float outerAngle);
 
             byte[] lightTypeBuffer = Converter.IntToBytes((int)lightType);
             byte[] castShadowsBuffer = Converter.BoolToBytes(castShadows);
             byte[] colorBuffer = Converter.ColorToBytes(color);
             byte[] powerBuffer = Converter.FloatToBytes(power);
-            byte[] innerAngleBuffer = Converter.FloatToBytes(innerAngle);
+            byte[] sharpnessBuffer = Converter.FloatToBytes(sharpness);
             byte[] outerAngleBuffer = Converter.FloatToBytes(outerAngle);
 
-            List<byte[]> buffers = new List<byte[]> { bpath, bname, lightTypeBuffer, castShadowsBuffer, colorBuffer, powerBuffer, innerAngleBuffer, outerAngleBuffer };
+            List<byte[]> buffers = new List<byte[]> { bpath, bname, lightTypeBuffer, castShadowsBuffer, colorBuffer, powerBuffer, sharpnessBuffer, outerAngleBuffer };
             NetCommand command = new NetCommand(Converter.ConcatenateBuffers(buffers), MessageType.Light);
             return command;
         }
@@ -1182,17 +1182,17 @@ namespace VRtist.Mixer
             string lightName = Converter.GetString(data, ref currentIndex);
 
             Node node = SyncData.nodes[lightName];
-            VRtistMixer.GetLightInfo(node.prefab, out LightType lightType, out bool castShadows, out float _, out Color _, out float range, out float innerAngle, out float outerAngle);
+            VRtistMixer.GetLightInfo(node.prefab, out LightType lightType, out bool castShadows, out float _, out Color _, out float range, out float sharpness, out float outerAngle);
 
             float power = Converter.GetFloat(data, ref currentIndex);
             Color color = Converter.GetColor(data, ref currentIndex);
 
-            VRtistMixer.SetLightInfo(node.prefab, lightType, castShadows, power, color, range, innerAngle, outerAngle);
+            VRtistMixer.SetLightInfo(node.prefab, lightType, castShadows, power, color, range, sharpness, outerAngle);
 
             // Apply to instances
             foreach (Tuple<GameObject, string> t in node.instances)
             {
-                VRtistMixer.SetLightInfo(t.Item1, lightType, castShadows, power, color, range, innerAngle, outerAngle);
+                VRtistMixer.SetLightInfo(t.Item1, lightType, castShadows, power, color, range, sharpness, outerAngle);
             }
         }
 
@@ -1295,13 +1295,13 @@ namespace VRtist.Mixer
 
             // Set data to all instances
             float range = 5f;
-            float innerAngle = (1f - spotBlend) * 100f;
+            float sharpness = (1f - spotBlend) * 100f;
             float outerAngle = spotSize * 180f / 3.14f;
-            VRtistMixer.SetLightInfo(lightGameObject, lightType, castShadows, power, lightColor, range, innerAngle, outerAngle);
+            VRtistMixer.SetLightInfo(lightGameObject, lightType, castShadows, power, lightColor, range, sharpness, outerAngle);
 
             foreach (Tuple<GameObject, string> t in node.instances)
             {
-                VRtistMixer.SetLightInfo(t.Item1, lightType, castShadows, power, lightColor, 5f, innerAngle, outerAngle);
+                VRtistMixer.SetLightInfo(t.Item1, lightType, castShadows, power, lightColor, 5f, sharpness, outerAngle);
             }
         }
 
