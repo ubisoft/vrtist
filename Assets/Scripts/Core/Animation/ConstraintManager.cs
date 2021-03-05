@@ -140,11 +140,12 @@ namespace VRtist
                 if (null == lineRenderer)
                 {
                     constraint.lineRenderer = lineGameObject.AddComponent<LineRenderer>();
-                    lineGameObject.AddComponent<ConstraintLineController>();
+                    ConstraintLineController controller = lineGameObject.AddComponent<ConstraintLineController>();
                     lineGameObject.name = "line";
                     lineRenderer = constraint.lineRenderer;
                     lineRenderer.positionCount = 2;
                     lineRenderer.material = Resources.Load<Material>("Materials/Dash");
+                    controller.SetGizmoVisible(GlobalState.Instance.settings.DisplayGizmos);
                 }
                 lineRenderer.SetPosition(0, constraint.gobject.transform.position);
                 lineRenderer.SetPosition(1, constraint.target.position);

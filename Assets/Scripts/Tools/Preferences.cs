@@ -76,6 +76,7 @@ namespace VRtist
         private UILabel versionLabel;
         private UILabel projectNameLabel;
         private UILabel saveInfoLabel;
+        private UIButton mixerSaveButton;
         private Image saveImage;
 
 
@@ -115,6 +116,7 @@ namespace VRtist
             projectNameLabel = saveSubPanel.transform.Find("ProjectName").GetComponent<UILabel>();
             saveInfoLabel = saveSubPanel.transform.Find("InfoLabel").GetComponent<UILabel>();
             saveInfoLabel.gameObject.SetActive(false);
+            mixerSaveButton = saveSubPanel.transform.Find("BlenderSaveButton").GetComponent<UIButton>();
 
             saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
@@ -297,6 +299,7 @@ namespace VRtist
         public void OnSetSaveSubPanel()
         {
             ResetSubPanels();
+            mixerSaveButton.gameObject.SetActive(SceneManager.GetSceneType() == "Mixer");
             saveOptionsButton.Checked = true;
             saveSubPanel.SetActive(true);
         }
