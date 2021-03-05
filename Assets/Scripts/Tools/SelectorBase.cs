@@ -1046,7 +1046,18 @@ namespace VRtist
 
             if (isSnappingToGround)
             {
-                SnapPlane(ref currentMouthPieceLocalToWorld, 1);
+                int bestIndex = 0;
+                float bestY = 0;
+                for (int i = 0; i < 6; i++)
+                {
+                    Vector3 normalDirection = currentMouthPieceLocalToWorld.MultiplyVector(snapRays[i].direction).normalized;
+                    if (normalDirection.y < bestY)
+                    {
+                        bestY = normalDirection.y;
+                        bestIndex = i;
+                    }
+                }
+                SnapPlane(ref currentMouthPieceLocalToWorld, bestIndex);
             }
             else
             {
