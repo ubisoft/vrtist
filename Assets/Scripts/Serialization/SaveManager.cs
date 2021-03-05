@@ -242,9 +242,8 @@ namespace VRtist.Serialization
             GlobalState.Instance.messageBox.SetVisible(false);
         }
 
-        private void TraverseScene(Transform root, string parentPath, bool isSubImport = false)
+        private void TraverseScene(Transform root, string parentPath)
         {
-            int childIndex = 0;
             foreach (Transform currentTransform in root)
             {
                 if (currentTransform == SceneManager.BoundingBox)
@@ -285,13 +284,14 @@ namespace VRtist.Serialization
                 ParametersController controller = currentTransform.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
                 SetCommonData(currentTransform, parentPath, path, controller, data);
-                SetObjectData(currentTransform, controller, isSubImport, childIndex, data);
+                SetObjectData(currentTransform, controller, data);
                 SceneData.Current.objects.Add(data);
 
                 // Serialize children
-                TraverseScene(currentTransform, path, isSubImport: isSubImport || data.isImported);
-
-                ++childIndex;
+                if (!data.isImported)
+                {
+                    TraverseScene(currentTransform, path);
+                }
             }
         }
 
@@ -457,19 +457,8 @@ namespace VRtist.Serialization
             }
         }
 
-        private void SetObjectData(Transform trans, ParametersController controller, bool isSubImport, int childIndex, ObjectData data)
+        private void SetObjectData(Transform trans, ParametersController controller, ObjectData data)
         {
-            data.isSubImport = isSubImport;
-            data.childIndex = childIndex;
-
-            if (isSubImport)
-            {
-                // TODO store material if there is a diff with the original imported sub object
-                data.isImported = false;  // only the root of the object is flagged as imported
-                data.meshPath = "";       // not used in this case
-                return;
-            }
-
             // Mesh for non-imported objects
             if (null == controller || !controller.isImported)
             {
@@ -714,19 +703,6 @@ namespace VRtist.Serialization
                     Debug.LogError("Failed to load external object: " + e.Message);
                     return;
                 }
-            }
-            else if (data.isSubImport)
-            {
-                // The imported object and all of its sub objects have been imported.
-                // Names between the saved ones and the imported ones may differ.
-                // We use the parent name which is always the good one and the child index to retrieve
-                // the object. Since we set the new object name (to the saved one), all its children can
-                // refer to their parent by name.
-                Transform parent = rootTransform.Find(data.parentPath);
-                gobject = parent.GetChild(data.childIndex).gameObject;
-                gobject.name = data.name;
-                LoadCommonData(gobject, data);
-                return;
             }
             else
             {

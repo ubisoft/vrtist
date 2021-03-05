@@ -63,8 +63,8 @@ namespace VRtist
         [Header("Parameters")]
         private bool useDefaultInstantiationScale = false;
 
-        private Dictionary<int, AssetBankItem> items = new Dictionary<int, AssetBankItem>();   // uid -> asset bank item
-        private HashSet<string> tags = new HashSet<string>();
+        private readonly Dictionary<int, AssetBankItem> items = new Dictionary<int, AssetBankItem>();   // uid -> asset bank item
+        private readonly HashSet<string> tags = new HashSet<string>();
         private GameObject bank;  // contains all prefabs from the asset bank
         private int selectedItem = -1;
         private bool loadingAsset = false;
@@ -246,7 +246,7 @@ namespace VRtist
                 }
             }
 
-            if (null != onEndScan) { onEndScan(); }
+            onEndScan?.Invoke();
         }
 
         private void AddBuiltinAsset(string tags, string name, string uiPath, string prefabPath)
@@ -276,8 +276,10 @@ namespace VRtist
                 return null;
             }
             int uid = thumbnail.GetHashCode();
-            GameObject root = new GameObject("AssetBankItem");
-            root.layer = LayerMask.NameToLayer("CameraHidden");
+            GameObject root = new GameObject("AssetBankItem")
+            {
+                layer = LayerMask.NameToLayer("CameraHidden")
+            };
             AssetBankItem item = root.AddComponent<AssetBankItem>();
             item.uid = uid;
             item.assetName = name;
@@ -334,6 +336,7 @@ namespace VRtist
                 GlobalState.Instance.messageBox.ShowMessage("Loading asset, please wait...");
                 Selection.ClearSelection();
                 item.prefab = await item.importFunction(item);
+                NameObjectMeshes(item.prefab);
                 item.imported = true;
 
                 // For blender assets, we don't want to instantiate objects, we will receive them
@@ -362,6 +365,22 @@ namespace VRtist
         private Task<GameObject> ImportObjectAsync(AssetBankItem item)
         {
             return GlobalState.GeometryImporter.ImportObjectAsync(item.assetName, bank.transform);
+        }
+
+        private void NameObjectMeshes(GameObject gobject)
+        {
+            foreach (Transform child in gobject.transform)
+            {
+                MeshFilter meshFilter = child.GetComponent<MeshFilter>();
+                if (null != meshFilter)
+                {
+                    Mesh mesh = meshFilter.mesh;
+                    if (null != mesh)
+                    {
+                        mesh.name = child.name;
+                    }
+                }
+            }
         }
 
         private void AddObject(GameObject gobject)

@@ -131,8 +131,34 @@ namespace VRtist
             return Instance.scene.AddObject(gobject);
         }
 
+        /// <summary>
+        /// For imported objects, if something has changed (transform, material, sub-object...) mark it 
+        /// as non imported, so we can save and load it with all its modifications.
+        /// </summary>
+        /// <param name="gobject"></param>
+        private static void SetAsNonImported(GameObject gobject, bool checkRoot = true)
+        {
+            ParametersController controller = gobject.GetComponent<ParametersController>();
+            if (null != controller && controller.isImported && !checkRoot) { return; }
+
+            // Search for an imported object in the object's hierarchy (parents)
+            Transform parent = gobject.transform;
+            while (parent != RightHanded)
+            {
+                controller = parent.GetComponent<ParametersController>();
+                if (null != controller && controller.isImported)
+                {
+                    controller.isImported = false;
+                    controller.importPath = null;
+                    return;
+                }
+                parent = parent.parent;
+            }
+        }
+
         public static void RemoveObject(GameObject gobject)
         {
+            SetAsNonImported(gobject);
             Instance.scene.RemoveObject(gobject);
         }
 
@@ -153,11 +179,13 @@ namespace VRtist
 
         public static void SetObjectMatrix(GameObject gobject, Matrix4x4 matrix)
         {
+            SetAsNonImported(gobject, checkRoot: false);
             Instance.scene.SetObjectMatrix(gobject, matrix);
         }
 
         public static void SetObjectTransform(GameObject gobject, Vector3 position, Quaternion rotation, Vector3 scale)
         {
+            SetAsNonImported(gobject, checkRoot: false);
             Instance.scene.SetObjectTransform(gobject, position, rotation, scale);
         }
 
@@ -173,6 +201,7 @@ namespace VRtist
 
         public static void SetObjectMaterialValue(GameObject gobject, MaterialValue materialValue)
         {
+            SetAsNonImported(gobject);
             Instance.scene.SetObjectMaterialValue(gobject, materialValue);
         }
 

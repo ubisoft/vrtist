@@ -121,8 +121,7 @@ namespace VRtist.Serialization
 
         public Material CreateMaterial(string rootPath)
         {
-            Material material = null;
-
+            Material material;
             if (!unlit)
             {
                 material = new Material(
@@ -451,8 +450,6 @@ namespace VRtist.Serialization
         // Mesh
         public string meshPath;
         public bool isImported;
-        public bool isSubImport;  // something inside the hierarchy of an imported object
-        public int childIndex;    // transform child index
 
         // Materials
         public List<MaterialData> materialsData = new List<MaterialData>();
@@ -477,8 +474,6 @@ namespace VRtist.Serialization
 
             meshPath = Converter.GetString(bytes, ref index);
             isImported = Converter.GetBool(bytes, ref index);
-            isSubImport = Converter.GetBool(bytes, ref index);
-            childIndex = Converter.GetInt(bytes, ref index);
 
             int materialCount = Converter.GetInt(bytes, ref index);
             for (int i = 0; i < materialCount; i++)
@@ -508,8 +503,6 @@ namespace VRtist.Serialization
 
             byte[] meshPathBuffer = Converter.StringToBytes(meshPath);
             byte[] isImportedBuffer = Converter.BoolToBytes(isImported);
-            byte[] isSubImportBuffer = Converter.BoolToBytes(isSubImport);
-            byte[] childIndexBuffer = Converter.IntToBytes(childIndex);
 
             byte[] materialCountBuffer = Converter.IntToBytes(materialsData.Count);
             List<byte[]> matBuffers = new List<byte[]>();
@@ -537,8 +530,6 @@ namespace VRtist.Serialization
 
                 meshPathBuffer,
                 isImportedBuffer,
-                isSubImportBuffer,
-                childIndexBuffer,
 
                 materialCountBuffer,
                 materialsBuffer,
@@ -882,7 +873,7 @@ namespace VRtist.Serialization
         public List<ShotData> shots = new List<ShotData>();
         public List<AnimationData> animations = new List<AnimationData>();
 
-        private byte[] headerBuffer = new byte[6] { (byte)'V', (byte)'R', (byte)'t', (byte)'i', (byte)'s', (byte)'t' };
+        private readonly byte[] headerBuffer = new byte[6] { (byte)'V', (byte)'R', (byte)'t', (byte)'i', (byte)'s', (byte)'t' };
         public int version = 0;
 
         public float fps;

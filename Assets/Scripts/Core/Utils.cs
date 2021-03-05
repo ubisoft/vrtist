@@ -38,6 +38,7 @@ namespace VRtist
         public float roughness;
         public float metallic;
     }
+
     public class Utils
     {
         public static string blenderHiddenParent = "__Blender_Hidden_Parent_Matrix";
@@ -250,7 +251,6 @@ namespace VRtist
                 renderer.materials = newMaterials; // set array
             }
         }
-
 
         public static void TryDispose(IDisposable obj)
         {
