@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -85,7 +86,17 @@ namespace VRtist
         // snap parameters
         [Header("Snap Parameters")]
         protected Ray[] snapRays;
-        static protected bool isSnapping = true;
+        static protected UnityEvent snapChangedEvent = new UnityEvent();
+        static private bool isSnapping = true;
+        static protected bool IsSnapping
+        {
+            get { return isSnapping; }
+            set
+            {
+                isSnapping = value;
+                snapChangedEvent.Invoke();
+            }
+        }
         static protected bool isSnappingToGround = false;
         private bool snapSwitch = false;
         private readonly float snapDistance = 0.03f;
@@ -1029,12 +1040,10 @@ namespace VRtist
             },
             () =>
             {
-                snapSwitch = !snapSwitch;
+                IsSnapping = !IsSnapping;
             });
 
-            bool snapping = snapSwitch ? !isSnapping : isSnapping;
-
-            if (!snapping || !IsSelectionSnappable())
+            if (!IsSnapping || !IsSelectionSnappable())
             {
                 boundingBox.SetActive(false);
                 return;

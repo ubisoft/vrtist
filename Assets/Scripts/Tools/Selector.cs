@@ -528,6 +528,7 @@ namespace VRtist
             }
 
             base.OnDisable();
+            snapChangedEvent.RemoveListener(OnSnapChanged);
             Selection.onSelectionChanged.RemoveListener(UpdateGridFromSelection);
             if (null != grid) { grid.gameObject.SetActive(false); }
             if (null != boundingBox) { boundingBox.SetActive(false); }
@@ -834,8 +835,13 @@ namespace VRtist
 
         public void EnableSnap(bool value)
         {
-            isSnapping = value;
-            snapToGroundCheckbox.Disabled = !isSnapping;
+            IsSnapping = value;
+        }
+
+        public void OnSnapChanged()
+        {
+            snapCheckbox.Checked = IsSnapping;
+            snapToGroundCheckbox.Disabled = !IsSnapping;
         }
 
         public void SnapToGround(bool value)
@@ -850,10 +856,14 @@ namespace VRtist
                 uniformScaleCheckbox.Disabled = !deformEnabled;
                 uniformScaleCheckbox.Checked = uniformScale;
             }
-            if (null != snapCheckbox) snapCheckbox.Checked = isSnapping;
+            if (null != snapCheckbox)
+            {
+                snapCheckbox.Checked = IsSnapping;
+                snapChangedEvent.AddListener(OnSnapChanged);
+            }
             if (null != snapToGroundCheckbox)
             {
-                snapToGroundCheckbox.Disabled = !isSnapping;
+                snapToGroundCheckbox.Disabled = !IsSnapping;
                 snapToGroundCheckbox.Checked = isSnappingToGround;
             }
             if (null != snapToGridCheckbox) { snapToGridCheckbox.Checked = snapToGrid; }
