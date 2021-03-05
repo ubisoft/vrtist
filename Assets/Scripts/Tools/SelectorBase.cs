@@ -60,7 +60,6 @@ namespace VRtist
             get { return deforming; }
         }
 
-
         protected CommandGroup clearSelectionUndoGroup;
         protected int selectionStateTimestamp = -1;
 
@@ -70,7 +69,6 @@ namespace VRtist
         bool outOfDeadZone = false;
         private CommandGroup gripCmdGroup = null;
         public bool Gripping { get { return null != gripCmdGroup; } }
-
 
         protected bool gripPrevented = false;
         protected bool gripInterrupted = false;
@@ -98,7 +96,6 @@ namespace VRtist
             }
         }
         static protected bool isSnappingToGround = false;
-        private bool snapSwitch = false;
         private readonly float snapDistance = 0.03f;
         private readonly float epsilonDistance = 0.0001f;
         private readonly float snapVisibleRayFactor = 3f;
@@ -452,8 +449,6 @@ namespace VRtist
 
         protected virtual void OnStartGrip()
         {
-            snapSwitch = false;
-
             EndUndoGroup(); // secu
             if (GlobalState.IsGrippingWorld)
             {
@@ -1078,6 +1073,8 @@ namespace VRtist
                 case 3: return 2;
                 case 4: return 5;
                 case 5: return 4;
+                default:
+                    break;
             }
             return -1;
         }
