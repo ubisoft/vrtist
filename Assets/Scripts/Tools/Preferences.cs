@@ -119,7 +119,8 @@ namespace VRtist
             saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
             SceneManager.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
-            SceneManager.sceneSavedEvent.AddListener(() => StartCoroutine(ShowSaveInfo(2)));
+            SceneManager.sceneSavedEvent.AddListener(() => StartCoroutine(ShowSaveLoadInfo("Project saved", 2)));
+            SceneManager.sceneLoadedEvent.AddListener(() => StartCoroutine(ShowSaveLoadInfo("Project loaded", 2)));
 
             Apply();
 
@@ -408,8 +409,9 @@ namespace VRtist
             saveImage.sprite = dirty ? UIUtils.LoadIcon("unsaved") : UIUtils.LoadIcon("save");
         }
 
-        private IEnumerator ShowSaveInfo(float seconds)
+        private IEnumerator ShowSaveLoadInfo(string text, float seconds)
         {
+            saveInfoLabel.Text = text;
             saveInfoLabel.gameObject.SetActive(true);
             yield return new WaitForSecondsRealtime(seconds);
             saveInfoLabel.gameObject.SetActive(false);

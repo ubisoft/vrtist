@@ -91,6 +91,17 @@ namespace VRtist
             // Then put it to righthanded
             copy.transform.SetParent(SceneManager.RightHanded, true);
 
+            // Be sure to keep original mesh name
+            MeshFilter[] sourceMeshFilters = gobject.GetComponentsInChildren<MeshFilter>();
+            if (sourceMeshFilters.Length > 0)
+            {
+                MeshFilter[] copyMeshFilters = copy.GetComponentsInChildren<MeshFilter>();
+                for (int i = 0; i < sourceMeshFilters.Length; ++i)
+                {
+                    copyMeshFilters[i].mesh.name = sourceMeshFilters[i].mesh.name;
+                }
+            }
+
             GlobalState.FireObjectAdded(copy);
             return copy;
         }

@@ -65,6 +65,8 @@ namespace VRtist.Serialization
         private readonly Dictionary<string, MeshInfo> meshes = new Dictionary<string, MeshInfo>();  // meshes to save in separated files
         private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
 
+        private readonly Dictionary<string, Mesh> loadedMeshes = new Dictionary<string, Mesh>();
+
         private readonly string DEFAULT_PROJECT_NAME = "newProject";
 
         #region Singleton
@@ -556,6 +558,8 @@ namespace VRtist.Serialization
             VRtistScene scene = new VRtistScene();
             SceneManager.SetSceneImpl(scene);
 
+            loadedMeshes.Clear();
+
             bool gizmoVisible = GlobalState.Settings.DisplayGizmos;
             bool errorLoading = false;
 
@@ -633,7 +637,10 @@ namespace VRtist.Serialization
                 if (!gizmoVisible)
                     GlobalState.SetDisplayGizmos(false);
                 if (!errorLoading)
+                {
                     GlobalState.Instance.messageBox.SetVisible(false);
+                    SceneManager.sceneLoadedEvent.Invoke();
+                }
             }
         }
 
@@ -718,9 +725,14 @@ namespace VRtist.Serialization
             {
                 if (!data.isImported)
                 {
-                    MeshData meshData = new MeshData();
-                    SerializationManager.Load(absoluteMeshPath, meshData);
-                    gobject.AddComponent<MeshFilter>().sharedMesh = meshData.CreateMesh();
+                    if (!loadedMeshes.TryGetValue(absoluteMeshPath, out Mesh mesh))
+                    {
+                        MeshData meshData = new MeshData();
+                        SerializationManager.Load(absoluteMeshPath, meshData);
+                        mesh = meshData.CreateMesh();
+                        loadedMeshes.Add(absoluteMeshPath, mesh);
+                    }
+                    gobject.AddComponent<MeshFilter>().sharedMesh = mesh;
                     gobject.AddComponent<MeshRenderer>().materials = LoadMaterials(data);
                     gobject.AddComponent<MeshCollider>();
                 }
