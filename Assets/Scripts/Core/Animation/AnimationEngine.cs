@@ -49,7 +49,7 @@ namespace VRtist
         PositionX, PositionY, PositionZ,
         RotationX, RotationY, RotationZ,
         ScaleX, ScaleY, ScaleZ,
-        LightIntensity, ColorR, ColorG, ColorB,
+        Power, ColorR, ColorG, ColorB,
         CameraFocal,
         Unknown
     }
@@ -310,7 +310,7 @@ namespace VRtist
                 Vector3 rotation = trans.localEulerAngles;
                 Vector3 scale = trans.localScale;
 
-                float lightIntensity = -1;
+                float power = -1;
                 Color color = Color.white;
 
                 float cameraFocal = -1;
@@ -333,7 +333,7 @@ namespace VRtist
                         case AnimatableProperty.ScaleY: scale.y = value; break;
                         case AnimatableProperty.ScaleZ: scale.z = value; break;
 
-                        case AnimatableProperty.LightIntensity: lightIntensity = value; break;
+                        case AnimatableProperty.Power: power = value; break;
                         case AnimatableProperty.ColorR: color.r = value; break;
                         case AnimatableProperty.ColorG: color.g = value; break;
                         case AnimatableProperty.ColorB: color.b = value; break;
@@ -346,10 +346,10 @@ namespace VRtist
                 trans.localEulerAngles = rotation;
                 trans.localScale = scale;
 
-                if (lightIntensity != -1)
+                if (power != -1)
                 {
                     LightController controller = trans.GetComponent<LightController>();
-                    controller.Intensity = lightIntensity;
+                    controller.Power = power;
                     controller.Color = color;
                 }
 
@@ -575,12 +575,12 @@ namespace VRtist
                     Vector3 rotation = selected.transform.localEulerAngles;
                     Vector3 scale = selected.transform.localScale;
 
-                    float lightIntensity = -1;
+                    float power = -1;
                     Color color = Color.white;
                     LightController lightController = selected.GetComponent<LightController>();
                     if (null != lightController)
                     {
-                        lightIntensity = lightController.Intensity;
+                        power = lightController.Power;
                         color = lightController.Color;
                     }
 
@@ -605,7 +605,7 @@ namespace VRtist
                         case AnimatableProperty.ScaleY: curve.AppendKey(new AnimationKey(currentFrame, scale.y)); break;
                         case AnimatableProperty.ScaleZ: curve.AppendKey(new AnimationKey(currentFrame, scale.z)); break;
 
-                        case AnimatableProperty.LightIntensity: curve.AppendKey(new AnimationKey(currentFrame, lightIntensity)); break;
+                        case AnimatableProperty.Power: curve.AppendKey(new AnimationKey(currentFrame, power)); break;
                         case AnimatableProperty.ColorR: curve.AppendKey(new AnimationKey(currentFrame, color.r)); break;
                         case AnimatableProperty.ColorG: curve.AppendKey(new AnimationKey(currentFrame, color.g)); break;
                         case AnimatableProperty.ColorB: curve.AppendKey(new AnimationKey(currentFrame, color.b)); break;

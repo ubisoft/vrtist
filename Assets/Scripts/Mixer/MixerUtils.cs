@@ -1972,7 +1972,7 @@ namespace VRtist.Mixer
 
                 case AnimatableProperty.CameraFocal: channelName = "lens"; channelIndex = -1; break;
 
-                case AnimatableProperty.LightIntensity: channelName = "energy"; channelIndex = -1; break;
+                case AnimatableProperty.Power: channelName = "energy"; channelIndex = -1; break;
                 case AnimatableProperty.ColorR: channelName = "color"; channelIndex = 0; break;
                 case AnimatableProperty.ColorG: channelName = "color"; channelIndex = 1; break;
                 case AnimatableProperty.ColorB: channelName = "color"; channelIndex = 2; break;

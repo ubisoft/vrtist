@@ -143,7 +143,7 @@ namespace VRtist
 
             // Search for an imported object in the object's hierarchy (parents)
             Transform parent = gobject.transform;
-            while (parent != RightHanded)
+            while (null != parent && parent != RightHanded)
             {
                 controller = parent.GetComponent<ParametersController>();
                 if (null != controller && controller.isImported)

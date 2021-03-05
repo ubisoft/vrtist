@@ -212,7 +212,7 @@ namespace VRtist.Mixer
             LightController lightController = obj.GetComponentInChildren<LightController>();
             lightType = lightController.Type;
             castShadows = lightController.CastShadows;
-            power = lightController.GetPower();
+            power = lightController.Power;
             color = lightController.Color;
             range = lightController.Range;
             sharpness = lightController.Sharpness;
@@ -226,7 +226,7 @@ namespace VRtist.Mixer
                 return;
             LightController controller = obj.GetComponent<LightController>();
             controller.Type = lightType;
-            controller.SetPower(power);
+            controller.Power = power;
             controller.Color = color;
             controller.CastShadows = castShadows;
             controller.Range = range;
@@ -239,7 +239,7 @@ namespace VRtist.Mixer
                 GameObject instance = instanceItem.Item1;
                 LightController instanceController = instance.GetComponent<LightController>();
                 instanceController.Type = lightType;
-                instanceController.SetPower(power);
+                instanceController.Power = power;
                 instanceController.Color = color;
                 instanceController.CastShadows = castShadows;
                 instanceController.Range = range;
@@ -268,7 +268,7 @@ namespace VRtist.Mixer
 
                 case "lens-1": property = AnimatableProperty.CameraFocal; break;
 
-                case "energy-1": property = AnimatableProperty.LightIntensity; break;
+                case "energy-1": property = AnimatableProperty.Power; break;
                 case "color0": property = AnimatableProperty.ColorR; break;
                 case "color1": property = AnimatableProperty.ColorG; break;
                 case "color2": property = AnimatableProperty.ColorB; break;

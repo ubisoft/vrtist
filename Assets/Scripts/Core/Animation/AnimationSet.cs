@@ -83,7 +83,7 @@ namespace VRtist
         private void CreateLightCurves()
         {
             CreatePositionRotationCurves();
-            curves.Add(AnimatableProperty.LightIntensity, new Curve(AnimatableProperty.LightIntensity));
+            curves.Add(AnimatableProperty.Power, new Curve(AnimatableProperty.Power));
             curves.Add(AnimatableProperty.ColorR, new Curve(AnimatableProperty.ColorR));
             curves.Add(AnimatableProperty.ColorG, new Curve(AnimatableProperty.ColorG));
             curves.Add(AnimatableProperty.ColorB, new Curve(AnimatableProperty.ColorB));

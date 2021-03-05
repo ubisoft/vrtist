@@ -67,6 +67,44 @@ namespace VRtist
                 LightData.SetIntensity(value);
             }
         }
+
+        public float Power
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case LightType.Point:
+                        return Intensity * 10f;
+                    case LightType.Directional:
+                        return Intensity / 1.5f;
+                    case LightType.Spot:
+                        return Intensity / (0.4f / 3f);
+                    case LightType.Area:
+                        break;
+                    case LightType.Disc:
+                        break;
+                }
+                return 0;
+            }
+            set
+            {
+                switch (Type)
+                {
+                    case LightType.Point:
+                        Intensity = value * 0.1f;
+                        break;
+                    case LightType.Directional:
+                        Intensity = value * 1.5f;
+                        break;
+                    case LightType.Spot:
+                        Intensity = value * (0.4f / 3f);
+                        break;
+                }
+
+            }
+        }
+
         public Color Color
         {
             get
@@ -127,40 +165,6 @@ namespace VRtist
         {
             // Binding set in the lightBuilder
             CastShadows = _castShadows;
-        }
-
-        public void SetPower(float power)
-        {
-            switch (Type)
-            {
-                case LightType.Point:
-                    Intensity = power * 0.1f;
-                    break;
-                case LightType.Directional:
-                    Intensity = power * 1.5f;
-                    break;
-                case LightType.Spot:
-                    Intensity = power * (0.4f / 3f);
-                    break;
-            }
-        }
-
-        public float GetPower()
-        {
-            switch (Type)
-            {
-                case LightType.Point:
-                    return Intensity * 10f;
-                case LightType.Directional:
-                    return Intensity / 1.5f;
-                case LightType.Spot:
-                    return Intensity / (0.4f / 3f);
-                case LightType.Area:
-                    break;
-                case LightType.Disc:
-                    break;
-            }
-            return 0;
         }
 
         private void Init()

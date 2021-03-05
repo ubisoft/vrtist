@@ -56,7 +56,7 @@ namespace VRtist
             }
             else if (null != lcontroller)
             {
-                new CommandAddKeyframe(gObject, AnimatableProperty.LightIntensity, frame, lcontroller.GetPower(), interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.Power, frame, lcontroller.Power, interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorR, frame, lcontroller.Color.r, interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorG, frame, lcontroller.Color.g, interpolation).Submit();
                 new CommandAddKeyframe(gObject, AnimatableProperty.ColorB, frame, lcontroller.Color.b, interpolation).Submit();
