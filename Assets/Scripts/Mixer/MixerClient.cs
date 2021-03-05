@@ -240,7 +240,12 @@ namespace VRtist.Mixer
         {
             connected = false;
             string[] args = System.Environment.GetCommandLineArgs();
+#if UNITY_EDITOR
+            // For debug purpose use the network settings
             VRtistMixer.GetNetworkData(ref hostname, ref room, ref port, ref master, ref userName, ref userColor);
+#else
+            hostname = null;
+#endif
 
             // Read command line
             for (int i = 0; i < args.Length; i++)
@@ -253,7 +258,11 @@ namespace VRtist.Mixer
                 if (args[i] == "--usercolor") { ColorUtility.TryParseHtmlString(args[i + 1], out userColor); }
             }
 
+#if UNITY_EDITOR
             VRtistMixer.SetNetworkData(room, master, userName, userColor);
+#endif
+
+            if (null == hostname) { return; }
 
             IPAddress ipAddress = GetIpAddressFromHostname(hostname);
             if (null == ipAddress)
