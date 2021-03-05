@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+using System;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -881,10 +882,8 @@ namespace VRtist.Serialization
         public List<ShotData> shots = new List<ShotData>();
         public List<AnimationData> animations = new List<AnimationData>();
 
-        /*
-        private char[] header = new char[6] { 'V', 'R', 't', 'i', 's', 't' };
+        private byte[] headerBuffer = new byte[6] { (byte)'V', (byte)'R', (byte)'t', (byte)'i', (byte)'s', (byte)'t' };
         public int version = 0;
-        */
 
         public float fps;
         public int startFrame;
@@ -907,16 +906,21 @@ namespace VRtist.Serialization
 
         public void FromBytes(byte[] buffer, ref int index)
         {
-            /*
+            for (int i = 0; i < 6; i++)
+            {
+                if (buffer[i] != headerBuffer[i])
+                {
+                    throw new Exception("Invalid VRtist file Header");
+                }
+            }
             index += 6;
 
             int fileVersion = Converter.GetInt(buffer, ref index);
             if (fileVersion > version)
             {
-                // throw  
-                return;
+                throw new Exception("File version mismatch, please update VRtist");
             }
-            */
+
 
             int objectsCount = Converter.GetInt(buffer, ref index);
             for (int i = 0; i < objectsCount; i++)
@@ -984,9 +988,7 @@ namespace VRtist.Serialization
 
         public byte[] ToBytes()
         {
-            /*
             byte[] versionBuffer = Converter.IntToBytes(version);
-            */
 
             byte[] objectsCountBuffer = Converter.IntToBytes(objects.Count);
             List<byte[]> objectsBufferList = new List<byte[]>();
@@ -1048,6 +1050,9 @@ namespace VRtist.Serialization
             byte[] playerBuffer = playerData.ToBytes();
 
             byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]> {
+                headerBuffer,
+                versionBuffer,
+
                 objectsCountBuffer,
                 objectsBuffer,
 
