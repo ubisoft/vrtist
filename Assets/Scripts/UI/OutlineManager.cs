@@ -85,7 +85,8 @@ namespace VRtist
             {
                 if (lookAtConstraint.sourceCount > 0)
                 {
-                    GameObject sourceObject = constraint.GetSource(0).sourceTransform.gameObject;
+                    ConstraintSource constraintSource = lookAtConstraint.GetSource(0);
+                    GameObject sourceObject = constraintSource.sourceTransform.gameObject;
                     if (Selection.IsSelected(lookAtConstraint.GetSource(0).sourceTransform.gameObject))
                     {
                         parentLayerName = LayerMask.LayerToName(sourceObject.layer);
