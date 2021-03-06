@@ -126,7 +126,7 @@ namespace VRtist
             set
             {
                 _castShadows = value;
-                LightData.EnableShadows(value);
+                LightData.EnableShadows(value && GlobalState.Instance.settings.castShadows);
             }
         }
         public float ShadowNearPlane { get { return LightData.shadowNearPlane; } set { LightData.shadowNearPlane = value; } }
