@@ -223,9 +223,18 @@ namespace VRtist
             byte[] data = new byte[dataLength];
             Buffer.BlockCopy(bytes, index, data, 0, dataLength);
 
-            Texture2D texture = new Texture2D(width, height, format, true, isLinear);
-            texture.LoadRawTextureData(data);
-            texture.Apply();
+            Texture2D texture = null;
+            try
+            {
+                texture = new Texture2D(width, height, format, true, isLinear);
+                texture.LoadRawTextureData(data);
+                texture.Apply();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Could not create texture " + filePath);
+                Debug.LogError(e.Message);
+            }
             return texture;
         }
 

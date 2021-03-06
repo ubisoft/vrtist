@@ -318,7 +318,7 @@ namespace VRtist
             mesh.RecalculateBounds();
 
             subMeshComponent.mesh = mesh;
-            subMeshComponent.name = assimpMesh.Name;
+            subMeshComponent.name = Utils.CreateUniqueName(assimpMesh.Name);
             subMeshComponent.materialIndex = assimpMesh.MaterialIndex;
 
             return subMeshComponent;
@@ -445,6 +445,7 @@ namespace VRtist
             meshFilter.mesh = new Mesh();
             meshFilter.mesh.CombineMeshes(combine, false);
             meshFilter.name = meshes[node.MeshIndices[0]].name;
+            meshFilter.mesh.name = meshFilter.name;
             meshRenderer.sharedMaterials = mats;
             MeshCollider collider = parent.AddComponent<MeshCollider>();
 
