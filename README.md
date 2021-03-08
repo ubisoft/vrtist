@@ -71,3 +71,11 @@ Launch or join a server, create or join a room and press "Launch VRtist". Put yo
 A Windows firewall popup may appear during the first launch, accept it.
 
 When done, everything that you did in VRtist is in your Blender scene. You can continue to work on it and relaunch VRtist anytime you want.
+
+## License and copyright
+
+The original code is Copyright (C) 2021 Ubisoft.
+
+All code of the VRtist project is under the MIT license.
+
+
