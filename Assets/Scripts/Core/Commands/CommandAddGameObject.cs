@@ -30,22 +30,26 @@ namespace VRtist
     /// </summary>
     public class CommandAddGameObject : CommandAddRemoveGameObject
     {
+        public GameObject newObject;
+
         public CommandAddGameObject(GameObject o) : base(o)
         {
         }
 
         public override void Undo()
         {
-            if (null == gObject) { return; }
-            SceneManager.RemoveObject(gObject);
+            if (null == newObject) { return; }
+            SceneManager.RemoveObject(newObject);
         }
         public override void Redo()
         {
-            if (null == gObject) { return; }
-            SceneManager.RestoreObject(gObject, parent);
+            if (null == newObject) { return; }
+            SceneManager.RestoreObject(newObject, parent);
         }
         public override void Submit()
         {
+            newObject = SceneManager.AddObject(gObject);
+            parent = SceneManager.GetObjectParent(newObject).transform;
             CommandManager.AddCommand(this);
         }
     }

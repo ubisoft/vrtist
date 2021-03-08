@@ -481,24 +481,22 @@ namespace VRtist
                     Vector3 position = matrix.GetColumn(3);
                     Quaternion rotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
                     Vector3 scale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
-                    GameObject newCamera = SceneManager.AddObject(instance);
 
-                    if (newCamera)
+                    CommandGroup undoGroup = new CommandGroup("Instantiate Camera");
+                    try
                     {
-                        CommandGroup undoGroup = new CommandGroup("Instantiate Camera");
-                        try
-                        {
-                            ClearSelection();
-                            new CommandAddGameObject(newCamera).Submit();
-                            AddToSelection(newCamera);
-                            SceneManager.SetObjectTransform(instance, position, rotation, scale);
-                            Selection.HoveredObject = newCamera;
-                        }
-                        finally
-                        {
-                            undoGroup.Submit();
-                            UIObject = null;
-                        }
+                        ClearSelection();
+                        CommandAddGameObject command = new CommandAddGameObject(instance);
+                        command.Submit();
+                        GameObject newCamera = command.newObject;
+                        AddToSelection(newCamera);
+                        SceneManager.SetObjectTransform(instance, position, rotation, scale);
+                        Selection.HoveredObject = newCamera;
+                    }
+                    finally
+                    {
+                        undoGroup.Submit();
+                        UIObject = null;
                     }
                 }
                 OnStartGrip();

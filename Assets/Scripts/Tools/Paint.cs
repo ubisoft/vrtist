@@ -296,12 +296,14 @@ namespace VRtist
                             GameObject.Destroy(currentPaint.transform.parent.gameObject);
                             currentPaint = null;
 
-                            GameObject paintInstance = SceneManager.AddObject(paintObject);
+                            CommandAddGameObject command = new CommandAddGameObject(paintObject);
+                            command.Submit();
+                            GameObject paintInstance = command.newObject;
+
                             PaintController controller = paintInstance.GetComponent<PaintController>();
                             controller.color = GlobalState.CurrentColor;
                             controller.controlPoints = freeDraw.controlPoints;
                             controller.controlPointsRadius = freeDraw.controlPointsRadius;
-                            new CommandAddGameObject(paintInstance).Submit();
                         }
                         break;
                     }
@@ -316,7 +318,9 @@ namespace VRtist
                                 GameObject.Destroy(currentVolume.transform.parent.gameObject);
                                 currentVolume = null;
 
-                                GameObject volumeInstance = SceneManager.AddObject(volumeObject);
+                                CommandAddGameObject command = new CommandAddGameObject(volumeObject);
+                                command.Submit();
+                                GameObject volumeInstance = command.newObject;
 
                                 VolumeController controller = volumeInstance.GetComponent<VolumeController>();
                                 controller.color = GlobalState.CurrentColor;
@@ -325,8 +329,7 @@ namespace VRtist
                                 controller.field = volumeGenerator.field;
                                 controller.resolution = volumeGenerator.resolution;
                                 controller.stepSize = volumeGenerator.stepSize;
-                                new CommandAddGameObject(volumeInstance).Submit();
-                                currentVolume = null;
+
                             }
                             else // EDIT
                             {

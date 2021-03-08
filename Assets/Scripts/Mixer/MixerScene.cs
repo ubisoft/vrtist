@@ -79,7 +79,7 @@ namespace VRtist.Mixer
             return SyncData.InstantiateFullHierarchyPrefab(gobject);
         }
 
-        public void RemoveObject(GameObject gobject)
+        private void _RemoveObject(GameObject gobject)
         {
             SendToTrashInfo trashInfo = new SendToTrashInfo
             {
@@ -87,16 +87,29 @@ namespace VRtist.Mixer
             };
             MixerClient.Instance.SendEvent<SendToTrashInfo>(MessageType.SendToTrash, trashInfo);
 
-            gobject.transform.parent.SetParent(SceneManager.Trash.transform, false);
-
             Node node = SyncData.nodes[gobject.name];
             node.RemoveInstance(gobject);
+
+            LightController lightController = gobject.GetComponent<LightController>();
+            if (null != lightController)
+                return;
+            CameraController cameraController = gobject.GetComponent<CameraController>();
+            if (null != cameraController)
+                return;
+            foreach (Transform child in gobject.transform)
+            {
+                _RemoveObject(child.GetChild(0).gameObject);
+            }
         }
 
-        public void RestoreObject(GameObject gobject, Transform parent)
+        public void RemoveObject(GameObject gobject)
         {
-            gobject.transform.parent.SetParent(parent, false);
+            gobject.transform.parent.SetParent(SceneManager.Trash.transform, false);
+            _RemoveObject(gobject);
+        }
 
+        public void _RestoreObject(GameObject gobject, Transform parent)
+        {
             Node node = SyncData.nodes[gobject.name];
             node.AddInstance(gobject);
 
@@ -106,6 +119,24 @@ namespace VRtist.Mixer
                 parent = parent
             };
             MixerClient.Instance.SendEvent<RestoreFromTrashInfo>(MessageType.RestoreFromTrash, trashInfo);
+
+            LightController lightController = gobject.GetComponent<LightController>();
+            if (null != lightController)
+                return;
+            CameraController cameraController = gobject.GetComponent<CameraController>();
+            if (null != cameraController)
+                return;
+
+            foreach (Transform child in gobject.transform)
+            {
+                _RestoreObject(child.GetChild(0).gameObject, gobject.transform);
+            }
+        }
+
+        public void RestoreObject(GameObject gobject, Transform parent)
+        {
+            gobject.transform.parent.SetParent(parent, false);
+            _RestoreObject(gobject, parent);
         }
 
         public GameObject DuplicateObject(GameObject gobject)

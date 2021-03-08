@@ -40,7 +40,9 @@ namespace VRtist
         public CommandAddRemoveGameObject(GameObject o)
         {
             gObject = o;
-            parent = SceneManager.GetObjectParent(o).transform;
+            GameObject parentObject = SceneManager.GetObjectParent(o);
+            if (null != parentObject)
+                parent = parentObject.transform;
         }
     }
 }

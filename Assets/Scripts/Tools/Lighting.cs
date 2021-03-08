@@ -139,13 +139,14 @@ namespace VRtist
                 Vector3 position = matrix.GetColumn(3);
                 Quaternion rotation = Quaternion.AngleAxis(180, Vector3.forward) * Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
                 Vector3 scale = new Vector3(matrix.GetColumn(0).magnitude, matrix.GetColumn(1).magnitude, matrix.GetColumn(2).magnitude);
-                instance = SceneManager.AddObject(instance);
 
                 CommandGroup undoGroup = new CommandGroup("Instantiate Light");
                 try
                 {
                     ClearSelection();
-                    new CommandAddGameObject(instance).Submit();
+                    CommandAddGameObject command = new CommandAddGameObject(instance);
+                    command.Submit();
+                    instance = command.newObject;
                     AddToSelection(instance);
                     SceneManager.SetObjectTransform(instance, position, rotation, scale);
                     Selection.HoveredObject = instance;

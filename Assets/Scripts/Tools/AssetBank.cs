@@ -45,18 +45,6 @@ namespace VRtist
         public bool imported = false;
 
         public UIDynamicListItem uiItem;
-        public bool isValid = true;
-
-        public void OnObjectAdded(GameObject gobject)
-        {
-            if (gobject == prefab)
-                isValid = true;
-        }
-        public void OnObjectRemoved(GameObject gobject)
-        {
-            if (gobject == prefab)
-                isValid = false;
-        }
 
         public void AddTags(string path)
         {
@@ -133,8 +121,6 @@ namespace VRtist
                 {
                     if (item.prefab) { Destroy(item.prefab); }
                     if (item.thumbnail) { Destroy(item.thumbnail); }
-                    GlobalState.ObjectAddedEvent.RemoveListener(item.OnObjectAdded);
-                    GlobalState.ObjectRemovedEvent.RemoveListener(item.OnObjectRemoved);
                     items.Remove(item.uid);
                 }
             }
@@ -306,8 +292,6 @@ namespace VRtist
             item.importFunction = importFunction;
             item.skipInstantiation = skipInstantiation;
             item.AddTags(tags);
-            GlobalState.ObjectAddedEvent.AddListener(item.OnObjectAdded);
-            GlobalState.ObjectRemovedEvent.AddListener(item.OnObjectRemoved);
             foreach (var tag in item.tags)
             {
                 this.tags.Add(tag);
@@ -346,7 +330,7 @@ namespace VRtist
             if (!item.thumbnail.GetComponent<UIGrabber>().isValid) { return; }
 
             // If the original doesn't exist, load it
-            if (null == item.prefab || !item.isValid)
+            if (null == item.prefab)
             {
                 loadingAsset = true;
                 GlobalState.Instance.messageBox.ShowMessage("Loading asset, please wait...");
@@ -413,34 +397,29 @@ namespace VRtist
             Quaternion toRightHandedRotation = Quaternion.Euler(new Vector3(90f, 0f, 0f));
             Vector3 scale = Vector3.one;
 
-            // Add the object to scene
-            GameObject newObject = SceneManager.AddObject(gobject);
-            if (item.imported)
-            {
-                ParametersController controller = newObject.GetComponent<ParametersController>();
-                if (null == controller)
-                {
-                    controller = newObject.AddComponent<ParametersController>();
-                    controller.isImported = true;
-                    controller.importPath = item.assetName;
-                }
-            }
-
             CommandGroup group = new CommandGroup("Instantiate Bank Object");
             try
             {
+                // Add the object to scene
                 ClearSelection();
-                if (null == newObject.GetComponent<MeshFilter>())
+                CommandAddGameObject command = new CommandAddGameObject(gobject);
+                command.Submit();
+                GameObject newObject = command.newObject;
+                if (item.imported)
                 {
-                    // Send transform
-                    new CommandAddGameObject(newObject).Submit();
+                    ParametersController controller = newObject.GetComponent<ParametersController>();
+                    if (null == controller)
+                    {
+                        controller = newObject.AddComponent<ParametersController>();
+                        controller.isImported = true;
+                        controller.importPath = item.assetName;
+                    }
                 }
 
                 // Set the object size to 20cm in the user space
                 Bounds bounds = new Bounds();
                 foreach (var subMeshFilter in newObject.GetComponentsInChildren<MeshFilter>())
                 {
-                    new CommandAddGameObject(subMeshFilter.gameObject).Submit();
                     if (!useDefaultInstantiationScale)
                     {
                         bounds.Encapsulate(subMeshFilter.mesh.bounds);
