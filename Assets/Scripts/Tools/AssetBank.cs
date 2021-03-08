@@ -45,6 +45,18 @@ namespace VRtist
         public bool imported = false;
 
         public UIDynamicListItem uiItem;
+        public bool isValid = true;
+
+        public void OnObjectAdded(GameObject gobject)
+        {
+            if (gobject == prefab)
+                isValid = true;
+        }
+        public void OnObjectRemoved(GameObject gobject)
+        {
+            if (gobject == prefab)
+                isValid = false;
+        }
 
         public void AddTags(string path)
         {
@@ -121,6 +133,8 @@ namespace VRtist
                 {
                     if (item.prefab) { Destroy(item.prefab); }
                     if (item.thumbnail) { Destroy(item.thumbnail); }
+                    GlobalState.ObjectAddedEvent.RemoveListener(item.OnObjectAdded);
+                    GlobalState.ObjectRemovedEvent.RemoveListener(item.OnObjectRemoved);
                     items.Remove(item.uid);
                 }
             }
@@ -292,6 +306,8 @@ namespace VRtist
             item.importFunction = importFunction;
             item.skipInstantiation = skipInstantiation;
             item.AddTags(tags);
+            GlobalState.ObjectAddedEvent.AddListener(item.OnObjectAdded);
+            GlobalState.ObjectRemovedEvent.AddListener(item.OnObjectRemoved);
             foreach (var tag in item.tags)
             {
                 this.tags.Add(tag);
@@ -330,7 +346,7 @@ namespace VRtist
             if (!item.thumbnail.GetComponent<UIGrabber>().isValid) { return; }
 
             // If the original doesn't exist, load it
-            if (null == item.prefab)
+            if (null == item.prefab || !item.isValid)
             {
                 loadingAsset = true;
                 GlobalState.Instance.messageBox.ShowMessage("Loading asset, please wait...");
@@ -401,9 +417,13 @@ namespace VRtist
             GameObject newObject = SceneManager.AddObject(gobject);
             if (item.imported)
             {
-                ParametersController controller = newObject.AddComponent<ParametersController>();
-                controller.isImported = true;
-                controller.importPath = item.assetName;
+                ParametersController controller = newObject.GetComponent<ParametersController>();
+                if (null == controller)
+                {
+                    controller = newObject.AddComponent<ParametersController>();
+                    controller.isImported = true;
+                    controller.importPath = item.assetName;
+                }
             }
 
             CommandGroup group = new CommandGroup("Instantiate Bank Object");

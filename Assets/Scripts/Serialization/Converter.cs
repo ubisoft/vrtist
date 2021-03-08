@@ -67,10 +67,10 @@ namespace VRtist.Serialization
                 return IntToBytes(0);
             }
 
-            byte[] bytes = new byte[sizeof(int) + value.Length];
             byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(value);
+            byte[] bytes = new byte[sizeof(int) + utf8.Length];
             Buffer.BlockCopy(BitConverter.GetBytes(utf8.Length), 0, bytes, 0, sizeof(int));
-            Buffer.BlockCopy(utf8, 0, bytes, sizeof(int), value.Length);
+            Buffer.BlockCopy(utf8, 0, bytes, sizeof(int), utf8.Length);
             return bytes;
         }
 
