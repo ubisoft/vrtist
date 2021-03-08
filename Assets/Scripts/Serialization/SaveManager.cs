@@ -59,6 +59,7 @@ namespace VRtist.Serialization
         private Transform cameraRig;
         private Transform rootTransform;
 
+        private string defaultSaveFolder;
         private string saveFolder;
         private string currentProjectName;
 
@@ -90,7 +91,7 @@ namespace VRtist.Serialization
                 instance = this;
             }
 
-            saveFolder = Application.persistentDataPath + "/saves/";
+            defaultSaveFolder = saveFolder = Application.persistentDataPath + "/saves/";
             cameraRig = Utils.FindRootGameObject("Camera Rig").transform;
             rootTransform = Utils.FindWorld().transform.Find("RightHanded");
         }
@@ -553,8 +554,11 @@ namespace VRtist.Serialization
         // Load
         // ----------------------------------------------------------------------------------------
 
-        public void Load(string projectName)
+        public void Load(string projectName, string saveFolderOverride = null)
         {
+            if (null != saveFolderOverride)
+                saveFolder = saveFolderOverride;
+
             VRtistScene scene = new VRtistScene();
             SceneManager.SetSceneImpl(scene);
 
@@ -634,6 +638,7 @@ namespace VRtist.Serialization
             }
             finally
             {
+                saveFolder = defaultSaveFolder;
                 if (!gizmoVisible)
                     GlobalState.SetDisplayGizmos(false);
                 if (!errorLoading)

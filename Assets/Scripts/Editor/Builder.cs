@@ -22,9 +22,11 @@
  */
 
 using System;
+using System.IO;
+
 using UnityEditor;
-using UnityEditor.Build.Content;
 using UnityEditor.Build.Reporting;
+using UnityEditor.Callbacks;
 
 namespace VRtist
 {
@@ -48,13 +50,13 @@ namespace VRtist
             buildOptions.target = BuildTarget.StandaloneWindows64;
             buildOptions.options = BuildOptions.None;
             int index = Array.IndexOf(args, BUILD_DIR_OPTION);
-            if(-1 != index)
+            if (-1 != index)
             {
                 try
                 {
                     buildOptions.locationPathName = $"{ROOT_BUILD_DIR}/{args[index + 1]}/{EXE_NAME}";
                 }
-                catch(IndexOutOfRangeException)
+                catch (IndexOutOfRangeException)
                 {
                     buildOptions.locationPathName = GetDefaultBuildDir();
                 }
@@ -67,7 +69,7 @@ namespace VRtist
             BuildReport report = BuildPipeline.BuildPlayer(buildOptions);
             BuildSummary summary = report.summary;
 
-            if(summary.result == BuildResult.Succeeded)
+            if (summary.result == BuildResult.Succeeded)
             {
                 //Debug.Log("Build succeeded");
                 //Debug.Log($"Total time: {summary.totalTime.TotalSeconds} seconds");
@@ -90,6 +92,14 @@ namespace VRtist
         {
             DateTime now = DateTime.Now;
             return $"{ROOT_BUILD_DIR}/{now:yyyy_MM_dd-HH_mm_ss}/{EXE_NAME}";
+        }
+
+
+        [PostProcessBuild]
+        static void OnPostprocessBuild(BuildTarget target, string pathToBuiltProject)
+        {
+            string path = Path.GetDirectoryName(pathToBuiltProject) + "/" + "VRtist_Data";
+            FileUtil.CopyFileOrDirectory("Data/Lobby", path + "/Lobby");
         }
     }
 }

@@ -27,6 +27,8 @@ using System.IO;
 
 using UnityEngine;
 
+using VRtist.Serialization;
+
 namespace VRtist
 {
     public class Lobby : MonoBehaviour
@@ -113,12 +115,31 @@ namespace VRtist
             // Load the lobby
             if (projectName is null)
             {
-                OnSetVisible(start: true);
+                Transform lobbyGeometryRoot = transform.Find("Environment");
 
-                //// DEBUG Auto-load
-                //OnBackToScene();
-                //Serialization.SaveManager.Instance.Load("london");
-                //// END DEBUG
+                string lobbyName = "Lobby";
+                string lobbyPath = "VRtist_data/";
+                if (null != GlobalState.Instance.settings.lobbyScenePath && GlobalState.Instance.settings.lobbyScenePath.Length > 0)
+                {
+                    lobbyPath = null;
+                    lobbyName = Path.GetFileName(GlobalState.Instance.settings.lobbyScenePath);
+                }
+
+                string lobbyFullPath = lobbyName;
+                if (null != lobbyPath)
+                    lobbyFullPath = lobbyPath + lobbyName;
+
+                if (File.Exists(lobbyFullPath))
+                {
+                    SaveManager.Instance.Load(lobbyName, lobbyPath);
+                    foreach (Transform child in SceneManager.RightHanded)
+                    {
+                        if (child.gameObject.activeSelf)
+                            child.SetParent(lobbyGeometryRoot);
+                    }
+                }
+
+                OnSetVisible(start: true);
             }
 
             // Start the scene

@@ -165,6 +165,7 @@ namespace VRtist
         public Interpolation interpolation = Interpolation.Linear;
 
         public string assetBankDirectory = "D:/VRtistData/";
+        public string lobbyScenePath = null;
 
         private string projectName = "myScene";
         public string ProjectName
