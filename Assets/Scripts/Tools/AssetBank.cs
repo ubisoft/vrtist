@@ -410,7 +410,6 @@ namespace VRtist
             // Get the position of the mouthpiece into matrix
             Matrix4x4 matrix = SceneManager.RightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;
             Maths.DecomposeMatrix(matrix, out Vector3 t, out _, out _);
-            Quaternion toRightHandedRotation = Quaternion.Euler(new Vector3(90f, 0f, 0f));
             Vector3 scale = Vector3.one;
 
             // Add the object to scene
@@ -450,7 +449,7 @@ namespace VRtist
                     scale *= (0.2f / bounds.size.magnitude) / GlobalState.WorldScale;  // 0.2: 20cm
 
                 AddToSelection(newObject);
-                SceneManager.SetObjectMatrix(newObject, Matrix4x4.TRS(t, Quaternion.identity, scale) * Matrix4x4.Rotate(toRightHandedRotation));
+                SceneManager.SetObjectMatrix(newObject, Matrix4x4.TRS(t, Quaternion.identity, scale));
                 Selection.HoveredObject = newObject;
             }
             finally
