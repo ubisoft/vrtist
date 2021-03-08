@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: -4939493968865620803}
   - component: {fileID: 3452633399292055460}
   m_Layer: 17
-  m_Name: UI_fauteuil
+  m_Name: UI_armchair
   m_TagString: UICollider
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -186,12 +186,12 @@ PrefabInstance:
     - target: {fileID: 5790217429610204798, guid: fb95e924163d34a488356e3093e6eb09,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 5790217429610204798, guid: fb95e924163d34a488356e3093e6eb09,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: 5790217429610204798, guid: fb95e924163d34a488356e3093e6eb09,
         type: 3}
@@ -206,7 +206,7 @@ PrefabInstance:
     - target: {fileID: 5790217429610204798, guid: fb95e924163d34a488356e3093e6eb09,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: 5790217429610204798, guid: fb95e924163d34a488356e3093e6eb09,
         type: 3}

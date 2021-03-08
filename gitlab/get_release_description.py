@@ -28,7 +28,7 @@ def get_release_description(version):
     found = False
     with open("CHANGELOG.md", "r") as f:
         for line in f.readlines():
-            if not found and line.strip() == f"# {args.version}":
+            if not found and line.strip() == f"# {version}":
                 found = True
             elif found and line.startswith("# "):
                 break

@@ -158,6 +158,21 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0.0009
       objectReference: {fileID: 0}
+    - target: {fileID: 1754143752412708624, guid: 2f4a4c3e09f97134b9410b877c6a7a49,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1754143752412708624, guid: 2f4a4c3e09f97134b9410b877c6a7a49,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 1754143752412708624, guid: 2f4a4c3e09f97134b9410b877c6a7a49,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
     - target: {fileID: 2152497018206033862, guid: 2f4a4c3e09f97134b9410b877c6a7a49,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -212,6 +227,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 7771856453029504365, guid: 2f4a4c3e09f97134b9410b877c6a7a49,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8158982904300487362, guid: 2f4a4c3e09f97134b9410b877c6a7a49,
         type: 3}
