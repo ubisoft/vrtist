@@ -46,6 +46,11 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
+# PYTHON ###################################
+
+# Cache
+**/__pycache__/
+
 # WINDOWS ##################################
 
 # Windows thumbnail cache files

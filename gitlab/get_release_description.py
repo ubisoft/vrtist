@@ -20,30 +20,28 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import argparse
+def get_release_description(version):
+    if version.startswith("v"):
+        version = version[1:]
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--tag", "-t", help="tag name", required=True)
-parser.add_argument("--name", "-n", help="release name", required=True)
-parser.add_argument("--zip", "-z", help="zip path to upload", required=True)
-args = parser.parse_args()
+    release_description = ""
+    found = False
+    with open("CHANGELOG.md", "r") as f:
+        for line in f.readlines():
+            if not found and line.strip() == f"# {args.version}":
+                found = True
+            elif found and line.startswith("# "):
+                break
+            if found:
+                release_description += f"{line}"
+    return release_description
 
-import os
-import sys
 
-access_token = os.environ.get("K8S_SECRET_GITHUB_ACCESS_TOKEN")
-if access_token is None:
-    sys.exit("Unable to retrieve GitHub access token from environment variables.")
+if __name__ == "__main__":
+    import argparse
 
-repo_name = os.environ.get("GITHUB_MIRROR")
-if repo_name is None:
-    sys.exit("Unable to retrieve Github repository name from environment variables.")
+    parser = argparse.ArgumentParser(description="Extract description of a release from CHANGELOG.md")
+    parser.add_argument("version", help="Version number")
+    args = parser.parse_args()
 
-from .get_release_description import get_release_description
-message = get_release_description(args.tag)
-
-from github import Github
-github = Github(access_token)
-repo = github.get_repo(repo_name)
-release = repo.create_git_release(args.tag, args.name, message)
-release.upload_asset(args.zip, label="", content_type="application/zip", name=f"VRtist_Win64_{args.tag}.zip")
+    print(get_release_description(args.version))
