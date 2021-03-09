@@ -292,6 +292,7 @@ namespace VRtist
         public void Clear()
         {
             shots.Clear();
+            activeShotIndex = -1;
         }
 
         public void FireChanged()
