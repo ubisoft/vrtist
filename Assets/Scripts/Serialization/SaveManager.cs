@@ -255,6 +255,7 @@ namespace VRtist.Serialization
                 string path = parentPath;
                 path += "/" + currentTransform.name;
 
+
                 // Depending on its type (which controller we can find on it) create data objects to be serialized
                 LightController lightController = currentTransform.GetComponent<LightController>();
                 if (null != lightController)
@@ -287,8 +288,15 @@ namespace VRtist.Serialization
                 ParametersController controller = currentTransform.GetComponent<ParametersController>();
                 ObjectData data = new ObjectData();
                 SetCommonData(currentTransform, parentPath, path, controller, data);
-                SetObjectData(currentTransform, controller, data);
-                SceneData.Current.objects.Add(data);
+                try
+                {
+                    SetObjectData(currentTransform, controller, data);
+                    SceneData.Current.objects.Add(data);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("Failed to set object data: " + e.Message);
+                }
 
                 // Serialize children
                 if (!data.isImported)

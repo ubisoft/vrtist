@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 
 using VRtist.Serialization;
 
@@ -119,24 +120,39 @@ namespace VRtist
 
                 string lobbyName = "Lobby";
                 string lobbyPath = "VRtist_data/";
+
+                // DEBUG
+                //GlobalState.Instance.settings.lobbyScenePath = "Lobby";
+                // DEBUG
+
                 if (null != GlobalState.Instance.settings.lobbyScenePath && GlobalState.Instance.settings.lobbyScenePath.Length > 0)
                 {
                     lobbyPath = null;
-                    lobbyName = Path.GetFileName(GlobalState.Instance.settings.lobbyScenePath);
+                    lobbyName = GlobalState.Instance.settings.lobbyScenePath;
+                    Debug.Log($"Loading user custom lobby scene {lobbyName}");
                 }
 
                 string lobbyFullPath = lobbyName;
                 if (null != lobbyPath)
                     lobbyFullPath = lobbyPath + lobbyName;
 
-                if (File.Exists(lobbyFullPath))
+                if (null == lobbyPath || Directory.Exists(lobbyFullPath))
                 {
+                    // Load scene
+                    Debug.Log($"Loading lobby scene {lobbyFullPath}");
                     SaveManager.Instance.Load(lobbyName, lobbyPath);
-                    foreach (Transform child in SceneManager.RightHanded)
+                    for (int i = SceneManager.RightHanded.childCount - 1; i >= 0; --i)
                     {
+                        Transform child = SceneManager.RightHanded.GetChild(i);
                         if (child.gameObject.activeSelf)
-                            child.SetParent(lobbyGeometryRoot);
+                            child.SetParent(lobbyGeometryRoot, false);
                     }
+
+                    // Set sky
+                    Utils.FindLobbyVolume().profile.TryGet(out GradientSky sky);
+                    sky.top.value = GlobalState.Instance.SkySettings.topColor;
+                    sky.middle.value = GlobalState.Instance.SkySettings.middleColor;
+                    sky.bottom.value = GlobalState.Instance.SkySettings.bottomColor;
                 }
 
                 OnSetVisible(start: true);

@@ -71,6 +71,12 @@ namespace VRtist
             return volumes.transform.Find("VolumePostProcess").GetComponent<Volume>();
         }
 
+        public static Volume FindLobbyVolume()
+        {
+            GameObject volumes = Utils.FindRootGameObject("Volumes");
+            return volumes.transform.Find("VolumeLobby").GetComponent<Volume>();
+        }
+
         public static Volume FindCameraPostProcessVolume()
         {
             GameObject volumes = Utils.FindRootGameObject("Volumes");
