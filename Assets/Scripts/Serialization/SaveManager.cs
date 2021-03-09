@@ -681,7 +681,9 @@ namespace VRtist.Serialization
 
             if (data.lockPosition || data.lockRotation || data.lockScale)
             {
-                ParametersController controller = gobject.AddComponent<ParametersController>();
+                ParametersController controller = gobject.GetComponent<ParametersController>();
+                if (null == controller)
+                    controller = gobject.AddComponent<ParametersController>();
                 controller.lockPosition = data.lockPosition;
                 controller.lockRotation = data.lockRotation;
                 controller.lockScale = data.lockScale;
@@ -836,10 +838,12 @@ namespace VRtist.Serialization
             LoadCommonData(newObject, data);
 
             CameraController controller = newObject.GetComponent<CameraController>();
-            controller.focal = data.focal;
-            controller.focus = data.focus;
-            controller.aperture = data.aperture;
             controller.enableDOF = data.enableDOF;
+            if (controller.enableDOF)
+                controller.CreateColimator();
+            controller.focal = data.focal;
+            controller.Focus = data.focus;
+            controller.aperture = data.aperture;
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;

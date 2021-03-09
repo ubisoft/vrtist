@@ -30,7 +30,6 @@ namespace VRtist
     /// </summary>
     public class CommandEnableDOF : ICommand
     {
-        private static GameObject colimatorPrefab = null;
         readonly GameObject camera;
         readonly bool enable;
 
@@ -42,21 +41,8 @@ namespace VRtist
 
         private void CreateColimator(GameObject camera)
         {
-            if (null == colimatorPrefab)
-            {
-                colimatorPrefab = Resources.Load<GameObject>("Prefabs/UI/Colimator");
-            }
-
-            GameObject colimator = SceneManager.InstantiateUnityPrefab(colimatorPrefab);
-            colimator = SceneManager.AddObject(colimator);
-
-            SceneManager.SetObjectParent(colimator, camera);
-
             CameraController cameraController = camera.GetComponent<CameraController>();
-            cameraController.colimator = colimator.transform;
-
-            ColimatorController colimatorController = colimator.GetComponent<ColimatorController>();
-            colimatorController.isVRtist = true;
+            cameraController.CreateColimator();
         }
 
         private void DestroyColimator(GameObject camera)

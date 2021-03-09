@@ -34,6 +34,8 @@ namespace VRtist
     /// </summary>
     public class CameraController : ParametersController
     {
+        private static GameObject colimatorPrefab = null;
+
         public Camera cameraObject = null;
         public float focal = 35f;
         public float focus = 1.0f;
@@ -227,6 +229,27 @@ namespace VRtist
                 Selection.RemoveFromSelection(gameObject);
             }
         }
+
+        public GameObject CreateColimator()
+        {
+            if (null == colimatorPrefab)
+            {
+                colimatorPrefab = Resources.Load<GameObject>("Prefabs/UI/Colimator");
+            }
+
+            GameObject colimatorObject = SceneManager.InstantiateUnityPrefab(colimatorPrefab);
+            colimatorObject = SceneManager.AddObject(colimatorObject);
+
+            SceneManager.SetObjectParent(colimatorObject, gameObject);
+
+            colimator = colimatorObject.transform;
+
+            ColimatorController colimatorController = colimatorObject.GetComponent<ColimatorController>();
+            colimatorController.isVRtist = true;
+
+            return colimatorObject;
+        }
+
 
         void Update()
         {

@@ -101,7 +101,7 @@ namespace VRtist
         }
         public override void Submit()
         {
-            if (objects.Count > 0)
+            if (null != objects && objects.Count > 0)
             {
                 Redo();
                 CommandManager.AddCommand(this);
