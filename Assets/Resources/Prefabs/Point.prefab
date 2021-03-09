@@ -44,7 +44,7 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0.5
+  m_Intensity: 3.9788735
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -114,7 +114,7 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 8
+  m_Intensity: 50
   m_EnableSpotReflector: 0
   m_LuxAtDistance: 1
   m_InnerSpotPercent: 0
@@ -294,7 +294,7 @@ MonoBehaviour:
   isImported: 0
   importPath: 
   minIntensity: 0
-  maxIntensity: 10
+  maxIntensity: 100
   minRange: 0
   maxRange: 100
 --- !u!1 &8776140250927165609
