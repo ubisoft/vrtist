@@ -274,6 +274,7 @@ namespace VRtist
                     else // volumeEditionMode == VolumeEditionMode.Edit
                     {
                         // nothing to do I guess.
+                        volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
                     }
                     break;
             }
@@ -530,10 +531,7 @@ namespace VRtist
 
                             // Recompute collider
                             MeshCollider meshCollider = currentVolume.GetComponent<MeshCollider>();
-                            if (meshCollider.sharedMesh == null)
-                            {
-                                meshCollider.sharedMesh = mesh;
-                            }
+                            meshCollider.sharedMesh = mesh;
                             // force update
                             meshCollider.enabled = false;
                             meshCollider.enabled = true;
