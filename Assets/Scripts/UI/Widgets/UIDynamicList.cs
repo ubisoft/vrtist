@@ -105,17 +105,20 @@ namespace VRtist
         {
             if (NeedsRebuild)
             {
-                UpdateLocalPosition();
-                UpdateAnchor();
-                UpdateChildren();
-
-                UpdateItemPositions();
-                UpdatePageCountLabel();
-
-                //ResetColor();
-
-                NeedsRebuild = false;
+                ForceUpdate();
             }
+        }
+
+        public void ForceUpdate()
+        {
+            UpdateLocalPosition();
+            UpdateAnchor();
+            UpdateChildren();
+
+            UpdateItemPositions();
+            UpdatePageCountLabel();
+
+            NeedsRebuild = false;
         }
 
         //

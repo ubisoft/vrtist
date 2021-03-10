@@ -207,6 +207,7 @@ namespace VRtist
                 projects.Add(item);
             }
 
+            projectList.ForceUpdate();
             UpdateButtons();
         }
 
@@ -422,8 +423,8 @@ namespace VRtist
         {
             firstPageButton.Disabled = projectList.currentPage == 0;
             previousPageButton.Disabled = projectList.currentPage == 0;
-            lastPageButton.Disabled = projectList.currentPage == projectList.pagesCount;
-            nextPageButton.Disabled = projectList.currentPage == projectList.pagesCount;
+            lastPageButton.Disabled = projectList.currentPage == projectList.pagesCount - 1;
+            nextPageButton.Disabled = projectList.currentPage == projectList.pagesCount - 1;
         }
 
         public void OnExitApplication()
