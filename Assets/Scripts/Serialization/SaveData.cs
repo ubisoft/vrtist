@@ -139,6 +139,9 @@ namespace VRtist.Serialization
 
             string fullPath = rootPath + path;
 
+            const string instanceString = " (Instance)";
+            while (name.EndsWith(instanceString))
+                name = name.Substring(0, name.Length - instanceString.Length);
             material.name = name;
             material.SetFloat("_UseColorMap", useColorMap ? 1f : 0f);
             material.SetColor("_BaseColor", baseColor);
