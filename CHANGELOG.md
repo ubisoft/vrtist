@@ -1,3 +1,9 @@
+# 0.1.1 (wip)
+
+## Fixes
+
+- Lobby project list buttons states
+
 # 0.1.0
 
 First release
