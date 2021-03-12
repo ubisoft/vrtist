@@ -101,8 +101,8 @@ namespace VRtist
         public Vector2 currentRange = new Vector2(12, 15);
 
         [SpaceHeader("Callbacks", 6, 0.8f, 0.8f, 0.8f)]
-        public RangeChangedEventFloat onSlideEvent = new RangeChangedEventFloat();
-        public RangeChangedEventInt onSlideEventInt = new RangeChangedEventInt();
+        public Vector2ChangedEvent onSlideEvent = new Vector2ChangedEvent();
+        public Vector2IntChangedEvent onSlideEventInt = new Vector2IntChangedEvent();
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 

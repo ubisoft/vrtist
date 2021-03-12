@@ -74,6 +74,8 @@ namespace VRtist
         private UIButton inFrontButton = null;
         public bool inFront = false;
 
+        private UITouchScreen touchScreen;
+
         private UILabel nameLabel = null;
 
         private LineRenderer frustumRenderer = null;
@@ -81,6 +83,7 @@ namespace VRtist
 
         private readonly float frustumLineWidth = 0.0020f;
 
+        private LineRenderer DEBUG_lineRenderer;
 
         private bool hacked = false;
         private void Hack()
@@ -143,6 +146,41 @@ namespace VRtist
                 inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>(true);
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
                 inFrontButton.NeedsRebuild = true;
+
+                touchScreen = transform.Find("Rotate/CameraPreview/TouchScreen").GetComponentInChildren<UITouchScreen>(true);
+                touchScreen.touchEvent.AddListener(OnTouch);
+
+                DEBUG_lineRenderer = gameObject.AddComponent<LineRenderer>();
+            }
+        }
+
+        private void OnTouch(Vector2 coords)
+        {
+            // Raycast from camera center to screen point aimed for
+
+            float halfWidthFactor = cameraObject.sensorSize.x * 0.5f / focal;
+            float halfHeightFactor = cameraObject.sensorSize.y * 0.5f / focal;
+
+            Vector3 nearPoint = new Vector3(halfWidthFactor * coords.x * near, -halfHeightFactor * coords.y * near, -near);
+            Vector3 worldNearPoint = transform.TransformPoint(nearPoint);
+
+            Vector3 farPoint = new Vector3(halfWidthFactor * coords.x * far, -halfHeightFactor * coords.y * far, -far);
+            Vector3 worldFarPoint = transform.TransformPoint(farPoint);
+
+            DEBUG_lineRenderer.positionCount = 2;
+            DEBUG_lineRenderer.SetPosition(0, worldNearPoint);
+            DEBUG_lineRenderer.startWidth = 0.005f;
+            DEBUG_lineRenderer.endWidth = 0.005f;
+
+            Ray ray = new Ray(worldNearPoint, worldFarPoint - worldNearPoint);
+            int layerMask = LayerMask.GetMask(new string[] { "Default", "Selection", "SelectionChild", "Hover", "HoverChild" });
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
+            {
+                if (null != colimator)
+                    colimator.transform.position = hit.point;
+                else
+                    Focus = Vector3.Distance(hit.point, transform.position);
+                DEBUG_lineRenderer.SetPosition(1, hit.point);
             }
         }
 

@@ -29,13 +29,13 @@ using UnityEngine.Events;
 namespace VRtist
 {
     [Serializable]
-    public class RangeChangedEventFloat : UnityEvent<Vector2>
+    public class Vector2ChangedEvent : UnityEvent<Vector2>
     {
 
     }
 
     [Serializable]
-    public class RangeChangedEventInt : UnityEvent<Vector2Int>
+    public class Vector2IntChangedEvent : UnityEvent<Vector2Int>
     {
 
     }

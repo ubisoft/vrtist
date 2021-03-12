@@ -150,7 +150,7 @@ namespace VRtist
         public GameObjectChangedEvent onRemoveAnimation = new GameObjectChangedEvent();
         public CurveChangedEvent onChangeCurve = new CurveChangedEvent();
 
-        public RangeChangedEventInt onRangeEvent = new RangeChangedEventInt();
+        public Vector2IntChangedEvent onRangeEvent = new Vector2IntChangedEvent();
 
         public Countdown countdown = null;
 
