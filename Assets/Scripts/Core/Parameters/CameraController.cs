@@ -74,13 +74,17 @@ namespace VRtist
         private UIButton inFrontButton = null;
         public bool inFront = false;
 
+        private UITouchScreen touchScreen;
+        private UIButton focusButton;
+
         private UILabel nameLabel = null;
 
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
 
-        private readonly float frustumLineWidth = 0.0020f;
+        private readonly float lineRendererWidth = 0.002f;
 
+        private LineRenderer colimatorLineRenderer;
 
         private bool hacked = false;
         private void Hack()
@@ -143,6 +147,52 @@ namespace VRtist
                 inFrontButton = transform.Find("Rotate/UI/InFront").GetComponentInChildren<UIButton>(true);
                 inFrontButton.onCheckEvent.AddListener(OnSetInFront);
                 inFrontButton.NeedsRebuild = true;
+
+                touchScreen = transform.Find("Rotate/CameraPreview/TouchScreen").GetComponentInChildren<UITouchScreen>(true);
+                touchScreen.touchEvent.AddListener(OnTouch);
+
+                focusButton = transform.Find("Rotate/UI/FocusButton").GetComponentInChildren<UIButton>(true);
+                focusButton.onCheckEvent.AddListener(OnCheckFocusButton);
+
+                colimatorLineRenderer = gameObject.GetComponent<LineRenderer>();
+                colimatorLineRenderer.positionCount = 2;
+                colimatorLineRenderer.SetPosition(0, transform.position);
+                colimatorLineRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
+                colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
+                colimatorLineRenderer.enabled = colimator != null;
+            }
+        }
+
+        private void OnTouch(Vector2 coords)
+        {
+            // Raycast from camera center to screen point aimed for
+
+            float halfWidthFactor = cameraObject.sensorSize.x * 0.5f / focal;
+            float halfHeightFactor = cameraObject.sensorSize.y * 0.5f / focal;
+
+            Vector3 nearPoint = new Vector3(halfWidthFactor * coords.x * near, -halfHeightFactor * coords.y * near, -near);
+            Vector3 worldNearPoint = transform.TransformPoint(nearPoint);
+
+            Vector3 farPoint = new Vector3(halfWidthFactor * coords.x * far, -halfHeightFactor * coords.y * far, -far);
+            Vector3 worldFarPoint = transform.TransformPoint(farPoint);
+
+            Ray ray = new Ray(worldNearPoint, worldFarPoint - worldNearPoint);
+            int layerMask = LayerMask.GetMask(new string[] { "Default", "Selection", "SelectionChild", "Hover", "HoverChild" });
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
+            {
+                if (null != colimator)
+                    colimator.transform.position = hit.point;
+                else
+                    Focus = Vector3.Distance(hit.point, transform.position);
+            }
+        }
+
+        private void OnCheckFocusButton(bool value)
+        {
+            touchScreen.gameObject.SetActive(value);
+            if (!EnableDOF && value)
+            {
+                new CommandEnableDOF(gameObject, true).Submit();
             }
         }
 
@@ -274,6 +324,11 @@ namespace VRtist
                         focus = Vector3.Distance(colimator.position, transform.position);
 
                         colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
+                        colimatorLineRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
+                        colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
+                        colimatorLineRenderer.SetPosition(0, transform.position);
+                        colimatorLineRenderer.SetPosition(1, colimator.position);
+                        colimatorLineRenderer.enabled = true;
 
                         if (CameraManager.Instance.ActiveCamera == gameObject)
                         {
@@ -285,6 +340,7 @@ namespace VRtist
                     else
                     {
                         colimator.gameObject.SetActive(false);
+                        colimatorLineRenderer.enabled = false;
                     }
                 }
 
@@ -384,8 +440,8 @@ namespace VRtist
 
             frustumRenderer.positionCount = points.Length;
             frustumRenderer.SetPositions(points);
-            frustumRenderer.startWidth = frustumLineWidth / GlobalState.WorldScale;
-            frustumRenderer.endWidth = frustumLineWidth / GlobalState.WorldScale;
+            frustumRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
+            frustumRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
         }
     }
 }

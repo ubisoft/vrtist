@@ -1,5 +1,9 @@
 # 0.1.1 (wip)
 
+## Features
+
+- Camera touchscreen for focus
+
 ## Fixes
 
 - Lobby project list buttons states

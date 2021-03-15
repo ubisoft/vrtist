@@ -126,6 +126,39 @@ namespace VRtist
                     inFrontButton.checkedSprite = UIUtils.LoadIcon("front");
                     inFrontButton.SetLightLayer(2);
                 }
+
+                // Touch screen
+                uiRoot = newCamera.transform.Find("Rotate/CameraPreview");
+                UITouchScreen touchScreen = UITouchScreen.Create(new UITouchScreen.CreateTouchScreenParams
+                {
+                    parent = uiRoot,
+                    width = 1f,
+                    height = 1f,
+                    thickness = 0.01f,
+                    relativeLocation = new Vector3(-0.5f, 0.5f, -0.03f)
+                });
+                touchScreen.SetLightLayer(2);
+                touchScreen.gameObject.SetActive(false);
+
+                // Focus button
+                uiRoot = newCamera.transform.Find("Rotate/UI");
+                UIButton focusButton = UIButton.Create(new UIButton.CreateButtonParams
+                {
+                    parent = uiRoot,
+                    widgetName = "FocusButton",
+                    caption = "Enable Touch Screen Focus",
+                    buttonContent = UIButton.ButtonContent.ImageOnly,
+                    icon = UIUtils.LoadIcon("dof"),
+                    width = 0.02f,
+                    height = 0.02f,
+                    iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
+                    iconMargin = 0.002f,
+                    relativeLocation = new Vector3(-0.27f, -0.005f, -UIButton.default_thickness)
+                });
+                focusButton.isCheckable = true;
+                focusButton.baseSprite = UIUtils.LoadIcon("dof");
+                focusButton.checkedSprite = UIUtils.LoadIcon("dof");
+                focusButton.SetLightLayer(2);
             }
 
             return newCamera;
