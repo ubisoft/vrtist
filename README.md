@@ -70,7 +70,7 @@ Download Blender 2.91 or above from blender.org (either install version or porta
 
 VRtist uses Mixer to get the content of a Blender scene and to synchronize it with Unity.
 
-see: https://github.com/ubisoft/mixer/README.md
+see: https://github.com/ubisoft/mixer
 
 Mixer is a standard Blender addon. Install it like any other addon.
 
