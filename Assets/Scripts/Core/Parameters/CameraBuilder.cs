@@ -153,16 +153,12 @@ namespace VRtist
                     height = 0.02f,
                     iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
                     iconMargin = 0.002f,
-                    relativeLocation = new Vector3(-0.24f, -0.005f, -UIButton.default_thickness)
+                    relativeLocation = new Vector3(-0.27f, -0.005f, -UIButton.default_thickness)
                 });
                 focusButton.isCheckable = true;
                 focusButton.baseSprite = UIUtils.LoadIcon("dof");
                 focusButton.checkedSprite = UIUtils.LoadIcon("dof");
                 focusButton.SetLightLayer(2);
-                focusButton.onCheckEvent.AddListener((bool focusEnabled) =>
-                {
-                    touchScreen.gameObject.SetActive(focusEnabled);
-                });
             }
 
             return newCamera;

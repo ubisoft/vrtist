@@ -161,7 +161,7 @@ namespace VRtist.Mixer
             far = cameraController.far;
             aperture = cameraController.aperture;
             colimatorr = cameraController.colimator;
-            dofEnabled = cameraController.enableDOF;
+            dofEnabled = cameraController.EnableDOF;
         }
 
         public static void SetCameraInfo(GameObject obj, float focal, float near, float far, bool dofEnabled, float aperture, string colimatorName, Camera.GateFitMode gateFit, Vector2 sensorSize)

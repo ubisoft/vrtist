@@ -75,15 +75,16 @@ namespace VRtist
         public bool inFront = false;
 
         private UITouchScreen touchScreen;
+        private UIButton focusButton;
 
         private UILabel nameLabel = null;
 
         private LineRenderer frustumRenderer = null;
         private GameObject disabledLayer = null;
 
-        private readonly float frustumLineWidth = 0.0020f;
+        private readonly float lineRendererWidth = 0.002f;
 
-        private LineRenderer DEBUG_lineRenderer;
+        private LineRenderer colimatorLineRenderer;
 
         private bool hacked = false;
         private void Hack()
@@ -150,7 +151,15 @@ namespace VRtist
                 touchScreen = transform.Find("Rotate/CameraPreview/TouchScreen").GetComponentInChildren<UITouchScreen>(true);
                 touchScreen.touchEvent.AddListener(OnTouch);
 
-                DEBUG_lineRenderer = gameObject.AddComponent<LineRenderer>();
+                focusButton = transform.Find("Rotate/UI/FocusButton").GetComponentInChildren<UIButton>(true);
+                focusButton.onCheckEvent.AddListener(OnCheckFocusButton);
+
+                colimatorLineRenderer = gameObject.GetComponent<LineRenderer>();
+                colimatorLineRenderer.positionCount = 2;
+                colimatorLineRenderer.SetPosition(0, transform.position);
+                colimatorLineRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
+                colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
+                colimatorLineRenderer.enabled = colimator != null;
             }
         }
 
@@ -167,11 +176,6 @@ namespace VRtist
             Vector3 farPoint = new Vector3(halfWidthFactor * coords.x * far, -halfHeightFactor * coords.y * far, -far);
             Vector3 worldFarPoint = transform.TransformPoint(farPoint);
 
-            DEBUG_lineRenderer.positionCount = 2;
-            DEBUG_lineRenderer.SetPosition(0, worldNearPoint);
-            DEBUG_lineRenderer.startWidth = 0.005f;
-            DEBUG_lineRenderer.endWidth = 0.005f;
-
             Ray ray = new Ray(worldNearPoint, worldFarPoint - worldNearPoint);
             int layerMask = LayerMask.GetMask(new string[] { "Default", "Selection", "SelectionChild", "Hover", "HoverChild" });
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, layerMask))
@@ -180,7 +184,15 @@ namespace VRtist
                     colimator.transform.position = hit.point;
                 else
                     Focus = Vector3.Distance(hit.point, transform.position);
-                DEBUG_lineRenderer.SetPosition(1, hit.point);
+            }
+        }
+
+        private void OnCheckFocusButton(bool value)
+        {
+            touchScreen.gameObject.SetActive(value);
+            if (!EnableDOF && value)
+            {
+                new CommandEnableDOF(gameObject, true).Submit();
             }
         }
 
@@ -312,6 +324,11 @@ namespace VRtist
                         focus = Vector3.Distance(colimator.position, transform.position);
 
                         colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
+                        colimatorLineRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
+                        colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
+                        colimatorLineRenderer.SetPosition(0, transform.position);
+                        colimatorLineRenderer.SetPosition(1, colimator.position);
+                        colimatorLineRenderer.enabled = true;
 
                         if (CameraManager.Instance.ActiveCamera == gameObject)
                         {
@@ -323,6 +340,7 @@ namespace VRtist
                     else
                     {
                         colimator.gameObject.SetActive(false);
+                        colimatorLineRenderer.enabled = false;
                     }
                 }
 
@@ -422,8 +440,8 @@ namespace VRtist
 
             frustumRenderer.positionCount = points.Length;
             frustumRenderer.SetPositions(points);
-            frustumRenderer.startWidth = frustumLineWidth / GlobalState.WorldScale;
-            frustumRenderer.endWidth = frustumLineWidth / GlobalState.WorldScale;
+            frustumRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
+            frustumRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
         }
     }
 }
