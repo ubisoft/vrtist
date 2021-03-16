@@ -82,6 +82,12 @@ namespace VRtist
             Selection.onHoveredChanged.AddListener(OnHoveredChanged);
         }
 
+        public Camera GetActiveCameraComponent()
+        {
+            if (null == activeCamera) { return null; }
+            return activeCamera.GetComponentInChildren<Camera>(true);
+        }
+
         GameObject GetFirstCamera(HashSet<GameObject> objects)
         {
             foreach (GameObject o in objects)

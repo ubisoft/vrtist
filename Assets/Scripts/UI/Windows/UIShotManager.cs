@@ -31,8 +31,8 @@ namespace VRtist
         public UIDynamicList shotList;
         public UILabel activeShotCountLabel;
 
-        UICheckbox montage = null;
-
+        UICheckbox montageCheckbox = null;
+        UIButton videoOutputButton;
 
         void Start()
         {
@@ -40,8 +40,10 @@ namespace VRtist
             ShotManager.Instance.ActiveShotChangedEvent.AddListener(OnActiveShotChanged);
             shotList.ItemClickedEvent += OnListItemClicked;
 
-            montage = transform.Find("MainPanel/Montage").GetComponent<UICheckbox>();
+            montageCheckbox = transform.Find("MainPanel/Montage").GetComponent<UICheckbox>();
             ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
+
+            videoOutputButton = transform.Find("MainPanel/VideoOutput").GetComponent<UIButton>();
 
             GlobalState.Animation.onFrameEvent.AddListener(OnCurrentFrameChanged);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
@@ -55,7 +57,7 @@ namespace VRtist
 
         private void OnMontageModeChanged()
         {
-            montage.Checked = ShotManager.Instance.MontageEnabled;
+            montageCheckbox.Checked = ShotManager.Instance.MontageEnabled;
         }
 
         void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
@@ -128,11 +130,7 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            if (state == AnimationState.Playing && null == CameraManager.Instance.ActiveCamera)
-            {
-                // Set Camera Active on Play/Record
-                ShotManager.Instance.ActiveShotIndex = ShotManager.Instance.ActiveShotIndex;
-            }
+            videoOutputButton.Checked = state == AnimationState.VideoOutput;
         }
 
         private void OnCurrentFrameChanged(int currentFrame)

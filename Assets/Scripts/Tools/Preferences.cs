@@ -178,7 +178,7 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            playShortcutButton.Checked = state == AnimationState.Playing || state == AnimationState.Recording;
+            playShortcutButton.Checked = state == AnimationState.Playing || state == AnimationState.AnimationRecording;
         }
 
         protected void UpdateUIFromPreferences()

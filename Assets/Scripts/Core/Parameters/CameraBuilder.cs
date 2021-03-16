@@ -34,12 +34,12 @@ namespace VRtist
     {
         private const int RT_WIDTH = 1920 / 2;
         private const int RT_HEIGHT = 1080 / 2;
-        private const int RT_DEPTH = 24;
+        private const int RT_DEPTH = 0;//24;
 
         public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newCamera = GameObject.Instantiate(source, parent);
-            RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.Default);
+            RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.ARGB32);// RenderTextureFormat.Default);
             if (null == renderTexture)
                 Debug.LogError("CAMERA FAILED");
             renderTexture.name = "Camera RT";

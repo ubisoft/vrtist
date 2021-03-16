@@ -97,6 +97,7 @@ namespace VRtist
                     instance = new ShotManager();
                     GlobalState.Animation.RegisterTimeHook(instance);
                     GlobalState.Animation.onFrameEvent.AddListener(instance.OnFrameChanged);
+                    GlobalState.Animation.onAnimationStateEvent.AddListener(instance.OnAnimationStateChanged);
                 }
                 return instance;
             }
@@ -112,7 +113,7 @@ namespace VRtist
                 activeShotIndex = value;
                 ActiveShotChangedEvent.Invoke();
 
-                if (!montageEnabled || !GlobalState.Animation.IsAnimating())
+                if (!montageEnabled || !GlobalState.Animation.IsAnimating() && GlobalState.Animation.animationState != AnimationState.VideoOutput)
                     return;
 
                 if (activeShotIndex >= 0 && activeShotIndex < shots.Count)
@@ -150,6 +151,18 @@ namespace VRtist
                     return i;
             }
             return -1;
+        }
+
+        void OnAnimationStateChanged(AnimationState state)
+        {
+            switch (state)
+            {
+                case AnimationState.Playing:
+                case AnimationState.VideoOutput:
+                    // Force activating a camera
+                    ActiveShotIndex = FindFirstShotIndexAt(AnimationEngine.Instance.CurrentFrame);
+                    break;
+            }
         }
 
         void OnFrameChanged(int frame)
@@ -192,7 +205,14 @@ namespace VRtist
                 while (shotIndex < shots.Count && !shots[shotIndex].enabled)
                     shotIndex++;
                 if (shotIndex >= shots.Count)
+                {
                     shotIndex = 0;
+                    if (GlobalState.Animation.animationState == AnimationState.VideoOutput)
+                    {
+                        GlobalState.Animation.OnToggleStartVideoOutput(false);
+                        return shot.end;
+                    }
+                }
                 while (shotIndex < shots.Count && !shots[shotIndex].enabled)
                     shotIndex++;
 

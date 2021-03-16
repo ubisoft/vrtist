@@ -59,7 +59,7 @@ namespace VRtist
             switch (state)
             {
                 case AnimationState.Playing: titleBar.Pushed = true; break;
-                case AnimationState.Recording: titleBar.Hovered = true; break;
+                case AnimationState.AnimationRecording: titleBar.Hovered = true; break;
             }
         }
 
