@@ -93,7 +93,8 @@ namespace VRtist
             this.cameraObject = cameraObject;
             Camera cam = cameraObject.GetComponentInChildren<Camera>(true);
             SetColor(UIOptions.BackgroundColor);
-            gameObject.GetComponentInChildren<MeshRenderer>(true).materials[1].SetTexture("_UnlitColorMap", cam.targetTexture);
+            CameraController controller = cameraObject.GetComponent<CameraController>();
+            gameObject.GetComponentInChildren<MeshRenderer>(true).materials[1].SetTexture("_UnlitColorMap", controller.Snapshot);
             SetItemName(cameraObject.name);
         }
     }

@@ -39,13 +39,6 @@ namespace VRtist
         public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newCamera = GameObject.Instantiate(source, parent);
-            RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.ARGB32);// RenderTextureFormat.Default);
-            if (null == renderTexture)
-                Debug.LogError("CAMERA FAILED");
-            renderTexture.name = "Camera RT";
-
-            newCamera.GetComponentInChildren<Camera>(true).targetTexture = renderTexture;
-            newCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", renderTexture);
 
             VRInput.DeepSetLayer(newCamera, "CameraHidden");
 

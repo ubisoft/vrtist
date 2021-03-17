@@ -26,6 +26,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace VRtist
 {
@@ -40,7 +41,39 @@ namespace VRtist
     /// </summary>
     public class CameraManager
     {
+        private GameObject virtualCamera;
+        private Camera virtualCameraComponent;
         private GameObject activeCamera = null;
+
+        public static int RT_WIDTH = 1920 / 2;
+        public static int RT_HEIGHT = 1080 / 2;
+        public static int RT_DEPTH = 0;//24;
+
+        GameObject VirtualCamera
+        {
+            get
+            {
+                if (null == virtualCamera)
+                {
+                    virtualCamera = new GameObject("Camera");
+                    RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.ARGB32);
+                    if (null == renderTexture)
+                        Debug.LogError("CAMERA FAILED");
+                    renderTexture.name = "Camera RT";
+
+                    virtualCameraComponent = virtualCamera.AddComponent<Camera>();
+                    virtualCameraComponent.targetTexture = renderTexture;
+                    virtualCameraComponent.cullingMask = LayerMask.GetMask(new string[] { "Default", "TransparentFX", "Water", "Selection", "Hover" });
+                    virtualCameraComponent.nearClipPlane = 0.07f;
+                    virtualCameraComponent.farClipPlane = 1000f;
+
+                    HDAdditionalCameraData additionCameraData = virtualCamera.AddComponent<HDAdditionalCameraData>();
+                    additionCameraData.volumeLayerMask = LayerMask.GetMask(new string[] { "PostProcessing", "CameraPostProcessing" });
+                    additionCameraData.stopNaNs = true;
+                }
+                return virtualCamera;
+            }
+        }
         public GameObject ActiveCamera
         {
             get { return activeCamera; }
@@ -50,13 +83,24 @@ namespace VRtist
                 activeCamera = value;
                 if (null != previousActiveCamera)
                 {
-                    previousActiveCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
-                    previousActiveCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
+                    CameraController cameraController = previousActiveCamera.GetComponent<CameraController>();
+                    cameraController.SetVirtualCamera(null);
                 }
                 if (null != activeCamera)
                 {
-                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
-                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(true);
+                    VirtualCamera.transform.parent = activeCamera.transform.Find("Rotate");
+                    VirtualCamera.transform.localPosition = Vector3.zero;
+                    VirtualCamera.transform.localRotation = Quaternion.identity;
+                    VirtualCamera.transform.localScale = Vector3.one;
+                    VirtualCamera.SetActive(true);
+                    CameraController cameraController = activeCamera.GetComponent<CameraController>();
+                    cameraController.SetVirtualCamera(virtualCameraComponent);
+
+                    activeCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
+                }
+                else
+                {
+                    VirtualCamera.SetActive(false);
                 }
                 onActiveCameraChanged.Invoke(previousActiveCamera, activeCamera);
             }
@@ -84,8 +128,8 @@ namespace VRtist
 
         public Camera GetActiveCameraComponent()
         {
-            if (null == activeCamera) { return null; }
-            return activeCamera.GetComponentInChildren<Camera>(true);
+            if (null == ActiveCamera) { return null; }
+            return virtualCameraComponent;
         }
 
         GameObject GetFirstCamera(HashSet<GameObject> objects)
@@ -108,19 +152,10 @@ namespace VRtist
                 hoveredCamera = hoveredObject;
 
             // Set current active camera from hovered one
-            if (null != hoveredCamera && hoveredCamera != activeCamera)
+            if (null != hoveredCamera && hoveredCamera != ActiveCamera)
             {
-                // Disable previous active camera
-                if (null != activeCamera)
-                {
-                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
-                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
-                }
-
                 // Enable current active camera
                 ActiveCamera = hoveredCamera;
-                activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
-                activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(true);
                 return;
             }
 
@@ -128,29 +163,15 @@ namespace VRtist
             // Check selected
             // --------------------------------------------
             GameObject selectedCamera = GetFirstCamera(currentSelection);
-            if (null != selectedCamera && selectedCamera != activeCamera)
+            if (null != selectedCamera && selectedCamera != ActiveCamera)
             {
-                // Disable previous selected camera
-                if (null != activeCamera)
-                {
-                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
-                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
-                }
-
                 // Enable new one
                 ActiveCamera = selectedCamera;
-                activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(true);
-                activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(true);
                 return;
             }
 
             if (null == hoveredCamera && null == selectedCamera)
             {
-                if (null != activeCamera)
-                {
-                    activeCamera.GetComponentInChildren<Camera>(true).gameObject.SetActive(false);
-                    activeCamera.GetComponent<CameraController>().UpdateCameraPreviewInFront(false);
-                }
                 ActiveCamera = null;
             }
         }
