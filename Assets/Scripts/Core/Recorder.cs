@@ -13,8 +13,8 @@ namespace VRtist
         private string outputDir;
 
         private Camera activeCamera;
-
         private int currentFrame;
+        private Texture2D emptyTexture;
 
         private UTJ.FrameCapturer.MovieEncoder encoder;
         private UTJ.FrameCapturer.MovieEncoderConfigs encoderConfigs = new UTJ.FrameCapturer.MovieEncoderConfigs(UTJ.FrameCapturer.MovieEncoder.Type.MP4);
@@ -45,6 +45,9 @@ namespace VRtist
             CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
             AnimationEngine.Instance.onFrameEvent.AddListener(OnFrameChanged);
             AnimationEngine.Instance.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
+
+            emptyTexture = new Texture2D(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT, TextureFormat.RGB24, false);
+            Utils.FillTexture(emptyTexture, new Color(10f / 255f, 10f / 255f, 10f / 255f));  // almost black: black is ignored :(
         }
 
         private void OnAnimationStateChanged(AnimationState state)
@@ -69,7 +72,7 @@ namespace VRtist
             encoderConfigs.captureVideo = true;
             encoderConfigs.captureAudio = false;
             encoderConfigs.mp4EncoderSettings.videoTargetBitrate = 10240000;
-            encoderConfigs.Setup(1920 / 2, 1080 / 2, 3, (int)AnimationEngine.Instance.fps);
+            encoderConfigs.Setup(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT, 3, (int)AnimationEngine.Instance.fps);
             encoder = UTJ.FrameCapturer.MovieEncoder.Create(encoderConfigs, outputDir + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
             if (encoder == null || !encoder.IsValid())
             {
@@ -108,10 +111,13 @@ namespace VRtist
 
         private void OnFrameChanged(int frame)
         {
-            if (null == activeCamera || !recording) { return; }
+            if (!recording) { return; }
 
-            HDAdditionalCameraData camData = activeCamera.gameObject.GetComponent<HDAdditionalCameraData>();
-            camData.flipYMode = HDAdditionalCameraData.FlipYMode.ForceFlipY;
+            if (null != activeCamera)
+            {
+                HDAdditionalCameraData camData = activeCamera.gameObject.GetComponent<HDAdditionalCameraData>();
+                camData.flipYMode = HDAdditionalCameraData.FlipYMode.ForceFlipY;
+            }
 
             StartCoroutine(Capture());
         }
@@ -120,12 +126,21 @@ namespace VRtist
         {
             yield return new WaitForEndOfFrame();
 
-            UTJ.FrameCapturer.fcAPI.fcLock(activeCamera.targetTexture, TextureFormat.RGB24, (data, fmt) =>
+            if (null != activeCamera)
             {
-                if (null != encoder)
-                    encoder.AddVideoFrame(data, fmt, currentFrame / AnimationEngine.Instance.fps);
-            });
+                UTJ.FrameCapturer.fcAPI.fcLock(activeCamera.targetTexture, TextureFormat.RGB24, AddVideoFrame);
+            }
+            else
+            {
+                UTJ.FrameCapturer.fcAPI.fcLock(emptyTexture, TextureFormat.RGB24, AddVideoFrame);
+            }
             currentFrame++;
+        }
+
+        private void AddVideoFrame(byte[] data, UTJ.FrameCapturer.fcAPI.fcPixelFormat fmt)
+        {
+            if (null != encoder)
+                encoder.AddVideoFrame(data, fmt, currentFrame / AnimationEngine.Instance.fps);
         }
     }
 }

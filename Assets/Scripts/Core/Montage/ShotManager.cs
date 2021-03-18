@@ -124,6 +124,10 @@ namespace VRtist
                         CameraController controller = shot.camera.GetComponent<CameraController>();
                         if (null != controller) { CameraManager.Instance.ActiveCamera = controller.gameObject; }
                     }
+                    else
+                    {
+                        CameraManager.Instance.ActiveCamera = null;
+                    }
                 }
             }
         }

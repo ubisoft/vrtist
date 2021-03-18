@@ -325,6 +325,17 @@ namespace VRtist
             return sprite;
         }
 
+        public static void FillTexture(Texture2D texture, Color color)
+        {
+            Color[] pixels = texture.GetPixels();
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = color;
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+        }
+
         public static void DeleteTransformChildren(Transform trans)
         {
             Debug.Log("Clear scene");

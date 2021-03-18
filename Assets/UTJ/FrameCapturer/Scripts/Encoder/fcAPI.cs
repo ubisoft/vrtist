@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+
 using UnityEngine;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -21,30 +23,30 @@ namespace UTJ.FrameCapturer
             TypeMask = 0xF << 4,
             Type_f16 = 0x1 << 4,
             Type_f32 = 0x2 << 4,
-            Type_u8  = 0x3 << 4,
+            Type_u8 = 0x3 << 4,
             Type_i16 = 0x4 << 4,
             Type_i32 = 0x5 << 4,
 
-            Rf16     = Type_f16 | 1,
-            RGf16    = Type_f16 | 2,
-            RGBf16   = Type_f16 | 3,
-            RGBAf16  = Type_f16 | 4,
-            Rf32     = Type_f32 | 1,
-            RGf32    = Type_f32 | 2,
-            RGBf32   = Type_f32 | 3,
-            RGBAf32  = Type_f32 | 4,
-            Ru8      = Type_u8  | 1,
-            RGu8     = Type_u8  | 2,
-            RGBu8    = Type_u8  | 3,
-            RGBAu8   = Type_u8  | 4,
-            Ri16     = Type_i16 | 1,
-            RGi16    = Type_i16 | 2,
-            RGBi16   = Type_i16 | 3,
-            RGBAi16  = Type_i16 | 4,
-            Ri32     = Type_i32 | 1,
-            RGi32    = Type_i32 | 2,
-            RGBi32   = Type_i32 | 3,
-            RGBAi32  = Type_i32 | 4,
+            Rf16 = Type_f16 | 1,
+            RGf16 = Type_f16 | 2,
+            RGBf16 = Type_f16 | 3,
+            RGBAf16 = Type_f16 | 4,
+            Rf32 = Type_f32 | 1,
+            RGf32 = Type_f32 | 2,
+            RGBf32 = Type_f32 | 3,
+            RGBAf32 = Type_f32 | 4,
+            Ru8 = Type_u8 | 1,
+            RGu8 = Type_u8 | 2,
+            RGBu8 = Type_u8 | 3,
+            RGBAu8 = Type_u8 | 4,
+            Ri16 = Type_i16 | 1,
+            RGi16 = Type_i16 | 2,
+            RGBi16 = Type_i16 | 3,
+            RGBAi16 = Type_i16 | 4,
+            Ri32 = Type_i32 | 1,
+            RGi32 = Type_i32 | 2,
+            RGBi32 = Type_i32 | 3,
+            RGBAi32 = Type_i32 | 4,
         };
 
         public enum fcBitrateMode
@@ -62,8 +64,8 @@ namespace UTJ.FrameCapturer
 
 
 
-        [DllImport ("fccore")] public static extern void         fcSetModulePath(string path);
-        [DllImport ("fccore")] public static extern double       fcGetTime();
+        [DllImport("fccore")] public static extern void fcSetModulePath(string path);
+        [DllImport("fccore")] public static extern double fcGetTime();
 
 
         public struct fcDeferredCall
@@ -79,16 +81,16 @@ namespace UTJ.FrameCapturer
             public void Release() { fcReleaseStream(this); ptr = IntPtr.Zero; }
             public static implicit operator bool(fcStream v) { return v.ptr != IntPtr.Zero; }
         }
-        [DllImport ("fccore")] public static extern fcStream     fcCreateFileStream(string path);
-        [DllImport ("fccore")] public static extern fcStream     fcCreateMemoryStream();
-        [DllImport ("fccore")] private static extern void        fcReleaseStream(fcStream s);
-        [DllImport ("fccore")] public static extern ulong        fcStreamGetWrittenSize(fcStream s);
+        [DllImport("fccore")] public static extern fcStream fcCreateFileStream(string path);
+        [DllImport("fccore")] public static extern fcStream fcCreateMemoryStream();
+        [DllImport("fccore")] private static extern void fcReleaseStream(fcStream s);
+        [DllImport("fccore")] public static extern ulong fcStreamGetWrittenSize(fcStream s);
 
-        [DllImport ("fccore")] public static extern void         fcGuardBegin();
-        [DllImport ("fccore")] public static extern void         fcGuardEnd();
-        [DllImport ("fccore")] public static extern fcDeferredCall fcAllocateDeferredCall();
-        [DllImport ("fccore")] private static extern void        fcReleaseDeferredCall(fcDeferredCall dc);
-        [DllImport ("fccore")] public static extern IntPtr       fcGetRenderEventFunc();
+        [DllImport("fccore")] public static extern void fcGuardBegin();
+        [DllImport("fccore")] public static extern void fcGuardEnd();
+        [DllImport("fccore")] public static extern fcDeferredCall fcAllocateDeferredCall();
+        [DllImport("fccore")] private static extern void fcReleaseDeferredCall(fcDeferredCall dc);
+        [DllImport("fccore")] public static extern IntPtr fcGetRenderEventFunc();
 
         public static void fcGuard(Action body)
         {
@@ -101,16 +103,16 @@ namespace UTJ.FrameCapturer
         {
             switch (v)
             {
-                case RenderTextureFormat.ARGB32:    return fcPixelFormat.RGBAu8;
-                case RenderTextureFormat.ARGBHalf:  return fcPixelFormat.RGBAf16;
-                case RenderTextureFormat.RGHalf:    return fcPixelFormat.RGf16;
-                case RenderTextureFormat.RHalf:     return fcPixelFormat.Rf16;
+                case RenderTextureFormat.ARGB32: return fcPixelFormat.RGBAu8;
+                case RenderTextureFormat.ARGBHalf: return fcPixelFormat.RGBAf16;
+                case RenderTextureFormat.RGHalf: return fcPixelFormat.RGf16;
+                case RenderTextureFormat.RHalf: return fcPixelFormat.Rf16;
                 case RenderTextureFormat.ARGBFloat: return fcPixelFormat.RGBAf32;
-                case RenderTextureFormat.RGFloat:   return fcPixelFormat.RGf32;
-                case RenderTextureFormat.RFloat:    return fcPixelFormat.Rf32;
-                case RenderTextureFormat.ARGBInt:   return fcPixelFormat.RGBAi32;
-                case RenderTextureFormat.RGInt:     return fcPixelFormat.RGi32;
-                case RenderTextureFormat.RInt:      return fcPixelFormat.Ri32;
+                case RenderTextureFormat.RGFloat: return fcPixelFormat.RGf32;
+                case RenderTextureFormat.RFloat: return fcPixelFormat.Rf32;
+                case RenderTextureFormat.ARGBInt: return fcPixelFormat.RGBAi32;
+                case RenderTextureFormat.RGInt: return fcPixelFormat.RGi32;
+                case RenderTextureFormat.RInt: return fcPixelFormat.Ri32;
             }
             return fcPixelFormat.Unknown;
         }
@@ -119,16 +121,16 @@ namespace UTJ.FrameCapturer
         {
             switch (v)
             {
-                case TextureFormat.Alpha8:      return fcPixelFormat.Ru8;
-                case TextureFormat.RGB24:       return fcPixelFormat.RGBu8;
-                case TextureFormat.RGBA32:      return fcPixelFormat.RGBAu8;
-                case TextureFormat.ARGB32:      return fcPixelFormat.RGBAu8;
-                case TextureFormat.RGBAHalf:    return fcPixelFormat.RGBAf16;
-                case TextureFormat.RGHalf:      return fcPixelFormat.RGf16;
-                case TextureFormat.RHalf:       return fcPixelFormat.Rf16;
-                case TextureFormat.RGBAFloat:   return fcPixelFormat.RGBAf32;
-                case TextureFormat.RGFloat:     return fcPixelFormat.RGf32;
-                case TextureFormat.RFloat:      return fcPixelFormat.Rf32;
+                case TextureFormat.Alpha8: return fcPixelFormat.Ru8;
+                case TextureFormat.RGB24: return fcPixelFormat.RGBu8;
+                case TextureFormat.RGBA32: return fcPixelFormat.RGBAu8;
+                case TextureFormat.ARGB32: return fcPixelFormat.RGBAu8;
+                case TextureFormat.RGBAHalf: return fcPixelFormat.RGBAf16;
+                case TextureFormat.RGHalf: return fcPixelFormat.RGf16;
+                case TextureFormat.RHalf: return fcPixelFormat.Rf16;
+                case TextureFormat.RGBAFloat: return fcPixelFormat.RGBAf32;
+                case TextureFormat.RGFloat: return fcPixelFormat.RGf32;
+                case TextureFormat.RFloat: return fcPixelFormat.Rf32;
             }
             return fcPixelFormat.Unknown;
         }
@@ -137,21 +139,21 @@ namespace UTJ.FrameCapturer
         {
             switch (AudioSettings.speakerMode)
             {
-                case AudioSpeakerMode.Mono:         return 1;
-                case AudioSpeakerMode.Stereo:       return 2;
-                case AudioSpeakerMode.Quad:         return 4;
-                case AudioSpeakerMode.Surround:     return 5;
-                case AudioSpeakerMode.Mode5point1:  return 6;
-                case AudioSpeakerMode.Mode7point1:  return 8;
-                case AudioSpeakerMode.Prologic:     return 6;
+                case AudioSpeakerMode.Mono: return 1;
+                case AudioSpeakerMode.Stereo: return 2;
+                case AudioSpeakerMode.Quad: return 4;
+                case AudioSpeakerMode.Surround: return 5;
+                case AudioSpeakerMode.Mode5point1: return 6;
+                case AudioSpeakerMode.Mode7point1: return 8;
+                case AudioSpeakerMode.Prologic: return 6;
             }
             return 0;
         }
 
 
-        [DllImport ("fccore")] public static extern void fcEnableAsyncReleaseContext(Bool v);
-        [DllImport ("fccore")] public static extern void fcWaitAsyncDelete();
-        [DllImport ("fccore")] public static extern void fcReleaseContext(IntPtr ctx);
+        [DllImport("fccore")] public static extern void fcEnableAsyncReleaseContext(Bool v);
+        [DllImport("fccore")] public static extern void fcWaitAsyncDelete();
+        [DllImport("fccore")] public static extern void fcReleaseContext(IntPtr ctx);
 
 
         // -------------------------------------------------------------
@@ -195,9 +197,9 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcPngContext v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern Bool         fcPngIsSupported();
-        [DllImport ("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
-        [DllImport ("fccore")] public static extern Bool         fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels);
+        [DllImport("fccore")] public static extern Bool fcPngIsSupported();
+        [DllImport("fccore")] public static extern fcPngContext fcPngCreateContext(ref fcPngConfig conf);
+        [DllImport("fccore")] public static extern Bool fcPngExportPixels(fcPngContext ctx, string path, byte[] pixels, int width, int height, fcPixelFormat fmt, int num_channels);
 
 
         // -------------------------------------------------------------
@@ -253,11 +255,11 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcExrContext v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern Bool         fcExrIsSupported();
-        [DllImport ("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
-        [DllImport ("fccore")] public static extern Bool         fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
-        [DllImport ("fccore")] public static extern Bool         fcExrAddLayerPixels(fcExrContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name);
-        [DllImport ("fccore")] public static extern Bool         fcExrEndImage(fcExrContext ctx);
+        [DllImport("fccore")] public static extern Bool fcExrIsSupported();
+        [DllImport("fccore")] public static extern fcExrContext fcExrCreateContext(ref fcExrConfig conf);
+        [DllImport("fccore")] public static extern Bool fcExrBeginImage(fcExrContext ctx, string path, int width, int height);
+        [DllImport("fccore")] public static extern Bool fcExrAddLayerPixels(fcExrContext ctx, byte[] pixels, fcPixelFormat fmt, int ch, string name);
+        [DllImport("fccore")] public static extern Bool fcExrEndImage(fcExrContext ctx);
 
 
         // -------------------------------------------------------------
@@ -293,10 +295,10 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcGifContext v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern Bool         fcGifIsSupported();
-        [DllImport ("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
-        [DllImport ("fccore")] public static extern void         fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool         fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
+        [DllImport("fccore")] public static extern Bool fcGifIsSupported();
+        [DllImport("fccore")] public static extern fcGifContext fcGifCreateContext(ref fcGifConfig conf);
+        [DllImport("fccore")] public static extern void fcGifAddOutputStream(fcGifContext ctx, fcStream stream);
+        [DllImport("fccore")] public static extern Bool fcGifAddFramePixels(fcGifContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
 
 
         // -------------------------------------------------------------
@@ -305,18 +307,18 @@ namespace UTJ.FrameCapturer
 
         public enum fcMP4VideoFlags
         {
-            H264NVIDIA  = 1 << 1,
-            H264AMD     = 1 << 2,
+            H264NVIDIA = 1 << 1,
+            H264AMD = 1 << 2,
             H264IntelHW = 1 << 3,
             H264IntelSW = 1 << 4,
-            H264OpenH264= 1 << 5,
+            H264OpenH264 = 1 << 5,
             H264Mask = H264NVIDIA | H264AMD | H264IntelHW | H264IntelSW | H264OpenH264,
         };
 
         public enum fcMP4AudioFlags
         {
             AACIntel = 1 << 1,
-            AACFAAC  = 1 << 2,
+            AACFAAC = 1 << 2,
             AACMask = AACIntel | AACFAAC,
         };
 
@@ -371,15 +373,15 @@ namespace UTJ.FrameCapturer
             public static implicit operator bool(fcMP4Context v) { return v.ptr != IntPtr.Zero; }
         }
 
-        [DllImport ("fccore")] public static extern Bool             fcMP4IsSupported();
-        [DllImport ("fccore")] public static extern Bool             fcMP4OSIsSupported();
-        [DllImport ("fccore")] public static extern fcMP4Context     fcMP4CreateContext(ref fcMP4Config conf);
-        [DllImport ("fccore")] public static extern fcMP4Context     fcMP4OSCreateContext(ref fcMP4Config conf, string path);
-        [DllImport ("fccore")] public static extern void             fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
-        [DllImport ("fccore")] private static extern IntPtr          fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
-        [DllImport ("fccore")] private static extern IntPtr          fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
-        [DllImport ("fccore")] public static extern Bool             fcMP4AddVideoFramePixels(fcMP4Context ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
-        [DllImport ("fccore")] public static extern Bool             fcMP4AddAudioSamples(fcMP4Context ctx, float[] samples, int num_samples);
+        [DllImport("fccore")] public static extern Bool fcMP4IsSupported();
+        [DllImport("fccore")] public static extern Bool fcMP4OSIsSupported();
+        [DllImport("fccore")] public static extern fcMP4Context fcMP4CreateContext(ref fcMP4Config conf);
+        [DllImport("fccore")] public static extern fcMP4Context fcMP4OSCreateContext(ref fcMP4Config conf, string path);
+        [DllImport("fccore")] public static extern void fcMP4AddOutputStream(fcMP4Context ctx, fcStream s);
+        [DllImport("fccore")] private static extern IntPtr fcMP4GetAudioEncoderInfo(fcMP4Context ctx);
+        [DllImport("fccore")] private static extern IntPtr fcMP4GetVideoEncoderInfo(fcMP4Context ctx);
+        [DllImport("fccore")] public static extern Bool fcMP4AddVideoFramePixels(fcMP4Context ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
+        [DllImport("fccore")] public static extern Bool fcMP4AddAudioSamples(fcMP4Context ctx, float[] samples, int num_samples);
 
         public static string fcMP4GetAudioEncoderInfoS(fcMP4Context ctx)
         {
@@ -460,13 +462,13 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        [DllImport ("fccore")] public static extern Bool fcWebMIsSupported();
-        [DllImport ("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
-        [DllImport ("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
+        [DllImport("fccore")] public static extern Bool fcWebMIsSupported();
+        [DllImport("fccore")] public static extern fcWebMContext fcWebMCreateContext(ref fcWebMConfig conf);
+        [DllImport("fccore")] public static extern void fcWebMAddOutputStream(fcWebMContext ctx, fcStream stream);
         // timestamp=-1 is treated as current time.
-        [DllImport ("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
+        [DllImport("fccore")] public static extern Bool fcWebMAddVideoFramePixels(fcWebMContext ctx, byte[] pixels, fcPixelFormat fmt, double timestamp = -1.0);
         // timestamp=-1 is treated as current time.
-        [DllImport ("fccore")] public static extern Bool fcWebMAddAudioSamples(fcWebMContext ctx, float[] samples, int num_samples);
+        [DllImport("fccore")] public static extern Bool fcWebMAddAudioSamples(fcWebMContext ctx, float[] samples, int num_samples);
 
 
         // -------------------------------------------------------------
@@ -502,12 +504,12 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        [DllImport ("fccore")] public static extern Bool fcWaveIsSupported();
-        [DllImport ("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
-        [DllImport ("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcWaveAddAudioSamples(fcWaveContext ctx, float[] samples, int num_samples);
+        [DllImport("fccore")] public static extern Bool fcWaveIsSupported();
+        [DllImport("fccore")] public static extern fcWaveContext fcWaveCreateContext(ref fcWaveConfig conf);
+        [DllImport("fccore")] public static extern void fcWaveAddOutputStream(fcWaveContext ctx, fcStream stream);
+        [DllImport("fccore")] public static extern Bool fcWaveAddAudioSamples(fcWaveContext ctx, float[] samples, int num_samples);
 
-        
+
 
         // -------------------------------------------------------------
         // Ogg Exporter
@@ -544,10 +546,10 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        [DllImport ("fccore")] public static extern Bool fcOggIsSupported();
-        [DllImport ("fccore")] public static extern fcOggContext fcOggCreateContext(ref fcOggConfig conf);
-        [DllImport ("fccore")] public static extern void fcOggAddOutputStream(fcOggContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcOggAddAudioSamples(fcOggContext ctx, float[] samples, int num_samples);
+        [DllImport("fccore")] public static extern Bool fcOggIsSupported();
+        [DllImport("fccore")] public static extern fcOggContext fcOggCreateContext(ref fcOggConfig conf);
+        [DllImport("fccore")] public static extern void fcOggAddOutputStream(fcOggContext ctx, fcStream stream);
+        [DllImport("fccore")] public static extern Bool fcOggAddAudioSamples(fcOggContext ctx, float[] samples, int num_samples);
 
 
         // -------------------------------------------------------------
@@ -566,7 +568,7 @@ namespace UTJ.FrameCapturer
             [HideInInspector] public int sampleRate;
             [HideInInspector] public int numChannels;
             public fcAudioBitsPerSample bitsPerSample;
-            [Range(0,9)] public int compressionLevel;
+            [Range(0, 9)] public int compressionLevel;
             public int blockSize;
             [HideInInspector] public Bool verify;
             [Range(1, 32)] public int maxTasks;
@@ -589,13 +591,16 @@ namespace UTJ.FrameCapturer
             }
         }
 
-        [DllImport ("fccore")] public static extern Bool fcFlacIsSupported();
-        [DllImport ("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
-        [DllImport ("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
-        [DllImport ("fccore")] public static extern Bool fcFlacAddAudioSamples(fcFlacContext ctx, float[] samples, int num_samples);
+        [DllImport("fccore")] public static extern Bool fcFlacIsSupported();
+        [DllImport("fccore")] public static extern fcFlacContext fcFlacCreateContext(ref fcFlacConfig conf);
+        [DllImport("fccore")] public static extern void fcFlacAddOutputStream(fcFlacContext ctx, fcStream stream);
+        [DllImport("fccore")] public static extern Bool fcFlacAddAudioSamples(fcFlacContext ctx, float[] samples, int num_samples);
 
 
-
+        public static void fcLock(Texture2D src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)
+        {
+            body(src.GetRawTextureData(), fcGetPixelFormat(dstfmt));
+        }
 
         public static void fcLock(RenderTexture src, TextureFormat dstfmt, Action<byte[], fcPixelFormat> body)
         {
