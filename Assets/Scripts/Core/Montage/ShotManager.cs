@@ -158,9 +158,17 @@ namespace VRtist
             switch (state)
             {
                 case AnimationState.Playing:
-                case AnimationState.VideoOutput:
-                    // Force activating a camera
                     ActiveShotIndex = FindFirstShotIndexAt(AnimationEngine.Instance.CurrentFrame);
+                    break;
+                case AnimationState.VideoOutput:
+                    if (shots.Count == 0)
+                    {
+                        GlobalState.Animation.Pause();
+                        break;
+                    }
+                    // Force activating a camera
+                    ActiveShotIndex = 0;
+                    GlobalState.Animation.CurrentFrame = shots[0].start;
                     break;
             }
         }

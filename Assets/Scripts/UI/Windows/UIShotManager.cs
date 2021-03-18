@@ -130,7 +130,7 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            videoOutputButton.Checked = state == AnimationState.VideoOutput;
+            videoOutputButton.Checked = GlobalState.Animation.animationState == AnimationState.VideoOutput;
         }
 
         private void OnCurrentFrameChanged(int currentFrame)

@@ -524,17 +524,15 @@ namespace VRtist
             if (record)
             {
                 animationState = AnimationState.VideoOutput;
-                onAnimationStateEvent.Invoke(animationState);
                 Selection.enabled = false;
+                onAnimationStateEvent.Invoke(animationState);
 
                 // Force rendering the first frame
                 CurrentFrame = currentFrame;
             }
             else
             {
-                animationState = AnimationState.Stopped;
-                onAnimationStateEvent.Invoke(animationState);
-                Selection.enabled = true;
+                Pause();
             }
         }
 
@@ -566,6 +564,9 @@ namespace VRtist
                     break;
                 case AnimationState.Playing:
                     playButtonShortcut.Checked = false;  // A déplacer !!!!
+                    break;
+                case AnimationState.VideoOutput:
+                    Selection.enabled = true;
                     break;
             }
             animationState = AnimationState.Stopped;

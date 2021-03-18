@@ -79,6 +79,9 @@ namespace VRtist
             get { return activeCamera; }
             set
             {
+                if (activeCamera == value)
+                    return;
+
                 GameObject previousActiveCamera = activeCamera;
                 activeCamera = value;
                 if (null != previousActiveCamera)
@@ -88,11 +91,14 @@ namespace VRtist
                 }
                 if (null != activeCamera)
                 {
+                    // reparent virtual camera to active camera
                     VirtualCamera.transform.parent = activeCamera.transform.Find("Rotate");
                     VirtualCamera.transform.localPosition = Vector3.zero;
                     VirtualCamera.transform.localRotation = Quaternion.identity;
                     VirtualCamera.transform.localScale = Vector3.one;
                     VirtualCamera.SetActive(true);
+
+                    // apply active paramete'rs to virtual camera
                     CameraController cameraController = activeCamera.GetComponent<CameraController>();
                     cameraController.SetVirtualCamera(virtualCameraComponent);
 
@@ -124,6 +130,7 @@ namespace VRtist
         {
             Selection.onSelectionChanged.AddListener(OnSelectionChanged);
             Selection.onHoveredChanged.AddListener(OnHoveredChanged);
+            Selection.onAuxiliarySelectionChanged.AddListener(OnAuxiliaryChanged);
         }
 
         public Camera GetActiveCameraComponent()
@@ -152,7 +159,7 @@ namespace VRtist
                 hoveredCamera = hoveredObject;
 
             // Set current active camera from hovered one
-            if (null != hoveredCamera && hoveredCamera != ActiveCamera)
+            if (null != hoveredCamera && (hoveredCamera != ActiveCamera || Selection.IsSelected(hoveredCamera)))
             {
                 // Enable current active camera
                 ActiveCamera = hoveredCamera;
@@ -184,6 +191,11 @@ namespace VRtist
         void OnHoveredChanged(GameObject previousHover, GameObject currentHover)
         {
             UpdateActiveCamera(currentHover, Selection.SelectedObjects);
+        }
+
+        void OnAuxiliaryChanged(GameObject previousAuxiliary, GameObject currentAuxiliary)
+        {
+            UpdateActiveCamera(currentAuxiliary, Selection.SelectedObjects);
         }
     }
 }
