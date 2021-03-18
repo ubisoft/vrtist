@@ -126,6 +126,20 @@ namespace VRtist
             }
         }
 
+        static Texture2D emptyTexture;
+        public static Texture2D EmptyTexture
+        {
+            get
+            {
+                if (null == emptyTexture)
+                {
+                    emptyTexture = new Texture2D(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT, TextureFormat.RGB24, false);
+                    Utils.FillTexture(emptyTexture, new Color(10f / 255f, 10f / 255f, 10f / 255f));  // almost black: black is ignored :(
+                }
+                return emptyTexture;
+            }
+        }
+
         CameraManager()
         {
             Selection.onSelectionChanged.AddListener(OnSelectionChanged);

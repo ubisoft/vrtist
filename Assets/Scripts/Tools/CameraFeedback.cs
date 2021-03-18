@@ -38,11 +38,7 @@ namespace VRtist
             CameraManager.Instance.onActiveCameraChanged.AddListener(OnCameraChanged);
             Assert.IsTrue(transform.GetChild(0).name == "CameraFeedbackPlane");
             cameraPlane = transform.GetChild(0).gameObject;
-        }
-
-        private void OnEnable()
-        {
-            SetActiveCamera(CameraManager.Instance.ActiveCamera);
+            cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", CameraManager.EmptyTexture);
         }
 
         protected void Update()
@@ -50,15 +46,10 @@ namespace VRtist
             if (!gameObject.activeSelf)
                 return;
 
-            if (null == feedbackCamera)
-                return;
-
+            Camera cam = CameraManager.Instance.GetActiveCameraComponent();
+            float aspect = cam == null ? 16f / 9f : cam.aspect;
             float far = Camera.main.farClipPlane * GlobalState.WorldScale * 0.7f;
             float fov = Camera.main.fieldOfView;
-
-            Camera cam = feedbackCamera.GetComponentInChildren<Camera>(true);
-            float aspect = cam.aspect;
-
             float scale = far * Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f) * 0.5f * GlobalState.Settings.cameraFeedbackScaleValue;
             Vector3 direction = GlobalState.Settings.cameraFeedbackDirection;
             transform.localPosition = direction.normalized * far;
@@ -76,15 +67,14 @@ namespace VRtist
             if (feedbackCamera == activeCamera)
                 return;
             feedbackCamera = activeCamera;
-            if (null != feedbackCamera)
+            Camera cam = CameraManager.Instance.GetActiveCameraComponent();
+            if (null != cam)
             {
-                Camera cam = feedbackCamera.GetComponentInChildren<Camera>(true);
-                cameraPlane.SetActive(true);
                 cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", cam.targetTexture);
             }
             else
             {
-                cameraPlane.SetActive(false);
+                cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", CameraManager.EmptyTexture);
             }
         }
     }

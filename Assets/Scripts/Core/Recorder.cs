@@ -14,7 +14,6 @@ namespace VRtist
 
         private Camera activeCamera;
         private int currentFrame;
-        private Texture2D emptyTexture;
 
         private UTJ.FrameCapturer.MovieEncoder encoder;
         private UTJ.FrameCapturer.MovieEncoderConfigs encoderConfigs = new UTJ.FrameCapturer.MovieEncoderConfigs(UTJ.FrameCapturer.MovieEncoder.Type.MP4);
@@ -45,9 +44,6 @@ namespace VRtist
             CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
             AnimationEngine.Instance.onFrameEvent.AddListener(OnFrameChanged);
             AnimationEngine.Instance.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
-
-            emptyTexture = new Texture2D(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT, TextureFormat.RGB24, false);
-            Utils.FillTexture(emptyTexture, new Color(10f / 255f, 10f / 255f, 10f / 255f));  // almost black: black is ignored :(
         }
 
         private void OnAnimationStateChanged(AnimationState state)
@@ -132,7 +128,7 @@ namespace VRtist
             }
             else
             {
-                UTJ.FrameCapturer.fcAPI.fcLock(emptyTexture, TextureFormat.RGB24, AddVideoFrame);
+                UTJ.FrameCapturer.fcAPI.fcLock(CameraManager.EmptyTexture, TextureFormat.RGB24, AddVideoFrame);
             }
             currentFrame++;
         }

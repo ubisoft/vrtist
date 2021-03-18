@@ -249,7 +249,7 @@ namespace VRtist
         {
             if (feedbackPositionningCheckbox != null)
             {
-                feedbackPositionningCheckbox.Checked = feedbackPositioning;
+                feedbackPositionningCheckbox.Checked = feedbackPositioning && GlobalState.Settings.cameraFeedbackVisible;
                 feedbackPositionningCheckbox.Disabled = !GlobalState.Settings.cameraFeedbackVisible;
             }
 
@@ -346,13 +346,12 @@ namespace VRtist
         public void OnCheckShowCameraFeedback(bool value)
         {
             GlobalState.Settings.cameraFeedbackVisible = value;
-
             backgroundFeedback.gameObject.SetActive(value);
-
-            UICheckbox feedbackPositionningCB = feedbackPositionningCheckbox.GetComponent<UICheckbox>();
-            if (feedbackPositionningCB != null)
+            feedbackPositionningCheckbox.Disabled = !value;
+            if (!value)
             {
-                feedbackPositionningCB.Disabled = !value;
+                feedbackPositioning = false;
+                feedbackPositionningCheckbox.Checked = false;
             }
         }
 
