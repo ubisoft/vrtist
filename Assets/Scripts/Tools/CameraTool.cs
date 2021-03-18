@@ -74,8 +74,6 @@ namespace VRtist
         public UIDynamicList cameraList;
         private GameObject cameraItemPrefab;
 
-        public bool montage = false;
-
         private readonly List<CameraController> selectedCameraControllers = new List<CameraController>();
 
         public float Focal
@@ -804,12 +802,6 @@ namespace VRtist
             {
                 command.Submit();
             }
-        }
-
-        public void OnSetMontage(bool montage)
-        {
-            this.montage = montage;
-            ShotManager.Instance.MontageEnabled = montage;
         }
     }
 }

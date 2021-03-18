@@ -128,6 +128,18 @@ namespace VRtist
             }
         }
 
+        private bool montageEnabled = false;
+        public bool MontageEnabled
+        {
+            get { return montageEnabled; }
+            set
+            {
+                montageEnabled = value;
+                MontageModeChangedEvent.Invoke();
+            }
+        }
+        public UnityEvent MontageModeChangedEvent = new UnityEvent();
+
         public List<Shot> shots = new List<Shot>();
         public UnityEvent ShotsChangedEvent = new UnityEvent();
         private static ShotManager instance = null;
@@ -326,18 +338,6 @@ namespace VRtist
         public void FireChanged()
         {
             ShotsChangedEvent.Invoke();
-        }
-
-        private bool montageEnabled = false;
-        public UnityEvent MontageModeChangedEvent = new UnityEvent();
-        public bool MontageEnabled
-        {
-            get { return montageEnabled; }
-            set
-            {
-                montageEnabled = value;
-                MontageModeChangedEvent.Invoke();
-            }
         }
 
         private static readonly Regex shotNameRegex = new Regex(@"Sh(?<number>\d{4})", RegexOptions.Compiled);

@@ -44,6 +44,7 @@ namespace VRtist
             ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
 
             videoOutputButton = transform.Find("MainPanel/VideoOutput").GetComponent<UIButton>();
+            videoOutputButton.Disabled = !montageCheckbox.Checked;
 
             GlobalState.Animation.onFrameEvent.AddListener(OnCurrentFrameChanged);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
@@ -55,9 +56,15 @@ namespace VRtist
             shotList.NeedsRebuild = true;
         }
 
+        public void OnSetMontage(bool montage)
+        {
+            ShotManager.Instance.MontageEnabled = montage;
+        }
+
         private void OnMontageModeChanged()
         {
             montageCheckbox.Checked = ShotManager.Instance.MontageEnabled;
+            videoOutputButton.Disabled = !montageCheckbox.Checked;
         }
 
         void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
@@ -130,7 +137,12 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            videoOutputButton.Checked = GlobalState.Animation.animationState == AnimationState.VideoOutput;
+            if (!videoOutputButton.Disabled)
+            {
+                videoOutputButton.Checked = GlobalState.Animation.animationState == AnimationState.VideoOutput;
+            }
+            // Prevent unchecking montage while recording a video
+            montageCheckbox.Disabled = GlobalState.Animation.animationState == AnimationState.VideoOutput;
         }
 
         private void OnCurrentFrameChanged(int currentFrame)
