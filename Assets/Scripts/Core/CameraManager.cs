@@ -76,10 +76,38 @@ namespace VRtist
             }
         }
 
-        public struct Resolution
+        [System.Serializable]
+        public struct Resolution : IEquatable<Resolution>
         {
             public int width;
             public int height;
+
+            public override bool Equals(object obj)
+            {
+                if (obj is Resolution)
+                    return this.Equals((Resolution)obj);
+                return false;
+            }
+
+            public override int GetHashCode()
+            {
+                return width ^ height;
+            }
+
+            public bool Equals(Resolution r)
+            {
+                return r.width == width && r.height == height;
+            }
+
+            public static bool operator !=(Resolution r1, Resolution r2)
+            {
+                return !r1.Equals(r2);
+            }
+
+            public static bool operator ==(Resolution r1, Resolution r2)
+            {
+                return r1.Equals(r2);
+            }
         }
 
         public static Resolution resolution720p = new Resolution { width = 1280, height = 720 };
@@ -152,6 +180,7 @@ namespace VRtist
                         videoOutputResolution = resolution1080p;
                         break;
                 }
+                GlobalState.Settings.videoOutputResolution = videoOutputResolution;
             }
         }
 
@@ -165,7 +194,6 @@ namespace VRtist
                 if (null == virtualCamera)
                 {
                     virtualCamera = new GameObject("Camera");
-                    OutputResolution = OutputResolution; // render texture creation
 
                     virtualCameraComponent = virtualCamera.AddComponent<Camera>();
                     _ = RenderTexture;
