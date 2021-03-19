@@ -96,7 +96,7 @@ namespace VRtist
             get
             {
                 if (null == snapshot)
-                    snapshot = new Texture2D(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT);
+                    snapshot = new Texture2D(CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height);
                 return snapshot;
             }
         }
@@ -242,12 +242,13 @@ namespace VRtist
                 selectionWasEnabled = Selection.enabled;
                 Selection.enabled = false;
 
-                GlobalState.Animation.CurrentFrame = GlobalState.Animation.StartFrame;
+                GlobalState.Animation.timeHooksEnabled = false;
                 GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
                 GlobalState.Animation.onAnimationStateEvent.AddListener(OnRecordStateChanged);
 
-                GlobalState.Animation.timeHooksEnabled = false;
                 isVideoOutput = true;
+
+                GlobalState.Animation.CurrentFrame = GlobalState.Animation.StartFrame;
             }
 
             GlobalState.Animation.OnToggleStartVideoOutput(value);
@@ -381,8 +382,8 @@ namespace VRtist
             if (null == cam)
             {
                 // take snapshot
-                RenderTexture.active = cameraObject.targetTexture;
-                Snapshot.ReadPixels(new Rect(0, 0, cameraObject.targetTexture.width, cameraObject.targetTexture.height), 0, 0);
+                RenderTexture.active = CameraManager.Instance.RenderTexture;
+                Snapshot.ReadPixels(new Rect(0, 0, CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height), 0, 0);
                 Snapshot.Apply();
                 GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", Snapshot);
                 RenderTexture.active = null;

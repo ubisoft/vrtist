@@ -68,7 +68,10 @@ namespace VRtist
             encoderConfigs.captureVideo = true;
             encoderConfigs.captureAudio = false;
             encoderConfigs.mp4EncoderSettings.videoTargetBitrate = 10240000;
-            encoderConfigs.Setup(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT, 3, (int)AnimationEngine.Instance.fps);
+
+            CameraManager.Instance.CurrentResolution = CameraManager.Instance.videoOutputResolution;
+
+            encoderConfigs.Setup(CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height, 3, (int)AnimationEngine.Instance.fps);
             encoder = UTJ.FrameCapturer.MovieEncoder.Create(encoderConfigs, outputDir + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
             if (encoder == null || !encoder.IsValid())
             {
@@ -124,11 +127,11 @@ namespace VRtist
 
             if (null != activeCamera)
             {
-                UTJ.FrameCapturer.fcAPI.fcLock(activeCamera.targetTexture, TextureFormat.RGB24, AddVideoFrame);
+                UTJ.FrameCapturer.fcAPI.fcLock(CameraManager.Instance.RenderTexture, TextureFormat.RGB24, AddVideoFrame);
             }
             else
             {
-                UTJ.FrameCapturer.fcAPI.fcLock(CameraManager.EmptyTexture, TextureFormat.RGB24, AddVideoFrame);
+                UTJ.FrameCapturer.fcAPI.fcLock(CameraManager.Instance.EmptyTexture, TextureFormat.RGB24, AddVideoFrame);
             }
             currentFrame++;
         }

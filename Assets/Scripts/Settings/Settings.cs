@@ -149,6 +149,12 @@ namespace VRtist
 
         public bool castShadows = false;
 
+        public CameraManager.Resolution videoOutputResolution = new CameraManager.Resolution
+        {
+            width = CameraManager.resolution1080p.width,
+            height = CameraManager.resolution1080p.height
+        };
+
         [Range(1.0f, 100.0f)]
         public float scaleSpeed = 50f;
 
@@ -230,6 +236,8 @@ namespace VRtist
                     bottomColor = new Color(113f / 255f, 113f / 255f, 113f / 255f)
                 }
             };
+
+            videoOutputResolution = CameraManager.resolution1080p;
 
             assetBankDirectory = "D:/VRtistData/";
             projectName = "myScene";

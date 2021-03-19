@@ -36,7 +36,7 @@ namespace VRtist
         {
             Assert.IsTrue(transform.GetChild(0).name == "CameraFeedbackPlane");
             cameraPlane = transform.GetChild(0).gameObject;
-            cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", CameraManager.EmptyTexture);
+            cameraPlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", CameraManager.Instance.EmptyTexture);
             CameraManager.Instance.RegisterScreen(cameraPlane.GetComponent<MeshRenderer>().material);
             UpdateTransform();
         }

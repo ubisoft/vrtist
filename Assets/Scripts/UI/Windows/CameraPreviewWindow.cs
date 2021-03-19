@@ -45,7 +45,7 @@ namespace VRtist
             CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
             CameraManager.Instance.RegisterScreen(previewImagePlane.GetComponent<MeshRenderer>().material);
-            previewImagePlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", CameraManager.EmptyTexture);
+            previewImagePlane.GetComponent<MeshRenderer>().material.SetTexture("_UnlitColorMap", CameraManager.Instance.EmptyTexture);
         }
 
         private void OnAnimationStateChanged(AnimationState state)

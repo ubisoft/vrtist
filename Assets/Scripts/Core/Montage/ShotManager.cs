@@ -171,6 +171,9 @@ namespace VRtist
 
         void OnAnimationStateChanged(AnimationState state)
         {
+            if (!montageEnabled || !GlobalState.Animation.timeHooksEnabled)
+                return;
+
             switch (state)
             {
                 case AnimationState.Playing:
@@ -191,6 +194,9 @@ namespace VRtist
 
         void OnFrameChanged(int frame)
         {
+            if (!montageEnabled || !GlobalState.Animation.timeHooksEnabled)
+                return;
+
             if (ActiveShotIndex != -1)
             {
                 Shot shot = shots[ActiveShotIndex];

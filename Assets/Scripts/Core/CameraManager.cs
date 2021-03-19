@@ -44,10 +44,116 @@ namespace VRtist
         private GameObject virtualCamera;
         private Camera virtualCameraComponent;
         private GameObject activeCamera = null;
+        RenderTexture renderTexture;
+        public RenderTexture RenderTexture
+        {
+            get
+            {
+                if (null == renderTexture)
+                {
+                    renderTexture = new RenderTexture(currentResolution.width, currentResolution.height, 0, RenderTextureFormat.ARGB32);
+                    if (null == renderTexture)
+                        Debug.LogError("CAMERA FAILED");
+                    renderTexture.name = "Camera RT";
 
-        public static int RT_WIDTH = 1920 / 2;
-        public static int RT_HEIGHT = 1080 / 2;
-        public static int RT_DEPTH = 0;//24;
+                    virtualCameraComponent.targetTexture = renderTexture;
+                }
+                return renderTexture;
+            }
+        }
+
+        Texture2D emptyTexture;
+        public Texture2D EmptyTexture
+        {
+            get
+            {
+                if (null == emptyTexture)
+                {
+                    emptyTexture = new Texture2D(currentResolution.width, currentResolution.height, TextureFormat.RGB24, false);
+                    Utils.FillTexture(emptyTexture, new Color(10f / 255f, 10f / 255f, 10f / 255f));  // almost black: black is ignored :(
+                }
+                return emptyTexture;
+            }
+        }
+
+        public struct Resolution
+        {
+            public int width;
+            public int height;
+        }
+
+        public static Resolution resolution720p = new Resolution { width = 1280, height = 720 };
+        public static Resolution resolution1080p = new Resolution { width = 1920, height = 1080 };
+        public static Resolution resolution2160p = new Resolution { width = 3840, height = 2160 };
+        private Resolution realTimeResolution;
+        public Resolution videoOutputResolution;
+
+        private Resolution currentResolution;
+        public Resolution CurrentResolution
+        {
+            get
+            {
+                return currentResolution;
+            }
+            set
+            {
+                if (value.width == currentResolution.width && value.height == currentResolution.height)
+                    return;
+                currentResolution = value;
+                if (null != renderTexture)
+                {
+                    RenderTexture.active = null;
+                    renderTexture.Release();
+                    renderTexture = null;
+                }
+                if (null != emptyTexture)
+                {
+                    emptyTexture = null;
+                }
+
+                AssignTextures();
+            }
+        }
+
+        public enum VideoResolution
+        {
+            VideoResolution_Unknown,
+            VideoResolution_720p,
+            VideoResolution_1080p,
+            VideoResolution_2160p,
+        }
+
+        public VideoResolution OutputResolution
+        {
+            get
+            {
+                switch (videoOutputResolution.height)
+                {
+                    case 720: return VideoResolution.VideoResolution_720p;
+                    case 1080: return VideoResolution.VideoResolution_1080p;
+                    case 2160: return VideoResolution.VideoResolution_2160p;
+                    default: return VideoResolution.VideoResolution_Unknown;
+                }
+            }
+            set
+            {
+                switch (value)
+                {
+                    case VideoResolution.VideoResolution_720p:
+                        videoOutputResolution = resolution720p;
+                        break;
+                    case VideoResolution.VideoResolution_1080p:
+                        videoOutputResolution = resolution1080p;
+                        break;
+                    case VideoResolution.VideoResolution_2160p:
+                        videoOutputResolution = resolution2160p;
+                        break;
+                    default:
+                        videoOutputResolution = resolution1080p;
+                        break;
+                }
+            }
+        }
 
         List<Material> screens = new List<Material>();
         bool isVideoOutput = false;
@@ -59,13 +165,10 @@ namespace VRtist
                 if (null == virtualCamera)
                 {
                     virtualCamera = new GameObject("Camera");
-                    RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.ARGB32);
-                    if (null == renderTexture)
-                        Debug.LogError("CAMERA FAILED");
-                    renderTexture.name = "Camera RT";
+                    OutputResolution = OutputResolution; // render texture creation
 
                     virtualCameraComponent = virtualCamera.AddComponent<Camera>();
-                    virtualCameraComponent.targetTexture = renderTexture;
+                    _ = RenderTexture;
                     virtualCameraComponent.cullingMask = LayerMask.GetMask(new string[] { "Default", "TransparentFX", "Water", "Selection", "Hover" });
                     virtualCameraComponent.nearClipPlane = 0.07f;
                     virtualCameraComponent.farClipPlane = 1000f;
@@ -132,22 +235,12 @@ namespace VRtist
             }
         }
 
-        static Texture2D emptyTexture;
-        public static Texture2D EmptyTexture
-        {
-            get
-            {
-                if (null == emptyTexture)
-                {
-                    emptyTexture = new Texture2D(CameraManager.RT_WIDTH, CameraManager.RT_HEIGHT, TextureFormat.RGB24, false);
-                    Utils.FillTexture(emptyTexture, new Color(10f / 255f, 10f / 255f, 10f / 255f));  // almost black: black is ignored :(
-                }
-                return emptyTexture;
-            }
-        }
-
         CameraManager()
         {
+            realTimeResolution = resolution720p;
+            videoOutputResolution = GlobalState.Settings.videoOutputResolution;
+            CurrentResolution = realTimeResolution;
+
             Selection.onSelectionChanged.AddListener(OnSelectionChanged);
             Selection.onHoveredChanged.AddListener(OnHoveredChanged);
             Selection.onAuxiliarySelectionChanged.AddListener(OnAuxiliaryChanged);
@@ -163,34 +256,29 @@ namespace VRtist
             screens.Remove(material);
         }
 
+        void AssignTextures()
+        {
+            foreach (Material material in screens)
+            {
+                material.SetTexture("_UnlitColorMap", (isVideoOutput || null == ActiveCamera) ? EmptyTexture as Texture : RenderTexture as Texture);
+            }
+            if (null != ActiveCamera)
+            {
+                ActiveCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", isVideoOutput ? EmptyTexture as Texture : RenderTexture as Texture);
+            }
+        }
+
         void OnAnimationStateChanged(AnimationState state)
         {
             if (AnimationState.VideoOutput == GlobalState.Animation.animationState)
             {
                 isVideoOutput = true;
-                foreach (Material material in screens)
-                {
-                    material.SetTexture("_UnlitColorMap", EmptyTexture);
-                }
-                if (null != ActiveCamera)
-                {
-                    ActiveCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", EmptyTexture);
-                }
+                CurrentResolution = videoOutputResolution;
             }
-            else
+            else if (isVideoOutput)
             {
-                if (isVideoOutput)
-                {
-                    if (null != ActiveCamera)
-                    {
-                        foreach (Material material in screens)
-                        {
-                            material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
-                        }
-                        ActiveCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
-                    }
-                    isVideoOutput = false;
-                }
+                isVideoOutput = false;
+                CurrentResolution = realTimeResolution;
             }
         }
 
