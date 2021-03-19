@@ -152,6 +152,27 @@ namespace VRtist
                 focusButton.baseSprite = UIUtils.LoadIcon("dof");
                 focusButton.checkedSprite = UIUtils.LoadIcon("dof");
                 focusButton.SetLightLayer(2);
+
+                // Focus button
+                uiRoot = newCamera.transform.Find("Rotate/UI");
+                UIButton videoOutputButton = UIButton.Create(new UIButton.CreateButtonParams
+                {
+                    parent = uiRoot,
+                    widgetName = "VideoOutputButton",
+                    caption = "Outputs camera to video file",
+                    buttonContent = UIButton.ButtonContent.ImageOnly,
+                    icon = UIUtils.LoadIcon("record_video"),
+                    width = 0.02f,
+                    height = 0.02f,
+                    iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
+                    iconMargin = 0.002f,
+                    relativeLocation = new Vector3(-0.02f, -0.005f, -UIButton.default_thickness)
+                });
+                videoOutputButton.isCheckable = true;
+                videoOutputButton.baseSprite = UIUtils.LoadIcon("record_video");
+                videoOutputButton.checkedSprite = UIUtils.LoadIcon("record_video");
+                videoOutputButton.SetLightLayer(2);
+
             }
 
             return newCamera;

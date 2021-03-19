@@ -49,6 +49,9 @@ namespace VRtist
         public static int RT_HEIGHT = 1080 / 2;
         public static int RT_DEPTH = 0;//24;
 
+        List<Material> screens = new List<Material>();
+        bool isVideoOutput = false;
+
         GameObject VirtualCamera
         {
             get
@@ -102,7 +105,10 @@ namespace VRtist
                     CameraController cameraController = activeCamera.GetComponent<CameraController>();
                     cameraController.SetVirtualCamera(virtualCameraComponent);
 
-                    activeCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
+                    if (isVideoOutput)
+                        activeCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", EmptyTexture);
+                    else
+                        activeCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
                 }
                 else
                 {
@@ -145,6 +151,47 @@ namespace VRtist
             Selection.onSelectionChanged.AddListener(OnSelectionChanged);
             Selection.onHoveredChanged.AddListener(OnHoveredChanged);
             Selection.onAuxiliarySelectionChanged.AddListener(OnAuxiliaryChanged);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
+        }
+
+        public void RegisterScreen(Material material)
+        {
+            screens.Add(material);
+        }
+        public void UnregisterScreen(Material material)
+        {
+            screens.Remove(material);
+        }
+
+        void OnAnimationStateChanged(AnimationState state)
+        {
+            if (AnimationState.VideoOutput == GlobalState.Animation.animationState)
+            {
+                isVideoOutput = true;
+                foreach (Material material in screens)
+                {
+                    material.SetTexture("_UnlitColorMap", EmptyTexture);
+                }
+                if (null != ActiveCamera)
+                {
+                    ActiveCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", EmptyTexture);
+                }
+            }
+            else
+            {
+                if (isVideoOutput)
+                {
+                    if (null != ActiveCamera)
+                    {
+                        foreach (Material material in screens)
+                        {
+                            material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
+                        }
+                        ActiveCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", virtualCameraComponent.targetTexture);
+                    }
+                    isVideoOutput = false;
+                }
+            }
         }
 
         public Camera GetActiveCameraComponent()

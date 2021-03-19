@@ -77,6 +77,10 @@ namespace VRtist
         private UITouchScreen touchScreen;
         private UIButton focusButton;
 
+        private UIButton videoOutputButton = null;
+        private bool selectionWasEnabled = true;
+        private bool isVideoOutput = false;
+
         private UILabel nameLabel = null;
 
         private LineRenderer frustumRenderer = null;
@@ -119,6 +123,24 @@ namespace VRtist
         {
             Init();
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
+        }
+
+        void StopVideoOutput()
+        {
+            isVideoOutput = false;
+            GlobalState.Animation.onFrameEvent.RemoveListener(OnFrameChanged);
+            GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnRecordStateChanged);
+            videoOutputButton.Checked = false;
+            Selection.enabled = selectionWasEnabled;
+            GlobalState.Animation.timeHooksEnabled = true;
+        }
+
+        void OnDisable()
+        {
+            if (isVideoOutput)
+            {
+                StopVideoOutput();
+            }
         }
 
         private void Init()
@@ -164,6 +186,9 @@ namespace VRtist
                 focusButton = transform.Find("Rotate/UI/FocusButton").GetComponentInChildren<UIButton>(true);
                 focusButton.onCheckEvent.AddListener(OnCheckFocusButton);
 
+                videoOutputButton = transform.Find("Rotate/UI/VideoOutputButton").GetComponentInChildren<UIButton>(true);
+                videoOutputButton.onCheckEvent.AddListener(OnCheckVideoOutputButton);
+
                 colimatorLineRenderer = gameObject.GetComponent<LineRenderer>();
                 colimatorLineRenderer.positionCount = 2;
                 colimatorLineRenderer.SetPosition(0, transform.position);
@@ -205,6 +230,45 @@ namespace VRtist
             if (!EnableDOF && value)
             {
                 new CommandEnableDOF(gameObject, true).Submit();
+            }
+        }
+
+        private void OnCheckVideoOutputButton(bool value)
+        {
+            if (value)
+            {
+                Selection.Clear();
+                Selection.AddToSelection(gameObject);
+                selectionWasEnabled = Selection.enabled;
+                Selection.enabled = false;
+
+                GlobalState.Animation.CurrentFrame = GlobalState.Animation.StartFrame;
+                GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
+                GlobalState.Animation.onAnimationStateEvent.AddListener(OnRecordStateChanged);
+
+                GlobalState.Animation.timeHooksEnabled = false;
+                isVideoOutput = true;
+            }
+
+            GlobalState.Animation.OnToggleStartVideoOutput(value);
+        }
+
+        void OnRecordStateChanged(AnimationState animationState)
+        {
+            if (isVideoOutput && GlobalState.Animation.animationState != AnimationState.VideoOutput)
+            {
+                StopVideoOutput();
+            }
+        }
+
+        void OnFrameChanged(int frame)
+        {
+            if (GlobalState.Animation.animationState == AnimationState.VideoOutput)
+            {
+                if (frame == GlobalState.Animation.EndFrame)
+                {
+                    GlobalState.Animation.Pause();
+                }
             }
         }
 

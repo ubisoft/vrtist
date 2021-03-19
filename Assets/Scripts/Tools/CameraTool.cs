@@ -538,6 +538,7 @@ namespace VRtist
                         value /= cameraFeedbackScaleFactor;
                     }
                     GlobalState.Settings.cameraFeedbackScaleValue = Mathf.Clamp(value, GlobalState.Settings.cameraFeedbackMinScaleValue, GlobalState.Settings.cameraFeedbackMaxScaleValue);
+                    GlobalState.Instance.cameraFeedback.GetComponent<CameraFeedback>().UpdateTransform();
                 }
             }
 

@@ -89,6 +89,7 @@ namespace VRtist
         readonly Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
 
         readonly List<TimeHook> timeHooks = new List<TimeHook>();
+        public bool timeHooksEnabled = true;
 
         public float fps = 24f;
         float playStartTime;
@@ -207,14 +208,17 @@ namespace VRtist
                 if (animationState == AnimationState.Playing)
                 {
                     int prevFrame = newFrame;
-                    foreach (TimeHook timeHook in timeHooks)
+                    if (timeHooksEnabled)
                     {
-                        newFrame = timeHook.HookTime(newFrame);
-                    }
-                    if (prevFrame != newFrame)
-                    {
-                        playStartFrame = newFrame;
-                        playStartTime = Time.time;
+                        foreach (TimeHook timeHook in timeHooks)
+                        {
+                            newFrame = timeHook.HookTime(newFrame);
+                        }
+                        if (prevFrame != newFrame)
+                        {
+                            playStartFrame = newFrame;
+                            playStartTime = Time.time;
+                        }
                     }
                 }
 
@@ -251,9 +255,12 @@ namespace VRtist
             if (animationState == AnimationState.VideoOutput)
             {
                 int newFrame = currentFrame + 1;
-                foreach (TimeHook timeHook in timeHooks)
+                if (timeHooksEnabled)
                 {
-                    newFrame = timeHook.HookTime(newFrame);
+                    foreach (TimeHook timeHook in timeHooks)
+                    {
+                        newFrame = timeHook.HookTime(newFrame);
+                    }
                 }
                 CurrentFrame = newFrame;
             }

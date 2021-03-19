@@ -3,10 +3,12 @@
 ## Features
 
 - Camera touchscreen for focus
+- Video output (Shot manager & Cameras)
 
 ## Fixes
 
 - Lobby project list buttons states
+- Camera feedback is now always visible (even if no camera is active)
 
 # 0.1.0
 
