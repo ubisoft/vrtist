@@ -69,12 +69,12 @@ Shader "VRtist/Grass"
             HLSLINCLUDE
 
             #define USE_GRASS_SHADER_IN_PASS__SHADOWCASTER 1
-            #define USE_GRASS_SHADER_IN_PASS__META 0
-            #define USE_GRASS_SHADER_IN_PASS__SCENEPICKING 0
-            #define USE_GRASS_SHADER_IN_PASS__SCENESELECTION 0
-            #define USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS 0
-            #define USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS 0
-            #define USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG 0
+            #define USE_GRASS_SHADER_IN_PASS__META 1
+            #define USE_GRASS_SHADER_IN_PASS__SCENEPICKING 1
+            #define USE_GRASS_SHADER_IN_PASS__SCENESELECTION 1
+            #define USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS 1
+            #define USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS 1
+            #define USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG 1
             #define USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY 1
             #define USE_GRASS_SHADER_IN_PASS__GBUFFER 1
             #define USE_GRASS_SHADER_IN_PASS__FORWARD 1
@@ -860,6 +860,7 @@ Shader "VRtist/Grass"
                     float4 texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -876,6 +877,7 @@ Shader "VRtist/Grass"
                     float4 interp0 : TEXCOORD0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -886,6 +888,7 @@ Shader "VRtist/Grass"
                     output.interp0.xyzw =  input.texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -896,6 +899,7 @@ Shader "VRtist/Grass"
                     output.texCoord0 = input.interp0.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -1461,6 +1465,7 @@ Shader "VRtist/Grass"
                     float4 texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -1480,6 +1485,7 @@ Shader "VRtist/Grass"
                     float4 interp0 : TEXCOORD0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -1490,6 +1496,7 @@ Shader "VRtist/Grass"
                     output.interp0.xyzw =  input.texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -1500,6 +1507,7 @@ Shader "VRtist/Grass"
                     output.texCoord0 = input.interp0.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2081,6 +2089,7 @@ Shader "VRtist/Grass"
                     float4 texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -2100,6 +2109,7 @@ Shader "VRtist/Grass"
                     float4 interp0 : TEXCOORD0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -2110,6 +2120,7 @@ Shader "VRtist/Grass"
                     output.interp0.xyzw =  input.texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2120,6 +2131,7 @@ Shader "VRtist/Grass"
                     output.texCoord0 = input.interp0.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2732,6 +2744,7 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -2758,6 +2771,7 @@ Shader "VRtist/Grass"
                     float4 interp7 : TEXCOORD7;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -2775,6 +2789,7 @@ Shader "VRtist/Grass"
                     output.interp7.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2792,6 +2807,7 @@ Shader "VRtist/Grass"
                     output.color = input.interp7.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -3406,6 +3422,7 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -3430,6 +3447,7 @@ Shader "VRtist/Grass"
                     float4 interp6 : TEXCOORD6;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -3446,6 +3464,7 @@ Shader "VRtist/Grass"
                     output.interp6.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -3462,6 +3481,7 @@ Shader "VRtist/Grass"
                     output.color = input.interp6.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -4014,6 +4034,7 @@ Shader "VRtist/Grass"
                     float4 texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -4033,6 +4054,7 @@ Shader "VRtist/Grass"
                     float4 interp0 : TEXCOORD0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
+                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -4043,6 +4065,7 @@ Shader "VRtist/Grass"
                     output.interp0.xyzw =  input.texCoord0;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -4053,6 +4076,7 @@ Shader "VRtist/Grass"
                     output.texCoord0 = input.interp0.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
+                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
