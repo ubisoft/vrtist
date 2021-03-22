@@ -32,10 +32,10 @@
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class GrassComputeRenderer : MonoBehaviour
+public class GrassRenderer : MonoBehaviour
 {
     [Header("Components")]
-    [SerializeField] private ComputeGrassPainter grassPainter = default;
+    [SerializeField] private GrassPainter grassPainter = default;
     [SerializeField] private Mesh sourceMesh = default;
     [SerializeField] private Material material = default;
     [SerializeField] private ComputeShader computeShader = default;
@@ -119,8 +119,7 @@ public class GrassComputeRenderer : MonoBehaviour
     private void OnValidate()
     {
         // Set up components
-        //m_MainCamera = Camera.main;
-        grassPainter = GetComponent<ComputeGrassPainter>();
+        grassPainter = GetComponent<GrassPainter>();
         sourceMesh = grassPainter.mesh;
     }
 
@@ -193,14 +192,14 @@ public class GrassComputeRenderer : MonoBehaviour
 
         // Set buffer data
         m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_SourceVertices", m_SourceVertBuffer);
-        m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_DrawTriangles", m_DrawBuffer);
+        m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_GrassTriangles", m_DrawBuffer);
         m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_IndirectArgsBuffer", m_ArgsBuffer);
         // Set vertex data
         m_InstantiatedComputeShader.SetInt("_NumSourceVertices", numSourceVertices);
         m_InstantiatedComputeShader.SetInt("_MaxBladesPerVertex", maxBladesPerVertex);
         m_InstantiatedComputeShader.SetInt("_MaxSegmentsPerBlade", maxSegmentsPerBlade);
 
-        m_InstantiatedMaterial.SetBuffer("_DrawTriangles", m_DrawBuffer);
+        m_InstantiatedMaterial.SetBuffer("_GrassTriangles", m_DrawBuffer);
         m_InstantiatedMaterial.SetShaderPassEnabled("ShadowCaster", castShadow);
 
         if (overrideMaterial)

@@ -2,15 +2,15 @@
 using UnityEditorInternal;
 using UnityEngine;
 
-[CustomEditor(typeof(ComputeGrassPainter))]
-public class ComputeGrassPainterEditor : Editor
+[CustomEditor(typeof(GrassPainter))]
+public class GrassPainterEditor : Editor
 {
-    ComputeGrassPainter grassPainter;
+    GrassPainter grassPainter;
     readonly string[] toolbarStrings = { "Add", "Remove", "Edit" };
 
     private void OnEnable()
     {
-        grassPainter = (ComputeGrassPainter)target;
+        grassPainter = (GrassPainter)target;
     }
 
     void OnSceneGUI()

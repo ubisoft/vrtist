@@ -46,21 +46,21 @@ struct SourceVertex
 StructuredBuffer<SourceVertex> _SourceVertices;
 
 // This describes a vertex on the generated mesh
-struct DrawVertex
+struct GrassVertex
 {
     float3 positionWS; // The position in world space
     float2 uv;
 };
 
 // A triangle on the generated mesh
-struct DrawTriangle
+struct GrassTriangle
 {
     float3 normalOS;
-    DrawVertex vertices[3]; // The three points on the triangle
+    GrassVertex vertices[3]; // The three points on the triangle
 };
 
 // A buffer containing the generated mesh
-AppendStructuredBuffer<DrawTriangle> _DrawTriangles;
+AppendStructuredBuffer<GrassTriangle> _GrassTriangles;
 
 // The indirect draw call args, as described in the renderer script
 struct IndirectArgs
@@ -149,9 +149,9 @@ float3x3 AngleAxis3x3(float angle, float3 axis)
 }
 
 // Generate each grass vertex for output triangles
-DrawVertex GrassVertex(float3 positionOS, float width, float height, float offset, float curve, float2 uv, float3x3 rotation)
+GrassVertex GenerateGrassVertex(float3 positionOS, float width, float height, float offset, float curve, float2 uv, float3x3 rotation)
 {
-    DrawVertex output = (DrawVertex)0;
+    GrassVertex output = (GrassVertex)0;
 
     float3 newPosOS = positionOS + mul(rotation, float3(width, height, curve) + float3(0, 0, offset));
     output.positionWS = mul(_LocalToWorld, float4(newPosOS, 1)).xyz;
@@ -217,13 +217,12 @@ void Main(uint3 id : SV_DispatchThreadID)
     int numSegmentsPerBlade = min(GRASS_SEGMENTS, max(1, _MaxSegmentsPerBlade));
     int numTrianglesPerBlade = (numSegmentsPerBlade - 1) * 2 + 1;
 
-    DrawVertex drawVertices[GRASS_NUM_VERTICES_PER_BLADE];
+    GrassVertex grassVertices[GRASS_NUM_VERTICES_PER_BLADE];
 
     for (int j = 0; j < numBladesPerVertex * distanceFade; ++j)
     {
         // set rotation and radius of the blades
-        float3x3 facingRotationMatrix = AngleAxis3x3(
-            rand(sv.positionOS.xyz) * TWO_PI + j, float3(0, 1, -0.1));
+        float3x3 facingRotationMatrix = AngleAxis3x3(rand(sv.positionOS.xyz) * TWO_PI + j, float3(0, 1, -0.1));
         float3x3 transformationMatrix = facingRotationMatrix;
         float bladeRadius = j / (float)numBladesPerVertex;
         float offset = (1 - bladeRadius) * _BladeRadius;
@@ -253,33 +252,25 @@ void Main(uint3 id : SV_DispatchThreadID)
             // ----------------------------------------
 
             // Append First Vertex
-            drawVertices[i * 2] = GrassVertex(newPos, segmentWidth, segmentHeight,
-                offset, segmentForward, float2(0, t),
-                transformMatrix);
-            // drawVertices[i * 2] = worldPos + float3(0.2 * (i + 1), 0.2 * (i + 1), 0);  // for testing
+            grassVertices[i * 2] = GenerateGrassVertex(newPos, segmentWidth, segmentHeight, offset, segmentForward, float2(0, t), transformMatrix);
 
             // Append Second Vertex
-            drawVertices[i * 2 + 1] = GrassVertex(newPos, -segmentWidth, segmentHeight,
-                offset, segmentForward, float2(1, t),
-                transformMatrix);
-            // drawVertices[i * 2 + 1] = worldPos + float3(-0.2 * (i + 1), 0.2 * (i + 1), 0);  // for testing
+            grassVertices[i * 2 + 1] = GenerateGrassVertex(newPos, -segmentWidth, segmentHeight, offset, segmentForward, float2(1, t), transformMatrix);
         }
 
         // Append Top Vertex
         float3 topPosOS = v0 + float3(sphereDisp.x * 1.5, sphereDisp.y, sphereDisp.z * 1.5) + wind1;
-        drawVertices[numSegmentsPerBlade * 2] = GrassVertex(topPosOS, 0, _GrassHeight, offset, forward,
-            float2(0.5, 1), transformationMatrix);
-        // drawVertices[numSegmentsPerBlade * 2] = worldPos + float3(0, 1, 0);  // for testing
+        grassVertices[numSegmentsPerBlade * 2] = GenerateGrassVertex(topPosOS, 0, _GrassHeight, offset, forward, float2(0.5, 1), transformationMatrix);
 
         // Append Triangles
         for (int k = 0; k < numTrianglesPerBlade; ++k)
         {
-            DrawTriangle tri = (DrawTriangle)0;
+            GrassTriangle tri = (GrassTriangle)0;
             tri.normalOS = faceNormal;
-            tri.vertices[0] = drawVertices[k];
-            tri.vertices[1] = drawVertices[k + 1];
-            tri.vertices[2] = drawVertices[k + 2];
-            _DrawTriangles.Append(tri);
+            tri.vertices[0] = grassVertices[k];
+            tri.vertices[1] = grassVertices[k + 1];
+            tri.vertices[2] = grassVertices[k + 2];
+            _GrassTriangles.Append(tri);
         }
 
     }  // For loop - Blade
