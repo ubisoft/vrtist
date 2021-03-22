@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.IO;
 
@@ -38,7 +39,6 @@ namespace VRtist
 
         void Start()
         {
-            outputDir = Application.persistentDataPath + "/records/";
             activeCamera = CameraManager.Instance.GetActiveCameraComponent();
 
             CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
@@ -60,19 +60,40 @@ namespace VRtist
 
         public void StartRecording()
         {
-            if (!Directory.Exists(outputDir))
+            string path = GlobalState.Settings.videoOutputDirectory;
+
+            try
             {
-                Directory.CreateDirectory(outputDir);
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+            }
+            catch (Exception)
+            {
+                GlobalState.Instance.messageBox.ShowMessage($"Failed to create directory {path}", 5f);
+                return;
+            }
+            if (!Directory.Exists(path))
+            {
+                GlobalState.Instance.messageBox.ShowMessage($"Failed to create directory {path}", 5f);
+                return;
             }
 
             encoderConfigs.captureVideo = true;
             encoderConfigs.captureAudio = false;
-            encoderConfigs.mp4EncoderSettings.videoTargetBitrate = 10240000;
+
+            switch (CameraManager.Instance.OutputResolution)
+            {
+                case CameraManager.VideoResolution.VideoResolution_720p: encoderConfigs.mp4EncoderSettings.videoTargetBitrate = 10240000; break;
+                case CameraManager.VideoResolution.VideoResolution_1080p: encoderConfigs.mp4EncoderSettings.videoTargetBitrate = 10240000 * 2; break;
+                case CameraManager.VideoResolution.VideoResolution_2160p: encoderConfigs.mp4EncoderSettings.videoTargetBitrate = 10240000 * 8; break;
+            }
 
             CameraManager.Instance.CurrentResolution = CameraManager.Instance.videoOutputResolution;
 
             encoderConfigs.Setup(CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height, 3, (int)AnimationEngine.Instance.fps);
-            encoder = UTJ.FrameCapturer.MovieEncoder.Create(encoderConfigs, outputDir + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
+            encoder = UTJ.FrameCapturer.MovieEncoder.Create(encoderConfigs, System.IO.Path.Combine(path, GlobalState.Settings.ProjectName + "_" + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")));
             if (encoder == null || !encoder.IsValid())
             {
                 StopRecording();
