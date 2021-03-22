@@ -56,6 +56,7 @@ namespace VRtist
                         Debug.LogError("CAMERA FAILED");
                     renderTexture.name = "Camera RT";
 
+                    _ = VirtualCamera;  // be sure virtualCameraComponent exists
                     virtualCameraComponent.targetTexture = renderTexture;
                 }
                 return renderTexture;
@@ -193,7 +194,7 @@ namespace VRtist
             {
                 if (null == virtualCamera)
                 {
-                    virtualCamera = new GameObject("Camera");
+                    virtualCamera = new GameObject("Virtual Camera");
 
                     virtualCameraComponent = virtualCamera.AddComponent<Camera>();
                     _ = RenderTexture;
@@ -232,7 +233,7 @@ namespace VRtist
                     VirtualCamera.transform.localScale = Vector3.one;
                     VirtualCamera.SetActive(true);
 
-                    // apply active paramete'rs to virtual camera
+                    // apply active parameters to virtual camera
                     CameraController cameraController = activeCamera.GetComponent<CameraController>();
                     cameraController.SetVirtualCamera(virtualCameraComponent);
 
@@ -246,6 +247,7 @@ namespace VRtist
                     VirtualCamera.SetActive(false);
                 }
                 onActiveCameraChanged.Invoke(previousActiveCamera, activeCamera);
+                AssignTextures();
             }
         }
         public ActiveCameraChangedEvent onActiveCameraChanged = new ActiveCameraChangedEvent();
@@ -278,6 +280,7 @@ namespace VRtist
         public void RegisterScreen(Material material)
         {
             screens.Add(material);
+            AssignTextures();
         }
         public void UnregisterScreen(Material material)
         {
@@ -354,7 +357,7 @@ namespace VRtist
                 return;
             }
 
-            if (null == hoveredCamera && null == selectedCamera)
+            if (!GlobalState.Animation.IsAnimating() && null == hoveredCamera && null == selectedCamera)
             {
                 ActiveCamera = null;
             }
@@ -373,6 +376,12 @@ namespace VRtist
         void OnAuxiliaryChanged(GameObject previousAuxiliary, GameObject currentAuxiliary)
         {
             UpdateActiveCamera(currentAuxiliary, Selection.SelectedObjects);
+        }
+
+        public void Clear()
+        {
+            // Be sure to never delete the virtual cam when loading a new scene
+            VirtualCamera.transform.parent = Utils.FindRootGameObject("UIUtils").transform;
         }
     }
 }

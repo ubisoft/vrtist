@@ -108,6 +108,7 @@ namespace VRtist
             firstSave = true;
             CommandManager.SetSceneDirty(false);
 
+            CameraManager.Instance.Clear();
             AnimationEngine.Instance.Clear();
             Selection.Clear();
             ConstraintManager.Clear();
