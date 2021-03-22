@@ -14,7 +14,7 @@ using UnityEngine;
 // Only requires mesh filter
 [RequireComponent(typeof(MeshFilter))]  // for drawing tool graphics (e.g. solid disc)
 [ExecuteInEditMode]
-public class ComputeGrassPainter : MonoBehaviour
+public class GrassPainter : MonoBehaviour
 {
     public Mesh mesh;
     private MeshFilter filter;

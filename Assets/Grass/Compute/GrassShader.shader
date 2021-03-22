@@ -1,4 +1,4 @@
-Shader "GrassInject"
+Shader "VRtist/Grass"
     {
         Properties
         {
@@ -653,7 +653,7 @@ Shader "GrassInject"
 
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__SHADOWCASTER
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -1261,7 +1261,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassLightTransport.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__META
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -1877,7 +1877,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__SCENEPICKING
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -2497,7 +2497,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__SCENESELECTION
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -3175,7 +3175,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassMotionVectors.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -3816,7 +3816,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -4430,7 +4430,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassFullScreenDebug.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -5116,7 +5116,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -5794,7 +5794,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassGBuffer.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__GBUFFER
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
@@ -6482,7 +6482,7 @@ Shader "GrassInject"
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassForward.hlsl"
 #if USE_GRASS_SHADER_IN_PASS__FORWARD
-                #include "Assets/Grass/Compute/Inject.hlsl"
+                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
             }
