@@ -10,9 +10,15 @@
     "com.unity.textmeshpro": "3.0.3",
     "com.unity.timeline": "1.4.6",
     "com.unity.ugui": "1.0.0",
+<<<<<<< HEAD
     "com.unity.xr.management": "4.0.7",
     "com.unity.xr.oculus": "1.8.1",
     "com.unity.xr.openxr": "1.1.1",
+=======
+    "com.unity.xr.management": "3.2.17",
+    "com.unity.xr.mock-hmd": "1.3.0-preview.1",
+    "com.unity.xr.oculus": "1.6.1",
+>>>>>>> 7d5c2f91... First working version of the grass
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",

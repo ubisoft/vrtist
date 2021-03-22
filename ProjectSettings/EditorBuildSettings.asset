@@ -13,5 +13,9 @@ EditorBuildSettings:
       type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 4b8102b2c42e9a0449618c35fce8071e,
       type: 2}
+<<<<<<< HEAD
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: defeab2f1bfcde34db60b7c4acd84484,
+=======
+    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: e98e16062fa4b934fbec96b56a62f0c1,
+>>>>>>> 7d5c2f91... First working version of the grass
       type: 2}
