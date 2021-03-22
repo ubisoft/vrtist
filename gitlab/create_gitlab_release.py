@@ -44,7 +44,7 @@ args = parser.parse_args()
 
 release_description = get_release_description(VERSION_TAG[1:])
 if release_description == "":
-    logging.error(f"No release description found for version {args.version} in CHANGELOG.md")
+    logging.error(f"No release description found for version {VERSION_TAG} in CHANGELOG.md")
     exit(1)
 
 zip_file = args.zip_file
