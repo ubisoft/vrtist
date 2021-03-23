@@ -128,6 +128,7 @@ namespace VRtist
         public static ColorChangedEvent colorReleasedEvent = new ColorChangedEvent();   // on release change
         public static UnityEvent colorClickedEvent = new UnityEvent();                  // on click
 
+        // Object events
         public static GameObjectChangedEvent ObjectAddedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRemovedEvent = new GameObjectChangedEvent();
         public static GameObjectChangedEvent ObjectRenamedEvent = new GameObjectChangedEvent();

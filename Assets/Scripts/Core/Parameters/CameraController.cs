@@ -77,6 +77,10 @@ namespace VRtist
         private UITouchScreen touchScreen;
         private UIButton focusButton;
 
+        private UIButton videoOutputButton = null;
+        private bool selectionWasEnabled = true;
+        private bool isVideoOutput = false;
+
         private UILabel nameLabel = null;
 
         private LineRenderer frustumRenderer = null;
@@ -86,12 +90,26 @@ namespace VRtist
 
         private LineRenderer colimatorLineRenderer;
 
+        private Texture2D snapshot;
+        public Texture2D Snapshot
+        {
+            get
+            {
+                if (null == snapshot)
+                    snapshot = new Texture2D(CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height);
+                return snapshot;
+            }
+        }
+
         private bool hacked = false;
         private void Hack()
         {
             if (hacked)
                 return;
             hacked = true;
+
+            if (null == nameLabel)
+                Init();
             // Hack : force TMPro properties when component is enabled
             UIUtils.SetTMProStyle(nameLabel.gameObject, minSize: 6f, maxSize: 72f, alignment: TextAlignmentOptions.Center);
             nameLabel.NeedsRebuild = true;
@@ -107,12 +125,26 @@ namespace VRtist
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
         }
 
+        void StopVideoOutput()
+        {
+            isVideoOutput = false;
+            GlobalState.Animation.onFrameEvent.RemoveListener(OnFrameChanged);
+            GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnRecordStateChanged);
+            videoOutputButton.Checked = false;
+            Selection.enabled = selectionWasEnabled;
+            GlobalState.Animation.timeHooksEnabled = true;
+        }
+
+        void OnDisable()
+        {
+            if (isVideoOutput)
+            {
+                StopVideoOutput();
+            }
+        }
+
         private void Init()
         {
-            if (null == cameraObject)
-            {
-                cameraObject = gameObject.GetComponentInChildren<Camera>(true);
-            }
             if (null == frustumRenderer)
             {
                 GameObject frustum = transform.Find("Frustum").gameObject;
@@ -154,6 +186,9 @@ namespace VRtist
                 focusButton = transform.Find("Rotate/UI/FocusButton").GetComponentInChildren<UIButton>(true);
                 focusButton.onCheckEvent.AddListener(OnCheckFocusButton);
 
+                videoOutputButton = transform.Find("Rotate/UI/VideoOutputButton").GetComponentInChildren<UIButton>(true);
+                videoOutputButton.onCheckEvent.AddListener(OnCheckVideoOutputButton);
+
                 colimatorLineRenderer = gameObject.GetComponent<LineRenderer>();
                 colimatorLineRenderer.positionCount = 2;
                 colimatorLineRenderer.SetPosition(0, transform.position);
@@ -165,6 +200,8 @@ namespace VRtist
 
         private void OnTouch(Vector2 coords)
         {
+            if (null == cameraObject)
+                return;
             // Raycast from camera center to screen point aimed for
 
             float halfWidthFactor = cameraObject.sensorSize.x * 0.5f / focal;
@@ -193,6 +230,46 @@ namespace VRtist
             if (!EnableDOF && value)
             {
                 new CommandEnableDOF(gameObject, true).Submit();
+            }
+        }
+
+        private void OnCheckVideoOutputButton(bool value)
+        {
+            if (value)
+            {
+                Selection.Clear();
+                Selection.AddToSelection(gameObject);
+                selectionWasEnabled = Selection.enabled;
+                Selection.enabled = false;
+
+                GlobalState.Animation.timeHooksEnabled = false;
+                GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
+                GlobalState.Animation.onAnimationStateEvent.AddListener(OnRecordStateChanged);
+
+                isVideoOutput = true;
+
+                GlobalState.Animation.CurrentFrame = GlobalState.Animation.StartFrame;
+            }
+
+            GlobalState.Animation.OnToggleStartVideoOutput(value);
+        }
+
+        void OnRecordStateChanged(AnimationState animationState)
+        {
+            if (isVideoOutput && GlobalState.Animation.animationState != AnimationState.VideoOutput)
+            {
+                StopVideoOutput();
+            }
+        }
+
+        void OnFrameChanged(int frame)
+        {
+            if (GlobalState.Animation.animationState == AnimationState.VideoOutput)
+            {
+                if (frame == GlobalState.Animation.EndFrame)
+                {
+                    GlobalState.Animation.Pause();
+                }
             }
         }
 
@@ -246,10 +323,10 @@ namespace VRtist
         // FOCAL
         //
 
-        private float ComputeFOV()
+        private void ComputeFOV()
         {
-            cameraObject.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * focal)) * Mathf.Rad2Deg;
-            return cameraObject.fieldOfView;
+            if (null != cameraObject)
+                cameraObject.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * focal)) * Mathf.Rad2Deg;
         }
 
 
@@ -300,13 +377,25 @@ namespace VRtist
             return colimatorObject;
         }
 
+        public void SetVirtualCamera(Camera cam)
+        {
+            if (null == cam)
+            {
+                // take snapshot
+                RenderTexture.active = CameraManager.Instance.RenderTexture;
+                Snapshot.ReadPixels(new Rect(0, 0, CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height), 0, 0);
+                Snapshot.Apply();
+                GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", Snapshot);
+                RenderTexture.active = null;
+            }
+            cameraObject = cam;
+            UpdateCameraPreviewInFront(null != cam);
+            Update();
+        }
 
         void Update()
         {
             Hack();
-
-            if (null == cameraObject)
-                cameraObject = gameObject.GetComponentInChildren<Camera>(true);
 
             if (null != cameraObject)
             {
@@ -316,6 +405,7 @@ namespace VRtist
                 cameraObject.farClipPlane = far;
                 cameraObject.nearClipPlane = near;
                 cameraObject.focalLength = focal;
+                ComputeFOV();
                 if (null != colimator)
                 {
                     if (enableDOF)
@@ -329,13 +419,6 @@ namespace VRtist
                         colimatorLineRenderer.SetPosition(0, transform.position);
                         colimatorLineRenderer.SetPosition(1, colimator.position);
                         colimatorLineRenderer.enabled = true;
-
-                        if (CameraManager.Instance.ActiveCamera == gameObject)
-                        {
-                            if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                            dof.focusDistance.value = focus;
-                            dof.active = true;
-                        }
                     }
                     else
                     {
@@ -344,28 +427,23 @@ namespace VRtist
                     }
                 }
 
-                if (!enableDOF && CameraManager.Instance.ActiveCamera == gameObject)
-                {
-                    if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
-                    dof.active = false;
-                }
+                if (null == dof) Utils.FindCameraPostProcessVolume().profile.TryGet(out dof);
+                dof.focusDistance.value = focus;
+                if (dof.active != enableDOF)
+                    dof.active = enableDOF;
 
-                // Active camera
-                if (CameraManager.Instance.ActiveCamera == gameObject)
-                {
-                    if (CameraTool.showCameraFrustum && GlobalState.Settings.DisplayGizmos)
-                        DrawFrustum();
-                    else
-                        frustumRenderer.enabled = false;
-                    disabledLayer.SetActive(false);
-                }
-                // Inactive camera
+                // Active camera                
+                if (CameraTool.showCameraFrustum && GlobalState.Settings.DisplayGizmos)
+                    DrawFrustum();
                 else
-                {
                     frustumRenderer.enabled = false;
-                    if (GlobalState.Settings.DisplayGizmos)
-                        disabledLayer.SetActive(true);
-                }
+                disabledLayer.SetActive(false);
+            }
+            else
+            {
+                frustumRenderer.enabled = false;
+                if (GlobalState.Settings.DisplayGizmos)
+                    disabledLayer.SetActive(true);
             }
 
             if (null != focalSlider && focalSlider.Value != focal)

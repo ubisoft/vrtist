@@ -97,6 +97,7 @@ namespace VRtist
                     instance = new ShotManager();
                     GlobalState.Animation.RegisterTimeHook(instance);
                     GlobalState.Animation.onFrameEvent.AddListener(instance.OnFrameChanged);
+                    GlobalState.Animation.onAnimationStateEvent.AddListener(instance.OnAnimationStateChanged);
                 }
                 return instance;
             }
@@ -112,7 +113,7 @@ namespace VRtist
                 activeShotIndex = value;
                 ActiveShotChangedEvent.Invoke();
 
-                if (!montageEnabled || !GlobalState.Animation.IsAnimating())
+                if (!montageEnabled || !GlobalState.Animation.IsAnimating() && GlobalState.Animation.animationState != AnimationState.VideoOutput)
                     return;
 
                 if (activeShotIndex >= 0 && activeShotIndex < shots.Count)
@@ -123,9 +124,25 @@ namespace VRtist
                         CameraController controller = shot.camera.GetComponent<CameraController>();
                         if (null != controller) { CameraManager.Instance.ActiveCamera = controller.gameObject; }
                     }
+                    else
+                    {
+                        CameraManager.Instance.ActiveCamera = null;
+                    }
                 }
             }
         }
+
+        private bool montageEnabled = false;
+        public bool MontageEnabled
+        {
+            get { return montageEnabled; }
+            set
+            {
+                montageEnabled = value;
+                MontageModeChangedEvent.Invoke();
+            }
+        }
+        public UnityEvent MontageModeChangedEvent = new UnityEvent();
 
         public List<Shot> shots = new List<Shot>();
         public UnityEvent ShotsChangedEvent = new UnityEvent();
@@ -152,8 +169,34 @@ namespace VRtist
             return -1;
         }
 
+        void OnAnimationStateChanged(AnimationState state)
+        {
+            if (!montageEnabled || !GlobalState.Animation.timeHooksEnabled)
+                return;
+
+            switch (state)
+            {
+                case AnimationState.Playing:
+                    ActiveShotIndex = FindFirstShotIndexAt(AnimationEngine.Instance.CurrentFrame);
+                    break;
+                case AnimationState.VideoOutput:
+                    if (shots.Count == 0)
+                    {
+                        GlobalState.Animation.Pause();
+                        break;
+                    }
+                    // Force activating a camera
+                    ActiveShotIndex = 0;
+                    GlobalState.Animation.CurrentFrame = shots[0].start;
+                    break;
+            }
+        }
+
         void OnFrameChanged(int frame)
         {
+            if (!montageEnabled || !GlobalState.Animation.timeHooksEnabled)
+                return;
+
             if (ActiveShotIndex != -1)
             {
                 Shot shot = shots[ActiveShotIndex];
@@ -192,7 +235,14 @@ namespace VRtist
                 while (shotIndex < shots.Count && !shots[shotIndex].enabled)
                     shotIndex++;
                 if (shotIndex >= shots.Count)
+                {
                     shotIndex = 0;
+                    if (GlobalState.Animation.animationState == AnimationState.VideoOutput)
+                    {
+                        GlobalState.Animation.OnToggleStartVideoOutput(false);
+                        return shot.end;
+                    }
+                }
                 while (shotIndex < shots.Count && !shots[shotIndex].enabled)
                     shotIndex++;
 
@@ -298,18 +348,6 @@ namespace VRtist
         public void FireChanged()
         {
             ShotsChangedEvent.Invoke();
-        }
-
-        private bool montageEnabled = false;
-        public UnityEvent MontageModeChangedEvent = new UnityEvent();
-        public bool MontageEnabled
-        {
-            get { return montageEnabled; }
-            set
-            {
-                montageEnabled = value;
-                MontageModeChangedEvent.Invoke();
-            }
         }
 
         private static readonly Regex shotNameRegex = new Regex(@"Sh(?<number>\d{4})", RegexOptions.Compiled);

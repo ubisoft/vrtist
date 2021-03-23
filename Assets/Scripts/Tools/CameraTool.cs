@@ -74,8 +74,6 @@ namespace VRtist
         public UIDynamicList cameraList;
         private GameObject cameraItemPrefab;
 
-        public bool montage = false;
-
         private readonly List<CameraController> selectedCameraControllers = new List<CameraController>();
 
         public float Focal
@@ -251,7 +249,7 @@ namespace VRtist
         {
             if (feedbackPositionningCheckbox != null)
             {
-                feedbackPositionningCheckbox.Checked = feedbackPositioning;
+                feedbackPositionningCheckbox.Checked = feedbackPositioning && GlobalState.Settings.cameraFeedbackVisible;
                 feedbackPositionningCheckbox.Disabled = !GlobalState.Settings.cameraFeedbackVisible;
             }
 
@@ -348,13 +346,12 @@ namespace VRtist
         public void OnCheckShowCameraFeedback(bool value)
         {
             GlobalState.Settings.cameraFeedbackVisible = value;
-
             backgroundFeedback.gameObject.SetActive(value);
-
-            UICheckbox feedbackPositionningCB = feedbackPositionningCheckbox.GetComponent<UICheckbox>();
-            if (feedbackPositionningCB != null)
+            feedbackPositionningCheckbox.Disabled = !value;
+            if (!value)
             {
-                feedbackPositionningCB.Disabled = !value;
+                feedbackPositioning = false;
+                feedbackPositionningCheckbox.Checked = false;
             }
         }
 
@@ -541,6 +538,7 @@ namespace VRtist
                         value /= cameraFeedbackScaleFactor;
                     }
                     GlobalState.Settings.cameraFeedbackScaleValue = Mathf.Clamp(value, GlobalState.Settings.cameraFeedbackMinScaleValue, GlobalState.Settings.cameraFeedbackMaxScaleValue);
+                    GlobalState.Instance.cameraFeedback.GetComponent<CameraFeedback>().UpdateTransform();
                 }
             }
 
@@ -804,12 +802,6 @@ namespace VRtist
             {
                 command.Submit();
             }
-        }
-
-        public void OnSetMontage(bool montage)
-        {
-            this.montage = montage;
-            ShotManager.Instance.MontageEnabled = montage;
         }
     }
 }

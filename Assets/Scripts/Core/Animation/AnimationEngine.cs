@@ -31,8 +31,9 @@ namespace VRtist
     {
         Stopped,
         Preroll,
-        Recording,
-        Playing
+        AnimationRecording,
+        Playing,
+        VideoOutput
     };
 
     public enum Interpolation
@@ -90,6 +91,7 @@ namespace VRtist
         readonly Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
 
         readonly List<TimeHook> timeHooks = new List<TimeHook>();
+        public bool timeHooksEnabled = true;
 
         public float fps = 24f;
         float playStartTime;
@@ -133,7 +135,7 @@ namespace VRtist
             {
                 currentFrame = Mathf.Clamp(value, startFrame, endFrame);
 
-                if (animationState != AnimationState.Playing && animationState != AnimationState.Recording)
+                if (animationState != AnimationState.Playing && animationState != AnimationState.AnimationRecording)
                 {
                     EvaluateAnimations();
                     onFrameEvent.Invoke(value);
@@ -142,8 +144,6 @@ namespace VRtist
         }
 
         public bool autoKeyEnabled = false;
-
-        public UIButton playButtonShortcut;
 
         public AnimationState animationState = AnimationState.Stopped;
         public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
@@ -199,7 +199,7 @@ namespace VRtist
         private void Update()
         {
             // Find current time and frame & Animate objects
-            if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
+            if (animationState == AnimationState.Playing || animationState == AnimationState.AnimationRecording)
             {
                 // Compute new frame
                 float deltaTime = Time.time - playStartTime;
@@ -208,14 +208,17 @@ namespace VRtist
                 if (animationState == AnimationState.Playing)
                 {
                     int prevFrame = newFrame;
-                    foreach (TimeHook timeHook in timeHooks)
+                    if (timeHooksEnabled)
                     {
-                        newFrame = timeHook.HookTime(newFrame);
-                    }
-                    if (prevFrame != newFrame)
-                    {
-                        playStartFrame = newFrame;
-                        playStartTime = Time.time;
+                        foreach (TimeHook timeHook in timeHooks)
+                        {
+                            newFrame = timeHook.HookTime(newFrame);
+                        }
+                        if (prevFrame != newFrame)
+                        {
+                            playStartFrame = newFrame;
+                            playStartTime = Time.time;
+                        }
                     }
                 }
 
@@ -223,7 +226,7 @@ namespace VRtist
                 {
                     if (newFrame > endFrame)
                     {
-                        if (animationState == AnimationState.Recording)
+                        if (animationState == AnimationState.AnimationRecording)
                         {
                             // Stop recording when reaching the end of the timeline
                             newFrame = endFrame;
@@ -242,11 +245,24 @@ namespace VRtist
                     onFrameEvent.Invoke(currentFrame);
 
                     // Record
-                    if (animationState == AnimationState.Recording)
+                    if (animationState == AnimationState.AnimationRecording)
                     {
                         RecordFrame();
                     }
                 }
+            }
+
+            if (animationState == AnimationState.VideoOutput)
+            {
+                int newFrame = currentFrame + 1;
+                if (timeHooksEnabled)
+                {
+                    foreach (TimeHook timeHook in timeHooks)
+                    {
+                        newFrame = timeHook.HookTime(newFrame);
+                    }
+                }
+                CurrentFrame = newFrame;
             }
         }
 
@@ -279,7 +295,7 @@ namespace VRtist
 
         public bool IsAnimating()
         {
-            return animationState == AnimationState.Playing || animationState == AnimationState.Recording;
+            return animationState == AnimationState.Playing || animationState == AnimationState.AnimationRecording;
         }
 
         public void Clear()
@@ -519,6 +535,23 @@ namespace VRtist
             countdown.gameObject.SetActive(true);
         }
 
+        public void OnToggleStartVideoOutput(bool record)
+        {
+            if (record)
+            {
+                animationState = AnimationState.VideoOutput;
+                Selection.enabled = false;
+                onAnimationStateEvent.Invoke(animationState);
+
+                // Force rendering the first frame
+                CurrentFrame = currentFrame;
+            }
+            else
+            {
+                Pause();
+            }
+        }
+
         public void OnTogglePlayPause(bool play)
         {
             if (play) { Play(); }
@@ -541,12 +574,12 @@ namespace VRtist
                 case AnimationState.Preroll:
                     countdown.gameObject.SetActive(false);
                     break;
-                case AnimationState.Recording:
+                case AnimationState.AnimationRecording:
                     StopRecording();
                     countdown.gameObject.SetActive(false);
                     break;
-                case AnimationState.Playing:
-                    playButtonShortcut.Checked = false;  // A déplacer !!!!
+                case AnimationState.VideoOutput:
+                    Selection.enabled = true;
                     break;
             }
             animationState = AnimationState.Stopped;
@@ -557,7 +590,7 @@ namespace VRtist
         {
             playStartFrame = currentFrame;
             playStartTime = Time.time;
-            animationState = AnimationState.Recording;
+            animationState = AnimationState.AnimationRecording;
             onAnimationStateEvent.Invoke(animationState);
             preRecordInterpolation = GlobalState.Settings.interpolation;
             GlobalState.Settings.interpolation = Interpolation.Linear;

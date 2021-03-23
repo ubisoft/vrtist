@@ -50,7 +50,7 @@ namespace VRtist
 
         void Update()
         {
-            if (GlobalState.Animation.animationState != AnimationState.Recording && GlobalState.Animation.animationState != AnimationState.Playing)
+            if (GlobalState.Animation.animationState != AnimationState.AnimationRecording && GlobalState.Animation.animationState != AnimationState.Playing)
             {
                 return;
             }
@@ -59,13 +59,13 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            bool playOrRecord = GlobalState.Animation.animationState == AnimationState.Recording || GlobalState.Animation.animationState == AnimationState.Playing;
+            bool playOrRecord = GlobalState.Animation.animationState == AnimationState.AnimationRecording || GlobalState.Animation.animationState == AnimationState.Playing;
             gameObject.SetActive(playOrRecord);
 
             switch (state)
             {
                 case AnimationState.Playing: image.sprite = playImage; break;
-                case AnimationState.Recording: image.sprite = recordImage; break;
+                case AnimationState.AnimationRecording: image.sprite = recordImage; break;
             }
         }
     }
