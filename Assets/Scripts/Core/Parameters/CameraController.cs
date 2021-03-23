@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+using System.Collections;
+
 using TMPro;
 
 using UnityEngine;
@@ -78,6 +80,8 @@ namespace VRtist
         private UIButton focusButton;
 
         private UIButton videoOutputButton = null;
+        private UIButton snapshotButton = null;
+
         private bool selectionWasEnabled = true;
         private bool isVideoOutput = false;
 
@@ -98,6 +102,10 @@ namespace VRtist
                 if (null == snapshot)
                     snapshot = new Texture2D(CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height);
                 return snapshot;
+            }
+            set
+            {
+                snapshot = value;
             }
         }
 
@@ -123,14 +131,13 @@ namespace VRtist
         {
             Init();
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
+            GlobalState.Animation.onAnimationStateEvent.AddListener(OnRecordStateChanged);
         }
 
         void StopVideoOutput()
         {
             isVideoOutput = false;
             GlobalState.Animation.onFrameEvent.RemoveListener(OnFrameChanged);
-            GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnRecordStateChanged);
-            videoOutputButton.Checked = false;
             Selection.enabled = selectionWasEnabled;
             GlobalState.Animation.timeHooksEnabled = true;
         }
@@ -187,7 +194,10 @@ namespace VRtist
                 focusButton.onCheckEvent.AddListener(OnCheckFocusButton);
 
                 videoOutputButton = transform.Find("Rotate/UI/VideoOutputButton").GetComponentInChildren<UIButton>(true);
-                videoOutputButton.onCheckEvent.AddListener(OnCheckVideoOutputButton);
+                videoOutputButton.onCheckEvent.AddListener(OnCheckVideoOutput);
+
+                snapshotButton = transform.Find("Rotate/UI/SnapshotButton").GetComponentInChildren<UIButton>(true);
+                snapshotButton.onReleaseEvent.AddListener(OnSnapshot);
 
                 colimatorLineRenderer = gameObject.GetComponent<LineRenderer>();
                 colimatorLineRenderer.positionCount = 2;
@@ -233,7 +243,7 @@ namespace VRtist
             }
         }
 
-        private void OnCheckVideoOutputButton(bool value)
+        private void OnCheckVideoOutput(bool value)
         {
             if (value)
             {
@@ -244,7 +254,6 @@ namespace VRtist
 
                 GlobalState.Animation.timeHooksEnabled = false;
                 GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
-                GlobalState.Animation.onAnimationStateEvent.AddListener(OnRecordStateChanged);
 
                 isVideoOutput = true;
 
@@ -254,10 +263,41 @@ namespace VRtist
             GlobalState.Animation.OnToggleStartVideoOutput(value);
         }
 
+        void OnSnapshot()
+        {
+            var resolution = CameraManager.Instance.CurrentResolution;
+
+            IEnumerator DoSnapshot()
+            {
+                // Wait for 2 frames (sometimes the rendering is wrong)
+                yield return null;
+                yield return new WaitForEndOfFrame();
+                Snapshot = null;
+                TakeSnapshot();
+                Utils.SavePNG(Snapshot, System.IO.Path.Combine(GlobalState.Settings.snapshotsDirectory, GlobalState.Settings.ProjectName + "_" + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png"));
+                Snapshot = null;
+                CameraManager.Instance.CurrentResolution = resolution;
+            }
+
+            Selection.Clear();
+            Selection.AddToSelection(gameObject);
+            CameraManager.Instance.CurrentResolution = CameraManager.Instance.videoOutputResolution;
+            SoundManager.Instance.PlayUISound(SoundManager.Sounds.Snapshot);
+            StartCoroutine(DoSnapshot());
+        }
+
         void OnRecordStateChanged(AnimationState animationState)
         {
+            bool buttonsDisabled = GlobalState.Animation.animationState == AnimationState.VideoOutput;
+            snapshotButton.Disabled = buttonsDisabled;
+            inFrontButton.Disabled = buttonsDisabled;
+            focusButton.Disabled = buttonsDisabled;
+            focalSlider.Disabled = buttonsDisabled;
+
+            videoOutputButton.Disabled = buttonsDisabled && !isVideoOutput;
             if (isVideoOutput && GlobalState.Animation.animationState != AnimationState.VideoOutput)
             {
+                videoOutputButton.Disabled = false;
                 StopVideoOutput();
             }
         }
@@ -377,16 +417,20 @@ namespace VRtist
             return colimatorObject;
         }
 
+        private void TakeSnapshot()
+        {
+            RenderTexture.active = CameraManager.Instance.RenderTexture;
+            Snapshot.ReadPixels(new Rect(0, 0, CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height), 0, 0);
+            Snapshot.Apply();
+            GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", Snapshot);
+            RenderTexture.active = null;
+        }
+
         public void SetVirtualCamera(Camera cam)
         {
             if (null == cam)
             {
-                // take snapshot
-                RenderTexture.active = CameraManager.Instance.RenderTexture;
-                Snapshot.ReadPixels(new Rect(0, 0, CameraManager.Instance.CurrentResolution.width, CameraManager.Instance.CurrentResolution.height), 0, 0);
-                Snapshot.Apply();
-                GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", Snapshot);
-                RenderTexture.active = null;
+                TakeSnapshot();
             }
             cameraObject = cam;
             UpdateCameraPreviewInFront(null != cam);

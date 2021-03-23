@@ -5,6 +5,7 @@
 - Camera touchscreen for focus
 - Camera focus and aperture are now animatable
 - Video output (Shot manager & Cameras)
+- Camera Snapshot
 
 ## Fixes
 

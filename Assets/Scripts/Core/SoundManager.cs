@@ -37,7 +37,8 @@ namespace VRtist
             OpenWindow,
             CloseWindow,
             ClickIn,
-            ClickOut
+            ClickOut,
+            Snapshot
         }
 
         private AudioSource audioSource;
@@ -60,6 +61,7 @@ namespace VRtist
             clips[Sounds.CloseWindow] = Resources.Load<AudioClip>("Sounds/ui_casual_pops_close");
             clips[Sounds.ClickIn] = Resources.Load<AudioClip>("Sounds/click-in");
             clips[Sounds.ClickOut] = Resources.Load<AudioClip>("Sounds/click-out");
+            clips[Sounds.Snapshot] = Resources.Load<AudioClip>("Sounds/snapshot");
         }
 
         public void PlayUISound(Sounds sound, bool force = false)

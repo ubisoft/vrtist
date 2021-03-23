@@ -156,6 +156,7 @@ namespace VRtist
             height = CameraManager.resolution1080p.height
         };
         public string videoOutputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) + "/VRtist";
+        public string snapshotsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "/VRtist";
 
         [Range(1.0f, 100.0f)]
         public float scaleSpeed = 50f;
@@ -241,6 +242,7 @@ namespace VRtist
 
             videoOutputResolution = CameraManager.resolution1080p;
             videoOutputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) + "/VRtist";
+            snapshotsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "/VRtist";
 
             assetBankDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VRtist";
             projectName = "myScene";

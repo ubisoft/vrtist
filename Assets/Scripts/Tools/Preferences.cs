@@ -85,6 +85,7 @@ namespace VRtist
         private UIButton midResButton;
         private UIButton highResButton;
         private UILabel videoOutputDirectoryLabel;
+        private UILabel snapshotsDirectoryLabel;
 
         private void Start()
         {
@@ -131,6 +132,7 @@ namespace VRtist
             midResButton = videoSubPanel.transform.Find("MidResButton").GetComponent<UIButton>();
             highResButton = videoSubPanel.transform.Find("HighResButton").GetComponent<UIButton>();
             videoOutputDirectoryLabel = videoSubPanel.transform.Find("VideoOutputDirectory").GetComponent<UILabel>();
+            snapshotsDirectoryLabel = videoSubPanel.transform.Find("SnapshotsDirectory").GetComponent<UILabel>();
 
             saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
@@ -173,6 +175,7 @@ namespace VRtist
             midResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution1080p;
             highResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution2160p;
             SetVideoOutputDirectory(GlobalState.Settings.videoOutputDirectory);
+            SetSnapshotsDirectory(GlobalState.Settings.snapshotsDirectory);
 
             ToolsUIManager.Instance.InitPaletteState();
             ToolsUIManager.Instance.InitDopesheetState();
@@ -484,6 +487,17 @@ namespace VRtist
         {
             videoOutputDirectoryLabel.Text = value;
             GlobalState.Settings.videoOutputDirectory = value;
+        }
+
+        public void OnEditSnapshotsDirectory()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(SetSnapshotsDirectory, snapshotsDirectoryLabel.transform, snapshotsDirectoryLabel.Text);
+        }
+
+        private void SetSnapshotsDirectory(string value)
+        {
+            snapshotsDirectoryLabel.Text = value;
+            GlobalState.Settings.snapshotsDirectory = value;
         }
     }
 }
