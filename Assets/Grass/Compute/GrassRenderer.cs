@@ -117,6 +117,13 @@ public class GrassRenderer : MonoBehaviour
     // 3: and start instance location if using a Graphics Buffer
     private int[] argsBufferReset = new int[] { 0, 2, 0, 0 }; // 2 instances for StereoInstancing.
 
+    public void FixMeshRef()
+    {
+        OnDisable();
+        OnValidate();
+        OnEnable();
+    }
+
     private void OnValidate()
     {
         // Set up components
