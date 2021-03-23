@@ -31,15 +31,16 @@ PackedVaryingsMeshToPS GrassVert(VertexShaderInput input)
     GrassTriangle tri = _GrassTriangles[input.vertexID / 3];
     GrassVertex vertex = tri.vertices[input.vertexID % 3];
 
-    float3 positionRWS = GetCameraRelativePositionWS(vertex.positionWS);
-    float3 lightPosition = float3(1, 1, 1); // TMP
-    float3 perpendicularAngle = float3(0, 0, 1);
-    float3 faceNormal = cross(perpendicularAngle, tri.normalOS) * lightPosition;
+    //float3 positionRWS = GetCameraRelativePositionWS(vertex.positionWS);
+    //float3 lightPosition = float3(1, 1, 1); // TMP
+    //float3 perpendicularAngle = float3(0, 0, 1);
+    //float3 faceNormal = cross(perpendicularAngle, tri.normalOS) * lightPosition;
+    float3 faceNormal = tri.normalOS;
 
     // 2) CALL the HDRP vertex shader with the extracted info.
     AttributesMesh inputMesh = (AttributesMesh)0;
 
-    inputMesh.positionOS = TransformWorldToObject(positionRWS);
+    inputMesh.positionOS = vertex.positionWS;// TransformWorldToObject(positionRWS);
 
 #if defined(ATTRIBUTES_NEED_NORMAL)
     inputMesh.normalOS = faceNormal;

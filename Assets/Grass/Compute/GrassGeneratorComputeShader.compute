@@ -141,9 +141,9 @@ GrassVertex GenerateGrassVertex(float3 positionOS, float width, float height, fl
 
     //float3 newPosOS = positionOS + mul(rotation, float3(width, height, offset + bending));
     float3 newPosOS = positionOS + mul(rotation, mul(normalToObject, float3(width, height, offset + bending)));
-    output.positionWS = mul(_LocalToWorld, float4(newPosOS, 1)).xyz;
+    //output.positionWS = mul(_LocalToWorld, float4(newPosOS, 1)).xyz;
+    output.positionWS = newPosOS;
     output.uv = uv;
-    // shadows is exactly as positionWS (no need to create a new variable)
     return output;
 }
 
@@ -195,7 +195,7 @@ void Main(uint3 id : SV_DispatchThreadID)
           cos(_Time.x * _WindSpeed + v0.x * 2) 
         + cos(_Time.x * _WindSpeed + v0.z));
 
-    wind1 = mul(normalToObject, wind1);
+    wind1 = mul(normalToObject, wind1); // wind applies in normal space for the moment.
     wind1 *= _WindStrength;
 
     // Interactivity
@@ -223,7 +223,7 @@ void Main(uint3 id : SV_DispatchThreadID)
     for (int j = 0; j < numBladesPerVertex; ++j)
     {
         // set rotation and radius of the blades
-        float3x3 facingRotationMatrix = AngleAxis3x3(rand(sv.positionOS.xyz) * TWO_PI + j, sv.normalOS);// float3(0, 1, -0.1));
+        float3x3 facingRotationMatrix = AngleAxis3x3(rand(sv.positionOS.xyz) * TWO_PI + j, sv.normalOS);
         float3x3 transformationMatrix = facingRotationMatrix;
         float tj = j / (float)numBladesPerVertex;
         float distanceFromSourceVertex = (1 - tj) * _BladeRadius; // spiral, each blade is furthur away from sourceVertex.
@@ -250,9 +250,6 @@ void Main(uint3 id : SV_DispatchThreadID)
             float3 newPos = (i == 0)
                 ? v0
                 : v0 + (float3(sphereDisp.x, sphereDisp.y, sphereDisp.z) + wind1) * ti;
-            
-            // NO WIND
-            //float3 newPos = v0;
 
             // ----------------------------------------
 
@@ -264,16 +261,15 @@ void Main(uint3 id : SV_DispatchThreadID)
         }
 
         // Append Top Vertex
-        // TODO: not only in Y+ place
-        float3 topPosOS = v0 + float3(sphereDisp.x * 1.5, sphereDisp.y * 1.5, sphereDisp.z * 1.5) + wind1;
-        //float3 topPosOS = v0;
+        //float3 topPosOS = v0 + float3(sphereDisp.x * 1.5, sphereDisp.y * 1.5, sphereDisp.z * 1.5) + wind1;
+        float3 topPosOS = v0 + sphereDisp + wind1;
         grassVertices[numSegmentsPerBlade * 2] = GenerateGrassVertex(topPosOS, 0, grassHeight, distanceFromSourceVertex, forward * sv.uv.y, float2(0.5, 1), transformationMatrix, normalToObject);
 
         // Append Triangles
         for (int k = 0; k < numTrianglesPerBlade; ++k)
         {
             GrassTriangle tri = (GrassTriangle)0;
-            tri.normalOS = faceNormal; // pas bon du tout vu comment est calculee faceNormal.
+            tri.normalOS = upNormal; // using this for the whole blade, we have a cartoon rendering that behaves correctly with lights.
             tri.vertices[0] = grassVertices[k];
             if (k % 2 == 0)
             {

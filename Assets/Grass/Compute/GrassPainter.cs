@@ -31,7 +31,7 @@ public class GrassPainter : MonoBehaviour
     List<Vector2> grassSizeMultipliers = new List<Vector2>();
 
     // Grass Limit
-    public int grassLimit = 10000;
+    public int grassLimit = 100000;
     public int currentGrassAmount = 0;
 
     // Paint Status
