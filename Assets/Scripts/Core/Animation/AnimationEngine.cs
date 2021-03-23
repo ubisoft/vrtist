@@ -143,8 +143,6 @@ namespace VRtist
 
         public bool autoKeyEnabled = false;
 
-        public UIButton playButtonShortcut;
-
         public AnimationState animationState = AnimationState.Stopped;
         public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
         public IntChangedEvent onFrameEvent = new IntChangedEvent();
@@ -568,9 +566,6 @@ namespace VRtist
                 case AnimationState.AnimationRecording:
                     StopRecording();
                     countdown.gameObject.SetActive(false);
-                    break;
-                case AnimationState.Playing:
-                    playButtonShortcut.Checked = false;  // A déplacer !!!!
                     break;
                 case AnimationState.VideoOutput:
                     Selection.enabled = true;
