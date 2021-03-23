@@ -56,6 +56,8 @@ public class GrassRenderer : MonoBehaviour
     [Header("Interactor")]
     public float affectRadius = 0.3f;
     public float affectStrength = 5;
+    public Transform interactor;
+
     // LOD
     [Header("LOD")]
     public float minFadeDistance = 40;
@@ -68,8 +70,7 @@ public class GrassRenderer : MonoBehaviour
     // Other
     [Header("Other")]
     public bool castShadow;
-
-    public Camera m_MainCamera;
+    public Camera mainCamera;
 
     private readonly int m_AllowedBladesPerVertex = 4;
     private readonly int m_AllowedSegmentsPerBlade = 5;
@@ -294,10 +295,13 @@ public class GrassRenderer : MonoBehaviour
         // Compute Shader
         m_InstantiatedComputeShader.SetMatrix("_LocalToWorld", transform.localToWorldMatrix);
         m_InstantiatedComputeShader.SetFloat("_Time", Time.time);
-        m_InstantiatedComputeShader.SetVector("_CameraPositionWS", m_MainCamera.transform.position);
+        if (mainCamera != null)
+            m_InstantiatedComputeShader.SetVector("_CameraPositionWS", mainCamera.transform.position);
+        if (interactor != null)
+            m_InstantiatedComputeShader.SetVector("_PositionMoving", interactor.position);
 
-        m_InstantiatedComputeShader.SetFloat("_GrassHeight", grassHeight);
-        m_InstantiatedComputeShader.SetFloat("_GrassWidth", grassWidth);
+        m_InstantiatedComputeShader.SetFloat("_BaseGrassHeight", grassHeight);
+        m_InstantiatedComputeShader.SetFloat("_BaseGrassWidth", grassWidth);
         m_InstantiatedComputeShader.SetFloat("_GrassRandomHeight", grassRandomHeight);
 
         m_InstantiatedComputeShader.SetFloat("_WindSpeed", windSpeed);

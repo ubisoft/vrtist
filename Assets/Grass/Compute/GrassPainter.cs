@@ -189,6 +189,7 @@ public class GrassPainter : MonoBehaviour
                     // place random in radius, except for first one
                     if (k != 0)
                     {
+                        // TODO: use the NORMAL plane, not Y+
                         origin.x += r * Mathf.Cos(t);
                         origin.y += r * Mathf.Sin(t);
                     }
