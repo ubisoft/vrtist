@@ -51,6 +51,8 @@ namespace VRtist
         ScaleX, ScaleY, ScaleZ,
         Power, ColorR, ColorG, ColorB,
         CameraFocal,
+        CameraFocus,
+        CameraAperture,
         Unknown
     }
 
@@ -314,6 +316,8 @@ namespace VRtist
                 Color color = Color.white;
 
                 float cameraFocal = -1;
+                float cameraFocus = -1;
+                float cameraAperture = -1;
 
                 foreach (Curve curve in animationSet.curves.Values)
                 {
@@ -339,6 +343,8 @@ namespace VRtist
                         case AnimatableProperty.ColorB: color.b = value; break;
 
                         case AnimatableProperty.CameraFocal: cameraFocal = value; break;
+                        case AnimatableProperty.CameraFocus: cameraFocus = value; break;
+                        case AnimatableProperty.CameraAperture: cameraAperture = value; break;
                     }
                 }
 
@@ -353,10 +359,15 @@ namespace VRtist
                     controller.Color = color;
                 }
 
-                if (cameraFocal != -1)
+                if (cameraFocal != -1 || cameraFocus != -1 || cameraAperture != -1)
                 {
                     CameraController controller = trans.GetComponent<CameraController>();
-                    controller.focal = cameraFocal;
+                    if (cameraFocal != -1)
+                        controller.focal = cameraFocal;
+                    if (cameraFocus != -1)
+                        controller.Focus = cameraFocus;
+                    if (cameraAperture != -1)
+                        controller.aperture = cameraAperture;
                 }
             }
         }
@@ -585,10 +596,14 @@ namespace VRtist
                     }
 
                     float cameraFocal = -1;
+                    float cameraFocus = -1;
+                    float cameraAperture = -1;
                     CameraController cameraController = selected.GetComponent<CameraController>();
                     if (null != cameraController)
                     {
                         cameraFocal = cameraController.focal;
+                        cameraFocus = cameraController.Focus;
+                        cameraAperture = cameraController.aperture;
                     }
 
                     switch (curve.property)
@@ -611,6 +626,8 @@ namespace VRtist
                         case AnimatableProperty.ColorB: curve.AppendKey(new AnimationKey(currentFrame, color.b)); break;
 
                         case AnimatableProperty.CameraFocal: curve.AppendKey(new AnimationKey(currentFrame, cameraFocal)); break;
+                        case AnimatableProperty.CameraFocus: curve.AppendKey(new AnimationKey(currentFrame, cameraFocus)); break;
+                        case AnimatableProperty.CameraAperture: curve.AppendKey(new AnimationKey(currentFrame, cameraAperture)); break;
                     }
                 }
             }
