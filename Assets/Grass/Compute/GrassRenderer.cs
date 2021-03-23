@@ -75,8 +75,6 @@ public class GrassRenderer : MonoBehaviour
     private readonly int m_AllowedBladesPerVertex = 4;
     private readonly int m_AllowedSegmentsPerBlade = 5;
 
-    private int totalNbVertexCount = 0;
-
     // The structure to send to the compute shader
     // This layout kind assures that the data is laid out sequentially
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -119,7 +117,6 @@ public class GrassRenderer : MonoBehaviour
 
     public void FixMeshRef()
     {
-        OnDisable();
         OnValidate();
         OnEnable();
     }
@@ -290,11 +287,6 @@ public class GrassRenderer : MonoBehaviour
         // DrawProceduralIndirect queues a draw call up for our generated mesh
         Graphics.DrawProceduralIndirect(m_InstantiatedMaterial, bounds, MeshTopology.Triangles,
             m_ArgsBuffer, 0, null, null, UnityEngine.Rendering.ShadowCastingMode.On, true, gameObject.layer);
-
-        //int GRASS_SEGMENTS = 5;
-        //int GRASS_NUM_VERTICES_PER_BLADE = (GRASS_SEGMENTS * 2 + 1);
-        //totalNbVertexCount = sourceMesh.vertexCount * GRASS_NUM_VERTICES_PER_BLADE * m_AllowedBladesPerVertex;
-        //Graphics.DrawProcedural(m_InstantiatedMaterial, bounds, MeshTopology.Triangles, totalNbVertexCount);
     }
 
     private void SetGrassData()
@@ -305,7 +297,7 @@ public class GrassRenderer : MonoBehaviour
         if (mainCamera != null)
             m_InstantiatedComputeShader.SetVector("_CameraPositionWS", mainCamera.transform.position);
         if (interactor != null)
-            m_InstantiatedComputeShader.SetVector("_PositionMoving", interactor.position);
+            m_InstantiatedComputeShader.SetVector("_PositionMovingWS", interactor.position);
 
         m_InstantiatedComputeShader.SetFloat("_BaseGrassHeight", grassHeight);
         m_InstantiatedComputeShader.SetFloat("_BaseGrassWidth", grassWidth);
