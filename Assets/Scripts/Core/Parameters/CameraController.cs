@@ -60,7 +60,12 @@ namespace VRtist
         public bool EnableDOF
         {
             get { return enableDOF; }
-            set { enableDOF = value; parameterChanged.Invoke(); }
+            set
+            {
+                enableDOF = value;
+                UpdateDOFGizmo();
+                parameterChanged.Invoke();
+            }
         }
         public UnityEvent parameterChanged = new UnityEvent();
 
@@ -132,6 +137,7 @@ namespace VRtist
             Init();
             GlobalState.ObjectRenamedEvent.AddListener(OnCameraRenamed);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnRecordStateChanged);
+            CameraManager.Instance.onActiveCameraChanged.AddListener(OnActiveCameraChanged);
         }
 
         void StopVideoOutput()
@@ -414,6 +420,8 @@ namespace VRtist
             ColimatorController colimatorController = colimatorObject.GetComponent<ColimatorController>();
             colimatorController.isVRtist = true;
 
+            UpdateDOFGizmo();
+
             return colimatorObject;
         }
 
@@ -437,6 +445,19 @@ namespace VRtist
             Update();
         }
 
+        void UpdateDOFGizmo()
+        {
+            if (null != colimator)
+                colimator.gameObject.SetActive(EnableDOF && CameraManager.Instance.ActiveCamera == gameObject && GlobalState.Settings.DisplayGizmos);
+
+            colimatorLineRenderer.enabled = EnableDOF && CameraManager.Instance.ActiveCamera == gameObject && GlobalState.Settings.DisplayGizmos;
+        }
+
+        void OnActiveCameraChanged(GameObject oldCamera, GameObject newCamera)
+        {
+            UpdateDOFGizmo();
+        }
+
         void Update()
         {
             Hack();
@@ -457,17 +478,10 @@ namespace VRtist
                         cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
                         focus = Vector3.Distance(colimator.position, transform.position);
 
-                        colimator.gameObject.SetActive(GlobalState.Settings.DisplayGizmos);
                         colimatorLineRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
                         colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
                         colimatorLineRenderer.SetPosition(0, transform.position);
                         colimatorLineRenderer.SetPosition(1, colimator.position);
-                        colimatorLineRenderer.enabled = true;
-                    }
-                    else
-                    {
-                        colimator.gameObject.SetActive(false);
-                        colimatorLineRenderer.enabled = false;
                     }
                 }
 
