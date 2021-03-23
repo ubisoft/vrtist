@@ -53,6 +53,8 @@ namespace VRtist
             if (null != controller)
             {
                 new CommandAddKeyframe(gObject, AnimatableProperty.CameraFocal, frame, controller.focal, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.CameraFocus, frame, controller.Focus, interpolation).Submit();
+                new CommandAddKeyframe(gObject, AnimatableProperty.CameraAperture, frame, controller.aperture, interpolation).Submit();
             }
             else if (null != lcontroller)
             {
