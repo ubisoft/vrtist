@@ -63,7 +63,8 @@ namespace VRtist
                 if (value)
                 {
                     CreateColimator(camera);
-                    SceneManager.SetObjectTransform(cameraController.colimator.gameObject, new Vector3(0, 0, -cameraController.Focus), cameraController.colimator.localRotation, cameraController.colimator.localScale);
+                    Vector3 globalColimatorPosition = cameraController.transform.position - cameraController.transform.forward * cameraController.Focus;
+                    SceneManager.SetObjectTransform(cameraController.colimator.gameObject, cameraController.transform.InverseTransformPoint(globalColimatorPosition), cameraController.colimator.localRotation, cameraController.colimator.localScale);
                     SceneManager.SendCameraInfo(camera.transform);
                 }
             }
@@ -73,7 +74,8 @@ namespace VRtist
                 {
                     cameraController.colimator.gameObject.SetActive(true);
                     SceneManager.RestoreObject(cameraController.colimator.gameObject, camera.transform);
-                    SceneManager.SetObjectTransform(cameraController.colimator.gameObject, new Vector3(0, 0, -cameraController.Focus), cameraController.colimator.localRotation, cameraController.colimator.localScale);
+                    Vector3 globalColimatorPosition = cameraController.transform.position - cameraController.transform.forward * cameraController.Focus;
+                    SceneManager.SetObjectTransform(cameraController.colimator.gameObject, cameraController.transform.InverseTransformPoint(globalColimatorPosition), cameraController.colimator.localRotation, cameraController.colimator.localScale);
                     SceneManager.SendCameraInfo(camera.transform);
                 }
                 else

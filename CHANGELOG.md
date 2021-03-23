@@ -6,6 +6,7 @@
 - Camera focus and aperture are now animatable
 - Video output (Shot manager & Cameras)
 - Camera Snapshot
+- Collimator is now hidden when camera is not active
 
 ## Fixes
 
