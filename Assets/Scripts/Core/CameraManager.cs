@@ -137,6 +137,7 @@ namespace VRtist
                 }
                 if (null != emptyTexture)
                 {
+                    Texture2D.Destroy(emptyTexture);
                     emptyTexture = null;
                 }
 
