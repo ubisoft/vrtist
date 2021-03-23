@@ -3,6 +3,7 @@
 ## Features
 
 - Camera touchscreen for focus
+- Camera focus and aperture are now animatable
 - Video output (Shot manager & Cameras)
 
 ## Fixes
