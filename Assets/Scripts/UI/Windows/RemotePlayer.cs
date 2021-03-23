@@ -48,6 +48,7 @@ namespace VRtist
             {
                 case AnimationState.Playing: playButton.Checked = true; break;
                 case AnimationState.AnimationRecording: recordButton.Checked = true; playButton.Checked = true; break;
+                case AnimationState.VideoOutput: playButton.Checked = true; break;
             }
         }
 

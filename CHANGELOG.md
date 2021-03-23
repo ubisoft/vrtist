@@ -8,7 +8,8 @@
 ## Fixes
 
 - Lobby project list buttons states
-- Camera feedback is now always visible (even if no camera is active)
+- Camera feedback is now always visible (even if no camera is active - only when it is activated)
+- Camera snapshot for cameras list when loading a scene
 
 # 0.1.0
 
