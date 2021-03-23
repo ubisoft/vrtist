@@ -135,11 +135,12 @@ float3x3 AngleAxis3x3(float angle, float3 axis)
 }
 
 // Generate each grass vertex for output triangles
-GrassVertex GenerateGrassVertex(float3 positionOS, float width, float height, float offset, float curve, float2 uv, float3x3 rotation)
+GrassVertex GenerateGrassVertex(float3 positionOS, float width, float height, float offset, float bending, float2 uv, float3x3 rotation, float3x3 normalToObject)
 {
     GrassVertex output = (GrassVertex)0;
 
-    float3 newPosOS = positionOS + mul(rotation, float3(width, height, curve) + float3(0, 0, offset));
+    //float3 newPosOS = positionOS + mul(rotation, float3(width, height, offset + bending));
+    float3 newPosOS = positionOS + mul(rotation, mul(normalToObject, float3(width, height, offset + bending)));
     output.positionWS = mul(_LocalToWorld, float4(newPosOS, 1)).xyz;
     output.uv = uv;
     // shadows is exactly as positionWS (no need to create a new variable)
@@ -161,31 +162,40 @@ void Main(uint3 id : SV_DispatchThreadID)
     SourceVertex sv = _SourceVertices[id.x];
     float widthMultiplier = sv.uv.x;
     float heightMultiplier = sv.uv.y;
+    float3 upNormal = sv.normalOS;
 
+    // jitter the amount of bending.
     float forward = rand(sv.positionOS.yyz) * _BladeForward;
 
-    // TODO: better perpendicular normal, surface is not always Y+
-    float3 perpendicularAngle = float3(0, 0, 1);
-    float3 faceNormal = cross(perpendicularAngle, sv.normalOS);  // multiply GetMainLight().direction in later stage
+    // upNormal, faceNormal and sideNormal make a local frame for the grassblades.
+    float3 arbitraryVector1 = float3(0, 0, 1);
+    float3 arbitraryVector2 = float3(0, 1, 0);
+    float dotPerp1 = abs(dot(arbitraryVector1, upNormal));
+    float3 faceNormal = normalize(cross(dotPerp1 > 0.8 ? arbitraryVector2 : arbitraryVector1, upNormal));
+    float3 sideNormal = normalize(cross(upNormal, faceNormal));
+    float3x3 normalToObject = float3x3(
+        faceNormal.x, upNormal.x, sideNormal.x,
+        faceNormal.y, upNormal.y, sideNormal.y,
+        faceNormal.z, upNormal.z, sideNormal.z);
 
     float3 worldPos = mul(_LocalToWorld, float4(sv.positionOS, 1)).xyz;
 
     // Camera Distance for culling
-    float distanceFromCamera = distance(worldPos, _CameraPositionWS);
-    float distanceFade = 1 - saturate((distanceFromCamera - _MinFadeDist) / (_MaxFadeDist - _MinFadeDist));  // my version
-    // float distanceFade = 1 - saturate((distanceFromCamera - _MinFadeDist) / _MaxFadeDist);  // original
+    //float distanceFromCamera = distance(worldPos, _CameraPositionWS);
+    //float distanceFade = 1 - saturate((distanceFromCamera - _MinFadeDist) / (_MaxFadeDist - _MinFadeDist));  // my version
+    //float distanceFade = 1 - saturate((distanceFromCamera - _MinFadeDist) / _MaxFadeDist);  // original
 
     // Wind
     float3 v0 = sv.positionOS.xyz;
-    // TODO: 3D wind, surface is not always Y+
     float3 wind1 = float3(
-        sin(_Time.x * _WindSpeed + v0.x) + sin(
-            _Time.x * _WindSpeed + v0.z * 2) + sin(
-                _Time.x * _WindSpeed * 0.1 + v0.x), 
+          sin(_Time.x * _WindSpeed + v0.x) 
+        + sin(_Time.x * _WindSpeed + v0.z * 2) 
+        + sin(_Time.x * _WindSpeed * 0.1 + v0.x), 
         0,
-        cos(_Time.x * _WindSpeed + v0.x * 2) + cos(
-            _Time.x * _WindSpeed + v0.z));
+          cos(_Time.x * _WindSpeed + v0.x * 2) 
+        + cos(_Time.x * _WindSpeed + v0.z));
 
+    wind1 = mul(normalToObject, wind1);
     wind1 *= _WindStrength;
 
     // Interactivity
@@ -213,27 +223,22 @@ void Main(uint3 id : SV_DispatchThreadID)
     for (int j = 0; j < numBladesPerVertex; ++j)
     {
         // set rotation and radius of the blades
-        float3x3 facingRotationMatrix = AngleAxis3x3(rand(sv.positionOS.xyz) * TWO_PI + j, float3(0, 1, -0.1));
+        float3x3 facingRotationMatrix = AngleAxis3x3(rand(sv.positionOS.xyz) * TWO_PI + j, sv.normalOS);// float3(0, 1, -0.1));
         float3x3 transformationMatrix = facingRotationMatrix;
         float tj = j / (float)numBladesPerVertex;
-        float offset = (1 - tj) * _BladeRadius; // spiral, each blade is furthur away from sourceVertex.
+        float distanceFromSourceVertex = (1 - tj) * _BladeRadius; // spiral, each blade is furthur away from sourceVertex.
 
         for (int i = 0; i < numSegmentsPerBlade; ++i)
         {
             // taper width, increase height
             float ti = i / (float)numSegmentsPerBlade;
             float segmentHeight = grassHeight * ti;
-            float segmentWidth = grassWidth * (1 - ti);
+            float segmentWidth = grassWidth * (1 - ti); // Linear thinning along the blade
+            segmentWidth = i == 0 ? grassWidth * 0.3 : segmentWidth; // the first (0) grass segment is thinner
+            // TODO: use a curve for the blade profile
 
-            // the first (0) grass segment is thinner
-            segmentWidth = i == 0 ? grassWidth * 0.3 : segmentWidth;
-
-            //float segmentForward = pow(abs(ti), _BladeCurve) * forward;
             // Modulate bending by the height multiplier of the blade, otherwise small blades are bent too much.
-            // forward = bending distance in meters, multiplied by a random [0..1]
-            // sv.uv.y = height multiplier [0..2]
-            // pow(abs(ti), _BladeCurve) is [0..1]
-            float segmentForward = pow(abs(ti), _BladeCurve) * forward * sv.uv.y;
+            float bendingDistance = pow(abs(ti), _BladeCurve) * forward * sv.uv.y;
 
             // Add below the line declaring float segmentWidth
             float3x3 transformMatrix = (i == 0)
@@ -245,26 +250,30 @@ void Main(uint3 id : SV_DispatchThreadID)
             float3 newPos = (i == 0)
                 ? v0
                 : v0 + (float3(sphereDisp.x, sphereDisp.y, sphereDisp.z) + wind1) * ti;
+            
+            // NO WIND
+            //float3 newPos = v0;
 
             // ----------------------------------------
 
             // Append First Vertex
-            grassVertices[i * 2] = GenerateGrassVertex(newPos, segmentWidth, segmentHeight, offset, segmentForward, float2(0, ti), transformMatrix);
+            grassVertices[i * 2] = GenerateGrassVertex(newPos, segmentWidth, segmentHeight, distanceFromSourceVertex, bendingDistance, float2(0, ti), transformMatrix, normalToObject);
 
             // Append Second Vertex
-            grassVertices[i * 2 + 1] = GenerateGrassVertex(newPos, -segmentWidth, segmentHeight, offset, segmentForward, float2(1, ti), transformMatrix);
+            grassVertices[i * 2 + 1] = GenerateGrassVertex(newPos, -segmentWidth, segmentHeight, distanceFromSourceVertex, bendingDistance, float2(1, ti), transformMatrix, normalToObject);
         }
 
         // Append Top Vertex
         // TODO: not only in Y+ place
-        float3 topPosOS = v0 + float3(sphereDisp.x * 1.5, sphereDisp.y, sphereDisp.z * 1.5) + wind1;
-        grassVertices[numSegmentsPerBlade * 2] = GenerateGrassVertex(topPosOS, 0, grassHeight, offset, forward * sv.uv.y, float2(0.5, 1), transformationMatrix);
+        float3 topPosOS = v0 + float3(sphereDisp.x * 1.5, sphereDisp.y * 1.5, sphereDisp.z * 1.5) + wind1;
+        //float3 topPosOS = v0;
+        grassVertices[numSegmentsPerBlade * 2] = GenerateGrassVertex(topPosOS, 0, grassHeight, distanceFromSourceVertex, forward * sv.uv.y, float2(0.5, 1), transformationMatrix, normalToObject);
 
         // Append Triangles
         for (int k = 0; k < numTrianglesPerBlade; ++k)
         {
             GrassTriangle tri = (GrassTriangle)0;
-            tri.normalOS = faceNormal;
+            tri.normalOS = faceNormal; // pas bon du tout vu comment est calculee faceNormal.
             tri.vertices[0] = grassVertices[k];
             if (k % 2 == 0)
             {
