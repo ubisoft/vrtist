@@ -90,6 +90,7 @@ public class GrassRenderer : MonoBehaviour
         public Vector3 position;
         public Vector3 normal;
         public Vector2 uv;
+        public Vector3 color;
     }
 
     // A state variable to help keep track of whether compute buffers have been set up
@@ -111,8 +112,8 @@ public class GrassRenderer : MonoBehaviour
     private Bounds m_LocalBounds;
 
     // The size of one entry in the various compute buffers
-    private const int SOURCE_VERT_STRIDE = sizeof(float) * (3 + 3 + 2);
-    private const int DRAW_STRIDE = sizeof(float) * (3 + (3 + 2) * 3); // triangle normal + 3 * vertex(position+uv)
+    private const int SOURCE_VERT_STRIDE = sizeof(float) * (3 + 3 + 2 + 3);
+    private const int DRAW_STRIDE = sizeof(float) * (3 + (3 + 2 + 3) * 3); // triangle normal + 3 * vertex(position+uv+color)
     private const int INDIRECT_ARGS_STRIDE = sizeof(int) * 4;
 
     // The data to reset the args buffer with every frame
@@ -169,16 +170,19 @@ public class GrassRenderer : MonoBehaviour
         Vector3[] positions = sourceMesh.vertices;
         Vector3[] normals = sourceMesh.normals;
         Vector2[] uvs = sourceMesh.uv;
+        Color[] colors = sourceMesh.colors;
 
         // Create the data to upload to the source vert buffer
         SourceVertex[] vertices = new SourceVertex[positions.Length];
         for (int i = 0; i < vertices.Length; i++)
         {
+            Color color = colors[i];
             vertices[i] = new SourceVertex()
             {
                 position = positions[i],
                 normal = normals[i],
-                uv = uvs[i]
+                uv = uvs[i],
+                color = new Vector3(color.r, color.g, color.b) // Color --> Vector3
             };
         }
 
@@ -228,7 +232,6 @@ public class GrassRenderer : MonoBehaviour
         // Get the bounds of the source mesh and then expand by the maximum blade width and height
         m_LocalBounds = sourceMesh.bounds;
         m_LocalBounds.Expand(Mathf.Max(grassHeight + grassRandomHeight, grassWidth));
-        // localBounds.Expand(1);  // default
     }
 
     private void OnDisable()
@@ -267,8 +270,6 @@ public class GrassRenderer : MonoBehaviour
             OnDisable();
             OnEnable();
         }
-
-        // Debug.Log("LateUpdate : " + m_Initialized + " " + sourceMesh.vertexCount);
 
         // If not initialized, do nothing (creating zero-length buffer will crash)
         if (!m_Initialized)

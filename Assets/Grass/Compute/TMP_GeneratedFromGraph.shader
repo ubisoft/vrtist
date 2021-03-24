@@ -1,4 +1,4 @@
-Shader "VRtist/Grass"
+Shader "SourceGrassShaderGraph"
     {
         Properties
         {
@@ -65,23 +65,7 @@ Shader "VRtist/Grass"
                 "RenderType"="HDLitShader"
                 "Queue"="Geometry+225"
             }
-            
-            HLSLINCLUDE
-
-            #define USE_GRASS_SHADER_IN_PASS__SHADOWCASTER 1
-            #define USE_GRASS_SHADER_IN_PASS__META 1
-            #define USE_GRASS_SHADER_IN_PASS__SCENEPICKING 1
-            #define USE_GRASS_SHADER_IN_PASS__SCENESELECTION 1
-            #define USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS 1
-            #define USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS 1
-            #define USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG 1
-            #define USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY 1
-            #define USE_GRASS_SHADER_IN_PASS__GBUFFER 1
-            #define USE_GRASS_SHADER_IN_PASS__FORWARD 1
-
-            ENDHLSL
-
-            Pass // SHADOWCASTER (ShaderPassDepthOnly)
+            Pass
             {
                 Name "ShadowCaster"
                 Tags
@@ -105,11 +89,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__SHADOWCASTER
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -275,7 +255,6 @@ Shader "VRtist/Grass"
                     float4 positionCS : SV_POSITION;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -292,7 +271,6 @@ Shader "VRtist/Grass"
                     float4 positionCS : SV_POSITION;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -302,7 +280,6 @@ Shader "VRtist/Grass"
                     output.positionCS = input.positionCS;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -312,13 +289,13 @@ Shader "VRtist/Grass"
                     output.positionCS = input.positionCS;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
     
                 // --------------------------------------------------
                 // Graph
+    
     
                 // Graph Functions
                 // GraphFunctions: <None>
@@ -650,15 +627,12 @@ Shader "VRtist/Grass"
     
                 // --------------------------------------------------
                 // Main
-
+    
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__SHADOWCASTER
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-
-            Pass // META (ShaderPassLightTransport)
+            Pass
             {
                 Name "META"
                 Tags
@@ -679,11 +653,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__META
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -862,7 +832,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -881,7 +850,6 @@ Shader "VRtist/Grass"
                     float4 interp1 : TEXCOORD1;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -890,10 +858,9 @@ Shader "VRtist/Grass"
                     PackedVaryingsMeshToPS output;
                     output.positionCS = input.positionCS;
                     output.interp0.xyzw =  input.texCoord0;
-                    output.interp1.xyzw = input.color;
+                    output.interp1.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -905,7 +872,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp1.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -920,12 +886,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
-    
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
-
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -1029,7 +995,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -1279,13 +1245,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassLightTransport.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__META
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-
-            Pass // SCENEPICKING (ShaderPassDepthOnly)
+            Pass
             {
                 Name "ScenePickingPass"
                 Tags
@@ -1306,11 +1269,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__SCENEPICKING
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -1484,7 +1443,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -1506,7 +1464,6 @@ Shader "VRtist/Grass"
                     float4 interp1 : TEXCOORD1;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -1515,10 +1472,9 @@ Shader "VRtist/Grass"
                     PackedVaryingsMeshToPS output;
                     output.positionCS = input.positionCS;
                     output.interp0.xyzw =  input.texCoord0;
-                    output.interp1.xyzw = input.color;
+                    output.interp1.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -1530,7 +1486,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp1.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -1545,11 +1500,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
-
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -1665,7 +1621,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -1915,13 +1871,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__SCENEPICKING
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-            
-            Pass // SCENESELECTION (ShaderPassDepthOnly)
+            Pass
             {
                 Name "SceneSelectionPass"
                 Tags
@@ -1943,11 +1896,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__SCENESELECTION
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -2124,7 +2073,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -2146,7 +2094,6 @@ Shader "VRtist/Grass"
                     float4 interp1 : TEXCOORD1;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -2155,10 +2102,9 @@ Shader "VRtist/Grass"
                     PackedVaryingsMeshToPS output;
                     output.positionCS = input.positionCS;
                     output.interp0.xyzw =  input.texCoord0;
-                    output.interp1.xyzw = input.color;
+                    output.interp1.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2170,7 +2116,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp1.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2185,10 +2130,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -2304,7 +2251,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -2554,13 +2501,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__SCENESELECTION
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-            
-            Pass // MOTIONVECTORS (ShaderPassMotionVectors)
+            Pass
             {
                 Name "MotionVectors"
                 Tags
@@ -2591,11 +2535,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -2790,7 +2730,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -2818,7 +2757,6 @@ Shader "VRtist/Grass"
                     float4 interp7 : TEXCOORD7;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -2836,7 +2774,6 @@ Shader "VRtist/Grass"
                     output.interp7.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2854,7 +2791,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp7.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -2869,10 +2805,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -2993,7 +2931,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -3243,13 +3181,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassMotionVectors.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-            
-            Pass // TRANSPARENT_DEPTH_PREPASS (ShaderPassDepthOnly)
+            Pass
             {
                 Name "TransparentDepthPrepass"
                 Tags
@@ -3281,11 +3216,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -3475,7 +3406,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -3500,7 +3430,6 @@ Shader "VRtist/Grass"
                     float4 interp6 : TEXCOORD6;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -3517,7 +3446,6 @@ Shader "VRtist/Grass"
                     output.interp6.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -3534,7 +3462,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp6.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -3888,13 +3815,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-
-            Pass // FULLSCREEN_DEBUG (ShaderPassFullScreenDebug)
+            Pass
             {
                 Name "FullScreenDebug"
                 Tags
@@ -3917,11 +3841,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
     
@@ -4091,7 +4011,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -4113,7 +4032,6 @@ Shader "VRtist/Grass"
                     float4 interp1 : TEXCOORD1;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -4122,10 +4040,9 @@ Shader "VRtist/Grass"
                     PackedVaryingsMeshToPS output;
                     output.positionCS = input.positionCS;
                     output.interp0.xyzw =  input.texCoord0;
-                    output.interp1.xyzw = input.color;
+                    output.interp1.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -4137,7 +4054,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp1.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -4152,10 +4068,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -4271,7 +4189,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -4521,13 +4439,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassFullScreenDebug.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-
-            Pass // DEPTH_ONLY (ShaderPassDepthOnly)
+            Pass
             {
                 Name "DepthOnly"
                 Tags
@@ -4558,11 +4473,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -4757,7 +4668,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -4785,7 +4695,6 @@ Shader "VRtist/Grass"
                     float4 interp7 : TEXCOORD7;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -4803,7 +4712,6 @@ Shader "VRtist/Grass"
                     output.interp7.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -4821,7 +4729,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp7.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -4836,10 +4743,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -4960,7 +4869,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -5210,13 +5119,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-            
-            Pass // GBUFFER (ShaderPassGBuffer)
+            Pass
             {
                 Name "GBuffer"
                 Tags
@@ -5247,11 +5153,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__GBUFFER
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -5446,7 +5348,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -5473,7 +5374,6 @@ Shader "VRtist/Grass"
                     float4 interp6 : TEXCOORD6;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -5487,10 +5387,9 @@ Shader "VRtist/Grass"
                     output.interp3.xyzw =  input.texCoord0;
                     output.interp4.xyzw =  input.texCoord1;
                     output.interp5.xyzw =  input.texCoord2;
-                    output.interp6.xyzw = input.color;
+                    output.interp6.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -5507,7 +5406,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp6.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -5522,10 +5420,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -5580,7 +5480,7 @@ Shader "VRtist/Grass"
                     surface.NormalTS = IN.TangentSpaceNormal;
                     surface.Metallic = 0;
                     {
-                        surface.VTPackedFeedback = float4(1.0f, 1.0f, 1.0f, .0f);
+                        surface.VTPackedFeedback = float4(1.0f,1.0f,1.0f,.0f);
                     }
                     return surface;
                 }
@@ -5649,7 +5549,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -5900,13 +5800,10 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassGBuffer.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__GBUFFER
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
                 ENDHLSL
             }
-            
-            Pass // FORWARD (ShaderPassForward)
+            Pass
             {
                 Name "Forward"
                 Tags
@@ -5940,11 +5837,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__FORWARD
-                #pragma vertex GrassVert
-#else
                 #pragma vertex Vert
-#endif
                 #pragma fragment Frag
                 #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
                 #pragma multi_compile_instancing
@@ -6146,7 +6039,6 @@ Shader "VRtist/Grass"
                     float4 color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
                 struct SurfaceDescriptionInputs
@@ -6173,7 +6065,6 @@ Shader "VRtist/Grass"
                     float4 interp6 : TEXCOORD6;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     uint instanceID : CUSTOM_INSTANCE_ID;
-                    UNITY_VERTEX_OUTPUT_STEREO
                     #endif
                 };
     
@@ -6187,10 +6078,9 @@ Shader "VRtist/Grass"
                     output.interp3.xyzw =  input.texCoord0;
                     output.interp4.xyzw =  input.texCoord1;
                     output.interp5.xyzw =  input.texCoord2;
-                    output.interp6.xyzw = input.color;
+                    output.interp6.xyzw =  input.color;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -6207,7 +6097,6 @@ Shader "VRtist/Grass"
                     output.color = input.interp6.xyzw;
                     #if UNITY_ANY_INSTANCING_ENABLED
                     output.instanceID = input.instanceID;
-                    UNITY_TRANSFER_VERTEX_OUTPUT_STEREO(input, output);
                     #endif
                     return output;
                 }
@@ -6222,10 +6111,12 @@ Shader "VRtist/Grass"
                 {
                     Out = lerp(A, B, T);
                 }
+                
                 void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
                 {
                     Out = A * B;
                 }
+    
                 // Graph Vertex
                 struct VertexDescription
                 {
@@ -6280,7 +6171,7 @@ Shader "VRtist/Grass"
                     surface.NormalTS = IN.TangentSpaceNormal;
                     surface.Metallic = 0;
                     {
-                        surface.VTPackedFeedback = float4(1.0f, 1.0f, 1.0f, .0f);
+                        surface.VTPackedFeedback = float4(1.0f,1.0f,1.0f,.0f);
                     }
                     return surface;
                 }
@@ -6349,7 +6240,7 @@ Shader "VRtist/Grass"
                     #endif
                     output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
                     output.uv0 =                         input.texCoord0;
-                    output.VertexColor = input.color;
+                    output.VertexColor =                 input.color;
                 
                     return output;
                 }
@@ -6600,13 +6491,3803 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassForward.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__FORWARD
-                #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
-#endif
+    
+                ENDHLSL
+            }
+            Pass
+            {
+                Name "RayTracingPrepass"
+                Tags
+                {
+                    "LightMode" = "RayTracingPrepass"
+                }
+    
+                // Render State
+                Cull [_CullMode]
+                Blend One Zero
+                ZWrite On
+    
+                // Debug
+                // <None>
+    
+                // --------------------------------------------------
+                // Pass
+    
+                HLSLPROGRAM
+    
+                // Pragmas
+                #pragma target 4.5
+                #pragma vertex Vert
+                #pragma fragment Frag
+                #pragma only_renderers d3d11 playstation xboxone vulkan metal switch
+    
+                // Keywords
+                #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
+                #pragma shader_feature_local _BLENDMODE_OFF _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
+                #pragma shader_feature_local _ _DOUBLESIDED_ON
+                #pragma shader_feature_local _ _ADD_PRECOMPUTED_VELOCITY
+                #pragma shader_feature_local _ _TRANSPARENT_WRITES_MOTION_VEC
+                #pragma shader_feature_local _ _ENABLE_FOG_ON_TRANSPARENT
+                #pragma shader_feature_local _ _DISABLE_DECALS
+                #pragma shader_feature_local _ _DISABLE_SSR
+                #pragma shader_feature_local _ _DISABLE_SSR_TRANSPARENT
+                #pragma shader_feature_local _REFRACTION_OFF _REFRACTION_PLANE _REFRACTION_SPHERE _REFRACTION_THIN
+                // GraphKeywords: <None>
+    
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl" // Required to be include before we include properties as it define DECLARE_STACK_CB
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphHeader.hlsl" // Need to be here for Gradient struct definition
+    
+                // --------------------------------------------------
+                // Defines
+    
+                // Attribute
+                #define ATTRIBUTES_NEED_NORMAL
+                #define ATTRIBUTES_NEED_TANGENT
+                #define ATTRIBUTES_NEED_TEXCOORD0
+                #define ATTRIBUTES_NEED_COLOR
+                #define VARYINGS_NEED_TEXCOORD0
+                #define VARYINGS_NEED_COLOR
+    
+                #define HAVE_MESH_MODIFICATION
+    
+    
+                #define SHADERPASS SHADERPASS_CONSTANT
+                #define RAYTRACING_SHADER_GRAPH_DEFAULT
+    
+                // Following two define are a workaround introduce in 10.1.x for RaytracingQualityNode
+                // The ShaderGraph don't support correctly migration of this node as it serialize all the node data
+                // in the json file making it impossible to uprgrade. Until we get a fix, we do a workaround here
+                // to still allow us to rename the field and keyword of this node without breaking existing code.
+                #ifdef RAYTRACING_SHADER_GRAPH_DEFAULT 
+                #define RAYTRACING_SHADER_GRAPH_HIGH
+                #endif
+    
+                #ifdef RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define RAYTRACING_SHADER_GRAPH_LOW
+                #endif
+                // end
+    
+                #ifndef SHADER_UNLIT
+                // We need isFrontFace when using double sided - it is not required for unlit as in case of unlit double sided only drive the cullmode
+                // VARYINGS_NEED_CULLFACE can be define by VaryingsMeshToPS.FaceSign input if a IsFrontFace Node is included in the shader graph.
+                #if defined(_DOUBLESIDED_ON) && !defined(VARYINGS_NEED_CULLFACE)
+                    #define VARYINGS_NEED_CULLFACE
+                #endif
+                #endif
+    
+                // Specific Material Define
+            #define _ENERGY_CONSERVING_SPECULAR 1
+                
+                // If we use subsurface scattering, enable output split lighting (for forward pass)
+                #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define OUTPUT_SPLIT_LIGHTING
+                #endif
+                
+                // This shader support recursive rendering for raytracing
+                #define HAVE_RECURSIVE_RENDERING
+                
+                // Caution: we can use the define SHADER_UNLIT onlit after the above Material include as it is the Unlit template who define it
+    
+                // To handle SSR on transparent correctly with a possibility to enable/disable it per framesettings
+                // we should have a code like this:
+                // if !defined(_DISABLE_SSR_TRANSPARENT)
+                // pragma multi_compile _ WRITE_NORMAL_BUFFER
+                // endif
+                // i.e we enable the multicompile only if we can receive SSR or not, and then C# code drive
+                // it based on if SSR transparent in frame settings and not (and stripper can strip it).
+                // this is currently not possible with our current preprocessor as _DISABLE_SSR_TRANSPARENT is a keyword not a define
+                // so instead we used this and chose to pay the extra cost of normal write even if SSR transaprent is disabled.
+                // Ideally the shader graph generator should handle it but condition below can't be handle correctly for now.
+                #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                #if !defined(_DISABLE_SSR_TRANSPARENT) && !defined(SHADER_UNLIT)
+                    #define WRITE_NORMAL_BUFFER
+                #endif
+                #endif
+    
+                #ifndef DEBUG_DISPLAY
+                    // In case of opaque we don't want to perform the alpha test, it is done in depth prepass and we use depth equal for ztest (setup from UI)
+                    // Don't do it with debug display mode as it is possible there is no depth prepass in this case
+                    #if !defined(_SURFACE_TYPE_TRANSPARENT) && defined(_ALPHATEST)
+                        #if SHADERPASS == SHADERPASS_FORWARD
+                        #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
+                        #elif SHADERPASS == SHADERPASS_GBUFFER
+                        #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
+                        #endif
+                    #endif
+                #endif
+    
+                // Translate transparent motion vector define
+                #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define _WRITE_TRANSPARENT_MOTION_VECTOR
+                #endif
+    
+                // Dots Instancing
+                // DotsInstancingOptions: <None>
+    
+                // Various properties
+    
+                // HybridV1InjectedBuiltinProperties: <None>
+    
+                // -- Graph Properties
+                CBUFFER_START(UnityPerMaterial)
+                float4 _EmissionColor;
+                float _UseShadowThreshold;
+                float4 _DoubleSidedConstants;
+                float _BlendMode;
+                float _EnableBlendModePreserveSpecularLighting;
+                float _RayTracing;
+                float _RefractionModel;
+                float4 _BottomColor;
+                float4 _TopColor;
+                CBUFFER_END
+                
+                // Object and Global properties
+    
+                // -- Property used by ScenePickingPass
+                #ifdef SCENEPICKINGPASS
+                float4 _SelectionID;
+                #endif
+    
+                // -- Properties used by SceneSelectionPass
+                #ifdef SCENESELECTIONPASS
+                int _ObjectId;
+                int _PassValue;
+                #endif
+    
+                // Includes
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Debug/DebugDisplay.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/NormalSurfaceGradient.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/BuiltinUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Decal/DecalUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitDecalData.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
+    
+                // --------------------------------------------------
+                // Structs and Packing
+    
+                struct AttributesMesh
+                {
+                    float3 positionOS : POSITION;
+                    float3 normalOS : NORMAL;
+                    float4 tangentOS : TANGENT;
+                    float4 uv0 : TEXCOORD0;
+                    float4 color : COLOR;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : INSTANCEID_SEMANTIC;
+                    #endif
+                };
+                struct VaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 texCoord0;
+                    float4 color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+                struct SurfaceDescriptionInputs
+                {
+                    float3 TangentSpaceNormal;
+                    float4 uv0;
+                    float4 VertexColor;
+                };
+                struct VertexDescriptionInputs
+                {
+                    float3 ObjectSpaceNormal;
+                    float3 ObjectSpaceTangent;
+                    float3 ObjectSpacePosition;
+                };
+                struct PackedVaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 interp0 : TEXCOORD0;
+                    float4 interp1 : TEXCOORD1;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+    
+                PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
+                {
+                    PackedVaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.interp0.xyzw =  input.texCoord0;
+                    output.interp1.xyzw =  input.color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+                VaryingsMeshToPS UnpackVaryingsMeshToPS (PackedVaryingsMeshToPS input)
+                {
+                    VaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.texCoord0 = input.interp0.xyzw;
+                    output.color = input.interp1.xyzw;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+    
+                // --------------------------------------------------
+                // Graph
+    
+    
+                // Graph Functions
+                
+                void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
+                {
+                    Out = lerp(A, B, T);
+                }
+                
+                void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
+                {
+                    Out = A * B;
+                }
+    
+                // Graph Vertex
+                struct VertexDescription
+                {
+                    float3 Position;
+                    float3 Normal;
+                    float3 Tangent;
+                };
+                
+                VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
+                {
+                    VertexDescription description = (VertexDescription)0;
+                    description.Position = IN.ObjectSpacePosition;
+                    description.Normal = IN.ObjectSpaceNormal;
+                    description.Tangent = IN.ObjectSpaceTangent;
+                    return description;
+                }
+    
+                // Graph Pixel
+                struct SurfaceDescription
+                {
+                    float3 BaseColor;
+                    float3 Emission;
+                    float Alpha;
+                    float3 BentNormal;
+                    float Smoothness;
+                    float Occlusion;
+                    float3 NormalTS;
+                    float Metallic;
+                };
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = (SurfaceDescription)0;
+                    float4 _Property_012052db90a64698ab50659a7262b337_Out_0 = _BottomColor;
+                    float4 _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0 = _TopColor;
+                    float4 _UV_f37e4173334549ca96492ea17a11b95f_Out_0 = IN.uv0;
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_R_1 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[0];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_G_2 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[1];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_B_3 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[2];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_A_4 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[3];
+                    float4 _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3;
+                    Unity_Lerp_float4(_Property_012052db90a64698ab50659a7262b337_Out_0, _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0, (_Split_0bc51e4dab284af997c83fae0af95b57_G_2.xxxx), _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3);
+                    float4 _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2;
+                    Unity_Multiply_float(IN.VertexColor, _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3, _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2);
+                    surface.BaseColor = (_Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2.xyz);
+                    surface.Emission = float3(0, 0, 0);
+                    surface.Alpha = 1;
+                    surface.BentNormal = IN.TangentSpaceNormal;
+                    surface.Smoothness = 0.5;
+                    surface.Occlusion = 1;
+                    surface.NormalTS = IN.TangentSpaceNormal;
+                    surface.Metallic = 0;
+                    return surface;
+                }
+    
+                // --------------------------------------------------
+                // Build Graph Inputs
+    
+                
+                VertexDescriptionInputs AttributesMeshToVertexDescriptionInputs(AttributesMesh input)
+                {
+                    VertexDescriptionInputs output;
+                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                
+                    output.ObjectSpaceNormal =           input.normalOS;
+                    output.ObjectSpaceTangent =          input.tangentOS.xyz;
+                    output.ObjectSpacePosition =         input.positionOS;
+                
+                    return output;
+                }
+                
+                AttributesMesh ApplyMeshModification(AttributesMesh input, float3 timeParameters)
+                {
+                    // build graph inputs
+                    VertexDescriptionInputs vertexDescriptionInputs = AttributesMeshToVertexDescriptionInputs(input);
+                    // Override time paramters with used one (This is required to correctly handle motion vector for vertex animation based on time)
+                
+                    // evaluate vertex graph
+                    VertexDescription vertexDescription = VertexDescriptionFunction(vertexDescriptionInputs);
+                
+                    // copy graph output to the results
+                    input.positionOS = vertexDescription.Position;
+                    input.normalOS = vertexDescription.Normal;
+                    input.tangentOS.xyz = vertexDescription.Tangent;
+                
+                    return input;
+                }
+                
+                FragInputs BuildFragInputs(VaryingsMeshToPS input)
+                {
+                    FragInputs output;
+                    ZERO_INITIALIZE(FragInputs, output);
+                
+                    // Init to some default value to make the computer quiet (else it output 'divide by zero' warning even if value is not used).
+                    // TODO: this is a really poor workaround, but the variable is used in a bunch of places
+                    // to compute normals which are then passed on elsewhere to compute other values...
+                    output.tangentToWorld = k_identity3x3;
+                    output.positionSS = input.positionCS;       // input.positionCS is SV_Position
+                
+                    output.texCoord0 = input.texCoord0;
+                    output.color = input.color;
+                
+                    return output;
+                }
+                
+                SurfaceDescriptionInputs FragInputsToSurfaceDescriptionInputs(FragInputs input, float3 viewWS)
+                {
+                    SurfaceDescriptionInputs output;
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                
+                    #if defined(SHADER_STAGE_RAY_TRACING)
+                    #else
+                    #endif
+                    output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+                    output.uv0 =                         input.texCoord0;
+                    output.VertexColor =                 input.color;
+                
+                    return output;
+                }
+                
+                // existing HDRP code uses the combined function to go directly from packed to frag inputs
+                FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
+                {
+                    UNITY_SETUP_INSTANCE_ID(input);
+                    VaryingsMeshToPS unpacked= UnpackVaryingsMeshToPS(input);
+                    return BuildFragInputs(unpacked);
+                }
+                
+    
+                // --------------------------------------------------
+                // Build Surface Data (Specific Material)
+    
+            void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
+                {
+                    ZERO_INITIALIZE(SurfaceData, surfaceData);
+                
+                    // specularOcclusion need to be init ahead of decal to quiet the compiler that modify the SurfaceData struct
+                    // however specularOcclusion can come from the graph, so need to be init here so it can be override.
+                    surfaceData.specularOcclusion = 1.0;
+                
+                    surfaceData.baseColor =                 surfaceDescription.BaseColor;
+                    surfaceData.perceptualSmoothness =      surfaceDescription.Smoothness;
+                    surfaceData.ambientOcclusion =          surfaceDescription.Occlusion;
+                    surfaceData.metallic =                  surfaceDescription.Metallic;
+                
+                    #if defined(_REFRACTION_PLANE) || defined(_REFRACTION_SPHERE) || defined(_REFRACTION_THIN)
+                        if (_EnableSSRefraction)
+                        {
+                
+                            surfaceData.transmittanceMask = (1.0 - surfaceDescription.Alpha);
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                        else
+                        {
+                            surfaceData.ior = 1.0;
+                            surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                            surfaceData.atDistance = 1.0;
+                            surfaceData.transmittanceMask = 0.0;
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                    #else
+                        surfaceData.ior = 1.0;
+                        surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                        surfaceData.atDistance = 1.0;
+                        surfaceData.transmittanceMask = 0.0;
+                    #endif
+                
+                    // These static material feature allow compile time optimization
+                    surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
+                    #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SUBSURFACE_SCATTERING;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_TRANSMISSION
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_TRANSMISSION;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_ANISOTROPY
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_IRIDESCENCE
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_SPECULAR_COLOR
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_CLEAR_COAT
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+                    #endif
+                
+                    #if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+                        // Require to have setup baseColor
+                        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+                        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+                    #endif
+                
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+                
+                    // normal delivered to master node
+                    GetNormalWS(fragInputs, surfaceDescription.NormalTS, surfaceData.normalWS, doubleSidedConstants);
+                
+                    surfaceData.geomNormalWS = fragInputs.tangentToWorld[2];
+                
+                    surfaceData.tangentWS = normalize(fragInputs.tangentToWorld[0].xyz);    // The tangent is not normalize in tangentToWorld for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+                
+                
+                    #if HAVE_DECALS
+                        if (_EnableDecals)
+                        {
+                            float alpha = 1.0;
+                            alpha = surfaceDescription.Alpha;
+                
+                            // Both uses and modifies 'surfaceData.normalWS'.
+                            DecalSurfaceData decalSurfaceData = GetDecalSurfaceData(posInput, fragInputs.tangentToWorld[2], alpha);
+                            ApplyDecalToSurfaceData(decalSurfaceData, fragInputs.tangentToWorld[2], surfaceData);
+                        }
+                    #endif
+                
+                    bentNormalWS = surfaceData.normalWS;
+                
+                    surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+                
+                    #ifdef DEBUG_DISPLAY
+                        if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)
+                        {
+                            // TODO: need to update mip info
+                            surfaceData.metallic = 0;
+                        }
+                
+                        // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
+                        // as it can modify attribute use for static lighting
+                        ApplyDebugToSurfaceData(fragInputs.tangentToWorld, surfaceData);
+                    #endif
+                
+                    // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
+                    // If user provide bent normal then we process a better term
+                    #if defined(_SPECULAR_OCCLUSION_CUSTOM)
+                        // Just use the value passed through via the slot (not active otherwise)
+                    #elif defined(_SPECULAR_OCCLUSION_FROM_AO_BENT_NORMAL)
+                        // If we have bent normal and ambient occlusion, process a specular occlusion
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData.normalWS, surfaceData.ambientOcclusion, PerceptualSmoothnessToPerceptualRoughness(surfaceData.perceptualSmoothness));
+                    #elif defined(_AMBIENT_OCCLUSION) && defined(_SPECULAR_OCCLUSION_FROM_AO)
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+                    #endif
+                
+                    #if defined(_ENABLE_GEOMETRIC_SPECULAR_AA) && !defined(SHADER_STAGE_RAY_TRACING)
+                        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.tangentToWorld[2], surfaceDescription.SpecularAAScreenSpaceVariance, surfaceDescription.SpecularAAThreshold);
+                    #endif
+                }
+                
+    
+                // --------------------------------------------------
+                // Get Surface And BuiltinData
+    
+                void GetSurfaceAndBuiltinData(FragInputs fragInputs, float3 V, inout PositionInputs posInput, out SurfaceData surfaceData, out BuiltinData builtinData RAY_TRACING_OPTIONAL_PARAMETERS)
+                {
+                    // Don't dither if displaced tessellation (we're fading out the displacement instead to match the next LOD)
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && !defined(_TESSELLATION_DISPLACEMENT)
+                    #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
+                    LODDitheringTransition(ComputeFadeMaskSeed(V, posInput.positionSS), unity_LODFade.x);
+                    #endif
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+    
+                    ApplyDoubleSidedFlipOrMirror(fragInputs, doubleSidedConstants); // Apply double sided flip on the vertex normal
+                    #endif // SHADER_UNLIT
+    
+                    SurfaceDescriptionInputs surfaceDescriptionInputs = FragInputsToSurfaceDescriptionInputs(fragInputs, V);
+                    SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
+    
+                    // Perform alpha test very early to save performance (a killed pixel will not sample textures)
+                    // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
+                    #ifdef _ALPHATEST_ON
+                        float alphaCutoff = surfaceDescription.AlphaClipThreshold;
+                        #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                        // The TransparentDepthPrepass is also used with SSR transparent.
+                        // If an artists enable transaprent SSR but not the TransparentDepthPrepass itself, then we use AlphaClipThreshold
+                        // otherwise if TransparentDepthPrepass is enabled we use AlphaClipThresholdDepthPrepass
+                        #elif SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_POSTPASS
+                        // DepthPostpass always use its own alpha threshold
+                        alphaCutoff = surfaceDescription.AlphaClipThresholdDepthPostpass;
+                        #elif (SHADERPASS == SHADERPASS_SHADOWS) || (SHADERPASS == SHADERPASS_RAYTRACING_VISIBILITY)
+                        // If use shadow threshold isn't enable we don't allow any test
+                        #endif
+    
+                        GENERIC_ALPHA_TEST(surfaceDescription.Alpha, alphaCutoff);
+                    #endif
+    
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && _DEPTHOFFSET_ON
+                    ApplyDepthOffsetPositionInput(V, surfaceDescription.DepthOffset, GetViewForwardDir(), GetWorldToHClipMatrix(), posInput);
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    float3 bentNormalWS;
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
+    
+                    // Builtin Data
+                    // For back lighting we use the oposite vertex normal
+                    InitBuiltinData(posInput, surfaceDescription.Alpha, bentNormalWS, -fragInputs.tangentToWorld[2], fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
+    
+                    #else
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData);
+    
+                    ZERO_INITIALIZE(BuiltinData, builtinData); // No call to InitBuiltinData as we don't have any lighting
+                    builtinData.opacity = surfaceDescription.Alpha;
+    
+                    #if defined(DEBUG_DISPLAY)
+                        // Light Layers are currently not used for the Unlit shader (because it is not lit)
+                        // But Unlit objects do cast shadows according to their rendering layer mask, which is what we want to
+                        // display in the light layers visualization mode, therefore we need the renderingLayers
+                        builtinData.renderingLayers = GetMeshRenderingLightLayer();
+                    #endif
+    
+                    #endif // SHADER_UNLIT
+    
+                    #ifdef _ALPHATEST_ON
+                        // Used for sharpening by alpha to mask - Alpha to covertage is only used with depth only and forward pass (no shadow pass, no transparent pass)
+                        builtinData.alphaClipTreshold = alphaCutoff;
+                    #endif
+    
+                    // override sampleBakedGI - not used by Unlit
+    
+                    builtinData.emissiveColor = surfaceDescription.Emission;
+    
+                    // Note this will not fully work on transparent surfaces (can check with _SURFACE_TYPE_TRANSPARENT define)
+                    // We will always overwrite vt feeback with the nearest. So behind transparent surfaces vt will not be resolved
+                    // This is a limitation of the current MRT approach.
+    
+                    #if _DEPTHOFFSET_ON
+                    builtinData.depthOffset = surfaceDescription.DepthOffset;
+                    #endif
+    
+                    // TODO: We should generate distortion / distortionBlur for non distortion pass
+                    #if (SHADERPASS == SHADERPASS_DISTORTION)
+                    builtinData.distortion = surfaceDescription.Distortion;
+                    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    // PostInitBuiltinData call ApplyDebugToBuiltinData
+                    PostInitBuiltinData(V, posInput, surfaceData, builtinData);
+                    #else
+                    ApplyDebugToBuiltinData(builtinData);
+                    #endif
+    
+                    RAY_TRACING_OPTIONAL_ALPHA_TEST_PASS
+                }
+    
+                // --------------------------------------------------
+                // Main
+    
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassConstant.hlsl"
+    
                 ENDHLSL
             }
         }
-
+        SubShader
+        {
+            Tags
+            {
+                "RenderPipeline"="HDRenderPipeline"
+                "RenderType"="HDLitShader"
+                "Queue"="Geometry+225"
+            }
+            Pass
+            {
+                Name "IndirectDXR"
+                Tags
+                {
+                    "LightMode" = "IndirectDXR"
+                }
+    
+                // Render State
+                // RenderState: <None>
+    
+                // Debug
+                // <None>
+    
+                // --------------------------------------------------
+                // Pass
+    
+                HLSLPROGRAM
+    
+                // Pragmas
+                #pragma target 5.0
+                #pragma raytracing surface_shader
+                #pragma only_renderers d3d11
+    
+                // Keywords
+                #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
+                #pragma shader_feature_local _BLENDMODE_OFF _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
+                #pragma shader_feature_local _ _DOUBLESIDED_ON
+                #pragma shader_feature_local _ _ADD_PRECOMPUTED_VELOCITY
+                #pragma shader_feature_local _ _TRANSPARENT_WRITES_MOTION_VEC
+                #pragma shader_feature_local _ _ENABLE_FOG_ON_TRANSPARENT
+                #pragma multi_compile _ DEBUG_DISPLAY
+                #pragma shader_feature_local _ _DISABLE_DECALS
+                #pragma shader_feature_local _ _DISABLE_SSR
+                #pragma shader_feature_local _ _DISABLE_SSR_TRANSPARENT
+                #pragma multi_compile _ LIGHTMAP_ON
+                #pragma multi_compile _ DIRLIGHTMAP_COMBINED
+                #pragma shader_feature_local _REFRACTION_OFF _REFRACTION_PLANE _REFRACTION_SPHERE _REFRACTION_THIN
+                // GraphKeywords: <None>
+    
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl" // Required to be include before we include properties as it define DECLARE_STACK_CB
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphHeader.hlsl" // Need to be here for Gradient struct definition
+    
+                // --------------------------------------------------
+                // Defines
+    
+                // Attribute
+                #define ATTRIBUTES_NEED_NORMAL
+                #define ATTRIBUTES_NEED_TANGENT
+                #define ATTRIBUTES_NEED_TEXCOORD0
+                #define ATTRIBUTES_NEED_COLOR
+                #define VARYINGS_NEED_TEXCOORD0
+                #define VARYINGS_NEED_COLOR
+    
+                #define HAVE_MESH_MODIFICATION
+    
+    
+                #define SHADERPASS SHADERPASS_RAYTRACING_INDIRECT
+                #define SHADOW_LOW
+                #define RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define HAS_LIGHTLOOP
+    
+                // Following two define are a workaround introduce in 10.1.x for RaytracingQualityNode
+                // The ShaderGraph don't support correctly migration of this node as it serialize all the node data
+                // in the json file making it impossible to uprgrade. Until we get a fix, we do a workaround here
+                // to still allow us to rename the field and keyword of this node without breaking existing code.
+                #ifdef RAYTRACING_SHADER_GRAPH_DEFAULT 
+                #define RAYTRACING_SHADER_GRAPH_HIGH
+                #endif
+    
+                #ifdef RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define RAYTRACING_SHADER_GRAPH_LOW
+                #endif
+                // end
+    
+                #ifndef SHADER_UNLIT
+                // We need isFrontFace when using double sided - it is not required for unlit as in case of unlit double sided only drive the cullmode
+                // VARYINGS_NEED_CULLFACE can be define by VaryingsMeshToPS.FaceSign input if a IsFrontFace Node is included in the shader graph.
+                #if defined(_DOUBLESIDED_ON) && !defined(VARYINGS_NEED_CULLFACE)
+                    #define VARYINGS_NEED_CULLFACE
+                #endif
+                #endif
+    
+                // Specific Material Define
+            #define _ENERGY_CONSERVING_SPECULAR 1
+                
+                // If we use subsurface scattering, enable output split lighting (for forward pass)
+                #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define OUTPUT_SPLIT_LIGHTING
+                #endif
+                
+                // This shader support recursive rendering for raytracing
+                #define HAVE_RECURSIVE_RENDERING
+                
+                // Caution: we can use the define SHADER_UNLIT onlit after the above Material include as it is the Unlit template who define it
+    
+                // To handle SSR on transparent correctly with a possibility to enable/disable it per framesettings
+                // we should have a code like this:
+                // if !defined(_DISABLE_SSR_TRANSPARENT)
+                // pragma multi_compile _ WRITE_NORMAL_BUFFER
+                // endif
+                // i.e we enable the multicompile only if we can receive SSR or not, and then C# code drive
+                // it based on if SSR transparent in frame settings and not (and stripper can strip it).
+                // this is currently not possible with our current preprocessor as _DISABLE_SSR_TRANSPARENT is a keyword not a define
+                // so instead we used this and chose to pay the extra cost of normal write even if SSR transaprent is disabled.
+                // Ideally the shader graph generator should handle it but condition below can't be handle correctly for now.
+                #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                #if !defined(_DISABLE_SSR_TRANSPARENT) && !defined(SHADER_UNLIT)
+                    #define WRITE_NORMAL_BUFFER
+                #endif
+                #endif
+    
+                #ifndef DEBUG_DISPLAY
+                    // In case of opaque we don't want to perform the alpha test, it is done in depth prepass and we use depth equal for ztest (setup from UI)
+                    // Don't do it with debug display mode as it is possible there is no depth prepass in this case
+                    #if !defined(_SURFACE_TYPE_TRANSPARENT) && defined(_ALPHATEST)
+                        #if SHADERPASS == SHADERPASS_FORWARD
+                        #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
+                        #elif SHADERPASS == SHADERPASS_GBUFFER
+                        #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
+                        #endif
+                    #endif
+                #endif
+    
+                // Translate transparent motion vector define
+                #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define _WRITE_TRANSPARENT_MOTION_VECTOR
+                #endif
+    
+                // Dots Instancing
+                // DotsInstancingOptions: <None>
+    
+                // Various properties
+    
+                // HybridV1InjectedBuiltinProperties: <None>
+    
+                // -- Graph Properties
+                CBUFFER_START(UnityPerMaterial)
+                float4 _EmissionColor;
+                float _UseShadowThreshold;
+                float4 _DoubleSidedConstants;
+                float _BlendMode;
+                float _EnableBlendModePreserveSpecularLighting;
+                float _RayTracing;
+                float _RefractionModel;
+                float4 _BottomColor;
+                float4 _TopColor;
+                CBUFFER_END
+                
+                // Object and Global properties
+    
+                // -- Property used by ScenePickingPass
+                #ifdef SCENEPICKINGPASS
+                float4 _SelectionID;
+                #endif
+    
+                // -- Properties used by SceneSelectionPass
+                #ifdef SCENESELECTIONPASS
+                int _ObjectId;
+                int _PassValue;
+                #endif
+    
+                // Includes
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingMacros.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIntersection.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoopDef.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/BuiltinUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingCommon.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
+    
+                // --------------------------------------------------
+                // Structs and Packing
+    
+                struct AttributesMesh
+                {
+                    float3 positionOS : POSITION;
+                    float3 normalOS : NORMAL;
+                    float4 tangentOS : TANGENT;
+                    float4 uv0 : TEXCOORD0;
+                    float4 color : COLOR;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : INSTANCEID_SEMANTIC;
+                    #endif
+                };
+                struct VaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 texCoord0;
+                    float4 color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+                struct SurfaceDescriptionInputs
+                {
+                    float3 TangentSpaceNormal;
+                    float4 uv0;
+                    float4 VertexColor;
+                };
+                struct VertexDescriptionInputs
+                {
+                    float3 ObjectSpaceNormal;
+                    float3 ObjectSpaceTangent;
+                    float3 ObjectSpacePosition;
+                };
+                struct PackedVaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 interp0 : TEXCOORD0;
+                    float4 interp1 : TEXCOORD1;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+    
+                PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
+                {
+                    PackedVaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.interp0.xyzw =  input.texCoord0;
+                    output.interp1.xyzw =  input.color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+                VaryingsMeshToPS UnpackVaryingsMeshToPS (PackedVaryingsMeshToPS input)
+                {
+                    VaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.texCoord0 = input.interp0.xyzw;
+                    output.color = input.interp1.xyzw;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+    
+                // --------------------------------------------------
+                // Graph
+    
+    
+                // Graph Functions
+                
+                void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
+                {
+                    Out = lerp(A, B, T);
+                }
+                
+                void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
+                {
+                    Out = A * B;
+                }
+    
+                // Graph Vertex
+                struct VertexDescription
+                {
+                    float3 Position;
+                    float3 Normal;
+                    float3 Tangent;
+                };
+                
+                VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
+                {
+                    VertexDescription description = (VertexDescription)0;
+                    description.Position = IN.ObjectSpacePosition;
+                    description.Normal = IN.ObjectSpaceNormal;
+                    description.Tangent = IN.ObjectSpaceTangent;
+                    return description;
+                }
+    
+                // Graph Pixel
+                struct SurfaceDescription
+                {
+                    float3 BaseColor;
+                    float3 Emission;
+                    float Alpha;
+                    float3 BentNormal;
+                    float Smoothness;
+                    float Occlusion;
+                    float3 NormalTS;
+                    float Metallic;
+                };
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = (SurfaceDescription)0;
+                    float4 _Property_012052db90a64698ab50659a7262b337_Out_0 = _BottomColor;
+                    float4 _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0 = _TopColor;
+                    float4 _UV_f37e4173334549ca96492ea17a11b95f_Out_0 = IN.uv0;
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_R_1 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[0];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_G_2 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[1];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_B_3 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[2];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_A_4 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[3];
+                    float4 _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3;
+                    Unity_Lerp_float4(_Property_012052db90a64698ab50659a7262b337_Out_0, _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0, (_Split_0bc51e4dab284af997c83fae0af95b57_G_2.xxxx), _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3);
+                    float4 _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2;
+                    Unity_Multiply_float(IN.VertexColor, _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3, _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2);
+                    surface.BaseColor = (_Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2.xyz);
+                    surface.Emission = float3(0, 0, 0);
+                    surface.Alpha = 1;
+                    surface.BentNormal = IN.TangentSpaceNormal;
+                    surface.Smoothness = 0.5;
+                    surface.Occlusion = 1;
+                    surface.NormalTS = IN.TangentSpaceNormal;
+                    surface.Metallic = 0;
+                    return surface;
+                }
+    
+                // --------------------------------------------------
+                // Build Graph Inputs
+    
+                
+                VertexDescriptionInputs AttributesMeshToVertexDescriptionInputs(AttributesMesh input)
+                {
+                    VertexDescriptionInputs output;
+                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                
+                    output.ObjectSpaceNormal =           input.normalOS;
+                    output.ObjectSpaceTangent =          input.tangentOS.xyz;
+                    output.ObjectSpacePosition =         input.positionOS;
+                
+                    return output;
+                }
+                
+                AttributesMesh ApplyMeshModification(AttributesMesh input, float3 timeParameters)
+                {
+                    // build graph inputs
+                    VertexDescriptionInputs vertexDescriptionInputs = AttributesMeshToVertexDescriptionInputs(input);
+                    // Override time paramters with used one (This is required to correctly handle motion vector for vertex animation based on time)
+                
+                    // evaluate vertex graph
+                    VertexDescription vertexDescription = VertexDescriptionFunction(vertexDescriptionInputs);
+                
+                    // copy graph output to the results
+                    input.positionOS = vertexDescription.Position;
+                    input.normalOS = vertexDescription.Normal;
+                    input.tangentOS.xyz = vertexDescription.Tangent;
+                
+                    return input;
+                }
+                
+                FragInputs BuildFragInputs(VaryingsMeshToPS input)
+                {
+                    FragInputs output;
+                    ZERO_INITIALIZE(FragInputs, output);
+                
+                    // Init to some default value to make the computer quiet (else it output 'divide by zero' warning even if value is not used).
+                    // TODO: this is a really poor workaround, but the variable is used in a bunch of places
+                    // to compute normals which are then passed on elsewhere to compute other values...
+                    output.tangentToWorld = k_identity3x3;
+                    output.positionSS = input.positionCS;       // input.positionCS is SV_Position
+                
+                    output.texCoord0 = input.texCoord0;
+                    output.color = input.color;
+                
+                    return output;
+                }
+                
+                SurfaceDescriptionInputs FragInputsToSurfaceDescriptionInputs(FragInputs input, float3 viewWS)
+                {
+                    SurfaceDescriptionInputs output;
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                
+                    #if defined(SHADER_STAGE_RAY_TRACING)
+                    #else
+                    #endif
+                    output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+                    output.uv0 =                         input.texCoord0;
+                    output.VertexColor =                 input.color;
+                
+                    return output;
+                }
+                
+                // existing HDRP code uses the combined function to go directly from packed to frag inputs
+                FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
+                {
+                    UNITY_SETUP_INSTANCE_ID(input);
+                    VaryingsMeshToPS unpacked= UnpackVaryingsMeshToPS(input);
+                    return BuildFragInputs(unpacked);
+                }
+                
+    
+                // --------------------------------------------------
+                // Build Surface Data (Specific Material)
+    
+            void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
+                {
+                    ZERO_INITIALIZE(SurfaceData, surfaceData);
+                
+                    // specularOcclusion need to be init ahead of decal to quiet the compiler that modify the SurfaceData struct
+                    // however specularOcclusion can come from the graph, so need to be init here so it can be override.
+                    surfaceData.specularOcclusion = 1.0;
+                
+                    surfaceData.baseColor =                 surfaceDescription.BaseColor;
+                    surfaceData.perceptualSmoothness =      surfaceDescription.Smoothness;
+                    surfaceData.ambientOcclusion =          surfaceDescription.Occlusion;
+                    surfaceData.metallic =                  surfaceDescription.Metallic;
+                
+                    #if defined(_REFRACTION_PLANE) || defined(_REFRACTION_SPHERE) || defined(_REFRACTION_THIN)
+                        if (_EnableSSRefraction)
+                        {
+                
+                            surfaceData.transmittanceMask = (1.0 - surfaceDescription.Alpha);
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                        else
+                        {
+                            surfaceData.ior = 1.0;
+                            surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                            surfaceData.atDistance = 1.0;
+                            surfaceData.transmittanceMask = 0.0;
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                    #else
+                        surfaceData.ior = 1.0;
+                        surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                        surfaceData.atDistance = 1.0;
+                        surfaceData.transmittanceMask = 0.0;
+                    #endif
+                
+                    // These static material feature allow compile time optimization
+                    surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
+                    #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SUBSURFACE_SCATTERING;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_TRANSMISSION
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_TRANSMISSION;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_ANISOTROPY
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_IRIDESCENCE
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_SPECULAR_COLOR
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_CLEAR_COAT
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+                    #endif
+                
+                    #if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+                        // Require to have setup baseColor
+                        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+                        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+                    #endif
+                
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+                
+                    // normal delivered to master node
+                    GetNormalWS(fragInputs, surfaceDescription.NormalTS, surfaceData.normalWS, doubleSidedConstants);
+                
+                    surfaceData.geomNormalWS = fragInputs.tangentToWorld[2];
+                
+                    surfaceData.tangentWS = normalize(fragInputs.tangentToWorld[0].xyz);    // The tangent is not normalize in tangentToWorld for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+                
+                
+                    #if HAVE_DECALS
+                        if (_EnableDecals)
+                        {
+                            float alpha = 1.0;
+                            alpha = surfaceDescription.Alpha;
+                
+                            // Both uses and modifies 'surfaceData.normalWS'.
+                            DecalSurfaceData decalSurfaceData = GetDecalSurfaceData(posInput, fragInputs.tangentToWorld[2], alpha);
+                            ApplyDecalToSurfaceData(decalSurfaceData, fragInputs.tangentToWorld[2], surfaceData);
+                        }
+                    #endif
+                
+                    bentNormalWS = surfaceData.normalWS;
+                
+                    surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+                
+                    #ifdef DEBUG_DISPLAY
+                        if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)
+                        {
+                            // TODO: need to update mip info
+                            surfaceData.metallic = 0;
+                        }
+                
+                        // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
+                        // as it can modify attribute use for static lighting
+                        ApplyDebugToSurfaceData(fragInputs.tangentToWorld, surfaceData);
+                    #endif
+                
+                    // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
+                    // If user provide bent normal then we process a better term
+                    #if defined(_SPECULAR_OCCLUSION_CUSTOM)
+                        // Just use the value passed through via the slot (not active otherwise)
+                    #elif defined(_SPECULAR_OCCLUSION_FROM_AO_BENT_NORMAL)
+                        // If we have bent normal and ambient occlusion, process a specular occlusion
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData.normalWS, surfaceData.ambientOcclusion, PerceptualSmoothnessToPerceptualRoughness(surfaceData.perceptualSmoothness));
+                    #elif defined(_AMBIENT_OCCLUSION) && defined(_SPECULAR_OCCLUSION_FROM_AO)
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+                    #endif
+                
+                    #if defined(_ENABLE_GEOMETRIC_SPECULAR_AA) && !defined(SHADER_STAGE_RAY_TRACING)
+                        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.tangentToWorld[2], surfaceDescription.SpecularAAScreenSpaceVariance, surfaceDescription.SpecularAAThreshold);
+                    #endif
+                }
+                
+    
+                // --------------------------------------------------
+                // Get Surface And BuiltinData
+    
+                void GetSurfaceAndBuiltinData(FragInputs fragInputs, float3 V, inout PositionInputs posInput, out SurfaceData surfaceData, out BuiltinData builtinData RAY_TRACING_OPTIONAL_PARAMETERS)
+                {
+                    // Don't dither if displaced tessellation (we're fading out the displacement instead to match the next LOD)
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && !defined(_TESSELLATION_DISPLACEMENT)
+                    #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
+                    LODDitheringTransition(ComputeFadeMaskSeed(V, posInput.positionSS), unity_LODFade.x);
+                    #endif
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+    
+                    ApplyDoubleSidedFlipOrMirror(fragInputs, doubleSidedConstants); // Apply double sided flip on the vertex normal
+                    #endif // SHADER_UNLIT
+    
+                    SurfaceDescriptionInputs surfaceDescriptionInputs = FragInputsToSurfaceDescriptionInputs(fragInputs, V);
+                    SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
+    
+                    // Perform alpha test very early to save performance (a killed pixel will not sample textures)
+                    // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
+                    #ifdef _ALPHATEST_ON
+                        float alphaCutoff = surfaceDescription.AlphaClipThreshold;
+                        #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                        // The TransparentDepthPrepass is also used with SSR transparent.
+                        // If an artists enable transaprent SSR but not the TransparentDepthPrepass itself, then we use AlphaClipThreshold
+                        // otherwise if TransparentDepthPrepass is enabled we use AlphaClipThresholdDepthPrepass
+                        #elif SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_POSTPASS
+                        // DepthPostpass always use its own alpha threshold
+                        alphaCutoff = surfaceDescription.AlphaClipThresholdDepthPostpass;
+                        #elif (SHADERPASS == SHADERPASS_SHADOWS) || (SHADERPASS == SHADERPASS_RAYTRACING_VISIBILITY)
+                        // If use shadow threshold isn't enable we don't allow any test
+                        #endif
+    
+                        GENERIC_ALPHA_TEST(surfaceDescription.Alpha, alphaCutoff);
+                    #endif
+    
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && _DEPTHOFFSET_ON
+                    ApplyDepthOffsetPositionInput(V, surfaceDescription.DepthOffset, GetViewForwardDir(), GetWorldToHClipMatrix(), posInput);
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    float3 bentNormalWS;
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
+    
+                    // Builtin Data
+                    // For back lighting we use the oposite vertex normal
+                    InitBuiltinData(posInput, surfaceDescription.Alpha, bentNormalWS, -fragInputs.tangentToWorld[2], fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
+    
+                    #else
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData);
+    
+                    ZERO_INITIALIZE(BuiltinData, builtinData); // No call to InitBuiltinData as we don't have any lighting
+                    builtinData.opacity = surfaceDescription.Alpha;
+    
+                    #if defined(DEBUG_DISPLAY)
+                        // Light Layers are currently not used for the Unlit shader (because it is not lit)
+                        // But Unlit objects do cast shadows according to their rendering layer mask, which is what we want to
+                        // display in the light layers visualization mode, therefore we need the renderingLayers
+                        builtinData.renderingLayers = GetMeshRenderingLightLayer();
+                    #endif
+    
+                    #endif // SHADER_UNLIT
+    
+                    #ifdef _ALPHATEST_ON
+                        // Used for sharpening by alpha to mask - Alpha to covertage is only used with depth only and forward pass (no shadow pass, no transparent pass)
+                        builtinData.alphaClipTreshold = alphaCutoff;
+                    #endif
+    
+                    // override sampleBakedGI - not used by Unlit
+    
+                    builtinData.emissiveColor = surfaceDescription.Emission;
+    
+                    // Note this will not fully work on transparent surfaces (can check with _SURFACE_TYPE_TRANSPARENT define)
+                    // We will always overwrite vt feeback with the nearest. So behind transparent surfaces vt will not be resolved
+                    // This is a limitation of the current MRT approach.
+    
+                    #if _DEPTHOFFSET_ON
+                    builtinData.depthOffset = surfaceDescription.DepthOffset;
+                    #endif
+    
+                    // TODO: We should generate distortion / distortionBlur for non distortion pass
+                    #if (SHADERPASS == SHADERPASS_DISTORTION)
+                    builtinData.distortion = surfaceDescription.Distortion;
+                    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    // PostInitBuiltinData call ApplyDebugToBuiltinData
+                    PostInitBuiltinData(V, posInput, surfaceData, builtinData);
+                    #else
+                    ApplyDebugToBuiltinData(builtinData);
+                    #endif
+    
+                    RAY_TRACING_OPTIONAL_ALPHA_TEST_PASS
+                }
+    
+                // --------------------------------------------------
+                // Main
+    
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassRaytracingIndirect.hlsl"
+    
+                ENDHLSL
+            }
+            Pass
+            {
+                Name "VisibilityDXR"
+                Tags
+                {
+                    "LightMode" = "VisibilityDXR"
+                }
+    
+                // Render State
+                // RenderState: <None>
+    
+                // Debug
+                // <None>
+    
+                // --------------------------------------------------
+                // Pass
+    
+                HLSLPROGRAM
+    
+                // Pragmas
+                #pragma target 5.0
+                #pragma raytracing surface_shader
+                #pragma only_renderers d3d11
+    
+                // Keywords
+                #pragma multi_compile _ TRANSPARENT_COLOR_SHADOW
+                #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
+                #pragma shader_feature_local _BLENDMODE_OFF _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
+                #pragma shader_feature_local _ _DOUBLESIDED_ON
+                #pragma shader_feature_local _ _ADD_PRECOMPUTED_VELOCITY
+                #pragma shader_feature_local _ _TRANSPARENT_WRITES_MOTION_VEC
+                #pragma shader_feature_local _ _ENABLE_FOG_ON_TRANSPARENT
+                #pragma shader_feature_local _ _DISABLE_DECALS
+                #pragma shader_feature_local _ _DISABLE_SSR
+                #pragma shader_feature_local _ _DISABLE_SSR_TRANSPARENT
+                #pragma shader_feature_local _REFRACTION_OFF _REFRACTION_PLANE _REFRACTION_SPHERE _REFRACTION_THIN
+                // GraphKeywords: <None>
+    
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl" // Required to be include before we include properties as it define DECLARE_STACK_CB
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphHeader.hlsl" // Need to be here for Gradient struct definition
+    
+                // --------------------------------------------------
+                // Defines
+    
+                // Attribute
+                #define ATTRIBUTES_NEED_NORMAL
+                #define ATTRIBUTES_NEED_TANGENT
+                #define ATTRIBUTES_NEED_TEXCOORD0
+                #define ATTRIBUTES_NEED_COLOR
+                #define VARYINGS_NEED_TEXCOORD0
+                #define VARYINGS_NEED_COLOR
+    
+                #define HAVE_MESH_MODIFICATION
+    
+    
+                #define SHADERPASS SHADERPASS_RAYTRACING_VISIBILITY
+                #define RAYTRACING_SHADER_GRAPH_RAYTRACED
+    
+                // Following two define are a workaround introduce in 10.1.x for RaytracingQualityNode
+                // The ShaderGraph don't support correctly migration of this node as it serialize all the node data
+                // in the json file making it impossible to uprgrade. Until we get a fix, we do a workaround here
+                // to still allow us to rename the field and keyword of this node without breaking existing code.
+                #ifdef RAYTRACING_SHADER_GRAPH_DEFAULT 
+                #define RAYTRACING_SHADER_GRAPH_HIGH
+                #endif
+    
+                #ifdef RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define RAYTRACING_SHADER_GRAPH_LOW
+                #endif
+                // end
+    
+                #ifndef SHADER_UNLIT
+                // We need isFrontFace when using double sided - it is not required for unlit as in case of unlit double sided only drive the cullmode
+                // VARYINGS_NEED_CULLFACE can be define by VaryingsMeshToPS.FaceSign input if a IsFrontFace Node is included in the shader graph.
+                #if defined(_DOUBLESIDED_ON) && !defined(VARYINGS_NEED_CULLFACE)
+                    #define VARYINGS_NEED_CULLFACE
+                #endif
+                #endif
+    
+                // Specific Material Define
+            #define _ENERGY_CONSERVING_SPECULAR 1
+                
+                // If we use subsurface scattering, enable output split lighting (for forward pass)
+                #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define OUTPUT_SPLIT_LIGHTING
+                #endif
+                
+                // This shader support recursive rendering for raytracing
+                #define HAVE_RECURSIVE_RENDERING
+                
+                // Caution: we can use the define SHADER_UNLIT onlit after the above Material include as it is the Unlit template who define it
+    
+                // To handle SSR on transparent correctly with a possibility to enable/disable it per framesettings
+                // we should have a code like this:
+                // if !defined(_DISABLE_SSR_TRANSPARENT)
+                // pragma multi_compile _ WRITE_NORMAL_BUFFER
+                // endif
+                // i.e we enable the multicompile only if we can receive SSR or not, and then C# code drive
+                // it based on if SSR transparent in frame settings and not (and stripper can strip it).
+                // this is currently not possible with our current preprocessor as _DISABLE_SSR_TRANSPARENT is a keyword not a define
+                // so instead we used this and chose to pay the extra cost of normal write even if SSR transaprent is disabled.
+                // Ideally the shader graph generator should handle it but condition below can't be handle correctly for now.
+                #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                #if !defined(_DISABLE_SSR_TRANSPARENT) && !defined(SHADER_UNLIT)
+                    #define WRITE_NORMAL_BUFFER
+                #endif
+                #endif
+    
+                #ifndef DEBUG_DISPLAY
+                    // In case of opaque we don't want to perform the alpha test, it is done in depth prepass and we use depth equal for ztest (setup from UI)
+                    // Don't do it with debug display mode as it is possible there is no depth prepass in this case
+                    #if !defined(_SURFACE_TYPE_TRANSPARENT) && defined(_ALPHATEST)
+                        #if SHADERPASS == SHADERPASS_FORWARD
+                        #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
+                        #elif SHADERPASS == SHADERPASS_GBUFFER
+                        #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
+                        #endif
+                    #endif
+                #endif
+    
+                // Translate transparent motion vector define
+                #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define _WRITE_TRANSPARENT_MOTION_VECTOR
+                #endif
+    
+                // Dots Instancing
+                // DotsInstancingOptions: <None>
+    
+                // Various properties
+    
+                // HybridV1InjectedBuiltinProperties: <None>
+    
+                // -- Graph Properties
+                CBUFFER_START(UnityPerMaterial)
+                float4 _EmissionColor;
+                float _UseShadowThreshold;
+                float4 _DoubleSidedConstants;
+                float _BlendMode;
+                float _EnableBlendModePreserveSpecularLighting;
+                float _RayTracing;
+                float _RefractionModel;
+                float4 _BottomColor;
+                float4 _TopColor;
+                CBUFFER_END
+                
+                // Object and Global properties
+    
+                // -- Property used by ScenePickingPass
+                #ifdef SCENEPICKINGPASS
+                float4 _SelectionID;
+                #endif
+    
+                // -- Properties used by SceneSelectionPass
+                #ifdef SCENESELECTIONPASS
+                int _ObjectId;
+                int _PassValue;
+                #endif
+    
+                // Includes
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingMacros.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIntersection.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/BuiltinUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingCommon.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
+    
+                // --------------------------------------------------
+                // Structs and Packing
+    
+                struct AttributesMesh
+                {
+                    float3 positionOS : POSITION;
+                    float3 normalOS : NORMAL;
+                    float4 tangentOS : TANGENT;
+                    float4 uv0 : TEXCOORD0;
+                    float4 color : COLOR;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : INSTANCEID_SEMANTIC;
+                    #endif
+                };
+                struct VaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 texCoord0;
+                    float4 color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+                struct SurfaceDescriptionInputs
+                {
+                    float3 TangentSpaceNormal;
+                    float4 uv0;
+                    float4 VertexColor;
+                };
+                struct VertexDescriptionInputs
+                {
+                    float3 ObjectSpaceNormal;
+                    float3 ObjectSpaceTangent;
+                    float3 ObjectSpacePosition;
+                };
+                struct PackedVaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 interp0 : TEXCOORD0;
+                    float4 interp1 : TEXCOORD1;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+    
+                PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
+                {
+                    PackedVaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.interp0.xyzw =  input.texCoord0;
+                    output.interp1.xyzw =  input.color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+                VaryingsMeshToPS UnpackVaryingsMeshToPS (PackedVaryingsMeshToPS input)
+                {
+                    VaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.texCoord0 = input.interp0.xyzw;
+                    output.color = input.interp1.xyzw;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+    
+                // --------------------------------------------------
+                // Graph
+    
+    
+                // Graph Functions
+                
+                void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
+                {
+                    Out = lerp(A, B, T);
+                }
+                
+                void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
+                {
+                    Out = A * B;
+                }
+    
+                // Graph Vertex
+                struct VertexDescription
+                {
+                    float3 Position;
+                    float3 Normal;
+                    float3 Tangent;
+                };
+                
+                VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
+                {
+                    VertexDescription description = (VertexDescription)0;
+                    description.Position = IN.ObjectSpacePosition;
+                    description.Normal = IN.ObjectSpaceNormal;
+                    description.Tangent = IN.ObjectSpaceTangent;
+                    return description;
+                }
+    
+                // Graph Pixel
+                struct SurfaceDescription
+                {
+                    float3 BaseColor;
+                    float3 Emission;
+                    float Alpha;
+                    float3 BentNormal;
+                    float Smoothness;
+                    float Occlusion;
+                    float3 NormalTS;
+                    float Metallic;
+                };
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = (SurfaceDescription)0;
+                    float4 _Property_012052db90a64698ab50659a7262b337_Out_0 = _BottomColor;
+                    float4 _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0 = _TopColor;
+                    float4 _UV_f37e4173334549ca96492ea17a11b95f_Out_0 = IN.uv0;
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_R_1 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[0];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_G_2 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[1];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_B_3 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[2];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_A_4 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[3];
+                    float4 _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3;
+                    Unity_Lerp_float4(_Property_012052db90a64698ab50659a7262b337_Out_0, _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0, (_Split_0bc51e4dab284af997c83fae0af95b57_G_2.xxxx), _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3);
+                    float4 _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2;
+                    Unity_Multiply_float(IN.VertexColor, _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3, _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2);
+                    surface.BaseColor = (_Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2.xyz);
+                    surface.Emission = float3(0, 0, 0);
+                    surface.Alpha = 1;
+                    surface.BentNormal = IN.TangentSpaceNormal;
+                    surface.Smoothness = 0.5;
+                    surface.Occlusion = 1;
+                    surface.NormalTS = IN.TangentSpaceNormal;
+                    surface.Metallic = 0;
+                    return surface;
+                }
+    
+                // --------------------------------------------------
+                // Build Graph Inputs
+    
+                
+                VertexDescriptionInputs AttributesMeshToVertexDescriptionInputs(AttributesMesh input)
+                {
+                    VertexDescriptionInputs output;
+                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                
+                    output.ObjectSpaceNormal =           input.normalOS;
+                    output.ObjectSpaceTangent =          input.tangentOS.xyz;
+                    output.ObjectSpacePosition =         input.positionOS;
+                
+                    return output;
+                }
+                
+                AttributesMesh ApplyMeshModification(AttributesMesh input, float3 timeParameters)
+                {
+                    // build graph inputs
+                    VertexDescriptionInputs vertexDescriptionInputs = AttributesMeshToVertexDescriptionInputs(input);
+                    // Override time paramters with used one (This is required to correctly handle motion vector for vertex animation based on time)
+                
+                    // evaluate vertex graph
+                    VertexDescription vertexDescription = VertexDescriptionFunction(vertexDescriptionInputs);
+                
+                    // copy graph output to the results
+                    input.positionOS = vertexDescription.Position;
+                    input.normalOS = vertexDescription.Normal;
+                    input.tangentOS.xyz = vertexDescription.Tangent;
+                
+                    return input;
+                }
+                
+                FragInputs BuildFragInputs(VaryingsMeshToPS input)
+                {
+                    FragInputs output;
+                    ZERO_INITIALIZE(FragInputs, output);
+                
+                    // Init to some default value to make the computer quiet (else it output 'divide by zero' warning even if value is not used).
+                    // TODO: this is a really poor workaround, but the variable is used in a bunch of places
+                    // to compute normals which are then passed on elsewhere to compute other values...
+                    output.tangentToWorld = k_identity3x3;
+                    output.positionSS = input.positionCS;       // input.positionCS is SV_Position
+                
+                    output.texCoord0 = input.texCoord0;
+                    output.color = input.color;
+                
+                    return output;
+                }
+                
+                SurfaceDescriptionInputs FragInputsToSurfaceDescriptionInputs(FragInputs input, float3 viewWS)
+                {
+                    SurfaceDescriptionInputs output;
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                
+                    #if defined(SHADER_STAGE_RAY_TRACING)
+                    #else
+                    #endif
+                    output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+                    output.uv0 =                         input.texCoord0;
+                    output.VertexColor =                 input.color;
+                
+                    return output;
+                }
+                
+                // existing HDRP code uses the combined function to go directly from packed to frag inputs
+                FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
+                {
+                    UNITY_SETUP_INSTANCE_ID(input);
+                    VaryingsMeshToPS unpacked= UnpackVaryingsMeshToPS(input);
+                    return BuildFragInputs(unpacked);
+                }
+                
+    
+                // --------------------------------------------------
+                // Build Surface Data (Specific Material)
+    
+            void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
+                {
+                    ZERO_INITIALIZE(SurfaceData, surfaceData);
+                
+                    // specularOcclusion need to be init ahead of decal to quiet the compiler that modify the SurfaceData struct
+                    // however specularOcclusion can come from the graph, so need to be init here so it can be override.
+                    surfaceData.specularOcclusion = 1.0;
+                
+                    surfaceData.baseColor =                 surfaceDescription.BaseColor;
+                    surfaceData.perceptualSmoothness =      surfaceDescription.Smoothness;
+                    surfaceData.ambientOcclusion =          surfaceDescription.Occlusion;
+                    surfaceData.metallic =                  surfaceDescription.Metallic;
+                
+                    #if defined(_REFRACTION_PLANE) || defined(_REFRACTION_SPHERE) || defined(_REFRACTION_THIN)
+                        if (_EnableSSRefraction)
+                        {
+                
+                            surfaceData.transmittanceMask = (1.0 - surfaceDescription.Alpha);
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                        else
+                        {
+                            surfaceData.ior = 1.0;
+                            surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                            surfaceData.atDistance = 1.0;
+                            surfaceData.transmittanceMask = 0.0;
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                    #else
+                        surfaceData.ior = 1.0;
+                        surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                        surfaceData.atDistance = 1.0;
+                        surfaceData.transmittanceMask = 0.0;
+                    #endif
+                
+                    // These static material feature allow compile time optimization
+                    surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
+                    #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SUBSURFACE_SCATTERING;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_TRANSMISSION
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_TRANSMISSION;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_ANISOTROPY
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_IRIDESCENCE
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_SPECULAR_COLOR
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_CLEAR_COAT
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+                    #endif
+                
+                    #if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+                        // Require to have setup baseColor
+                        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+                        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+                    #endif
+                
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+                
+                    // normal delivered to master node
+                    GetNormalWS(fragInputs, surfaceDescription.NormalTS, surfaceData.normalWS, doubleSidedConstants);
+                
+                    surfaceData.geomNormalWS = fragInputs.tangentToWorld[2];
+                
+                    surfaceData.tangentWS = normalize(fragInputs.tangentToWorld[0].xyz);    // The tangent is not normalize in tangentToWorld for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+                
+                
+                    #if HAVE_DECALS
+                        if (_EnableDecals)
+                        {
+                            float alpha = 1.0;
+                            alpha = surfaceDescription.Alpha;
+                
+                            // Both uses and modifies 'surfaceData.normalWS'.
+                            DecalSurfaceData decalSurfaceData = GetDecalSurfaceData(posInput, fragInputs.tangentToWorld[2], alpha);
+                            ApplyDecalToSurfaceData(decalSurfaceData, fragInputs.tangentToWorld[2], surfaceData);
+                        }
+                    #endif
+                
+                    bentNormalWS = surfaceData.normalWS;
+                
+                    surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+                
+                    #ifdef DEBUG_DISPLAY
+                        if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)
+                        {
+                            // TODO: need to update mip info
+                            surfaceData.metallic = 0;
+                        }
+                
+                        // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
+                        // as it can modify attribute use for static lighting
+                        ApplyDebugToSurfaceData(fragInputs.tangentToWorld, surfaceData);
+                    #endif
+                
+                    // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
+                    // If user provide bent normal then we process a better term
+                    #if defined(_SPECULAR_OCCLUSION_CUSTOM)
+                        // Just use the value passed through via the slot (not active otherwise)
+                    #elif defined(_SPECULAR_OCCLUSION_FROM_AO_BENT_NORMAL)
+                        // If we have bent normal and ambient occlusion, process a specular occlusion
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData.normalWS, surfaceData.ambientOcclusion, PerceptualSmoothnessToPerceptualRoughness(surfaceData.perceptualSmoothness));
+                    #elif defined(_AMBIENT_OCCLUSION) && defined(_SPECULAR_OCCLUSION_FROM_AO)
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+                    #endif
+                
+                    #if defined(_ENABLE_GEOMETRIC_SPECULAR_AA) && !defined(SHADER_STAGE_RAY_TRACING)
+                        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.tangentToWorld[2], surfaceDescription.SpecularAAScreenSpaceVariance, surfaceDescription.SpecularAAThreshold);
+                    #endif
+                }
+                
+    
+                // --------------------------------------------------
+                // Get Surface And BuiltinData
+    
+                void GetSurfaceAndBuiltinData(FragInputs fragInputs, float3 V, inout PositionInputs posInput, out SurfaceData surfaceData, out BuiltinData builtinData RAY_TRACING_OPTIONAL_PARAMETERS)
+                {
+                    // Don't dither if displaced tessellation (we're fading out the displacement instead to match the next LOD)
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && !defined(_TESSELLATION_DISPLACEMENT)
+                    #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
+                    LODDitheringTransition(ComputeFadeMaskSeed(V, posInput.positionSS), unity_LODFade.x);
+                    #endif
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+    
+                    ApplyDoubleSidedFlipOrMirror(fragInputs, doubleSidedConstants); // Apply double sided flip on the vertex normal
+                    #endif // SHADER_UNLIT
+    
+                    SurfaceDescriptionInputs surfaceDescriptionInputs = FragInputsToSurfaceDescriptionInputs(fragInputs, V);
+                    SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
+    
+                    // Perform alpha test very early to save performance (a killed pixel will not sample textures)
+                    // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
+                    #ifdef _ALPHATEST_ON
+                        float alphaCutoff = surfaceDescription.AlphaClipThreshold;
+                        #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                        // The TransparentDepthPrepass is also used with SSR transparent.
+                        // If an artists enable transaprent SSR but not the TransparentDepthPrepass itself, then we use AlphaClipThreshold
+                        // otherwise if TransparentDepthPrepass is enabled we use AlphaClipThresholdDepthPrepass
+                        #elif SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_POSTPASS
+                        // DepthPostpass always use its own alpha threshold
+                        alphaCutoff = surfaceDescription.AlphaClipThresholdDepthPostpass;
+                        #elif (SHADERPASS == SHADERPASS_SHADOWS) || (SHADERPASS == SHADERPASS_RAYTRACING_VISIBILITY)
+                        // If use shadow threshold isn't enable we don't allow any test
+                        #endif
+    
+                        GENERIC_ALPHA_TEST(surfaceDescription.Alpha, alphaCutoff);
+                    #endif
+    
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && _DEPTHOFFSET_ON
+                    ApplyDepthOffsetPositionInput(V, surfaceDescription.DepthOffset, GetViewForwardDir(), GetWorldToHClipMatrix(), posInput);
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    float3 bentNormalWS;
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
+    
+                    // Builtin Data
+                    // For back lighting we use the oposite vertex normal
+                    InitBuiltinData(posInput, surfaceDescription.Alpha, bentNormalWS, -fragInputs.tangentToWorld[2], fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
+    
+                    #else
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData);
+    
+                    ZERO_INITIALIZE(BuiltinData, builtinData); // No call to InitBuiltinData as we don't have any lighting
+                    builtinData.opacity = surfaceDescription.Alpha;
+    
+                    #if defined(DEBUG_DISPLAY)
+                        // Light Layers are currently not used for the Unlit shader (because it is not lit)
+                        // But Unlit objects do cast shadows according to their rendering layer mask, which is what we want to
+                        // display in the light layers visualization mode, therefore we need the renderingLayers
+                        builtinData.renderingLayers = GetMeshRenderingLightLayer();
+                    #endif
+    
+                    #endif // SHADER_UNLIT
+    
+                    #ifdef _ALPHATEST_ON
+                        // Used for sharpening by alpha to mask - Alpha to covertage is only used with depth only and forward pass (no shadow pass, no transparent pass)
+                        builtinData.alphaClipTreshold = alphaCutoff;
+                    #endif
+    
+                    // override sampleBakedGI - not used by Unlit
+    
+                    builtinData.emissiveColor = surfaceDescription.Emission;
+    
+                    // Note this will not fully work on transparent surfaces (can check with _SURFACE_TYPE_TRANSPARENT define)
+                    // We will always overwrite vt feeback with the nearest. So behind transparent surfaces vt will not be resolved
+                    // This is a limitation of the current MRT approach.
+    
+                    #if _DEPTHOFFSET_ON
+                    builtinData.depthOffset = surfaceDescription.DepthOffset;
+                    #endif
+    
+                    // TODO: We should generate distortion / distortionBlur for non distortion pass
+                    #if (SHADERPASS == SHADERPASS_DISTORTION)
+                    builtinData.distortion = surfaceDescription.Distortion;
+                    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    // PostInitBuiltinData call ApplyDebugToBuiltinData
+                    PostInitBuiltinData(V, posInput, surfaceData, builtinData);
+                    #else
+                    ApplyDebugToBuiltinData(builtinData);
+                    #endif
+    
+                    RAY_TRACING_OPTIONAL_ALPHA_TEST_PASS
+                }
+    
+                // --------------------------------------------------
+                // Main
+    
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassRaytracingVisibility.hlsl"
+    
+                ENDHLSL
+            }
+            Pass
+            {
+                Name "ForwardDXR"
+                Tags
+                {
+                    "LightMode" = "ForwardDXR"
+                }
+    
+                // Render State
+                // RenderState: <None>
+    
+                // Debug
+                // <None>
+    
+                // --------------------------------------------------
+                // Pass
+    
+                HLSLPROGRAM
+    
+                // Pragmas
+                #pragma target 5.0
+                #pragma raytracing surface_shader
+                #pragma only_renderers d3d11
+    
+                // Keywords
+                #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
+                #pragma shader_feature_local _BLENDMODE_OFF _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
+                #pragma shader_feature_local _ _DOUBLESIDED_ON
+                #pragma shader_feature_local _ _ADD_PRECOMPUTED_VELOCITY
+                #pragma shader_feature_local _ _TRANSPARENT_WRITES_MOTION_VEC
+                #pragma shader_feature_local _ _ENABLE_FOG_ON_TRANSPARENT
+                #pragma multi_compile _ DEBUG_DISPLAY
+                #pragma shader_feature_local _ _DISABLE_DECALS
+                #pragma shader_feature_local _ _DISABLE_SSR
+                #pragma shader_feature_local _ _DISABLE_SSR_TRANSPARENT
+                #pragma multi_compile _ LIGHTMAP_ON
+                #pragma multi_compile _ DIRLIGHTMAP_COMBINED
+                #pragma shader_feature_local _REFRACTION_OFF _REFRACTION_PLANE _REFRACTION_SPHERE _REFRACTION_THIN
+                // GraphKeywords: <None>
+    
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl" // Required to be include before we include properties as it define DECLARE_STACK_CB
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphHeader.hlsl" // Need to be here for Gradient struct definition
+    
+                // --------------------------------------------------
+                // Defines
+    
+                // Attribute
+                #define ATTRIBUTES_NEED_NORMAL
+                #define ATTRIBUTES_NEED_TANGENT
+                #define ATTRIBUTES_NEED_TEXCOORD0
+                #define ATTRIBUTES_NEED_COLOR
+                #define VARYINGS_NEED_TEXCOORD0
+                #define VARYINGS_NEED_COLOR
+    
+                #define HAVE_MESH_MODIFICATION
+    
+    
+                #define SHADERPASS SHADERPASS_RAYTRACING_FORWARD
+                #define SHADOW_LOW
+                #define RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define HAS_LIGHTLOOP
+    
+                // Following two define are a workaround introduce in 10.1.x for RaytracingQualityNode
+                // The ShaderGraph don't support correctly migration of this node as it serialize all the node data
+                // in the json file making it impossible to uprgrade. Until we get a fix, we do a workaround here
+                // to still allow us to rename the field and keyword of this node without breaking existing code.
+                #ifdef RAYTRACING_SHADER_GRAPH_DEFAULT 
+                #define RAYTRACING_SHADER_GRAPH_HIGH
+                #endif
+    
+                #ifdef RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define RAYTRACING_SHADER_GRAPH_LOW
+                #endif
+                // end
+    
+                #ifndef SHADER_UNLIT
+                // We need isFrontFace when using double sided - it is not required for unlit as in case of unlit double sided only drive the cullmode
+                // VARYINGS_NEED_CULLFACE can be define by VaryingsMeshToPS.FaceSign input if a IsFrontFace Node is included in the shader graph.
+                #if defined(_DOUBLESIDED_ON) && !defined(VARYINGS_NEED_CULLFACE)
+                    #define VARYINGS_NEED_CULLFACE
+                #endif
+                #endif
+    
+                // Specific Material Define
+            #define _ENERGY_CONSERVING_SPECULAR 1
+                
+                // If we use subsurface scattering, enable output split lighting (for forward pass)
+                #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define OUTPUT_SPLIT_LIGHTING
+                #endif
+                
+                // This shader support recursive rendering for raytracing
+                #define HAVE_RECURSIVE_RENDERING
+                
+                // Caution: we can use the define SHADER_UNLIT onlit after the above Material include as it is the Unlit template who define it
+    
+                // To handle SSR on transparent correctly with a possibility to enable/disable it per framesettings
+                // we should have a code like this:
+                // if !defined(_DISABLE_SSR_TRANSPARENT)
+                // pragma multi_compile _ WRITE_NORMAL_BUFFER
+                // endif
+                // i.e we enable the multicompile only if we can receive SSR or not, and then C# code drive
+                // it based on if SSR transparent in frame settings and not (and stripper can strip it).
+                // this is currently not possible with our current preprocessor as _DISABLE_SSR_TRANSPARENT is a keyword not a define
+                // so instead we used this and chose to pay the extra cost of normal write even if SSR transaprent is disabled.
+                // Ideally the shader graph generator should handle it but condition below can't be handle correctly for now.
+                #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                #if !defined(_DISABLE_SSR_TRANSPARENT) && !defined(SHADER_UNLIT)
+                    #define WRITE_NORMAL_BUFFER
+                #endif
+                #endif
+    
+                #ifndef DEBUG_DISPLAY
+                    // In case of opaque we don't want to perform the alpha test, it is done in depth prepass and we use depth equal for ztest (setup from UI)
+                    // Don't do it with debug display mode as it is possible there is no depth prepass in this case
+                    #if !defined(_SURFACE_TYPE_TRANSPARENT) && defined(_ALPHATEST)
+                        #if SHADERPASS == SHADERPASS_FORWARD
+                        #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
+                        #elif SHADERPASS == SHADERPASS_GBUFFER
+                        #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
+                        #endif
+                    #endif
+                #endif
+    
+                // Translate transparent motion vector define
+                #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define _WRITE_TRANSPARENT_MOTION_VECTOR
+                #endif
+    
+                // Dots Instancing
+                // DotsInstancingOptions: <None>
+    
+                // Various properties
+    
+                // HybridV1InjectedBuiltinProperties: <None>
+    
+                // -- Graph Properties
+                CBUFFER_START(UnityPerMaterial)
+                float4 _EmissionColor;
+                float _UseShadowThreshold;
+                float4 _DoubleSidedConstants;
+                float _BlendMode;
+                float _EnableBlendModePreserveSpecularLighting;
+                float _RayTracing;
+                float _RefractionModel;
+                float4 _BottomColor;
+                float4 _TopColor;
+                CBUFFER_END
+                
+                // Object and Global properties
+    
+                // -- Property used by ScenePickingPass
+                #ifdef SCENEPICKINGPASS
+                float4 _SelectionID;
+                #endif
+    
+                // -- Properties used by SceneSelectionPass
+                #ifdef SCENESELECTIONPASS
+                int _ObjectId;
+                int _PassValue;
+                #endif
+    
+                // Includes
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingMacros.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIntersection.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoopDef.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/BuiltinUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingCommon.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
+    
+                // --------------------------------------------------
+                // Structs and Packing
+    
+                struct AttributesMesh
+                {
+                    float3 positionOS : POSITION;
+                    float3 normalOS : NORMAL;
+                    float4 tangentOS : TANGENT;
+                    float4 uv0 : TEXCOORD0;
+                    float4 color : COLOR;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : INSTANCEID_SEMANTIC;
+                    #endif
+                };
+                struct VaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 texCoord0;
+                    float4 color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+                struct SurfaceDescriptionInputs
+                {
+                    float3 TangentSpaceNormal;
+                    float4 uv0;
+                    float4 VertexColor;
+                };
+                struct VertexDescriptionInputs
+                {
+                    float3 ObjectSpaceNormal;
+                    float3 ObjectSpaceTangent;
+                    float3 ObjectSpacePosition;
+                };
+                struct PackedVaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 interp0 : TEXCOORD0;
+                    float4 interp1 : TEXCOORD1;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+    
+                PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
+                {
+                    PackedVaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.interp0.xyzw =  input.texCoord0;
+                    output.interp1.xyzw =  input.color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+                VaryingsMeshToPS UnpackVaryingsMeshToPS (PackedVaryingsMeshToPS input)
+                {
+                    VaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.texCoord0 = input.interp0.xyzw;
+                    output.color = input.interp1.xyzw;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+    
+                // --------------------------------------------------
+                // Graph
+    
+    
+                // Graph Functions
+                
+                void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
+                {
+                    Out = lerp(A, B, T);
+                }
+                
+                void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
+                {
+                    Out = A * B;
+                }
+    
+                // Graph Vertex
+                struct VertexDescription
+                {
+                    float3 Position;
+                    float3 Normal;
+                    float3 Tangent;
+                };
+                
+                VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
+                {
+                    VertexDescription description = (VertexDescription)0;
+                    description.Position = IN.ObjectSpacePosition;
+                    description.Normal = IN.ObjectSpaceNormal;
+                    description.Tangent = IN.ObjectSpaceTangent;
+                    return description;
+                }
+    
+                // Graph Pixel
+                struct SurfaceDescription
+                {
+                    float3 BaseColor;
+                    float3 Emission;
+                    float Alpha;
+                    float3 BentNormal;
+                    float Smoothness;
+                    float Occlusion;
+                    float3 NormalTS;
+                    float Metallic;
+                };
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = (SurfaceDescription)0;
+                    float4 _Property_012052db90a64698ab50659a7262b337_Out_0 = _BottomColor;
+                    float4 _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0 = _TopColor;
+                    float4 _UV_f37e4173334549ca96492ea17a11b95f_Out_0 = IN.uv0;
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_R_1 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[0];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_G_2 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[1];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_B_3 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[2];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_A_4 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[3];
+                    float4 _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3;
+                    Unity_Lerp_float4(_Property_012052db90a64698ab50659a7262b337_Out_0, _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0, (_Split_0bc51e4dab284af997c83fae0af95b57_G_2.xxxx), _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3);
+                    float4 _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2;
+                    Unity_Multiply_float(IN.VertexColor, _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3, _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2);
+                    surface.BaseColor = (_Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2.xyz);
+                    surface.Emission = float3(0, 0, 0);
+                    surface.Alpha = 1;
+                    surface.BentNormal = IN.TangentSpaceNormal;
+                    surface.Smoothness = 0.5;
+                    surface.Occlusion = 1;
+                    surface.NormalTS = IN.TangentSpaceNormal;
+                    surface.Metallic = 0;
+                    return surface;
+                }
+    
+                // --------------------------------------------------
+                // Build Graph Inputs
+    
+                
+                VertexDescriptionInputs AttributesMeshToVertexDescriptionInputs(AttributesMesh input)
+                {
+                    VertexDescriptionInputs output;
+                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                
+                    output.ObjectSpaceNormal =           input.normalOS;
+                    output.ObjectSpaceTangent =          input.tangentOS.xyz;
+                    output.ObjectSpacePosition =         input.positionOS;
+                
+                    return output;
+                }
+                
+                AttributesMesh ApplyMeshModification(AttributesMesh input, float3 timeParameters)
+                {
+                    // build graph inputs
+                    VertexDescriptionInputs vertexDescriptionInputs = AttributesMeshToVertexDescriptionInputs(input);
+                    // Override time paramters with used one (This is required to correctly handle motion vector for vertex animation based on time)
+                
+                    // evaluate vertex graph
+                    VertexDescription vertexDescription = VertexDescriptionFunction(vertexDescriptionInputs);
+                
+                    // copy graph output to the results
+                    input.positionOS = vertexDescription.Position;
+                    input.normalOS = vertexDescription.Normal;
+                    input.tangentOS.xyz = vertexDescription.Tangent;
+                
+                    return input;
+                }
+                
+                FragInputs BuildFragInputs(VaryingsMeshToPS input)
+                {
+                    FragInputs output;
+                    ZERO_INITIALIZE(FragInputs, output);
+                
+                    // Init to some default value to make the computer quiet (else it output 'divide by zero' warning even if value is not used).
+                    // TODO: this is a really poor workaround, but the variable is used in a bunch of places
+                    // to compute normals which are then passed on elsewhere to compute other values...
+                    output.tangentToWorld = k_identity3x3;
+                    output.positionSS = input.positionCS;       // input.positionCS is SV_Position
+                
+                    output.texCoord0 = input.texCoord0;
+                    output.color = input.color;
+                
+                    return output;
+                }
+                
+                SurfaceDescriptionInputs FragInputsToSurfaceDescriptionInputs(FragInputs input, float3 viewWS)
+                {
+                    SurfaceDescriptionInputs output;
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                
+                    #if defined(SHADER_STAGE_RAY_TRACING)
+                    #else
+                    #endif
+                    output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+                    output.uv0 =                         input.texCoord0;
+                    output.VertexColor =                 input.color;
+                
+                    return output;
+                }
+                
+                // existing HDRP code uses the combined function to go directly from packed to frag inputs
+                FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
+                {
+                    UNITY_SETUP_INSTANCE_ID(input);
+                    VaryingsMeshToPS unpacked= UnpackVaryingsMeshToPS(input);
+                    return BuildFragInputs(unpacked);
+                }
+                
+    
+                // --------------------------------------------------
+                // Build Surface Data (Specific Material)
+    
+            void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
+                {
+                    ZERO_INITIALIZE(SurfaceData, surfaceData);
+                
+                    // specularOcclusion need to be init ahead of decal to quiet the compiler that modify the SurfaceData struct
+                    // however specularOcclusion can come from the graph, so need to be init here so it can be override.
+                    surfaceData.specularOcclusion = 1.0;
+                
+                    surfaceData.baseColor =                 surfaceDescription.BaseColor;
+                    surfaceData.perceptualSmoothness =      surfaceDescription.Smoothness;
+                    surfaceData.ambientOcclusion =          surfaceDescription.Occlusion;
+                    surfaceData.metallic =                  surfaceDescription.Metallic;
+                
+                    #if defined(_REFRACTION_PLANE) || defined(_REFRACTION_SPHERE) || defined(_REFRACTION_THIN)
+                        if (_EnableSSRefraction)
+                        {
+                
+                            surfaceData.transmittanceMask = (1.0 - surfaceDescription.Alpha);
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                        else
+                        {
+                            surfaceData.ior = 1.0;
+                            surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                            surfaceData.atDistance = 1.0;
+                            surfaceData.transmittanceMask = 0.0;
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                    #else
+                        surfaceData.ior = 1.0;
+                        surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                        surfaceData.atDistance = 1.0;
+                        surfaceData.transmittanceMask = 0.0;
+                    #endif
+                
+                    // These static material feature allow compile time optimization
+                    surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
+                    #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SUBSURFACE_SCATTERING;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_TRANSMISSION
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_TRANSMISSION;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_ANISOTROPY
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_IRIDESCENCE
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_SPECULAR_COLOR
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_CLEAR_COAT
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+                    #endif
+                
+                    #if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+                        // Require to have setup baseColor
+                        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+                        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+                    #endif
+                
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+                
+                    // normal delivered to master node
+                    GetNormalWS(fragInputs, surfaceDescription.NormalTS, surfaceData.normalWS, doubleSidedConstants);
+                
+                    surfaceData.geomNormalWS = fragInputs.tangentToWorld[2];
+                
+                    surfaceData.tangentWS = normalize(fragInputs.tangentToWorld[0].xyz);    // The tangent is not normalize in tangentToWorld for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+                
+                
+                    #if HAVE_DECALS
+                        if (_EnableDecals)
+                        {
+                            float alpha = 1.0;
+                            alpha = surfaceDescription.Alpha;
+                
+                            // Both uses and modifies 'surfaceData.normalWS'.
+                            DecalSurfaceData decalSurfaceData = GetDecalSurfaceData(posInput, fragInputs.tangentToWorld[2], alpha);
+                            ApplyDecalToSurfaceData(decalSurfaceData, fragInputs.tangentToWorld[2], surfaceData);
+                        }
+                    #endif
+                
+                    bentNormalWS = surfaceData.normalWS;
+                
+                    surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+                
+                    #ifdef DEBUG_DISPLAY
+                        if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)
+                        {
+                            // TODO: need to update mip info
+                            surfaceData.metallic = 0;
+                        }
+                
+                        // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
+                        // as it can modify attribute use for static lighting
+                        ApplyDebugToSurfaceData(fragInputs.tangentToWorld, surfaceData);
+                    #endif
+                
+                    // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
+                    // If user provide bent normal then we process a better term
+                    #if defined(_SPECULAR_OCCLUSION_CUSTOM)
+                        // Just use the value passed through via the slot (not active otherwise)
+                    #elif defined(_SPECULAR_OCCLUSION_FROM_AO_BENT_NORMAL)
+                        // If we have bent normal and ambient occlusion, process a specular occlusion
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData.normalWS, surfaceData.ambientOcclusion, PerceptualSmoothnessToPerceptualRoughness(surfaceData.perceptualSmoothness));
+                    #elif defined(_AMBIENT_OCCLUSION) && defined(_SPECULAR_OCCLUSION_FROM_AO)
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+                    #endif
+                
+                    #if defined(_ENABLE_GEOMETRIC_SPECULAR_AA) && !defined(SHADER_STAGE_RAY_TRACING)
+                        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.tangentToWorld[2], surfaceDescription.SpecularAAScreenSpaceVariance, surfaceDescription.SpecularAAThreshold);
+                    #endif
+                }
+                
+    
+                // --------------------------------------------------
+                // Get Surface And BuiltinData
+    
+                void GetSurfaceAndBuiltinData(FragInputs fragInputs, float3 V, inout PositionInputs posInput, out SurfaceData surfaceData, out BuiltinData builtinData RAY_TRACING_OPTIONAL_PARAMETERS)
+                {
+                    // Don't dither if displaced tessellation (we're fading out the displacement instead to match the next LOD)
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && !defined(_TESSELLATION_DISPLACEMENT)
+                    #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
+                    LODDitheringTransition(ComputeFadeMaskSeed(V, posInput.positionSS), unity_LODFade.x);
+                    #endif
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+    
+                    ApplyDoubleSidedFlipOrMirror(fragInputs, doubleSidedConstants); // Apply double sided flip on the vertex normal
+                    #endif // SHADER_UNLIT
+    
+                    SurfaceDescriptionInputs surfaceDescriptionInputs = FragInputsToSurfaceDescriptionInputs(fragInputs, V);
+                    SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
+    
+                    // Perform alpha test very early to save performance (a killed pixel will not sample textures)
+                    // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
+                    #ifdef _ALPHATEST_ON
+                        float alphaCutoff = surfaceDescription.AlphaClipThreshold;
+                        #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                        // The TransparentDepthPrepass is also used with SSR transparent.
+                        // If an artists enable transaprent SSR but not the TransparentDepthPrepass itself, then we use AlphaClipThreshold
+                        // otherwise if TransparentDepthPrepass is enabled we use AlphaClipThresholdDepthPrepass
+                        #elif SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_POSTPASS
+                        // DepthPostpass always use its own alpha threshold
+                        alphaCutoff = surfaceDescription.AlphaClipThresholdDepthPostpass;
+                        #elif (SHADERPASS == SHADERPASS_SHADOWS) || (SHADERPASS == SHADERPASS_RAYTRACING_VISIBILITY)
+                        // If use shadow threshold isn't enable we don't allow any test
+                        #endif
+    
+                        GENERIC_ALPHA_TEST(surfaceDescription.Alpha, alphaCutoff);
+                    #endif
+    
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && _DEPTHOFFSET_ON
+                    ApplyDepthOffsetPositionInput(V, surfaceDescription.DepthOffset, GetViewForwardDir(), GetWorldToHClipMatrix(), posInput);
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    float3 bentNormalWS;
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
+    
+                    // Builtin Data
+                    // For back lighting we use the oposite vertex normal
+                    InitBuiltinData(posInput, surfaceDescription.Alpha, bentNormalWS, -fragInputs.tangentToWorld[2], fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
+    
+                    #else
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData);
+    
+                    ZERO_INITIALIZE(BuiltinData, builtinData); // No call to InitBuiltinData as we don't have any lighting
+                    builtinData.opacity = surfaceDescription.Alpha;
+    
+                    #if defined(DEBUG_DISPLAY)
+                        // Light Layers are currently not used for the Unlit shader (because it is not lit)
+                        // But Unlit objects do cast shadows according to their rendering layer mask, which is what we want to
+                        // display in the light layers visualization mode, therefore we need the renderingLayers
+                        builtinData.renderingLayers = GetMeshRenderingLightLayer();
+                    #endif
+    
+                    #endif // SHADER_UNLIT
+    
+                    #ifdef _ALPHATEST_ON
+                        // Used for sharpening by alpha to mask - Alpha to covertage is only used with depth only and forward pass (no shadow pass, no transparent pass)
+                        builtinData.alphaClipTreshold = alphaCutoff;
+                    #endif
+    
+                    // override sampleBakedGI - not used by Unlit
+    
+                    builtinData.emissiveColor = surfaceDescription.Emission;
+    
+                    // Note this will not fully work on transparent surfaces (can check with _SURFACE_TYPE_TRANSPARENT define)
+                    // We will always overwrite vt feeback with the nearest. So behind transparent surfaces vt will not be resolved
+                    // This is a limitation of the current MRT approach.
+    
+                    #if _DEPTHOFFSET_ON
+                    builtinData.depthOffset = surfaceDescription.DepthOffset;
+                    #endif
+    
+                    // TODO: We should generate distortion / distortionBlur for non distortion pass
+                    #if (SHADERPASS == SHADERPASS_DISTORTION)
+                    builtinData.distortion = surfaceDescription.Distortion;
+                    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    // PostInitBuiltinData call ApplyDebugToBuiltinData
+                    PostInitBuiltinData(V, posInput, surfaceData, builtinData);
+                    #else
+                    ApplyDebugToBuiltinData(builtinData);
+                    #endif
+    
+                    RAY_TRACING_OPTIONAL_ALPHA_TEST_PASS
+                }
+    
+                // --------------------------------------------------
+                // Main
+    
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassRaytracingForward.hlsl"
+    
+                ENDHLSL
+            }
+            Pass
+            {
+                Name "GBufferDXR"
+                Tags
+                {
+                    "LightMode" = "GBufferDXR"
+                }
+    
+                // Render State
+                // RenderState: <None>
+    
+                // Debug
+                // <None>
+    
+                // --------------------------------------------------
+                // Pass
+    
+                HLSLPROGRAM
+    
+                // Pragmas
+                #pragma target 5.0
+                #pragma raytracing surface_shader
+                #pragma only_renderers d3d11
+    
+                // Keywords
+                #pragma multi_compile _ MINIMAL_GBUFFER
+                #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
+                #pragma shader_feature_local _BLENDMODE_OFF _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
+                #pragma shader_feature_local _ _DOUBLESIDED_ON
+                #pragma shader_feature_local _ _ADD_PRECOMPUTED_VELOCITY
+                #pragma shader_feature_local _ _TRANSPARENT_WRITES_MOTION_VEC
+                #pragma shader_feature_local _ _ENABLE_FOG_ON_TRANSPARENT
+                #pragma multi_compile _ DEBUG_DISPLAY
+                #pragma shader_feature_local _ _DISABLE_DECALS
+                #pragma shader_feature_local _ _DISABLE_SSR
+                #pragma shader_feature_local _ _DISABLE_SSR_TRANSPARENT
+                #pragma multi_compile _ LIGHTMAP_ON
+                #pragma multi_compile _ DIRLIGHTMAP_COMBINED
+                #pragma shader_feature_local _REFRACTION_OFF _REFRACTION_PLANE _REFRACTION_SPHERE _REFRACTION_THIN
+                // GraphKeywords: <None>
+    
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl" // Required to be include before we include properties as it define DECLARE_STACK_CB
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphHeader.hlsl" // Need to be here for Gradient struct definition
+    
+                // --------------------------------------------------
+                // Defines
+    
+                // Attribute
+                #define ATTRIBUTES_NEED_NORMAL
+                #define ATTRIBUTES_NEED_TANGENT
+                #define ATTRIBUTES_NEED_TEXCOORD0
+                #define ATTRIBUTES_NEED_COLOR
+                #define VARYINGS_NEED_TEXCOORD0
+                #define VARYINGS_NEED_COLOR
+    
+                #define HAVE_MESH_MODIFICATION
+    
+    
+                #define SHADERPASS SHADERPASS_RAYTRACING_GBUFFER
+                #define SHADOW_LOW
+                #define RAYTRACING_SHADER_GRAPH_RAYTRACED
+    
+                // Following two define are a workaround introduce in 10.1.x for RaytracingQualityNode
+                // The ShaderGraph don't support correctly migration of this node as it serialize all the node data
+                // in the json file making it impossible to uprgrade. Until we get a fix, we do a workaround here
+                // to still allow us to rename the field and keyword of this node without breaking existing code.
+                #ifdef RAYTRACING_SHADER_GRAPH_DEFAULT 
+                #define RAYTRACING_SHADER_GRAPH_HIGH
+                #endif
+    
+                #ifdef RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define RAYTRACING_SHADER_GRAPH_LOW
+                #endif
+                // end
+    
+                #ifndef SHADER_UNLIT
+                // We need isFrontFace when using double sided - it is not required for unlit as in case of unlit double sided only drive the cullmode
+                // VARYINGS_NEED_CULLFACE can be define by VaryingsMeshToPS.FaceSign input if a IsFrontFace Node is included in the shader graph.
+                #if defined(_DOUBLESIDED_ON) && !defined(VARYINGS_NEED_CULLFACE)
+                    #define VARYINGS_NEED_CULLFACE
+                #endif
+                #endif
+    
+                // Specific Material Define
+            #define _ENERGY_CONSERVING_SPECULAR 1
+                
+                // If we use subsurface scattering, enable output split lighting (for forward pass)
+                #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define OUTPUT_SPLIT_LIGHTING
+                #endif
+                
+                // This shader support recursive rendering for raytracing
+                #define HAVE_RECURSIVE_RENDERING
+                
+                // Caution: we can use the define SHADER_UNLIT onlit after the above Material include as it is the Unlit template who define it
+    
+                // To handle SSR on transparent correctly with a possibility to enable/disable it per framesettings
+                // we should have a code like this:
+                // if !defined(_DISABLE_SSR_TRANSPARENT)
+                // pragma multi_compile _ WRITE_NORMAL_BUFFER
+                // endif
+                // i.e we enable the multicompile only if we can receive SSR or not, and then C# code drive
+                // it based on if SSR transparent in frame settings and not (and stripper can strip it).
+                // this is currently not possible with our current preprocessor as _DISABLE_SSR_TRANSPARENT is a keyword not a define
+                // so instead we used this and chose to pay the extra cost of normal write even if SSR transaprent is disabled.
+                // Ideally the shader graph generator should handle it but condition below can't be handle correctly for now.
+                #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                #if !defined(_DISABLE_SSR_TRANSPARENT) && !defined(SHADER_UNLIT)
+                    #define WRITE_NORMAL_BUFFER
+                #endif
+                #endif
+    
+                #ifndef DEBUG_DISPLAY
+                    // In case of opaque we don't want to perform the alpha test, it is done in depth prepass and we use depth equal for ztest (setup from UI)
+                    // Don't do it with debug display mode as it is possible there is no depth prepass in this case
+                    #if !defined(_SURFACE_TYPE_TRANSPARENT) && defined(_ALPHATEST)
+                        #if SHADERPASS == SHADERPASS_FORWARD
+                        #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
+                        #elif SHADERPASS == SHADERPASS_GBUFFER
+                        #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
+                        #endif
+                    #endif
+                #endif
+    
+                // Translate transparent motion vector define
+                #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define _WRITE_TRANSPARENT_MOTION_VECTOR
+                #endif
+    
+                // Dots Instancing
+                // DotsInstancingOptions: <None>
+    
+                // Various properties
+    
+                // HybridV1InjectedBuiltinProperties: <None>
+    
+                // -- Graph Properties
+                CBUFFER_START(UnityPerMaterial)
+                float4 _EmissionColor;
+                float _UseShadowThreshold;
+                float4 _DoubleSidedConstants;
+                float _BlendMode;
+                float _EnableBlendModePreserveSpecularLighting;
+                float _RayTracing;
+                float _RefractionModel;
+                float4 _BottomColor;
+                float4 _TopColor;
+                CBUFFER_END
+                
+                // Object and Global properties
+    
+                // -- Property used by ScenePickingPass
+                #ifdef SCENEPICKINGPASS
+                float4 _SelectionID;
+                #endif
+    
+                // -- Properties used by SceneSelectionPass
+                #ifdef SCENESELECTIONPASS
+                int _ObjectId;
+                int _PassValue;
+                #endif
+    
+                // Includes
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingMacros.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/Deferred/RaytracingIntersectonGBuffer.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/StandardLit/StandardLit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/BuiltinUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingCommon.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
+    
+                // --------------------------------------------------
+                // Structs and Packing
+    
+                struct AttributesMesh
+                {
+                    float3 positionOS : POSITION;
+                    float3 normalOS : NORMAL;
+                    float4 tangentOS : TANGENT;
+                    float4 uv0 : TEXCOORD0;
+                    float4 color : COLOR;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : INSTANCEID_SEMANTIC;
+                    #endif
+                };
+                struct VaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 texCoord0;
+                    float4 color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+                struct SurfaceDescriptionInputs
+                {
+                    float3 TangentSpaceNormal;
+                    float4 uv0;
+                    float4 VertexColor;
+                };
+                struct VertexDescriptionInputs
+                {
+                    float3 ObjectSpaceNormal;
+                    float3 ObjectSpaceTangent;
+                    float3 ObjectSpacePosition;
+                };
+                struct PackedVaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 interp0 : TEXCOORD0;
+                    float4 interp1 : TEXCOORD1;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+    
+                PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
+                {
+                    PackedVaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.interp0.xyzw =  input.texCoord0;
+                    output.interp1.xyzw =  input.color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+                VaryingsMeshToPS UnpackVaryingsMeshToPS (PackedVaryingsMeshToPS input)
+                {
+                    VaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.texCoord0 = input.interp0.xyzw;
+                    output.color = input.interp1.xyzw;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+    
+                // --------------------------------------------------
+                // Graph
+    
+    
+                // Graph Functions
+                
+                void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
+                {
+                    Out = lerp(A, B, T);
+                }
+                
+                void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
+                {
+                    Out = A * B;
+                }
+    
+                // Graph Vertex
+                struct VertexDescription
+                {
+                    float3 Position;
+                    float3 Normal;
+                    float3 Tangent;
+                };
+                
+                VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
+                {
+                    VertexDescription description = (VertexDescription)0;
+                    description.Position = IN.ObjectSpacePosition;
+                    description.Normal = IN.ObjectSpaceNormal;
+                    description.Tangent = IN.ObjectSpaceTangent;
+                    return description;
+                }
+    
+                // Graph Pixel
+                struct SurfaceDescription
+                {
+                    float3 BaseColor;
+                    float3 Emission;
+                    float Alpha;
+                    float3 BentNormal;
+                    float Smoothness;
+                    float Occlusion;
+                    float3 NormalTS;
+                    float Metallic;
+                };
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = (SurfaceDescription)0;
+                    float4 _Property_012052db90a64698ab50659a7262b337_Out_0 = _BottomColor;
+                    float4 _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0 = _TopColor;
+                    float4 _UV_f37e4173334549ca96492ea17a11b95f_Out_0 = IN.uv0;
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_R_1 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[0];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_G_2 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[1];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_B_3 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[2];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_A_4 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[3];
+                    float4 _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3;
+                    Unity_Lerp_float4(_Property_012052db90a64698ab50659a7262b337_Out_0, _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0, (_Split_0bc51e4dab284af997c83fae0af95b57_G_2.xxxx), _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3);
+                    float4 _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2;
+                    Unity_Multiply_float(IN.VertexColor, _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3, _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2);
+                    surface.BaseColor = (_Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2.xyz);
+                    surface.Emission = float3(0, 0, 0);
+                    surface.Alpha = 1;
+                    surface.BentNormal = IN.TangentSpaceNormal;
+                    surface.Smoothness = 0.5;
+                    surface.Occlusion = 1;
+                    surface.NormalTS = IN.TangentSpaceNormal;
+                    surface.Metallic = 0;
+                    return surface;
+                }
+    
+                // --------------------------------------------------
+                // Build Graph Inputs
+    
+                
+                VertexDescriptionInputs AttributesMeshToVertexDescriptionInputs(AttributesMesh input)
+                {
+                    VertexDescriptionInputs output;
+                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                
+                    output.ObjectSpaceNormal =           input.normalOS;
+                    output.ObjectSpaceTangent =          input.tangentOS.xyz;
+                    output.ObjectSpacePosition =         input.positionOS;
+                
+                    return output;
+                }
+                
+                AttributesMesh ApplyMeshModification(AttributesMesh input, float3 timeParameters)
+                {
+                    // build graph inputs
+                    VertexDescriptionInputs vertexDescriptionInputs = AttributesMeshToVertexDescriptionInputs(input);
+                    // Override time paramters with used one (This is required to correctly handle motion vector for vertex animation based on time)
+                
+                    // evaluate vertex graph
+                    VertexDescription vertexDescription = VertexDescriptionFunction(vertexDescriptionInputs);
+                
+                    // copy graph output to the results
+                    input.positionOS = vertexDescription.Position;
+                    input.normalOS = vertexDescription.Normal;
+                    input.tangentOS.xyz = vertexDescription.Tangent;
+                
+                    return input;
+                }
+                
+                FragInputs BuildFragInputs(VaryingsMeshToPS input)
+                {
+                    FragInputs output;
+                    ZERO_INITIALIZE(FragInputs, output);
+                
+                    // Init to some default value to make the computer quiet (else it output 'divide by zero' warning even if value is not used).
+                    // TODO: this is a really poor workaround, but the variable is used in a bunch of places
+                    // to compute normals which are then passed on elsewhere to compute other values...
+                    output.tangentToWorld = k_identity3x3;
+                    output.positionSS = input.positionCS;       // input.positionCS is SV_Position
+                
+                    output.texCoord0 = input.texCoord0;
+                    output.color = input.color;
+                
+                    return output;
+                }
+                
+                SurfaceDescriptionInputs FragInputsToSurfaceDescriptionInputs(FragInputs input, float3 viewWS)
+                {
+                    SurfaceDescriptionInputs output;
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                
+                    #if defined(SHADER_STAGE_RAY_TRACING)
+                    #else
+                    #endif
+                    output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+                    output.uv0 =                         input.texCoord0;
+                    output.VertexColor =                 input.color;
+                
+                    return output;
+                }
+                
+                // existing HDRP code uses the combined function to go directly from packed to frag inputs
+                FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
+                {
+                    UNITY_SETUP_INSTANCE_ID(input);
+                    VaryingsMeshToPS unpacked= UnpackVaryingsMeshToPS(input);
+                    return BuildFragInputs(unpacked);
+                }
+                
+    
+                // --------------------------------------------------
+                // Build Surface Data (Specific Material)
+    
+            void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
+                {
+                    ZERO_INITIALIZE(SurfaceData, surfaceData);
+                
+                    // specularOcclusion need to be init ahead of decal to quiet the compiler that modify the SurfaceData struct
+                    // however specularOcclusion can come from the graph, so need to be init here so it can be override.
+                    surfaceData.specularOcclusion = 1.0;
+                
+                    surfaceData.baseColor =                 surfaceDescription.BaseColor;
+                    surfaceData.perceptualSmoothness =      surfaceDescription.Smoothness;
+                    surfaceData.ambientOcclusion =          surfaceDescription.Occlusion;
+                    surfaceData.metallic =                  surfaceDescription.Metallic;
+                
+                    #if defined(_REFRACTION_PLANE) || defined(_REFRACTION_SPHERE) || defined(_REFRACTION_THIN)
+                        if (_EnableSSRefraction)
+                        {
+                
+                            surfaceData.transmittanceMask = (1.0 - surfaceDescription.Alpha);
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                        else
+                        {
+                            surfaceData.ior = 1.0;
+                            surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                            surfaceData.atDistance = 1.0;
+                            surfaceData.transmittanceMask = 0.0;
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                    #else
+                        surfaceData.ior = 1.0;
+                        surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                        surfaceData.atDistance = 1.0;
+                        surfaceData.transmittanceMask = 0.0;
+                    #endif
+                
+                    // These static material feature allow compile time optimization
+                    surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
+                    #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SUBSURFACE_SCATTERING;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_TRANSMISSION
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_TRANSMISSION;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_ANISOTROPY
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_IRIDESCENCE
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_SPECULAR_COLOR
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_CLEAR_COAT
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+                    #endif
+                
+                    #if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+                        // Require to have setup baseColor
+                        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+                        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+                    #endif
+                
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+                
+                    // normal delivered to master node
+                    GetNormalWS(fragInputs, surfaceDescription.NormalTS, surfaceData.normalWS, doubleSidedConstants);
+                
+                    surfaceData.geomNormalWS = fragInputs.tangentToWorld[2];
+                
+                    surfaceData.tangentWS = normalize(fragInputs.tangentToWorld[0].xyz);    // The tangent is not normalize in tangentToWorld for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+                
+                
+                    #if HAVE_DECALS
+                        if (_EnableDecals)
+                        {
+                            float alpha = 1.0;
+                            alpha = surfaceDescription.Alpha;
+                
+                            // Both uses and modifies 'surfaceData.normalWS'.
+                            DecalSurfaceData decalSurfaceData = GetDecalSurfaceData(posInput, fragInputs.tangentToWorld[2], alpha);
+                            ApplyDecalToSurfaceData(decalSurfaceData, fragInputs.tangentToWorld[2], surfaceData);
+                        }
+                    #endif
+                
+                    bentNormalWS = surfaceData.normalWS;
+                
+                    surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+                
+                    #ifdef DEBUG_DISPLAY
+                        if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)
+                        {
+                            // TODO: need to update mip info
+                            surfaceData.metallic = 0;
+                        }
+                
+                        // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
+                        // as it can modify attribute use for static lighting
+                        ApplyDebugToSurfaceData(fragInputs.tangentToWorld, surfaceData);
+                    #endif
+                
+                    // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
+                    // If user provide bent normal then we process a better term
+                    #if defined(_SPECULAR_OCCLUSION_CUSTOM)
+                        // Just use the value passed through via the slot (not active otherwise)
+                    #elif defined(_SPECULAR_OCCLUSION_FROM_AO_BENT_NORMAL)
+                        // If we have bent normal and ambient occlusion, process a specular occlusion
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData.normalWS, surfaceData.ambientOcclusion, PerceptualSmoothnessToPerceptualRoughness(surfaceData.perceptualSmoothness));
+                    #elif defined(_AMBIENT_OCCLUSION) && defined(_SPECULAR_OCCLUSION_FROM_AO)
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+                    #endif
+                
+                    #if defined(_ENABLE_GEOMETRIC_SPECULAR_AA) && !defined(SHADER_STAGE_RAY_TRACING)
+                        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.tangentToWorld[2], surfaceDescription.SpecularAAScreenSpaceVariance, surfaceDescription.SpecularAAThreshold);
+                    #endif
+                }
+                
+    
+                // --------------------------------------------------
+                // Get Surface And BuiltinData
+    
+                void GetSurfaceAndBuiltinData(FragInputs fragInputs, float3 V, inout PositionInputs posInput, out SurfaceData surfaceData, out BuiltinData builtinData RAY_TRACING_OPTIONAL_PARAMETERS)
+                {
+                    // Don't dither if displaced tessellation (we're fading out the displacement instead to match the next LOD)
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && !defined(_TESSELLATION_DISPLACEMENT)
+                    #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
+                    LODDitheringTransition(ComputeFadeMaskSeed(V, posInput.positionSS), unity_LODFade.x);
+                    #endif
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+    
+                    ApplyDoubleSidedFlipOrMirror(fragInputs, doubleSidedConstants); // Apply double sided flip on the vertex normal
+                    #endif // SHADER_UNLIT
+    
+                    SurfaceDescriptionInputs surfaceDescriptionInputs = FragInputsToSurfaceDescriptionInputs(fragInputs, V);
+                    SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
+    
+                    // Perform alpha test very early to save performance (a killed pixel will not sample textures)
+                    // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
+                    #ifdef _ALPHATEST_ON
+                        float alphaCutoff = surfaceDescription.AlphaClipThreshold;
+                        #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                        // The TransparentDepthPrepass is also used with SSR transparent.
+                        // If an artists enable transaprent SSR but not the TransparentDepthPrepass itself, then we use AlphaClipThreshold
+                        // otherwise if TransparentDepthPrepass is enabled we use AlphaClipThresholdDepthPrepass
+                        #elif SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_POSTPASS
+                        // DepthPostpass always use its own alpha threshold
+                        alphaCutoff = surfaceDescription.AlphaClipThresholdDepthPostpass;
+                        #elif (SHADERPASS == SHADERPASS_SHADOWS) || (SHADERPASS == SHADERPASS_RAYTRACING_VISIBILITY)
+                        // If use shadow threshold isn't enable we don't allow any test
+                        #endif
+    
+                        GENERIC_ALPHA_TEST(surfaceDescription.Alpha, alphaCutoff);
+                    #endif
+    
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && _DEPTHOFFSET_ON
+                    ApplyDepthOffsetPositionInput(V, surfaceDescription.DepthOffset, GetViewForwardDir(), GetWorldToHClipMatrix(), posInput);
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    float3 bentNormalWS;
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
+    
+                    // Builtin Data
+                    // For back lighting we use the oposite vertex normal
+                    InitBuiltinData(posInput, surfaceDescription.Alpha, bentNormalWS, -fragInputs.tangentToWorld[2], fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
+    
+                    #else
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData);
+    
+                    ZERO_INITIALIZE(BuiltinData, builtinData); // No call to InitBuiltinData as we don't have any lighting
+                    builtinData.opacity = surfaceDescription.Alpha;
+    
+                    #if defined(DEBUG_DISPLAY)
+                        // Light Layers are currently not used for the Unlit shader (because it is not lit)
+                        // But Unlit objects do cast shadows according to their rendering layer mask, which is what we want to
+                        // display in the light layers visualization mode, therefore we need the renderingLayers
+                        builtinData.renderingLayers = GetMeshRenderingLightLayer();
+                    #endif
+    
+                    #endif // SHADER_UNLIT
+    
+                    #ifdef _ALPHATEST_ON
+                        // Used for sharpening by alpha to mask - Alpha to covertage is only used with depth only and forward pass (no shadow pass, no transparent pass)
+                        builtinData.alphaClipTreshold = alphaCutoff;
+                    #endif
+    
+                    // override sampleBakedGI - not used by Unlit
+    
+                    builtinData.emissiveColor = surfaceDescription.Emission;
+    
+                    // Note this will not fully work on transparent surfaces (can check with _SURFACE_TYPE_TRANSPARENT define)
+                    // We will always overwrite vt feeback with the nearest. So behind transparent surfaces vt will not be resolved
+                    // This is a limitation of the current MRT approach.
+    
+                    #if _DEPTHOFFSET_ON
+                    builtinData.depthOffset = surfaceDescription.DepthOffset;
+                    #endif
+    
+                    // TODO: We should generate distortion / distortionBlur for non distortion pass
+                    #if (SHADERPASS == SHADERPASS_DISTORTION)
+                    builtinData.distortion = surfaceDescription.Distortion;
+                    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    // PostInitBuiltinData call ApplyDebugToBuiltinData
+                    PostInitBuiltinData(V, posInput, surfaceData, builtinData);
+                    #else
+                    ApplyDebugToBuiltinData(builtinData);
+                    #endif
+    
+                    RAY_TRACING_OPTIONAL_ALPHA_TEST_PASS
+                }
+    
+                // --------------------------------------------------
+                // Main
+    
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderpassRaytracingGBuffer.hlsl"
+    
+                ENDHLSL
+            }
+            Pass
+            {
+                Name "PathTracingDXR"
+                Tags
+                {
+                    "LightMode" = "PathTracingDXR"
+                }
+    
+                // Render State
+                // RenderState: <None>
+    
+                // Debug
+                // <None>
+    
+                // --------------------------------------------------
+                // Pass
+    
+                HLSLPROGRAM
+    
+                // Pragmas
+                #pragma target 5.0
+                #pragma raytracing surface_shader
+                #pragma only_renderers d3d11
+    
+                // Keywords
+                #pragma shader_feature _ _SURFACE_TYPE_TRANSPARENT
+                #pragma shader_feature_local _BLENDMODE_OFF _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
+                #pragma shader_feature_local _ _DOUBLESIDED_ON
+                #pragma shader_feature_local _ _ADD_PRECOMPUTED_VELOCITY
+                #pragma shader_feature_local _ _TRANSPARENT_WRITES_MOTION_VEC
+                #pragma shader_feature_local _ _ENABLE_FOG_ON_TRANSPARENT
+                #pragma shader_feature_local _ _DISABLE_DECALS
+                #pragma shader_feature_local _ _DISABLE_SSR
+                #pragma shader_feature_local _ _DISABLE_SSR_TRANSPARENT
+                #pragma shader_feature_local _REFRACTION_OFF _REFRACTION_PLANE _REFRACTION_SPHERE _REFRACTION_THIN
+                // GraphKeywords: <None>
+    
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/FragInputs.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPass.cs.hlsl"
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/TextureStack.hlsl" // Required to be include before we include properties as it define DECLARE_STACK_CB
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphHeader.hlsl" // Need to be here for Gradient struct definition
+    
+                // --------------------------------------------------
+                // Defines
+    
+                // Attribute
+                #define ATTRIBUTES_NEED_NORMAL
+                #define ATTRIBUTES_NEED_TANGENT
+                #define ATTRIBUTES_NEED_TEXCOORD0
+                #define ATTRIBUTES_NEED_COLOR
+                #define VARYINGS_NEED_TEXCOORD0
+                #define VARYINGS_NEED_COLOR
+    
+                #define HAVE_MESH_MODIFICATION
+    
+    
+                #define SHADERPASS SHADERPASS_PATH_TRACING
+                #define SHADOW_LOW
+                #define RAYTRACING_SHADER_GRAPH_DEFAULT
+                #define HAS_LIGHTLOOP
+    
+                // Following two define are a workaround introduce in 10.1.x for RaytracingQualityNode
+                // The ShaderGraph don't support correctly migration of this node as it serialize all the node data
+                // in the json file making it impossible to uprgrade. Until we get a fix, we do a workaround here
+                // to still allow us to rename the field and keyword of this node without breaking existing code.
+                #ifdef RAYTRACING_SHADER_GRAPH_DEFAULT 
+                #define RAYTRACING_SHADER_GRAPH_HIGH
+                #endif
+    
+                #ifdef RAYTRACING_SHADER_GRAPH_RAYTRACED
+                #define RAYTRACING_SHADER_GRAPH_LOW
+                #endif
+                // end
+    
+                #ifndef SHADER_UNLIT
+                // We need isFrontFace when using double sided - it is not required for unlit as in case of unlit double sided only drive the cullmode
+                // VARYINGS_NEED_CULLFACE can be define by VaryingsMeshToPS.FaceSign input if a IsFrontFace Node is included in the shader graph.
+                #if defined(_DOUBLESIDED_ON) && !defined(VARYINGS_NEED_CULLFACE)
+                    #define VARYINGS_NEED_CULLFACE
+                #endif
+                #endif
+    
+                // Specific Material Define
+            #define _ENERGY_CONSERVING_SPECULAR 1
+                
+                // If we use subsurface scattering, enable output split lighting (for forward pass)
+                #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define OUTPUT_SPLIT_LIGHTING
+                #endif
+                
+                // This shader support recursive rendering for raytracing
+                #define HAVE_RECURSIVE_RENDERING
+                
+                // Caution: we can use the define SHADER_UNLIT onlit after the above Material include as it is the Unlit template who define it
+    
+                // To handle SSR on transparent correctly with a possibility to enable/disable it per framesettings
+                // we should have a code like this:
+                // if !defined(_DISABLE_SSR_TRANSPARENT)
+                // pragma multi_compile _ WRITE_NORMAL_BUFFER
+                // endif
+                // i.e we enable the multicompile only if we can receive SSR or not, and then C# code drive
+                // it based on if SSR transparent in frame settings and not (and stripper can strip it).
+                // this is currently not possible with our current preprocessor as _DISABLE_SSR_TRANSPARENT is a keyword not a define
+                // so instead we used this and chose to pay the extra cost of normal write even if SSR transaprent is disabled.
+                // Ideally the shader graph generator should handle it but condition below can't be handle correctly for now.
+                #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                #if !defined(_DISABLE_SSR_TRANSPARENT) && !defined(SHADER_UNLIT)
+                    #define WRITE_NORMAL_BUFFER
+                #endif
+                #endif
+    
+                #ifndef DEBUG_DISPLAY
+                    // In case of opaque we don't want to perform the alpha test, it is done in depth prepass and we use depth equal for ztest (setup from UI)
+                    // Don't do it with debug display mode as it is possible there is no depth prepass in this case
+                    #if !defined(_SURFACE_TYPE_TRANSPARENT) && defined(_ALPHATEST)
+                        #if SHADERPASS == SHADERPASS_FORWARD
+                        #define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST
+                        #elif SHADERPASS == SHADERPASS_GBUFFER
+                        #define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST
+                        #endif
+                    #endif
+                #endif
+    
+                // Translate transparent motion vector define
+                #if defined(_TRANSPARENT_WRITES_MOTION_VEC) && defined(_SURFACE_TYPE_TRANSPARENT)
+                    #define _WRITE_TRANSPARENT_MOTION_VECTOR
+                #endif
+    
+                // Dots Instancing
+                // DotsInstancingOptions: <None>
+    
+                // Various properties
+    
+                // HybridV1InjectedBuiltinProperties: <None>
+    
+                // -- Graph Properties
+                CBUFFER_START(UnityPerMaterial)
+                float4 _EmissionColor;
+                float _UseShadowThreshold;
+                float4 _DoubleSidedConstants;
+                float _BlendMode;
+                float _EnableBlendModePreserveSpecularLighting;
+                float _RayTracing;
+                float _RefractionModel;
+                float4 _BottomColor;
+                float4 _TopColor;
+                CBUFFER_END
+                
+                // Object and Global properties
+    
+                // -- Property used by ScenePickingPass
+                #ifdef SCENEPICKINGPASS
+                float4 _SelectionID;
+                #endif
+    
+                // -- Properties used by SceneSelectionPass
+                #ifdef SCENESELECTIONPASS
+                int _ObjectId;
+                int _PassValue;
+                #endif
+    
+                // Includes
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingMacros.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Material.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/ShaderVariablesRaytracingLightLoop.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIntersection.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/Lighting.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoopDef.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/LitPathTracing.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/BuiltinUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/Material/MaterialUtilities.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/Raytracing/Shaders/RaytracingCommon.hlsl"
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderGraphFunctions.hlsl"
+    
+                // --------------------------------------------------
+                // Structs and Packing
+    
+                struct AttributesMesh
+                {
+                    float3 positionOS : POSITION;
+                    float3 normalOS : NORMAL;
+                    float4 tangentOS : TANGENT;
+                    float4 uv0 : TEXCOORD0;
+                    float4 color : COLOR;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : INSTANCEID_SEMANTIC;
+                    #endif
+                };
+                struct VaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 texCoord0;
+                    float4 color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+                struct SurfaceDescriptionInputs
+                {
+                    float3 TangentSpaceNormal;
+                    float4 uv0;
+                    float4 VertexColor;
+                };
+                struct VertexDescriptionInputs
+                {
+                    float3 ObjectSpaceNormal;
+                    float3 ObjectSpaceTangent;
+                    float3 ObjectSpacePosition;
+                };
+                struct PackedVaryingsMeshToPS
+                {
+                    float4 positionCS : SV_POSITION;
+                    float4 interp0 : TEXCOORD0;
+                    float4 interp1 : TEXCOORD1;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    uint instanceID : CUSTOM_INSTANCE_ID;
+                    #endif
+                };
+    
+                PackedVaryingsMeshToPS PackVaryingsMeshToPS (VaryingsMeshToPS input)
+                {
+                    PackedVaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.interp0.xyzw =  input.texCoord0;
+                    output.interp1.xyzw =  input.color;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+                VaryingsMeshToPS UnpackVaryingsMeshToPS (PackedVaryingsMeshToPS input)
+                {
+                    VaryingsMeshToPS output;
+                    output.positionCS = input.positionCS;
+                    output.texCoord0 = input.interp0.xyzw;
+                    output.color = input.interp1.xyzw;
+                    #if UNITY_ANY_INSTANCING_ENABLED
+                    output.instanceID = input.instanceID;
+                    #endif
+                    return output;
+                }
+    
+                // --------------------------------------------------
+                // Graph
+    
+    
+                // Graph Functions
+                
+                void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
+                {
+                    Out = lerp(A, B, T);
+                }
+                
+                void Unity_Multiply_float(float4 A, float4 B, out float4 Out)
+                {
+                    Out = A * B;
+                }
+    
+                // Graph Vertex
+                struct VertexDescription
+                {
+                    float3 Position;
+                    float3 Normal;
+                    float3 Tangent;
+                };
+                
+                VertexDescription VertexDescriptionFunction(VertexDescriptionInputs IN)
+                {
+                    VertexDescription description = (VertexDescription)0;
+                    description.Position = IN.ObjectSpacePosition;
+                    description.Normal = IN.ObjectSpaceNormal;
+                    description.Tangent = IN.ObjectSpaceTangent;
+                    return description;
+                }
+    
+                // Graph Pixel
+                struct SurfaceDescription
+                {
+                    float3 BaseColor;
+                    float3 Emission;
+                    float Alpha;
+                    float3 BentNormal;
+                    float Smoothness;
+                    float Occlusion;
+                    float3 NormalTS;
+                    float Metallic;
+                };
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = (SurfaceDescription)0;
+                    float4 _Property_012052db90a64698ab50659a7262b337_Out_0 = _BottomColor;
+                    float4 _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0 = _TopColor;
+                    float4 _UV_f37e4173334549ca96492ea17a11b95f_Out_0 = IN.uv0;
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_R_1 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[0];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_G_2 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[1];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_B_3 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[2];
+                    float _Split_0bc51e4dab284af997c83fae0af95b57_A_4 = _UV_f37e4173334549ca96492ea17a11b95f_Out_0[3];
+                    float4 _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3;
+                    Unity_Lerp_float4(_Property_012052db90a64698ab50659a7262b337_Out_0, _Property_4ba8f27dd0624e169eceb8ddf3272592_Out_0, (_Split_0bc51e4dab284af997c83fae0af95b57_G_2.xxxx), _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3);
+                    float4 _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2;
+                    Unity_Multiply_float(IN.VertexColor, _Lerp_0064276be16d4a85af37e45d4e838ef0_Out_3, _Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2);
+                    surface.BaseColor = (_Multiply_eacef034ae88461a8da5d3757eb375b9_Out_2.xyz);
+                    surface.Emission = float3(0, 0, 0);
+                    surface.Alpha = 1;
+                    surface.BentNormal = IN.TangentSpaceNormal;
+                    surface.Smoothness = 0.5;
+                    surface.Occlusion = 1;
+                    surface.NormalTS = IN.TangentSpaceNormal;
+                    surface.Metallic = 0;
+                    return surface;
+                }
+    
+                // --------------------------------------------------
+                // Build Graph Inputs
+    
+                
+                VertexDescriptionInputs AttributesMeshToVertexDescriptionInputs(AttributesMesh input)
+                {
+                    VertexDescriptionInputs output;
+                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                
+                    output.ObjectSpaceNormal =           input.normalOS;
+                    output.ObjectSpaceTangent =          input.tangentOS.xyz;
+                    output.ObjectSpacePosition =         input.positionOS;
+                
+                    return output;
+                }
+                
+                AttributesMesh ApplyMeshModification(AttributesMesh input, float3 timeParameters)
+                {
+                    // build graph inputs
+                    VertexDescriptionInputs vertexDescriptionInputs = AttributesMeshToVertexDescriptionInputs(input);
+                    // Override time paramters with used one (This is required to correctly handle motion vector for vertex animation based on time)
+                
+                    // evaluate vertex graph
+                    VertexDescription vertexDescription = VertexDescriptionFunction(vertexDescriptionInputs);
+                
+                    // copy graph output to the results
+                    input.positionOS = vertexDescription.Position;
+                    input.normalOS = vertexDescription.Normal;
+                    input.tangentOS.xyz = vertexDescription.Tangent;
+                
+                    return input;
+                }
+                
+                FragInputs BuildFragInputs(VaryingsMeshToPS input)
+                {
+                    FragInputs output;
+                    ZERO_INITIALIZE(FragInputs, output);
+                
+                    // Init to some default value to make the computer quiet (else it output 'divide by zero' warning even if value is not used).
+                    // TODO: this is a really poor workaround, but the variable is used in a bunch of places
+                    // to compute normals which are then passed on elsewhere to compute other values...
+                    output.tangentToWorld = k_identity3x3;
+                    output.positionSS = input.positionCS;       // input.positionCS is SV_Position
+                
+                    output.texCoord0 = input.texCoord0;
+                    output.color = input.color;
+                
+                    return output;
+                }
+                
+                SurfaceDescriptionInputs FragInputsToSurfaceDescriptionInputs(FragInputs input, float3 viewWS)
+                {
+                    SurfaceDescriptionInputs output;
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                
+                    #if defined(SHADER_STAGE_RAY_TRACING)
+                    #else
+                    #endif
+                    output.TangentSpaceNormal =          float3(0.0f, 0.0f, 1.0f);
+                    output.uv0 =                         input.texCoord0;
+                    output.VertexColor =                 input.color;
+                
+                    return output;
+                }
+                
+                // existing HDRP code uses the combined function to go directly from packed to frag inputs
+                FragInputs UnpackVaryingsMeshToFragInputs(PackedVaryingsMeshToPS input)
+                {
+                    UNITY_SETUP_INSTANCE_ID(input);
+                    VaryingsMeshToPS unpacked= UnpackVaryingsMeshToPS(input);
+                    return BuildFragInputs(unpacked);
+                }
+                
+    
+                // --------------------------------------------------
+                // Build Surface Data (Specific Material)
+    
+            void BuildSurfaceData(FragInputs fragInputs, inout SurfaceDescription surfaceDescription, float3 V, PositionInputs posInput, out SurfaceData surfaceData, out float3 bentNormalWS)
+                {
+                    ZERO_INITIALIZE(SurfaceData, surfaceData);
+                
+                    // specularOcclusion need to be init ahead of decal to quiet the compiler that modify the SurfaceData struct
+                    // however specularOcclusion can come from the graph, so need to be init here so it can be override.
+                    surfaceData.specularOcclusion = 1.0;
+                
+                    surfaceData.baseColor =                 surfaceDescription.BaseColor;
+                    surfaceData.perceptualSmoothness =      surfaceDescription.Smoothness;
+                    surfaceData.ambientOcclusion =          surfaceDescription.Occlusion;
+                    surfaceData.metallic =                  surfaceDescription.Metallic;
+                
+                    #if defined(_REFRACTION_PLANE) || defined(_REFRACTION_SPHERE) || defined(_REFRACTION_THIN)
+                        if (_EnableSSRefraction)
+                        {
+                
+                            surfaceData.transmittanceMask = (1.0 - surfaceDescription.Alpha);
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                        else
+                        {
+                            surfaceData.ior = 1.0;
+                            surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                            surfaceData.atDistance = 1.0;
+                            surfaceData.transmittanceMask = 0.0;
+                            surfaceDescription.Alpha = 1.0;
+                        }
+                    #else
+                        surfaceData.ior = 1.0;
+                        surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
+                        surfaceData.atDistance = 1.0;
+                        surfaceData.transmittanceMask = 0.0;
+                    #endif
+                
+                    // These static material feature allow compile time optimization
+                    surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
+                    #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SUBSURFACE_SCATTERING;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_TRANSMISSION
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_TRANSMISSION;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_ANISOTROPY
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_IRIDESCENCE
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_SPECULAR_COLOR
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
+                    #endif
+                
+                    #ifdef _MATERIAL_FEATURE_CLEAR_COAT
+                        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+                    #endif
+                
+                    #if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+                        // Require to have setup baseColor
+                        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+                        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+                    #endif
+                
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+                
+                    // normal delivered to master node
+                    GetNormalWS(fragInputs, surfaceDescription.NormalTS, surfaceData.normalWS, doubleSidedConstants);
+                
+                    surfaceData.geomNormalWS = fragInputs.tangentToWorld[2];
+                
+                    surfaceData.tangentWS = normalize(fragInputs.tangentToWorld[0].xyz);    // The tangent is not normalize in tangentToWorld for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
+                
+                
+                    #if HAVE_DECALS
+                        if (_EnableDecals)
+                        {
+                            float alpha = 1.0;
+                            alpha = surfaceDescription.Alpha;
+                
+                            // Both uses and modifies 'surfaceData.normalWS'.
+                            DecalSurfaceData decalSurfaceData = GetDecalSurfaceData(posInput, fragInputs.tangentToWorld[2], alpha);
+                            ApplyDecalToSurfaceData(decalSurfaceData, fragInputs.tangentToWorld[2], surfaceData);
+                        }
+                    #endif
+                
+                    bentNormalWS = surfaceData.normalWS;
+                
+                    surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
+                
+                    #ifdef DEBUG_DISPLAY
+                        if (_DebugMipMapMode != DEBUGMIPMAPMODE_NONE)
+                        {
+                            // TODO: need to update mip info
+                            surfaceData.metallic = 0;
+                        }
+                
+                        // We need to call ApplyDebugToSurfaceData after filling the surfarcedata and before filling builtinData
+                        // as it can modify attribute use for static lighting
+                        ApplyDebugToSurfaceData(fragInputs.tangentToWorld, surfaceData);
+                    #endif
+                
+                    // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
+                    // If user provide bent normal then we process a better term
+                    #if defined(_SPECULAR_OCCLUSION_CUSTOM)
+                        // Just use the value passed through via the slot (not active otherwise)
+                    #elif defined(_SPECULAR_OCCLUSION_FROM_AO_BENT_NORMAL)
+                        // If we have bent normal and ambient occlusion, process a specular occlusion
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData.normalWS, surfaceData.ambientOcclusion, PerceptualSmoothnessToPerceptualRoughness(surfaceData.perceptualSmoothness));
+                    #elif defined(_AMBIENT_OCCLUSION) && defined(_SPECULAR_OCCLUSION_FROM_AO)
+                        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+                    #endif
+                
+                    #if defined(_ENABLE_GEOMETRIC_SPECULAR_AA) && !defined(SHADER_STAGE_RAY_TRACING)
+                        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.tangentToWorld[2], surfaceDescription.SpecularAAScreenSpaceVariance, surfaceDescription.SpecularAAThreshold);
+                    #endif
+                }
+                
+    
+                // --------------------------------------------------
+                // Get Surface And BuiltinData
+    
+                void GetSurfaceAndBuiltinData(FragInputs fragInputs, float3 V, inout PositionInputs posInput, out SurfaceData surfaceData, out BuiltinData builtinData RAY_TRACING_OPTIONAL_PARAMETERS)
+                {
+                    // Don't dither if displaced tessellation (we're fading out the displacement instead to match the next LOD)
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && !defined(_TESSELLATION_DISPLACEMENT)
+                    #ifdef LOD_FADE_CROSSFADE // enable dithering LOD transition if user select CrossFade transition in LOD group
+                    LODDitheringTransition(ComputeFadeMaskSeed(V, posInput.positionSS), unity_LODFade.x);
+                    #endif
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    #ifdef _DOUBLESIDED_ON
+                        float3 doubleSidedConstants = _DoubleSidedConstants.xyz;
+                    #else
+                        float3 doubleSidedConstants = float3(1.0, 1.0, 1.0);
+                    #endif
+    
+                    ApplyDoubleSidedFlipOrMirror(fragInputs, doubleSidedConstants); // Apply double sided flip on the vertex normal
+                    #endif // SHADER_UNLIT
+    
+                    SurfaceDescriptionInputs surfaceDescriptionInputs = FragInputsToSurfaceDescriptionInputs(fragInputs, V);
+                    SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
+    
+                    // Perform alpha test very early to save performance (a killed pixel will not sample textures)
+                    // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
+                    #ifdef _ALPHATEST_ON
+                        float alphaCutoff = surfaceDescription.AlphaClipThreshold;
+                        #if SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_PREPASS
+                        // The TransparentDepthPrepass is also used with SSR transparent.
+                        // If an artists enable transaprent SSR but not the TransparentDepthPrepass itself, then we use AlphaClipThreshold
+                        // otherwise if TransparentDepthPrepass is enabled we use AlphaClipThresholdDepthPrepass
+                        #elif SHADERPASS == SHADERPASS_TRANSPARENT_DEPTH_POSTPASS
+                        // DepthPostpass always use its own alpha threshold
+                        alphaCutoff = surfaceDescription.AlphaClipThresholdDepthPostpass;
+                        #elif (SHADERPASS == SHADERPASS_SHADOWS) || (SHADERPASS == SHADERPASS_RAYTRACING_VISIBILITY)
+                        // If use shadow threshold isn't enable we don't allow any test
+                        #endif
+    
+                        GENERIC_ALPHA_TEST(surfaceDescription.Alpha, alphaCutoff);
+                    #endif
+    
+                    #if !defined(SHADER_STAGE_RAY_TRACING) && _DEPTHOFFSET_ON
+                    ApplyDepthOffsetPositionInput(V, surfaceDescription.DepthOffset, GetViewForwardDir(), GetWorldToHClipMatrix(), posInput);
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    float3 bentNormalWS;
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData, bentNormalWS);
+    
+                    // Builtin Data
+                    // For back lighting we use the oposite vertex normal
+                    InitBuiltinData(posInput, surfaceDescription.Alpha, bentNormalWS, -fragInputs.tangentToWorld[2], fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
+    
+                    #else
+                    BuildSurfaceData(fragInputs, surfaceDescription, V, posInput, surfaceData);
+    
+                    ZERO_INITIALIZE(BuiltinData, builtinData); // No call to InitBuiltinData as we don't have any lighting
+                    builtinData.opacity = surfaceDescription.Alpha;
+    
+                    #if defined(DEBUG_DISPLAY)
+                        // Light Layers are currently not used for the Unlit shader (because it is not lit)
+                        // But Unlit objects do cast shadows according to their rendering layer mask, which is what we want to
+                        // display in the light layers visualization mode, therefore we need the renderingLayers
+                        builtinData.renderingLayers = GetMeshRenderingLightLayer();
+                    #endif
+    
+                    #endif // SHADER_UNLIT
+    
+                    #ifdef _ALPHATEST_ON
+                        // Used for sharpening by alpha to mask - Alpha to covertage is only used with depth only and forward pass (no shadow pass, no transparent pass)
+                        builtinData.alphaClipTreshold = alphaCutoff;
+                    #endif
+    
+                    // override sampleBakedGI - not used by Unlit
+    
+                    builtinData.emissiveColor = surfaceDescription.Emission;
+    
+                    // Note this will not fully work on transparent surfaces (can check with _SURFACE_TYPE_TRANSPARENT define)
+                    // We will always overwrite vt feeback with the nearest. So behind transparent surfaces vt will not be resolved
+                    // This is a limitation of the current MRT approach.
+    
+                    #if _DEPTHOFFSET_ON
+                    builtinData.depthOffset = surfaceDescription.DepthOffset;
+                    #endif
+    
+                    // TODO: We should generate distortion / distortionBlur for non distortion pass
+                    #if (SHADERPASS == SHADERPASS_DISTORTION)
+                    builtinData.distortion = surfaceDescription.Distortion;
+                    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+                    #endif
+    
+                    #ifndef SHADER_UNLIT
+                    // PostInitBuiltinData call ApplyDebugToBuiltinData
+                    PostInitBuiltinData(V, posInput, surfaceData, builtinData);
+                    #else
+                    ApplyDebugToBuiltinData(builtinData);
+                    #endif
+    
+                    RAY_TRACING_OPTIONAL_ALPHA_TEST_PASS
+                }
+    
+                // --------------------------------------------------
+                // Main
+    
+                #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassPathTracing.hlsl"
+    
+                ENDHLSL
+            }
+        }
         CustomEditor "Rendering.HighDefinition.LitShaderGraphGUI"
         FallBack "Hidden/Shader Graph/FallbackError"
     }
