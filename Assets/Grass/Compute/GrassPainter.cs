@@ -45,7 +45,8 @@ public class GrassPainter : MonoBehaviour
     public LayerMask paintMask = 1;
     public float brushSize = 1f;
     public float density = 2f;
-    public float normalLimit = 1;
+    [Range(0.0f, 1.0f)]
+    public float normalLimit = 0.5f;
 
     // Grass Size
     public float widthMultiplier = 1f;
@@ -207,8 +208,9 @@ public class GrassPainter : MonoBehaviour
 
                     if (Physics.Raycast(ray, out terrainHit, 200f, hitMask.value) &&
                         currentGrassAmount < grassLimit &&
-                        terrainHit.normal.y <= (1 + normalLimit) &&
-                        terrainHit.normal.y >= (1 - normalLimit))
+                        terrainHit.normal.y >= (2.0f * normalLimit - 1.0f ))
+                    //terrainHit.normal.y <= (1 + normalLimit) &&
+                    //terrainHit.normal.y >= (1 - normalLimit))
                     {
                         if ((paintMask.value & (1 << terrainHit.transform.gameObject.layer)) > 0)
                         {
