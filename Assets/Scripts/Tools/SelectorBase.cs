@@ -253,7 +253,7 @@ namespace VRtist
         }
         private void OnAnimationStateChanged(AnimationState state)
         {
-            if (state == AnimationState.Recording)
+            if (state == AnimationState.AnimationRecording)
             {
                 Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Stop Record");
             }
@@ -708,7 +708,7 @@ namespace VRtist
                 () => { },
                 () =>
                 {
-                    if (GlobalState.Animation.animationState == AnimationState.Recording || GlobalState.Animation.animationState == AnimationState.Preroll)
+                    if (GlobalState.Animation.animationState == AnimationState.AnimationRecording || GlobalState.Animation.animationState == AnimationState.Preroll)
                     {
                         GlobalState.Animation.Pause();
                         return;

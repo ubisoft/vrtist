@@ -31,8 +31,9 @@ namespace VRtist
     {
         Stopped,
         Preroll,
-        Recording,
-        Playing
+        AnimationRecording,
+        Playing,
+        VideoOutput
     };
 
     public enum Interpolation
@@ -51,6 +52,8 @@ namespace VRtist
         ScaleX, ScaleY, ScaleZ,
         Power, ColorR, ColorG, ColorB,
         CameraFocal,
+        CameraFocus,
+        CameraAperture,
         Unknown
     }
 
@@ -88,6 +91,7 @@ namespace VRtist
         readonly Dictionary<GameObject, AnimationSet> oldAnimations = new Dictionary<GameObject, AnimationSet>();
 
         readonly List<TimeHook> timeHooks = new List<TimeHook>();
+        public bool timeHooksEnabled = true;
 
         public float fps = 24f;
         float playStartTime;
@@ -131,7 +135,7 @@ namespace VRtist
             {
                 currentFrame = Mathf.Clamp(value, startFrame, endFrame);
 
-                if (animationState != AnimationState.Playing && animationState != AnimationState.Recording)
+                if (animationState != AnimationState.Playing && animationState != AnimationState.AnimationRecording)
                 {
                     EvaluateAnimations();
                     onFrameEvent.Invoke(value);
@@ -140,8 +144,6 @@ namespace VRtist
         }
 
         public bool autoKeyEnabled = false;
-
-        public UIButton playButtonShortcut;
 
         public AnimationState animationState = AnimationState.Stopped;
         public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
@@ -197,7 +199,7 @@ namespace VRtist
         private void Update()
         {
             // Find current time and frame & Animate objects
-            if (animationState == AnimationState.Playing || animationState == AnimationState.Recording)
+            if (animationState == AnimationState.Playing || animationState == AnimationState.AnimationRecording)
             {
                 // Compute new frame
                 float deltaTime = Time.time - playStartTime;
@@ -206,14 +208,17 @@ namespace VRtist
                 if (animationState == AnimationState.Playing)
                 {
                     int prevFrame = newFrame;
-                    foreach (TimeHook timeHook in timeHooks)
+                    if (timeHooksEnabled)
                     {
-                        newFrame = timeHook.HookTime(newFrame);
-                    }
-                    if (prevFrame != newFrame)
-                    {
-                        playStartFrame = newFrame;
-                        playStartTime = Time.time;
+                        foreach (TimeHook timeHook in timeHooks)
+                        {
+                            newFrame = timeHook.HookTime(newFrame);
+                        }
+                        if (prevFrame != newFrame)
+                        {
+                            playStartFrame = newFrame;
+                            playStartTime = Time.time;
+                        }
                     }
                 }
 
@@ -221,7 +226,7 @@ namespace VRtist
                 {
                     if (newFrame > endFrame)
                     {
-                        if (animationState == AnimationState.Recording)
+                        if (animationState == AnimationState.AnimationRecording)
                         {
                             // Stop recording when reaching the end of the timeline
                             newFrame = endFrame;
@@ -240,11 +245,24 @@ namespace VRtist
                     onFrameEvent.Invoke(currentFrame);
 
                     // Record
-                    if (animationState == AnimationState.Recording)
+                    if (animationState == AnimationState.AnimationRecording)
                     {
                         RecordFrame();
                     }
                 }
+            }
+
+            if (animationState == AnimationState.VideoOutput)
+            {
+                int newFrame = currentFrame + 1;
+                if (timeHooksEnabled)
+                {
+                    foreach (TimeHook timeHook in timeHooks)
+                    {
+                        newFrame = timeHook.HookTime(newFrame);
+                    }
+                }
+                CurrentFrame = newFrame;
             }
         }
 
@@ -277,7 +295,7 @@ namespace VRtist
 
         public bool IsAnimating()
         {
-            return animationState == AnimationState.Playing || animationState == AnimationState.Recording;
+            return animationState == AnimationState.Playing || animationState == AnimationState.AnimationRecording;
         }
 
         public void Clear()
@@ -314,6 +332,8 @@ namespace VRtist
                 Color color = Color.white;
 
                 float cameraFocal = -1;
+                float cameraFocus = -1;
+                float cameraAperture = -1;
 
                 foreach (Curve curve in animationSet.curves.Values)
                 {
@@ -339,6 +359,8 @@ namespace VRtist
                         case AnimatableProperty.ColorB: color.b = value; break;
 
                         case AnimatableProperty.CameraFocal: cameraFocal = value; break;
+                        case AnimatableProperty.CameraFocus: cameraFocus = value; break;
+                        case AnimatableProperty.CameraAperture: cameraAperture = value; break;
                     }
                 }
 
@@ -353,10 +375,15 @@ namespace VRtist
                     controller.Color = color;
                 }
 
-                if (cameraFocal != -1)
+                if (cameraFocal != -1 || cameraFocus != -1 || cameraAperture != -1)
                 {
                     CameraController controller = trans.GetComponent<CameraController>();
-                    controller.focal = cameraFocal;
+                    if (cameraFocal != -1)
+                        controller.focal = cameraFocal;
+                    if (cameraFocus != -1)
+                        controller.Focus = cameraFocus;
+                    if (cameraAperture != -1)
+                        controller.aperture = cameraAperture;
                 }
             }
         }
@@ -508,6 +535,23 @@ namespace VRtist
             countdown.gameObject.SetActive(true);
         }
 
+        public void OnToggleStartVideoOutput(bool record)
+        {
+            if (record)
+            {
+                animationState = AnimationState.VideoOutput;
+                Selection.enabled = false;
+                onAnimationStateEvent.Invoke(animationState);
+
+                // Force rendering the first frame
+                CurrentFrame = currentFrame;
+            }
+            else
+            {
+                Pause();
+            }
+        }
+
         public void OnTogglePlayPause(bool play)
         {
             if (play) { Play(); }
@@ -530,12 +574,12 @@ namespace VRtist
                 case AnimationState.Preroll:
                     countdown.gameObject.SetActive(false);
                     break;
-                case AnimationState.Recording:
+                case AnimationState.AnimationRecording:
                     StopRecording();
                     countdown.gameObject.SetActive(false);
                     break;
-                case AnimationState.Playing:
-                    playButtonShortcut.Checked = false;  // A déplacer !!!!
+                case AnimationState.VideoOutput:
+                    Selection.enabled = true;
                     break;
             }
             animationState = AnimationState.Stopped;
@@ -546,7 +590,7 @@ namespace VRtist
         {
             playStartFrame = currentFrame;
             playStartTime = Time.time;
-            animationState = AnimationState.Recording;
+            animationState = AnimationState.AnimationRecording;
             onAnimationStateEvent.Invoke(animationState);
             preRecordInterpolation = GlobalState.Settings.interpolation;
             GlobalState.Settings.interpolation = Interpolation.Linear;
@@ -585,10 +629,14 @@ namespace VRtist
                     }
 
                     float cameraFocal = -1;
+                    float cameraFocus = -1;
+                    float cameraAperture = -1;
                     CameraController cameraController = selected.GetComponent<CameraController>();
                     if (null != cameraController)
                     {
                         cameraFocal = cameraController.focal;
+                        cameraFocus = cameraController.Focus;
+                        cameraAperture = cameraController.aperture;
                     }
 
                     switch (curve.property)
@@ -611,6 +659,8 @@ namespace VRtist
                         case AnimatableProperty.ColorB: curve.AppendKey(new AnimationKey(currentFrame, color.b)); break;
 
                         case AnimatableProperty.CameraFocal: curve.AppendKey(new AnimationKey(currentFrame, cameraFocal)); break;
+                        case AnimatableProperty.CameraFocus: curve.AppendKey(new AnimationKey(currentFrame, cameraFocus)); break;
+                        case AnimatableProperty.CameraAperture: curve.AppendKey(new AnimationKey(currentFrame, cameraAperture)); break;
                     }
                 }
             }

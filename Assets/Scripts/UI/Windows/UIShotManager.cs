@@ -31,8 +31,8 @@ namespace VRtist
         public UIDynamicList shotList;
         public UILabel activeShotCountLabel;
 
-        UICheckbox montage = null;
-
+        UICheckbox montageCheckbox = null;
+        UIButton videoOutputButton;
 
         void Start()
         {
@@ -40,8 +40,11 @@ namespace VRtist
             ShotManager.Instance.ActiveShotChangedEvent.AddListener(OnActiveShotChanged);
             shotList.ItemClickedEvent += OnListItemClicked;
 
-            montage = transform.Find("MainPanel/Montage").GetComponent<UICheckbox>();
+            montageCheckbox = transform.Find("MainPanel/Montage").GetComponent<UICheckbox>();
             ShotManager.Instance.MontageModeChangedEvent.AddListener(OnMontageModeChanged);
+
+            videoOutputButton = transform.Find("MainPanel/VideoOutput").GetComponent<UIButton>();
+            videoOutputButton.Disabled = !montageCheckbox.Checked;
 
             GlobalState.Animation.onFrameEvent.AddListener(OnCurrentFrameChanged);
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
@@ -53,9 +56,15 @@ namespace VRtist
             shotList.NeedsRebuild = true;
         }
 
+        public void OnSetMontage(bool montage)
+        {
+            ShotManager.Instance.MontageEnabled = montage;
+        }
+
         private void OnMontageModeChanged()
         {
-            montage.Checked = ShotManager.Instance.MontageEnabled;
+            montageCheckbox.Checked = ShotManager.Instance.MontageEnabled;
+            videoOutputButton.Disabled = !montageCheckbox.Checked;
         }
 
         void SetUIElementColors(UIElement spinner, Color baseColor, Color selectedColor)
@@ -128,11 +137,12 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            if (state == AnimationState.Playing && null == CameraManager.Instance.ActiveCamera)
+            if (!videoOutputButton.Disabled)
             {
-                // Set Camera Active on Play/Record
-                ShotManager.Instance.ActiveShotIndex = ShotManager.Instance.ActiveShotIndex;
+                videoOutputButton.Checked = GlobalState.Animation.animationState == AnimationState.VideoOutput;
             }
+            // Prevent unchecking montage while recording a video
+            montageCheckbox.Disabled = GlobalState.Animation.animationState == AnimationState.VideoOutput;
         }
 
         private void OnCurrentFrameChanged(int currentFrame)

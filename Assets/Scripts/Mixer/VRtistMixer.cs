@@ -148,7 +148,7 @@ namespace VRtist.Mixer
 
         public static bool IsObjectInUse(GameObject obj)
         {
-            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.AnimationRecording;
             bool gripped = GlobalState.Instance.selectionGripped;
             return ((recording || gripped) && Selection.IsSelected(obj));
         }
@@ -166,7 +166,7 @@ namespace VRtist.Mixer
 
         public static void SetCameraInfo(GameObject obj, float focal, float near, float far, bool dofEnabled, float aperture, string colimatorName, Camera.GateFitMode gateFit, Vector2 sensorSize)
         {
-            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.AnimationRecording;
             if (recording && Selection.IsSelected(obj))
                 return;
             CameraController cameraController = obj.GetComponent<CameraController>();
@@ -221,7 +221,7 @@ namespace VRtist.Mixer
 
         public static void SetLightInfo(GameObject obj, LightType lightType, bool castShadows, float power, Color color, float range, float sharpness, float outerAngle)
         {
-            bool recording = GlobalState.Animation.animationState == AnimationState.Recording;
+            bool recording = GlobalState.Animation.animationState == AnimationState.AnimationRecording;
             if (recording && Selection.IsSelected(obj))
                 return;
             LightController controller = obj.GetComponent<LightController>();

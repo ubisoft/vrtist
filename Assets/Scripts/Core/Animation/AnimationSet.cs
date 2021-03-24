@@ -93,6 +93,8 @@ namespace VRtist
         {
             CreatePositionRotationCurves();
             curves.Add(AnimatableProperty.CameraFocal, new Curve(AnimatableProperty.CameraFocal));
+            curves.Add(AnimatableProperty.CameraFocus, new Curve(AnimatableProperty.CameraFocus));
+            curves.Add(AnimatableProperty.CameraAperture, new Curve(AnimatableProperty.CameraAperture));
         }
 
         public void ComputeCache()

@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -149,6 +150,14 @@ namespace VRtist
 
         public bool castShadows = false;
 
+        public CameraManager.Resolution videoOutputResolution = new CameraManager.Resolution
+        {
+            width = CameraManager.resolution1080p.width,
+            height = CameraManager.resolution1080p.height
+        };
+        public string videoOutputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) + "/VRtist";
+        public string snapshotsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "/VRtist";
+
         [Range(1.0f, 100.0f)]
         public float scaleSpeed = 50f;
 
@@ -164,7 +173,7 @@ namespace VRtist
 
         public Interpolation interpolation = Interpolation.Linear;
 
-        public string assetBankDirectory = "D:/VRtistData/";
+        public string assetBankDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VRtist";
         public string lobbyScenePath = null;
 
         private string projectName = "myScene";
@@ -231,7 +240,11 @@ namespace VRtist
                 }
             };
 
-            assetBankDirectory = "D:/VRtistData/";
+            videoOutputResolution = CameraManager.resolution1080p;
+            videoOutputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) + "/VRtist";
+            snapshotsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "/VRtist";
+
+            assetBankDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VRtist";
             projectName = "myScene";
         }
 

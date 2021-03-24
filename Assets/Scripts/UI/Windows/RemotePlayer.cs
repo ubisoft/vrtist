@@ -32,10 +32,13 @@ namespace VRtist
         UIButton playButton = null;
         UIButton recordButton = null;
 
+        UIButton shortcutPlayButton = null;
+
         public void Start()
         {
             playButton = transform.Find("PlayButton").GetComponent<UIButton>();
             recordButton = transform.Find("RecordButton").GetComponent<UIButton>();
+            shortcutPlayButton = Utils.FindRootGameObject("Camera Rig").transform.Find("Pivot/PaletteController/PaletteHandle/Palette/MainPanel/Shortcuts Panel/Play Button").GetComponent<UIButton>();
             GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
         }
 
@@ -43,11 +46,23 @@ namespace VRtist
         {
             playButton.Checked = false;
             recordButton.Checked = false;
+            shortcutPlayButton.Checked = false;
 
             switch (state)
             {
-                case AnimationState.Playing: playButton.Checked = true; break;
-                case AnimationState.Recording: recordButton.Checked = true; playButton.Checked = true; break;
+                case AnimationState.Playing:
+                    playButton.Checked = true;
+                    shortcutPlayButton.Checked = true;
+                    break;
+                case AnimationState.AnimationRecording:
+                    recordButton.Checked = true;
+                    playButton.Checked = true;
+                    shortcutPlayButton.Checked = true;
+                    break;
+                case AnimationState.VideoOutput:
+                    playButton.Checked = true;
+                    shortcutPlayButton.Checked = true;
+                    break;
             }
         }
 

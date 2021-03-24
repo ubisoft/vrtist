@@ -34,18 +34,11 @@ namespace VRtist
     {
         private const int RT_WIDTH = 1920 / 2;
         private const int RT_HEIGHT = 1080 / 2;
-        private const int RT_DEPTH = 24;
+        private const int RT_DEPTH = 0;//24;
 
         public override GameObject CreateInstance(GameObject source, Transform parent = null, bool isPrefab = false)
         {
             GameObject newCamera = GameObject.Instantiate(source, parent);
-            RenderTexture renderTexture = new RenderTexture(RT_WIDTH, RT_HEIGHT, RT_DEPTH, RenderTextureFormat.Default);
-            if (null == renderTexture)
-                Debug.LogError("CAMERA FAILED");
-            renderTexture.name = "Camera RT";
-
-            newCamera.GetComponentInChildren<Camera>(true).targetTexture = renderTexture;
-            newCamera.GetComponentInChildren<MeshRenderer>(true).material.SetTexture("_UnlitColorMap", renderTexture);
 
             VRInput.DeepSetLayer(newCamera, "CameraHidden");
 
@@ -159,6 +152,44 @@ namespace VRtist
                 focusButton.baseSprite = UIUtils.LoadIcon("dof");
                 focusButton.checkedSprite = UIUtils.LoadIcon("dof");
                 focusButton.SetLightLayer(2);
+
+                // Video output button
+                uiRoot = newCamera.transform.Find("Rotate/UI");
+                UIButton videoOutputButton = UIButton.Create(new UIButton.CreateButtonParams
+                {
+                    parent = uiRoot,
+                    widgetName = "VideoOutputButton",
+                    caption = "Outputs camera to video file",
+                    buttonContent = UIButton.ButtonContent.ImageOnly,
+                    icon = UIUtils.LoadIcon("record_video"),
+                    width = 0.02f,
+                    height = 0.02f,
+                    iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
+                    iconMargin = 0.002f,
+                    relativeLocation = new Vector3(-0.02f, -0.005f, -UIButton.default_thickness)
+                });
+                videoOutputButton.isCheckable = true;
+                videoOutputButton.baseSprite = UIUtils.LoadIcon("record_video");
+                videoOutputButton.checkedSprite = UIUtils.LoadIcon("record_video");
+                videoOutputButton.SetLightLayer(2);
+
+                // Snapshot button
+                uiRoot = newCamera.transform.Find("Rotate/UI");
+                UIButton snapshotButton = UIButton.Create(new UIButton.CreateButtonParams
+                {
+                    parent = uiRoot,
+                    widgetName = "SnapshotButton",
+                    caption = "Outputs camera to image file",
+                    buttonContent = UIButton.ButtonContent.ImageOnly,
+                    icon = UIUtils.LoadIcon("snapshot"),
+                    width = 0.02f,
+                    height = 0.02f,
+                    iconMarginBehavior = UIButton.IconMarginBehavior.UseIconMargin,
+                    iconMargin = 0.002f,
+                    relativeLocation = new Vector3(-0.05f, -0.005f, -UIButton.default_thickness)
+                });
+                snapshotButton.SetLightLayer(2);
+
             }
 
             return newCamera;

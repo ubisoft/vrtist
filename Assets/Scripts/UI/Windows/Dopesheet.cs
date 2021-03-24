@@ -99,6 +99,8 @@ namespace VRtist
 
                 UpdateInterpolation();
             }
+
+            GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
         }
 
         private void OnFrameChanged(int frame)
@@ -163,7 +165,7 @@ namespace VRtist
             switch (state)
             {
                 case AnimationState.Playing: titleBar.Pushed = true; break;
-                case AnimationState.Recording: titleBar.Hovered = true; break;
+                case AnimationState.AnimationRecording: titleBar.Hovered = true; break;
             }
         }
 
@@ -176,7 +178,6 @@ namespace VRtist
                 {
                     GlobalState.Animation.onAnimationStateEvent.AddListener(OnAnimationStateChanged);
                     GlobalState.ObjectRenamedEvent.AddListener(OnCameraNameChanged);
-                    GlobalState.Animation.onFrameEvent.AddListener(OnFrameChanged);
                     GlobalState.Animation.onRangeEvent.AddListener(OnRangeChanged);
 
                     Selection.onSelectionChanged.AddListener(OnSelectionChanged);
@@ -194,7 +195,6 @@ namespace VRtist
                 {
                     GlobalState.Animation.onAnimationStateEvent.RemoveListener(OnAnimationStateChanged);
                     GlobalState.ObjectRenamedEvent.RemoveListener(OnCameraNameChanged);
-                    GlobalState.Animation.onFrameEvent.RemoveListener(OnFrameChanged);
                     GlobalState.Animation.onRangeEvent.RemoveListener(OnRangeChanged);
 
                     Selection.onSelectionChanged.RemoveListener(OnSelectionChanged);

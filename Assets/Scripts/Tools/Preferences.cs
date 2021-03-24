@@ -51,12 +51,14 @@ namespace VRtist
         private UIButton displayOptionsButton;
         private UIButton soundsOptionsButton;
         private UIButton advancedOptionsButton;
+        private UIButton videoOptionsButton;
         private UIButton saveOptionsButton;
         private UIButton infoOptionsButton;
 
         private GameObject displaySubPanel;
         private GameObject soundsSubPanel;
         private GameObject advancedSubPanel;
+        private GameObject videoSubPanel;
         private GameObject saveSubPanel;
         private GameObject infoSubPanel;
 
@@ -79,6 +81,11 @@ namespace VRtist
         private UIButton mixerSaveButton;
         private Image saveImage;
 
+        private UIButton lowResButton;
+        private UIButton midResButton;
+        private UIButton highResButton;
+        private UILabel videoOutputDirectoryLabel;
+        private UILabel snapshotsDirectoryLabel;
 
         private void Start()
         {
@@ -90,12 +97,14 @@ namespace VRtist
             displayOptionsButton = panel.Find("DisplayOptionsButton").GetComponent<UIButton>();
             soundsOptionsButton = panel.Find("SoundsOptionsButton").GetComponent<UIButton>();
             advancedOptionsButton = panel.Find("AdvancedOptionsButton").GetComponent<UIButton>();
+            videoOptionsButton = panel.Find("VideoOptionsButton").GetComponent<UIButton>();
             saveOptionsButton = panel.Find("SaveOptionsButton").GetComponent<UIButton>();
             infoOptionsButton = panel.Find("InfoOptionsButton").GetComponent<UIButton>();
 
             displaySubPanel = panel.Find("DisplayOptions").gameObject;
             soundsSubPanel = panel.Find("SoundsOptions").gameObject;
             advancedSubPanel = panel.Find("AdvancedOptions").gameObject;
+            videoSubPanel = panel.Find("VideoOptions").gameObject;
             saveSubPanel = panel.Find("SaveOptions").gameObject;
             infoSubPanel = panel.Find("InfoOptions").gameObject;
 
@@ -117,6 +126,13 @@ namespace VRtist
             saveInfoLabel = saveSubPanel.transform.Find("InfoLabel").GetComponent<UILabel>();
             saveInfoLabel.gameObject.SetActive(false);
             mixerSaveButton = saveSubPanel.transform.Find("BlenderSaveButton").GetComponent<UIButton>();
+
+            // Video Output buttons
+            lowResButton = videoSubPanel.transform.Find("LowResButton").GetComponent<UIButton>();
+            midResButton = videoSubPanel.transform.Find("MidResButton").GetComponent<UIButton>();
+            highResButton = videoSubPanel.transform.Find("HighResButton").GetComponent<UIButton>();
+            videoOutputDirectoryLabel = videoSubPanel.transform.Find("VideoOutputDirectory").GetComponent<UILabel>();
+            snapshotsDirectoryLabel = videoSubPanel.transform.Find("SnapshotsDirectory").GetComponent<UILabel>();
 
             saveImage = saveShortcutButton.GetComponentInChildren<Image>();
 
@@ -155,6 +171,12 @@ namespace VRtist
             OnRightHanded(GlobalState.Settings.rightHanded);
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
 
+            lowResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution720p;
+            midResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution1080p;
+            highResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution2160p;
+            SetVideoOutputDirectory(GlobalState.Settings.videoOutputDirectory);
+            SetSnapshotsDirectory(GlobalState.Settings.snapshotsDirectory);
+
             ToolsUIManager.Instance.InitPaletteState();
             ToolsUIManager.Instance.InitDopesheetState();
             ToolsUIManager.Instance.InitShotManagerState();
@@ -178,7 +200,7 @@ namespace VRtist
 
         private void OnAnimationStateChanged(AnimationState state)
         {
-            playShortcutButton.Checked = state == AnimationState.Playing || state == AnimationState.Recording;
+            playShortcutButton.Checked = state == AnimationState.Playing || state == AnimationState.AnimationRecording;
         }
 
         protected void UpdateUIFromPreferences()
@@ -269,6 +291,8 @@ namespace VRtist
             soundsSubPanel.SetActive(false);
             advancedOptionsButton.Checked = false;
             advancedSubPanel.SetActive(false);
+            videoOptionsButton.Checked = false;
+            videoSubPanel.SetActive(false);
             saveOptionsButton.Checked = false;
             saveSubPanel.SetActive(false);
             infoOptionsButton.Checked = false;
@@ -294,6 +318,13 @@ namespace VRtist
             ResetSubPanels();
             advancedOptionsButton.Checked = true;
             advancedSubPanel.SetActive(true);
+        }
+
+        public void OnSetVideoSubPanel()
+        {
+            ResetSubPanels();
+            videoOptionsButton.Checked = true;
+            videoSubPanel.SetActive(true);
         }
 
         public void OnSetSaveSubPanel()
@@ -423,6 +454,50 @@ namespace VRtist
         public void OnRemoteSave()
         {
             SceneManager.RemoteSave();
+        }
+
+        public void OnSetResolution(string resStr)
+        {
+            lowResButton.Checked = false;
+            midResButton.Checked = false;
+            highResButton.Checked = false;
+            switch (resStr)
+            {
+                case "low":
+                    lowResButton.Checked = true;
+                    CameraManager.Instance.OutputResolution = CameraManager.VideoResolution.VideoResolution_720p;
+                    break;
+                case "medium":
+                    midResButton.Checked = true;
+                    CameraManager.Instance.OutputResolution = CameraManager.VideoResolution.VideoResolution_1080p;
+                    break;
+                case "high":
+                    highResButton.Checked = true;
+                    CameraManager.Instance.OutputResolution = CameraManager.VideoResolution.VideoResolution_2160p;
+                    break;
+            }
+        }
+
+        public void OnEditVideoOutputDirectory()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(SetVideoOutputDirectory, videoOutputDirectoryLabel.transform, videoOutputDirectoryLabel.Text);
+        }
+
+        private void SetVideoOutputDirectory(string value)
+        {
+            videoOutputDirectoryLabel.Text = value;
+            GlobalState.Settings.videoOutputDirectory = value;
+        }
+
+        public void OnEditSnapshotsDirectory()
+        {
+            ToolsUIManager.Instance.OpenKeyboard(SetSnapshotsDirectory, snapshotsDirectoryLabel.transform, snapshotsDirectoryLabel.Text);
+        }
+
+        private void SetSnapshotsDirectory(string value)
+        {
+            snapshotsDirectoryLabel.Text = value;
+            GlobalState.Settings.snapshotsDirectory = value;
         }
     }
 }

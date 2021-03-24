@@ -67,6 +67,7 @@ namespace VRtist.Serialization
         private readonly Dictionary<string, MaterialInfo> materials = new Dictionary<string, MaterialInfo>();  // all materials
 
         private readonly Dictionary<string, Mesh> loadedMeshes = new Dictionary<string, Mesh>();
+        private readonly List<CameraController> loadedCameras = new List<CameraController>();
 
         private readonly string DEFAULT_PROJECT_NAME = "newProject";
 
@@ -571,6 +572,7 @@ namespace VRtist.Serialization
             SceneManager.SetSceneImpl(scene);
 
             loadedMeshes.Clear();
+            loadedCameras.Clear();
 
             bool gizmoVisible = GlobalState.Settings.DisplayGizmos;
             bool errorLoading = false;
@@ -638,6 +640,9 @@ namespace VRtist.Serialization
                 ShotManager.Instance.FireChanged();
 
                 AnimationEngine.Instance.CurrentFrame = sceneData.currentFrame;
+
+                // Load camera snapshots
+                StartCoroutine(LoadCameraSnapshots());
             }
             catch (Exception)
             {
@@ -847,6 +852,19 @@ namespace VRtist.Serialization
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
+
+            loadedCameras.Add(controller);
+        }
+
+        private IEnumerator LoadCameraSnapshots()
+        {
+            foreach (CameraController controller in loadedCameras)
+            {
+                yield return null;  // wait next frame
+                CameraManager.Instance.ActiveCamera = controller.gameObject;
+                yield return new WaitForEndOfFrame();
+                controller.SetVirtualCamera(null);
+            }
         }
 
         private void LoadAnimation(AnimationData data)

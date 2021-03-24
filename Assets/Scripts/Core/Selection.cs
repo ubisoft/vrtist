@@ -64,6 +64,8 @@ namespace VRtist
     /// </summary>
     public class Selection
     {
+        public static bool enabled = true;
+
         // Current selected objects (blue outlined)
         static readonly HashSet<GameObject> selectedObjects = new HashSet<GameObject>();
         public static HashSet<GameObject> SelectedObjects
@@ -79,6 +81,7 @@ namespace VRtist
             get { return hoveredObject; }
             set
             {
+                if (!enabled) { return; }
                 GameObject previousHovered = hoveredObject;
                 hoveredObject = value;
                 onHoveredChanged.Invoke(previousHovered, value);
@@ -100,6 +103,7 @@ namespace VRtist
             }
             set
             {
+                if (!enabled) { return; }
                 if (IsSelected(value))
                     return;
 
@@ -148,6 +152,7 @@ namespace VRtist
 
         public static bool AddToSelection(GameObject gObject)
         {
+            if (!enabled) { return false; }
             if (IsSelected(gObject))
                 return false;
             selectionStateTimestamp++;
@@ -159,6 +164,7 @@ namespace VRtist
 
         public static bool RemoveFromSelection(GameObject gObject)
         {
+            if (!enabled) { return false; }
             if (!IsSelected(gObject))
                 return false;
             selectionStateTimestamp++;
@@ -170,6 +176,7 @@ namespace VRtist
 
         public static void ClearSelection()
         {
+            if (!enabled) { return; }
             if (!HasSelectedObjects())
                 return;
             selectionStateTimestamp++;
