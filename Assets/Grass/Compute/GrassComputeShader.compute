@@ -85,6 +85,12 @@ float _GrassRandomHeight;
 // Wind
 half _WindSpeed;
 float _WindStrength;
+float _WindMultiplierXX;
+float _WindMultiplierXY;
+float _WindMultiplierXZ;
+float _WindMultiplierZX;
+float _WindMultiplierZY;
+float _WindMultiplierZZ;
 
 // Interactor
 half _InteractorRadius, _InteractorStrength;
@@ -188,12 +194,15 @@ void Main(uint3 id : SV_DispatchThreadID)
     // Wind
     float3 v0 = sv.positionOS.xyz;
     float3 wind1 = float3(
-          sin(_Time.x * _WindSpeed + v0.x) 
-        + sin(_Time.x * _WindSpeed + v0.z * 2) 
-        + sin(_Time.x * _WindSpeed * 0.1 + v0.x), 
+           sin(_Time.x * _WindSpeed + v0.x * _WindMultiplierXX)
+        +  sin(_Time.x * _WindSpeed + v0.y * _WindMultiplierXY)
+        +  sin(_Time.x * _WindSpeed + v0.z * _WindMultiplierXZ)
+        ,
         0,
-          cos(_Time.x * _WindSpeed + v0.x * 2) 
-        + cos(_Time.x * _WindSpeed + v0.z));
+           cos(_Time.x * _WindSpeed + v0.x * _WindMultiplierZX)
+        +  cos(_Time.x * _WindSpeed + v0.y * _WindMultiplierZY)
+        +  cos(_Time.x * _WindSpeed + v0.z * _WindMultiplierZZ)
+        );
 
     wind1 = mul(normalToObject, wind1); // wind applies in normal space for the moment.
     wind1 *= _WindStrength;
