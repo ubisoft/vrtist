@@ -12,6 +12,7 @@ struct GrassVertex
 struct GrassTriangle
 {
     float3 normalOS;
+    float3 color;
     GrassVertex vertices[3];
 };
 
@@ -31,37 +32,37 @@ PackedVaryingsMeshToPS GrassVert(VertexShaderInput input)
     GrassTriangle tri = _GrassTriangles[input.vertexID / 3];
     GrassVertex vertex = tri.vertices[input.vertexID % 3];
 
-    //float3 positionRWS = GetCameraRelativePositionWS(vertex.positionWS);
-    //float3 lightPosition = float3(1, 1, 1); // TMP
-    //float3 perpendicularAngle = float3(0, 0, 1);
-    //float3 faceNormal = cross(perpendicularAngle, tri.normalOS) * lightPosition;
-    float3 faceNormal = tri.normalOS;
-
     // 2) CALL the HDRP vertex shader with the extracted info.
-    AttributesMesh inputMesh = (AttributesMesh)0;
+    AttributesMesh attribs = (AttributesMesh)0;
 
-    inputMesh.positionOS = vertex.positionWS;// TransformWorldToObject(positionRWS);
+    //float3 positionRWS = GetCameraRelativePositionWS(vertex.positionWS); // IF compute outputs WorldSpace positions
+    //attribs.positionOS = TransformWorldToObject(positionRWS); // IF compute outputs WorldSpace positions
+    attribs.positionOS = vertex.positionWS;
 
 #if defined(ATTRIBUTES_NEED_NORMAL)
-    inputMesh.normalOS = faceNormal;
+    attribs.normalOS = tri.normalOS;
 #endif
 
 #if defined(ATTRIBUTES_NEED_TANGENT)
-    inputMesh.tangentOS = float4(0,0,1,1);
+    attribs.tangentOS = float4(0,0,1,1);
 #endif
 
 #if defined(ATTRIBUTES_NEED_TEXCOORD0)
-    inputMesh.uv0 = float4(vertex.uv, 0, 0);
+    attribs.uv0 = float4(vertex.uv, 0, 0);
 #endif
 
-    UNITY_TRANSFER_INSTANCE_ID(input, inputMesh); // copy .instanceID from input to output
+#if defined(ATTRIBUTES_NEED_COLOR)
+    attribs.color = float4(tri.color, 1);
+#endif
 
-    VaryingsMeshToPS varyingsType = VertMesh(inputMesh);
+    UNITY_TRANSFER_INSTANCE_ID(input, attribs); // copy .instanceID from input to output
 
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(varyingsType); // output.stereoTargetEyeIndexAsRTArrayIdx = unity_StereoEyeIndex
+    VaryingsMeshToPS v2f = VertMesh(attribs);
+
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(v2f); // output.stereoTargetEyeIndexAsRTArrayIdx = unity_StereoEyeIndex
 
     // 3) PACK the result for the rest of the HDRP Pipeline.
-    return PackVaryingsMeshToPS(varyingsType);
+    return PackVaryingsMeshToPS(v2f);
 }
 
 #endif // _GRASS_VERTEX_SHADER_INCLUDED_
