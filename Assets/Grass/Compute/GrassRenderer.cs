@@ -50,8 +50,15 @@ public class GrassRenderer : MonoBehaviour
     [Range(1, 4)] public float bladeCurveAmount = 2;
     // Wind
     [Header("Wind")]
-    public float windSpeed = 10;
-    public float windStrength = 0.05f;
+    public float windSpeed = 3;
+    public float windStrength = 0.01f;
+    public float windMultiplierXX = 1.0f;
+    public float windMultiplierXY = 1.0f;
+    public float windMultiplierXZ = 1.0f;
+    public float windMultiplierZX = 1.0f;
+    public float windMultiplierZY = 1.0f;
+    public float windMultiplierZZ = 1.0f;
+
     // Interactor
     [Header("Interactor")]
     public float affectRadius = 0.3f;
@@ -305,6 +312,12 @@ public class GrassRenderer : MonoBehaviour
 
         m_InstantiatedComputeShader.SetFloat("_WindSpeed", windSpeed);
         m_InstantiatedComputeShader.SetFloat("_WindStrength", windStrength);
+        m_InstantiatedComputeShader.SetFloat("_WindMultiplierXX", windMultiplierXX);
+        m_InstantiatedComputeShader.SetFloat("_WindMultiplierXY", windMultiplierXY);
+        m_InstantiatedComputeShader.SetFloat("_WindMultiplierXZ", windMultiplierXZ);
+        m_InstantiatedComputeShader.SetFloat("_WindMultiplierZX", windMultiplierZX);
+        m_InstantiatedComputeShader.SetFloat("_WindMultiplierZY", windMultiplierZY);
+        m_InstantiatedComputeShader.SetFloat("_WindMultiplierZZ", windMultiplierZZ);
 
         m_InstantiatedComputeShader.SetFloat("_InteractorRadius", affectRadius);
         m_InstantiatedComputeShader.SetFloat("_InteractorStrength", affectStrength);
