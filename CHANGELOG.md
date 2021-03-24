@@ -6,13 +6,15 @@
 - Camera focus and aperture are now animatable
 - Video output (Shot manager & Cameras)
 - Camera Snapshot
-- Collimator is now hidden when camera is not active
+- Collimator link to camera is now hidden when camera is not active
 
 ## Fixes
 
 - Lobby project list buttons states
 - Camera feedback is now always visible (even if no camera is active - only when it is activated)
 - Camera snapshot for cameras list when loading a scene
+- Animation Editor instead of Dopesheet
+- Animation Editor handle is easier to select
 
 # 0.1.0
 
