@@ -105,7 +105,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__SHADOWCASTER
+#if (USE_GRASS_SHADER_IN_PASS__SHADOWCASTER == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -652,7 +652,7 @@ Shader "VRtist/Grass"
                 // Main
 
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__SHADOWCASTER
+#if (USE_GRASS_SHADER_IN_PASS__SHADOWCASTER == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -679,7 +679,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__META
+#if (USE_GRASS_SHADER_IN_PASS__META == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -913,7 +913,6 @@ Shader "VRtist/Grass"
                 // --------------------------------------------------
                 // Graph
     
-    
                 // Graph Functions
                 
                 void Unity_Lerp_float4(float4 A, float4 B, float4 T, out float4 Out)
@@ -949,7 +948,15 @@ Shader "VRtist/Grass"
                     float3 NormalTS;
                     float Metallic;
                 };
-                
+    
+#if (USE_GRASS_SHADER_IN_PASS__META == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    return GrassSurface(IN);
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -974,7 +981,7 @@ Shader "VRtist/Grass"
                     surface.Metallic = 0;
                     return surface;
                 }
-    
+#endif
                 // --------------------------------------------------
                 // Build Graph Inputs
     
@@ -1279,7 +1286,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassLightTransport.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__META
+#if (USE_GRASS_SHADER_IN_PASS__META == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -1306,7 +1313,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__SCENEPICKING
+#if (USE_GRASS_SHADER_IN_PASS__SCENEPICKING == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -1580,6 +1587,14 @@ Shader "VRtist/Grass"
                     float Metallic;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__SCENEPICKING == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+                
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    return GrassSurface(IN);
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -1604,6 +1619,7 @@ Shader "VRtist/Grass"
                     surface.Metallic = 0;
                     return surface;
                 }
+#endif
     
                 // --------------------------------------------------
                 // Build Graph Inputs
@@ -1915,7 +1931,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__SCENEPICKING
+#if (USE_GRASS_SHADER_IN_PASS__SCENEPICKING == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -1943,7 +1959,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__SCENESELECTION
+#if (USE_GRASS_SHADER_IN_PASS__SCENESELECTION == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -2219,6 +2235,14 @@ Shader "VRtist/Grass"
                     float Metallic;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__SCENESELECTION == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    return GrassSurface(IN);
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -2243,6 +2267,7 @@ Shader "VRtist/Grass"
                     surface.Metallic = 0;
                     return surface;
                 }
+#endif
     
                 // --------------------------------------------------
                 // Build Graph Inputs
@@ -2554,7 +2579,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__SCENESELECTION
+#if (USE_GRASS_SHADER_IN_PASS__SCENESELECTION == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -2591,7 +2616,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS
+#if (USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -2903,6 +2928,14 @@ Shader "VRtist/Grass"
                     float Metallic;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    return GrassSurface(IN);
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -2927,6 +2960,7 @@ Shader "VRtist/Grass"
                     surface.Metallic = 0;
                     return surface;
                 }
+#endif
     
                 // --------------------------------------------------
                 // Build Graph Inputs
@@ -3243,7 +3277,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassMotionVectors.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS
+#if (USE_GRASS_SHADER_IN_PASS__MOTIONVECTORS == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -3281,7 +3315,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS
+#if (USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -3888,7 +3922,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS
+#if (USE_GRASS_SHADER_IN_PASS__TRANSPARENT_DEPTH_PREPASS == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -3917,7 +3951,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG
+#if (USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -4186,6 +4220,14 @@ Shader "VRtist/Grass"
                     float Metallic;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    return GrassSurface(IN);
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -4210,7 +4252,7 @@ Shader "VRtist/Grass"
                     surface.Metallic = 0;
                     return surface;
                 }
-    
+#endif
                 // --------------------------------------------------
                 // Build Graph Inputs
     
@@ -4521,7 +4563,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassFullScreenDebug.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG
+#if (USE_GRASS_SHADER_IN_PASS__FULLSCREEN_DEBUG == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -4558,7 +4600,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY
+#if (USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -4870,6 +4912,14 @@ Shader "VRtist/Grass"
                     float Metallic;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    return GrassSurface(IN);
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -4894,7 +4944,7 @@ Shader "VRtist/Grass"
                     surface.Metallic = 0;
                     return surface;
                 }
-    
+#endif
                 // --------------------------------------------------
                 // Build Graph Inputs
     
@@ -5210,7 +5260,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassDepthOnly.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY
+#if (USE_GRASS_SHADER_IN_PASS__DEPTH_ONLY == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -5247,7 +5297,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__GBUFFER
+#if (USE_GRASS_SHADER_IN_PASS__GBUFFER == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -5557,6 +5607,18 @@ Shader "VRtist/Grass"
                     float4 VTPackedFeedback;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__GBUFFER == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = GrassSurface(IN);
+                    {
+                        surface.VTPackedFeedback = float4(1.0f, 1.0f, 1.0f, .0f);
+                    }
+                    return surface;
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -5584,7 +5646,7 @@ Shader "VRtist/Grass"
                     }
                     return surface;
                 }
-    
+#endif
                 // --------------------------------------------------
                 // Build Graph Inputs
     
@@ -5900,7 +5962,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassGBuffer.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__GBUFFER
+#if (USE_GRASS_SHADER_IN_PASS__GBUFFER == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
@@ -5940,7 +6002,7 @@ Shader "VRtist/Grass"
     
                 // Pragmas
                 #pragma target 4.5
-#if USE_GRASS_SHADER_IN_PASS__FORWARD
+#if (USE_GRASS_SHADER_IN_PASS__FORWARD == 1)
                 #pragma vertex GrassVert
 #else
                 #pragma vertex Vert
@@ -6257,6 +6319,18 @@ Shader "VRtist/Grass"
                     float4 VTPackedFeedback;
                 };
                 
+#if (USE_GRASS_SHADER_IN_PASS__FORWARD == 1)
+                #include "Assets/Grass/Compute/GrassSurfaceShader.hlsl"
+
+                SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
+                {
+                    SurfaceDescription surface = GrassSurface(IN);
+                    {
+                        surface.VTPackedFeedback = float4(1.0f, 1.0f, 1.0f, .0f);
+                    }
+                    return surface;
+                }
+#else
                 SurfaceDescription SurfaceDescriptionFunction(SurfaceDescriptionInputs IN)
                 {
                     SurfaceDescription surface = (SurfaceDescription)0;
@@ -6284,7 +6358,7 @@ Shader "VRtist/Grass"
                     }
                     return surface;
                 }
-    
+#endif
                 // --------------------------------------------------
                 // Build Graph Inputs
     
@@ -6600,7 +6674,7 @@ Shader "VRtist/Grass"
                 // Main
     
                 #include "Packages/com.unity.render-pipelines.high-definition/Runtime/RenderPipeline/ShaderPass/ShaderPassForward.hlsl"
-#if USE_GRASS_SHADER_IN_PASS__FORWARD
+#if (USE_GRASS_SHADER_IN_PASS__FORWARD == 1)
                 #include "Assets/Grass/Compute/GrassVertexShader.hlsl"
 #endif
                 ENDHLSL
