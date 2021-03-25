@@ -447,9 +447,8 @@ namespace VRtist
 
         void UpdateDOFGizmo()
         {
-            if (null != colimator)
-                colimator.gameObject.SetActive(EnableDOF && CameraManager.Instance.ActiveCamera == gameObject && GlobalState.Settings.DisplayGizmos);
-
+            if (null == colimatorLineRenderer)
+                colimatorLineRenderer = gameObject.GetComponent<LineRenderer>();
             colimatorLineRenderer.enabled = EnableDOF && CameraManager.Instance.ActiveCamera == gameObject && GlobalState.Settings.DisplayGizmos;
         }
 
