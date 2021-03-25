@@ -333,6 +333,7 @@ public class GrassRenderer : MonoBehaviour
         // Material
         m_InstantiatedMaterial.SetFloat("_FogStartDistance", RenderSettings.fogStartDistance);
         m_InstantiatedMaterial.SetFloat("_FogEndDistance", RenderSettings.fogEndDistance);
+        m_InstantiatedMaterial.SetMatrix("_GrassObjectToWorldMatrix", transform.localToWorldMatrix);
     }
 
     // This applies the game object's transform to the local bounds
