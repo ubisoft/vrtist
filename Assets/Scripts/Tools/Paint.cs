@@ -37,25 +37,32 @@ namespace VRtist
         Transform ribbonPanel;
         Transform hullPanel;
         Transform volumePanel;
-
+        Transform grassPanel;
+        
         UIButton tubeButton;
         UIButton ribbonButton;
         UIButton hullButton;
         UIButton volumeButton;
+        UIButton grassButton;
 
         GameObject pencilCursor = null;
         GameObject flatCursor = null;
         GameObject convexCursor = null;
         GameObject volumeCursor = null;
+        GameObject grassCursor = null;
 
         UIButton volumeCreateButton;
         UIButton volumeEditButton;
 
+        UIButton grassAddButton;
+        UIButton grassRemoveButton;
+        UIButton grassEditButton;
+        
         // Paint tool
         Vector3 paintPrevPosition;
         GameObject currentPaint;
         float brushSize = 0.01f;
-        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume }
+        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume, Grass }
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
         bool paintOnSurface = false;
@@ -70,6 +77,14 @@ namespace VRtist
         GameObject currentVolume;
         private float stepSize = 0.01f; // size in viewer's space
         private float strength = 0.5f;
+
+        // GRASS
+        enum GrassEditionMode { Add, Remove, Edit };
+        GrassEditionMode grassEditionMode = GrassEditionMode.Add;
+        //GrassPainter grassPainter; // TODOGRASS
+        GameObject currentGrass;
+        private float grassBrushSize = 1.0f;
+        private float grassDensity = 1.0f;
 
         // Start is called before the first frame update
         void Start()
@@ -88,6 +103,7 @@ namespace VRtist
 
             freeDraw = new FreeDraw();
             volumeGenerator = new VolumeMeshGenerator();
+            //grassPainter = new GrassPainter(); // TODOGRASS
 
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
@@ -104,6 +120,7 @@ namespace VRtist
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldHorizontal, "Brush Size");
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Primary, false);
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
+            // TODOGRASS: tooltips for Grass.
         }
 
         private void ConfigureSubPanels()
@@ -112,30 +129,44 @@ namespace VRtist
             ribbonPanel = panel.Find("PaintRibbonPanel");
             hullPanel = panel.Find("PaintHullPanel");
             volumePanel = panel.Find("PaintVolumePanel");
+            grassPanel = panel.Find("PaintGrassPanel");
 
             tubePanel.gameObject.SetActive(true); // <---- Tube is default
             ribbonPanel.gameObject.SetActive(false);
             hullPanel.gameObject.SetActive(false);
             volumePanel.gameObject.SetActive(false);
+            grassPanel.gameObject.SetActive(false);
 
             tubeButton = panel.Find("PaintTubeButton").GetComponent<UIButton>();
             tubeButton.Checked = true; // <---- Tube is default
             ribbonButton = panel.Find("PaintRibbonButton").GetComponent<UIButton>();
             hullButton = panel.Find("PaintHullButton").GetComponent<UIButton>();
             volumeButton = panel.Find("PaintVolumeButton").GetComponent<UIButton>();
+            grassButton = panel.Find("PaintGrassButton").GetComponent<UIButton>();
 
             tubeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Pencil));
             ribbonButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.FlatPencil));
             hullButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.ConvexHull));
             volumeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Volume));
+            grassButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Grass));
 
-            // Sub
+            // Sub - Volume
             volumeCreateButton = volumePanel.Find("ModeCreateButton").GetComponent<UIButton>(); // <---- Create is default.
             volumeCreateButton.Checked = true;
             volumeEditButton = volumePanel.Find("ModeEditButton").GetComponent<UIButton>();
 
             volumeCreateButton.onReleaseEvent.AddListener(() => OnVolumeCreatePressed());
             volumeEditButton.onReleaseEvent.AddListener(() => OnVolumeEditPressed());
+
+            // Sub - Grass
+            grassAddButton = grassPanel.Find("ModeAddButton").GetComponent<UIButton>(); // <---- Add is default.
+            grassAddButton.Checked = true;
+            grassRemoveButton = grassPanel.Find("ModeRemoveButton").GetComponent<UIButton>();
+            grassEditButton = grassPanel.Find("ModeEditButton").GetComponent<UIButton>();
+
+            grassAddButton.onReleaseEvent.AddListener(() => OnGrassAddPressed());
+            grassRemoveButton.onReleaseEvent.AddListener(() => OnGrassRemovePressed());
+            grassEditButton.onReleaseEvent.AddListener(() => OnGrassEditPressed());
         }
 
         private void ConfigureCursors()
@@ -144,11 +175,13 @@ namespace VRtist
             flatCursor = mouthpiece.transform.Find("flat_curve").gameObject;
             convexCursor = mouthpiece.transform.Find("convex").gameObject;
             volumeCursor = mouthpiece.transform.Find("volume").gameObject;
+            grassCursor = mouthpiece.transform.Find("grass").gameObject;
 
             pencilCursor.SetActive(paintTool == PaintTools.Pencil);
             flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
             convexCursor.SetActive(paintTool == PaintTools.ConvexHull);
             volumeCursor.SetActive(paintTool == PaintTools.Volume);
+            grassCursor.SetActive(paintTool == PaintTools.Grass);
         }
 
         protected override void OnDisable()
@@ -165,7 +198,7 @@ namespace VRtist
 
         void OnSelectPanel(PaintTools tool)
         {
-            // If changing tool TO of FROM volume, reset the volume generator.
+            // If changing tool TO or FROM volume, reset the volume generator.
             if (paintTool != tool && (paintTool == PaintTools.Volume || tool == PaintTools.Volume))
                 ResetVolume();
 
@@ -176,18 +209,21 @@ namespace VRtist
             ribbonButton.Checked = tool == PaintTools.FlatPencil;
             hullButton.Checked = tool == PaintTools.ConvexHull;
             volumeButton.Checked = tool == PaintTools.Volume;
+            grassButton.Checked = tool == PaintTools.Grass;
 
             // ACTIVE panel
             tubePanel.gameObject.SetActive(tool == PaintTools.Pencil);
             ribbonPanel.gameObject.SetActive(tool == PaintTools.FlatPencil);
             hullPanel.gameObject.SetActive(tool == PaintTools.ConvexHull);
             volumePanel.gameObject.SetActive(tool == PaintTools.Volume);
+            grassPanel.gameObject.SetActive(tool == PaintTools.Grass);
 
             // Mouthpiece
             pencilCursor.SetActive(tool == PaintTools.Pencil);
             flatCursor.SetActive(tool == PaintTools.FlatPencil);
             convexCursor.SetActive(tool == PaintTools.ConvexHull);
             volumeCursor.SetActive(tool == PaintTools.Volume);
+            grassCursor.SetActive(tool == PaintTools.Grass);
 
             // Sub-Elements (put in its own function?)
             switch (tool)
@@ -196,6 +232,17 @@ namespace VRtist
                     {
                         volumeCreateButton.Checked = true;
                         volumeEditButton.Checked = false;
+                        // TODO: default values for sliders?
+                        // ...
+                    }
+                    break;
+
+                case PaintTools.Grass:
+                    {
+                        grassAddButton.Checked = true;
+                        grassRemoveButton.Checked = false;
+                        grassEditButton.Checked = false;
+                        
                         // TODO: default values for sliders?
                         // ...
                     }
@@ -277,6 +324,9 @@ namespace VRtist
                         volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
                     }
                     break;
+
+                case PaintTools.Grass: // TODOGRASS
+                    break;
             }
         }
 
@@ -339,6 +389,9 @@ namespace VRtist
                         }
                     }
                     break;
+
+                case PaintTools.Grass: // TODOGRASS
+                    break;
             }
         }
 
@@ -352,7 +405,10 @@ namespace VRtist
 
             GameObject gobject = new GameObject();
             gobject.transform.parent = rootObject.transform;
-            gobject.name = Utils.CreateUniqueName(what == PaintTools.Volume ? "Volume" : "Paint");
+            gobject.name = Utils.CreateUniqueName(
+                  what == PaintTools.Volume ? "Volume" 
+                : what == PaintTools.Grass ? "Grass" 
+                : "Paint");
 
             gobject.transform.localPosition = Vector3.zero;
             gobject.transform.localRotation = Quaternion.identity;
@@ -380,6 +436,10 @@ namespace VRtist
             if (what == PaintTools.Volume)
             {
                 gobject.AddComponent<VolumeController>();
+            }
+            else if (what == PaintTools.Grass)
+            {
+                //gobject.AddComponent<GrassController>(); // TODOGRASS
             }
             else
             {
@@ -482,6 +542,10 @@ namespace VRtist
                     }
                 }
             }
+            else if (paintTool == PaintTools.Grass)
+            { 
+                // TODOGRASS: need to do something with the LineRenderer???
+            }
 
             // Draw
             float deadZone = VRInput.deadZoneIn;
@@ -501,6 +565,7 @@ namespace VRtist
                     case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * value); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
                     case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * value * strength); break;
+                    case PaintTools.Grass: break; // TODOGRASS: grassPainter.AddPoint(penPosition, 2.0f * value * strength); break;
                 }
 
                 switch (paintTool)
@@ -545,6 +610,9 @@ namespace VRtist
                             //controller.UpdateBoundsRenderer();
                         }
                         break;
+
+                    case PaintTools.Grass: // TODOGRASS
+                        break;
                 }
             }
 
@@ -557,6 +625,11 @@ namespace VRtist
             // ...
 
             volumeGenerator.Reset();
+        }
+
+        private void InitGrassFromSelection()
+        {
+            // TODOGRASS
         }
 
         private void InitVolumeFromSelection()
@@ -595,6 +668,8 @@ namespace VRtist
             paintOnSurface = value;
         }
 
+        // VOLUME CALLBACKS
+
         public void OnVolumeCreatePressed()
         {
             volumeEditionMode = VolumeEditionMode.Create;
@@ -623,6 +698,45 @@ namespace VRtist
         public void OnVolumeCellSizeChanged(float value)
         {
             stepSize = value / 1000.0f; // millimeters to meters
+        }
+
+        // GRASS CALLBACKS
+
+        public void OnGrassAddPressed()
+        {
+            grassEditionMode = GrassEditionMode.Add;
+
+            grassAddButton.Checked = true;
+            grassRemoveButton.Checked = false;
+            grassEditButton.Checked = false;
+        }
+
+        public void OnGrassRemovePressed()
+        {
+            grassEditionMode = GrassEditionMode.Remove;
+
+            grassAddButton.Checked = false;
+            grassRemoveButton.Checked = true;
+            grassEditButton.Checked = false;
+        }
+
+        public void OnGrassEditPressed()
+        {
+            grassEditionMode = GrassEditionMode.Edit;
+
+            grassAddButton.Checked = false;
+            grassRemoveButton.Checked = false;
+            grassEditButton.Checked = true;
+        }
+
+        public void OnGrassBrushSizeChanged(float value)
+        {
+            grassBrushSize = value;
+        }
+
+        public void OnGrassDensityChanged(float value)
+        {
+            grassDensity = value;
         }
     }
 }
