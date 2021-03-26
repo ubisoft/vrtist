@@ -311,6 +311,11 @@ namespace VRtist.Mixer
             MixerClient.Instance.SendEvent(MessageType.FrameStartEnd, info);
         }
 
+        public void InsertObjectConstraint(int _, Constraint constraint)
+        {
+            AddObjectConstraint(constraint.gobject, constraint.constraintType, constraint.target.gameObject);
+        }
+
         public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
         {
             switch (constraintType)

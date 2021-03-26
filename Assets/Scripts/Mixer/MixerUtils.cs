@@ -65,7 +65,7 @@ namespace VRtist.Mixer
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static HashSet<string> texturesFlipY = new HashSet<string>();
 
-        private static Camera.GateFitMode[] mixerToVRtistGateFitMap = new Camera.GateFitMode[3] { Camera.GateFitMode.Fill, Camera.GateFitMode.Horizontal, Camera.GateFitMode.Vertical };
+        private static Camera.GateFitMode[] mixerToVRtistGateFitMap = new Camera.GateFitMode[3] { Camera.GateFitMode.Fill, Camera.GateFitMode.Vertical, Camera.GateFitMode.Horizontal };
         private static int[] vrtistToMixerGateFitMap = new int[4] { -1, 2, 1, 0 };
 
         public static void BuildClientId(byte[] data)

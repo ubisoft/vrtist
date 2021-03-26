@@ -230,7 +230,7 @@ namespace VRtist
                 colimatorLineRenderer.SetPosition(0, transform.position);
                 colimatorLineRenderer.startWidth = lineRendererWidth / GlobalState.WorldScale;
                 colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
-                colimatorLineRenderer.enabled = colimator != null;
+                colimatorLineRenderer.enabled = false;
             }
         }
 

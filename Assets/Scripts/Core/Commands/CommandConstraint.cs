@@ -22,7 +22,6 @@
  */
 
 using UnityEngine;
-using UnityEngine.Animations;
 
 namespace VRtist
 {
@@ -64,36 +63,27 @@ namespace VRtist
     /// </summary>
     public class CommandRemoveConstraint : ICommand
     {
-        readonly ConstraintType constraintType;
-        readonly GameObject gobject;
-        readonly GameObject target;
+        readonly int constraintIndex;
+        readonly Constraint constraint;
 
         public CommandRemoveConstraint(ConstraintType constraintType, GameObject gobject)
         {
-            this.constraintType = constraintType;
-            this.gobject = gobject;
-            Component component = ConstraintManager.GetConstraint(constraintType, gobject);
-            if (null != component)
-            {
-                IConstraint constraint = component as IConstraint;
-                if (constraint.sourceCount > 0)
-                    target = constraint.GetSource(0).sourceTransform.gameObject;
-            }
+            ConstraintManager.FindConstraint(gobject, constraintType, out constraint, out constraintIndex);
         }
 
         public override void Redo()
         {
-            SceneManager.RemoveObjectConstraint(gobject, constraintType);
+            SceneManager.RemoveObjectConstraint(constraint);
         }
 
         public override void Undo()
         {
-            SceneManager.AddObjectConstraint(gobject, constraintType, target);
+            SceneManager.InsertObjectConstraint(constraintIndex, constraint);
         }
 
         public override void Submit()
         {
-            if (null == target) { return; }
+            if (null == constraint || null == constraint.target) { return; }
             CommandManager.AddCommand(this);
             Redo();
         }

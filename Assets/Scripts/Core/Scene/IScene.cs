@@ -50,6 +50,7 @@ namespace VRtist
         void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key);
         void MoveKeyframe(GameObject gobject, AnimatableProperty property, int oldTime, int newTime);
         void SetFrameRange(int start, int end);
+        void InsertObjectConstraint(int index, Constraint constraint);
         void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target);
         void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType);
         void SetSky(SkySettings sky);
