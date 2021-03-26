@@ -40,6 +40,15 @@ namespace VRtist
 
         public Camera cameraObject = null;
         public float focal = 35f;
+        public float Focal
+        {
+            get { return focal; }
+            set
+            {
+                focal = value;
+                ComputeFOV();
+            }
+        }
         public float focus = 1.0f;
         public float Focus
         {
@@ -55,6 +64,15 @@ namespace VRtist
             }
         }
         public float aperture = 16f; // [1..32] in Unity
+        public float Aperture
+        {
+            get { return aperture; }
+            set
+            {
+                aperture = value;
+                cameraObject.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = value;
+            }
+        }
         public bool enableDOF = false;
         private static UnityEngine.Rendering.HighDefinition.DepthOfField dof;
         public bool EnableDOF
@@ -72,7 +90,9 @@ namespace VRtist
         public Transform colimator = null;
         public float near = 0.07f;
         public float far = 1000f;
+        public float filmWidth = 36f;
         public float filmHeight = 24f;
+        public Camera.GateFitMode gateFit = Camera.GateFitMode.Fill;
 
         private UISlider focalSlider = null;
         private bool focalActionSelected;
@@ -220,8 +240,8 @@ namespace VRtist
                 return;
             // Raycast from camera center to screen point aimed for
 
-            float halfWidthFactor = cameraObject.sensorSize.x * 0.5f / focal;
-            float halfHeightFactor = cameraObject.sensorSize.y * 0.5f / focal;
+            float halfWidthFactor = filmWidth * 0.5f / focal;
+            float halfHeightFactor = filmHeight * 0.5f / focal;
 
             Vector3 nearPoint = new Vector3(halfWidthFactor * coords.x * near, -halfHeightFactor * coords.y * near, -near);
             Vector3 worldNearPoint = transform.TransformPoint(nearPoint);
@@ -372,9 +392,17 @@ namespace VRtist
         private void ComputeFOV()
         {
             if (null != cameraObject)
+            {
+                ComputeFilmSize();
                 cameraObject.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * focal)) * Mathf.Rad2Deg;
+            }
         }
 
+        private float ComputeFocal()
+        {
+            focal = filmHeight / (2f * Mathf.Tan(Mathf.Deg2Rad * cameraObject.fieldOfView / 2f));
+            return focal;
+        }
 
         private void OnFocalSliderChange(int focal)
         {
@@ -470,6 +498,7 @@ namespace VRtist
                 cameraObject.nearClipPlane = near;
                 cameraObject.focalLength = focal;
                 ComputeFOV();
+                cameraObject.gateFit = gateFit;
                 if (null != colimator)
                 {
                     if (enableDOF)
@@ -526,6 +555,9 @@ namespace VRtist
             focus = other.focus;
             aperture = other.aperture;
             enableDOF = other.enableDOF;
+            filmHeight = other.filmHeight;
+            filmWidth = other.filmWidth;
+            gateFit = other.gateFit;
         }
 
         public override void SetName(string name)
@@ -533,6 +565,38 @@ namespace VRtist
             base.SetName(name);
             if (null != nameLabel)
                 nameLabel.Text = name;
+        }
+
+        private void ComputeFilmSize()
+        {
+            float ratio = (float)CameraManager.Instance.CurrentResolution.width / (float)CameraManager.Instance.CurrentResolution.height;
+            switch (cameraObject.gateFit)
+            {
+                case Camera.GateFitMode.Horizontal:
+                    filmWidth = cameraObject.sensorSize.x;
+                    filmHeight = filmWidth / ratio;
+                    break;
+                case Camera.GateFitMode.Vertical:
+                    filmHeight = cameraObject.sensorSize.y;
+                    filmWidth = filmHeight * ratio;
+                    break;
+                case Camera.GateFitMode.None:
+                    filmWidth = cameraObject.sensorSize.x;
+                    filmHeight = cameraObject.sensorSize.y;
+                    break;
+                case Camera.GateFitMode.Fill:
+                    if (ratio > 1f)  // horizontal
+                    {
+                        filmWidth = cameraObject.sensorSize.x;
+                        filmHeight = filmWidth / ratio;
+                    }
+                    else            // vertical
+                    {
+                        filmHeight = cameraObject.sensorSize.y;
+                        filmWidth = filmHeight * ratio;
+                    }
+                    break;
+            }
         }
 
         private void DrawFrustum()
@@ -543,8 +607,8 @@ namespace VRtist
             // TODO: represent FOCUS and APERTURE
             // ...
 
-            float halfWidthFactor = cameraObject.sensorSize.x * 0.5f / focal;
-            float halfHeightFactor = cameraObject.sensorSize.y * 0.5f / focal;
+            float halfWidthFactor = filmWidth * 0.5f / focal;
+            float halfHeightFactor = filmHeight * 0.5f / focal;
 
             float nearHalfWidth = halfWidthFactor * near;
             float nearHalfHeight = halfHeightFactor * near;

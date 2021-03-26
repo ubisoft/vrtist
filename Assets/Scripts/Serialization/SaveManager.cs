@@ -852,6 +852,8 @@ namespace VRtist.Serialization
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
+            controller.filmWidth = data.filmWidth;
+            controller.gateFit = (Camera.GateFitMode)data.gateFit;
 
             loadedCameras.Add(controller);
         }

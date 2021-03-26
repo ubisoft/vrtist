@@ -177,6 +177,8 @@ namespace VRtist.Mixer
             cameraController.colimator = colimatorName == "" ? null : SyncData.nodes[colimatorName].prefab.transform;
             cameraController.enableDOF = dofEnabled;
             cameraController.filmHeight = sensorSize.y;
+            cameraController.filmWidth = sensorSize.x;
+            cameraController.gateFit = gateFit;
 
             Node cameraNode = SyncData.nodes[obj.name];
             foreach (var instanceItem in cameraNode.instances)
@@ -190,6 +192,8 @@ namespace VRtist.Mixer
                 instanceCameraController.colimator = colimatorName == "" ? null : SyncData.nodes[colimatorName].instances[0].Item1.transform;
                 instanceCameraController.enableDOF = dofEnabled;
                 instanceCameraController.filmHeight = sensorSize.y;
+                instanceCameraController.filmWidth = sensorSize.x;
+                instanceCameraController.gateFit = gateFit;
             }
         }
 
