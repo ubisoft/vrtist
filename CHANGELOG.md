@@ -15,6 +15,9 @@
 - Camera snapshot for cameras list when loading a scene
 - Animation Editor instead of Dopesheet
 - Animation Editor handle is easier to select
+- Camera Sensor Size
+- Constraints Undo/Redo
+- Added Undo/Redo to Camera touch screen
 
 # 0.1.0
 

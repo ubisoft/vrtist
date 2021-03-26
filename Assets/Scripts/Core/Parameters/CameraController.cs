@@ -22,6 +22,7 @@
  */
 
 using System.Collections;
+using System.Collections.Generic;
 
 using TMPro;
 
@@ -120,6 +121,9 @@ namespace VRtist
         private LineRenderer colimatorLineRenderer;
 
         private Texture2D snapshot;
+
+        private Vector3 collimatorInitialPosition;
+
         public Texture2D Snapshot
         {
             get
@@ -215,6 +219,8 @@ namespace VRtist
 
                 touchScreen = transform.Find("Rotate/CameraPreview/TouchScreen").GetComponentInChildren<UITouchScreen>(true);
                 touchScreen.touchEvent.AddListener(OnTouch);
+                touchScreen.onClickEvent.AddListener(OnTouchClicked);
+                touchScreen.onReleaseEvent.AddListener(OnTouchReleased);
 
                 focusButton = transform.Find("Rotate/UI/FocusButton").GetComponentInChildren<UIButton>(true);
                 focusButton.onCheckEvent.AddListener(OnCheckFocusButton);
@@ -232,6 +238,28 @@ namespace VRtist
                 colimatorLineRenderer.endWidth = lineRendererWidth / GlobalState.WorldScale;
                 colimatorLineRenderer.enabled = false;
             }
+        }
+
+        private void OnTouchClicked()
+        {
+            if (null != colimator)
+                collimatorInitialPosition = colimator.localPosition;
+        }
+
+        private void OnTouchReleased()
+        {
+            if (null == colimator)
+                return;
+            new CommandMoveObjects
+            (
+                new List<GameObject>() { colimator.gameObject },
+                new List<Vector3>() { collimatorInitialPosition },
+                new List<Quaternion>() { colimator.localRotation },
+                new List<Vector3>() { colimator.localScale },
+                new List<Vector3>() { colimator.localPosition },
+                new List<Quaternion>() { colimator.localRotation },
+                new List<Vector3>() { colimator.localScale }
+            ).Submit();
         }
 
         private void OnTouch(Vector2 coords)
