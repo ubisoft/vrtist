@@ -48,6 +48,7 @@ namespace VRtist
                     instance = new SceneManager();
                     VRtistScene scene = new VRtistScene();
                     SetSceneImpl(scene);
+                    GlobalState.SetClientId(null);
                 }
                 return instance;
             }
@@ -261,6 +262,12 @@ namespace VRtist
         }
 
         // Constraints
+        public static void InsertObjectConstraint(int index, Constraint constraint)
+        {
+            ConstraintManager.InsertConstraint(index, constraint);
+            Instance.scene.InsertObjectConstraint(index, constraint);
+        }
+
         public static void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
         {
             switch (constraintType)
@@ -273,6 +280,10 @@ namespace VRtist
                     break;
             }
             Instance.scene.AddObjectConstraint(gobject, constraintType, target);
+        }
+        public static void RemoveObjectConstraint(Constraint constraint)
+        {
+            RemoveObjectConstraint(constraint.gobject, constraint.constraintType);
         }
 
         public static void RemoveObjectConstraint(GameObject gobject, ConstraintType constraintType)

@@ -138,7 +138,11 @@ namespace VRtist
 
             SceneManager.sceneDirtyEvent.AddListener(OnSceneDirtyChanged);
             SceneManager.sceneSavedEvent.AddListener(() => StartCoroutine(ShowSaveLoadInfo("Project saved", 2)));
-            SceneManager.sceneLoadedEvent.AddListener(() => StartCoroutine(ShowSaveLoadInfo("Project loaded", 2)));
+            SceneManager.sceneLoadedEvent.AddListener(() =>
+            {
+                OnConnected();
+                StartCoroutine(ShowSaveLoadInfo("Project loaded", 2));
+            });
 
             Apply();
 

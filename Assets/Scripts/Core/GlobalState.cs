@@ -353,10 +353,18 @@ namespace VRtist
         // Connected users
         public static void SetClientId(string id)
         {
-            Instance.mixerConnected = true;
-            networkUser.id = id;
-            Instance.onConnected.Invoke();
-            RemoveConnectedUser(id);
+            if (null == id || id.Length == 0)
+            {
+                Instance.mixerConnected = false;
+                networkUser.id = "";
+            }
+            else
+            {
+                Instance.mixerConnected = true;
+                networkUser.id = id;
+                Instance.onConnected.Invoke();
+                RemoveConnectedUser(id); // remove itself from connected users
+            }
         }
 
         public static bool HasConnectedUser(string userId)

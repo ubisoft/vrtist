@@ -60,6 +60,40 @@ namespace VRtist
             UpdateConstraintVisualization(gameObject);
         }
 
+        public static List<Constraint> GetObjectConstraints(GameObject gobject)
+        {
+            List<Constraint> objectConstraints = new List<Constraint>();
+            foreach (Constraint constraint in constraints)
+            {
+                if (constraint.gobject == gobject || constraint.target == gobject.transform)
+                {
+                    objectConstraints.Add(constraint);
+                }
+            }
+            return objectConstraints;
+        }
+
+        public static bool FindConstraint(GameObject gobject, ConstraintType constraintType, out Constraint constraint, out int index)
+        {
+            index = -1;
+            constraint = null;
+            foreach (Constraint c in constraints)
+            {
+                index++;
+                if (c.gobject == gobject && c.constraintType == constraintType)
+                {
+                    constraint = c;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static int GetConstraintIndex(Constraint constraint)
+        {
+            return constraints.IndexOf(constraint);
+        }
+
         public static Component GetConstraint(ConstraintType constraintType, GameObject gobject)
         {
             switch (constraintType)
@@ -154,16 +188,20 @@ namespace VRtist
             }
         }
 
-        public static void AddConstraint(GameObject source, GameObject target, ConstraintType type)
+        public static void AddConstraint(GameObject source, GameObject target, ConstraintType type, int index = -1)
         {
             switch (type)
             {
-                case ConstraintType.Parent: AddParentConstraint(source, target); break;
-                case ConstraintType.LookAt: AddLookAtConstraint(source, target); break;
+                case ConstraintType.Parent: AddParentConstraint(source, target, index); break;
+                case ConstraintType.LookAt: AddLookAtConstraint(source, target, index); break;
             }
         }
+        public static void InsertConstraint(int index, Constraint constraint)
+        {
+            AddConstraint(constraint.gobject, constraint.target.gameObject, constraint.constraintType, index);
+        }
 
-        public static void AddParentConstraint(GameObject gobject, GameObject target)
+        public static void AddParentConstraint(GameObject gobject, GameObject target, int index = -1)
         {
             ParentConstraint constraint = gobject.GetComponent<ParentConstraint>();
             if (null == constraint)
@@ -174,7 +212,11 @@ namespace VRtist
                 {
                     gobject.AddComponent<ParametersController>();
                 }
-                constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.Parent });
+                Constraint newConstraint = new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.Parent };
+                if (index == -1)
+                    constraints.Add(newConstraint);
+                else
+                    constraints.Insert(index, newConstraint);
                 ParametersController targetParametersController = target.GetComponent<ParametersController>();
                 if (null == targetParametersController)
                 {
@@ -223,7 +265,7 @@ namespace VRtist
             GlobalState.FireObjectConstraint(gobject);
         }
 
-        public static void AddLookAtConstraint(GameObject gobject, GameObject target)
+        public static void AddLookAtConstraint(GameObject gobject, GameObject target, int index = -1)
         {
             LookAtConstraint constraint = gobject.GetComponent<LookAtConstraint>();
             if (null == constraint)
@@ -234,7 +276,12 @@ namespace VRtist
                 {
                     gobject.AddComponent<ParametersController>();
                 }
-                constraints.Add(new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.LookAt });
+                Constraint newConstraint = new Constraint { gobject = gobject, target = target.transform, constraintType = ConstraintType.LookAt };
+                if (index == -1)
+                    constraints.Add(newConstraint);
+                else
+                    constraints.Insert(index, newConstraint);
+
                 ParametersController targetParametersController = target.GetComponent<ParametersController>();
                 if (null == targetParametersController)
                 {
@@ -286,6 +333,7 @@ namespace VRtist
                     case ConstraintType.LookAt: RemoveConstraint<LookAtConstraint>(constraint.gobject); break;
                 }
             }
+
         }
     }
 }

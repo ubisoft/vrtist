@@ -26,7 +26,6 @@ using System.Collections.Generic;
 using TMPro;
 
 using UnityEngine;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.XR;
 
 namespace VRtist
@@ -42,13 +41,9 @@ namespace VRtist
         public Transform cameraPreviewHandle = null;
         public Transform paletteHandle = null;
         public TextMeshProUGUI tm;
-        public float filmHeight = 24f;  // mm
         public float zoomSpeed = 1f;
         public RenderTexture renderTexture = null;
 
-        private float focal;
-        private float focus;
-        private float aperture;
         private GameObject UIObject = null;
         private Transform focalSlider = null;
         private Transform focusSlider = null;
@@ -76,65 +71,11 @@ namespace VRtist
 
         private readonly List<CameraController> selectedCameraControllers = new List<CameraController>();
 
-        public float Focal
-        {
-            get { return focal; }
-            set
-            {
-                focal = value;
-
-                foreach (GameObject gobject in SelectedCameraObjects())
-                {
-                    CameraController cameraControler = gobject.GetComponent<CameraController>();
-                    if (null == cameraControler)
-                        continue;
-                    cameraControler.focal = value;
-                }
-            }
-        }
-
-        public float Focus
-        {
-            get { return focus; }
-            set
-            {
-                focus = value;
-                foreach (GameObject gobject in SelectedCameraObjects())
-                {
-                    CameraController cameraControler = gobject.GetComponent<CameraController>();
-                    if (null == cameraControler)
-                        continue;
-                    cameraControler.Focus = value;
-                }
-            }
-        }
-
-        public float Aperture
-        {
-            get { return aperture; }
-            set
-            {
-                aperture = value;
-
-                foreach (GameObject gobject in SelectedCameraObjects())
-                {
-                    CameraController cameraControler = gobject.GetComponent<CameraController>();
-                    if (null == cameraControler)
-                        continue;
-                    cameraControler.aperture = value;
-                }
-            }
-        }
-
         protected override void OnEnable()
         {
             base.OnEnable();
-
             InitUIPanel();
-
             OnSelectionChanged(null, null);
-            foreach (Camera camera in SelectedCameras())
-                ComputeFocal(camera);
         }
 
         protected override void OnDisable()
@@ -434,36 +375,18 @@ namespace VRtist
             }
         }
 
-        private List<Camera> SelectedCameras()
+        private List<CameraController> SelectedCameras()
         {
-            List<Camera> selectedCameras = new List<Camera>();
+            List<CameraController> selectedCameras = new List<CameraController>();
             foreach (var selectedItem in Selection.ActiveObjects)
             {
-                Camera cam = selectedItem.GetComponentInChildren<Camera>();
-                if (!cam)
+                CameraController controller = selectedItem.GetComponent<CameraController>();
+                if (!controller)
                     continue;
-                selectedCameras.Add(cam);
+                selectedCameras.Add(controller);
             }
             return selectedCameras;
         }
-
-        private List<GameObject> SelectedCameraObjects()
-        {
-            List<GameObject> selectedCameras = new List<GameObject>();
-
-            foreach (var selectedItem in Selection.ActiveObjects)
-            {
-                Camera cam = selectedItem.GetComponentInChildren<Camera>();
-                if (!cam)
-                    continue;
-                if (selectedItem != CameraManager.Instance.ActiveCamera)
-                    selectedCameras.Add(selectedItem);
-            }
-            if (null != CameraManager.Instance.ActiveCamera)
-                selectedCameras.Add(CameraManager.Instance.ActiveCamera);
-            return selectedCameras;
-        }
-
 
         protected override void DoUpdateGui()
         {
@@ -551,55 +474,30 @@ namespace VRtist
             }
         }
 
-        private float ComputeFocal(Camera cam)
-        {
-            Focal = filmHeight / (2f * Mathf.Tan(Mathf.Deg2Rad * cam.fieldOfView / 2f));
-            return Focal;
-        }
-
-        private float ComputeFOV(Camera cam)
-        {
-            cam.fieldOfView = 2f * Mathf.Atan(filmHeight / (2f * Focal)) * Mathf.Rad2Deg;
-            return cam.fieldOfView;
-        }
-
-        private void SetCameraAperture(Camera cam, float aperture)
-        {
-            cam.GetComponent<HDAdditionalCameraData>().physicalParameters.aperture = aperture;
-        }
-
         public void OnChangeFocal(float value)
         {
-            Focal = value;
-            foreach (GameObject camObject in SelectedCameraObjects())
+            foreach (CameraController controller in SelectedCameras())
             {
-                Camera cam = camObject.GetComponentInChildren<Camera>();
-                ComputeFOV(cam);
-                SendCameraParams(camObject);
+                controller.Focal = value;
+                SendCameraParams(controller.gameObject);
             }
         }
 
         public void OnChangeFocus(float value)
         {
-            Focus = value;
-            foreach (GameObject camObject in SelectedCameraObjects())
+            foreach (CameraController controller in SelectedCameras())
             {
-                CameraController cameraController = camObject.GetComponent<CameraController>();
-                Vector3 direction = (cameraController.colimator.position - camObject.transform.position).normalized;
-                cameraController.colimator.position = camObject.transform.position + value * direction;
-
-                SendCameraParams(camObject);
+                controller.Focus = value;
+                SendCameraParams(controller.gameObject);
             }
         }
 
         public void OnChangeAperture(float value)
         {
-            Aperture = value;
-            foreach (GameObject camObject in SelectedCameraObjects())
+            foreach (CameraController controller in SelectedCameras())
             {
-                Camera cam = camObject.GetComponentInChildren<Camera>();
-                SetCameraAperture(cam, value);
-                SendCameraParams(camObject);
+                controller.Aperture = value;
+                SendCameraParams(controller.gameObject);
             }
         }
 
@@ -609,9 +507,10 @@ namespace VRtist
             // update selection parameters from UI
             if (args.toolName != "Camera")
                 return;
-            Focal = args.value;
-            foreach (Camera cam in SelectedCameras())
-                ComputeFOV(cam);
+            foreach (CameraController controller in SelectedCameras())
+            {
+                controller.Focal = args.value;
+            }
         }
 
         protected override void UpdateUI()

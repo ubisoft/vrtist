@@ -65,7 +65,8 @@ namespace VRtist.Mixer
         public static Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         public static HashSet<string> texturesFlipY = new HashSet<string>();
 
-
+        private static Camera.GateFitMode[] mixerToVRtistGateFitMap = new Camera.GateFitMode[3] { Camera.GateFitMode.Fill, Camera.GateFitMode.Vertical, Camera.GateFitMode.Horizontal };
+        private static int[] vrtistToMixerGateFitMap = new int[4] { -1, 2, 1, 0 };
 
         public static void BuildClientId(byte[] data)
         {
@@ -857,7 +858,7 @@ namespace VRtist.Mixer
             byte[] bname = Converter.StringToBytes(cameraInfo.transform.name);
 
             Camera cam = cameraInfo.transform.GetComponentInChildren<Camera>(true);
-            int sensorFit = (int)cam.gateFit;
+            int sensorFit = vrtistToMixerGateFitMap[(int)cam.gateFit];
 
             byte[] focalBuffer = Converter.FloatToBytes(focal);
             byte[] nearBuffer = Converter.FloatToBytes(near);
@@ -1196,6 +1197,7 @@ namespace VRtist.Mixer
             }
         }
 
+
         public static void BuildCamera(Transform root, byte[] data)
         {
             int currentIndex = 0;
@@ -1232,7 +1234,7 @@ namespace VRtist.Mixer
             bool dofEnabled = Converter.GetBool(data, ref currentIndex);
             float aperture = Converter.GetFloat(data, ref currentIndex);
             string colimatorName = Converter.GetString(data, ref currentIndex);
-            Camera.GateFitMode gateFit = (Camera.GateFitMode)Converter.GetInt(data, ref currentIndex);
+            Camera.GateFitMode gateFit = mixerToVRtistGateFitMap[Converter.GetInt(data, ref currentIndex)];
             if (gateFit == Camera.GateFitMode.None)
                 gateFit = Camera.GateFitMode.Horizontal;
             Vector2 sensorSize = Converter.GetVector2(data, ref currentIndex);

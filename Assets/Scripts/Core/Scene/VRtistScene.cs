@@ -171,6 +171,10 @@ namespace VRtist
 
         public void SetFrameRange(int start, int end) { }
 
+        public void InsertObjectConstraint(int index, Constraint constraint)
+        {
+        }
+
         public void AddObjectConstraint(GameObject gobject, ConstraintType constraintType, GameObject target)
         {
         }

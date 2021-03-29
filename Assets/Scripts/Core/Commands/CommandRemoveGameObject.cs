@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace VRtist
@@ -52,8 +54,22 @@ namespace VRtist
 
             ToolsUIManager.Instance.SpawnDeleteInstanceVFX(gObject);
 
+            CommandGroup constraintGroup = null;
+            List<Constraint> constraints = ConstraintManager.GetObjectConstraints(gObject);
+            if (constraints.Count > 0)
+            {
+                constraintGroup = new CommandGroup("Constraints");
+                foreach (Constraint constraint in constraints)
+                {
+                    new CommandRemoveConstraint(constraint.constraintType, constraint.gobject).Submit();
+                }
+            }
+
             Redo();
             CommandManager.AddCommand(this);
+
+            if (null != constraintGroup)
+                constraintGroup.Submit();
         }
     }
 }

@@ -621,6 +621,8 @@ namespace VRtist.Serialization
         public float near;
         public float far;
         public float filmHeight;
+        public float filmWidth;
+        public int gateFit;
 
         public override void FromBytes(byte[] buffer, ref int index)
         {
@@ -632,6 +634,17 @@ namespace VRtist.Serialization
             near = Converter.GetFloat(buffer, ref index);
             far = Converter.GetFloat(buffer, ref index);
             filmHeight = Converter.GetFloat(buffer, ref index);
+
+            if (SceneData.fileVersion >= 1)
+            {
+                filmWidth = Converter.GetFloat(buffer, ref index);
+                gateFit = Converter.GetInt(buffer, ref index);
+            }
+            else
+            {
+                filmWidth = 36f;
+                gateFit = 3;  // Fill
+            }
         }
 
         public override byte[] ToBytes()
@@ -644,6 +657,8 @@ namespace VRtist.Serialization
             byte[] nearBuffer = Converter.FloatToBytes(near);
             byte[] farBuffer = Converter.FloatToBytes(far);
             byte[] filmHeightBuffer = Converter.FloatToBytes(filmHeight);
+            byte[] filmWidthBuffer = Converter.FloatToBytes(filmWidth);
+            byte[] gateFitBuffer = Converter.IntToBytes(gateFit);
 
             return Converter.ConcatenateBuffers(new List<byte[]>()
             {
@@ -654,7 +669,9 @@ namespace VRtist.Serialization
                 enableDOFBuffer,
                 nearBuffer,
                 farBuffer,
-                filmHeightBuffer
+                filmHeightBuffer,
+                filmWidthBuffer,
+                gateFitBuffer
             });
         }
     }
@@ -856,7 +873,9 @@ namespace VRtist.Serialization
         }
     }
 
-
+    // Version 1:
+    //  - add: CameraData.filmWidth
+    //  - add: CameraData.gateFit
     public class SceneData : IBlob
     {
         private static SceneData current;
@@ -877,7 +896,8 @@ namespace VRtist.Serialization
         public List<AnimationData> animations = new List<AnimationData>();
 
         private readonly byte[] headerBuffer = new byte[6] { (byte)'V', (byte)'R', (byte)'t', (byte)'i', (byte)'s', (byte)'t' };
-        public int version = 0;
+        public static int version = 1;
+        public static int fileVersion;
 
         public float fps;
         public int startFrame;
@@ -909,7 +929,7 @@ namespace VRtist.Serialization
             }
             index += 6;
 
-            int fileVersion = Converter.GetInt(buffer, ref index);
+            fileVersion = Converter.GetInt(buffer, ref index);
             if (fileVersion > version)
             {
                 throw new Exception("File version mismatch, please update VRtist");

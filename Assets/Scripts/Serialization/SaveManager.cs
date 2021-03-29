@@ -568,8 +568,6 @@ namespace VRtist.Serialization
             if (null != saveFolderOverride)
                 saveFolder = saveFolderOverride;
 
-            VRtistScene scene = new VRtistScene();
-            SceneManager.SetSceneImpl(scene);
 
             loadedMeshes.Clear();
             loadedCameras.Clear();
@@ -587,6 +585,11 @@ namespace VRtist.Serialization
 
                 // Clear current scene
                 SceneManager.ClearScene();
+
+                // ensure VRtist scene
+                VRtistScene scene = new VRtistScene();
+                SceneManager.SetSceneImpl(scene);
+                GlobalState.SetClientId(null);
 
                 // Load data from file
                 string path = GetScenePath(projectName);
@@ -852,6 +855,8 @@ namespace VRtist.Serialization
             controller.near = data.near;
             controller.far = data.far;
             controller.filmHeight = data.filmHeight;
+            controller.filmWidth = data.filmWidth;
+            controller.gateFit = (Camera.GateFitMode)data.gateFit;
 
             loadedCameras.Add(controller);
         }
@@ -865,6 +870,7 @@ namespace VRtist.Serialization
                 yield return new WaitForEndOfFrame();
                 controller.SetVirtualCamera(null);
             }
+            CameraManager.Instance.ActiveCamera = null;
         }
 
         private void LoadAnimation(AnimationData data)
