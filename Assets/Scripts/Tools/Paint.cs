@@ -54,10 +54,6 @@ namespace VRtist
         UIButton volumeCreateButton;
         UIButton volumeEditButton;
 
-        UIButton grassAddButton;
-        UIButton grassRemoveButton;
-        UIButton grassEditButton;
-        
         // Paint tool
         Vector3 paintPrevPosition;
         GameObject currentPaint;
@@ -79,12 +75,7 @@ namespace VRtist
         private float strength = 0.5f;
 
         // GRASS
-        enum GrassEditionMode { Add, Remove, Edit };
-        GrassEditionMode grassEditionMode = GrassEditionMode.Add;
-        //GrassPainter grassPainter; // TODOGRASS
-        GameObject currentGrass;
-        private float grassBrushSize = 1.0f;
-        private float grassDensity = 1.0f;
+        PaintGrassTool grassPainter;
 
         // Start is called before the first frame update
         void Start()
@@ -103,7 +94,9 @@ namespace VRtist
 
             freeDraw = new FreeDraw();
             volumeGenerator = new VolumeMeshGenerator();
-            //grassPainter = new GrassPainter(); // TODOGRASS
+
+            grassPainter = transform.Find("GrassPainter").GetComponent<PaintGrassTool>();
+            grassPainter.SetPanel(grassPanel);
 
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
@@ -157,16 +150,6 @@ namespace VRtist
 
             volumeCreateButton.onReleaseEvent.AddListener(() => OnVolumeCreatePressed());
             volumeEditButton.onReleaseEvent.AddListener(() => OnVolumeEditPressed());
-
-            // Sub - Grass
-            grassAddButton = grassPanel.Find("ModeAddButton").GetComponent<UIButton>(); // <---- Add is default.
-            grassAddButton.Checked = true;
-            grassRemoveButton = grassPanel.Find("ModeRemoveButton").GetComponent<UIButton>();
-            grassEditButton = grassPanel.Find("ModeEditButton").GetComponent<UIButton>();
-
-            grassAddButton.onReleaseEvent.AddListener(() => OnGrassAddPressed());
-            grassRemoveButton.onReleaseEvent.AddListener(() => OnGrassRemovePressed());
-            grassEditButton.onReleaseEvent.AddListener(() => OnGrassEditPressed());
         }
 
         private void ConfigureCursors()
@@ -237,15 +220,8 @@ namespace VRtist
                     }
                     break;
 
-                case PaintTools.Grass:
-                    {
-                        grassAddButton.Checked = true;
-                        grassRemoveButton.Checked = false;
-                        grassEditButton.Checked = false;
-                        
-                        // TODO: default values for sliders?
-                        // ...
-                    }
+                case PaintTools.Grass: 
+                    grassPainter.OnSelectPanel();
                     break;
 
                 default: break;
@@ -325,7 +301,12 @@ namespace VRtist
                     }
                     break;
 
-                case PaintTools.Grass: // TODOGRASS
+                case PaintTools.Grass:
+                    Vector3 penPosition = mouthpiece.position;
+                    Vector3 direction = transform.forward;
+                    Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
+                    grassPainter.SetRay(startRay, direction); // raycasts and updates linerenderer
+                    grassPainter.BeginPaint();
                     break;
             }
         }
@@ -390,13 +371,17 @@ namespace VRtist
                     }
                     break;
 
-                case PaintTools.Grass: // TODOGRASS
+                case PaintTools.Grass:
+                    grassPainter.EndPaint();
                     break;
             }
         }
 
         private static GameObject Create(PaintTools what, Color color)
         {
+            if (what == PaintTools.Grass)
+                return null;
+
             GameObject rootObject = new GameObject();
             rootObject.transform.parent = SceneManager.RightHanded;
             rootObject.transform.localPosition = Vector3.zero;
@@ -439,7 +424,7 @@ namespace VRtist
             }
             else if (what == PaintTools.Grass)
             {
-                //gobject.AddComponent<GrassController>(); // TODOGRASS
+                //gobject.AddComponent<GrassController>();
             }
             else
             {
@@ -478,7 +463,9 @@ namespace VRtist
 
             float triggerValue = VRInput.GetValue(VRInput.primaryController, CommonUsages.trigger);
 
-            // Change brush size
+            //
+            // BRUSH SIZE
+            //
             if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
                 Vector2 val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
@@ -488,74 +475,95 @@ namespace VRtist
                     if (val.y < -0.3f) { brushSize -= 0.001f; }
                     brushSize = Mathf.Clamp(brushSize, 0.001f, 0.5f);
                     mouthpiece.localScale = new Vector3(brushSize, brushSize, brushSize);
+
+                    switch (paintTool)
+                    {
+                        case PaintTools.Grass: grassPainter.SetBrushSize(brushSize); break;
+                        default: break;
+                    }
                 }
             }
 
+            //
+            // LINE RENDERER
+            //
             paintLineRenderer.enabled = false;
             Vector3 penPosition = mouthpiece.position;
-            if (paintOnSurface)
+            switch(paintTool)
             {
-                Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
-                Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
-                Vector3 endRay = startRay + 1000f * direction;
-                paintLineRenderer.enabled = true;
-                paintLineRenderer.positionCount = 2;
-                paintLineRenderer.SetPosition(0, startRay);
-                paintLineRenderer.SetPosition(1, endRay);
-                paintLineRenderer.startWidth = 0.005f / GlobalState.WorldScale;
-                paintLineRenderer.endWidth = paintLineRenderer.startWidth;
-                bool hit = Physics.Raycast(startRay, direction, out RaycastHit hitInfo, Mathf.Infinity);
-                if (!hit)
-                    return;
-                penPosition = hitInfo.point - 0.001f * direction;
-                paintLineRenderer.SetPosition(1, penPosition);
-            }
-            else if (paintTool == PaintTools.Volume)
-            {
-                if (currentVolume)
-                {
-                    VolumeController controller = currentVolume.GetComponent<VolumeController>();
-                    if (null != controller)
+                case PaintTools.Pencil:
+                case PaintTools.FlatPencil:
+                    if (paintOnSurface)
                     {
+                        Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
+                        Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
+                        Vector3 endRay = startRay + 1000f * direction;
                         paintLineRenderer.enabled = true;
+                        paintLineRenderer.positionCount = 2;
+                        paintLineRenderer.SetPosition(0, startRay);
+                        paintLineRenderer.SetPosition(1, endRay);
+                        paintLineRenderer.startWidth = 0.005f / GlobalState.WorldScale;
+                        paintLineRenderer.endWidth = paintLineRenderer.startWidth;
+                        bool hit = Physics.Raycast(startRay, direction, out RaycastHit hitInfo, Mathf.Infinity);
+                        if (!hit)
+                            return;
+                        penPosition = hitInfo.point - 0.001f * direction;
+                        paintLineRenderer.SetPosition(1, penPosition);
+                    }
+                    break;
 
-                        Vector3 C = controller.bounds.center;
-                        Vector3 E = controller.bounds.extents;
+                case PaintTools.ConvexHull: break;
 
-                        Vector3 tlf = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, -E.z));
-                        Vector3 trf = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, -E.z));
-                        Vector3 blf = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, -E.z));
-                        Vector3 brf = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, -E.z));
-                        Vector3 tlb = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, E.z));
-                        Vector3 trb = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, E.z));
-                        Vector3 blb = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, E.z));
-                        Vector3 brb = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, E.z));
+                case PaintTools.Volume:
+                    if (currentVolume)
+                    {
+                        VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                        if (null != controller)
+                        {
+                            paintLineRenderer.enabled = true;
 
-                        paintLineRenderer.positionCount = 16;
-                        paintLineRenderer.SetPositions(new Vector3[] {
+                            Vector3 C = controller.bounds.center;
+                            Vector3 E = controller.bounds.extents;
+
+                            Vector3 tlf = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, -E.z));
+                            Vector3 trf = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, -E.z));
+                            Vector3 blf = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, -E.z));
+                            Vector3 brf = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, -E.z));
+                            Vector3 tlb = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, E.z));
+                            Vector3 trb = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, E.z));
+                            Vector3 blb = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, E.z));
+                            Vector3 brb = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, E.z));
+
+                            paintLineRenderer.positionCount = 16;
+                            paintLineRenderer.SetPositions(new Vector3[] {
                             blf, tlf, brf, trf, brb, trb, blb,
                             blf, brf, brb, blb,
                             tlb, tlf, trf, trb, tlb
                         });
-                        paintLineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
-                        paintLineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
+                            paintLineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
+                            paintLineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
+                        }
                     }
-                }
-            }
-            else if (paintTool == PaintTools.Grass)
-            { 
-                // TODOGRASS: need to do something with the LineRenderer???
+                    break;
+
+                case PaintTools.Grass:
+                    {
+                        Vector3 direction = transform.forward;
+                        Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
+                        grassPainter.SetRay(startRay, direction); // raycasts and updates linerenderer
+                    }
+                    break;
             }
 
-            // Draw
+            //
+            // DRAW (trigger PRESSED)
+            //
             float deadZone = VRInput.deadZoneIn;
             if (triggerValue >= deadZone &&
                 (
                   (position != paintPrevPosition && currentPaint != null) || currentVolume != null)
                 )
             {
-                // Add a point (the current world position) to the line renderer
-
                 float pressure = (triggerValue - deadZone) / (1f - deadZone);
                 float value = brushSize / GlobalState.WorldScale * pressure;
 
@@ -565,7 +573,7 @@ namespace VRtist
                     case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * value); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
                     case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * value * strength); break;
-                    case PaintTools.Grass: break; // TODOGRASS: grassPainter.AddPoint(penPosition, 2.0f * value * strength); break;
+                    case PaintTools.Grass: grassPainter.AddPoint(value); break;
                 }
 
                 switch (paintTool)
@@ -611,7 +619,8 @@ namespace VRtist
                         }
                         break;
 
-                    case PaintTools.Grass: // TODOGRASS
+                    case PaintTools.Grass:
+                        // update to mesh is already done in PaintGrassTool.AddPoint()
                         break;
                 }
             }
@@ -625,11 +634,6 @@ namespace VRtist
             // ...
 
             volumeGenerator.Reset();
-        }
-
-        private void InitGrassFromSelection()
-        {
-            // TODOGRASS
         }
 
         private void InitVolumeFromSelection()
@@ -698,45 +702,6 @@ namespace VRtist
         public void OnVolumeCellSizeChanged(float value)
         {
             stepSize = value / 1000.0f; // millimeters to meters
-        }
-
-        // GRASS CALLBACKS
-
-        public void OnGrassAddPressed()
-        {
-            grassEditionMode = GrassEditionMode.Add;
-
-            grassAddButton.Checked = true;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = false;
-        }
-
-        public void OnGrassRemovePressed()
-        {
-            grassEditionMode = GrassEditionMode.Remove;
-
-            grassAddButton.Checked = false;
-            grassRemoveButton.Checked = true;
-            grassEditButton.Checked = false;
-        }
-
-        public void OnGrassEditPressed()
-        {
-            grassEditionMode = GrassEditionMode.Edit;
-
-            grassAddButton.Checked = false;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = true;
-        }
-
-        public void OnGrassBrushSizeChanged(float value)
-        {
-            grassBrushSize = value;
-        }
-
-        public void OnGrassDensityChanged(float value)
-        {
-            grassDensity = value;
         }
     }
 }
