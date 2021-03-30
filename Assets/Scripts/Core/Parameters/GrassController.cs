@@ -3,10 +3,90 @@ using UnityEngine;
 
 namespace VRtist
 {
+    [RequireComponent(typeof(MeshFilter)), RequireComponent(typeof(MeshRenderer))] // DEBUG
     public class GrassController : ParametersController
     {
+        // DEBUG visualization
+        public MeshFilter DEBUG_filter;
+        public MeshRenderer DEBUG_render;
+        public List<Vector3> DEBUG_positions = new List<Vector3>();
+        public List<Color> DEBUG_colors = new List<Color>();
+        public List<int> DEBUG_indices = new List<int>();
+        public List<Vector3> DEBUG_normals = new List<Vector3>();
+        public List<Vector2> DEBUG_uvs = new List<Vector2>();
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct SourceVertex
+        {
+            public Vector3 position;
+            public Vector3 normal;
+            public Vector2 uv;
+            public Vector3 color;
+        }
+
+        private List<SourceVertex> vertices = new List<SourceVertex>();
+        public int nbSourceVertices = 0;
+
         public Material material = default;
         public ComputeShader computeShader = default;
+
+
+
+
+
+
+        // DEBUG
+        public void InitDebugData()
+        {
+            Material debugMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
+
+            DEBUG_filter = GetComponent<MeshFilter>();
+            DEBUG_render = GetComponent<MeshRenderer>();
+            DEBUG_render.sharedMaterial = debugMaterial;
+            DEBUG_render.material.SetColor("_BaseColor", Color.red);
+            DEBUG_render.material.SetFloat("_Opacity", 1.0f);
+            DEBUG_positions = new List<Vector3>();
+            DEBUG_colors = new List<Color>();
+            DEBUG_indices = new List<int>();
+            DEBUG_normals = new List<Vector3>();
+            DEBUG_uvs = new List<Vector2>();
+        }
+
+
+        public void AddPoint(Vector3 position, Vector3 normal, Vector2 uv, Color color)
+        {
+            Vector3 col = new Vector3(color.r, color.g, color.b);
+            vertices.Add(new SourceVertex() { position = position, normal = normal, uv = uv, color = col });
+
+            // Update DEBUG arrays & mesh
+            DEBUG_positions.Add(position);
+            DEBUG_normals.Add(normal);
+            DEBUG_uvs.Add(uv);
+            DEBUG_colors.Add(color);
+            DEBUG_indices.Add(nbSourceVertices);
+
+            Mesh mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            mesh.name = "DEBUG Grass Mesh";
+            mesh.SetVertices(DEBUG_positions);
+            int[] indi = DEBUG_indices.ToArray();
+            mesh.SetIndices(indi, MeshTopology.Points, 0);
+            mesh.SetUVs(0, DEBUG_uvs);
+            mesh.SetColors(DEBUG_colors);
+            mesh.SetNormals(DEBUG_normals);
+            DEBUG_filter.mesh = mesh;
+
+            nbSourceVertices++;
+        }
+
+        public void Clear()
+        {
+            //vertices.Clear();
+            vertices = new List<SourceVertex>();
+            nbSourceVertices = 0;
+        }
+
+
+
 
         // Blade
         [Header("Blade")]
@@ -28,11 +108,13 @@ namespace VRtist
         public float windMultiplierZY = 1.0f;
         public float windMultiplierZZ = 1.0f;
 
+
         // Interactor
         [Header("Interactor")]
         public float affectRadius = 0.3f;
         public float affectStrength = 5;
         public Transform interactorXf;
+
 
         // LOD
         [Header("LOD")]
@@ -43,6 +125,8 @@ namespace VRtist
         public bool overrideMaterial;
         public Color topColor = new Color(1, 1, 0);
         public Color bottomColor = new Color(0, 1, 0);
+
+
         // Other
         [Header("Other")]
         public bool castShadow;
@@ -50,19 +134,6 @@ namespace VRtist
 
         private readonly int m_AllowedBladesPerVertex = 4;
         private readonly int m_AllowedSegmentsPerBlade = 5;
-
-        // The structure to send to the compute shader
-        // This layout kind assures that the data is laid out sequentially
-        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        private struct SourceVertex
-        {
-            public Vector3 position;
-            public Vector3 normal;
-            public Vector2 uv;
-            public Vector3 color;
-        }
-
-        private List<SourceVertex> vertices;
 
         // A state variable to help keep track of whether compute buffers have been set up
         private bool m_Initialized;
@@ -82,15 +153,9 @@ namespace VRtist
         // The local bounds of the generated mesh
         private Bounds m_LocalBounds;
 
-        public void AddPoint(Vector3 position, Vector3 normal, Vector2 uv, Vector3 color)
-        {
-            vertices.Add(new SourceVertex() { position = position, normal = normal, uv = uv, color = color });
-        }
 
-        public void Clear()
-        {
-            //vertices.Clear();
-            vertices = new List<SourceVertex>();
-        }
+
+
+
     }
 }
