@@ -5,8 +5,8 @@ namespace VRtist
 {
     public class GrassController : ParametersController
     {
-        [SerializeField] private Material material = default;
-        [SerializeField] private ComputeShader computeShader = default;
+        public Material material = default;
+        public ComputeShader computeShader = default;
 
         // Blade
         [Header("Blade")]

@@ -154,8 +154,6 @@ namespace VRtist
 
         public GameObject Create()
         {
-            Debug.Log("GRASS CREATE");
-
             GameObject rootObject = new GameObject();
             rootObject.transform.parent = SceneManager.RightHanded;
             rootObject.transform.localPosition = Vector3.zero;
@@ -172,12 +170,14 @@ namespace VRtist
             gobject.tag = "PhysicObject";
 
             gobject.AddComponent<BoxCollider>(); // LOL, how are we going to handle this??? A BoxCollider?
+
             GrassController controller = gobject.AddComponent<GrassController>();
             controller.cameraXf = vrCamera;
             controller.interactorXf = paletteController;
-            // material
-            // compute shader
-
+            controller.material = Resources.Load<Material>("Grass/Grass");
+            controller.computeShader = Resources.Load<ComputeShader>("Grass/GrassComputeShader");
+            controller.overrideMaterial = true;
+            controller.castShadow = true;
 
             // DEBUG - add a mesh/filter/renderer to debug the pointcloud creation
             DEBUG_mesh = new Mesh
