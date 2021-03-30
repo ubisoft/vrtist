@@ -208,6 +208,9 @@ namespace VRtist
             volumeCursor.SetActive(tool == PaintTools.Volume);
             grassCursor.SetActive(tool == PaintTools.Grass);
 
+            // SubTool object activation
+            grassPainter.gameObject.SetActive(tool == PaintTools.Grass); // calls OnEnable
+
             // Sub-Elements (put in its own function?)
             switch (tool)
             {
@@ -220,10 +223,6 @@ namespace VRtist
                     }
                     break;
 
-                case PaintTools.Grass: 
-                    grassPainter.OnSelectPanel();
-                    break;
-
                 default: break;
             }
         }
@@ -231,7 +230,17 @@ namespace VRtist
         protected override void DoUpdateGui()
         {
             base.DoUpdateGui();
-            paintLineRenderer.enabled = false;
+
+            switch (paintTool)
+            {
+                case PaintTools.Grass:
+                    grassPainter.IsInGUI = true;
+                    break;
+
+                default: 
+                    paintLineRenderer.enabled = false; 
+                    break;
+            }
         }
 
         protected override void DoUpdate()
@@ -548,6 +557,7 @@ namespace VRtist
 
                 case PaintTools.Grass:
                     {
+                        grassPainter.IsInGUI = false;
                         Vector3 direction = transform.forward;
                         Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
                         grassPainter.SetRay(startRay, direction); // raycasts and updates linerenderer

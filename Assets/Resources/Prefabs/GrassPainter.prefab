@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6852290231667557900}
-  - component: {fileID: 6852290231667557905}
-  - component: {fileID: 6852290231667557906}
   - component: {fileID: 6852290231667557907}
+  - component: {fileID: 6852290231667557906}
+  - component: {fileID: 6852290231667557905}
   - component: {fileID: 6852290231667557904}
   m_Layer: 0
   m_Name: GrassPainter
@@ -34,14 +34,39 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6852290231667557905
-MeshFilter:
+--- !u!114 &6852290231667557907
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6852290231667557901}
-  m_Mesh: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 472ac2c2f1096484a9fd56c005f65289, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grassLimit: 100000
+  currentGrassAmount: 0
+  painting: 0
+  removing: 0
+  editing: 0
+  toolbarInt: 0
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 787969
+  paintMask:
+    serializedVersion: 2
+    m_Bits: 787969
+  normalLimit: 0.5
+  widthMultiplier: 1
+  heightMultiplier: 1
+  adjustedColor: {r: 1, g: 1, b: 1, a: 1}
+  rangeR: 0
+  rangeG: 0
+  rangeB: 0
+  hitPosGizmo: {x: 0, y: 0, z: 0}
+  hitNormal: {x: 0, y: 0, z: 0}
 --- !u!120 &6852290231667557906
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -58,7 +83,7 @@ LineRenderer:
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 257
+  m_RenderingLayerMask: 4
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: c93a369ce3a3dec4484a827bf498f303, type: 2}
@@ -140,39 +165,14 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
---- !u!114 &6852290231667557907
-MonoBehaviour:
+--- !u!33 &6852290231667557905
+MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6852290231667557901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 472ac2c2f1096484a9fd56c005f65289, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  grassLimit: 100000
-  currentGrassAmount: 0
-  painting: 0
-  removing: 0
-  editing: 0
-  toolbarInt: 0
-  hitMask:
-    serializedVersion: 2
-    m_Bits: 1
-  paintMask:
-    serializedVersion: 2
-    m_Bits: 1
-  normalLimit: 0.5
-  widthMultiplier: 1
-  heightMultiplier: 1
-  adjustedColor: {r: 1, g: 1, b: 1, a: 1}
-  rangeR: 0
-  rangeG: 0
-  rangeB: 0
-  hitPosGizmo: {x: 0, y: 0, z: 0}
-  hitNormal: {x: 0, y: 0, z: 0}
+  m_Mesh: {fileID: 0}
 --- !u!23 &6852290231667557904
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -189,10 +189,10 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 257
+  m_RenderingLayerMask: 4
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 2d544622cb0195f4896a6ea01dd0ba18, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
