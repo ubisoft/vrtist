@@ -1,11 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace VRtist
 {
-    [RequireComponent(typeof(MeshFilter)), // DEBUG
-     RequireComponent(typeof(MeshRenderer)), // DEBUG
-     RequireComponent(typeof(LineRenderer))]
+    [RequireComponent(typeof(LineRenderer))]
     public class PaintGrassTool : MonoBehaviour
     {
         enum GrassEditionMode { CreateNew, EditExisting };
@@ -14,9 +11,7 @@ namespace VRtist
         enum GrassAction { Add, Remove, Edit };
         GrassAction grassAction = GrassAction.Add;
 
-        GameObject grass;
-        float grassBrushSize = 1.0f;
-        float grassDensity = 1.0f;
+        private GameObject grass;
 
         // UI
         private Transform panel;
@@ -31,24 +26,10 @@ namespace VRtist
         // 
         private Transform vrCamera;
         private Transform paletteController;
+        private Transform toolControllerXf;
 
         private LineRenderer line;
         // ADD an object (from UIUtils) to symbolize the brush.
-
-        // DEBUG visualization
-        private Mesh DEBUG_mesh;
-        private MeshFilter DEBUG_filter;
-        private MeshRenderer DEBUG_render;
-        private List<Vector3> DEBUG_positions = new List<Vector3>();
-        private List<Color> DEBUG_colors = new List<Color>();
-        private List<int> DEBUG_indices = new List<int>();
-        private List<Vector3> DEBUG_normals = new List<Vector3>();
-
-
-
-        // ----------
-
-        List<Vector2> grassSizeMultipliers = new List<Vector2>();
 
         // Grass Limit
         public int grassLimit = 100000;
@@ -63,14 +44,14 @@ namespace VRtist
         // Brush Settings
         public LayerMask hitMask = 1;
         public LayerMask paintMask = 1;
-        //public float brushSize = 1f;
-        //public float density = 2f;
+        public float brushSize = 0.1f; // 10cm
+        public float density = 5f;
         [Range(0.0f, 1.0f)]
         public float normalLimit = 0.5f;
 
         // Grass Size
-        public float widthMultiplier = 1f;
-        public float heightMultiplier = 1f;
+        public float widthMultiplier = 1f; // TODO: expose
+        public float heightMultiplier = 1f; // TODO: expose
 
         // Color
         public Color adjustedColor = Color.white;
@@ -78,7 +59,11 @@ namespace VRtist
 
         // Stored Values
         public Vector3 hitPosGizmo;
-        public Vector3 hitNormal;
+        public Vector3 hitNormalGizmo;
+
+
+        Ray firstRay;
+
 
         private Vector3 lastPosition = Vector3.zero;
 
@@ -128,28 +113,38 @@ namespace VRtist
             grassDensitySlider.onSlideEvent.AddListener((float value) => OnGrassDensityChanged(value));
         }
 
+        // Called by the generic Paint tool, when touching the vertical joystick
         public void SetBrushSize(float s)
         {
             Debug.Log("GRASS set brush size: " + s);
-
-            grassBrushSize = s;
+            brushSize = s;
         }
 
-        public void SetRay(Vector3 startRay, Vector3 dir)
+        public void UpdateControllerInfo(Transform controllerXf, Transform mouthpieceXf)
         {
+            toolControllerXf = controllerXf;
+
+            Vector3 direction = transform.forward;
+            Vector3 startRay = mouthpieceXf.position + mouthpieceXf.lossyScale.x * direction;
+
             line.SetPosition(0, startRay);
-            line.SetPosition(1, startRay + 1.0f * dir);
-        
-            Ray ray = new Ray(startRay, dir);
+            line.SetPosition(1, startRay + 1.0f * direction);
+
+            // First raycast to update the LineRenderer/Gizmo, done every frame even if not painting.
+            firstRay.origin = startRay;
+            firstRay.direction = direction;
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, 100f, hitMask.value))
+            if (Physics.Raycast(firstRay, out hit, 100f, hitMask.value))
             {
-                hitPosGizmo = hit.point;
+                hitPosGizmo = hit.point; // store for gizmo display
+                hitNormalGizmo = hit.normal;
                 line.SetPosition(1, hitPosGizmo);
             }
 
             line.startWidth = 0.005f / GlobalState.WorldScale;
             line.endWidth = line.startWidth;
+
+            // TODO: add a subobject with a gizmo, like the teleport tool.
         }
 
         public GameObject Create()
@@ -169,7 +164,7 @@ namespace VRtist
             gobject.transform.localScale = Vector3.one;
             gobject.tag = "PhysicObject";
 
-            gobject.AddComponent<BoxCollider>(); // LOL, how are we going to handle this??? A BoxCollider?
+            //gobject.AddComponent<BoxCollider>(); // LOL, how are we going to handle this??? A BoxCollider?
 
             GrassController controller = gobject.AddComponent<GrassController>();
             controller.cameraXf = vrCamera;
@@ -178,48 +173,106 @@ namespace VRtist
             controller.computeShader = Resources.Load<ComputeShader>("Grass/GrassComputeShader");
             controller.overrideMaterial = true;
             controller.castShadow = true;
-
-            // DEBUG - add a mesh/filter/renderer to debug the pointcloud creation
-            DEBUG_mesh = new Mesh
-            {
-                indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
-            };
-            DEBUG_filter = GetComponent<MeshFilter>();
-            DEBUG_filter.mesh = DEBUG_mesh;
-            DEBUG_render = GetComponent<MeshRenderer>();
-            Material debugMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
-            DEBUG_render.sharedMaterial = debugMaterial;
-            DEBUG_render.material.SetColor("_BaseColor", Color.red);
-            DEBUG_render.material.SetFloat("_Opacity", 1.0f);
+            controller.Clear();
+            // DEBUG
+            controller.InitDebugData();
 
             return gobject;
         }
 
-        public void AddPoint(float pressure)
+        public void Paint(float pressure)
         {
-            Debug.Log("GRASS ADD POINT");
+            Debug.Log("GRASS Paint");
 
+            // TODO: use pressure to increase add-density or remove-radius???
 
+            switch(grassAction)
+            {
+                case GrassAction.Add:
+                    Add();
+                    break;
 
+                case GrassAction.Remove:
+                    Remove();
+                    break;
 
+                case GrassAction.Edit:
+                    Edit();
+                    break;
+            }
+        }
 
+        private void Add()
+        {
+            if (grass == null)
+                return;
 
+            GrassController controller = grass.GetComponent<GrassController>(); // TODO: not for every point, store it.
+            if (controller == null)
+                return;
 
+            // place based on density
+            for (int k = 0; k < density; k++)
+            {
+                // brush range
+                float t = 2f * Mathf.PI * Random.Range(0f, brushSize);
+                float u = Random.Range(0f, brushSize) + Random.Range(0f, brushSize);
+                float r = (u > 1 ? 2 - u : u);
 
+                // Create rays in a circle around the firstRay, in controller space.
+                Ray ray = firstRay;
+                Vector3 rayOriginDelta = Vector3.zero;
+                if (k != 0) // except for the first point, at the center of the circle).
+                {
+                    rayOriginDelta.x += r * Mathf.Cos(t);
+                    rayOriginDelta.y += r * Mathf.Sin(t);
+                    ray.origin = toolControllerXf.TransformPoint(toolControllerXf.InverseTransformPoint(firstRay.origin) + rayOriginDelta);
+                }
 
-            //MeshFilter meshFilter = currentVolume.GetComponent<MeshFilter>();
-            //Mesh mesh = meshFilter.mesh;
-            //mesh.Clear();
-            //mesh.vertices = volumeGenerator.vertices;
-            //mesh.triangles = volumeGenerator.triangles;
-            //mesh.RecalculateNormals();
+                // if the ray hits something thats on the layer mask,
+                // within the grass limit and within the y normal limit
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 200f, hitMask.value) &&
+                    currentGrassAmount < grassLimit &&
+                    hit.normal.y >= (2.0f * normalLimit - 1.0f))
+                {
+                    if ((paintMask.value & (1 << hit.transform.gameObject.layer)) > 0)
+                    {
+                        Vector3 hitPos = hit.point;
+                        Vector3 hitNormal = hit.normal;
+                        if (k != 0 || (Vector3.Distance(hit.point, lastPosition) > brushSize))
+                        {
+                            Vector3 newGrassPosition = grass.transform.InverseTransformPoint(hitPos); // to Local mesh position
+                            Vector3 newGrassNormal = grass.transform.InverseTransformDirection(hit.normal);
+                            Vector2 newGrassUV = new Vector2(widthMultiplier, heightMultiplier);
+                            Color newGrassColor = new Color( // add random color variations
+                                adjustedColor.r + (Random.Range(0, 1.0f) * rangeR),
+                                adjustedColor.g + (Random.Range(0, 1.0f) * rangeG),
+                                adjustedColor.b + (Random.Range(0, 1.0f) * rangeB), 1);
 
-            //// Recompute collider
-            //MeshCollider meshCollider = currentVolume.GetComponent<MeshCollider>();
-            //meshCollider.sharedMesh = mesh;
-            //// force update
-            //meshCollider.enabled = false;
-            //meshCollider.enabled = true;
+                            // ADD POINT to the controller.
+                            controller.AddPoint(newGrassPosition, newGrassNormal, newGrassUV, newGrassColor);
+
+                            currentGrassAmount++;
+
+                            if (rayOriginDelta == Vector3.zero)
+                            {
+                                lastPosition = hitPos;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void Remove()
+        {
+
+        }
+
+        private void Edit()
+        {
+
         }
 
         public void BeginPaint()
@@ -343,16 +396,14 @@ namespace VRtist
 
         public void OnGrassBrushSizeChanged(float value)
         {
-            Debug.Log("GRASS On BrushSize changed");
-
-            grassBrushSize = value;
+            Debug.Log($"GRASS On BrushSize changed: {value}");
+            brushSize = value;
         }
 
         public void OnGrassDensityChanged(float value)
         {
-            Debug.Log("GRASS On Density changed");
-
-            grassDensity = value;
+            Debug.Log($"GRASS OnDensityChanged: {value}");
+            density = value;
         }
 
         private void InitFromSelection()

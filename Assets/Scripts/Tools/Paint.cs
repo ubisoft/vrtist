@@ -311,10 +311,7 @@ namespace VRtist
                     break;
 
                 case PaintTools.Grass:
-                    Vector3 penPosition = mouthpiece.position;
-                    Vector3 direction = transform.forward;
-                    Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
-                    grassPainter.SetRay(startRay, direction); // raycasts and updates linerenderer
+                    grassPainter.UpdateControllerInfo(transform, mouthpiece);
                     grassPainter.BeginPaint();
                     break;
             }
@@ -558,9 +555,7 @@ namespace VRtist
                 case PaintTools.Grass:
                     {
                         grassPainter.IsInGUI = false;
-                        Vector3 direction = transform.forward;
-                        Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
-                        grassPainter.SetRay(startRay, direction); // raycasts and updates linerenderer
+                        grassPainter.UpdateControllerInfo(transform, mouthpiece);
                     }
                     break;
             }
@@ -569,10 +564,13 @@ namespace VRtist
             // DRAW (trigger PRESSED)
             //
             float deadZone = VRInput.deadZoneIn;
-            if (triggerValue >= deadZone &&
-                (
-                  (position != paintPrevPosition && currentPaint != null) || currentVolume != null)
-                )
+            if (triggerValue >= deadZone 
+                && (
+                     (position != paintPrevPosition && currentPaint != null) 
+                   || currentVolume != null
+                   || paintTool == PaintTools.Grass
+                   )
+               )
             {
                 float pressure = (triggerValue - deadZone) / (1f - deadZone);
                 float value = brushSize / GlobalState.WorldScale * pressure;
@@ -583,7 +581,7 @@ namespace VRtist
                     case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * value); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
                     case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * value * strength); break;
-                    case PaintTools.Grass: grassPainter.AddPoint(value); break;
+                    case PaintTools.Grass: grassPainter.Paint(value); break;
                 }
 
                 switch (paintTool)
