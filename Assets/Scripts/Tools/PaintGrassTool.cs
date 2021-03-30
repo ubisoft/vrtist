@@ -86,6 +86,11 @@ namespace VRtist
 
         // ----------
 
+        private void OnEnable()
+        {
+            ResetPanel();
+        }
+
         public void Start()
         {
             vrCamera = Utils.FindRootGameObject("Camera Rig").transform.Find("Pivot/VRCamera");
@@ -93,6 +98,8 @@ namespace VRtist
 
             line = GetComponent<LineRenderer>();
         }
+
+        public bool IsInGUI { set { if (line != null) line.enabled = !value; } }
 
         public void SetPanel(Transform subPanel)
         {
@@ -263,9 +270,9 @@ namespace VRtist
             }
         }
 
-        public void OnSelectPanel()
+        public void ResetPanel()
         {
-            Debug.Log("GRASS On Select Panel");
+            Debug.Log("GRASS Reset Panel");
 
             grassCreateNewButton.Checked = true;
             grassEditExistingButton.Checked = false;
