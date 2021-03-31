@@ -32,36 +32,36 @@ namespace VRtist
 
         // Blade
         [Header("Blade")]
-        public float grassHeight = 0.15f;
+        public float grassHeight = 0.2f;
         public float grassWidth = 0.02f;
         public float grassRandomHeight = 0.25f;
         [Range(0, 1)] public float bladeRadius = 0.1f;
-        public float bladeForwardAmount = 0.05f;
+        public float bladeForwardAmount = 0.1f;
         [Range(1, 4)] public float bladeCurveAmount = 2;
 
         // Wind
         [Header("Wind")]
-        public float windSpeed = 3;
+        public float windSpeed = 1;
         public float windStrength = 0.01f;
-        public float windMultiplierXX = 1.0f;
-        public float windMultiplierXY = 1.0f;
-        public float windMultiplierXZ = 1.0f;
-        public float windMultiplierZX = 1.0f;
-        public float windMultiplierZY = 1.0f;
-        public float windMultiplierZZ = 1.0f;
+        public float windMultiplierXX = 10.0f;
+        public float windMultiplierXY = 5.0f;
+        public float windMultiplierXZ = 5.0f;
+        public float windMultiplierZX = 7.0f;
+        public float windMultiplierZY = 8.0f;
+        public float windMultiplierZZ = 9.0f;
 
 
         // Interactor
         [Header("Interactor")]
-        public float affectRadius = 0.3f;
-        public float affectStrength = 5;
+        public float affectRadius = 0.1f;
+        public float affectStrength = 1;
         public Transform interactorXf;
 
 
         // LOD
         [Header("LOD")]
-        public float minFadeDistance = 40;
-        public float maxFadeDistance = 60;
+        public float minFadeDistance = 5;
+        public float maxFadeDistance = 10;
         // Material
         [Header("Material")]
         public bool overrideMaterial;

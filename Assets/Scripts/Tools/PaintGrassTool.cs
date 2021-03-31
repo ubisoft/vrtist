@@ -21,7 +21,7 @@ namespace VRtist
         public float brushSize = 0.1f; // 10cm
         public float density = 5f;
         [Range(0.0f, 1.0f)]
-        public float normalLimit = 0.5f;
+        public float normalLimit = 1.0f; // 1.0f = ALL orientation. 0.5f = top half hemisphere. 0.0f = only strictly top/horizontal
 
         // Grass Size
         public float widthMultiplier = 1f; // TODO: expose
