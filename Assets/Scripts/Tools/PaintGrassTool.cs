@@ -11,6 +11,29 @@ namespace VRtist
         enum GrassAction { Add, Remove, Edit };
         GrassAction grassAction = GrassAction.Add;
 
+        // Grass Limit
+        public int grassLimit = 100000;
+        public int currentGrassAmount = 0;
+
+        // Brush Settings
+        public LayerMask hitMask = 1;
+        public LayerMask paintMask = 1;
+        public float brushSize = 0.1f; // 10cm
+        public float density = 5f;
+        [Range(0.0f, 1.0f)]
+        public float normalLimit = 0.5f;
+
+        // Grass Size
+        public float widthMultiplier = 1f; // TODO: expose
+        public float heightMultiplier = 1f; // TODO: expose
+
+        // Color
+        public Color adjustedColor = Color.white;
+        public float rangeR, rangeG, rangeB;
+
+        // ----------------------------------------------------------
+
+        // Current Grass object being worked on.
         private GameObject grass;
 
         // UI
@@ -29,47 +52,16 @@ namespace VRtist
         private Transform toolControllerXf;
 
         private LineRenderer line;
-        // ADD an object (from UIUtils) to symbolize the brush.
-
-        // Grass Limit
-        public int grassLimit = 100000;
-        public int currentGrassAmount = 0;
-
-        // Paint Status
-        public bool painting;
-        public bool removing;
-        public bool editing;
-        public int toolbarInt = 0;
-
-        // Brush Settings
-        public LayerMask hitMask = 1;
-        public LayerMask paintMask = 1;
-        public float brushSize = 0.1f; // 10cm
-        public float density = 5f;
-        [Range(0.0f, 1.0f)]
-        public float normalLimit = 0.5f;
-
-        // Grass Size
-        public float widthMultiplier = 1f; // TODO: expose
-        public float heightMultiplier = 1f; // TODO: expose
-
-        // Color
-        public Color adjustedColor = Color.white;
-        public float rangeR, rangeG, rangeB;
+        // TODO: ADD an object (from UIUtils) to symbolize the brush.
 
         // Stored Values
-        public Vector3 hitPosGizmo;
-        public Vector3 hitNormalGizmo;
+        private Vector3 hitPosGizmo;
+        private Vector3 hitNormalGizmo;
 
-
-        Ray firstRay;
-
-
+        private Ray firstRay;
         private Vector3 lastPosition = Vector3.zero;
 
-        int[] indi;
-
-        // ----------
+        // ----------------------------------------------------------
 
         private void OnEnable()
         {
@@ -300,15 +292,15 @@ namespace VRtist
                 if (grass == null)
                     return;
 
-                GameObject grassObject = SceneManager.InstantiateUnityPrefab(grass);
-                GameObject.Destroy(grass.transform.parent.gameObject); // what are we doing here??
+                //GameObject grassObject = SceneManager.InstantiateUnityPrefab(grass);
+                //GameObject.Destroy(grass.transform.parent.gameObject); // what are we doing here??
                 grass = null;
 
-                CommandAddGameObject command = new CommandAddGameObject(grassObject);
-                command.Submit();
-                GameObject grassInstance = command.newObject;
+                //CommandAddGameObject command = new CommandAddGameObject(grassObject);
+                //command.Submit();
+                //GameObject grassInstance = command.newObject;
 
-                GrassController controller = grassInstance.GetComponent<GrassController>();
+                //GrassController controller = grassInstance.GetComponent<GrassController>();
                 // Store stuff in controller (stuff probably known only by the painter class at this point).
                 // e.g.:
                 //    controller.origin = volumeGenerator.origin;
