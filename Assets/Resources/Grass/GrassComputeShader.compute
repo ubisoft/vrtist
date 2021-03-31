@@ -193,16 +193,28 @@ void Main(uint3 id : SV_DispatchThreadID)
 
     // Wind
     float3 v0 = sv.positionOS.xyz;
+    float speed = _Time.x * _WindSpeed;
     float3 wind1 = float3(
-           sin(_Time.x * _WindSpeed + v0.x * _WindMultiplierXX)
-        +  sin(_Time.x * _WindSpeed + v0.y * _WindMultiplierXY)
-        +  sin(_Time.x * _WindSpeed + v0.z * _WindMultiplierXZ)
+           sin(speed + v0.x * _WindMultiplierXX)
+        +  sin(speed + v0.y * _WindMultiplierXY)
+        +  sin(speed + v0.z * _WindMultiplierXZ)
         ,
         0,
-           cos(_Time.x * _WindSpeed + v0.x * _WindMultiplierZX)
-        +  cos(_Time.x * _WindSpeed + v0.y * _WindMultiplierZY)
-        +  cos(_Time.x * _WindSpeed + v0.z * _WindMultiplierZZ)
+           cos(speed + v0.x * _WindMultiplierZX)
+        +  cos(speed + v0.y * _WindMultiplierZY)
+        +  cos(speed + v0.z * _WindMultiplierZZ)
         );
+
+    //float3 wind1 = float3(
+    //      sin(_Time.x * _WindMultiplierXX + v0.x * _WindSpeed)
+    //    + sin(_Time.x * _WindMultiplierXY + v0.y * _WindSpeed)
+    //    + sin(_Time.x * _WindMultiplierXZ + v0.z * _WindSpeed)
+    //    ,
+    //    0,
+    //      cos(_Time.x * _WindMultiplierZX + v0.x * _WindSpeed)
+    //    + cos(_Time.x * _WindMultiplierZY + v0.y * _WindSpeed)
+    //    + cos(_Time.x * _WindMultiplierZZ + v0.z * _WindSpeed)
+    //    );
 
     wind1 = mul(normalToObject, wind1); // wind applies in normal space for the moment.
     wind1 *= _WindStrength;
