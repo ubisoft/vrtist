@@ -21,7 +21,7 @@ namespace VRtist
         public LayerMask hitMask = 1;
         public LayerMask paintMask = 1;
         public float brushSize = 0.1f;
-        public float density = 5f;
+        public int density = 5; // number of raycasts, of tufts of grass created per stroke.
         [Range(0.0f, 1.0f)]
         public float normalLimit = 1.0f; // 1.0f = ALL orientation. 0.5f = top half hemisphere. 0.0f = only strictly top/horizontal
 
@@ -148,7 +148,7 @@ namespace VRtist
             uiBrushSizeSlider.onSlideEvent.AddListener((float value) => OnBrushSizeChanged(value));
 
             uiDensitySlider = P.Find("GrassDensity").GetComponent<UISlider>();
-            uiDensitySlider.onSlideEvent.AddListener((float value) => OnDensityChanged(value));
+            uiDensitySlider.onSlideEventInt.AddListener((int value) => OnDensityChanged(value));
 
             uiWidthMultiplierSlider = P.Find("WidthMultiplier").GetComponent<UISlider>();
             uiWidthMultiplierSlider.onSlideEvent.AddListener((float value) => OnWidthMultiplierChanged(value));
@@ -280,23 +280,36 @@ namespace VRtist
             if (grass == null)
                 return;
 
+            // DEBUG
+            line.positionCount = 2 * density;
+            
             // place based on density
             for (int k = 0; k < density; k++)
             {
                 // brush range
-                float t = 2f * Mathf.PI * Random.Range(0f, brushSize);
-                float u = Random.Range(0f, brushSize) + Random.Range(0f, brushSize);
-                float r = (u > 1 ? 2 - u : u);
+                // THIS CODE HAS NO SENSE, for now.
+                //float t = 2f * Mathf.PI * Random.Range(0f, brushSize);
+                //float u = Random.Range(0f, brushSize) + Random.Range(0f, brushSize);
+                //float r = (u > 1 ? 2 - u : u);
+
+                Vector2 delta = brushSize * GlobalState.WorldScale * Random.insideUnitCircle;
 
                 // Create rays in a circle around the firstRay, in controller space.
                 Ray ray = firstRay;
                 Vector3 rayOriginDelta = Vector3.zero;
                 if (k != 0) // except for the first point, at the center of the circle).
                 {
-                    rayOriginDelta.x += r * Mathf.Cos(t);
-                    rayOriginDelta.y += r * Mathf.Sin(t);
-                    ray.origin = toolControllerXf.TransformPoint(toolControllerXf.InverseTransformPoint(firstRay.origin) + rayOriginDelta);
+                    //rayOriginDelta.x += r * Mathf.Cos(t);
+                    //rayOriginDelta.y += r * Mathf.Sin(t);
+                    rayOriginDelta.x = delta.x;
+                    rayOriginDelta.y = delta.y;
+                    ray.origin = 
+                        toolControllerXf.TransformPoint(
+                            toolControllerXf.InverseTransformPoint(firstRay.origin) + rayOriginDelta);
                 }
+
+                line.SetPosition(2 * k + 0, ray.origin);
+                line.SetPosition(2 * k + 1, ray.origin + ray.direction);
 
                 // if the ray hits something thats on the layer mask,
                 // within the grass limit and within the y normal limit
@@ -536,7 +549,7 @@ namespace VRtist
             brushSize = value;
         }
 
-        public void OnDensityChanged(float value)
+        public void OnDensityChanged(int value)
         {
             Debug.Log($"GRASS OnDensityChanged: {value}");
             density = value;
