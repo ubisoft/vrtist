@@ -5,8 +5,10 @@ namespace VRtist
     [RequireComponent(typeof(LineRenderer))]
     public class PaintGrassTool : MonoBehaviour
     {
+        // TODO: change that, not a mode.
         enum GrassEditionMode { CreateNew, EditExisting };
         GrassEditionMode grassEditionMode = GrassEditionMode.CreateNew;
+        bool isPainting = false;
 
         enum GrassAction { Add, Remove, Edit };
         GrassAction grassAction = GrassAction.Add;
@@ -18,33 +20,56 @@ namespace VRtist
         // Brush Settings
         public LayerMask hitMask = 1;
         public LayerMask paintMask = 1;
-        public float brushSize = 0.1f; // 10cm
+        public float brushSize = 0.1f;
         public float density = 5f;
         [Range(0.0f, 1.0f)]
         public float normalLimit = 1.0f; // 1.0f = ALL orientation. 0.5f = top half hemisphere. 0.0f = only strictly top/horizontal
 
-        // Grass Size
-        public float widthMultiplier = 1f; // TODO: expose
-        public float heightMultiplier = 1f; // TODO: expose
-
-        // Color
-        public Color adjustedColor = Color.white;
-        public float rangeR, rangeG, rangeB;
+        // Modifiers for the EDIT mode.
+        public float widthMultiplier = 1f;
+        public float heightMultiplier = 1f;
+        public Color adjustedColor = new Color(0.5f, 0.5f, 0.5f);
+        //public float rangeR, rangeG, rangeB;
 
         // ----------------------------------------------------------
 
         // Current Grass object being worked on.
-        private GameObject grass;
+        private GrassController grass;
 
         // UI
-        private Transform panel;
-        private UIButton grassCreateNewButton;
-        private UIButton grassEditExistingButton;
-        private UIButton grassAddButton;
-        private UIButton grassRemoveButton;
-        private UIButton grassEditButton;
-        private UISlider grassBrushSizeSlider;
-        private UISlider grassDensitySlider;
+        #region UI Variables
+
+        //private Transform panel;
+
+        private UIButton uiNewButton;
+        private UIButton uiPickButton;
+        private UIButton uiActiveButton;
+
+        private UIButton uiAddButton;
+        private UIButton uiRemoveButton;
+        private UIButton uiEditButton;
+
+        private UIButton uiPaintParamsButton;
+        private UIButton uiRenderParamsButton;
+
+        private UIPanel uiPaintParamsPanel;
+        private UIPanel uiRenderParamsPanel;
+
+        private UISlider uiBrushSizeSlider;
+        private UISlider uiDensitySlider;
+        private UISlider uiWidthMultiplierSlider;
+        private UISlider uiHeightMultiplierSlider;
+        private UISlider uiHueShiftSlider;
+        private UISlider uiSaturationShiftSlider;
+        private UISlider uiValueShiftSlider;
+
+        private UISlider uiGrassWidthSlider;
+        private UISlider uiGrassHeightSlider;
+        private UISlider uiGrassBendingSlider;
+        private UIButton uiTopColorButton;
+        private UIButton uiBottomColorButton;
+
+        #endregion
 
         // 
         private Transform vrCamera;
@@ -80,29 +105,85 @@ namespace VRtist
 
         public void SetPanel(Transform subPanel)
         {
-            panel = subPanel;
+            Transform P = subPanel;
 
-            grassCreateNewButton = panel.Find("CreateNewButton").GetComponent<UIButton>(); // <---- CreateNew is default.
-            grassCreateNewButton.Checked = true;
-            grassEditExistingButton = panel.Find("EditExistingButton").GetComponent<UIButton>();
+            #region UI Setup
 
-            grassAddButton = panel.Find("ModeAddButton").GetComponent<UIButton>(); // <---- Add is default.
-            grassAddButton.Checked = true;
-            grassRemoveButton = panel.Find("ModeRemoveButton").GetComponent<UIButton>();
-            grassEditButton = panel.Find("ModeEditButton").GetComponent<UIButton>();
+            uiNewButton = P.Find("CreateNewButton").GetComponent<UIButton>();
+            uiNewButton.onReleaseEvent.AddListener(() => OnGrassCreateNewPressed());
 
-            grassBrushSizeSlider = panel.Find("GrassBrushSize").GetComponent<UISlider>();
-            grassDensitySlider = panel.Find("GrassDensity").GetComponent<UISlider>();
+            uiPickButton = P.Find("PickExistingButton").GetComponent<UIButton>();
+            uiPickButton.onReleaseEvent.AddListener(() => OnGrassPickExistingPressed());
 
-            grassCreateNewButton.onReleaseEvent.AddListener(() => OnGrassCreateNewPressed());
-            grassEditExistingButton.onReleaseEvent.AddListener(() => OnGrassEditExistingPressed());
+            uiActiveButton = P.Find("ActivePaintButton").GetComponent<UIButton>();
+            uiActiveButton.onReleaseEvent.AddListener(() => OnStopPaintPressed());
 
-            grassAddButton.onReleaseEvent.AddListener(() => OnGrassAddPressed());
-            grassRemoveButton.onReleaseEvent.AddListener(() => OnGrassRemovePressed());
-            grassEditButton.onReleaseEvent.AddListener(() => OnGrassEditPressed());
+            uiAddButton = P.Find("ModeAddButton").GetComponent<UIButton>(); // <---- Add is default.
+            uiAddButton.onReleaseEvent.AddListener(() => OnGrassAddPressed());
+            uiAddButton.Checked = true;
 
-            grassBrushSizeSlider.onSlideEvent.AddListener((float value) => OnGrassBrushSizeChanged(value));
-            grassDensitySlider.onSlideEvent.AddListener((float value) => OnGrassDensityChanged(value));
+            uiRemoveButton = P.Find("ModeRemoveButton").GetComponent<UIButton>();
+            uiRemoveButton.onReleaseEvent.AddListener(() => OnGrassRemovePressed());
+
+            uiEditButton = P.Find("ModeEditButton").GetComponent<UIButton>();
+            uiEditButton.onReleaseEvent.AddListener(() => OnGrassEditPressed());
+
+            uiPaintParamsButton = P.Find("PaintParametersPanelButton").GetComponent<UIButton>(); // <---- Paint is default.
+            uiPaintParamsButton.onReleaseEvent.AddListener(() => OnPaintParamsPressed());
+            uiPaintParamsButton.Checked = true;
+
+            uiRenderParamsButton = P.Find("RenderParametersPanelButton").GetComponent<UIButton>();
+            uiRenderParamsButton.onReleaseEvent.AddListener(() => OnRenderParamsPressed());
+
+            uiPaintParamsPanel = P.Find("PaintParametersPanel").GetComponent<UIPanel>(); // <---- PaintParams is default.
+            uiPaintParamsPanel.gameObject.SetActive(true);
+
+            uiRenderParamsPanel = P.Find("RenderParametersPanel").GetComponent<UIPanel>();
+            uiRenderParamsPanel.gameObject.SetActive(false);
+
+            // PAINT PARAMS
+            P = uiPaintParamsPanel.transform;
+
+            uiBrushSizeSlider = P.Find("GrassBrushSize").GetComponent<UISlider>();
+            uiBrushSizeSlider.onSlideEvent.AddListener((float value) => OnBrushSizeChanged(value));
+
+            uiDensitySlider = P.Find("GrassDensity").GetComponent<UISlider>();
+            uiDensitySlider.onSlideEvent.AddListener((float value) => OnDensityChanged(value));
+
+            uiWidthMultiplierSlider = P.Find("WidthMultiplier").GetComponent<UISlider>();
+            uiWidthMultiplierSlider.onSlideEvent.AddListener((float value) => OnWidthMultiplierChanged(value));
+
+            uiHeightMultiplierSlider = P.Find("HeightMultiplier").GetComponent<UISlider>();
+            uiHeightMultiplierSlider.onSlideEvent.AddListener((float value) => OnHeightMultiplierChanged(value));
+
+            uiHueShiftSlider = P.Find("HueShift").GetComponent<UISlider>();
+            uiHueShiftSlider.onSlideEvent.AddListener((float value) => OnHueShiftChanged(value));
+
+            uiSaturationShiftSlider = P.Find("SaturationShift").GetComponent<UISlider>();
+            uiSaturationShiftSlider.onSlideEvent.AddListener((float value) => OnSaturationShiftChanged(value));
+
+            uiValueShiftSlider = P.Find("ValueShift").GetComponent<UISlider>();
+            uiValueShiftSlider.onSlideEvent.AddListener((float value) => OnValueShiftChanged(value));
+
+            // RENDER PARAMS
+            P = uiRenderParamsPanel.transform;
+
+            uiGrassWidthSlider = P.Find("GrassWidth").GetComponent<UISlider>();
+            uiGrassWidthSlider.onSlideEvent.AddListener((float value) => OnGrassWidthChanged(value));
+
+            uiGrassHeightSlider = P.Find("GrassHeight").GetComponent<UISlider>();
+            uiGrassHeightSlider.onSlideEvent.AddListener((float value) => OnGrassHeightChanged(value));
+
+            uiGrassBendingSlider = P.Find("GrassBending").GetComponent<UISlider>();
+            uiGrassBendingSlider.onSlideEvent.AddListener((float value) => OnGrassBendingChanged(value));
+
+            uiTopColorButton = P.Find("TopColorButton").GetComponent<UIButton>();
+            uiTopColorButton.onReleaseEvent.AddListener(() => OnTopColorPressed());
+
+            uiBottomColorButton = P.Find("BottomColorButton").GetComponent<UIButton>();
+            uiBottomColorButton.onReleaseEvent.AddListener(() => OnBottomColorPressed());
+
+            #endregion
         }
 
         // Called by the generic Paint tool, when touching the vertical joystick
@@ -139,7 +220,7 @@ namespace VRtist
             // TODO: add a subobject with a gizmo, like the teleport tool.
         }
 
-        public GameObject Create()
+        public GrassController Create()
         {
             GameObject rootObject = new GameObject();
             rootObject.transform.parent = SceneManager.RightHanded;
@@ -169,7 +250,7 @@ namespace VRtist
             // DEBUG
             controller.InitDebugData();
 
-            return gobject;
+            return controller;
         }
 
         public void Paint(float pressure)
@@ -197,10 +278,6 @@ namespace VRtist
         private void Add()
         {
             if (grass == null)
-                return;
-
-            GrassController controller = grass.GetComponent<GrassController>(); // TODO: not for every point, store it.
-            if (controller == null)
                 return;
 
             // place based on density
@@ -237,13 +314,14 @@ namespace VRtist
                             Vector3 newGrassPosition = grass.transform.InverseTransformPoint(hitPos); // to Local mesh position
                             Vector3 newGrassNormal = grass.transform.InverseTransformDirection(hit.normal);
                             Vector2 newGrassUV = new Vector2(widthMultiplier, heightMultiplier);
-                            Color newGrassColor = new Color( // add random color variations
-                                adjustedColor.r + (Random.Range(0, 1.0f) * rangeR),
-                                adjustedColor.g + (Random.Range(0, 1.0f) * rangeG),
-                                adjustedColor.b + (Random.Range(0, 1.0f) * rangeB), 1);
+                            //Color newGrassColor = new Color( // add random color variations
+                            //    adjustedColor.r + (Random.Range(0, 1.0f) * rangeR),
+                            //    adjustedColor.g + (Random.Range(0, 1.0f) * rangeG),
+                            //    adjustedColor.b + (Random.Range(0, 1.0f) * rangeB), 1);
+                            Color newGrassColor = adjustedColor;
 
                             // ADD POINT to the controller.
-                            controller.AddPoint(newGrassPosition, newGrassNormal, newGrassUV, newGrassColor);
+                            grass.AddPoint(newGrassPosition, newGrassNormal, newGrassUV, newGrassColor);
 
                             currentGrassAmount++;
 
@@ -315,89 +393,6 @@ namespace VRtist
             }
         }
 
-        public void ResetPanel()
-        {
-            Debug.Log("GRASS Reset Panel");
-
-            grassCreateNewButton.Checked = true;
-            grassEditExistingButton.Checked = false;
-
-            grassAddButton.Checked = true;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = false;
-        }
-
-        public void OnGrassCreateNewPressed()
-        {
-            Debug.Log("GRASS On Create New");
-
-            grassCreateNewButton.Checked = true;
-            grassEditExistingButton.Checked = false;
-
-            grassAddButton.Checked = true;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = false;
-        }
-
-        public void OnGrassEditExistingPressed()
-        {
-            Debug.Log("GRASS On Edit Existing");
-
-            grassCreateNewButton.Checked = false;
-            grassEditExistingButton.Checked = true;
-
-            grassAddButton.Checked = true;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = false;
-
-            InitFromSelection();
-        }
-
-        public void OnGrassAddPressed()
-        {
-            Debug.Log("GRASS On Add");
-
-            grassAction = GrassAction.Add;
-
-            grassAddButton.Checked = true;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = false;
-        }
-
-        public void OnGrassRemovePressed()
-        {
-            Debug.Log("GRASS On Remove");
-
-            grassAction = GrassAction.Remove;
-
-            grassAddButton.Checked = false;
-            grassRemoveButton.Checked = true;
-            grassEditButton.Checked = false;
-        }
-
-        public void OnGrassEditPressed()
-        {
-            Debug.Log("GRASS On Edit");
-
-            grassAction = GrassAction.Edit;
-
-            grassAddButton.Checked = false;
-            grassRemoveButton.Checked = false;
-            grassEditButton.Checked = true;
-        }
-
-        public void OnGrassBrushSizeChanged(float value)
-        {
-            Debug.Log($"GRASS On BrushSize changed: {value}");
-            brushSize = value;
-        }
-
-        public void OnGrassDensityChanged(float value)
-        {
-            Debug.Log($"GRASS OnDensityChanged: {value}");
-            density = value;
-        }
-
         private void InitFromSelection()
         {
             GameObject selected = null;
@@ -411,7 +406,7 @@ namespace VRtist
                 GrassController controller = selected.GetComponent<GrassController>();
                 if (null != controller)
                 {
-                    grass = selected;
+                    grass = controller;
 
                     // DEBUG - rebuild debug arrays and mesh from controller
                     // ...
@@ -422,5 +417,197 @@ namespace VRtist
 
             grass = null;
         }
+
+        #region UI Callbacks
+
+        public void SetDefaultUIState()
+        {
+            uiAddButton.Checked = true; // <--- ADD default
+            uiRemoveButton.Checked = false;
+            uiEditButton.Checked = false;
+
+            uiPaintParamsButton.Checked = true; // <--- PAINT PARAMS default
+            uiRenderParamsButton.Checked = false;
+
+            uiPaintParamsPanel.gameObject.SetActive(true); // <--- PAINT PARAMS panel default
+            uiRenderParamsPanel.gameObject.SetActive(false);
+        }
+
+        public void ResetPanel()
+        {
+            Debug.Log("GRASS Reset Panel");
+
+            uiPickButton.Checked = false; // no active object picking
+            uiActiveButton.Checked = false; // no active paint
+
+            SetDefaultUIState();
+        }
+
+        public void OnGrassCreateNewPressed()
+        {
+            Debug.Log("GRASS On Create New");
+
+            // TODO: stop current paint, or cancel picking.
+            
+            uiPickButton.Checked = false;
+            uiActiveButton.Checked = false;
+
+            SetDefaultUIState();
+        }
+
+        public void OnGrassPickExistingPressed()
+        {
+            Debug.Log("GRASS On Pick Existing");
+
+            // TODO: cancel paint. picking!!
+
+            uiPickButton.Checked = true;
+            uiActiveButton.Checked = false;
+
+            SetDefaultUIState();
+
+            //InitFromSelection();
+        }
+
+        public void OnStopPaintPressed()
+        {
+            // TODO: stop paint!
+
+            uiPickButton.Checked = false;
+            uiActiveButton.Checked = false;
+
+            SetDefaultUIState();
+        }
+
+        public void OnGrassAddPressed()
+        {
+            Debug.Log("GRASS On Add");
+
+            grassAction = GrassAction.Add;
+
+            uiAddButton.Checked = true;
+            uiRemoveButton.Checked = false;
+            uiEditButton.Checked = false;
+        }
+
+        public void OnGrassRemovePressed()
+        {
+            Debug.Log("GRASS On Remove");
+
+            grassAction = GrassAction.Remove;
+
+            uiAddButton.Checked = false;
+            uiRemoveButton.Checked = true;
+            uiEditButton.Checked = false;
+        }
+
+        public void OnGrassEditPressed()
+        {
+            Debug.Log("GRASS On Edit");
+
+            grassAction = GrassAction.Edit;
+
+            uiAddButton.Checked = false;
+            uiRemoveButton.Checked = false;
+            uiEditButton.Checked = true;
+        }
+
+        public void OnPaintParamsPressed()
+        {
+            uiPaintParamsButton.Checked = true;
+            uiRenderParamsButton.Checked = false;
+
+            uiPaintParamsPanel.gameObject.SetActive(true);
+            uiRenderParamsPanel.gameObject.SetActive(false);
+        }
+
+        public void OnRenderParamsPressed()
+        {
+            uiPaintParamsButton.Checked = false;
+            uiRenderParamsButton.Checked = true;
+
+            uiPaintParamsPanel.gameObject.SetActive(false);
+            uiRenderParamsPanel.gameObject.SetActive(true);
+        }
+
+        public void OnBrushSizeChanged(float value)
+        {
+            Debug.Log($"GRASS On BrushSize changed: {value}");
+            brushSize = value;
+        }
+
+        public void OnDensityChanged(float value)
+        {
+            Debug.Log($"GRASS OnDensityChanged: {value}");
+            density = value;
+        }
+
+        public void OnWidthMultiplierChanged(float value)
+        {
+            Debug.Log($"GRASS OnWidthMultiplierChanged: {value}");
+            widthMultiplier = value;
+        }
+
+        public void OnHeightMultiplierChanged(float value)
+        {
+            Debug.Log($"GRASS OnHeightMultiplierChanged: {value}");
+            heightMultiplier = value;
+        }
+
+        public void OnHueShiftChanged(float value)
+        {
+            Debug.Log($"GRASS OnHueShiftChanged: {value}");
+            adjustedColor.r = 0.5f * (value + 1); // -1..1 to 0..1
+        }
+
+        public void OnSaturationShiftChanged(float value)
+        {
+            Debug.Log($"GRASS OnSaturationShiftChanged: {value}");
+            adjustedColor.g = 0.5f * (value + 1); // -1..1 to 0..1
+        }
+
+        public void OnValueShiftChanged(float value)
+        {
+            Debug.Log($"GRASS OnValueShiftChanged: {value}");
+            adjustedColor.b = 0.5f * (value + 1); // -1..1 to 0..1
+        }
+
+        public void OnGrassWidthChanged(float value)
+        {
+            Debug.Log($"GRASS OnGrassWidthChanged: {value}");
+            if (grass == null)
+                return;
+            grass.grassWidth = value;
+        }
+
+        public void OnGrassHeightChanged(float value)
+        {
+            Debug.Log($"GRASS OnGrassHeightChanged: {value}");
+            if (grass == null)
+                return;
+            grass.grassHeight = value;
+        }
+
+        public void OnGrassBendingChanged(float value)
+        {
+            Debug.Log($"GRASS OnGrassBendingChanged: {value}");
+            if (grass == null)
+                return;
+            grass.bladeForwardAmount = value; // TODO: rename grassBending
+        }
+
+        public void OnTopColorPressed()
+        {
+            Debug.Log($"GRASS OnTopColorPressed");
+            // TODO
+        }
+
+        public void OnBottomColorPressed()
+        {
+            Debug.Log($"GRASS OnBottomColorPressed");
+            // TODO
+        }
+
+        #endregion
     }
 }
