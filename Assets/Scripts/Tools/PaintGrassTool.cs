@@ -6,9 +6,9 @@ namespace VRtist
     public class PaintGrassTool : MonoBehaviour
     {
         // TODO: change that, not a mode.
-        enum GrassEditionMode { CreateNew, EditExisting };
-        GrassEditionMode grassEditionMode = GrassEditionMode.CreateNew;
-        bool isPainting = false;
+        //enum GrassEditionMode { CreateNew, EditExisting };
+        //GrassEditionMode grassEditionMode = GrassEditionMode.CreateNew;
+        //bool isPainting = false;
 
         enum GrassAction { Add, Remove, Edit };
         GrassAction grassAction = GrassAction.Add;
@@ -186,13 +186,6 @@ namespace VRtist
             #endregion
         }
 
-        // Called by the generic Paint tool, when touching the vertical joystick
-        public void SetBrushSize(float s)
-        {
-            Debug.Log("GRASS set brush size: " + s);
-            brushSize = s;
-        }
-
         public void UpdateControllerInfo(Transform controllerXf, Transform mouthpieceXf)
         {
             toolControllerXf = controllerXf;
@@ -255,8 +248,6 @@ namespace VRtist
 
         public void Paint(float pressure)
         {
-            Debug.Log("GRASS Paint");
-
             // TODO: use pressure to increase add-density or remove-radius???
 
             switch(grassAction)
@@ -281,26 +272,21 @@ namespace VRtist
                 return;
 
             // DEBUG
-            line.positionCount = 2 * density;
+            //line.positionCount = 2 * density;
             
             // place based on density
             for (int k = 0; k < density; k++)
             {
-                // brush range
-                // THIS CODE HAS NO SENSE, for now.
-                //float t = 2f * Mathf.PI * Random.Range(0f, brushSize);
-                //float u = Random.Range(0f, brushSize) + Random.Range(0f, brushSize);
-                //float r = (u > 1 ? 2 - u : u);
+                float worldBrushSize = brushSize * GlobalState.WorldScale;
 
-                Vector2 delta = brushSize * GlobalState.WorldScale * Random.insideUnitCircle;
+                // Random on the brush disc
+                Vector2 delta = worldBrushSize * Random.insideUnitCircle;
 
                 // Create rays in a circle around the firstRay, in controller space.
                 Ray ray = firstRay;
                 Vector3 rayOriginDelta = Vector3.zero;
                 if (k != 0) // except for the first point, at the center of the circle).
                 {
-                    //rayOriginDelta.x += r * Mathf.Cos(t);
-                    //rayOriginDelta.y += r * Mathf.Sin(t);
                     rayOriginDelta.x = delta.x;
                     rayOriginDelta.y = delta.y;
                     ray.origin = 
@@ -308,8 +294,8 @@ namespace VRtist
                             toolControllerXf.InverseTransformPoint(firstRay.origin) + rayOriginDelta);
                 }
 
-                line.SetPosition(2 * k + 0, ray.origin);
-                line.SetPosition(2 * k + 1, ray.origin + ray.direction);
+                //line.SetPosition(2 * k + 0, ray.origin);
+                //line.SetPosition(2 * k + 1, ray.origin + ray.direction);
 
                 // if the ray hits something thats on the layer mask,
                 // within the grass limit and within the y normal limit
@@ -358,52 +344,56 @@ namespace VRtist
 
         }
 
+        private void StartPainting()
+        {
+            if (grass != null)
+            {
+                StopPainting(); // NOTE: sets grass to null
+            }
+
+            // Create the object holding a set of grass
+            grass = Create();
+            grass.transform.position = hitPosGizmo;
+
+            // switch ON the record button
+            uiActiveButton.Checked = true;
+        }
+
+        private void StopPainting()
+        {
+            if (grass == null)
+            {
+                return;
+            }
+
+            //GameObject grassObject = SceneManager.InstantiateUnityPrefab(grass);
+            //GameObject.Destroy(grass.transform.parent.gameObject); // what are we doing here??
+            grass = null;
+
+            //CommandAddGameObject command = new CommandAddGameObject(grassObject);
+            //command.Submit();
+            //GameObject grassInstance = command.newObject;
+
+            //GrassController controller = grassInstance.GetComponent<GrassController>();
+            // Store stuff in controller (stuff probably known only by the painter class at this point).
+            // e.g.:
+            //    controller.origin = volumeGenerator.origin;
+            //    controller.bounds = volumeGenerator.bounds;
+            //    controller.field = volumeGenerator.field;
+            //    controller.resolution = volumeGenerator.resolution;
+            //    controller.stepSize = volumeGenerator.stepSize;
+
+            uiActiveButton.Checked = false; // may be useless, StopPainting come from clicking on that button.
+        }
+
         public void BeginPaint()
         {
-            Debug.Log("GRASS BEGIN");
 
-            if (grassEditionMode == GrassEditionMode.CreateNew)
-            {
-                grass = Create();
-                grass.transform.position = hitPosGizmo;
-            }
-            else // EDIT
-            {
-                // TODO: ????
-            }
         }
 
         public void EndPaint()
         {
-            Debug.Log("GRASS END");
 
-            if (grassEditionMode == GrassEditionMode.CreateNew)
-            {
-                // END happens even if no BEGIN. Find out why.
-                if (grass == null)
-                    return;
-
-                //GameObject grassObject = SceneManager.InstantiateUnityPrefab(grass);
-                //GameObject.Destroy(grass.transform.parent.gameObject); // what are we doing here??
-                grass = null;
-
-                //CommandAddGameObject command = new CommandAddGameObject(grassObject);
-                //command.Submit();
-                //GameObject grassInstance = command.newObject;
-
-                //GrassController controller = grassInstance.GetComponent<GrassController>();
-                // Store stuff in controller (stuff probably known only by the painter class at this point).
-                // e.g.:
-                //    controller.origin = volumeGenerator.origin;
-                //    controller.bounds = volumeGenerator.bounds;
-                //    controller.field = volumeGenerator.field;
-                //    controller.resolution = volumeGenerator.resolution;
-                //    controller.stepSize = volumeGenerator.stepSize;
-            }
-            else // EDIT
-            { 
-                // TODO: ????
-            }
         }
 
         private void InitFromSelection()
@@ -448,8 +438,6 @@ namespace VRtist
 
         public void ResetPanel()
         {
-            Debug.Log("GRASS Reset Panel");
-
             uiPickButton.Checked = false; // no active object picking
             uiActiveButton.Checked = false; // no active paint
 
@@ -458,24 +446,21 @@ namespace VRtist
 
         public void OnGrassCreateNewPressed()
         {
-            Debug.Log("GRASS On Create New");
+            StartPainting();
 
-            // TODO: stop current paint, or cancel picking.
-            
+            // TODO: cancel picking.
             uiPickButton.Checked = false;
-            uiActiveButton.Checked = false;
 
             SetDefaultUIState();
         }
 
         public void OnGrassPickExistingPressed()
         {
-            Debug.Log("GRASS On Pick Existing");
-
-            // TODO: cancel paint. picking!!
+            StopPainting();
+            
+            // TODO: Picking!!
 
             uiPickButton.Checked = true;
-            uiActiveButton.Checked = false;
 
             SetDefaultUIState();
 
@@ -484,7 +469,7 @@ namespace VRtist
 
         public void OnStopPaintPressed()
         {
-            // TODO: stop paint!
+            StopPainting();
 
             uiPickButton.Checked = false;
             uiActiveButton.Checked = false;
@@ -494,8 +479,6 @@ namespace VRtist
 
         public void OnGrassAddPressed()
         {
-            Debug.Log("GRASS On Add");
-
             grassAction = GrassAction.Add;
 
             uiAddButton.Checked = true;
@@ -505,8 +488,6 @@ namespace VRtist
 
         public void OnGrassRemovePressed()
         {
-            Debug.Log("GRASS On Remove");
-
             grassAction = GrassAction.Remove;
 
             uiAddButton.Checked = false;
@@ -516,8 +497,6 @@ namespace VRtist
 
         public void OnGrassEditPressed()
         {
-            Debug.Log("GRASS On Edit");
-
             grassAction = GrassAction.Edit;
 
             uiAddButton.Checked = false;
@@ -543,70 +522,69 @@ namespace VRtist
             uiRenderParamsPanel.gameObject.SetActive(true);
         }
 
+        // Called by the generic Paint tool, when touching the vertical joystick
+        public void SetBrushSize(float s)
+        {
+            brushSize = s;
+        }
+
         public void OnBrushSizeChanged(float value)
         {
-            Debug.Log($"GRASS On BrushSize changed: {value}");
             brushSize = value;
         }
 
         public void OnDensityChanged(int value)
         {
-            Debug.Log($"GRASS OnDensityChanged: {value}");
             density = value;
         }
 
         public void OnWidthMultiplierChanged(float value)
         {
-            Debug.Log($"GRASS OnWidthMultiplierChanged: {value}");
             widthMultiplier = value;
         }
 
         public void OnHeightMultiplierChanged(float value)
         {
-            Debug.Log($"GRASS OnHeightMultiplierChanged: {value}");
             heightMultiplier = value;
         }
 
         public void OnHueShiftChanged(float value)
         {
-            Debug.Log($"GRASS OnHueShiftChanged: {value}");
             adjustedColor.r = 0.5f * (value + 1); // -1..1 to 0..1
         }
 
         public void OnSaturationShiftChanged(float value)
         {
-            Debug.Log($"GRASS OnSaturationShiftChanged: {value}");
             adjustedColor.g = 0.5f * (value + 1); // -1..1 to 0..1
         }
 
         public void OnValueShiftChanged(float value)
         {
-            Debug.Log($"GRASS OnValueShiftChanged: {value}");
             adjustedColor.b = 0.5f * (value + 1); // -1..1 to 0..1
         }
 
         public void OnGrassWidthChanged(float value)
         {
-            Debug.Log($"GRASS OnGrassWidthChanged: {value}");
-            if (grass == null)
-                return;
-            grass.grassWidth = value;
+            if (grass != null)
+            {
+                grass.grassWidth = value;
+            }
         }
 
         public void OnGrassHeightChanged(float value)
         {
-            Debug.Log($"GRASS OnGrassHeightChanged: {value}");
-            if (grass == null)
-                return;
-            grass.grassHeight = value;
+            if (grass != null)
+            {
+                grass.grassHeight = value;
+            }
         }
 
         public void OnGrassBendingChanged(float value)
         {
-            Debug.Log($"GRASS OnGrassBendingChanged: {value}");
-            if (grass == null)
-                return;
-            grass.bladeForwardAmount = value; // TODO: rename grassBending
+            if (grass != null)
+            {
+                grass.bladeForwardAmount = value; // TODO: rename grassBending
+            }
         }
 
         public void OnTopColorPressed()
