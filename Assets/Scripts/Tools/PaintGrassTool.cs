@@ -5,11 +5,6 @@ namespace VRtist
     [RequireComponent(typeof(LineRenderer))]
     public class PaintGrassTool : MonoBehaviour
     {
-        // TODO: change that, not a mode.
-        //enum GrassEditionMode { CreateNew, EditExisting };
-        //GrassEditionMode grassEditionMode = GrassEditionMode.CreateNew;
-        //bool isPainting = false;
-
         enum GrassAction { Add, Remove, Edit };
         GrassAction grassAction = GrassAction.Add;
 
@@ -29,7 +24,6 @@ namespace VRtist
         public float widthMultiplier = 1f;
         public float heightMultiplier = 1f;
         public Color adjustedColor = new Color(0.5f, 0.5f, 0.5f);
-        //public float rangeR, rangeG, rangeB;
 
         // ----------------------------------------------------------
 
@@ -215,16 +209,9 @@ namespace VRtist
 
         public GrassController Create()
         {
-            GameObject rootObject = new GameObject();
-            rootObject.transform.parent = SceneManager.RightHanded;
-            rootObject.transform.localPosition = Vector3.zero;
-            rootObject.transform.localRotation = Quaternion.identity;
-            rootObject.transform.localScale = Vector3.one;
-
             GameObject gobject = new GameObject();
-            gobject.transform.parent = rootObject.transform;
+            SceneManager.AddObject(gobject);
             gobject.name = Utils.CreateUniqueName("Grass");
-
             gobject.transform.localPosition = Vector3.zero;
             gobject.transform.localRotation = Quaternion.identity;
             gobject.transform.localScale = Vector3.one;
@@ -240,8 +227,7 @@ namespace VRtist
             controller.overrideMaterial = true;
             controller.castShadow = true;
             controller.Clear();
-            // DEBUG
-            controller.InitDebugData();
+            controller.InitDebugData(); // DEBUG
 
             return controller;
         }
@@ -313,10 +299,6 @@ namespace VRtist
                             Vector3 newGrassPosition = grass.transform.InverseTransformPoint(hitPos); // to Local mesh position
                             Vector3 newGrassNormal = grass.transform.InverseTransformDirection(hit.normal);
                             Vector2 newGrassUV = new Vector2(widthMultiplier, heightMultiplier);
-                            //Color newGrassColor = new Color( // add random color variations
-                            //    adjustedColor.r + (Random.Range(0, 1.0f) * rangeR),
-                            //    adjustedColor.g + (Random.Range(0, 1.0f) * rangeG),
-                            //    adjustedColor.b + (Random.Range(0, 1.0f) * rangeB), 1);
                             Color newGrassColor = adjustedColor;
 
                             // ADD POINT to the controller.
@@ -366,34 +348,24 @@ namespace VRtist
                 return;
             }
 
-            //GameObject grassObject = SceneManager.InstantiateUnityPrefab(grass);
-            //GameObject.Destroy(grass.transform.parent.gameObject); // what are we doing here??
+            // Unparent from RIGHT_HANDED so that CommandAddGameObject can RE-ADD.
+            grass.transform.SetParent(null, false);
+            CommandAddGameObject command = new CommandAddGameObject(grass.gameObject);
+            command.Submit();
+
             grass = null;
-
-            //CommandAddGameObject command = new CommandAddGameObject(grassObject);
-            //command.Submit();
-            //GameObject grassInstance = command.newObject;
-
-            //GrassController controller = grassInstance.GetComponent<GrassController>();
-            // Store stuff in controller (stuff probably known only by the painter class at this point).
-            // e.g.:
-            //    controller.origin = volumeGenerator.origin;
-            //    controller.bounds = volumeGenerator.bounds;
-            //    controller.field = volumeGenerator.field;
-            //    controller.resolution = volumeGenerator.resolution;
-            //    controller.stepSize = volumeGenerator.stepSize;
 
             uiActiveButton.Checked = false; // may be useless, StopPainting come from clicking on that button.
         }
 
         public void BeginPaint()
         {
-
+            // new CommandModifyGrass(grass)
         }
 
         public void EndPaint()
         {
-
+            // command.Submit();
         }
 
         private void InitFromSelection()
