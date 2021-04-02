@@ -150,6 +150,13 @@ namespace VRtist
             m_Initialized = false;
         }
 
+        public override void CopyParameters(ParametersController sourceController)
+        {
+            lockPosition = sourceController.lockPosition;
+            lockRotation = sourceController.lockRotation;
+            lockScale = sourceController.lockScale;
+        }
+
         private void InitResources()
         {
             // Each segment has two points
