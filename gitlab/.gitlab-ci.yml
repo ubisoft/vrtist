@@ -13,7 +13,6 @@ build:
   script:
     - .\gitlab\build.bat "${UNITY_EXE}" --buildDir "${CI_COMMIT_TAG}"
     - echo ${CI_COMMIT_TAG} > "Build\${CI_COMMIT_TAG}\version.txt"
-    - for %f in (LICENSE, README.md, CHANGELOG.md) do xcopy %f "Build\${CI_COMMIT_TAG}\"
   artifacts:
     name: "VRtist_${CI_COMMIT_TAG}"
     paths:
