@@ -1,14 +1,35 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 namespace VRtist
 {
     public class UITouchScreen : UIElement
     {
         public Vector2ChangedEvent touchEvent = new Vector2ChangedEvent();
+        public UnityEvent onClickEvent = new UnityEvent();
+        public UnityEvent onReleaseEvent = new UnityEvent();
 
         private float thickness;
 
         #region Ray
+
+        public override void OnRayClick()
+        {
+            base.OnRayClick();
+            onClickEvent.Invoke();
+        }
+
+        public override void OnRayReleaseInside()
+        {
+            base.OnRayReleaseInside();
+            onReleaseEvent.Invoke();
+        }
+
+        public override bool OnRayReleaseOutside()
+        {
+            onReleaseEvent.Invoke();
+            return base.OnRayReleaseOutside();
+        }
 
         public override bool OverridesRayEndPoint() { return true; }
         public override void OverrideRayEndPoint(Ray ray, ref Vector3 rayEndPoint)
