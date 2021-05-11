@@ -215,6 +215,17 @@ namespace VRtist
             // TODO: use this to build a box collider????????????
         }
 
+        private void UpdateResources()
+        {
+            if (vertices.Count == 0)
+                return;
+
+            if (m_SourceVertBuffer == null)
+                return;
+
+            m_SourceVertBuffer.SetData(vertices);
+        }
+
         private void ReleaseResources()
         {
             // Release each buffer
@@ -225,6 +236,8 @@ namespace VRtist
             m_ArgsBuffer?.Release();
             m_ArgsBuffer = null;
         }
+
+        private bool dirty = false;
 
         // LateUpdate is called after all Update calls
         private void LateUpdate()
@@ -259,6 +272,12 @@ namespace VRtist
 
             if (vertices.Count == 0)
                 return;
+
+            if (dirty)
+            {
+                UpdateResources();
+                dirty = false;
+            }
 
             // Clear the draw and indirect args buffers of last frame's data
             m_DrawBuffer.SetCounterValue(0);
@@ -367,17 +386,10 @@ namespace VRtist
             DEBUG_colors.Add(color);
             DEBUG_indices.Add(numSourceVertices);
 
-            Mesh mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
-            mesh.name = "DEBUG Grass Mesh";
-            mesh.SetVertices(DEBUG_positions);
-            int[] indi = DEBUG_indices.ToArray();
-            mesh.SetIndices(indi, MeshTopology.Points, 0);
-            mesh.SetUVs(0, DEBUG_uvs);
-            mesh.SetColors(DEBUG_colors);
-            mesh.SetNormals(DEBUG_normals);
-            DEBUG_filter.mesh = mesh;
-
             numSourceVertices++;
+
+            dirty = true;
+            //RebuildDebugMesh();
         }
 
         public void RemovePointAt(int index)
@@ -395,6 +407,26 @@ namespace VRtist
                 DEBUG_indices[i] = i;
             }
 
+            numSourceVertices--;
+
+            dirty = true;
+            //RebuildDebugMesh();
+        }
+
+        public void ModifyPointAt(int index, Color newColor, Vector2 newUV)
+        {
+            SourceVertex V = vertices[index];
+            vertices[index] = new SourceVertex() { position = V.position, normal = V.normal, uv = newUV, color = new Vector3(newColor.r, newColor.g, newColor.b) };
+            
+            DEBUG_uvs[index] = newUV;
+            DEBUG_colors[index] = newColor;
+
+            dirty = true;
+            //RebuildDebugMesh();
+        }
+
+        public void RebuildDebugMesh()
+        {
             Mesh mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
             mesh.name = "DEBUG Grass Mesh";
             mesh.SetVertices(DEBUG_positions);
@@ -404,8 +436,6 @@ namespace VRtist
             mesh.SetColors(DEBUG_colors);
             mesh.SetNormals(DEBUG_normals);
             DEBUG_filter.mesh = mesh;
-
-            numSourceVertices--;
         }
 
         public void Clear()

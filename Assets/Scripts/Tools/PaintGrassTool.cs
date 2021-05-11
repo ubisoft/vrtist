@@ -390,7 +390,7 @@ namespace VRtist
                             Color newGrassColor = adjustedColor;
 
                             // ADD POINT to the controller.
-                            grass.AddPoint(newGrassPosition, newGrassNormal, newGrassUV, newGrassColor);
+                            grass.AddPoint(newGrassPosition, newGrassNormal, newGrassUV, newGrassColor); // TODO: do not rebuild for each vertex. Add, then rebuild once.
 
                             currentGrassAmount++;
 
@@ -402,6 +402,8 @@ namespace VRtist
                     }
                 }
             }
+
+            grass.RebuildDebugMesh();
         }
 
         private void Remove()
@@ -418,24 +420,36 @@ namespace VRtist
                 // if its within the radius of the brush, remove all info
                 if (dist <= brushSize)
                 {
-                    //positions.RemoveAt(j);
-                    //colors.RemoveAt(j);
-                    //normals.RemoveAt(j);
-                    //grassSizeMultipliers.RemoveAt(j);
-                    //indices.RemoveAt(j);
-                    grass.RemovePointAt(j);
+                    grass.RemovePointAt(j); // TODO: do not rebuild for each vertex. Remove, then rebuild once.
                     currentGrassAmount--;
-                    //for (int i = 0; i < indices.Count; i++)
-                    //{
-                    //    indices[i] = i;
-                    //}
                 }
             }
+
+            grass.RebuildDebugMesh();
         }
 
         private void Edit()
         {
+            if (grass == null)
+                return;
 
+            for (int j = 0; j < grass.vertices.Count; j++)
+            {
+                Vector3 pos = grass.vertices[j].position;
+                pos = grass.transform.TransformPoint(pos); // local to world
+                float dist = Vector3.Distance(hitPosGizmo, pos);
+
+                // if its within the radius of the brush, remove all info
+                if (dist <= brushSize)
+                {
+                    Color newGrassColor = adjustedColor;
+                    Vector2 newGrassUV = new Vector2(widthMultiplier, heightMultiplier);
+
+                    grass.ModifyPointAt(j, newGrassColor, newGrassUV); // TODO: do not rebuild for each vertex. Modify, then rebuild once.
+                }
+            }
+
+            grass.RebuildDebugMesh();
         }
 
         private void StartPainting()
