@@ -37,16 +37,19 @@ namespace VRtist
         Transform ribbonPanel;
         Transform hullPanel;
         Transform volumePanel;
-
+        Transform grassPanel;
+        
         UIButton tubeButton;
         UIButton ribbonButton;
         UIButton hullButton;
         UIButton volumeButton;
+        UIButton grassButton;
 
         GameObject pencilCursor = null;
         GameObject flatCursor = null;
         GameObject convexCursor = null;
         GameObject volumeCursor = null;
+        GameObject grassCursor = null;
 
         UIButton volumeCreateButton;
         UIButton volumeEditButton;
@@ -55,7 +58,7 @@ namespace VRtist
         Vector3 paintPrevPosition;
         GameObject currentPaint;
         float brushSize = 0.01f;
-        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume }
+        enum PaintTools { Pencil = 0, FlatPencil, ConvexHull, Volume, Grass }
         PaintTools paintTool = PaintTools.Pencil;
         LineRenderer paintLineRenderer;
         bool paintOnSurface = false;
@@ -70,6 +73,9 @@ namespace VRtist
         GameObject currentVolume;
         private float stepSize = 0.01f; // size in viewer's space
         private float strength = 0.5f;
+
+        // GRASS
+        PaintGrassTool grassPainter;
 
         // Start is called before the first frame update
         void Start()
@@ -89,6 +95,9 @@ namespace VRtist
             freeDraw = new FreeDraw();
             volumeGenerator = new VolumeMeshGenerator();
 
+            grassPainter = transform.Find("GrassPainter").GetComponent<PaintGrassTool>();
+            grassPainter.SetPanel(grassPanel);
+
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
 
@@ -104,6 +113,7 @@ namespace VRtist
             Tooltips.SetText(VRDevice.PrimaryController, Tooltips.Location.Joystick, Tooltips.Action.HoldHorizontal, "Brush Size");
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Primary, false);
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Grip, false);
+            // TODOGRASS: tooltips for Grass.
         }
 
         private void ConfigureSubPanels()
@@ -112,24 +122,28 @@ namespace VRtist
             ribbonPanel = panel.Find("PaintRibbonPanel");
             hullPanel = panel.Find("PaintHullPanel");
             volumePanel = panel.Find("PaintVolumePanel");
+            grassPanel = panel.Find("PaintGrassPanel");
 
             tubePanel.gameObject.SetActive(true); // <---- Tube is default
             ribbonPanel.gameObject.SetActive(false);
             hullPanel.gameObject.SetActive(false);
             volumePanel.gameObject.SetActive(false);
+            grassPanel.gameObject.SetActive(false);
 
             tubeButton = panel.Find("PaintTubeButton").GetComponent<UIButton>();
             tubeButton.Checked = true; // <---- Tube is default
             ribbonButton = panel.Find("PaintRibbonButton").GetComponent<UIButton>();
             hullButton = panel.Find("PaintHullButton").GetComponent<UIButton>();
             volumeButton = panel.Find("PaintVolumeButton").GetComponent<UIButton>();
+            grassButton = panel.Find("PaintGrassButton").GetComponent<UIButton>();
 
             tubeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Pencil));
             ribbonButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.FlatPencil));
             hullButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.ConvexHull));
             volumeButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Volume));
+            grassButton.onReleaseEvent.AddListener(() => OnSelectPanel(PaintTools.Grass));
 
-            // Sub
+            // Sub - Volume
             volumeCreateButton = volumePanel.Find("ModeCreateButton").GetComponent<UIButton>(); // <---- Create is default.
             volumeCreateButton.Checked = true;
             volumeEditButton = volumePanel.Find("ModeEditButton").GetComponent<UIButton>();
@@ -144,11 +158,13 @@ namespace VRtist
             flatCursor = mouthpiece.transform.Find("flat_curve").gameObject;
             convexCursor = mouthpiece.transform.Find("convex").gameObject;
             volumeCursor = mouthpiece.transform.Find("volume").gameObject;
+            grassCursor = mouthpiece.transform.Find("grass").gameObject;
 
             pencilCursor.SetActive(paintTool == PaintTools.Pencil);
             flatCursor.SetActive(paintTool == PaintTools.FlatPencil);
             convexCursor.SetActive(paintTool == PaintTools.ConvexHull);
             volumeCursor.SetActive(paintTool == PaintTools.Volume);
+            grassCursor.SetActive(paintTool == PaintTools.Grass);
         }
 
         protected override void OnDisable()
@@ -165,7 +181,7 @@ namespace VRtist
 
         void OnSelectPanel(PaintTools tool)
         {
-            // If changing tool TO of FROM volume, reset the volume generator.
+            // If changing tool TO or FROM volume, reset the volume generator.
             if (paintTool != tool && (paintTool == PaintTools.Volume || tool == PaintTools.Volume))
                 ResetVolume();
 
@@ -176,18 +192,24 @@ namespace VRtist
             ribbonButton.Checked = tool == PaintTools.FlatPencil;
             hullButton.Checked = tool == PaintTools.ConvexHull;
             volumeButton.Checked = tool == PaintTools.Volume;
+            grassButton.Checked = tool == PaintTools.Grass;
 
             // ACTIVE panel
             tubePanel.gameObject.SetActive(tool == PaintTools.Pencil);
             ribbonPanel.gameObject.SetActive(tool == PaintTools.FlatPencil);
             hullPanel.gameObject.SetActive(tool == PaintTools.ConvexHull);
             volumePanel.gameObject.SetActive(tool == PaintTools.Volume);
+            grassPanel.gameObject.SetActive(tool == PaintTools.Grass);
 
             // Mouthpiece
             pencilCursor.SetActive(tool == PaintTools.Pencil);
             flatCursor.SetActive(tool == PaintTools.FlatPencil);
             convexCursor.SetActive(tool == PaintTools.ConvexHull);
             volumeCursor.SetActive(tool == PaintTools.Volume);
+            grassCursor.SetActive(tool == PaintTools.Grass);
+
+            // SubTool object activation
+            grassPainter.gameObject.SetActive(tool == PaintTools.Grass); // calls OnEnable
 
             // Sub-Elements (put in its own function?)
             switch (tool)
@@ -208,7 +230,17 @@ namespace VRtist
         protected override void DoUpdateGui()
         {
             base.DoUpdateGui();
-            paintLineRenderer.enabled = false;
+
+            switch (paintTool)
+            {
+                case PaintTools.Grass:
+                    grassPainter.IsInGUI = true;
+                    break;
+
+                default: 
+                    paintLineRenderer.enabled = false; 
+                    break;
+            }
         }
 
         protected override void DoUpdate()
@@ -277,6 +309,11 @@ namespace VRtist
                         volumeGenerator.toLocalMatrix = currentVolume.transform.worldToLocalMatrix;
                     }
                     break;
+
+                case PaintTools.Grass:
+                    grassPainter.UpdateControllerInfo(transform, mouthpiece);
+                    grassPainter.BeginPaint();
+                    break;
             }
         }
 
@@ -339,11 +376,18 @@ namespace VRtist
                         }
                     }
                     break;
+
+                case PaintTools.Grass:
+                    grassPainter.EndPaint();
+                    break;
             }
         }
 
         private static GameObject Create(PaintTools what, Color color)
         {
+            if (what == PaintTools.Grass)
+                return null;
+
             GameObject rootObject = new GameObject();
             rootObject.transform.parent = SceneManager.RightHanded;
             rootObject.transform.localPosition = Vector3.zero;
@@ -352,7 +396,10 @@ namespace VRtist
 
             GameObject gobject = new GameObject();
             gobject.transform.parent = rootObject.transform;
-            gobject.name = Utils.CreateUniqueName(what == PaintTools.Volume ? "Volume" : "Paint");
+            gobject.name = Utils.CreateUniqueName(
+                  what == PaintTools.Volume ? "Volume" 
+                : what == PaintTools.Grass ? "Grass" 
+                : "Paint");
 
             gobject.transform.localPosition = Vector3.zero;
             gobject.transform.localRotation = Quaternion.identity;
@@ -380,6 +427,10 @@ namespace VRtist
             if (what == PaintTools.Volume)
             {
                 gobject.AddComponent<VolumeController>();
+            }
+            else if (what == PaintTools.Grass)
+            {
+                //gobject.AddComponent<GrassController>();
             }
             else
             {
@@ -418,7 +469,9 @@ namespace VRtist
 
             float triggerValue = VRInput.GetValue(VRInput.primaryController, CommonUsages.trigger);
 
-            // Change brush size
+            //
+            // BRUSH SIZE
+            //
             if (navigation.CanUseControls(NavigationMode.UsedControls.RIGHT_JOYSTICK))
             {
                 Vector2 val = VRInput.GetValue(VRInput.primaryController, CommonUsages.primary2DAxis);
@@ -428,70 +481,97 @@ namespace VRtist
                     if (val.y < -0.3f) { brushSize -= 0.001f; }
                     brushSize = Mathf.Clamp(brushSize, 0.001f, 0.5f);
                     mouthpiece.localScale = new Vector3(brushSize, brushSize, brushSize);
-                }
-            }
 
-            paintLineRenderer.enabled = false;
-            Vector3 penPosition = mouthpiece.position;
-            if (paintOnSurface)
-            {
-                Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
-                Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
-                Vector3 endRay = startRay + 1000f * direction;
-                paintLineRenderer.enabled = true;
-                paintLineRenderer.positionCount = 2;
-                paintLineRenderer.SetPosition(0, startRay);
-                paintLineRenderer.SetPosition(1, endRay);
-                paintLineRenderer.startWidth = 0.005f / GlobalState.WorldScale;
-                paintLineRenderer.endWidth = paintLineRenderer.startWidth;
-                bool hit = Physics.Raycast(startRay, direction, out RaycastHit hitInfo, Mathf.Infinity);
-                if (!hit)
-                    return;
-                penPosition = hitInfo.point - 0.001f * direction;
-                paintLineRenderer.SetPosition(1, penPosition);
-            }
-            else if (paintTool == PaintTools.Volume)
-            {
-                if (currentVolume)
-                {
-                    VolumeController controller = currentVolume.GetComponent<VolumeController>();
-                    if (null != controller)
+                    switch (paintTool)
                     {
-                        paintLineRenderer.enabled = true;
-
-                        Vector3 C = controller.bounds.center;
-                        Vector3 E = controller.bounds.extents;
-
-                        Vector3 tlf = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, -E.z));
-                        Vector3 trf = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, -E.z));
-                        Vector3 blf = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, -E.z));
-                        Vector3 brf = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, -E.z));
-                        Vector3 tlb = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, E.z));
-                        Vector3 trb = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, E.z));
-                        Vector3 blb = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, E.z));
-                        Vector3 brb = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, E.z));
-
-                        paintLineRenderer.positionCount = 16;
-                        paintLineRenderer.SetPositions(new Vector3[] {
-                            blf, tlf, brf, trf, brb, trb, blb,
-                            blf, brf, brb, blb,
-                            tlb, tlf, trf, trb, tlb
-                        });
-                        paintLineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
-                        paintLineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
+                        case PaintTools.Grass: grassPainter.SetBrushSize(brushSize); break;
+                        default: break;
                     }
                 }
             }
 
-            // Draw
-            float deadZone = VRInput.deadZoneIn;
-            if (triggerValue >= deadZone &&
-                (
-                  (position != paintPrevPosition && currentPaint != null) || currentVolume != null)
-                )
+            //
+            // LINE RENDERER
+            //
+            paintLineRenderer.enabled = false;
+            Vector3 penPosition = mouthpiece.position;
+            switch(paintTool)
             {
-                // Add a point (the current world position) to the line renderer
+                case PaintTools.Pencil:
+                case PaintTools.FlatPencil:
+                    if (paintOnSurface)
+                    {
+                        Vector3 direction = transform.forward; // (paintItem.position - centerEye.position).normalized;
+                        Vector3 startRay = penPosition + mouthpiece.lossyScale.x * direction;
+                        Vector3 endRay = startRay + 1000f * direction;
+                        paintLineRenderer.enabled = true;
+                        paintLineRenderer.positionCount = 2;
+                        paintLineRenderer.SetPosition(0, startRay);
+                        paintLineRenderer.SetPosition(1, endRay);
+                        paintLineRenderer.startWidth = 0.005f / GlobalState.WorldScale;
+                        paintLineRenderer.endWidth = paintLineRenderer.startWidth;
+                        bool hit = Physics.Raycast(startRay, direction, out RaycastHit hitInfo, Mathf.Infinity);
+                        if (!hit)
+                            return;
+                        penPosition = hitInfo.point - 0.001f * direction;
+                        paintLineRenderer.SetPosition(1, penPosition);
+                    }
+                    break;
 
+                case PaintTools.ConvexHull: break;
+
+                case PaintTools.Volume:
+                    if (currentVolume)
+                    {
+                        VolumeController controller = currentVolume.GetComponent<VolumeController>();
+                        if (null != controller)
+                        {
+                            paintLineRenderer.enabled = true;
+
+                            Vector3 C = controller.bounds.center;
+                            Vector3 E = controller.bounds.extents;
+
+                            Vector3 tlf = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, -E.z));
+                            Vector3 trf = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, -E.z));
+                            Vector3 blf = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, -E.z));
+                            Vector3 brf = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, -E.z));
+                            Vector3 tlb = controller.transform.TransformPoint(C + new Vector3(-E.x, E.y, E.z));
+                            Vector3 trb = controller.transform.TransformPoint(C + new Vector3(E.x, E.y, E.z));
+                            Vector3 blb = controller.transform.TransformPoint(C + new Vector3(-E.x, -E.y, E.z));
+                            Vector3 brb = controller.transform.TransformPoint(C + new Vector3(E.x, -E.y, E.z));
+
+                            paintLineRenderer.positionCount = 16;
+                            paintLineRenderer.SetPositions(new Vector3[] {
+                            blf, tlf, brf, trf, brb, trb, blb,
+                            blf, brf, brb, blb,
+                            tlb, tlf, trf, trb, tlb
+                        });
+                            paintLineRenderer.startWidth = 0.001f / GlobalState.WorldScale;
+                            paintLineRenderer.endWidth = 0.001f / GlobalState.WorldScale;
+                        }
+                    }
+                    break;
+
+                case PaintTools.Grass:
+                    {
+                        grassPainter.IsInGUI = false;
+                        grassPainter.UpdateControllerInfo(transform, mouthpiece);
+                    }
+                    break;
+            }
+
+            //
+            // DRAW (trigger PRESSED)
+            //
+            float deadZone = VRInput.deadZoneIn;
+            if (triggerValue >= deadZone 
+                && (
+                     (position != paintPrevPosition && currentPaint != null) 
+                   || currentVolume != null
+                   || paintTool == PaintTools.Grass
+                   )
+               )
+            {
                 float pressure = (triggerValue - deadZone) / (1f - deadZone);
                 float value = brushSize / GlobalState.WorldScale * pressure;
 
@@ -501,6 +581,7 @@ namespace VRtist
                     case PaintTools.FlatPencil: freeDraw.AddFlatLineControlPoint(penPosition, -transform.forward, 0.5f * value); break;
                     case PaintTools.ConvexHull: freeDraw.AddConvexHullPoint(penPosition); break;
                     case PaintTools.Volume: volumeGenerator.AddPoint(penPosition, 2.0f * value * strength); break;
+                    case PaintTools.Grass: grassPainter.Paint(value); break;
                 }
 
                 switch (paintTool)
@@ -544,6 +625,10 @@ namespace VRtist
                             controller.stepSize = volumeGenerator.stepSize;
                             //controller.UpdateBoundsRenderer();
                         }
+                        break;
+
+                    case PaintTools.Grass:
+                        // update to mesh is already done in PaintGrassTool.AddPoint()
                         break;
                 }
             }
@@ -594,6 +679,8 @@ namespace VRtist
         {
             paintOnSurface = value;
         }
+
+        // VOLUME CALLBACKS
 
         public void OnVolumeCreatePressed()
         {
