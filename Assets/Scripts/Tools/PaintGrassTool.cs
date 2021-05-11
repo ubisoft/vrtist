@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 namespace VRtist
@@ -407,7 +406,31 @@ namespace VRtist
 
         private void Remove()
         {
+            if (grass == null)
+                return;
 
+            for (int j = 0; j < grass.vertices.Count; j++)
+            {
+                Vector3 pos = grass.vertices[j].position;
+                pos = grass.transform.TransformPoint(pos); // local to world
+                float dist = Vector3.Distance(hitPosGizmo, pos);
+
+                // if its within the radius of the brush, remove all info
+                if (dist <= brushSize)
+                {
+                    //positions.RemoveAt(j);
+                    //colors.RemoveAt(j);
+                    //normals.RemoveAt(j);
+                    //grassSizeMultipliers.RemoveAt(j);
+                    //indices.RemoveAt(j);
+                    grass.RemovePointAt(j);
+                    currentGrassAmount--;
+                    //for (int i = 0; i < indices.Count; i++)
+                    //{
+                    //    indices[i] = i;
+                    //}
+                }
+            }
         }
 
         private void Edit()

@@ -16,7 +16,7 @@ namespace VRtist
         public List<Vector2> DEBUG_uvs = new List<Vector2>();
 
         [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        private struct SourceVertex
+        public struct SourceVertex
         {
             public Vector3 position;
             public Vector3 normal;
@@ -24,7 +24,7 @@ namespace VRtist
             public Vector3 color;
         }
 
-        private List<SourceVertex> vertices = new List<SourceVertex>();
+        public List<SourceVertex> vertices = new List<SourceVertex>();
         public int numSourceVertices = 0;
 
         public Material material = default;
@@ -159,6 +159,9 @@ namespace VRtist
 
         private void InitResources()
         {
+            if (vertices.Count == 0)
+                return;
+
             // Each segment has two points
             int maxBladesPerVertex = Mathf.Max(1, m_AllowedBladesPerVertex);
             int maxSegmentsPerBlade = Mathf.Max(1, m_AllowedSegmentsPerBlade);
@@ -216,8 +219,11 @@ namespace VRtist
         {
             // Release each buffer
             m_SourceVertBuffer?.Release();
+            m_SourceVertBuffer = null;
             m_DrawBuffer?.Release();
+            m_DrawBuffer = null;
             m_ArgsBuffer?.Release();
+            m_ArgsBuffer = null;
         }
 
         // LateUpdate is called after all Update calls
@@ -241,11 +247,18 @@ namespace VRtist
                     return;
             }
 
-            if (m_SourceVertBuffer.count != vertices.Count)
+            if (m_SourceVertBuffer != null && m_SourceVertBuffer.count != vertices.Count)
             {
                 ReleaseResources();
+            }
+
+            if (vertices.Count != 0 && m_SourceVertBuffer == null)
+            {
                 InitResources();
             }
+
+            if (vertices.Count == 0)
+                return;
 
             // Clear the draw and indirect args buffers of last frame's data
             m_DrawBuffer.SetCounterValue(0);
@@ -365,6 +378,34 @@ namespace VRtist
             DEBUG_filter.mesh = mesh;
 
             numSourceVertices++;
+        }
+
+        public void RemovePointAt(int index)
+        {
+            vertices.RemoveAt(index);
+
+            // Update DEBUG arrays & mesh
+            DEBUG_positions.RemoveAt(index);
+            DEBUG_normals.RemoveAt(index);
+            DEBUG_uvs.RemoveAt(index);
+            DEBUG_colors.RemoveAt(index);
+            DEBUG_indices.RemoveAt(index);
+            for (int i = 0; i < DEBUG_indices.Count; i++)
+            {
+                DEBUG_indices[i] = i;
+            }
+
+            Mesh mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            mesh.name = "DEBUG Grass Mesh";
+            mesh.SetVertices(DEBUG_positions);
+            int[] indi = DEBUG_indices.ToArray();
+            mesh.SetIndices(indi, MeshTopology.Points, 0);
+            mesh.SetUVs(0, DEBUG_uvs);
+            mesh.SetColors(DEBUG_colors);
+            mesh.SetNormals(DEBUG_normals);
+            DEBUG_filter.mesh = mesh;
+
+            numSourceVertices--;
         }
 
         public void Clear()
