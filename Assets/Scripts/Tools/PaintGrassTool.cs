@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 namespace VRtist
@@ -63,6 +64,9 @@ namespace VRtist
         private UIButton uiTopColorButton;
         private UIButton uiBottomColorButton;
 
+        public UIDynamicList grassList;
+        private GameObject grassItemPrefab;
+
         #endregion
 
         // 
@@ -93,6 +97,14 @@ namespace VRtist
             paletteController = Utils.FindRootGameObject("Camera Rig").transform.Find("Pivot/PaletteController");
 
             line = GetComponent<LineRenderer>();
+
+            GlobalState.ObjectAddedEvent.AddListener(OnGrassAdded);
+            GlobalState.ObjectRemovedEvent.AddListener(OnGrassRemoved);
+            SceneManager.clearSceneEvent.AddListener(OnClearScene);
+            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
+
+            if (null != grassList) { grassList.ItemClickedEvent += OnSelectGrassItem; }
+            grassItemPrefab = Resources.Load<GameObject>("Prefabs/UI/GrassItem");
         }
 
         public bool IsInGUI { set { if (line != null) line.enabled = !value; } }
@@ -180,6 +192,84 @@ namespace VRtist
             #endregion
         }
 
+        void OnPaletteOpened()
+        {
+            grassList.NeedsRebuild = true;
+        }
+
+        private void OnClearScene()
+        {
+            grassList.Clear();
+        }
+
+        private void OnGrassAdded(GameObject gObject)
+        {
+            GrassController grassController = gObject.GetComponent<GrassController>();
+            if (null == grassController)
+                return;
+
+            // Grass is added two times. Dont duplicate.
+            bool grassFound = false;
+            foreach(var it in grassList.GetItems())
+            {
+                GrassItem gIt = it.Content.GetComponentInChildren<GrassItem>();
+                if (gIt != null)
+                {
+                    if (gIt.grassObject.name == gObject.name)
+                    {
+                        grassFound = true;
+                    }
+                }
+            }
+
+            if (!grassFound)
+            {
+                GameObject grassItemObject = Instantiate(grassItemPrefab);
+                GrassItem grassItem = grassItemObject.GetComponentInChildren<GrassItem>();
+                grassItem.SetGrassObject(gObject);
+                Transform t = grassItem.transform;
+                UIDynamicListItem item = grassList.AddItem(t);
+                item.UseColliderForUI = true;
+            }
+            else
+            {
+                // TODO: Update image of the item, now that the painting is done.
+            }
+        }
+
+        private void OnGrassRemoved(GameObject gObject)
+        {
+            GrassController grassController = gObject.GetComponent<GrassController>();
+            if (null == grassController)
+                return;
+            foreach (var item in grassList.GetItems())
+            {
+                GrassItem grassItem = item.Content.GetComponent<GrassItem>();
+                if (grassItem.grassObject == gObject)
+                {
+                    grassList.RemoveItem(item);
+                    return;
+                }
+            }
+        }
+
+        public void OnSelectGrassItem(object sender, IndexedGameObjectArgs args)
+        {
+            GameObject item = args.gobject;
+            GrassItem grassItem = item.GetComponent<GrassItem>();
+
+            CommandGroup command = new CommandGroup("Select Grass");
+            try
+            {
+                SelectorBase.ClearSelection();
+                SelectorBase.AddToSelection(grassItem.grassObject);
+            }
+            finally
+            {
+                command.Submit();
+            }
+        }
+
         public void UpdateControllerInfo(Transform controllerXf, Transform mouthpieceXf)
         {
             toolControllerXf = controllerXf;
@@ -210,14 +300,11 @@ namespace VRtist
         public GrassController Create()
         {
             GameObject gobject = new GameObject();
-            SceneManager.AddObject(gobject);
             gobject.name = Utils.CreateUniqueName("Grass");
             gobject.transform.localPosition = Vector3.zero;
             gobject.transform.localRotation = Quaternion.identity;
             gobject.transform.localScale = Vector3.one;
             gobject.tag = "PhysicObject";
-
-            //gobject.AddComponent<BoxCollider>(); // LOL, how are we going to handle this??? A BoxCollider?
 
             GrassController controller = gobject.AddComponent<GrassController>();
             controller.cameraXf = vrCamera;
@@ -228,6 +315,8 @@ namespace VRtist
             controller.castShadow = true;
             controller.Clear();
             controller.InitDebugData(); // DEBUG
+
+            SceneManager.AddObject(gobject); // add to right handed and fire object added.
 
             return controller;
         }
