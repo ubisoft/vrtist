@@ -510,7 +510,7 @@ namespace VRtist
                     grass = controller;
 
                     // DEBUG - rebuild debug arrays and mesh from controller
-                    // ...
+                    grass.RebuildDebugMesh();
 
                     return;
                 }
@@ -546,7 +546,6 @@ namespace VRtist
         {
             StartPainting();
 
-            // TODO: cancel picking.
             uiPickButton.Checked = false;
 
             SetDefaultUIState();
@@ -555,14 +554,12 @@ namespace VRtist
         public void OnGrassPickExistingPressed()
         {
             StopPainting();
-            
-            // TODO: Picking!!
 
             uiPickButton.Checked = true;
 
             SetDefaultUIState();
 
-            //InitFromSelection();
+            InitFromSelection();
         }
 
         public void OnStopPaintPressed()
