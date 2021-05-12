@@ -16,7 +16,7 @@ namespace VRtist
         public List<Vector2> DEBUG_uvs = new List<Vector2>();
 
         [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        private struct SourceVertex
+        public struct SourceVertex
         {
             public Vector3 position;
             public Vector3 normal;
@@ -24,7 +24,7 @@ namespace VRtist
             public Vector3 color;
         }
 
-        private List<SourceVertex> vertices = new List<SourceVertex>();
+        public List<SourceVertex> vertices = new List<SourceVertex>();
         public int numSourceVertices = 0;
 
         public Material material = default;
@@ -159,6 +159,9 @@ namespace VRtist
 
         private void InitResources()
         {
+            if (vertices.Count == 0)
+                return;
+
             // Each segment has two points
             int maxBladesPerVertex = Mathf.Max(1, m_AllowedBladesPerVertex);
             int maxSegmentsPerBlade = Mathf.Max(1, m_AllowedSegmentsPerBlade);
@@ -190,12 +193,6 @@ namespace VRtist
             m_InstantiatedMaterial.SetBuffer("_GrassTriangles", m_DrawBuffer);
             m_InstantiatedMaterial.SetShaderPassEnabled("ShadowCaster", castShadow);
 
-            if (overrideMaterial)
-            {
-                m_InstantiatedMaterial.SetColor("_TopColor", topColor);
-                m_InstantiatedMaterial.SetColor("_BottomColor", bottomColor);
-            }
-
             // Calculate the number of threads to use. Get the thread size from the kernel
             // Then, divide the number of triangles by that size
             m_InstantiatedComputeShader.GetKernelThreadGroupSizes(m_IdGrassKernel, out uint threadGroupSize, out _, out _);
@@ -212,13 +209,29 @@ namespace VRtist
             // TODO: use this to build a box collider????????????
         }
 
+        private void UpdateResources()
+        {
+            if (vertices.Count == 0)
+                return;
+
+            if (m_SourceVertBuffer == null)
+                return;
+
+            m_SourceVertBuffer.SetData(vertices);
+        }
+
         private void ReleaseResources()
         {
             // Release each buffer
             m_SourceVertBuffer?.Release();
+            m_SourceVertBuffer = null;
             m_DrawBuffer?.Release();
+            m_DrawBuffer = null;
             m_ArgsBuffer?.Release();
+            m_ArgsBuffer = null;
         }
+
+        private bool dirty = false;
 
         // LateUpdate is called after all Update calls
         private void LateUpdate()
@@ -241,10 +254,23 @@ namespace VRtist
                     return;
             }
 
-            if (m_SourceVertBuffer.count != vertices.Count)
+            if (m_SourceVertBuffer != null && m_SourceVertBuffer.count != vertices.Count)
             {
                 ReleaseResources();
+            }
+
+            if (vertices.Count != 0 && m_SourceVertBuffer == null)
+            {
                 InitResources();
+            }
+
+            if (vertices.Count == 0)
+                return;
+
+            if (dirty)
+            {
+                UpdateResources();
+                dirty = false;
             }
 
             // Clear the draw and indirect args buffers of last frame's data
@@ -278,7 +304,7 @@ namespace VRtist
             m_InstantiatedComputeShader.SetFloat("_BaseGrassHeight", grassHeight);
             m_InstantiatedComputeShader.SetFloat("_BaseGrassWidth", grassWidth);
             m_InstantiatedComputeShader.SetFloat("_GrassRandomHeight", grassRandomHeight);
-
+            
             m_InstantiatedComputeShader.SetFloat("_WindSpeed", windSpeed);
             m_InstantiatedComputeShader.SetFloat("_WindStrength", windStrength);
             m_InstantiatedComputeShader.SetFloat("_WindMultiplierXX", windMultiplierXX);
@@ -302,6 +328,11 @@ namespace VRtist
             m_InstantiatedMaterial.SetFloat("_FogStartDistance", RenderSettings.fogStartDistance);
             m_InstantiatedMaterial.SetFloat("_FogEndDistance", RenderSettings.fogEndDistance);
             m_InstantiatedMaterial.SetMatrix("_GrassObjectToWorldMatrix", transform.localToWorldMatrix);
+            if (overrideMaterial)
+            {
+                m_InstantiatedMaterial.SetColor("_TopColor", topColor);
+                m_InstantiatedMaterial.SetColor("_BottomColor", bottomColor);
+            }
         }
 
         // This applies the game object's transform to the local bounds
@@ -354,6 +385,47 @@ namespace VRtist
             DEBUG_colors.Add(color);
             DEBUG_indices.Add(numSourceVertices);
 
+            numSourceVertices++;
+
+            dirty = true;
+            //RebuildDebugMesh();
+        }
+
+        public void RemovePointAt(int index)
+        {
+            vertices.RemoveAt(index);
+
+            // Update DEBUG arrays & mesh
+            DEBUG_positions.RemoveAt(index);
+            DEBUG_normals.RemoveAt(index);
+            DEBUG_uvs.RemoveAt(index);
+            DEBUG_colors.RemoveAt(index);
+            DEBUG_indices.RemoveAt(index);
+            for (int i = 0; i < DEBUG_indices.Count; i++)
+            {
+                DEBUG_indices[i] = i;
+            }
+
+            numSourceVertices--;
+
+            dirty = true;
+            //RebuildDebugMesh();
+        }
+
+        public void ModifyPointAt(int index, Color newColor, Vector2 newUV)
+        {
+            SourceVertex V = vertices[index];
+            vertices[index] = new SourceVertex() { position = V.position, normal = V.normal, uv = newUV, color = new Vector3(newColor.r, newColor.g, newColor.b) };
+            
+            DEBUG_uvs[index] = newUV;
+            DEBUG_colors[index] = newColor;
+
+            dirty = true;
+            //RebuildDebugMesh();
+        }
+
+        public void RebuildDebugMesh()
+        {
             Mesh mesh = new Mesh { indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
             mesh.name = "DEBUG Grass Mesh";
             mesh.SetVertices(DEBUG_positions);
@@ -363,8 +435,6 @@ namespace VRtist
             mesh.SetColors(DEBUG_colors);
             mesh.SetNormals(DEBUG_normals);
             DEBUG_filter.mesh = mesh;
-
-            numSourceVertices++;
         }
 
         public void Clear()
