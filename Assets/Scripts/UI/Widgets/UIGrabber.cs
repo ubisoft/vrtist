@@ -137,42 +137,37 @@ namespace VRtist
             }
         }
 
-        public static GameObject CreateTextThumbnail(string text, UnityAction<int> onEnter, UnityAction<int> onExit)
+        public static GameObject CreateTextThumbnail(int uid, string text)
         {
             LoadPrefabs();
             GameObject thumbnail = Instantiate(textThumbnailPrefab);
             thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = text;
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
-            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = false;
-            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
-            uiGrabber.onExitUI3DObject.AddListener(onExit);
             return thumbnail;
         }
 
-        public static GameObject CreateImageThumbnail(Sprite image, UnityAction<int> onEnter, UnityAction<int> onExit)
+        public static GameObject CreateImageThumbnail(int uid, string thumbnailPath)
         {
+            Sprite image = Resources.Load<Sprite>(thumbnailPath);
             LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
             thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = image;
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
-            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = false;
-            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
-            uiGrabber.onExitUI3DObject.AddListener(onExit);
             return thumbnail;
         }
 
-        public static GameObject CreateLazyImageThumbnail(string path, UnityAction<int> onEnter, UnityAction<int> onExit)
+        public static GameObject CreateLazyImageThumbnail(int uid, string path)
         {
             LoadPrefabs();
             GameObject thumbnail = Instantiate(imageThumbnailPrefab);
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
             uiGrabber.lazyImagePath = path;
-            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = false;
-            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
-            uiGrabber.onExitUI3DObject.AddListener(onExit);
             return thumbnail;
         }
 
@@ -187,17 +182,16 @@ namespace VRtist
             transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
         }
 
-        public static GameObject Create3DThumbnail(GameObject thumbnail, UnityAction<int> onEnter, UnityAction<int> onExit)
+        public static GameObject Create3DThumbnail(int uid, string thumbnailPath)
         {
+            GameObject thumbnail = Instantiate(Resources.Load<GameObject>(thumbnailPath));
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
             if (null == uiGrabber)
             {
                 uiGrabber = thumbnail.AddComponent<UIGrabber>();
             }
-            uiGrabber.uid = thumbnail.GetHashCode();
+            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = true;
-            uiGrabber.onEnterUI3DObject.AddListener(onEnter);
-            uiGrabber.onExitUI3DObject.AddListener(onExit);
             thumbnail.transform.localRotation = thumbnailRotation;
 
             MeshRenderer[] meshRenderers = thumbnail.GetComponentsInChildren<MeshRenderer>();
