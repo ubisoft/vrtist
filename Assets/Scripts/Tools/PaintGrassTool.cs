@@ -1,5 +1,14 @@
 using UnityEngine;
 
+/* TODO:
+ * - use pressure in Add/Remove/Edit
+ * - correctly set the panel states (too much reset, play/stop button)
+ * - pick top/bottom colors buttons
+ * - select grass object when using *NEW*
+ * - create a thumbnail for the grassItems (or just a grass icon)
+ * - start/stop button when picking for edit.
+ * 
+ */
 namespace VRtist
 {
     [RequireComponent(typeof(LineRenderer))]
@@ -23,6 +32,8 @@ namespace VRtist
         // Modifiers for the EDIT mode.
         public float widthMultiplier = 1f;
         public float heightMultiplier = 1f;
+        public Color topColor = new Color(1, 1, 0);
+        public Color bottomColor = new Color(0, 1, 0);
         public Color adjustedColor = new Color(0.5f, 0.5f, 0.5f);
 
         // ----------------------------------------------------------
@@ -63,7 +74,7 @@ namespace VRtist
         private UIButton uiTopColorButton;
         private UIButton uiBottomColorButton;
 
-        public UIDynamicList grassList;
+        private UIDynamicList grassList;
         private GameObject grassItemPrefab;
 
         #endregion
@@ -88,6 +99,28 @@ namespace VRtist
         private void OnEnable()
         {
             ResetPanel();
+
+            GlobalState.colorChangedEvent.AddListener(OnColorPickerChanged);
+            //GlobalState.colorReleasedEvent.AddListener(OnColorPickerReleased);
+            //GlobalState.colorClickedEvent.AddListener(OnColorPickerPressed);
+
+            GlobalState.ObjectAddedEvent.AddListener(OnGrassAdded);
+            GlobalState.ObjectRemovedEvent.AddListener(OnGrassRemoved);
+            SceneManager.clearSceneEvent.AddListener(OnClearScene);
+            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
+        }
+
+        private void OnDisable()
+        {
+            GlobalState.colorChangedEvent.RemoveListener(OnColorPickerChanged);
+            //GlobalState.colorReleasedEvent.RemoveListener(OnColorPickerReleased);
+            //GlobalState.colorClickedEvent.RemoveListener(OnColorPickerPressed);
+
+            GlobalState.ObjectAddedEvent.RemoveListener(OnGrassAdded);
+            GlobalState.ObjectRemovedEvent.RemoveListener(OnGrassRemoved);
+            SceneManager.clearSceneEvent.RemoveListener(OnClearScene);
+
+            ToolsUIManager.Instance.onPaletteOpened.RemoveListener(OnPaletteOpened);
         }
 
         public void Start()
@@ -97,18 +130,14 @@ namespace VRtist
 
             line = GetComponent<LineRenderer>();
 
-            GlobalState.ObjectAddedEvent.AddListener(OnGrassAdded);
-            GlobalState.ObjectRemovedEvent.AddListener(OnGrassRemoved);
-            SceneManager.clearSceneEvent.AddListener(OnClearScene);
-            ToolsUIManager.Instance.onPaletteOpened.AddListener(OnPaletteOpened);
+            
 
-            if (null != grassList) { grassList.ItemClickedEvent += OnSelectGrassItem; }
             grassItemPrefab = Resources.Load<GameObject>("Prefabs/UI/GrassItem");
         }
 
         public bool IsInGUI { set { if (line != null) line.enabled = !value; } }
 
-        public void SetPanel(Transform subPanel)
+        public void SetPanel(Transform subPanel, Transform grassListPanel)
         {
             Transform P = subPanel;
 
@@ -188,6 +217,10 @@ namespace VRtist
             uiBottomColorButton = P.Find("BottomColorButton").GetComponent<UIButton>();
             uiBottomColorButton.onReleaseEvent.AddListener(() => OnBottomColorPressed());
 
+            // LIST
+            grassList = grassListPanel.Find("List").GetComponent<UIDynamicList>();
+            grassList.ItemClickedEvent += OnSelectGrassItem;
+
             #endregion
         }
 
@@ -256,12 +289,16 @@ namespace VRtist
         {
             GameObject item = args.gobject;
             GrassItem grassItem = item.GetComponent<GrassItem>();
+            SelectGrassObject(grassItem.grassObject);
+        }
 
+        public void SelectGrassObject(GameObject grassObject)
+        {
             CommandGroup command = new CommandGroup("Select Grass");
             try
             {
                 SelectorBase.ClearSelection();
-                SelectorBase.AddToSelection(grassItem.grassObject);
+                SelectorBase.AddToSelection(grassObject);
             }
             finally
             {
@@ -269,78 +306,19 @@ namespace VRtist
             }
         }
 
-        public void UpdateControllerInfo(Transform controllerXf, Transform mouthpieceXf)
-        {
-            toolControllerXf = controllerXf;
-
-            Vector3 direction = transform.forward;
-            Vector3 startRay = mouthpieceXf.position + mouthpieceXf.lossyScale.x * direction;
-
-            line.SetPosition(0, startRay);
-            line.SetPosition(1, startRay + 1.0f * direction);
-
-            // First raycast to update the LineRenderer/Gizmo, done every frame even if not painting.
-            firstRay.origin = startRay;
-            firstRay.direction = direction;
-            RaycastHit hit;
-            if (Physics.Raycast(firstRay, out hit, 100f, hitMask.value))
-            {
-                hitPosGizmo = hit.point; // store for gizmo display
-                hitNormalGizmo = hit.normal;
-                line.SetPosition(1, hitPosGizmo);
-            }
-
-            line.startWidth = 0.005f / GlobalState.WorldScale;
-            line.endWidth = line.startWidth;
-
-            // TODO: add a subobject with a gizmo, like the teleport tool.
-        }
-
-        public GrassController Create()
-        {
-            GameObject gobject = new GameObject();
-            gobject.name = Utils.CreateUniqueName("Grass");
-            gobject.transform.localPosition = Vector3.zero;
-            gobject.transform.localRotation = Quaternion.identity;
-            gobject.transform.localScale = Vector3.one;
-            gobject.tag = "PhysicObject";
-
-            GrassController controller = gobject.AddComponent<GrassController>();
-            controller.cameraXf = vrCamera;
-            controller.interactorXf = paletteController;
-            controller.material = Resources.Load<Material>("Grass/Grass");
-            controller.computeShader = Resources.Load<ComputeShader>("Grass/GrassComputeShader");
-            controller.overrideMaterial = true;
-            controller.castShadow = true;
-            controller.Clear();
-            controller.InitDebugData(); // DEBUG
-
-            SceneManager.AddObject(gobject); // add to right handed and fire object added.
-
-            return controller;
-        }
+        #region PAINT
 
         public void Paint(float pressure)
         {
-            // TODO: use pressure to increase add-density or remove-radius???
-
             switch(grassAction)
             {
-                case GrassAction.Add:
-                    Add();
-                    break;
-
-                case GrassAction.Remove:
-                    Remove();
-                    break;
-
-                case GrassAction.Edit:
-                    Edit();
-                    break;
+                case GrassAction.Add: Add(pressure); break;
+                case GrassAction.Remove: Remove(pressure); break;
+                case GrassAction.Edit: Edit(pressure); break;
             }
         }
 
-        private void Add()
+        private void Add(float pressure)
         {
             if (grass == null)
                 return;
@@ -406,7 +384,7 @@ namespace VRtist
             grass.RebuildDebugMesh();
         }
 
-        private void Remove()
+        private void Remove(float pressure)
         {
             if (grass == null)
                 return;
@@ -428,7 +406,7 @@ namespace VRtist
             grass.RebuildDebugMesh();
         }
 
-        private void Edit()
+        private void Edit(float pressure)
         {
             if (grass == null)
                 return;
@@ -452,6 +430,89 @@ namespace VRtist
             grass.RebuildDebugMesh();
         }
 
+        public void UpdateControllerInfo(Transform controllerXf, Transform mouthpieceXf)
+        {
+            toolControllerXf = controllerXf;
+
+            Vector3 direction = transform.forward;
+            Vector3 startRay = mouthpieceXf.position + mouthpieceXf.lossyScale.x * direction;
+
+            line.SetPosition(0, startRay);
+            line.SetPosition(1, startRay + 1.0f * direction);
+
+            // First raycast to update the LineRenderer/Gizmo, done every frame even if not painting.
+            firstRay.origin = startRay;
+            firstRay.direction = direction;
+            RaycastHit hit;
+            if (Physics.Raycast(firstRay, out hit, 100f, hitMask.value))
+            {
+                hitPosGizmo = hit.point; // store for gizmo display
+                hitNormalGizmo = hit.normal;
+                line.SetPosition(1, hitPosGizmo);
+            }
+
+            line.startWidth = 0.005f / GlobalState.WorldScale;
+            line.endWidth = line.startWidth;
+
+            // TODO: add a subobject with a gizmo, like the teleport tool.
+        }
+
+        #endregion
+
+        public GrassController Create()
+        {
+            GameObject gobject = new GameObject();
+            gobject.name = Utils.CreateUniqueName("Grass");
+            gobject.transform.localPosition = Vector3.zero;
+            gobject.transform.localRotation = Quaternion.identity;
+            gobject.transform.localScale = Vector3.one;
+            gobject.tag = "PhysicObject";
+
+            GrassController controller = gobject.AddComponent<GrassController>();
+            controller.cameraXf = vrCamera;
+            controller.interactorXf = paletteController;
+            controller.material = Resources.Load<Material>("Grass/Grass");
+            controller.computeShader = Resources.Load<ComputeShader>("Grass/GrassComputeShader");
+            controller.overrideMaterial = true;
+            controller.topColor = uiTopColorButton.ImageColor;
+            controller.bottomColor = uiBottomColorButton.ImageColor;
+            controller.castShadow = true;
+            controller.Clear();
+            controller.InitDebugData(); // DEBUG
+
+            SceneManager.AddObject(gobject); // add to right handed and fire object added.
+
+            return controller;
+        }
+
+        private void InitFromSelection()
+        {
+            GameObject selected = null;
+            foreach (GameObject o in Selection.SelectedObjects)
+            {
+                selected = o;
+                break;
+            }
+            if (null != selected)
+            {
+                GrassController controller = selected.GetComponent<GrassController>();
+                if (null != controller)
+                {
+                    grass = controller;
+
+                    // DEBUG - rebuild debug arrays and mesh from controller
+                    grass.RebuildDebugMesh();
+
+                    // switch ON the record button
+                    uiActiveButton.Checked = true;
+
+                    return;
+                }
+            }
+
+            grass = null;
+        }
+
         private void StartPainting()
         {
             if (grass != null)
@@ -462,6 +523,8 @@ namespace VRtist
             // Create the object holding a set of grass
             grass = Create();
             grass.transform.position = hitPosGizmo;
+
+            SelectGrassObject(grass.gameObject); // TODO: also select the grassItem in the list.
 
             // switch ON the record button
             uiActiveButton.Checked = true;
@@ -494,31 +557,6 @@ namespace VRtist
             // command.Submit();
         }
 
-        private void InitFromSelection()
-        {
-            GameObject selected = null;
-            foreach (GameObject o in Selection.SelectedObjects)
-            {
-                selected = o;
-                break;
-            }
-            if (null != selected)
-            {
-                GrassController controller = selected.GetComponent<GrassController>();
-                if (null != controller)
-                {
-                    grass = controller;
-
-                    // DEBUG - rebuild debug arrays and mesh from controller
-                    grass.RebuildDebugMesh();
-
-                    return;
-                }
-            }
-
-            grass = null;
-        }
-
         #region UI Callbacks
 
         public void SetDefaultUIState()
@@ -538,6 +576,19 @@ namespace VRtist
         {
             uiPickButton.Checked = false; // no active object picking
             uiActiveButton.Checked = false; // no active paint
+
+            uiTopColorButton.Checked = false;
+            uiBottomColorButton.Checked = false;
+
+            uiTopColorButton.ImageColor = topColor;
+            uiBottomColorButton.ImageColor = bottomColor;
+
+            uiWidthMultiplierSlider.Value = widthMultiplier;
+            uiHeightMultiplierSlider.Value = heightMultiplier;
+
+            uiHueShiftSlider.Value = adjustedColor.r * 2.0f - 1.0f;
+            uiSaturationShiftSlider.Value = adjustedColor.g * 2.0f - 1.0f;
+            uiValueShiftSlider.Value = adjustedColor.b * 2.0f - 1.0f;
 
             SetDefaultUIState();
         }
@@ -684,14 +735,46 @@ namespace VRtist
 
         public void OnTopColorPressed()
         {
-            Debug.Log($"GRASS OnTopColorPressed");
-            // TODO
+            uiBottomColorButton.Checked = false;
+
+            uiTopColorButton.Checked = !uiTopColorButton.Checked;
+            if (uiTopColorButton.Checked)
+            {
+                GlobalState.CurrentColor = uiTopColorButton.ImageColor;
+            }
         }
 
         public void OnBottomColorPressed()
         {
-            Debug.Log($"GRASS OnBottomColorPressed");
-            // TODO
+            uiTopColorButton.Checked = false;
+
+            uiBottomColorButton.Checked = !uiBottomColorButton.Checked;
+            if (uiBottomColorButton.Checked)
+            {
+                GlobalState.CurrentColor = uiBottomColorButton.ImageColor;
+            }
+        }
+
+        public void OnColorPickerChanged(Color c)
+        {
+            if (uiTopColorButton.Checked)
+            {
+                uiTopColorButton.ImageColor = c;
+                topColor = c;
+                if (grass)
+                {
+                    grass.topColor = c;
+                }
+            }
+            else if (uiBottomColorButton.Checked)
+            {
+                uiBottomColorButton.ImageColor = c;
+                bottomColor = c;
+                if (grass)
+                {
+                    grass.bottomColor = c;
+                }
+            }
         }
 
         #endregion

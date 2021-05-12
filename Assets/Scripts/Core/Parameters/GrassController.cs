@@ -193,12 +193,6 @@ namespace VRtist
             m_InstantiatedMaterial.SetBuffer("_GrassTriangles", m_DrawBuffer);
             m_InstantiatedMaterial.SetShaderPassEnabled("ShadowCaster", castShadow);
 
-            if (overrideMaterial)
-            {
-                m_InstantiatedMaterial.SetColor("_TopColor", topColor);
-                m_InstantiatedMaterial.SetColor("_BottomColor", bottomColor);
-            }
-
             // Calculate the number of threads to use. Get the thread size from the kernel
             // Then, divide the number of triangles by that size
             m_InstantiatedComputeShader.GetKernelThreadGroupSizes(m_IdGrassKernel, out uint threadGroupSize, out _, out _);
@@ -310,7 +304,7 @@ namespace VRtist
             m_InstantiatedComputeShader.SetFloat("_BaseGrassHeight", grassHeight);
             m_InstantiatedComputeShader.SetFloat("_BaseGrassWidth", grassWidth);
             m_InstantiatedComputeShader.SetFloat("_GrassRandomHeight", grassRandomHeight);
-
+            
             m_InstantiatedComputeShader.SetFloat("_WindSpeed", windSpeed);
             m_InstantiatedComputeShader.SetFloat("_WindStrength", windStrength);
             m_InstantiatedComputeShader.SetFloat("_WindMultiplierXX", windMultiplierXX);
@@ -334,6 +328,11 @@ namespace VRtist
             m_InstantiatedMaterial.SetFloat("_FogStartDistance", RenderSettings.fogStartDistance);
             m_InstantiatedMaterial.SetFloat("_FogEndDistance", RenderSettings.fogEndDistance);
             m_InstantiatedMaterial.SetMatrix("_GrassObjectToWorldMatrix", transform.localToWorldMatrix);
+            if (overrideMaterial)
+            {
+                m_InstantiatedMaterial.SetColor("_TopColor", topColor);
+                m_InstantiatedMaterial.SetColor("_BottomColor", bottomColor);
+            }
         }
 
         // This applies the game object's transform to the local bounds

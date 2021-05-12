@@ -38,6 +38,7 @@ namespace VRtist
         Transform hullPanel;
         Transform volumePanel;
         Transform grassPanel;
+        Transform grassListPanel;
         
         UIButton tubeButton;
         UIButton ribbonButton;
@@ -96,7 +97,7 @@ namespace VRtist
             volumeGenerator = new VolumeMeshGenerator();
 
             grassPainter = transform.Find("GrassPainter").GetComponent<PaintGrassTool>();
-            grassPainter.SetPanel(grassPanel);
+            grassPainter.SetPanel(grassPanel, grassListPanel);
 
             brushSize = mouthpiece.localScale.x;
             OnPaintColor(GlobalState.CurrentColor);
@@ -123,12 +124,14 @@ namespace VRtist
             hullPanel = panel.Find("PaintHullPanel");
             volumePanel = panel.Find("PaintVolumePanel");
             grassPanel = panel.Find("PaintGrassPanel");
+            grassListPanel = panel.Find("GrassListPanel");
 
             tubePanel.gameObject.SetActive(true); // <---- Tube is default
             ribbonPanel.gameObject.SetActive(false);
             hullPanel.gameObject.SetActive(false);
             volumePanel.gameObject.SetActive(false);
             grassPanel.gameObject.SetActive(false);
+            grassListPanel.gameObject.SetActive(false);
 
             tubeButton = panel.Find("PaintTubeButton").GetComponent<UIButton>();
             tubeButton.Checked = true; // <---- Tube is default
@@ -199,7 +202,7 @@ namespace VRtist
             ribbonPanel.gameObject.SetActive(tool == PaintTools.FlatPencil);
             hullPanel.gameObject.SetActive(tool == PaintTools.ConvexHull);
             volumePanel.gameObject.SetActive(tool == PaintTools.Volume);
-            grassPanel.gameObject.SetActive(tool == PaintTools.Grass);
+            grassPanel.gameObject.SetActive(tool == PaintTools.Grass); grassListPanel.gameObject.SetActive(tool == PaintTools.Grass);
 
             // Mouthpiece
             pencilCursor.SetActive(tool == PaintTools.Pencil);
