@@ -70,7 +70,7 @@ SurfaceDescription GrassSurface(SurfaceDescriptionInputs IN)
     float hueOverrideInput = IN.VertexColor.x;
     float saturationOverrideInput = IN.VertexColor.y;
     float valueOverrideInput = IN.VertexColor.z;
-    float hueModifier = hueOverrideInput;
+    float hueModifier = (hueOverrideInput >= 0.5) ? hueOverrideInput - 0.5 : hueOverrideInput + 0.5;
     float valueModifier = (valueOverrideInput >= 0.5) ? 1.0 + 2.0 * (valueOverrideInput - 0.5) :  (2.0 * valueOverrideInput);
     float saturationModifier = (saturationOverrideInput >= 0.5) ? 1.0 + 2.0 * (saturationOverrideInput - 0.5) : (2.0 * saturationOverrideInput);
 
