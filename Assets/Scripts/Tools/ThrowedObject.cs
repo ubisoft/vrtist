@@ -14,7 +14,7 @@ namespace VRtist
         Vector3 prevPos;
         Vector3 force;
         float initialScale = 0.1f;
-        float scale;
+        float scale = 1f;
 
         Rigidbody rb;
 
@@ -22,7 +22,6 @@ namespace VRtist
         {
             prevPos = transform.position;
             startTime = Time.time;
-            scale = transform.localScale.x;
             transform.localScale = Vector3.one * initialScale;
 
             Collider collider = GetComponent<Collider>();
@@ -52,6 +51,8 @@ namespace VRtist
 
         void Update()
         {
+            if (Time.time - startTime < scaleDuration) { return; }
+
             if (Vector3.Distance(prevPos, transform.position) < epsilon || Time.time - startTime > timeout)
             {
                 Destroy(rb);
@@ -62,6 +63,11 @@ namespace VRtist
         public void AddForce(Vector3 force)
         {
             this.force = force;
+        }
+
+        public void SetScale(float value)
+        {
+            scale = value;
         }
     }
 }

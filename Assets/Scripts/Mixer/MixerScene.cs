@@ -264,15 +264,15 @@ namespace VRtist.Mixer
 
         private void AddBlenderAsset(string name, string tags, string thumbnailPath)
         {
-            GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(thumbnailPath, assetBank.OnUIObjectEnter, assetBank.OnUIObjectExit);
-            assetBank.AddAsset(name, thumbnail, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
+            //GameObject thumbnail = UIGrabber.CreateLazyImageThumbnail(AssetBankUtils.NextUID, thumbnailPath);
+            AssetBankUtils.AddAsset(name, AssetBankUtils.ThumbnailType.LazyImage, thumbnailPath, null, tags, importFunction: ImportBlenderAsset, skipInstantiation: true);
         }
 
-        private Task<GameObject> ImportBlenderAsset(AssetBankItem item)
+        private Task<GameObject> ImportBlenderAsset(AssetBankItemData data)
         {
-            requestedBlenderImportName = item.assetName;
+            requestedBlenderImportName = data.assetName;
             blenderImportTask = new TaskCompletionSource<GameObject>();
-            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = item.assetName };
+            BlenderBankInfo info = new BlenderBankInfo { action = BlenderBankAction.ImportRequest, name = data.assetName };
             MixerClient.Instance.SendBlenderBank(info);
             return blenderImportTask.Task;
         }

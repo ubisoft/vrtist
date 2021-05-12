@@ -39,7 +39,7 @@ namespace VRtist
         public float metallic;
     }
 
-    public class Utils
+    public static class Utils
     {
         public static string blenderHiddenParent = "__Blender_Hidden_Parent_Matrix";
         public static string blenderCollectionInstanceOffset = "__Blender_Collection_Instance_Offset";
@@ -186,6 +186,22 @@ namespace VRtist
         public static string GetMaterialName(GameObject gobject)
         {
             return "Mat_" + gobject.name;
+        }
+
+        public static void NameObjectMeshes(GameObject gobject)
+        {
+            foreach (Transform child in gobject.transform)
+            {
+                MeshFilter meshFilter = child.GetComponent<MeshFilter>();
+                if (null != meshFilter)
+                {
+                    Mesh mesh = meshFilter.mesh;
+                    if (null != mesh)
+                    {
+                        mesh.name = child.name;
+                    }
+                }
+            }
         }
 
         public static RenderTexture CreateRenderTexture(int width, int height, int depth, RenderTextureFormat format, bool randomWrite)
