@@ -69,9 +69,13 @@ namespace VRtist
             get { return ++nextUID; }
         }
 
+        private static bool started = false;
+        private static bool assetsLoaded = false;
+
         public static void LoadAssets()
         {
-            if (items.Count != 0) { return; }
+            if (started) { return; }
+            started = true;
 
             // Create our storage for loaded objects
             bank = new GameObject(ASSET_BANK_NAME);
@@ -84,7 +88,7 @@ namespace VRtist
             GlobalState.Instance.StartCoroutine(ScanDirectory(GlobalState.Settings.assetBankDirectory, () =>
             {
                 SceneManager.ListImportableObjects();
-            }));
+            }, first: true));
         }
 
         public static void ScanAssetBank()
@@ -187,14 +191,14 @@ namespace VRtist
             AddBuiltinAsset("Vehicle", "Car", "Prefabs/UI/JUNK/UI_car", "Prefabs/Primitives/JUNK/car");
         }
 
-        private static IEnumerator ScanDirectory(string path, Action onEndScan = null)
+        private static IEnumerator ScanDirectory(string path, Action onEndScan = null, bool first = false)
         {
             if (Directory.Exists(path))
             {
                 string[] directories = Directory.GetDirectories(path);
                 foreach (var directory in directories)
                 {
-                    GlobalState.Instance.StartCoroutine(ScanDirectory(directory));
+                    yield return GlobalState.Instance.StartCoroutine(ScanDirectory(directory));
                 }
 
                 string[] filenames = Directory.GetFiles(path, "*.fbx");
@@ -206,6 +210,10 @@ namespace VRtist
             }
 
             onEndScan?.Invoke();
+            if (first)
+            {
+                assetsLoaded = true;
+            }
         }
 
         private static void AddBuiltinAsset(string tags, string name, string uiPath, string prefabPath)
@@ -260,6 +268,16 @@ namespace VRtist
 
         public static void PopulateUIList(UIDynamicList uiList, UnityAction<int> onEnter, UnityAction<int> onExit)
         {
+            GlobalState.Instance.StartCoroutine(_PopulateUIList(uiList, onEnter, onExit));
+        }
+
+        static IEnumerator _PopulateUIList(UIDynamicList uiList, UnityAction<int> onEnter, UnityAction<int> onExit)
+        {
+            while (!assetsLoaded)
+            {
+                yield return null;
+            }
+
             foreach (AssetBankItemData data in items.Values)
             {
                 // Create thumbnail
