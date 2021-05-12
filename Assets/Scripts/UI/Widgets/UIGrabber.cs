@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-using TMPro;
-
 using UnityEditor;
 
 using UnityEngine;
@@ -46,10 +44,9 @@ namespace VRtist
         public UnityEvent onClickEvent = new UnityEvent();
         public UnityEvent onReleaseEvent = new UnityEvent();
 
-        private static GameObject textThumbnailPrefab;
-        private static GameObject imageThumbnailPrefab;
 
-        private static Quaternion thumbnailRotation = Quaternion.Euler(25f, -35f, 0f);
+
+
 
         private string lazyImagePath = null;
         private bool lazyLoaded = false;
@@ -63,15 +60,8 @@ namespace VRtist
                 {
                     ToolsUIManager.Instance.RegisterUI3DObject(prefab);
                     uid = prefab.GetHashCode();
-                    transform.localRotation = thumbnailRotation;
+                    transform.localRotation = AssetBankUtils.thumbnailRotation;
                 }
-            }
-
-            // Load thumbnail prefabs
-            if (null == textThumbnailPrefab)
-            {
-                textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
-                imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
             }
         }
 
@@ -127,48 +117,38 @@ namespace VRtist
         }
 
         #region Create Thumbnail helpers
-        static void LoadPrefabs()
+        public static UIGrabber CreateTextGrabber(GameObject thumbnail)
         {
-            // Load thumbnail prefabs
-            if (null == textThumbnailPrefab)
+            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            if (null == uiGrabber)
             {
-                textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
-                imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
+                uiGrabber = thumbnail.AddComponent<UIGrabber>();
             }
-        }
-
-        public static GameObject CreateTextThumbnail(int uid, string text)
-        {
-            LoadPrefabs();
-            GameObject thumbnail = Instantiate(textThumbnailPrefab);
-            thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = text;
-            UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
-            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = false;
-            return thumbnail;
+            return uiGrabber;
         }
 
-        public static GameObject CreateImageThumbnail(int uid, string thumbnailPath)
+        public static UIGrabber CreateImageGrabber(GameObject thumbnail)
         {
-            Sprite image = Resources.Load<Sprite>(thumbnailPath);
-            LoadPrefabs();
-            GameObject thumbnail = Instantiate(imageThumbnailPrefab);
-            thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = image;
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
-            uiGrabber.uid = uid;
+            if (null == uiGrabber)
+            {
+                uiGrabber = thumbnail.AddComponent<UIGrabber>();
+            }
             uiGrabber.rotateOnHover = false;
-            return thumbnail;
+            return uiGrabber;
         }
 
-        public static GameObject CreateLazyImageThumbnail(int uid, string path)
+        public static UIGrabber CreateLazyImageGrabber(GameObject thumbnail, string path)
         {
-            LoadPrefabs();
-            GameObject thumbnail = Instantiate(imageThumbnailPrefab);
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+            if (null == uiGrabber)
+            {
+                uiGrabber = thumbnail.AddComponent<UIGrabber>();
+            }
             uiGrabber.lazyImagePath = path;
-            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = false;
-            return thumbnail;
+            return uiGrabber;
         }
 
         private void LoadThumbnail(string path)
@@ -182,25 +162,15 @@ namespace VRtist
             transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = sprite;
         }
 
-        public static GameObject Create3DThumbnail(int uid, string thumbnailPath)
+        public static UIGrabber Create3DGrabber(GameObject thumbnail)
         {
-            GameObject thumbnail = Instantiate(Resources.Load<GameObject>(thumbnailPath));
             UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
             if (null == uiGrabber)
             {
                 uiGrabber = thumbnail.AddComponent<UIGrabber>();
             }
-            uiGrabber.uid = uid;
             uiGrabber.rotateOnHover = true;
-            thumbnail.transform.localRotation = thumbnailRotation;
-
-            MeshRenderer[] meshRenderers = thumbnail.GetComponentsInChildren<MeshRenderer>();
-            foreach (MeshRenderer meshRenderer in meshRenderers)
-            {
-                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
-
-            return thumbnail;
+            return uiGrabber;
         }
         #endregion
 
@@ -320,7 +290,7 @@ namespace VRtist
         {
             if (rotateOnHover)
             {
-                transform.localRotation = thumbnailRotation;
+                transform.localRotation = AssetBankUtils.thumbnailRotation;
             }
         }
 
