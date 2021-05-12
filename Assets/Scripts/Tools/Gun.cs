@@ -15,6 +15,7 @@ namespace VRtist
 
         UIPanel panel;
         UIButton deleteButton;
+        public int assetBankId;
 
         public void SetListItem(UIDynamicListItem listItem)
         {
@@ -27,15 +28,11 @@ namespace VRtist
             deleteButton.onReleaseEvent.AddListener(deleteAction);
         }
 
-        public static GunPrefabItem Create(AssetBankItem assetBankItem)
+        public static GunPrefabItem Create(AssetBankItemData data)
         {
             GameObject root = new GameObject("GunPrefabItem");
             GunPrefabItem item = root.AddComponent<GunPrefabItem>();
             root.layer = LayerMask.NameToLayer("CameraHidden");
-
-            // Set the item invisible in order to hide it while it is not added into
-            // a list. We will activate it after it is added
-            root.transform.localScale = Vector3.zero;
 
             //
             // Background Panel
@@ -45,8 +42,8 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "GunPrefabPreviewBackgroundPanel",
                 relativeLocation = new Vector3(0.01f, -0.01f, -UIPanel.default_element_thickness),
-                width = 0.145f,
-                height = 0.185f,
+                width = 0.10f,
+                height = 0.10f,
                 margin = 0.005f
             });
             panel.SetLightLayer(3);
@@ -54,8 +51,13 @@ namespace VRtist
             //
             // Thumbnail & prefab
             //
-            item.prefab = Instantiate(assetBankItem.data.prefab);
-            item.thumbnail = Instantiate(assetBankItem.thumbnail);
+            item.assetBankId = data.uid;
+            item.prefab = data.prefab;
+            item.thumbnail = AssetBankUtils.CreateThumbnail(data);
+            if (item.thumbnail.TryGetComponent(out UIGrabber uiGrabber))
+            {
+                Destroy(uiGrabber);
+            }
             item.thumbnail.transform.parent = root.transform;
 
             //
@@ -65,7 +67,7 @@ namespace VRtist
             {
                 parent = panel.transform,
                 widgetName = "DeleteButton",
-                relativeLocation = new Vector3(0.11f, -0.15f, -UIButton.default_thickness),
+                relativeLocation = new Vector3(0.07f, -0.07f, -UIButton.default_thickness),
                 width = 0.03f,
                 height = 0.03f,
                 icon = UIUtils.LoadIcon("trash"),
@@ -102,12 +104,6 @@ namespace VRtist
 
             AssetBankUtils.LoadAssets();
             AssetBankUtils.PopulateUIList(bankList, OnUIObjectEnter, OnUIObjectExit);
-
-            //bankList.ItemClickedEvent += OnBankItemClicked;
-
-            prefabs.Add(Resources.Load<GameObject>("Prefabs/Primitives/PRIMITIVES/cube"));
-            prefabs.Add(Resources.Load<GameObject>("Prefabs/Primitives/PRIMITIVES/cylinder"));
-            prefabs.Add(Resources.Load<GameObject>("Prefabs/Primitives/PRIMITIVES/prism"));
         }
 
         public override void OnUIObjectEnter(int uid)
@@ -150,7 +146,7 @@ namespace VRtist
             );
 
             bool triggered = VRInput.GetValue(VRInput.primaryController, CommonUsages.triggerButton);
-            if (triggered)
+            if (triggered && prefabs.Count > 0)
             {
                 if (Time.time - prevTime > 1f / fireRate)
                 {
@@ -169,6 +165,24 @@ namespace VRtist
             }
         }
 
+        protected override void DoUpdateGui()
+        {
+            VRInput.ButtonEvent(VRInput.primaryController, CommonUsages.triggerButton, () =>
+            {
+
+            }, () =>
+            {
+                // Manage click on an asset bank item
+                if (selectedItem != -1)
+                {
+                    if (AssetBankUtils.TryGetItem(selectedItem, out AssetBankItemData data))
+                    {
+                        AddPrefab(data);
+                    }
+                }
+            });
+        }
+
         public void SetFireRate(float value)
         {
             fireRate = value;
@@ -184,25 +198,52 @@ namespace VRtist
             objectScale = value;
         }
 
-        public void AddPrefab(AssetBankItem assetBankItem)
+        public async void AddPrefab(AssetBankItemData data)
         {
-            GunPrefabItem gunItem = GunPrefabItem.Create(assetBankItem);
+            GunPrefabItem gunItem = GunPrefabItem.Create(data);
             gunItem.AddListener(OnDeletePrefab);
             UIDynamicListItem dlItem = prefabList.AddItem(gunItem.transform);
             dlItem.UseColliderForUI = false; // dont use the default global collider, sub-widget will catch UI events and propagate them.
             gunItem.transform.localScale = Vector3.one; // Items are hidden (scale 0) while they are not added into a list, so activate the item here.
             gunItem.SetListItem(dlItem); // link i
+
+            await AssetBankUtils.LoadPrefab(selectedItem);
+            prefabs.Add(data.prefab);
         }
 
         public void ClearPrefabs()
         {
-
+            prefabs.Clear();
             prefabList.Clear();
         }
 
         public void OnDeletePrefab()
         {
+            prefabs.RemoveAt(prefabList.CurrentIndex);
 
+            var currentDLItem = prefabList.GetItems()[prefabList.CurrentIndex];
+            prefabList.RemoveItem(currentDLItem);
+
+            prefabList.CurrentIndex = -1;
+            RebuildPrefabList();
+        }
+
+        private void RebuildPrefabList()
+        {
+            List<int> uids = new List<int>();
+            foreach (var uiItem in prefabList.GetItems())
+            {
+                uids.Add(uiItem.Content.GetComponent<GunPrefabItem>().assetBankId);
+            }
+
+            ClearPrefabs();
+            foreach (int uid in uids)
+            {
+                if (AssetBankUtils.TryGetItem(uid, out AssetBankItemData data))
+                {
+                    AddPrefab(data);
+                }
+            }
         }
     }
 }

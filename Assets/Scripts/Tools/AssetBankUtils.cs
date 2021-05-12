@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
+using TMPro;
+
 using UnityEngine;
 using UnityEngine.Events;
-
+using UnityEngine.UI;
 
 namespace VRtist
 {
@@ -56,6 +58,10 @@ namespace VRtist
         public static GameObject bank;
         private static readonly Dictionary<int, AssetBankItemData> items = new Dictionary<int, AssetBankItemData>();   // uid -> asset bank item data
         private static readonly HashSet<string> tagList = new HashSet<string>();
+
+        private static GameObject textThumbnailPrefab;
+        private static GameObject imageThumbnailPrefab;
+        public static Quaternion thumbnailRotation = Quaternion.Euler(25f, -35f, 0f);
 
         private static int nextUID = 0;
         public static int NextUID
@@ -257,15 +263,16 @@ namespace VRtist
             foreach (AssetBankItemData data in items.Values)
             {
                 // Create thumbnail
-                GameObject thumbnail = data.thumbnailType switch
+                GameObject thumbnail = CreateThumbnail(data);
+                UIGrabber uiGrabber = data.thumbnailType switch
                 {
-                    ThumbnailType.Object => UIGrabber.Create3DThumbnail(data.uid, data.thumbnailPath),
-                    ThumbnailType.Text => UIGrabber.CreateTextThumbnail(data.uid, data.thumbnailPath),
-                    ThumbnailType.Image => UIGrabber.CreateImageThumbnail(data.uid, data.thumbnailPath),
-                    ThumbnailType.LazyImage => UIGrabber.CreateLazyImageThumbnail(data.uid, data.thumbnailPath),
+                    ThumbnailType.Object => UIGrabber.Create3DGrabber(thumbnail),
+                    ThumbnailType.Image => UIGrabber.CreateImageGrabber(thumbnail),
+                    ThumbnailType.LazyImage => UIGrabber.CreateLazyImageGrabber(thumbnail, data.thumbnailPath),
+                    ThumbnailType.Text => UIGrabber.CreateTextGrabber(thumbnail),
                     _ => throw new NotImplementedException()
                 };
-                UIGrabber uiGrabber = thumbnail.GetComponent<UIGrabber>();
+                uiGrabber.uid = data.uid;
                 uiGrabber.onEnterUI3DObject.AddListener(onEnter);
                 uiGrabber.onExitUI3DObject.AddListener(onExit);
 
@@ -283,6 +290,61 @@ namespace VRtist
                 // Add it to the list
                 uiList.AddItem(item.transform);
             }
+        }
+
+        public static GameObject CreateThumbnail(AssetBankItemData data)
+        {
+            if (null == textThumbnailPrefab)
+            {
+                textThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankGenericItem");
+                imageThumbnailPrefab = Resources.Load<GameObject>("Prefabs/UI/AssetBankImageItem");
+            }
+
+            GameObject thumbnail = data.thumbnailType switch
+            {
+                ThumbnailType.Object => Create3DThumbnail(data.thumbnailPath),
+                ThumbnailType.Text => CreateTextThumbnail(data.thumbnailPath),
+                ThumbnailType.Image => CreateImageThumbnail(data.thumbnailPath),
+                ThumbnailType.LazyImage => CreateLazyImageThumbnail(data.thumbnailPath),
+                _ => throw new NotImplementedException()
+            };
+
+            return thumbnail;
+        }
+
+        private static GameObject CreateTextThumbnail(string text)
+        {
+            GameObject thumbnail = GameObject.Instantiate(textThumbnailPrefab);
+            thumbnail.transform.Find("Canvas/Panel/Name").GetComponent<TextMeshProUGUI>().text = text;
+            return thumbnail;
+        }
+
+        private static GameObject CreateImageThumbnail(string thumbnailPath)
+        {
+            Sprite image = Resources.Load<Sprite>(thumbnailPath);
+            GameObject thumbnail = GameObject.Instantiate(imageThumbnailPrefab);
+            thumbnail.transform.Find("Canvas/Panel/Image").GetComponent<Image>().sprite = image;
+            return thumbnail;
+        }
+
+        public static GameObject CreateLazyImageThumbnail(string path)
+        {
+            GameObject thumbnail = GameObject.Instantiate(imageThumbnailPrefab);
+            return thumbnail;
+        }
+
+        public static GameObject Create3DThumbnail(string thumbnailPath)
+        {
+            GameObject thumbnail = GameObject.Instantiate(Resources.Load<GameObject>(thumbnailPath));
+            thumbnail.transform.localRotation = thumbnailRotation;
+
+            MeshRenderer[] meshRenderers = thumbnail.GetComponentsInChildren<MeshRenderer>();
+            foreach (MeshRenderer meshRenderer in meshRenderers)
+            {
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+
+            return thumbnail;
         }
 
         public static async Task LoadPrefab(int uid)

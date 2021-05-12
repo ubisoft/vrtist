@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -11,24 +12,37 @@ namespace VRtist
         float startTime;
         float epsilon = 0.01f;
         float scaleDuration = 0.2f;
-        Vector3 prevPos;
         Vector3 force;
         float initialScale = 0.1f;
         float scale = 1f;
 
-        Rigidbody rb;
+        readonly List<Vector3> startPositions = new List<Vector3>();
+        readonly List<Rigidbody> rbs = new List<Rigidbody>();
+        readonly List<MeshCollider> nonConvexMeshColliders = new List<MeshCollider>();
 
         void Start()
         {
-            prevPos = transform.position;
             startTime = Time.time;
             transform.localScale = Vector3.one * initialScale;
 
-            Collider collider = GetComponent<Collider>();
-            collider.isTrigger = false;
-            rb = gameObject.AddComponent<Rigidbody>();
-            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-            rb.AddForce(force, ForceMode.Impulse);
+            Collider[] colliders = GetComponentsInChildren<Collider>();
+            foreach (var collider in colliders)
+            {
+                collider.isTrigger = false;
+                if (collider.gameObject.TryGetComponent(out MeshCollider meshCollider))
+                {
+                    if (!meshCollider.convex)
+                    {
+                        meshCollider.convex = true;
+                        nonConvexMeshColliders.Add(meshCollider);
+                    }
+                }
+                Rigidbody rb = collider.gameObject.AddComponent<Rigidbody>();
+                rb.AddForce(force, ForceMode.Impulse);
+                rbs.Add(rb);
+
+                startPositions.Add(rb.transform.position);
+            }
 
             SoundManager.Instance.PlayUISound(SoundManager.Sounds.Spawn, force: true);
 
@@ -53,11 +67,50 @@ namespace VRtist
         {
             if (Time.time - startTime < scaleDuration) { return; }
 
-            if (Vector3.Distance(prevPos, transform.position) < epsilon || Time.time - startTime > timeout)
+            if (Time.time - startTime < timeout)
+            {
+                for (int i = 0; i < startPositions.Count; i++)
+                {
+                    Vector3 startPosition = startPositions[i];
+                    Vector3 position = rbs[i].transform.position;
+                    if (Vector3.Distance(startPosition, position) > epsilon)
+                    {
+                        return;
+                    }
+                }
+            }
+            StartCoroutine(DestroySelf());
+        }
+
+        IEnumerator DestroySelf()
+        {
+            foreach (var rb in rbs)
             {
                 Destroy(rb);
-                Destroy(this);
             }
+            while (true)
+            {
+                yield return new WaitForSeconds(1f);
+                List<int> toRemove = new List<int>();
+                for (int i = 0; i < nonConvexMeshColliders.Count; i++)
+                {
+                    MeshCollider collider = nonConvexMeshColliders[i];
+                    if (!collider.TryGetComponent(out Rigidbody rb))
+                    {
+                        collider.convex = false;
+                        toRemove.Add(i);
+                    }
+                }
+                foreach (int index in toRemove)
+                {
+                    nonConvexMeshColliders.RemoveAt(index);
+                }
+                if (nonConvexMeshColliders.Count == 0)
+                {
+                    break;
+                }
+            }
+            Destroy(this);
         }
 
         public void AddForce(Vector3 force)
