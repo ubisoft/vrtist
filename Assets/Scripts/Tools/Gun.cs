@@ -42,8 +42,8 @@ namespace VRtist
                 parent = root.transform,
                 widgetName = "GunPrefabPreviewBackgroundPanel",
                 relativeLocation = new Vector3(0.01f, -0.01f, -UIPanel.default_element_thickness),
-                width = 0.10f,
-                height = 0.10f,
+                width = 0.14f,
+                height = 0.12f,
                 margin = 0.005f
             });
             panel.SetLightLayer(3);
@@ -59,6 +59,14 @@ namespace VRtist
                 Destroy(uiGrabber);
             }
             item.thumbnail.transform.parent = root.transform;
+            if (data.thumbnailType == AssetBankUtils.ThumbnailType.Object)
+            {
+                item.thumbnail.transform.localPosition = new Vector3(0.07f, -0.06f, -0.03f);
+            }
+            else
+            {
+                item.thumbnail.transform.localPosition = new Vector3(0.03f, -0.01f, -0.01f);
+            }
 
             //
             // Delete Button
@@ -67,7 +75,7 @@ namespace VRtist
             {
                 parent = panel.transform,
                 widgetName = "DeleteButton",
-                relativeLocation = new Vector3(0.07f, -0.07f, -UIButton.default_thickness),
+                relativeLocation = new Vector3(0.11f, -0.09f, -UIButton.default_thickness),
                 width = 0.03f,
                 height = 0.03f,
                 icon = UIUtils.LoadIcon("trash"),
