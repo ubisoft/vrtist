@@ -157,6 +157,7 @@ namespace VRtist
         };
         public string videoOutputDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) + "/VRtist";
         public string snapshotsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "/VRtist";
+        public string exportDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/VRtist";
 
         [Range(1.0f, 100.0f)]
         public float scaleSpeed = 50f;
