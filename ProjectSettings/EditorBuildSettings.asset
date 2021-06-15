@@ -7,12 +7,17 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
 <<<<<<< HEAD
+<<<<<<< HEAD
     path: Assets/Scenes/Main.unity
     guid: 46c95fc38d30dda479f744a884f9959c
 =======
     path: Assets/Scenes/Gun.unity
     guid: 00738922e5f02e74b938489dca895f59
 >>>>>>> cf3b16f7... USD export
+=======
+    path: Assets/Scenes/Main.unity
+    guid: f4d5b3471de27884ea78a2010e49576f
+>>>>>>> b6b85968... USD cameras
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: cf46956a377d7544e87e0d4d4067a87e,
       type: 2}

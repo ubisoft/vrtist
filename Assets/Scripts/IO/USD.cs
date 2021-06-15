@@ -184,7 +184,7 @@ namespace VRtist
 
         string GetFilename()
         {
-            return System.IO.Path.Combine(GlobalState.Settings.exportDirectory, GlobalState.Settings.ProjectName + "_" + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".usd");
+            return System.IO.Path.Combine(GlobalState.Settings.exportDirectory, GlobalState.Settings.ProjectName + "_" + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".usda");
         }
 
         public void ExportSnapshot()
@@ -198,8 +198,8 @@ namespace VRtist
             context.scene.Time = null;
             context.activePolicy = ActiveExportPolicy.ExportAsVisibility;
 
-            SceneExporter.SyncExportContext(m_exportRoot, context);
-            SceneExporter.Export(m_exportRoot, context, zeroRootTransform: true);
+            VRtist.SceneExporter.SyncExportContext(m_exportRoot, context);
+            VRtist.SceneExporter.Export(m_exportRoot, context, zeroRootTransform: true);
             scene.Save();
             scene.Close();
         }
@@ -273,8 +273,8 @@ namespace VRtist
                 context.scene.Time = null;
                 context.activePolicy = ActiveExportPolicy.ExportAsVisibility;
 
-                SceneExporter.SyncExportContext(m_exportRoot, context);
-                SceneExporter.Export(m_exportRoot, context, zeroRootTransform: false);
+                VRtist.SceneExporter.SyncExportContext(m_exportRoot, context);
+                VRtist.SceneExporter.Export(m_exportRoot, context, zeroRootTransform: false);
                 firstFrame = false;
             }
 
@@ -284,7 +284,7 @@ namespace VRtist
             context.exportMaterials = false;
 
             // Record the time varying data that changes from frame to frame.
-            SceneExporter.Export(m_exportRoot, context, zeroRootTransform: false);
+            VRtist.SceneExporter.Export(m_exportRoot, context, zeroRootTransform: false);
         }
 
     }
