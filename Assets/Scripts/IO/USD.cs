@@ -26,6 +26,7 @@ using Unity.Formats.USD;
 using UnityEngine;
 
 using USD.NET;
+using USD.NET.Unity;
 
 namespace VRtist
 {
@@ -189,7 +190,8 @@ namespace VRtist
 
         public void ExportSnapshot()
         {
-            Scene scene = Scene.Create(GetFilename());
+            string filename = GetFilename();
+            Scene scene = Scene.Create(filename);
             ExportContext context = new ExportContext();
             context.scene = scene;
             context.basisTransform = convertHandedness;
@@ -202,6 +204,62 @@ namespace VRtist
             VRtist.SceneExporter.Export(m_exportRoot, context, zeroRootTransform: true);
             scene.Save();
             scene.Close();
+            //Import(filename);
+        }
+
+        public void Import(string filename)
+        {
+            Scene scene = Scene.Open(filename);
+
+            CommandGroup group = new CommandGroup();
+
+            var cameras = scene.ReadAll<CameraControllerSample>();
+            foreach (var camera in cameras)
+            {
+                CameraControllerSample sample = camera.sample;
+
+                GameObject cameraPrefab = ResourceManager.GetPrefab(PrefabID.Camera);
+                GameObject instance = SceneManager.InstantiateUnityPrefab(cameraPrefab);
+                GameObject newObject = SceneManager.AddObject(instance);
+
+                newObject.name = camera.path.GetName();
+                sample.CopyToCamera(newObject.GetComponent<CameraController>());
+                Maths.DecomposeMatrix(sample.transform, out Vector3 position, out Quaternion rotation, out Vector3 scale);
+                newObject.transform.localPosition = position;
+                newObject.transform.localRotation = rotation;
+                newObject.transform.localScale = scale;
+            }
+
+            foreach (var m in scene.ReadAll<MeshSample>())
+            {
+                MeshSample sample = m.sample;
+
+                GameObject gobject = new GameObject();
+                gobject.name = m.path.GetName();
+                Maths.DecomposeMatrix(sample.transform, out Vector3 position, out Quaternion rotation, out Vector3 scale);
+                gobject.transform.localPosition = position;
+                gobject.transform.localRotation = rotation;
+                gobject.transform.localScale = scale;
+
+                Mesh mesh = new Mesh();
+                mesh.SetVertices(sample.points);
+                mesh.SetNormals(sample.normals);
+                mesh.SetUVs(0, sample.st as Vector2[]);
+                mesh.SetTriangles(sample.faceVertexIndices, 0);
+
+                MeshFilter meshFilter = gobject.AddComponent<MeshFilter>();
+                meshFilter.sharedMesh = mesh;
+                MeshRenderer mr = gobject.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = ResourceManager.GetMaterial(MaterialID.ObjectOpaque);
+                gobject.AddComponent<MeshCollider>();
+
+                SceneManager.AddObject(gobject);
+            }
+
+            group.Submit();
+
+            scene.Close();
+
         }
 
         public void ExportAnimation()
