@@ -810,7 +810,18 @@ namespace VRtist
         //     of true.
         public void CopyFromCamera(CameraController controller, bool convertTransformToUsd = true)
         {
-            transform = Matrix4x4.TRS(controller.transform.localPosition, controller.transform.localRotation, Vector3.one);
+            transform = Matrix4x4.TRS(controller.transform.localPosition, controller.transform.localRotation, controller.transform.localScale);
+
+            // Partial change of basis.
+            var basisChange = Matrix4x4.identity;
+            // Invert the forward vector.
+            basisChange[2, 2] = -1;
+            // Full change of basis would be b*t*b-1, but here we're placing only a single inversion
+            // at the root of the hierarchy, so all we need to do is get the camera into the same
+            // space.
+            transform = transform * basisChange;
+
+
             projection = ProjectionType.Perspective;
             focalLength = controller.focal;
             focusDistance = controller.focus;
@@ -824,17 +835,15 @@ namespace VRtist
         //
         // Résumé :
         //     Copyies the current sample values to the given camera.
-        public void CopyToCamera(CameraController controller, bool setTransform)
+        public void CopyToCamera(CameraController controller)
         {
-            /*
-            controller.focal = focal;
-            controller.focus = focus;
-            controller.aperture = aperture;
+            controller.focal = focalLength;
+            controller.focus = focusDistance;
+            controller.aperture = fStop;
             controller.enableDOF = enableDOF;
-            controller.near = near;
-            controller.far = far;
+            controller.near = clippingRange.x;
+            controller.far = clippingRange.y;
             controller.filmHeight = filmHeight;
-            */
         }
     }
 
