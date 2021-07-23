@@ -22,17 +22,18 @@
  */
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FPSLook : MonoBehaviour
 {
     public Transform rotateX;
-    private float sensitivity = 400;
+    private float sensitivity = 100;
     float xRotation = 0f;
+
 
     void Update()
     {
-        float z = Input.GetAxis("Fire1");
-        if (z <= 0)
+        if (!Mouse.current.leftButton.isPressed)
         {
             Cursor.lockState = CursorLockMode.None;
             return;
@@ -40,8 +41,10 @@ public class FPSLook : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
 
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
+        Vector2 mousePosition = Mouse.current.delta.ReadValue();
+
+        float mouseX = mousePosition.x * sensitivity * Time.deltaTime;
+        float mouseY = mousePosition.y * sensitivity * Time.deltaTime;
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 

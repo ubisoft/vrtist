@@ -163,7 +163,6 @@ namespace VRtist
             OnDisplayAvatars(GlobalState.Settings.DisplayAvatars);
             OnShowConsoleWindow(GlobalState.Settings.ConsoleVisible);
 
-            UpdateUIFromPreferences();
             worldGrid.SetActive(GlobalState.Settings.DisplayWorldGrid);
             OnChangeMasterVolume(GlobalState.Settings.masterVolume);
             OnChangeAmbientVolume(GlobalState.Settings.ambientVolume);
@@ -172,7 +171,7 @@ namespace VRtist
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
             projectNameLabel.Text = GlobalState.Settings.ProjectName;
 
-            OnRightHanded(GlobalState.Settings.rightHanded);
+            OnRightHanded(true);
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
 
             lowResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution720p;
@@ -181,6 +180,7 @@ namespace VRtist
             SetVideoOutputDirectory(GlobalState.Settings.videoOutputDirectory);
             SetSnapshotsDirectory(GlobalState.Settings.snapshotsDirectory);
 
+            UpdateUIFromPreferences();
             ToolsUIManager.Instance.InitPaletteState();
             ToolsUIManager.Instance.InitDopesheetState();
             ToolsUIManager.Instance.InitShotManagerState();

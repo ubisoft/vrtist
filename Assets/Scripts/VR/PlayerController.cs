@@ -96,10 +96,8 @@ namespace VRtist
             if (teleport != null)
                 teleport.gameObject.SetActive(false);
 
-            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Trigger, Tooltips.Action.HoldPush, "Open Palette");
-            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo");
-            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo");
-            Tooltips.SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset");
+            Tooltips.InitSecondaryTooltips();
+
             IsInLobby = true;  // hide tooltips
 
             OnChangeNavigationMode("BiManual");

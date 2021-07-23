@@ -14,36 +14,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   displayGizmos: 1
+  displayLocators: 0
   displayWorldGrid: 1
   displayAvatars: 1
-  displayFPS: 0
+  displayFPS: 1
   display3DCurves: 1
-  masterVolume: 0
+  masterVolume: -4.247485
   ambientVolume: -35
   uiVolume: 0
   rightHanded: 1
   forcePaletteOpen: 0
-  palettePosition: {x: 0, y: 0, z: 0}
-  paletteRotation: {x: 0.25881907, y: 0, z: 0, w: 0.9659259}
+  palettePosition: {x: -0.026369628, y: 0.023469195, z: 0.17568526}
+  paletteRotation: {x: -0.56895435, y: -0.021272672, z: 0.011196136, w: -0.82201767}
   pinnedPalette: 0
-  dopeSheetPosition: {x: 0.5609078, y: 1.3983407, z: -0.0092475265}
-  dopeSheetRotation: {x: 0.10379473, y: 0.5400479, z: -0.07501844, w: 0.83183366}
-  dopeSheetVisible: 0
-  shotManagerPosition: {x: 0.44513124, y: 1.4776944, z: 0.30038226}
-  shotManagerRotation: {x: 0.10379473, y: 0.5400479, z: -0.07501844, w: 0.83183366}
+  dopeSheetPosition: {x: 0.22789104, y: 1.394446, z: 0.5336347}
+  dopeSheetRotation: {x: -0.0979478, y: 0.2255668, z: 0.02950788, w: 0.96884215}
+  dopeSheetVisible: 1
+  shotManagerPosition: {x: 0, y: 0, z: 0}
+  shotManagerRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   shotManagerVisible: 0
-  cameraPreviewPosition: {x: 0.49638534, y: 1.6861426, z: 0.3212937}
-  cameraPreviewRotation: {x: 0.10379473, y: 0.5400479, z: -0.07501844, w: 0.83183366}
+  cameraPreviewPosition: {x: 0, y: 0, z: 0}
+  cameraPreviewRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
   cameraPreviewVisible: 0
-  cameraFeedbackPosition: {x: 0, y: 0, z: 0}
-  cameraFeedbackRotation: {x: 0, y: 0, z: 0, w: 1}
-  cameraFeedbackScale: {x: 1, y: 1, z: 1}
+  cameraFeedbackDirection: {x: 0, y: 0, z: 1}
   cameraFeedbackScaleValue: 1
+  cameraFeedbackMaxScaleValue: 1.7
+  cameraFeedbackMinScaleValue: 0.4
   cameraFeedbackVisible: 0
   cameraDamping: 50
-  consoleVisible: 0
-  consolePosition: {x: 0.516192, y: 1.6527272, z: 0.026209299}
-  consoleRotation: {x: 0.08905364, y: 0.65752494, z: -0.12512602, w: 0.7376136}
+  consoleVisible: 1
+  consolePosition: {x: 0.60718995, y: 1.4552332, z: 0.22997063}
+  consoleRotation: {x: 0.048734475, y: 0.67617005, z: -0.03198534, w: 0.7344358}
   sky:
     topColor: {r: 0.83137256, g: 0.83137256, b: 0.83137256, a: 1}
     middleColor: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 1}
@@ -53,6 +54,11 @@ MonoBehaviour:
     middleColor: {r: 0.7647059, g: 0.7647059, b: 0.7647059, a: 1}
     bottomColor: {r: 0.44313726, g: 0.44313726, b: 0.44313726, a: 1}
   castShadows: 0
+  videoOutputResolution:
+    width: 1920
+    height: 1080
+  videoOutputDirectory: C:\Users\Dreca\Videos/VRtist
+  snapshotsDirectory: C:\Users\Dreca\Pictures/VRtist
   scaleSpeed: 50
   raySliderDrag: 95
   rayHueDrag: 85
@@ -91,3 +97,4 @@ MonoBehaviour:
     m_RotationOrder: 4
   interpolation: 1
   assetBankDirectory: D:/VRtistData/
+  lobbyScenePath: 

@@ -33,6 +33,7 @@ namespace VRtist
 
         public override void SetTooltips()
         {
+            base.SetTooltips();
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Primary, false);
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Secondary, false);
             Tooltips.SetVisible(VRDevice.PrimaryController, Tooltips.Location.Trigger, false);

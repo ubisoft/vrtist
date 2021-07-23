@@ -100,6 +100,8 @@ namespace VRtist
         {
             string path = Path.GetDirectoryName(pathToBuiltProject) + "/" + "VRtist_Data";
             FileUtil.CopyFileOrDirectory("Data/Lobby", path + "/Lobby");
+            FileUtil.CopyFileOrDirectory("Data/bin", path + "/bin");
+
         }
     }
 }
