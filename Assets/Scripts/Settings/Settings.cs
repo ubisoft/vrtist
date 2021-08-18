@@ -200,6 +200,7 @@ namespace VRtist
             scaleSpeed = 50f;
             raySliderDrag = 95.0f;
 
+
             dopeSheetVisible = false;
             dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);
             dopeSheetRotation = Quaternion.Euler(7, 52, 0);

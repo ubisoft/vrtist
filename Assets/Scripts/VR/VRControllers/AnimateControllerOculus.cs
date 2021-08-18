@@ -15,7 +15,7 @@ namespace VRtist
 
         protected override void AnimateGrip(float gripAmount)
         {
-            gripTransform.localRotation = initGripRotation * Quaternion.Euler(0, gripAmount * gripRotationAmplitude * (int)gripDirection, 0);
+            gripTransform.localRotation = initGripRotation * Quaternion.Euler(0, gripAmount * gripRotationAmplitude * -(int)gripDirection, 0);
             gripTransform.gameObject.GetComponent<MeshRenderer>().material.SetColor("_BaseColor", gripAmount > 0.01f ? UIOptions.SelectedColor : Color.black);
         }
 
