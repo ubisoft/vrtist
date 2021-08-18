@@ -49,6 +49,8 @@ namespace VRtist
             }
         }
 
+        public ControllerPath ControllerPaths;
+
         private VRController rightController;
         private VRController inverseRightController;
         private VRController leftController;
@@ -61,9 +63,9 @@ namespace VRtist
         {
             switch (name)
             {
-                case "Index Controller OpenXR": InitializeControllers(ControllerModel.Index); break;
+                case "Index Controller OpenXR": InitializeControllersFromModel(ControllerModel.Index); break;
                 case "Oculus Touch Controller OpenXR": InitializeOculusController(GetHMD()); break;
-                default: InitializeControllers(ControllerModel.Quest); break;
+                default: InitializeControllersFromModel(ControllerModel.Quest); break;
             }
         }
 
@@ -71,31 +73,20 @@ namespace VRtist
         {
             switch (name)
             {
-                case "Oculus Rift S": InitializeControllers(ControllerModel.Quest); break;
-                case "Oculus Quest": InitializeControllers(ControllerModel.Quest); break;
-                case "Oculus Quest2": InitializeControllers(ControllerModel.Quest2); break;
-                default: InitializeControllers(ControllerModel.Quest); break;
+                case "Oculus Rift S": InitializeControllersFromModel(ControllerModel.Quest); break;
+                case "Oculus Quest": InitializeControllersFromModel(ControllerModel.Quest); break;
+                case "Oculus Quest2": InitializeControllersFromModel(ControllerModel.Quest2); break;
+                default: InitializeControllersFromModel(ControllerModel.Quest); break;
             }
         }
 
-        public void InitializeControllers(ControllerModel model)
+        public void InitializeControllersFromModel(ControllerModel model)
         {
             if (null != rightController) rightController.controllerTransform.gameObject.SetActive(false);
             if (null != leftController) leftController.controllerTransform.gameObject.SetActive(false);
             if (null != inverseRightController) inverseRightController.controllerTransform.gameObject.SetActive(false);
             if (null != inverseLeftController) inverseLeftController.controllerTransform.gameObject.SetActive(false);
-            switch (model)
-            {
-                case ControllerModel.Index:
-                    GetIndexControllersValues();
-                    break;
-                case ControllerModel.Quest:
-                    GetQuestControllersValues();
-                    break;
-                case ControllerModel.Quest2:
-                    GetQuest2ControllersValues();
-                    break;
-            }
+            GetControllerValues(model);
             SetRightHanded(GlobalState.Settings.rightHanded);
         }
 
@@ -116,32 +107,6 @@ namespace VRtist
             System.Diagnostics.Process process = System.Diagnostics.Process.Start(info);
             process.WaitForExit();
             return process.StandardOutput.ReadLine();
-        }
-
-        public Transform GetPrimaryControllerTransform()
-        {
-            if (rightController == null) InitializeControllers(ControllerModel.Quest);
-            if (GlobalState.Settings.rightHanded) return rightController.controllerTransform;
-            else return inverseLeftController.controllerTransform;
-        }
-
-        public Transform GetSecondaryControllerTransform()
-        {
-            if (GlobalState.Settings.rightHanded) return leftController.controllerTransform;
-            else return inverseRightController.controllerTransform;
-        }
-
-        public Vector3 GetPrimaryControllerUp()
-        {
-            if (rightController == null) InitializeControllers(ControllerModel.Quest);
-            if (GlobalState.Settings.rightHanded) return rightController.upAxis.up;
-            else return inverseLeftController.upAxis.up;
-        }
-
-        public Vector3 GetSecondaryControllerUp()
-        {
-            if (GlobalState.Settings.rightHanded) return leftController.upAxis.up;
-            else return inverseRightController.upAxis.up;
         }
 
         public void SetRightHanded(bool value)
@@ -184,7 +149,7 @@ namespace VRtist
 
         private void SetHolders(VRController primary, VRController secondary, Transform toolsController, Transform paletteController, Transform palette)
         {
-            if (null != palette) palette.SetPositionAndRotation(primary.paletteHolder.position, primary.paletteHolder.rotation);
+            if (null != palette) palette.SetPositionAndRotation(primary.paletteHolder.position + GlobalState.Instance.settings.palettePositionOffset, primary.paletteHolder.rotation * GlobalState.Instance.settings.paletteRotationOffset);
             toolsController.Find("mouthpieces").SetPositionAndRotation(secondary.mouthpieceHolder.position, secondary.mouthpieceHolder.rotation);
             toolsController.Find("SelectionHelper").SetPositionAndRotation(secondary.helperHolder.position, secondary.helperHolder.rotation);
             paletteController.Find("SceneHelper").SetPositionAndRotation(primary.helperHolder.position, primary.helperHolder.rotation);
@@ -198,59 +163,53 @@ namespace VRtist
                 palette.SetPositionAndRotation(inverseRightController.paletteHolder.position, inverseRightController.paletteHolder.rotation);
         }
 
-        private void GetQuestControllersValues()
+        private void GetControllerValues(ControllerModel model)
         {
             Transform toolsController = GlobalState.Instance.toolsController;
             Transform paletteController = GlobalState.Instance.paletteController;
 
-            rightController = new VRController("OculusQuest/right_controller", toolsController);
+            rightController = new VRController(ControllerPaths.GetControllerPath(true, model), toolsController);
             rightController.controllerTransform.gameObject.SetActive(true);
+            toolsController.Find("mouthpieces").position = rightController.mouthpieceHolder.position;
 
-            inverseRightController = new VRController("OculusQuest/right_controller", paletteController);
+            inverseRightController = new VRController(ControllerPaths.GetControllerPath(true, model), paletteController);
 
-            leftController = new VRController("OculusQuest/left_controller", paletteController);
+            leftController = new VRController(ControllerPaths.GetControllerPath(false, model), paletteController);
             leftController.controllerTransform.gameObject.SetActive(true);
 
-            inverseLeftController = new VRController("OculusQuest/left_controller", toolsController);
+            inverseLeftController = new VRController(ControllerPaths.GetControllerPath(false, model), toolsController);
         }
 
-        private void GetIndexControllersValues()
+        public Transform GetPrimaryControllerTransform()
         {
-            Transform toolsController = GlobalState.Instance.toolsController;
-            Transform paletteController = GlobalState.Instance.paletteController;
-
-            rightController = new VRController("ValveIndex/IndexRightPivot/Index_controller_Right", toolsController);
-            toolsController.Find("mouthpieces").position = rightController.mouthpieceHolder.position;
-            rightController.controllerTransform.gameObject.SetActive(true);
-
-            inverseRightController = new VRController("ValveIndex/IndexRightPivot/Index_controller_Right", paletteController);
-
-            leftController = new VRController("ValveIndex/IndexLeftPivot/Index_controller_Left", paletteController);
-            leftController.controllerTransform.gameObject.SetActive(true);
-
-            inverseLeftController = new VRController("ValveIndex/IndexLeftPivot/Index_controller_Left", toolsController);
+            if (null == rightController || null == inverseLeftController) InitializeControllersFromModel(ControllerModel.Quest);
+            if (GlobalState.Settings.rightHanded) return rightController.controllerTransform;
+            else return inverseLeftController.controllerTransform;
+        }
+        public Transform GetSecondaryControllerTransform()
+        {
+            if (null == leftController || null == inverseRightController) InitializeControllersFromModel(ControllerModel.Quest);
+            if (GlobalState.Settings.rightHanded) return leftController.controllerTransform;
+            else return inverseRightController.controllerTransform;
         }
 
-        private void GetQuest2ControllersValues()
+        public Vector3 GetPrimaryControllerUp()
         {
-            Transform toolsController = GlobalState.Instance.toolsController;
-            Transform paletteController = GlobalState.Instance.paletteController;
+            if (null == rightController || null == inverseLeftController) InitializeControllersFromModel(ControllerModel.Quest);
+            if (GlobalState.Settings.rightHanded) return rightController.upAxis.up;
+            else return inverseLeftController.upAxis.up;
+        }
 
-            rightController = new VRController("OculusQuest2/Quest2_controller_Right/right_controller", toolsController);
-            toolsController.Find("mouthpieces").position = rightController.mouthpieceHolder.position;
-            rightController.controllerTransform.gameObject.SetActive(true);
-
-            inverseRightController = new VRController("OculusQuest2/Quest2_controller_Right/right_controller", paletteController);
-
-            leftController = new VRController("OculusQuest2/Quest2_controller_Left/left_controller", paletteController);
-            leftController.controllerTransform.gameObject.SetActive(true);
-
-            inverseLeftController = new VRController("OculusQuest2/Quest2_controller_Left/left_controller", toolsController);
+        public Vector3 GetSecondaryControllerUp()
+        {
+            if (null == leftController || null == inverseRightController) InitializeControllersFromModel(ControllerModel.Quest);
+            if (GlobalState.Settings.rightHanded) return leftController.upAxis.up;
+            else return inverseRightController.upAxis.up;
         }
 
         internal Transform GetPrimaryTooltipTransform(Tooltips.Location location)
         {
-            if (rightController == null) InitializeControllers(ControllerModel.Quest);
+            if (null == rightController || null == inverseLeftController) InitializeControllersFromModel(ControllerModel.Quest);
             if (GlobalState.Settings.rightHanded) return GetTooltipTransform(rightController, location);
             else return GetTooltipTransform(inverseLeftController, location);
         }
@@ -258,18 +217,20 @@ namespace VRtist
 
         internal Transform GetSecondaryTooltipTransform(Tooltips.Location location)
         {
+            if (null == leftController || null == inverseRightController) InitializeControllersFromModel(ControllerModel.Quest);
             if (GlobalState.Settings.rightHanded) return GetTooltipTransform(leftController, location);
             else return GetTooltipTransform(inverseRightController, location);
         }
 
         public TextMeshProUGUI GetPrimaryDisplay()
         {
-            if (rightController == null) InitializeControllers(ControllerModel.Quest);
+            if (null == rightController || null == inverseLeftController) InitializeControllersFromModel(ControllerModel.Quest);
             if (GlobalState.Settings.rightHanded) return rightController.controllerDisplay;
             else return inverseLeftController.controllerDisplay;
         }
         public TextMeshProUGUI GetSecondaryDisplay()
         {
+            if (null == leftController || null == inverseRightController) InitializeControllersFromModel(ControllerModel.Quest);
             if (GlobalState.Settings.rightHanded) return leftController.controllerDisplay;
             else return inverseRightController.controllerDisplay;
         }

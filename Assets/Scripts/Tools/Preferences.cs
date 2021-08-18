@@ -171,7 +171,7 @@ namespace VRtist
             SetAssetBankDirectory(GlobalState.Settings.assetBankDirectory);
             projectNameLabel.Text = GlobalState.Settings.ProjectName;
 
-            OnRightHanded(true);
+            OnRightHanded(GlobalState.Settings.rightHanded);
             backgroundFeedback.gameObject.SetActive(GlobalState.Settings.cameraFeedbackVisible);
 
             lowResButton.Checked = GlobalState.Settings.videoOutputResolution == CameraManager.resolution720p;

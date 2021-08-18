@@ -168,14 +168,14 @@ namespace VRtist
                 palettePinButton.Disabled = true;
                 paletteCloseButton.Disabled = false;
                 palettePinButton.Checked = true;
-                GlobalState.SetPaletteOnHolder(paletteRoot);
+                paletteRoot.localPosition = GlobalState.Settings.palettePositionOffset;
+                paletteRoot.localRotation = GlobalState.Settings.paletteRotationOffset;
             }
             else
             {
                 palettePinButton.Checked = false;
                 paletteRoot.transform.parent = handContainer.transform;
-                paletteRoot.localPosition = GlobalState.Settings.palettePosition;
-                paletteRoot.localRotation = GlobalState.Settings.paletteRotation;
+                GlobalState.SetPaletteOnHolder(paletteRoot);
 
                 if (GlobalState.Settings.forcePaletteOpen)
                 {

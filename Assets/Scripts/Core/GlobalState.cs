@@ -427,10 +427,6 @@ namespace VRtist
             }
         }
 
-        public static Transform GetSecondaryControllerTransform()
-        {
-            return Instance.VRControllers.GetSecondaryControllerTransform();
-        }
         public static Vector3 GetSecondaryControllerUp()
         {
             return Instance.VRControllers.GetSecondaryControllerUp();
@@ -444,6 +440,7 @@ namespace VRtist
 
             Settings.rightHanded = value;
 
+            Debug.Log("from set Right Handed");
             Instance.VRControllers.SetRightHanded(value);
         }
 

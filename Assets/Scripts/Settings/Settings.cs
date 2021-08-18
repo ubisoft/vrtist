@@ -79,8 +79,8 @@ namespace VRtist
         public bool rightHanded = true;
         public bool forcePaletteOpen = false;
 
-        public Vector3 palettePosition;
-        public Quaternion paletteRotation;
+        public Vector3 palettePositionOffset;
+        public Quaternion paletteRotationOffset;
         public bool pinnedPalette = false;
 
         public Vector3 dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);
@@ -200,6 +200,9 @@ namespace VRtist
             scaleSpeed = 50f;
             raySliderDrag = 95.0f;
 
+            palettePositionOffset = Vector3.zero;
+            paletteRotationOffset = Quaternion.identity;
+
             dopeSheetVisible = false;
             dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);
             dopeSheetRotation = Quaternion.Euler(7, 52, 0);
@@ -249,8 +252,8 @@ namespace VRtist
         {
             if (window.name == "PaletteHandle")
             {
-                palettePosition = window.localPosition;
-                paletteRotation = window.localRotation;
+                palettePositionOffset = GlobalState.GetPaletteHolder().position - window.position;
+                paletteRotationOffset = window.localRotation * Quaternion.Inverse(GlobalState.GetPaletteHolder().rotation);
             }
             if (window.name == "DopesheetHandle")
             {
