@@ -298,7 +298,9 @@ MonoBehaviour:
   colimator: {fileID: 0}
   near: 0.07
   far: 1000
+  filmWidth: 36
   filmHeight: 24
+  gateFit: 3
   inFront: 0
 --- !u!65 &1366448641114277504
 BoxCollider:
