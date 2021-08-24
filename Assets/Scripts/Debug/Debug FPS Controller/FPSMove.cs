@@ -22,21 +22,29 @@
  */
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FPSMove : MonoBehaviour
 {
     public Transform rotateX;
     private float speed = 10f;
 
-    void Update()
+    public void Start()
     {
-        float x = Input.GetAxis("Horizontal") * speed * Time.deltaTime;
-        float y = Input.GetAxis("Vertical") * speed * Time.deltaTime;
+        InputAction moveInput = new InputAction("move");
+        moveInput.AddCompositeBinding("2DVector")
+            .With("Right", "<keyboard>/leftArrow")
+            .With("Left", "<keyboard>/rightArrow")
+            .With("Down", "<keyboard>/downArrow")
+            .With("up", "<keyboard>/upArrow");
+        moveInput.performed += (e) => Move(e);
+    }
 
-        if (x == 0f && y == 0f)
-            return;
-
-        Vector3 move = rotateX.right * x + rotateX.forward * y;
+    public void Move(InputAction.CallbackContext e)
+    {
+        Vector2 value = e.ReadValue<Vector2>();
+        if (value == null) return;
+        Vector3 move = rotateX.right * value.x + rotateX.forward * value.y;
         transform.localPosition += move;
     }
 }

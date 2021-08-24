@@ -22,6 +22,7 @@
  */
 
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -516,7 +517,7 @@ namespace VRtist
 
         public static void InitInvertedControllers()
         {
-            if (invertedController.Count == 0 && secondaryController.isValid && primaryController.isValid)
+            if (secondaryController.isValid && primaryController.isValid)
             {
                 invertedController[head] = head;
                 invertedController[secondaryController] = primaryController;
@@ -553,6 +554,7 @@ namespace VRtist
                 }
                 if (currentControllerValues.Count == 2)
                 {
+                    GlobalState.Instance.VRControllers.InitializeControllers(primaryController.name);
                     InitInvertedControllers();
                     FillCurrentControllerValues();
                     UpdateControllerValues();
@@ -561,6 +563,8 @@ namespace VRtist
 
             return head.isValid && secondaryController.isValid && primaryController.isValid;
         }
+
+        
 
         class DeviceTransform
         {
@@ -608,13 +612,6 @@ namespace VRtist
         public static void UpdateTransformFromVRDevice(Transform transform, InputDevice device)
         {
             GetControllerTransform(device, out Vector3 position, out Quaternion rotation);
-            transform.localPosition = position;
-            transform.localRotation = rotation;
-        }
-
-        public static void UpdateTransformFromVRDevice(Transform transform, InputDevice device, out Vector3 position, out Quaternion rotation)
-        {
-            GetControllerTransform(device, out position, out rotation);
             transform.localPosition = position;
             transform.localRotation = rotation;
         }

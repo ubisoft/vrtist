@@ -37,7 +37,7 @@ namespace VRtist
 
         public static void SetText(VRDevice device, Location location, Action action, string text, bool visible = true)
         {
-            Transform tooltip = GetTooltipTransform(device, location);
+            Transform tooltip = GlobalState.GetTooltipTransform(device, location);
             if (null == tooltip) { return; }
 
             Transform textTransform = tooltip.Find("Canvas/Panel/Text");
@@ -71,7 +71,7 @@ namespace VRtist
 
         public static void SetVisible(VRDevice device, Location location, bool visible)
         {
-            Transform tooltip = GetTooltipTransform(device, location);
+            Transform tooltip = GlobalState.GetTooltipTransform(device, location);
             if (null == tooltip) { return; }
 
             tooltip.gameObject.SetActive(visible);
@@ -89,29 +89,26 @@ namespace VRtist
         public static void UpdateOpacity()
         {
             Transform camTransform = Camera.main.transform;
-            Vector3 primaryTarget = -GlobalState.GetPrimaryControllerTransform().up;
+            Vector3 primaryTarget = -GlobalState.GetPrimaryControllerUp();
             float primaryAngle = Vector3.Angle(primaryTarget, camTransform.forward);
             SetOpacity(VRDevice.PrimaryController, primaryAngle);
 
-            Vector3 secondaryTarget = -GlobalState.GetSecondaryControllerTransform().up;
+            Vector3 secondaryTarget = -GlobalState.GetSecondaryControllerUp();
             float secondaryAngle = Vector3.Angle(secondaryTarget, camTransform.forward);
             SetOpacity(VRDevice.SecondaryController, secondaryAngle);
         }
 
         private static void SetOpacity(VRDevice device, float angle)
         {
-            Transform controller = GlobalState.GetControllerTransform(device);
-            if (null == controller) { return; }
-
-            Transform tooltip = controller.Find("GripButtonAnchor/Tooltip");
+            Transform tooltip = GlobalState.GetTooltipTransform(device, Location.Grip);
             SetOpacity(tooltip, angle);
-            tooltip = controller.Find("TriggerButtonAnchor/Tooltip");
+            tooltip = GlobalState.GetTooltipTransform(device, Location.Trigger);
             SetOpacity(tooltip, angle);
-            tooltip = controller.Find("PrimaryButtonAnchor/Tooltip");
+            tooltip = GlobalState.GetTooltipTransform(device, Location.Primary);
             SetOpacity(tooltip, angle);
-            tooltip = controller.Find("SecondaryButtonAnchor/Tooltip");
+            tooltip = GlobalState.GetTooltipTransform(device, Location.Secondary);
             SetOpacity(tooltip, angle);
-            tooltip = controller.Find("JoystickBaseAnchor/Tooltip");
+            tooltip = GlobalState.GetTooltipTransform(device, Location.Joystick);
             SetOpacity(tooltip, angle);
         }
 
@@ -137,21 +134,12 @@ namespace VRtist
             imagePanel.color = color;
         }
 
-        private static Transform GetTooltipTransform(VRDevice device, Location location)
+        public static void InitSecondaryTooltips()
         {
-            Transform controller = GlobalState.GetControllerTransform(device);
-            if (null == controller) { return null; }
-
-            Transform tooltip = null;
-            switch (location)
-            {
-                case Location.Grip: tooltip = controller.Find("GripButtonAnchor/Tooltip"); break;
-                case Location.Trigger: tooltip = controller.Find("TriggerButtonAnchor/Tooltip"); break;
-                case Location.Primary: tooltip = controller.Find("PrimaryButtonAnchor/Tooltip"); break;
-                case Location.Secondary: tooltip = controller.Find("SecondaryButtonAnchor/Tooltip"); break;
-                case Location.Joystick: tooltip = controller.Find("JoystickBaseAnchor/Tooltip"); break;
-            }
-            return tooltip;
+            SetText(VRDevice.SecondaryController, Tooltips.Location.Trigger, Tooltips.Action.HoldPush, "Open Palette");
+            SetText(VRDevice.SecondaryController, Tooltips.Location.Primary, Tooltips.Action.Push, "Undo");
+            SetText(VRDevice.SecondaryController, Tooltips.Location.Secondary, Tooltips.Action.Push, "Redo");
+            SetText(VRDevice.SecondaryController, Tooltips.Location.Joystick, Tooltips.Action.Push, "Reset");
         }
     }
 }

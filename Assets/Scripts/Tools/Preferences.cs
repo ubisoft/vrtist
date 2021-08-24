@@ -163,7 +163,6 @@ namespace VRtist
             OnDisplayAvatars(GlobalState.Settings.DisplayAvatars);
             OnShowConsoleWindow(GlobalState.Settings.ConsoleVisible);
 
-            UpdateUIFromPreferences();
             worldGrid.SetActive(GlobalState.Settings.DisplayWorldGrid);
             OnChangeMasterVolume(GlobalState.Settings.masterVolume);
             OnChangeAmbientVolume(GlobalState.Settings.ambientVolume);
@@ -181,6 +180,7 @@ namespace VRtist
             SetVideoOutputDirectory(GlobalState.Settings.videoOutputDirectory);
             SetSnapshotsDirectory(GlobalState.Settings.snapshotsDirectory);
 
+            UpdateUIFromPreferences();
             ToolsUIManager.Instance.InitPaletteState();
             ToolsUIManager.Instance.InitDopesheetState();
             ToolsUIManager.Instance.InitShotManagerState();

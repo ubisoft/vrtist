@@ -193,15 +193,13 @@ namespace VRtist
             masterVolume = 0f;
             ambientVolume = -35f;
             uiVolume = 0f;
-            rightHanded = true;
             forcePaletteOpen = false;
             pinnedPalette = false;
-            palettePosition = new Vector3(-0.02f, 0.05f, -0.05f);
-            paletteRotation = Quaternion.Euler(30f, 0, 0);
             cameraDamping = 50f;
             castShadows = false;
             scaleSpeed = 50f;
             raySliderDrag = 95.0f;
+
 
             dopeSheetVisible = false;
             dopeSheetPosition = new Vector3(0.3f, 1.4f, 0.7f);

@@ -41,6 +41,7 @@ namespace VRtist
 
         [Header("Parameters")]
         public PlayerController playerController;
+        public VRControllerManager VRControllers;
         public Transform toolsController;
         public Transform paletteController;
         public GameObject colorPanel = null;
@@ -66,8 +67,6 @@ namespace VRtist
         private static int fpsFrameRange = 60;
         private static int[] fpsBuffer = null;
         private static int fpsBufferIndex = 0;
-        private TextMeshProUGUI primaryControllerDisplay = null;
-        private TextMeshProUGUI secondaryControllerDisplay = null;
 
         // World
         public Transform world = null;
@@ -262,7 +261,7 @@ namespace VRtist
         private void Update()
         {
             // Info on the secondary controller
-            if (null != secondaryControllerDisplay)
+            if (null != VRControllers.GetSecondaryDisplay())
             {
                 string infoText = worldScale < 1f ? $"Scale\n-{1f / worldScale:F2}" : $"Scale\n{worldScale:F2}";
                 if (settings.DisplayFPS)
@@ -270,7 +269,7 @@ namespace VRtist
                     UpdateFps();
                     infoText += $"\n\nFPS\n{Fps}";
                 }
-                secondaryControllerDisplay.text = infoText;
+                VRControllers.GetSecondaryDisplay().text = infoText;
             }
 
             Tooltips.UpdateOpacity();
@@ -405,6 +404,7 @@ namespace VRtist
             }
         }
 
+        #region VRControllers
         public static void SetPrimaryControllerVisible(bool visible)
         {
             GetPrimaryControllerTransform().gameObject.SetActive(visible);
@@ -412,92 +412,62 @@ namespace VRtist
 
         public static Transform GetPrimaryControllerTransform()
         {
-            if (Settings.rightHanded)
+            return Instance.VRControllers.GetPrimaryControllerTransform();
+        }
+
+        public static Vector3 GetPrimaryControllerUp()
+        {
+            return Instance.VRControllers.GetPrimaryControllerUp();
+        }
+        public static void SetPrimaryControllerDisplayText(string text)
+        {
+            if (null != instance.VRControllers.GetPrimaryDisplay())
             {
-                return Instance.toolsController.Find("right_controller");
-            }
-            else
-            {
-                return Instance.toolsController.Find("left_controller");
+                instance.VRControllers.GetPrimaryDisplay().text = text;
             }
         }
 
         public static Transform GetSecondaryControllerTransform()
         {
-            if (Settings.rightHanded)
-            {
-                return Instance.paletteController.Find("left_controller");
-            }
-            else
-            {
-                return Instance.paletteController.Find("right_controller");
-            }
+            return Instance.VRControllers.GetSecondaryControllerTransform();
+        }
+        public static Vector3 GetSecondaryControllerUp()
+        {
+            return Instance.VRControllers.GetSecondaryControllerUp();
         }
 
-        public static Transform GetControllerTransform(VRDevice device)
-        {
-            if (device == VRDevice.PrimaryController) { return GetPrimaryControllerTransform(); }
-            if (device == VRDevice.SecondaryController) { return GetSecondaryControllerTransform(); }
-            return null;
-        }
-
-        public static void SetPrimaryControllerDisplayText(string text)
-        {
-            if (null != Instance.primaryControllerDisplay)
-            {
-                Instance.primaryControllerDisplay.text = text;
-            }
-        }
-
-        public static void SetSecondaryControllerDisplayText(string text)
-        {
-            if (null != Instance.secondaryControllerDisplay)
-            {
-                Instance.secondaryControllerDisplay.text = text;
-            }
-        }
 
         public static void SetRightHanded(bool value)
         {
-            if (null != Instance.secondaryControllerDisplay && Settings.rightHanded == value)
+            if (Settings.rightHanded == value)
                 return;
 
             Settings.rightHanded = value;
 
-            GameObject leftHandleRightController = Instance.paletteController.Find("right_controller").gameObject;
-            GameObject leftHandleLeftController = Instance.paletteController.Find("left_controller").gameObject;
-
-            GameObject rightHandleRightController = Instance.toolsController.Find("right_controller").gameObject;
-            GameObject rightHandleLeftController = Instance.toolsController.Find("left_controller").gameObject;
-
-            leftHandleLeftController.SetActive(value);
-            leftHandleRightController.SetActive(!value);
-            rightHandleRightController.SetActive(value);
-            rightHandleLeftController.SetActive(!value);
-
-            // Update controller's displays
-            Instance.primaryControllerDisplay = GetPrimaryControllerTransform().Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
-            Instance.secondaryControllerDisplay = GetSecondaryControllerTransform().Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
-            Instance.secondaryControllerDisplay.text = "";
-            Instance.primaryControllerDisplay.text = "";
-
-            // Update tooltips
-            Tooltips.HideAll(VRDevice.PrimaryController);
-            Tooltips.HideAll(VRDevice.SecondaryController);
-            ToolBase tool = ToolsManager.CurrentTool();
-            if (null != tool)
-            {
-                tool.SetTooltips();
-            }
-            Instance.playerController.HandleCommonTooltipsVisibility();
-
-            // Move Palette
-            Transform palette = Instance.paletteController.Find("PaletteHandle");
-            Vector3 currentPalettePosition = palette.localPosition;
-            if (Settings.rightHanded)
-                palette.localPosition = new Vector3(-0.02f, currentPalettePosition.y, currentPalettePosition.z);
-            else
-                palette.localPosition = new Vector3(-0.2f, currentPalettePosition.y, currentPalettePosition.z);
+            Instance.VRControllers.SetRightHanded(value);
         }
+
+        public static Transform GetTooltipTransform(VRDevice device, Tooltips.Location location)
+        {
+            if (device == VRDevice.PrimaryController) return instance.VRControllers.GetPrimaryTooltipTransform(location);
+            else return instance.VRControllers.GetSecondaryTooltipTransform(location);
+        }
+
+        public static Transform GetControllerLaser()
+        {
+            return instance.VRControllers.GetLaserTransform();
+        }
+
+        public static void SetPaletteOnHolder(Transform palette)
+        {
+            Instance.VRControllers.SetPaletteHolder(palette);
+        }
+        public static Transform GetPaletteHolder()
+        {
+            return Instance.VRControllers.GetPaletteTransform();
+        }
+
+
+        #endregion
     }
 }

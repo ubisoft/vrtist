@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
@@ -124,7 +126,7 @@ namespace UnityEngine.Experimental.Rendering
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F9))
+            if (Keyboard.current.f9Key.isPressed)
             {
                 GraphicsSettings.useScriptableRenderPipelineBatching = !GraphicsSettings.useScriptableRenderPipelineBatching;
             }
@@ -135,7 +137,7 @@ namespace UnityEngine.Experimental.Rendering
                 m_oldBatcherEnable = GraphicsSettings.useScriptableRenderPipelineBatching;
             }
 
-            if (Input.GetKeyDown(KeyCode.F8))
+            if (Keyboard.current.f8Key.isPressed)
             {
                 ToggleStats();
             }
