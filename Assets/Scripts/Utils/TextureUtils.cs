@@ -31,6 +31,7 @@ namespace VRtist
 {
     public class TextureUtils
     {
+
         public static Texture2D CreateSmallImage()
         {
             Texture2D smallImage = new Texture2D(1, 1, TextureFormat.RGBA32, false, true);
@@ -166,6 +167,7 @@ namespace VRtist
 
             return true;
         }
+
 
         public static Texture2D LoadTextureDXT(string filePath, bool isLinear)
         {
