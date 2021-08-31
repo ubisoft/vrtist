@@ -16,16 +16,7 @@ MonoBehaviour:
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders:
-<<<<<<< HEAD
-<<<<<<< HEAD
   - {fileID: 11400000, guid: c4994592528d043469e714d03a1630e9, type: 2}
-=======
-  - {fileID: 11400000, guid: 757a3e827c578ce47b2ae919cc103f56, type: 2}
-=======
-  - {fileID: 11400000, guid: c4994592528d043469e714d03a1630e9, type: 2}
->>>>>>> a44f9732... pinned pannel
-  - {fileID: 11400000, guid: 6c2b6675404fc8945a7af56b4b42fa88, type: 2}
->>>>>>> 7d5c2f91... First working version of the grass
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
