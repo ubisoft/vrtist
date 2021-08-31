@@ -161,7 +161,7 @@ namespace VRtist
                     int prefabIndex = UnityEngine.Random.Range(0, prefabs.Count);
                     GameObject spawned = Instantiate(prefabs[prefabIndex]);
                     ThrowedObject throwed = spawned.AddComponent<ThrowedObject>();
-                    throwed.AddForce(transform.forward * power);
+                    throwed.AddForce(mouthpiece.forward * power);
                     throwed.SetScale(objectScale);
                     new CommandAddGameObject(spawned).Submit();
                     Matrix4x4 matrix = SceneManager.RightHanded.worldToLocalMatrix * mouthpiece.localToWorldMatrix;

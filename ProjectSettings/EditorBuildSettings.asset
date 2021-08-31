@@ -4,28 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes:
-  - enabled: 1
-<<<<<<< HEAD
-<<<<<<< HEAD
-    path: Assets/Scenes/Main.unity
-    guid: 46c95fc38d30dda479f744a884f9959c
-=======
-    path: Assets/Scenes/Gun.unity
-    guid: 00738922e5f02e74b938489dca895f59
->>>>>>> cf3b16f7... USD export
-=======
-    path: Assets/Scenes/Main.unity
-    guid: f4d5b3471de27884ea78a2010e49576f
->>>>>>> b6b85968... USD cameras
+  m_Scenes: []
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: cf46956a377d7544e87e0d4d4067a87e,
       type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 4b8102b2c42e9a0449618c35fce8071e,
       type: 2}
-<<<<<<< HEAD
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: defeab2f1bfcde34db60b7c4acd84484,
-=======
-    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: e98e16062fa4b934fbec96b56a62f0c1,
->>>>>>> 7d5c2f91... First working version of the grass
       type: 2}
