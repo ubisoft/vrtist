@@ -552,7 +552,7 @@ namespace VRtist
                     currentControllerValues[primaryController] = primaryControllerValues;
                     prevControllerValues[primaryController] = primaryControllerValues;
                 }
-                if (currentControllerValues.Count == 2)
+                if (currentControllerValues.Count == 2 && !invertedController.ContainsKey(head))
                 {
                     GlobalState.Instance.VRControllers.InitializeControllers(primaryController.name);
                     InitInvertedControllers();
@@ -564,7 +564,7 @@ namespace VRtist
             return head.isValid && secondaryController.isValid && primaryController.isValid;
         }
 
-        
+
 
         class DeviceTransform
         {

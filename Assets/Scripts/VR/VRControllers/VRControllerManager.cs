@@ -15,6 +15,7 @@ namespace VRtist
         public class VRController
         {
             public Transform controllerTransform;
+            public GameObject rootObject;
             public TextMeshProUGUI controllerDisplay;
             public Transform gripDisplay;
             public Transform triggerDisplay;
@@ -27,9 +28,11 @@ namespace VRtist
             public Transform paletteHolder;
             public Transform helperHolder;
 
-            public VRController(string rootPath, Transform toolsPalette)
+            public VRController(string ControllerPath, string rootPath, Transform toolsPalette)
             {
-                controllerTransform = toolsPalette.Find(rootPath);
+                controllerTransform = toolsPalette.Find(ControllerPath);
+                rootObject = toolsPalette.Find(rootPath).gameObject;
+                rootObject.SetActive(true);
                 controllerDisplay = controllerTransform.Find("Canvas/Text").GetComponent<TextMeshProUGUI>();
                 mouthpieceHolder = controllerTransform.Find("MouthpieceHolder");
                 laserHolder = controllerTransform.Find("LaserHolder");
@@ -46,6 +49,12 @@ namespace VRtist
                 primaryButtonDisplay = controllerTransform.Find("PrimaryButtonAnchor/Tooltip");
                 secondaryButtonDisplay = controllerTransform.Find("SecondaryButtonAnchor/Tooltip");
                 joystickDisplay = controllerTransform.Find("JoystickBaseAnchor/Tooltip");
+            }
+
+            public void SetActive(bool isActive)
+            {
+                rootObject.SetActive(isActive);
+                controllerTransform.gameObject.SetActive(isActive);
             }
         }
 
@@ -82,10 +91,10 @@ namespace VRtist
 
         public void InitializeControllersFromModel(ControllerModel model)
         {
-            if (null != rightController) rightController.controllerTransform.gameObject.SetActive(false);
-            if (null != leftController) leftController.controllerTransform.gameObject.SetActive(false);
-            if (null != inverseRightController) inverseRightController.controllerTransform.gameObject.SetActive(false);
-            if (null != inverseLeftController) inverseLeftController.controllerTransform.gameObject.SetActive(false);
+            if (null != rightController) rightController.SetActive(false);
+            if (null != leftController) leftController.SetActive(false);
+            if (null != inverseRightController) inverseRightController.SetActive(false);
+            if (null != inverseLeftController) inverseLeftController.SetActive(false);
             GetControllerValues(model);
             SetRightHanded(GlobalState.Settings.rightHanded);
         }
@@ -111,10 +120,10 @@ namespace VRtist
 
         public void SetRightHanded(bool value)
         {
-            rightController.controllerTransform.gameObject.SetActive(value);
             inverseRightController.controllerTransform.gameObject.SetActive(!value);
-            leftController.controllerTransform.gameObject.SetActive(value);
             inverseLeftController.controllerTransform.gameObject.SetActive(!value);
+            rightController.controllerTransform.gameObject.SetActive(value);
+            leftController.controllerTransform.gameObject.SetActive(value);
 
             Transform toolsController = GlobalState.Instance.toolsController;
             Transform paletteController = GlobalState.Instance.paletteController;
@@ -149,7 +158,8 @@ namespace VRtist
 
         private void SetHolders(VRController primary, VRController secondary, Transform toolsController, Transform paletteController, Transform palette)
         {
-            if (null != palette) palette.SetPositionAndRotation(primary.paletteHolder.position + GlobalState.Instance.settings.palettePositionOffset, primary.paletteHolder.rotation * GlobalState.Instance.settings.paletteRotationOffset);
+            if (null != palette && !GlobalState.Instance.settings.pinnedPalette)
+                palette.SetPositionAndRotation(primary.paletteHolder.TransformPoint(GlobalState.Instance.settings.palettePositionOffset), primary.paletteHolder.rotation * GlobalState.Instance.settings.paletteRotationOffset);
             toolsController.Find("mouthpieces").SetPositionAndRotation(secondary.mouthpieceHolder.position, secondary.mouthpieceHolder.rotation);
             toolsController.Find("SelectionHelper").SetPositionAndRotation(secondary.helperHolder.position, secondary.helperHolder.rotation);
             paletteController.Find("SceneHelper").SetPositionAndRotation(primary.helperHolder.position, primary.helperHolder.rotation);
@@ -168,16 +178,16 @@ namespace VRtist
             Transform toolsController = GlobalState.Instance.toolsController;
             Transform paletteController = GlobalState.Instance.paletteController;
 
-            rightController = new VRController(ControllerPaths.GetControllerPath(true, model), toolsController);
+            rightController = new VRController(ControllerPaths.GetControllerPath(true, model), ControllerPaths.GetControllerRoot(model), toolsController);
             rightController.controllerTransform.gameObject.SetActive(true);
             toolsController.Find("mouthpieces").position = rightController.mouthpieceHolder.position;
 
-            inverseRightController = new VRController(ControllerPaths.GetControllerPath(true, model), paletteController);
+            inverseRightController = new VRController(ControllerPaths.GetControllerPath(true, model), ControllerPaths.GetControllerRoot(model), paletteController);
 
-            leftController = new VRController(ControllerPaths.GetControllerPath(false, model), paletteController);
+            leftController = new VRController(ControllerPaths.GetControllerPath(false, model), ControllerPaths.GetControllerRoot(model), paletteController);
             leftController.controllerTransform.gameObject.SetActive(true);
 
-            inverseLeftController = new VRController(ControllerPaths.GetControllerPath(false, model), toolsController);
+            inverseLeftController = new VRController(ControllerPaths.GetControllerPath(false, model), ControllerPaths.GetControllerRoot(model), toolsController);
         }
 
         public Transform GetPrimaryControllerTransform()

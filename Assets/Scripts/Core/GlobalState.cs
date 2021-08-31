@@ -440,7 +440,6 @@ namespace VRtist
 
             Settings.rightHanded = value;
 
-            Debug.Log("from set Right Handed");
             Instance.VRControllers.SetRightHanded(value);
         }
 

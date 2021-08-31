@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace VRtist
 {
-    [CreateAssetMenu(menuName ="VRtist/ControllerPath")]
+    [CreateAssetMenu(menuName = "VRtist/ControllerPath")]
     public class ControllerPath : ScriptableObject
     {
 
@@ -14,6 +14,10 @@ namespace VRtist
         public string LeftQuest2Controller;
         public string RightIndexController;
         public string LeftIndexController;
+
+        public string QuestRoot;
+        public string Quest2Root;
+        public string IndexRoot;
 
 
         public string GetControllerPath(bool isRight, VRControllerManager.ControllerModel model)
@@ -27,6 +31,16 @@ namespace VRtist
             }
         }
 
-}
+        public string GetControllerRoot(VRControllerManager.ControllerModel model)
+        {
+            switch (model)
+            {
+                case VRControllerManager.ControllerModel.Quest: return QuestRoot;
+                case VRControllerManager.ControllerModel.Quest2: return Quest2Root;
+                case VRControllerManager.ControllerModel.Index: return IndexRoot;
+                default: return QuestRoot;
+            }
+        }
+    }
 
 }

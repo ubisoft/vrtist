@@ -253,8 +253,16 @@ namespace VRtist
         {
             if (window.name == "PaletteHandle")
             {
-                palettePositionOffset = GlobalState.GetPaletteHolder().position - window.position;
-                paletteRotationOffset = window.localRotation * Quaternion.Inverse(GlobalState.GetPaletteHolder().rotation);
+                if (pinnedPalette)
+                {
+                    palettePositionOffset = window.transform.localPosition;
+                    paletteRotationOffset = window.transform.localRotation;
+                }
+                else
+                {
+                    palettePositionOffset = GlobalState.GetPaletteHolder().InverseTransformPoint(window.position);
+                    paletteRotationOffset = window.rotation * Quaternion.Inverse(GlobalState.GetPaletteHolder().rotation);
+                }
             }
             if (window.name == "DopesheetHandle")
             {

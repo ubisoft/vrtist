@@ -297,8 +297,7 @@ namespace VRtist
             sceneVolume.SetActive(false);
             lobbyVolume.SetActive(true);
 
-            // Hide & disable palette
-            palette.SetActive(false);
+
 
             // Hide all windows (vehicle_hud)
             vehicleHUD.SetActive(false);
@@ -318,6 +317,9 @@ namespace VRtist
             {
                 HighlightSelectedProject();
                 launchProjectButton.Disabled = true;
+
+                // Hide & disable palette
+                palette.SetActive(false);
             }
             else
             {
