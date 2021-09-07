@@ -24,8 +24,9 @@ MonoBehaviour:
   uiVolume: 0
   rightHanded: 1
   forcePaletteOpen: 0
-  palettePositionOffset: {x: 0, y: 0, z: 0}
-  paletteRotationOffset: {x: 0, y: 0, z: 0, w: 1}
+  palettePositionOffset: {x: 0.0000000058861858, y: 0.000000040899536, z: 0.0000002697485}
+  paletteRotationOffset: {x: 0.00000003911884, y: -0.00000006576397, z: 0.000000035786268,
+    w: 1.0000002}
   pinnedPalette: 0
   dopeSheetPosition: {x: 0.3, y: 1.4, z: 0.7}
   dopeSheetRotation: {x: 0.054870065, y: 0.4375535, z: -0.02676192, w: 0.8971176}
@@ -97,5 +98,5 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   interpolation: 1
-  assetBankDirectory: C:\Users\Dreca\Documents/VRtist
+  assetBankDirectory: C:\VRtist\Data
   lobbyScenePath: 

@@ -27,6 +27,7 @@ namespace VRtist
             public Transform upAxis;
             public Transform paletteHolder;
             public Transform helperHolder;
+            public Transform frontAnchor;
 
             public VRController(string ControllerPath, string rootPath, Transform toolsPalette)
             {
@@ -39,6 +40,7 @@ namespace VRtist
                 upAxis = controllerTransform.Find("UpAxis");
                 paletteHolder = controllerTransform.Find("PaletteHolder");
                 helperHolder = controllerTransform.Find("HelperHolder");
+                frontAnchor = controllerTransform.Find("FrontAnchor");
                 GetControllerTooltips();
             }
 
@@ -258,18 +260,23 @@ namespace VRtist
             }
         }
 
-        internal Transform GetLaserTransform()
+        public Transform GetLaserTransform()
         {
             if (GlobalState.Settings.rightHanded) return rightController.laserHolder;
             else return inverseLeftController.laserHolder;
         }
 
-        internal Transform GetPaletteTransform()
+        public Transform GetPaletteTransform()
         {
             if (GlobalState.Settings.rightHanded) return leftController.paletteHolder;
             else return inverseRightController.paletteHolder;
         }
 
+        public Transform GetFrontAnchor()
+        {
+            if (GlobalState.Settings.rightHanded) return leftController.frontAnchor;
+            else return inverseRightController.frontAnchor;
+        }
 
     }
 }

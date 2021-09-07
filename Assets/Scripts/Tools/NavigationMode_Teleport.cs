@@ -130,8 +130,8 @@ namespace VRtist
             {
                 if (joyMag > deadZone)
                 {
-                    Vector3 rayStartPosition = paletteController.Find("left_controller").Find("FrontAnchor").transform.position;
-                    Vector3 rayStartDirection = paletteController.forward;
+                    Vector3 rayStartPosition = GlobalState.Instance.VRControllers.GetFrontAnchor().position;
+                    Vector3 rayStartDirection = GlobalState.Instance.VRControllers.GetFrontAnchor().up;
 
                     List<Vector3> points;
                     RaycastHit hitInfo;
