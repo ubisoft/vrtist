@@ -24,6 +24,7 @@
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.XR;
 
 #if UNITY_2017_2_OR_NEWER
@@ -631,14 +632,18 @@ namespace VRtist
         // amplitude in [0..1]
         public static void SendHaptic(InputDevice controller, float duration, float amplitude = 1f)
         {
-            InputDevice c = GetLeftOrRightHandedController(controller);
-            c.SendHapticImpulse(0, amplitude, duration);
+            UnityEngine.InputSystem.Utilities.InternedString hand = GlobalState.Instance.settings.rightHanded ? UnityEngine.InputSystem.CommonUsages.RightHand : UnityEngine.InputSystem.CommonUsages.LeftHand;
+            XRController dev = UnityEngine.InputSystem.InputSystem.GetDevice<XRController>(hand);
+            var command = UnityEngine.InputSystem.XR.Haptics.SendHapticImpulseCommand.Create(1, amplitude, duration);
+            dev.ExecuteCommand(ref command);
         }
 
         public static void SendHapticImpulse(InputDevice controller, uint channel, float amplitude, float duration = 1)
         {
-            InputDevice c = GetLeftOrRightHandedController(controller);
-            c.SendHapticImpulse(channel, amplitude, duration);
+            UnityEngine.InputSystem.Utilities.InternedString hand = GlobalState.Instance.settings.rightHanded ? UnityEngine.InputSystem.CommonUsages.RightHand : UnityEngine.InputSystem.CommonUsages.LeftHand;
+            XRController dev = UnityEngine.InputSystem.InputSystem.GetDevice<XRController>(hand);
+            var command = UnityEngine.InputSystem.XR.Haptics.SendHapticImpulseCommand.Create(1, amplitude, duration);
+            dev.ExecuteCommand(ref command);
         }
     }
 }
