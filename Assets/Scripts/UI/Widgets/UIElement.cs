@@ -170,12 +170,12 @@ namespace VRtist
 
         public static void WidgetBorderHapticFeedback()
         {
-            VRInput.SendHaptic(VRInput.primaryController, 0.005f, 0.004f);
+            VRInput.SendHaptic(VRInput.primaryController, 0.025f, 0.1f);
         }
 
         public static void ClickHapticFeedback()
         {
-            VRInput.SendHaptic(VRInput.primaryController, 0.01f, 0.05f);
+            VRInput.SendHaptic(VRInput.primaryController, 0.05f, 0.3f);
         }
 
         #region ray
