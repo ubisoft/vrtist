@@ -434,7 +434,7 @@ namespace VRtist
         {
             toolControllerXf = controllerXf;
 
-            Vector3 direction = transform.forward;
+            Vector3 direction = mouthpieceXf.forward;
             Vector3 startRay = mouthpieceXf.position + mouthpieceXf.lossyScale.x * direction;
 
             line.SetPosition(0, startRay);
