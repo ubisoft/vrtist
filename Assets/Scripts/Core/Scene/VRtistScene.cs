@@ -103,6 +103,7 @@ namespace VRtist
             }
 
             GlobalState.FireObjectAdded(copy);
+            GlobalState.Animation.CopyAnimation(gobject, copy);
             return copy;
         }
 

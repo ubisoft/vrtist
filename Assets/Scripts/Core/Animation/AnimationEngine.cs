@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +35,7 @@ namespace VRtist
         Preroll,
         AnimationRecording,
         Playing,
-        VideoOutput,
+        VideoOutput
     };
 
     public enum Interpolation
@@ -41,7 +43,7 @@ namespace VRtist
         Constant,
         Linear,
         Bezier,
-        Other,
+        Other
     }
 
 
@@ -59,14 +61,28 @@ namespace VRtist
 
     public class AnimationKey
     {
-        public AnimationKey(int frame, float value, Interpolation? interpolation = null)
+        public AnimationKey(int frame, float value, Interpolation? interpolation = null, Vector2 inTangent = new Vector2(), Vector2 outTangent = new Vector2())
         {
             this.frame = frame;
             this.value = value;
             this.interpolation = interpolation ?? GlobalState.Settings.interpolation;
+            this.inTangent = inTangent;
+            this.outTangent = outTangent;
         }
+
+        public AnimationKey(AnimationKey key)
+        {
+            frame = key.frame;
+            value = key.value;
+            interpolation = key.interpolation;
+            inTangent = key.inTangent;
+            outTangent = key.outTangent;
+        }
+
         public int frame;
         public float value;
+        public Vector2 inTangent;
+        public Vector2 outTangent;
         public Interpolation interpolation;
     }
 
@@ -93,7 +109,9 @@ namespace VRtist
         readonly List<TimeHook> timeHooks = new List<TimeHook>();
         public bool timeHooksEnabled = true;
 
-        public float fps = 24f;
+
+        private const float defaultFPS = 24f;
+        public float fps = defaultFPS;
         float playStartTime;
         int playStartFrame;
 
@@ -134,7 +152,6 @@ namespace VRtist
             set
             {
                 currentFrame = Mathf.Clamp(value, startFrame, endFrame);
-
                 if (animationState != AnimationState.Playing && animationState != AnimationState.AnimationRecording)
                 {
                     EvaluateAnimations();
@@ -146,13 +163,15 @@ namespace VRtist
         public bool autoKeyEnabled = false;
 
         public AnimationState animationState = AnimationState.Stopped;
-        public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
+
         public IntChangedEvent onFrameEvent = new IntChangedEvent();
+        public CurveChangedEvent onChangeCurve = new CurveChangedEvent();
+        public Vector2IntChangedEvent onRangeEvent = new Vector2IntChangedEvent();
         public GameObjectChangedEvent onAddAnimation = new GameObjectChangedEvent();
         public GameObjectChangedEvent onRemoveAnimation = new GameObjectChangedEvent();
-        public CurveChangedEvent onChangeCurve = new CurveChangedEvent();
+        public GameObjectChangedEvent onStartOffsetChanged = new GameObjectChangedEvent();
+        public AnimationStateChangedEvent onAnimationStateEvent = new AnimationStateChangedEvent();
 
-        public Vector2IntChangedEvent onRangeEvent = new Vector2IntChangedEvent();
 
         public Countdown countdown = null;
 
@@ -179,8 +198,8 @@ namespace VRtist
 
         private void Start()
         {
-            countdown.onCountdownFinished.AddListener(StartRecording);
             onRangeEvent.AddListener(RecomputeCurvesCache);
+            countdown.onCountdownFinished.AddListener(StartRecording);
 
             GlobalState.ObjectAddedEvent.AddListener(OnObjectAdded);
             GlobalState.ObjectRemovedEvent.AddListener(OnObjectRemoved);
@@ -266,6 +285,23 @@ namespace VRtist
             }
         }
 
+        public void CopyAnimation(GameObject source, GameObject target)
+        {
+            if (animations.TryGetValue(source, out AnimationSet sourceAnim))
+            {
+                AnimationSet targetAnim = new AnimationSet(target);
+                foreach (KeyValuePair<AnimatableProperty, Curve> curve in sourceAnim.curves)
+                {
+                    targetAnim.SetCurve(curve.Key, curve.Value.keys);
+                }
+                SetObjectAnimations(target, targetAnim);
+            }
+            for (int i = 0; i < source.transform.childCount; i++)
+            {
+                CopyAnimation(source.transform.GetChild(i).gameObject, target.transform.GetChild(i).gameObject);
+            }
+        }
+
         void OnObjectAdded(GameObject gobject)
         {
             if (disabledAnimations.TryGetValue(gobject, out AnimationSet animationSet))
@@ -308,7 +344,7 @@ namespace VRtist
             disabledAnimations.Clear();
             recordingObjects.Clear();
             oldAnimations.Clear();
-            fps = 24f;
+            fps = defaultFPS;
             StartFrame = 1;
             EndFrame = 250;
             CurrentFrame = 1;
@@ -323,70 +359,10 @@ namespace VRtist
         {
             foreach (AnimationSet animationSet in animations.Values)
             {
-                Transform trans = animationSet.transform;
-                Vector3 position = trans.localPosition;
-                Vector3 rotation = trans.localEulerAngles;
-                Vector3 scale = trans.localScale;
-
-                float power = -1;
-                Color color = Color.white;
-
-                float cameraFocal = -1;
-                float cameraFocus = -1;
-                float cameraAperture = -1;
-
-                foreach (Curve curve in animationSet.curves.Values)
-                {
-                    if (!curve.Evaluate(currentFrame, out float value))
-                        continue;
-                    switch (curve.property)
-                    {
-                        case AnimatableProperty.PositionX: position.x = value; break;
-                        case AnimatableProperty.PositionY: position.y = value; break;
-                        case AnimatableProperty.PositionZ: position.z = value; break;
-
-                        case AnimatableProperty.RotationX: rotation.x = value; break;
-                        case AnimatableProperty.RotationY: rotation.y = value; break;
-                        case AnimatableProperty.RotationZ: rotation.z = value; break;
-
-                        case AnimatableProperty.ScaleX: scale.x = value; break;
-                        case AnimatableProperty.ScaleY: scale.y = value; break;
-                        case AnimatableProperty.ScaleZ: scale.z = value; break;
-
-                        case AnimatableProperty.Power: power = value; break;
-                        case AnimatableProperty.ColorR: color.r = value; break;
-                        case AnimatableProperty.ColorG: color.g = value; break;
-                        case AnimatableProperty.ColorB: color.b = value; break;
-
-                        case AnimatableProperty.CameraFocal: cameraFocal = value; break;
-                        case AnimatableProperty.CameraFocus: cameraFocus = value; break;
-                        case AnimatableProperty.CameraAperture: cameraAperture = value; break;
-                    }
-                }
-
-                trans.localPosition = position;
-                trans.localEulerAngles = rotation;
-                trans.localScale = scale;
-
-                if (power != -1)
-                {
-                    LightController controller = trans.GetComponent<LightController>();
-                    controller.Power = power;
-                    controller.Color = color;
-                }
-
-                if (cameraFocal != -1 || cameraFocus != -1 || cameraAperture != -1)
-                {
-                    CameraController controller = trans.GetComponent<CameraController>();
-                    if (cameraFocal != -1)
-                        controller.focal = cameraFocal;
-                    if (cameraFocus != -1)
-                        controller.Focus = cameraFocus;
-                    if (cameraAperture != -1)
-                        controller.aperture = cameraAperture;
-                }
+                animationSet.EvaluateAnimation(CurrentFrame);
             }
         }
+
 
         public int TimeToFrame(float time)
         {
@@ -404,17 +380,12 @@ namespace VRtist
             return animationSet;
         }
 
-        public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
+        public void SetObjectAnimations(GameObject gobject, AnimationSet animationSet, bool callEvent = true)
         {
             animations[gobject] = animationSet;
             foreach (Curve curve in animationSet.curves.Values)
                 curve.ComputeCache();
-            onAddAnimation.Invoke(gobject);
-        }
-
-        public bool ObjectHasAnimation(GameObject gobject)
-        {
-            return animations.ContainsKey(gobject);
+            if (callEvent) onAddAnimation.Invoke(gobject);
         }
 
         public bool ObjectHasKeyframeAt(GameObject gobject, int frame)
@@ -429,9 +400,9 @@ namespace VRtist
             return false;
         }
 
-        public void ClearAnimations(GameObject gobject)
+        public void ClearAnimations(GameObject gobject, bool callEvent = true)
         {
-            if (animations.Remove(gobject))
+            if (animations.Remove(gobject) && callEvent)
                 onRemoveAnimation.Invoke(gobject);
         }
 
@@ -444,7 +415,6 @@ namespace VRtist
             animationSet.GetCurve(property).MoveKey(frame, newFrame);
             if (!IsAnimating())
                 EvaluateAnimations();
-            onChangeCurve.Invoke(gobject, property);
         }
 
         public AnimationSet GetOrCreateObjectAnimation(GameObject gobject)
@@ -472,7 +442,7 @@ namespace VRtist
         }
 
         // To be used by in-app add key (not from networked keys)
-        public void AddFilteredKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        public void AddFilteredKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key, bool updateCurves = true, bool lockTangents = false)
         {
             AnimationSet animationSet = GetObjectAnimation(gobject);
             if (null == animationSet)
@@ -480,6 +450,31 @@ namespace VRtist
                 animationSet = new AnimationSet(gobject);
                 animations.Add(gobject, animationSet);
             }
+            Curve curve = animationSet.GetCurve(property);
+
+            //Filter rotation
+            if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+            {
+                AnimationKey previousKey = curve.GetPreviousKey(key.frame);
+                if (null != previousKey)
+                {
+                    float delta = Mathf.DeltaAngle(previousKey.value, key.value);
+                    key.value = previousKey.value + delta;
+                }
+                else
+                {
+                    float delta = Mathf.DeltaAngle(0, key.value);
+                    key.value = delta;
+                }
+            }
+            curve.AddKey(key, lockTangents);
+
+            if (updateCurves) onChangeCurve.Invoke(gobject, property);
+        }
+
+        public void AddFilteredKeyframeZone(GameObject gobject, AnimatableProperty property, AnimationKey key, int startFrame, int endFrame, bool updateCurves = true)
+        {
+            AnimationSet animationSet = GetObjectAnimation(gobject);
             Curve curve = animationSet.GetCurve(property);
 
             // Filter rotation
@@ -491,10 +486,38 @@ namespace VRtist
                     float delta = Mathf.DeltaAngle(previousKey.value, key.value);
                     key.value = previousKey.value + delta;
                 }
+                else
+                {
+                    float delta = Mathf.DeltaAngle(0, key.value);
+                    key.value = delta;
+                }
             }
+            curve.AddZoneKey(key, startFrame, endFrame);
+            if (updateCurves) onChangeCurve.Invoke(gobject, property);
+        }
 
-            curve.AddKey(key);
-            onChangeCurve.Invoke(gobject, property);
+
+        public void AddFilteredKeyframeTangent(GameObject gobjet, AnimatableProperty property, AnimationKey key, int start, int end, bool updateCurves = true)
+        {
+            AnimationSet animationSet = GetObjectAnimation(gobjet);
+            Curve curve = animationSet.GetCurve(property);
+            // Filter rotation
+            if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+            {
+                AnimationKey previousKey = curve.GetPreviousKey(key.frame);
+                if (null != previousKey)
+                {
+                    float delta = Mathf.DeltaAngle(previousKey.value, key.value);
+                    key.value = previousKey.value + delta;
+                }
+                else
+                {
+                    float delta = Mathf.DeltaAngle(0, key.value);
+                    key.value = delta;
+                }
+            }
+            curve.AddTangentKey(key, start, end);
+            if (updateCurves) onChangeCurve.Invoke(gobjet, property);
         }
 
         private void RemoveEmptyAnimationSet(GameObject gobject)
@@ -511,19 +534,19 @@ namespace VRtist
             animations.Remove(gobject);
         }
 
-        public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, int frame)
+        public void RemoveKeyframe(GameObject gobject, AnimatableProperty property, int frame, bool updateCurves = true, bool lockTangents = false)
         {
             AnimationSet animationSet = GetObjectAnimation(gobject);
             if (null == animationSet)
                 return;
             Curve curve = animationSet.GetCurve(property);
-            curve.RemoveKey(frame);
+            curve.RemoveKey(frame, lockTangents);
 
             RemoveEmptyAnimationSet(gobject);
 
             if (!IsAnimating())
                 EvaluateAnimations();
-            onChangeCurve.Invoke(gobject, property);
+            if (updateCurves) onChangeCurve.Invoke(gobject, property);
         }
 
         public void Record()

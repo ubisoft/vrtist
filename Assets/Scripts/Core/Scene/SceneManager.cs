@@ -224,27 +224,27 @@ namespace VRtist
         }
 
         // Animation
-        public static void ClearObjectAnimations(GameObject gobject)
+        public static void ClearObjectAnimations(GameObject gobject, bool callEvent = true)
         {
-            GlobalState.Animation.ClearAnimations(gobject);
+            GlobalState.Animation.ClearAnimations(gobject, callEvent);
             Instance.scene.ClearObjectAnimations(gobject);
         }
 
-        public static void SetObjectAnimations(GameObject gobject, AnimationSet animationSet)
+        public static void SetObjectAnimations(GameObject gobject, AnimationSet animationSet, bool callEvent = true)
         {
-            GlobalState.Animation.SetObjectAnimations(gobject, animationSet);
+            GlobalState.Animation.SetObjectAnimations(gobject, animationSet, callEvent);
             Instance.scene.SetObjectAnimations(gobject, animationSet);
         }
 
-        public static void AddObjectKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        public static void AddObjectKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key, bool updateCurves = true, bool lockTangents = false)
         {
-            GlobalState.Animation.AddFilteredKeyframe(gobject, property, key);
+            GlobalState.Animation.AddFilteredKeyframe(gobject, property, key, updateCurves, lockTangents);
             Instance.scene.AddKeyframe(gobject, property, key);
         }
 
-        public static void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key)
+        public static void RemoveKeyframe(GameObject gobject, AnimatableProperty property, AnimationKey key, bool updateCurves = true, bool lockTangents = false)
         {
-            GlobalState.Animation.RemoveKeyframe(gobject, property, key.frame);
+            GlobalState.Animation.RemoveKeyframe(gobject, property, key.frame, updateCurves, lockTangents);
             Instance.scene.RemoveKeyframe(gobject, property, key);
         }
 

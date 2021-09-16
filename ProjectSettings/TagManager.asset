@@ -8,6 +8,9 @@ TagManager:
   - UIObject
   - UICollider
   - WindowAnchor
+  - Curve
+  - Goal
+  - Actuator
   layers:
   - Default
   - TransparentFX
@@ -29,9 +32,9 @@ TagManager:
   - CameraHidden
   - SelectionChild
   - HoverChild
-  - 
-  - 
-  - 
+  - ThroughRed
+  - ThroughBlue
+  - ThroughGreen
   - 
   - 
   - 

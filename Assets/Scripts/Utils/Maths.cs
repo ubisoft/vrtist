@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +51,7 @@ namespace VRtist
             return new Vector3(col[index].x, col[index].y, col[index].z);
         }
 
-        public void  SetColumn(int index, Vector3 column)
+        public void SetColumn(int index, Vector3 column)
         {
             col[index] = column;
         }
@@ -82,7 +84,7 @@ namespace VRtist
             rotation.SetColumn(1, GetColumn(1).normalized);
             rotation.SetColumn(2, GetColumn(2).normalized);
 
-            if(rotation.IsNegative())
+            if (rotation.IsNegative())
             {
                 rotation.Negate();
                 scale *= -1f;
@@ -154,5 +156,203 @@ namespace VRtist
             }
             return result;
         }
+
+        public static double[,] Add(double[,] m1, double[,] m2)
+        {
+            int row1 = m1.GetUpperBound(0) + 1;
+            int col1 = m1.GetUpperBound(1) + 1;
+            int row2 = m2.GetUpperBound(0) + 1;
+            int col2 = m2.GetUpperBound(1) + 1;
+
+            if (row1 != row2 || col1 != col2)
+            {
+                Debug.Log("Matrix addition with uncompatible matrix sizes");
+                return new double[1, 1];
+            }
+
+            else
+            {
+                double[,] response = new double[row1, col1];
+                for (int i = 0; i < row1; i++)
+                {
+                    for (int j = 0; j < col1; j++)
+                    {
+                        response[i, j] = m1[i, j] + m2[i, j];
+                    }
+                }
+                return response;
+            }
+        }
+
+        public static double[,] Multiply(double alpha, double[,] m)
+        {
+            int row = m.GetUpperBound(0) + 1;
+            int col = m.GetUpperBound(1) + 1;
+
+            double[,] response = new double[row, col];
+            for (int i = 0; i < row; i++)
+            {
+                for (int j = 0; j < col; j++)
+                {
+                    response[i, j] = alpha * m[i, j];
+                }
+            }
+            return response;
+        }
+
+        public static double[,] ColumnArrayToArray(double[] m)
+        {
+            int row = m.Length;
+            double[,] response = new double[row, 1];
+            for (int i = 0; i < row; i++)
+            {
+                response[i, 0] = m[i];
+            }
+            return response;
+        }
+
+        public static double[,] Transpose(double[,] m)
+        {
+            int row = m.GetUpperBound(0) + 1;
+            int col = m.GetUpperBound(1) + 1;
+            double[,] response = new double[col, row];
+            for (int i = 0; i < col; i++)
+            {
+                for (int j = 0; j < row; j++)
+                {
+                    response[i, j] = m[j, i];
+                }
+            }
+            return response;
+        }
+
+        public static double[,] Multiply(double[,] m1, double[,] m2)
+        {
+            int row1 = m1.GetUpperBound(0) + 1;
+            int col1 = m1.GetUpperBound(1) + 1;
+            int row2 = m2.GetUpperBound(0) + 1;
+            int col2 = m2.GetUpperBound(1) + 1;
+
+            if (col1 != row2)
+            {
+                Debug.Log("Matrix multiplication with uncompatible matrix sizes");
+                return new double[1, 1];
+            }
+            else
+            {
+                double[,] response = new double[row1, col2];
+                for (int i = 0; i < row1; i++)
+                {
+                    for (int j = 0; j < col2; j++)
+                    {
+                        double sum = 0d;
+                        for (int k = 0; k < col1; k++)
+                        {
+                            sum += m1[i, k] * m2[k, j];
+                        }
+                        response[i, j] = sum;
+                    }
+                }
+                return response;
+            }
+        }
+
+        public static double[,] Identity(int p)
+        {
+            double[,] response = new double[p, p];
+            for (int i = 0; i < p; i++)
+            {
+                response[i, i] = 1d;
+            }
+            return response;
+        }
+
+        public static double[] ArrayToColumnArray(double[,] m)
+        {
+            int row = m.GetUpperBound(0) + 1;
+            int col = m.GetUpperBound(1) + 1;
+            if (col != 1)
+            {
+                Debug.Log("Impossible to make a column array.");
+                return new double[1];
+            }
+            else
+            {
+                double[] response = new double[row];
+                for (int i = 0; i < row; i++)
+                {
+                    response[i] = m[i, 0];
+                }
+                return response;
+            }
+        }
+
     }
+
+    public class Bezier
+    {
+        public static float EvaluateBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, int frame)
+        {
+            if ((float)frame == A.x)
+                return A.y;
+
+            if ((float)frame == D.x)
+                return D.y;
+
+            float pmin = 0;
+            float pmax = 1;
+            Vector2 avg = A;
+            float dt = D.x - A.x;
+            int safety = 0;
+            while (dt > 0.1f)
+            {
+                float param = (pmin + pmax) * 0.5f;
+                avg = CubicBezier(A, B, C, D, param);
+                if (avg.x < frame)
+                {
+                    pmin = param;
+                }
+                else
+                {
+                    pmax = param;
+                }
+                dt = Mathf.Abs(avg.x - (float)frame);
+                if (safety > 1000)
+                {
+                    Debug.LogError("bezier job error");
+                    break;
+                }
+                else safety++;
+            }
+            return avg.y;
+        }
+
+        public static Vector2 CubicBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, float t)
+        {
+            float invT1 = 1 - t;
+            float invT2 = invT1 * invT1;
+            float invT3 = invT2 * invT1;
+
+            float t2 = t * t;
+            float t3 = t2 * t;
+
+            return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
+        }
+
+        public static float CubicBezier(float A, float B, float C, float D, float t)
+        {
+            float invT1 = 1 - t;
+            float invT2 = invT1 * invT1;
+            float invT3 = invT2 * invT1;
+
+            float t2 = t * t;
+            float t3 = t2 * t;
+
+            return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
+        }
+
+    }
+
+
+
 }

@@ -1,7 +1,9 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
- *
+ * &
+ * Université de Rennes 1 / Invictus Project
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -39,7 +41,8 @@ namespace VRtist
 
             foreach (Curve curve in GlobalState.Animation.GetObjectAnimation(obj).curves.Values)
             {
-                new CommandRemoveKeyframe(gObject, curve.property, frame).Submit();
+                if (curve.HasKeyAt(frame))
+                    new CommandRemoveKeyframe(gObject, curve.property, frame).Submit();
             }
         }
 

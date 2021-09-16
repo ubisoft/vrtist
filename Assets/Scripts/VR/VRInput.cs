@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -327,21 +329,6 @@ namespace VRtist
             }
         }
 
-        static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<float> usage, bool value)
-        {
-            if (!currentControllerValues.ContainsKey(controller)) { return; }
-
-            ControllerValues controllerValue = currentControllerValues[controller];
-            if (usage == CommonUsages.trigger)
-            {
-                controllerValue.triggerButtonPressed = value;
-            }
-            if (usage == CommonUsages.grip)
-            {
-                controllerValue.gripButtonPressed = value;
-            }
-        }
-
         static void UpdateControllerValue(InputDevice controller, InputFeatureUsage<bool> usage, bool value)
         {
             if (!currentControllerValues.ContainsKey(controller)) { return; }
@@ -428,7 +415,6 @@ namespace VRtist
                     value.y = 0;
                 }
                 return value;
-                //return controllerValue.primary2DAxis;
             }
             return Vector2.zero;
         }
@@ -538,7 +524,7 @@ namespace VRtist
                     if (device.characteristics == (InputDeviceCharacteristics.HeadMounted | InputDeviceCharacteristics.TrackedDevice)) { head = device; }
                     if (device.characteristics == (InputDeviceCharacteristics.Right | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { primaryController = device; }
                     if (device.characteristics == (InputDeviceCharacteristics.Left | InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.TrackedDevice)) { secondaryController = device; }
-                    Debug.Log(string.Format("Device found with name '{0}' and role '{1}'", device.name, device.characteristics.ToString()));
+                    //Debug.Log(string.Format("Device found with name '{0}' and role '{1}'", device.name, device.characteristics.ToString()));
                 }
                 if (!head.isValid) { Debug.LogWarning("Generic device not found !!"); }
                 if (!secondaryController.isValid) { Debug.LogWarning("Left device not found !!"); }

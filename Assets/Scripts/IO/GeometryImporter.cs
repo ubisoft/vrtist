@@ -75,6 +75,11 @@ namespace VRtist
             importer.Import(filename, parent, synchronous);
         }
 
+        public void GenerateImportSkeleton(Transform root, RigController rootController)
+        {
+            importer.GenerateSkeleton(root, rootController);
+        }
+
         public Task<GameObject> ImportObjectAsync(string filename, Transform parent)
         {
             task = new TaskCompletionSource<GameObject>();

@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,6 +105,7 @@ namespace VRtist
                 {
                     GameObject instance = SceneManager.InstantiateObject(item.prefab);
                     AddObject(instance);
+                    GlobalState.Animation.CopyAnimation(item.prefab, instance);
                 }
             }
             selectedItem = -1;
@@ -138,6 +141,11 @@ namespace VRtist
                         controller.isImported = true;
                         controller.importPath = item.assetName;
                     }
+                    if (controller is RigController)
+                    {
+                        controller.isImported = true;
+                        controller.importPath = item.assetName;
+                    }
                 }
 
                 // Set the object size to 20cm in the user space
@@ -147,6 +155,13 @@ namespace VRtist
                     if (!useDefaultInstantiationScale)
                     {
                         bounds.Encapsulate(subMeshFilter.mesh.bounds);
+                    }
+                }
+                foreach (var subSkinneMesh in newObject.GetComponentsInChildren<SkinnedMeshRenderer>())
+                {
+                    if (!useDefaultInstantiationScale)
+                    {
+                        bounds.Encapsulate(subSkinneMesh.sharedMesh.bounds);
                     }
                 }
                 if (bounds.size.magnitude > 0)

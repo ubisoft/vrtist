@@ -66,13 +66,28 @@ namespace VRtist
             get { return displayFPS; }
             set { displayFPS = value; onSettingsChanged.Invoke(); }
         }
-
-        public bool display3DCurves = true;
+        //Animation Displays
+        private bool display3DCurves = true;
         public bool Display3DCurves
         {
             get { return display3DCurves; }
             set { display3DCurves = value; onSettingsChanged.Invoke(); }
         }
+
+        private bool displaySkeletons = true;
+        public bool DisplaySkeletons
+        {
+            get { return displaySkeletons; }
+            set { displaySkeletons = value; onSettingsChanged.Invoke(); }
+        }
+
+        public float curveForwardOffset = 0f;
+        public float CurveForwardOffset
+        {
+            get { return curveForwardOffset; }
+            set { curveForwardOffset = value; onSettingsChanged.Invoke(); }
+        }
+
         public float masterVolume = 0f;
         public float ambientVolume = -35f;
         public float uiVolume = 0f;

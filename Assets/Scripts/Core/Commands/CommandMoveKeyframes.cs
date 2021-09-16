@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,25 +40,55 @@ namespace VRtist
             AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(obj);
             if (null == animationSet)
                 return;
+
+            bool isHuman = obj.TryGetComponent(out RigController skinController);
+
             foreach (Curve curve in animationSet.curves.Values)
             {
                 new CommandMoveKeyframe(gObject, curve.property, frame, newFrame).Submit();
+            }
+
+            if (isHuman)
+            {
+                foreach (Transform child in obj.transform)
+                {
+                    RecursiveMoveKeyframe(child, frame, newFrame);
+                }
+            }
+        }
+
+        private void RecursiveMoveKeyframe(Transform target, int frame, int newFrame)
+        {
+            AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(target.gameObject);
+            if (animationSet != null)
+            {
+                foreach (Curve curve in animationSet.curves.Values)
+                {
+                    new CommandMoveKeyframe(target.gameObject, curve.property, frame, newFrame).Submit();
+                }
+            }
+            foreach (Transform child in target)
+            {
+                RecursiveMoveKeyframe(child, frame, newFrame);
             }
         }
 
         public override void Undo()
         {
             base.Undo();
+            GlobalState.Animation.onChangeCurve.Invoke(gObject, AnimatableProperty.PositionX);
         }
 
         public override void Redo()
         {
             base.Redo();
-
+            GlobalState.Animation.onChangeCurve.Invoke(gObject, AnimatableProperty.PositionX);
         }
+
         public override void Submit()
         {
             base.Submit();
+            GlobalState.Animation.onChangeCurve.Invoke(gObject, AnimatableProperty.PositionX);
         }
     }
 }

@@ -27,7 +27,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
-
+using Unity.Collections;
 using UnityEngine;
 
 namespace VRtist
@@ -47,6 +47,17 @@ namespace VRtist
 
         private Transform rootBone;
         private bool isHuman;
+        private Vector3 meshCenter;
+        private Vector3 meshSize;
+        private SkinnedMeshRenderer bodyMesh;
+        private int importCount;
+
+        private List<string> GoalNames = new List<string>()
+        {
+            "LeftLeg","LeftFoot","RightLeg","RightFoot","LeftShoulder","RightShoulder","LeftForeArm","LeftHand","RightForeArm","RightHand","Head"
+        };
+
+        public RigConfiguration rigConfiguration;
 
         // We consider that half of the total time is spent inside the assimp engine
         // A quarter of the total time is necessary to create meshes
@@ -213,6 +224,8 @@ namespace VRtist
             meshes = new List<SubMeshComponent>();
             bones = new Dictionary<string, Transform>();
             delayedMesh = new Dictionary<Assimp.Node, GameObject>();
+            meshCenter = Vector3.zero;
+            meshSize = Vector3.zero;
 
             //textures = new Dictionary<string, Texture2D>();   
         }
@@ -338,10 +351,10 @@ namespace VRtist
             int i = 0;
             foreach (Assimp.Mesh assimpMesh in scene.Meshes)
             {
+                GlobalState.Instance.messageBox.ShowMessage("Importing Meshes : " + i + " / " + scene.MeshCount);
                 if (assimpMesh.HasBones) isHuman = true;
 
                 SubMeshComponent subMeshComponent = ImportMesh(assimpMesh);
-
                 meshes.Add(subMeshComponent);
                 i++;
 
@@ -388,7 +401,8 @@ namespace VRtist
             Material transpMat = Resources.Load<Material>("Materials/ObjectTransparent");
             foreach (Assimp.Material assimpMaterial in scene.Materials)
             {
-                if (assimpMaterial.HasOpacity && assimpMaterial.Opacity < 0.99f)
+                GlobalState.Instance.messageBox.ShowMessage("Importing Materials : " + i + " / " + scene.MaterialCount);
+                if (assimpMaterial.HasOpacity && !assimpMaterial.HasColorTransparent)
                 {
                     materials.Add(new Material(transpMat));
                 }
@@ -416,33 +430,38 @@ namespace VRtist
                     Color baseColor = new Color(assimpMaterial.ColorDiffuse.R, assimpMaterial.ColorDiffuse.G, assimpMaterial.ColorDiffuse.B, assimpMaterial.ColorDiffuse.A);
                     material.SetColor("_BaseColor", baseColor);
                 }
+                if (assimpMaterial.HasTextureOpacity)
+                {
+                    Assimp.TextureSlot tslot = assimpMaterial.TextureOpacity;
+                    GetTexture(tslot, out Texture2D texture, out float useMap);
+                    material.SetFloat("_UseOpacityMap", useMap);
+                    material.SetTexture("_OpacityMap", texture);
+                }
                 if (assimpMaterial.HasOpacity && assimpMaterial.Opacity < 1.0f)
                 {
                     material.SetFloat("_Opacity", assimpMaterial.Opacity);
                 }
                 if (assimpMaterial.HasTextureDiffuse)
                 {
+                    //Assimp.TextureSlot[] slots = assimpMaterial.GetAllMaterialTextures();
                     Assimp.TextureSlot tslot = assimpMaterial.TextureDiffuse;
-                    string fullpath = Path.IsPathRooted(tslot.FilePath) ? tslot.FilePath : directoryName + "\\" + tslot.FilePath;
-                    if (File.Exists(fullpath))
-                    {
-                        Texture2D texture = GetOrCreateTextureFromFile(fullpath);
-                        material.SetFloat("_UseColorMap", 1f);
-                        material.SetTexture("_ColorMap", texture);
-                    }
-                    else
-                    {
-                        List<Assimp.EmbeddedTexture> texts = scene.Textures;
-                        if (texts.Count > 0)
-                        {
-                            byte[] data = texts[0].CompressedData;
-                            Texture2D tex = new Texture2D(1, 1);
-                            tex.LoadImage(data);
-                            material.SetFloat("_UseColorMap", 1f);
-                            material.SetTexture("_ColorMap", tex);
-                        }
-
-                    }
+                    GetTexture(tslot, out Texture2D texture, out float useMap);
+                    material.SetFloat("_UseColorMap", useMap);
+                    material.SetTexture("_ColorMap", texture);
+                }
+                if (assimpMaterial.HasTextureNormal)
+                {
+                    Assimp.TextureSlot tslot = assimpMaterial.TextureNormal;
+                    GetTexture(tslot, out Texture2D texture, out float useMap);
+                    material.SetFloat("_UseNormalMap", useMap);
+                    material.SetTexture("_NormalMap", texture);
+                }
+                if (assimpMaterial.HasTextureEmissive)
+                {
+                    Assimp.TextureSlot tslot = assimpMaterial.TextureEmissive;
+                    GetTexture(tslot, out Texture2D texture, out float useMap);
+                    material.SetFloat("_UseEmissiveMap", useMap);
+                    material.SetTexture("_EmissiveMap", texture);
                 }
                 i++;
 
@@ -451,6 +470,28 @@ namespace VRtist
             }
         }
 
+        private void GetTexture(Assimp.TextureSlot tslot, out Texture2D texture, out float useColorMap)
+        {
+            string fullpath = Path.IsPathRooted(tslot.FilePath) ? tslot.FilePath : directoryName + "\\" + tslot.FilePath;
+            texture = new Texture2D(1, 1, TextureFormat.RGBA32, 0, true);
+            useColorMap = 0f;
+            if (File.Exists(fullpath))
+            {
+                texture = GetOrCreateTextureFromFile(fullpath);
+                useColorMap = 1f;
+            }
+            else
+            {
+                List<Assimp.EmbeddedTexture> texts = scene.Textures;
+                Assimp.EmbeddedTexture diffuseTexture = texts.Find(x => x.Filename == tslot.FilePath);
+                if (diffuseTexture != null)
+                {
+                    byte[] data = diffuseTexture.CompressedData;
+                    texture.LoadImage(data);
+                    useColorMap = 1f;
+                }
+            }
+        }
 
         private void AssignMeshes(Assimp.Node node, GameObject parent)
         {
@@ -474,7 +515,7 @@ namespace VRtist
                 mats[i] = materials[meshes[indice].materialIndex];
                 i++;
             }
-            AddNormalMesh(node, parent, mats, combine);
+            AddSimpleMesh(node, parent, mats, combine);
 
             progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
         }
@@ -488,7 +529,7 @@ namespace VRtist
             foreach (int indice in node.MeshIndices)
             {
                 combine[i].mesh = meshes[indice].mesh;
-                combine[i].transform = Matrix4x4.identity;
+                combine[i].transform = parent.transform.worldToLocalMatrix;
                 mats[i] = materials[meshes[indice].materialIndex];
                 i++;
             }
@@ -500,77 +541,40 @@ namespace VRtist
         {
             SkinnedMeshRenderer meshRenderer = parent.AddComponent<SkinnedMeshRenderer>();
             List<List<Assimp.Bone>> meshBones = new List<List<Assimp.Bone>>();
+            Dictionary<int, List<BoneWeight1>> VertexBonesWeights = new Dictionary<int, List<BoneWeight1>>();
             List<Transform[]> bonesArray = new List<Transform[]>();
             List<Matrix4x4[]> bindPoses = new List<Matrix4x4[]>();
-            List<BoneWeight[]> bonesWeights = new List<BoneWeight[]>();
+            //Debug.Log(node.Name + " / " + parent.name);
 
+            int previousVertexCount = 0;
             for (int iMesh = 0; iMesh < node.MeshIndices.Count; iMesh++)
             {
                 Assimp.Mesh currentMesh = scene.Meshes[node.MeshIndices[iMesh]];
                 meshBones.Add(currentMesh.Bones);
                 bonesArray.Add(new Transform[currentMesh.BoneCount]);
                 bindPoses.Add(new Matrix4x4[currentMesh.BoneCount]);
-                bonesWeights.Add(new BoneWeight[currentMesh.VertexCount]);
 
                 for (int iBone = 0; iBone < bonesArray[iMesh].Length; iBone++)
                 {
-                    if (!bones.ContainsKey(meshBones[iMesh][iBone].Name))
+                    Assimp.Bone currentBones = meshBones[iMesh][iBone];
+                    if (!bones.ContainsKey(currentBones.Name))
                     {
-                        Debug.Log("missing bone " + meshBones[iMesh][iBone].Name);
+                        Debug.Log("missing bone " + currentBones.Name);
                         continue;
                     }
-                    bonesArray[iMesh][iBone] = bones[meshBones[iMesh][iBone].Name];
+                    bonesArray[iMesh][iBone] = bones[currentBones.Name];
                     bindPoses[iMesh][iBone] = bonesArray[iMesh][iBone].worldToLocalMatrix;
 
-                    for (int iVertex = 0; iVertex < meshBones[iMesh][iBone].VertexWeightCount; iVertex++)
+                    for (int iVertex = 0; iVertex < currentBones.VertexWeightCount; iVertex++)
                     {
-                        int vertexIndex = meshBones[iMesh][iBone].VertexWeights[iVertex].VertexID;
-                        float weight = meshBones[iMesh][iBone].VertexWeights[iVertex].Weight;
-                        if (bonesWeights[iMesh][vertexIndex].weight0 <= weight)
-                        {
-                            bonesWeights[iMesh][vertexIndex].boneIndex1 = bonesWeights[iMesh][vertexIndex].boneIndex0;
-                            bonesWeights[iMesh][vertexIndex].weight1 = bonesWeights[iMesh][vertexIndex].weight0;
-                            bonesWeights[iMesh][vertexIndex].boneIndex0 = iBone;
-                            bonesWeights[iMesh][vertexIndex].weight0 = weight;
-                            continue;
-                        }
-                        if (bonesWeights[iMesh][vertexIndex].weight1 <= weight)
-                        {
-                            bonesWeights[iMesh][vertexIndex].boneIndex2 = bonesWeights[iMesh][vertexIndex].boneIndex1;
-                            bonesWeights[iMesh][vertexIndex].weight2 = bonesWeights[iMesh][vertexIndex].weight1;
-                            bonesWeights[iMesh][vertexIndex].boneIndex1 = iBone;
-                            bonesWeights[iMesh][vertexIndex].weight1 = weight;
-                            continue;
-                        }
-                        if (bonesWeights[iMesh][vertexIndex].weight2 <= weight)
-                        {
-                            bonesWeights[iMesh][vertexIndex].boneIndex3 = bonesWeights[iMesh][vertexIndex].boneIndex2;
-                            bonesWeights[iMesh][vertexIndex].weight3 = bonesWeights[iMesh][vertexIndex].weight2;
-                            bonesWeights[iMesh][vertexIndex].boneIndex2 = iBone;
-                            bonesWeights[iMesh][vertexIndex].weight2 = weight;
-                            continue;
-                        }
-                        if (bonesWeights[iMesh][vertexIndex].weight3 == 0)
-                        {
-                            bonesWeights[iMesh][vertexIndex].boneIndex3 = iBone;
-                            bonesWeights[iMesh][vertexIndex].weight3 = weight;
-                            continue;
-                        }
-                        else
-                        {
-                            Debug.Log("A vertices has more than 4 bones weight");
-                            break;
-                        }
+                        int vertexIndex = currentBones.VertexWeights[iVertex].VertexID + previousVertexCount;
+                        float weight = currentBones.VertexWeights[iVertex].Weight;
+                        BoneWeight1 boneWeight = new BoneWeight1() { boneIndex = iBone, weight = weight };
+                        if (!VertexBonesWeights.ContainsKey(vertexIndex)) VertexBonesWeights.Add(vertexIndex, new List<BoneWeight1>());
+                        VertexBonesWeights[vertexIndex].Add(boneWeight);
                     }
                 }
-                for (int vert = 0; vert < bonesWeights[iMesh].Length; vert++)
-                {
-                    float totalWeight = bonesWeights[iMesh][vert].weight0 + bonesWeights[iMesh][vert].weight1 + bonesWeights[iMesh][vert].weight2 + bonesWeights[iMesh][vert].weight3;
-                    if (totalWeight != 1)
-                    {
-                        bonesWeights[iMesh][vert].weight0 += (1 - totalWeight);
-                    }
-                }
+                previousVertexCount += currentMesh.VertexCount;
             }
 
             List<Assimp.Bone> meshBonesFlat = new List<Assimp.Bone>();
@@ -580,19 +584,44 @@ namespace VRtist
             List<Matrix4x4> bindPosesFlat = new List<Matrix4x4>();
             bindPoses.ForEach(x => bindPosesFlat.AddRange(x));
             List<BoneWeight> bonesWeightsFlat = new List<BoneWeight>();
-            bonesWeights.ForEach(x => bonesWeightsFlat.AddRange(x));
+            byte[] bonesPerVertes = new byte[VertexBonesWeights.Count];
+            List<BoneWeight1> bw = new List<BoneWeight1>();
+            for (int i = 0; i < VertexBonesWeights.Count; i++)
+            {
+                bonesPerVertes[i] = (byte)VertexBonesWeights[i].Count;
+                VertexBonesWeights[i].Sort((x, y) =>
+                {
+                    if (x == null)
+                    {
+                        if (y == null) return 0;
+                        else return -1;
+                    }
+                    else
+                    {
+                        if (y == null) return 1;
+                        else return -x.weight.CompareTo(y.weight);
+                    }
+                });
+                bw.AddRange(VertexBonesWeights[i]);
+            }
 
             meshRenderer.bones = bonesArrayFlat.ToArray();
             meshRenderer.sharedMesh = new Mesh();
             meshRenderer.sharedMesh.bindposes = bindPosesFlat.ToArray();
             meshRenderer.sharedMesh.CombineMeshes(combine, false);
-            meshRenderer.sharedMesh.boneWeights = bonesWeightsFlat.ToArray();
+            meshRenderer.sharedMesh.SetBoneWeights(new NativeArray<byte>(bonesPerVertes, Allocator.Temp), new NativeArray<BoneWeight1>(bw.ToArray(), Allocator.Temp));
             meshRenderer.sharedMesh.name = meshes[node.MeshIndices[0]].name;
             meshRenderer.sharedMaterials = mats;
             meshRenderer.rootBone = rootBone;
+            if (meshRenderer.sharedMesh.bounds.size.magnitude > meshSize.magnitude)
+            {
+                meshCenter = meshRenderer.bounds.center;
+                meshSize = meshRenderer.bounds.size;
+                bodyMesh = meshRenderer;
+            }
         }
 
-        private void AddNormalMesh(Assimp.Node node, GameObject parent, Material[] mats, CombineInstance[] combine)
+        private void AddSimpleMesh(Assimp.Node node, GameObject parent, Material[] mats, CombineInstance[] combine)
         {
             MeshFilter meshFilter = parent.AddComponent<MeshFilter>();
             MeshRenderer meshRenderer = parent.AddComponent<MeshRenderer>();
@@ -606,12 +635,12 @@ namespace VRtist
         }
 
 
-        private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
+        private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go, Matrix4x4 cumulMatrix, Quaternion preRotation)
         {
             if (parent != null && parent != go.transform)
                 go.transform.parent = parent;
 
-
+            GlobalState.Instance.messageBox.ShowMessage("Importing Hierarchy : " + importCount);
             // Do not use Assimp Decompose function, it does not work properly
             // use unity decomposition instead
             Matrix4x4 mat = new Matrix4x4(
@@ -620,10 +649,69 @@ namespace VRtist
                 new Vector4(node.Transform.A3, node.Transform.B3, node.Transform.C3, node.Transform.D3),
                 new Vector4(node.Transform.A4, node.Transform.B4, node.Transform.C4, node.Transform.D4)
                 );
-
             Vector3 position, scale;
             Quaternion rotation;
             Maths.DecomposeMatrix(mat, out position, out rotation, out scale);
+            Maths.DecomposeMatrix(cumulMatrix, out Vector3 cumulPos, out Quaternion cumulRot, out Vector3 cumulScale);
+
+            position = (cumulRot * position) + cumulPos;
+            node.Transform.Decompose(out Assimp.Vector3D scale1, out Assimp.Quaternion rot, out Assimp.Vector3D trans);
+            AssignMeshes(node, go);
+
+            if (node.Parent != null)
+            {
+                go.transform.localPosition = position;
+                go.transform.localRotation = rotation;
+                go.transform.localScale = scale;
+                go.name = isHuman ? node.Name : Utils.CreateUniqueName(node.Name);
+                if (isHuman)
+                {
+                    if (bones.ContainsKey(node.Name))
+                    {
+                        bones[node.Name] = go.transform;
+                    }
+                    if (node.Name.Contains("Hips")) rootBone = go.transform;
+                }
+            }
+
+
+            if (scene.HasAnimations)
+            {
+                ImportAnimation(node, go, preRotation);
+            }
+
+            mat = Matrix4x4.TRS(Vector3.zero, cumulRot * rotation, scale);
+            importCount++;
+            foreach (Assimp.Node assimpChild in node.Children)
+            {
+                GameObject child = new GameObject();
+                if (blocking)
+                    ImportHierarchy(assimpChild, go.transform, child, mat, Quaternion.identity).MoveNext();
+                else
+                    yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child, mat, Quaternion.identity));
+            }
+
+        }
+
+        private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
+        {
+            if (parent != null && parent != go.transform)
+                go.transform.parent = parent;
+
+            GlobalState.Instance.messageBox.ShowMessage("Importing Hierarchy : " + importCount);
+            // Do not use Assimp Decompose function, it does not work properly
+            // use unity decomposition instead
+            Matrix4x4 mat = new Matrix4x4(
+                new Vector4(node.Transform.A1, node.Transform.B1, node.Transform.C1, node.Transform.D1),
+                new Vector4(node.Transform.A2, node.Transform.B2, node.Transform.C2, node.Transform.D2),
+                new Vector4(node.Transform.A3, node.Transform.B3, node.Transform.C3, node.Transform.D3),
+                new Vector4(node.Transform.A4, node.Transform.B4, node.Transform.C4, node.Transform.D4)
+                );
+            Vector3 position, scale;
+            Quaternion rotation;
+            Maths.DecomposeMatrix(mat, out position, out rotation, out scale);
+
+            node.Transform.Decompose(out Assimp.Vector3D scale1, out Assimp.Quaternion rot, out Assimp.Vector3D trans);
 
             AssignMeshes(node, go);
 
@@ -643,72 +731,79 @@ namespace VRtist
                 }
             }
 
+
             if (scene.HasAnimations)
             {
-                if (blocking)
-                {
-                    ImportAnimation(node, go).MoveNext();
-                }
-                else
-                {
-                    yield return StartCoroutine(ImportAnimation(node, go));
-                }
+                ImportAnimation(node, go, Quaternion.identity);
             }
 
-
+            importCount++;
             foreach (Assimp.Node assimpChild in node.Children)
             {
                 GameObject child = new GameObject();
-                child.tag = "PhysicObject";
+                child.tag = "Goal";
                 if (blocking)
                     ImportHierarchy(assimpChild, go.transform, child).MoveNext();
                 else
                     yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child));
             }
-
         }
 
-        private IEnumerator ImportAnimation(Assimp.Node node, GameObject go)
+
+        private void ImportAnimation(Assimp.Node node, GameObject go, Quaternion initRotation)
         {
             Assimp.Animation animation = scene.Animations[0];
+            if ((GlobalState.Animation.fps / (float)animation.TicksPerSecond) * animation.DurationInTicks > GlobalState.Animation.EndFrame)
+            {
+                GlobalState.Animation.EndFrame = Mathf.CeilToInt(GlobalState.Animation.fps / (float)animation.TicksPerSecond * (float)animation.DurationInTicks) + 1;
+            }
             Assimp.NodeAnimationChannel nodeChannel = animation.NodeAnimationChannels.Find(x => x.NodeName == node.Name);
+            //if (nodeChannel == null) nodeChannel = animation.NodeAnimationChannels.Find(x => x.NodeName.Split('_')[0] == node.Name);
             if (null != nodeChannel)
             {
-
                 AnimationSet animationSet = new AnimationSet(go);
                 animationSet.ComputeCache();
-                foreach (Assimp.VectorKey vectorKey in nodeChannel.PositionKeys)
+                if (nodeChannel.PositionKeyCount > 1 || nodeChannel.RotationKeyCount == nodeChannel.PositionKeyCount)
+                {
+                    foreach (Assimp.VectorKey vectorKey in nodeChannel.PositionKeys)
+                    {
+                        int frame = Mathf.CeilToInt((float)vectorKey.Time * GlobalState.Animation.fps / (float)animation.TicksPerSecond) + 1;
+                        animationSet.curves[AnimatableProperty.PositionX].AddKey(new AnimationKey(frame, vectorKey.Value.X, Interpolation.Bezier));
+                        animationSet.curves[AnimatableProperty.PositionY].AddKey(new AnimationKey(frame, vectorKey.Value.Y, Interpolation.Bezier));
+                        animationSet.curves[AnimatableProperty.PositionZ].AddKey(new AnimationKey(frame, vectorKey.Value.Z, Interpolation.Bezier));
+                    }
+                }
+                foreach (Assimp.VectorKey vectorKey in nodeChannel.ScalingKeys)
                 {
                     int frame = Mathf.CeilToInt((float)vectorKey.Time * GlobalState.Animation.fps / (float)animation.TicksPerSecond) + 1;
-                    animationSet.curves[AnimatableProperty.PositionX].AddKey(new AnimationKey(frame, vectorKey.Value.X));
-                    animationSet.curves[AnimatableProperty.PositionY].AddKey(new AnimationKey(frame, vectorKey.Value.Y));
-                    animationSet.curves[AnimatableProperty.PositionZ].AddKey(new AnimationKey(frame, vectorKey.Value.Z));
+                    animationSet.curves[AnimatableProperty.ScaleX].AddKey(new AnimationKey(frame, vectorKey.Value.X, Interpolation.Bezier));
+                    animationSet.curves[AnimatableProperty.ScaleY].AddKey(new AnimationKey(frame, vectorKey.Value.Y, Interpolation.Bezier));
+                    animationSet.curves[AnimatableProperty.ScaleZ].AddKey(new AnimationKey(frame, vectorKey.Value.Z, Interpolation.Bezier));
                 }
                 Vector3 previousRotation = Vector3.zero;
                 foreach (Assimp.QuaternionKey quaternionKey in nodeChannel.RotationKeys)
                 {
                     int frame = Mathf.RoundToInt((float)quaternionKey.Time * GlobalState.Animation.fps / (float)animation.TicksPerSecond) + 1;
                     Quaternion uQuaternion = new Quaternion(quaternionKey.Value.X, quaternionKey.Value.Y, quaternionKey.Value.Z, quaternionKey.Value.W);
+
                     Vector3 eulerValue = uQuaternion.eulerAngles;
                     eulerValue.x = previousRotation.x + Mathf.DeltaAngle(previousRotation.x, eulerValue.x);
                     eulerValue.y = previousRotation.y + Mathf.DeltaAngle(previousRotation.y, eulerValue.y);
                     eulerValue.z = previousRotation.z + Mathf.DeltaAngle(previousRotation.z, eulerValue.z);
-                    animationSet.curves[AnimatableProperty.RotationX].AddKey(new AnimationKey(frame, eulerValue.x));
-                    animationSet.curves[AnimatableProperty.RotationY].AddKey(new AnimationKey(frame, eulerValue.y));
-                    animationSet.curves[AnimatableProperty.RotationZ].AddKey(new AnimationKey(frame, eulerValue.z));
+                    animationSet.curves[AnimatableProperty.RotationX].AddKey(new AnimationKey(frame, eulerValue.x, Interpolation.Bezier));
+                    animationSet.curves[AnimatableProperty.RotationY].AddKey(new AnimationKey(frame, eulerValue.y, Interpolation.Bezier));
+                    animationSet.curves[AnimatableProperty.RotationZ].AddKey(new AnimationKey(frame, eulerValue.z, Interpolation.Bezier));
                     previousRotation = eulerValue;
                 }
 
                 GlobalState.Animation.SetObjectAnimations(go, animationSet);
-                if (!blocking)
-                {
-                    yield return null;
-                }
             }
         }
 
+
         private IEnumerator ImportScene(string fileName, Transform root = null)
         {
+
             if (blocking)
                 ImportMaterials().MoveNext();
             else
@@ -726,14 +821,54 @@ namespace VRtist
             objectRoot.name = Utils.CreateUniqueName(Path.GetFileNameWithoutExtension(fileName));
             objectRoot.transform.parent = root;
             objectRoot.transform.localPosition = Vector3.zero;
-            objectRoot.transform.localScale = new Vector3(-1, 1, 1);
-            objectRoot.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            if (!isHuman)
+            {
+                objectRoot.transform.localScale = new Vector3(-1, 1, 1);
+                objectRoot.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            }
 
+            importCount = 1;
             if (blocking)
                 ImportHierarchy(scene.RootNode, root, objectRoot).MoveNext();
             else
                 yield return StartCoroutine(ImportHierarchy(scene.RootNode, root, objectRoot));
+
+            if (null == rootBone)
+            {
+                foreach (Transform child in objectRoot.transform)
+                {
+                    if (child.childCount > 0) rootBone = child;
+                }
+            }
+
+            foreach (KeyValuePair<Assimp.Node, GameObject> pair in delayedMesh)
+            {
+                AssignSkinnedMeshes(pair.Key, pair.Value);
+            }
+
+            if (isHuman)
+            {
+                objectRoot.tag = "PhysicObject";
+                BoxCollider objectCollider = objectRoot.AddComponent<BoxCollider>();
+                objectCollider.center = meshCenter;
+                objectCollider.size = meshSize;
+                bodyMesh.updateWhenOffscreen = true;
+
+                RigController skinMesh = objectRoot.AddComponent<RigController>();
+                skinMesh.SkinMesh = bodyMesh;
+                skinMesh.Collider = objectCollider;
+                skinMesh.RootObject = rootBone;
+
+                GenerateSkeleton(rootBone, skinMesh);
+            }
+
         }
+
+        public void GenerateSkeleton(Transform root, RigController rootController)
+        {
+            rigConfiguration.GenerateGoalController(rootController, root, new List<Transform>());
+        }
+
 
         private async Task<Assimp.Scene> ImportAssimpFile(string fileName)
         {

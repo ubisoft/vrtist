@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,8 @@
 
 using System;
 using System.Collections.Generic;
-
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 
 namespace VRtist
@@ -61,10 +64,10 @@ namespace VRtist
             int length = -1;
             if (null != cachedValues)
                 length = cachedValues.Length - 1;
-            ComputeCacheValues(0, length);
+            ComputeCacheJob(0, length);
         }
 
-        private void ComputeCacheValues(int startIndex, int endIndex)
+        private void ComputeCacheJob(int startIndex, int endIndex)
         {
             if (null == cachedValues || cachedValues.Length != GlobalState.Animation.EndFrame - GlobalState.Animation.StartFrame + 1)
             {
@@ -73,13 +76,31 @@ namespace VRtist
                 endIndex = cachedValues.Length - 1;
             }
 
-            for (int i = startIndex; i <= endIndex; i++)
+            NativeArray<keyStruct> keysStructs = new NativeArray<keyStruct>(keys.Count, Allocator.TempJob);
+            NativeArray<int> keysIndices = new NativeArray<int>(cachedKeysIndices, Allocator.TempJob);
+            NativeArray<float> values = new NativeArray<float>(endIndex - startIndex, Allocator.TempJob);
+
+            for (int i = 0; i < keys.Count; i++) keysStructs[i] = keyStruct.GetKeyStruct(keys[i]);
+
+            CurveEvalutationJobs job = new CurveEvalutationJobs()
             {
-                EvaluateCache(i + GlobalState.Animation.StartFrame, out cachedValues[i]);
-            }
+                Keys = keysStructs,
+                CachedKeysIndices = keysIndices,
+                firstIndex = startIndex + GlobalState.Animation.StartFrame,
+                Value = values
+            };
+
+            JobHandle jobHandle = job.Schedule(endIndex - startIndex, 20);
+            jobHandle.Complete();
+
+            for (int i = 0; i < (endIndex - startIndex); i++) cachedValues[i + startIndex] = values[i];
+
+            keysStructs.Dispose();
+            keysIndices.Dispose();
+            values.Dispose();
         }
 
-        private void ComputeCacheValuesAt(int keyIndex)
+        public void ComputeCacheValuesAt(int keyIndex)
         {
             // recompute value cache in range [index - 2 ; index + 2] (for bezier curves)            
             int startKeyIndex = keyIndex - 2;
@@ -93,7 +114,7 @@ namespace VRtist
             if (endKeyIndex >= 0 && endKeyIndex <= keys.Count - 1)
                 end = Mathf.Clamp(keys[endKeyIndex].frame - GlobalState.Animation.StartFrame, 0, cachedValues.Length - 1);
 
-            ComputeCacheValues(start, end);
+            ComputeCacheJob(start, end);
         }
 
         private void ComputeCacheIndices()
@@ -165,7 +186,7 @@ namespace VRtist
             }
         }
 
-        private bool GetKeyIndex(int frame, out int index)
+        public bool GetKeyIndex(int frame, out int index)
         {
             index = cachedKeysIndices[frame - GlobalState.Animation.StartFrame];
             if (index == -1)
@@ -175,13 +196,26 @@ namespace VRtist
             return key.frame == frame;
         }
 
-        public void SetKeys(List<AnimationKey> k)
+        public int GetPreviousKeyFrame(int frame)
         {
-            keys = k;
+            int index = cachedKeysIndices[frame - GlobalState.Animation.StartFrame];
+            if (index < 0) return 0;
+            return keys[index].frame;
+        }
+        public int GetNextKeyFrame(int frame)
+        {
+            int index = cachedKeysIndices[frame - GlobalState.Animation.StartFrame] + 1;
+            if (index >= keys.Count) return keys.Count - 1;
+            return keys[index].frame;
+        }
+
+        public void SetKeys(List<AnimationKey> newKeys)
+        {
+            newKeys.ForEach(x => keys.Add(new AnimationKey(x)));
             ComputeCache();
         }
 
-        public void RemoveKey(int frame)
+        public void RemoveKey(int frame, bool lockTangents = false)
         {
             if (GetKeyIndex(frame, out int index))
             {
@@ -193,6 +227,8 @@ namespace VRtist
 
                 keys.RemoveAt(index);
 
+                if (!lockTangents)
+                    InitializeTangents(index);
                 ComputeCacheValuesAt(index);
             }
         }
@@ -204,11 +240,18 @@ namespace VRtist
             keys.Add(key);
         }
 
-        public void AddKey(AnimationKey key)
+        public void AddKey(AnimationKey key, bool lockTangents = false)
         {
             if (GetKeyIndex(key.frame, out int index))
             {
                 keys[index] = key;
+                if (!lockTangents)
+                {
+                    PreviousTangent(index);
+                    NextTangent(index);
+                    if (key.inTangent == Vector2.zero && key.outTangent == Vector2.zero) CurrentTangent(index);
+                }
+
                 ComputeCacheValuesAt(index);
             }
             else
@@ -230,8 +273,251 @@ namespace VRtist
                 for (int i = end + 1; i < cachedKeysIndices.Length; i++)
                     cachedKeysIndices[i]++;
 
+                if (!lockTangents)
+                {
+                    PreviousTangent(index);
+                    NextTangent(index);
+                    if (key.inTangent == Vector2.zero && key.outTangent == Vector2.zero) CurrentTangent(index);
+                }
+
                 ComputeCacheValuesAt(index);
             }
+        }
+
+
+        private void PreviousTangent(int index)
+        {
+            index--;
+            if (index > -1 && index < keys.Count)
+            {
+                if (index == 0 && index == keys.Count - 1)
+                {
+                    keys[index].outTangent = new Vector2();
+                }
+                else
+                {
+                    Vector2 key = new Vector2(keys[index].frame, keys[index].value);
+
+                    if (index == 0)
+                    {
+                        Vector2 nextKey = new Vector2(keys[index + 1].frame, keys[index + 1].value);
+                        keys[index].outTangent = (nextKey - key) / 3f;
+                    }
+
+                    else if (index == keys.Count - 1)
+                    {
+                        Vector2 prevKey = new Vector2(keys[index - 1].frame, keys[index - 1].value);
+                        keys[index].outTangent = (key - prevKey) / 3f;
+                    }
+
+                    else
+                    {
+                        Vector2 prevKey = new Vector2(keys[index - 1].frame, keys[index - 1].value);
+                        Vector2 nextKey = new Vector2(keys[index + 1].frame, keys[index + 1].value);
+                        keys[index].outTangent = (nextKey - prevKey).normalized * ((nextKey.x - key.x) / 3f);
+                    }
+                }
+            }
+        }
+        private void NextTangent(int index)
+        {
+            index++;
+            if (index > -1 && index < keys.Count)
+            {
+                if (index == 0 && index == keys.Count - 1)
+                {
+                    keys[index].inTangent = new Vector2();
+                }
+                else
+                {
+                    Vector2 key = new Vector2(keys[index].frame, keys[index].value);
+
+                    if (index == 0)
+                    {
+                        Vector2 nextKey = new Vector2(keys[index + 1].frame, keys[index + 1].value);
+                        keys[index].inTangent = (nextKey - key) / 3f;
+                    }
+
+                    else if (index == keys.Count - 1)
+                    {
+                        Vector2 prevKey = new Vector2(keys[index - 1].frame, keys[index - 1].value);
+                        keys[index].inTangent = (key - prevKey) / 3f;
+                    }
+
+                    else
+                    {
+                        Vector2 prevKey = new Vector2(keys[index - 1].frame, keys[index - 1].value);
+                        Vector2 nextKey = new Vector2(keys[index + 1].frame, keys[index + 1].value);
+                        keys[index].inTangent = (nextKey - prevKey).normalized * ((key.x - prevKey.x) / 3f);
+                    }
+                }
+            }
+        }
+
+        private void CurrentTangent(int index)
+        {
+            if (index > -1 && index < keys.Count)
+            {
+                if (index == 0 && index == keys.Count - 1)
+                {
+                    keys[index].inTangent = new Vector2();
+                    keys[index].outTangent = new Vector2();
+                }
+                else
+                {
+                    Vector2 key = new Vector2(keys[index].frame, keys[index].value);
+
+                    if (index == 0)
+                    {
+                        Vector2 nextKey = new Vector2(keys[index + 1].frame, keys[index + 1].value);
+                        keys[index].inTangent = (nextKey - key) / 3f;
+                        keys[index].outTangent = (nextKey - key) / 3f;
+                    }
+
+                    else if (index == keys.Count - 1)
+                    {
+                        Vector2 prevKey = new Vector2(keys[index - 1].frame, keys[index - 1].value);
+                        keys[index].inTangent = (key - prevKey) / 3f;
+                        keys[index].outTangent = (key - prevKey) / 3f;
+                    }
+
+                    else
+                    {
+                        Vector2 prevKey = new Vector2(keys[index - 1].frame, keys[index - 1].value);
+                        Vector2 nextKey = new Vector2(keys[index + 1].frame, keys[index + 1].value);
+                        keys[index].inTangent = (nextKey - prevKey).normalized * ((key.x - prevKey.x) / 3f);
+                        keys[index].outTangent = (nextKey - prevKey).normalized * ((nextKey.x - key.x) / 3f);
+                    }
+                }
+            }
+        }
+
+        private void InitializeTangents(int index)
+        {
+            PreviousTangent(index);
+            CurrentTangent(index);
+            NextTangent(index);
+        }
+
+
+        /// <summary>
+        /// Add a key at startFrame and endFrame. Move every keys in between towards the new key value. Then add the new keyframe.
+        /// Used when draging a curve.
+        /// </summary>
+        public void AddZoneKey(AnimationKey key, int startFrame, int endFrame)
+        {
+            int firstKeyIndex = cachedKeysIndices[startFrame - (GlobalState.Animation.StartFrame - 1)];
+            int lastKeyIndex = cachedKeysIndices[endFrame - (GlobalState.Animation.StartFrame - 1)];
+
+            if (!Evaluate(key.frame, out float value)) return;
+            if (keys[firstKeyIndex].frame != startFrame && Evaluate(startFrame, out float prevValue))
+            {
+                AddKey(new AnimationKey(startFrame, prevValue, key.interpolation));
+            }
+            if (keys[lastKeyIndex].frame != endFrame && Evaluate(endFrame, out float nextValue))
+            {
+                AddKey(new AnimationKey(endFrame, nextValue, key.interpolation));
+            }
+
+            float deltaValue = key.value - value;
+            float zoneSize = endFrame - startFrame;
+            for (int i = firstKeyIndex; i <= lastKeyIndex; i++)
+            {
+                int deltaFrame = Mathf.Abs(key.frame - keys[i].frame);
+                float deltaTime = 1 - (deltaFrame / (float)zoneSize);
+
+                if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+                {
+                    keys[i].value = Mathf.LerpAngle(keys[i].value, keys[i].value + deltaValue, deltaTime);
+                }
+                else
+                {
+                    keys[i].value = Mathf.Lerp(keys[i].value, keys[i].value + deltaValue, deltaTime);
+                }
+                ComputeCacheValuesAt(i);
+            }
+            AddKey(key);
+        }
+
+        /// <summary>
+        /// Same as AddZoneKey, but fill oldKeys and newKeys instead of modifying the curve.
+        /// Used when the curve is released, to apply changes through commands
+        /// </summary>
+        public void GetZoneKeyChanges(AnimationKey key, int startFrame, int endFrame, List<AnimationKey> oldKeys, List<AnimationKey> newKeys)
+        {
+            int firstKeyIndex = cachedKeysIndices[startFrame - (GlobalState.Animation.StartFrame - 1)];
+            int lastKeyIndex = cachedKeysIndices[endFrame - (GlobalState.Animation.StartFrame - 1)];
+
+            if (!Evaluate(key.frame, out float value)) return;
+            if (keys[firstKeyIndex].frame != startFrame && Evaluate(startFrame, out float prevValue))
+            {
+                newKeys.Add(new AnimationKey(startFrame, prevValue, key.interpolation));
+            }
+            if (keys[lastKeyIndex].frame != endFrame && Evaluate(endFrame, out float nextValue))
+            {
+                newKeys.Add(new AnimationKey(endFrame, nextValue, key.interpolation));
+            }
+
+            float deltaValue = key.value - value;
+            float zoneSize = endFrame - startFrame;
+            for (int i = firstKeyIndex; i <= lastKeyIndex; i++)
+            {
+                int deltaFrame = Mathf.Abs(key.frame - keys[i].frame);
+                float deltaTime = 1 - (deltaFrame / (float)zoneSize);
+
+                if (property == AnimatableProperty.RotationX || property == AnimatableProperty.RotationY || property == AnimatableProperty.RotationZ)
+                {
+                    oldKeys.Add(new AnimationKey(keys[i].frame, keys[i].value, keys[i].interpolation));
+                    float newValue = Mathf.LerpAngle(keys[i].value, keys[i].value + deltaValue, deltaTime);
+                    newKeys.Add(new AnimationKey(keys[i].frame, newValue, key.interpolation));
+                }
+                else
+                {
+                    oldKeys.Add(new AnimationKey(keys[i].frame, keys[i].value, keys[i].interpolation));
+                    float newValue = Mathf.Lerp(keys[i].value, keys[i].value + deltaValue, deltaTime);
+                    newKeys.Add(new AnimationKey(keys[i].frame, newValue, key.interpolation));
+                }
+            }
+            if (TryFindKey(key.frame, out AnimationKey oldKey)) oldKeys.Add(new AnimationKey(oldKey.frame, oldKey.value, oldKey.interpolation));
+            newKeys.Add(new AnimationKey(key.frame, key.value, key.interpolation));
+        }
+
+        /// <summary>
+        /// Adds a keyframe at start and at end. Remove all keyframes in between.
+        /// Used when starting to drag a curve to modify tangents.
+        /// </summary>
+        public void AddTangentKey(AnimationKey key, int start, int end)
+        {
+            if (keys.Count == 0) return;
+
+            int startFrame = Mathf.Max(GlobalState.Animation.StartFrame, start);
+            int endFrame = Mathf.Min(GlobalState.Animation.EndFrame, end);
+
+            int firstKeyIndex = Mathf.Max(cachedKeysIndices[startFrame - (GlobalState.Animation.StartFrame)], 0);
+            int lastKeyIndex = Mathf.Max(cachedKeysIndices[endFrame - (GlobalState.Animation.StartFrame)], 0);
+
+            bool hasPrevValue = Evaluate(startFrame, out float prevValue);
+            bool hasNextValue = Evaluate(endFrame, out float nextValue);
+
+            if (keys[firstKeyIndex].frame != startFrame && hasPrevValue)
+            {
+                AddKey(new AnimationKey(startFrame, prevValue, Interpolation.Bezier), false);
+            }
+            if (keys[lastKeyIndex].frame != endFrame && hasNextValue)
+            {
+                AddKey(new AnimationKey(endFrame, nextValue, Interpolation.Bezier), false);
+            }
+            List<AnimationKey> toRemove = keys.FindAll(x => x.frame > startFrame && x.frame < endFrame);
+            toRemove.ForEach(x => RemoveKey(x.frame));
+        }
+
+        /// <summary>
+        /// fills oldKeys with all previous keyframes between startFrame and endFrame.
+        /// Used when releasing a curve, to apply changes through commands
+        /// </summary>
+        public void GetTangentKeys(int startFrame, int endFrame, ref List<AnimationKey> oldKeys)
+        {
+            oldKeys = keys.FindAll(x => x.frame >= startFrame && x.frame <= endFrame);
         }
 
         public void MoveKey(int oldFrame, int newFrame)
@@ -245,11 +531,6 @@ namespace VRtist
             }
         }
 
-        public AnimationKey GetKey(int index)
-        {
-            return keys[index];
-        }
-
         public AnimationKey GetPreviousKey(int frame)
         {
             --frame;
@@ -260,6 +541,20 @@ namespace VRtist
                 if (index != -1)
                 {
                     return keys[index];
+                }
+            }
+            return null;
+        }
+
+        public AnimationKey GetNextKey(int frame)
+        {
+            frame -= GlobalState.Animation.StartFrame;
+            if (frame >= 0 && frame < cachedKeysIndices.Length)
+            {
+                int index = cachedKeysIndices[frame];
+                if (index + 1 < keys.Count)
+                {
+                    return keys[index + 1];
                 }
             }
             return null;
@@ -297,123 +592,11 @@ namespace VRtist
             return value != float.NaN;
         }
 
-        private Vector2 CubicBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, float t)
+        public void SetTangents(int index, Vector2 inTangent, Vector2 outTangent)
         {
-            float invT1 = 1 - t;
-            float invT2 = invT1 * invT1;
-            float invT3 = invT2 * invT1;
-
-            float t2 = t * t;
-            float t3 = t2 * t;
-
-            return (A * invT3) + (B * 3 * t * invT2) + (C * 3 * invT1 * t2) + (D * t3);
-        }
-
-        private float EvaluateBezier(Vector2 A, Vector2 B, Vector2 C, Vector2 D, int frame)
-        {
-            if ((float)frame == A.x)
-                return A.y;
-
-            if ((float)frame == D.x)
-                return D.y;
-
-            float pmin = 0;
-            float pmax = 1;
-            Vector2 avg = A;
-            float dt = D.x - A.x;
-            while (dt > 0.1f)
-            {
-                float param = (pmin + pmax) * 0.5f;
-                avg = CubicBezier(A, B, C, D, param);
-                if (avg.x < frame)
-                {
-                    pmin = param;
-                }
-                else
-                {
-                    pmax = param;
-                }
-                dt = Math.Abs(avg.x - (float)frame);
-            }
-            return avg.y;
-        }
-
-        private bool EvaluateCache(int frame, out float value)
-        {
-            if (keys.Count == 0)
-            {
-                value = float.NaN;
-                return false;
-            }
-
-            int prevIndex = cachedKeysIndices[frame - GlobalState.Animation.StartFrame];
-            if (prevIndex == -1)
-            {
-                value = keys[0].value;
-                return true;
-            }
-            if (prevIndex == keys.Count - 1)
-            {
-                value = keys[keys.Count - 1].value;
-                return true;
-            }
-
-            AnimationKey prevKey = keys[prevIndex];
-            switch (prevKey.interpolation)
-            {
-                case Interpolation.Constant:
-                    value = prevKey.value;
-                    return true;
-
-                case Interpolation.Other:
-                case Interpolation.Linear:
-                    {
-                        AnimationKey nextKey = keys[prevIndex + 1];
-                        float dt = (float)(frame - prevKey.frame) / (float)(nextKey.frame - prevKey.frame);
-                        float oneMinusDt = 1f - dt;
-                        value = prevKey.value * oneMinusDt + nextKey.value * dt;
-                        return true;
-                    }
-
-                case Interpolation.Bezier:
-                    {
-                        AnimationKey nextKey = keys[prevIndex + 1];
-
-                        Vector2 A = new Vector2(prevKey.frame, prevKey.value);
-                        Vector2 B, C;
-                        Vector2 D = new Vector2(nextKey.frame, nextKey.value);
-
-                        if (prevIndex == 0)
-                        {
-                            B = A + (D - A) / 3f;
-                        }
-                        else
-                        {
-                            AnimationKey prevPrevKey = keys[prevIndex - 1];
-                            Vector2 V = (D - new Vector2(prevPrevKey.frame, prevPrevKey.value)).normalized;
-                            Vector2 AD = D - A;
-                            B = A + V * AD.magnitude / 3f;
-                        }
-
-                        if (prevIndex + 2 >= keys.Count)
-                        {
-                            C = D - (D - A) / 3f;
-                        }
-                        else
-                        {
-                            AnimationKey nextNextKey = keys[prevIndex + 2];
-                            Vector2 V = (new Vector2(nextNextKey.frame, nextNextKey.value) - A).normalized;
-                            Vector2 AD = D - A;
-                            C = D - V * AD.magnitude / 3f;
-                        }
-
-                        value = EvaluateBezier(A, B, C, D, frame);
-                        return true;
-                    }
-
-            }
-            value = float.NaN;
-            return false;
+            keys[index].inTangent = inTangent;
+            keys[index].outTangent = outTangent;
+            ComputeCacheValuesAt(index);
         }
     }
 }

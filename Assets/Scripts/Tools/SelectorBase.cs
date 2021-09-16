@@ -340,12 +340,13 @@ namespace VRtist
                     return true;
                 }
                 MeshFilter meshFilter = gObject.GetComponentInChildren<MeshFilter>();
-                if (meshFilter.gameObject != gObject)
+                if (meshFilter != null && meshFilter.gameObject != gObject)
                 {
                     return true;
                 }
             }
             return false;
+
         }
 
         private Mesh CreatePlaneMesh(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
@@ -861,48 +862,13 @@ namespace VRtist
                 MeshFilter meshFilter = obj.GetComponentInChildren<MeshFilter>();
                 if (null != meshFilter)
                 {
-                    Matrix4x4 transformMatrix;
-                    if (selectionCount > 1 || foundHierarchicalObject)
-                    {
-                        if (meshFilter.gameObject != obj)
-                        {
-                            transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
-                        }
-                        else
-                        {
-                            transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * obj.transform.localToWorldMatrix;
-                        }
-                    }
-                    else
-                    {
-                        transformMatrix = Matrix4x4.identity;
-                    }
-
-                    Mesh mesh = meshFilter.mesh;
-                    // Get vertices
-                    Vector3[] vertices = new Vector3[8];
-                    vertices[0] = new Vector3(mesh.bounds.min.x, mesh.bounds.min.y, mesh.bounds.min.z);
-                    vertices[1] = new Vector3(mesh.bounds.min.x, mesh.bounds.min.y, mesh.bounds.max.z);
-                    vertices[2] = new Vector3(mesh.bounds.min.x, mesh.bounds.max.y, mesh.bounds.min.z);
-                    vertices[3] = new Vector3(mesh.bounds.min.x, mesh.bounds.max.y, mesh.bounds.max.z);
-                    vertices[4] = new Vector3(mesh.bounds.max.x, mesh.bounds.min.y, mesh.bounds.min.z);
-                    vertices[5] = new Vector3(mesh.bounds.max.x, mesh.bounds.min.y, mesh.bounds.max.z);
-                    vertices[6] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.min.z);
-                    vertices[7] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.max.z);
-
-                    for (int i = 0; i < vertices.Length; i++)
-                    {
-                        vertices[i] = transformMatrix.MultiplyPoint(vertices[i]);
-                        //  Compute min and max bounds
-                        if (vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
-                        if (vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
-                        if (vertices[i].z < minBound.z) { minBound.z = vertices[i].z; }
-
-                        if (vertices[i].x > maxBound.x) { maxBound.x = vertices[i].x; }
-                        if (vertices[i].y > maxBound.y) { maxBound.y = vertices[i].y; }
-                        if (vertices[i].z > maxBound.z) { maxBound.z = vertices[i].z; }
-                    }
-                    hasBounds = true;
+                    GetMeshFilterBounds(selectionCount, foundHierarchicalObject, obj, meshFilter);
+                    continue;
+                }
+                SkinnedMeshRenderer[] skinMeshes = obj.GetComponentsInChildren<SkinnedMeshRenderer>(); ;
+                if (null != skinMeshes)
+                {
+                    GetSkinnedMeshBounds(selectionCount, foundHierarchicalObject, obj, skinMeshes);
                 }
             }
             if (hasBounds)
@@ -916,17 +882,125 @@ namespace VRtist
                 planePositions[5] = new Vector3((maxBound.x + minBound.x) * 0.5f, (maxBound.y + minBound.y) * 0.5f, maxBound.z);
             }
 
+            UpdateSelectionPlanes();
+        }
+
+        private void GetSkinnedMeshBounds(int selectionCount, bool foundHierarchicalObject, GameObject obj, SkinnedMeshRenderer[] skinnedMeshes)
+        {
+            Vector3 maxBoundSize = Vector3.zero;
+            SkinnedMeshRenderer maxMesh = new SkinnedMeshRenderer();
+            foreach (SkinnedMeshRenderer mesh in skinnedMeshes)
+            {
+                if (mesh.bounds.size.magnitude > maxBoundSize.magnitude)
+                {
+                    maxBoundSize = mesh.bounds.size;
+                    maxMesh = mesh;
+                }
+            }
+
+            Matrix4x4 transformMatrix;
+            if (selectionCount > 1 || foundHierarchicalObject)
+            {
+                transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * obj.transform.localToWorldMatrix;
+            }
+            else
+            {
+                transformMatrix = Matrix4x4.identity;
+            }
+
+
+            // Get vertices
+            Vector3[] vertices = new Vector3[8];
+            vertices[0] = new Vector3(maxMesh.localBounds.min.x, maxMesh.localBounds.min.y, maxMesh.localBounds.min.z);
+            vertices[1] = new Vector3(maxMesh.localBounds.min.x, maxMesh.localBounds.min.y, maxMesh.localBounds.max.z);
+            vertices[2] = new Vector3(maxMesh.localBounds.min.x, maxMesh.localBounds.max.y, maxMesh.localBounds.min.z);
+            vertices[3] = new Vector3(maxMesh.localBounds.min.x, maxMesh.localBounds.max.y, maxMesh.localBounds.max.z);
+            vertices[4] = new Vector3(maxMesh.localBounds.max.x, maxMesh.localBounds.min.y, maxMesh.localBounds.min.z);
+            vertices[5] = new Vector3(maxMesh.localBounds.max.x, maxMesh.localBounds.min.y, maxMesh.localBounds.max.z);
+            vertices[6] = new Vector3(maxMesh.localBounds.max.x, maxMesh.localBounds.max.y, maxMesh.localBounds.min.z);
+            vertices[7] = new Vector3(maxMesh.localBounds.max.x, maxMesh.localBounds.max.y, maxMesh.localBounds.max.z);
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                vertices[i] = transformMatrix.MultiplyPoint(vertices[i]);
+                //  Compute min and max bounds
+                if (vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
+                if (vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
+                if (vertices[i].z < minBound.z) { minBound.z = vertices[i].z; }
+
+                if (vertices[i].x > maxBound.x) { maxBound.x = vertices[i].x; }
+                if (vertices[i].y > maxBound.y) { maxBound.y = vertices[i].y; }
+                if (vertices[i].z > maxBound.z) { maxBound.z = vertices[i].z; }
+            }
+            hasBounds = true;
             if (selectionCount == 1 && !foundHierarchicalObject)
             {
-                Transform transform = firstSelectedObject.GetComponentInChildren<MeshFilter>().transform;
-                planeContainerMatrix = SceneManager.RightHanded.worldToLocalMatrix * transform.localToWorldMatrix;
+                //postest = maxMesh.bounds.center;
+                maxMesh.transform.position = maxMesh.rootBone.position;
+                planeContainerMatrix = SceneManager.RightHanded.worldToLocalMatrix * maxMesh.localToWorldMatrix;
+                //Vector3 meshPosition = planeContainerMatrix.GetColumn(3);
+                //meshPosition += (maxMesh.bounds.center - maxMesh.transform.position);
+                //planeContainerMatrix.SetColumn(3, meshPosition);
+            }
+            else
+            {
+                planeContainerMatrix = maxMesh.localToWorldMatrix;
+            }
+        }
+
+        private void GetMeshFilterBounds(int selectionCount, bool foundHierarchicalObject, GameObject obj, MeshFilter meshFilter)
+        {
+            Matrix4x4 transformMatrix;
+            if (selectionCount > 1 || foundHierarchicalObject)
+            {
+                if (meshFilter.gameObject != obj)
+                {
+                    transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
+                }
+                else
+                {
+                    transformMatrix = SceneManager.RightHanded.worldToLocalMatrix * obj.transform.localToWorldMatrix;
+                }
+            }
+            else
+            {
+                transformMatrix = Matrix4x4.identity;
+            }
+
+            Mesh mesh = meshFilter.mesh;
+            // Get vertices
+            Vector3[] vertices = new Vector3[8];
+            vertices[0] = new Vector3(mesh.bounds.min.x, mesh.bounds.min.y, mesh.bounds.min.z);
+            vertices[1] = new Vector3(mesh.bounds.min.x, mesh.bounds.min.y, mesh.bounds.max.z);
+            vertices[2] = new Vector3(mesh.bounds.min.x, mesh.bounds.max.y, mesh.bounds.min.z);
+            vertices[3] = new Vector3(mesh.bounds.min.x, mesh.bounds.max.y, mesh.bounds.max.z);
+            vertices[4] = new Vector3(mesh.bounds.max.x, mesh.bounds.min.y, mesh.bounds.min.z);
+            vertices[5] = new Vector3(mesh.bounds.max.x, mesh.bounds.min.y, mesh.bounds.max.z);
+            vertices[6] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.min.z);
+            vertices[7] = new Vector3(mesh.bounds.max.x, mesh.bounds.max.y, mesh.bounds.max.z);
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                vertices[i] = transformMatrix.MultiplyPoint(vertices[i]);
+                //  Compute min and max bounds
+                if (vertices[i].x < minBound.x) { minBound.x = vertices[i].x; }
+                if (vertices[i].y < minBound.y) { minBound.y = vertices[i].y; }
+                if (vertices[i].z < minBound.z) { minBound.z = vertices[i].z; }
+
+                if (vertices[i].x > maxBound.x) { maxBound.x = vertices[i].x; }
+                if (vertices[i].y > maxBound.y) { maxBound.y = vertices[i].y; }
+                if (vertices[i].z > maxBound.z) { maxBound.z = vertices[i].z; }
+            }
+            hasBounds = true;
+
+            if (selectionCount == 1 && !foundHierarchicalObject)
+            {
+                planeContainerMatrix = SceneManager.RightHanded.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix;
             }
             else
             {
                 planeContainerMatrix = Matrix4x4.identity;
             }
-
-            UpdateSelectionPlanes();
         }
 
         public void UpdateSelectionPlanes()
@@ -935,6 +1009,8 @@ namespace VRtist
             boundingBox.transform.localPosition = planePosition;
             boundingBox.transform.localRotation = planeRotation;
             boundingBox.transform.localScale = planeScale;
+
+            postest = planePosition;
 
             if (!hasBounds)
             {
@@ -994,8 +1070,6 @@ namespace VRtist
             planes[5].transform.localPosition = planePositions[5];
             planes[5].GetComponent<MeshFilter>().mesh = CreatePlaneMesh(new Vector3(delta.x, -delta.y, g.z), new Vector3(delta.x, delta.y, g.z), new Vector3(-delta.x, delta.y, g.z), new Vector3(-delta.x, -delta.y, g.z));
             SetPlaneCollider(planes[5], new Vector3(0, 0, g.z), new Vector3(delta.x * 2f, delta.y * 2f, cs.z));
-
-
         }
 
         protected void InitControllerMatrix()
@@ -1024,6 +1098,8 @@ namespace VRtist
             worldPlanePosition = boundingBox.transform.TransformPoint(planePositions[5]);
             snapRays[5] = new Ray(mouthpieces.transform.InverseTransformPoint(worldPlanePosition), mouthpieces.transform.InverseTransformDirection(boundingBox.transform.forward));
         }
+
+
 
         protected void Snap(ref Matrix4x4 currentMouthPieceLocalToWorld)
         {
@@ -1088,6 +1164,15 @@ namespace VRtist
                     break;
             }
             return -1;
+        }
+
+        Vector3 postest;
+
+        public void OnDrawGizmos()
+        {
+            if (!hasBounds) return;
+
+            Gizmos.DrawCube(postest, Vector3.one * 0.1f);
         }
 
         protected bool SnapPlane(ref Matrix4x4 currentMouthPieceLocalToWorld, int planeIndex)

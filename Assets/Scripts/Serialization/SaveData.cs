@@ -435,6 +435,136 @@ namespace VRtist.Serialization
         }
     }
 
+    public class SkinMeshData : IBlob
+    {
+        private string name;
+        private string[] bones;
+        private MeshData mesh;
+        private int poseCount;
+        private Matrix4x4[] bindposes;
+        private string rootBone;
+        private int vertexCount;
+        private byte[] bonesPerVert;
+        private int[] boneIndexes;
+        private float[] boneWeigts;
+        private Vector3 boundsCenter;
+        private Vector3 boundsExtend;
+
+        public SkinMeshData() { }
+
+        public SkinMeshData(SkinMeshInfo skinMesh)
+        {
+            name = skinMesh.skinMesh.name;
+            mesh = new MeshData(skinMesh.mesh);
+            bones = new string[skinMesh.skinMesh.bones.Length];
+            for (int i = 0; i < skinMesh.skinMesh.bones.Length; i++)
+            {
+                bones[i] = GetPathToRoot(skinMesh.skinMesh.transform.parent, skinMesh.skinMesh.bones[i]);
+            }
+            poseCount = skinMesh.skinMesh.sharedMesh.bindposes.Length;
+            bindposes = new Matrix4x4[poseCount];
+            for (int j = 0; j < poseCount; j++)
+            {
+                bindposes[j] = skinMesh.skinMesh.sharedMesh.bindposes[j];
+            }
+            rootBone = skinMesh.skinMesh.rootBone.name;
+            bonesPerVert = skinMesh.mesh.mesh.GetBonesPerVertex().ToArray();
+            vertexCount = bonesPerVert.Length;
+            BoneWeight1[] weigts = skinMesh.mesh.mesh.GetAllBoneWeights().ToArray();
+            boneIndexes = new int[weigts.Length];
+            boneWeigts = new float[weigts.Length];
+            for (int k = 0; k < weigts.Length; k++)
+            {
+                boneIndexes[k] = weigts[k].boneIndex;
+                boneWeigts[k] = weigts[k].weight;
+            }
+            boundsCenter = skinMesh.skinMesh.localBounds.center;
+            boundsExtend = skinMesh.skinMesh.localBounds.extents;
+        }
+
+        public void SetSkinnedMeshRenderer(SkinnedMeshRenderer renderer, Transform parent)
+        {
+            Transform[] bonesTransform = new Transform[bones.Length];
+            for (int i = 0; i < bones.Length; i++)
+            {
+                bonesTransform[i] = parent.Find(bones[i]);
+                Debug.Log(bonesTransform[i]);
+            }
+            renderer.bones = bonesTransform;
+            renderer.sharedMesh = mesh.CreateMesh();
+            renderer.sharedMesh.bindposes = bindposes;
+            Unity.Collections.NativeArray<BoneWeight1> bw1 = new Unity.Collections.NativeArray<BoneWeight1>(boneIndexes.Length, Unity.Collections.Allocator.Temp);
+            for (int j = 0; j < boneIndexes.Length; j++)
+            {
+                bw1[j] = new BoneWeight1 { boneIndex = boneIndexes[j], weight = boneWeigts[j] };
+            }
+            renderer.sharedMesh.SetBoneWeights(new Unity.Collections.NativeArray<byte>(bonesPerVert, Unity.Collections.Allocator.Temp), bw1);
+            renderer.rootBone = parent.Find(rootBone);
+            renderer.localBounds = new Bounds(boundsCenter, boundsExtend);
+            renderer.sharedMesh.RecalculateBounds();
+        }
+
+        public void FromBytes(byte[] bytes, ref int index)
+        {
+            name = Converter.GetString(bytes, ref index);
+            bones = Converter.GetStrings(bytes, ref index).ToArray();
+            mesh = new MeshData();
+            mesh.FromBytes(bytes, ref index);
+            poseCount = Converter.GetInt(bytes, ref index);
+            bindposes = new Matrix4x4[poseCount];
+            for (int i = 0; i < poseCount; i++)
+            {
+                bindposes[i] = Converter.GetMatrix(bytes, ref index);
+            }
+            rootBone = Converter.GetString(bytes, ref index);
+            vertexCount = Converter.GetInt(bytes, ref index);
+            bonesPerVert = new byte[vertexCount];
+            Buffer.BlockCopy(bytes, index, bonesPerVert, 0, vertexCount);
+            index += vertexCount;
+            boneIndexes = Converter.GetInts(bytes, ref index);
+            boneWeigts = Converter.GetFloats(bytes, ref index);
+            boundsCenter = Converter.GetVector3(bytes, ref index);
+            boundsExtend = Converter.GetVector3(bytes, ref index);
+
+        }
+
+        public byte[] ToBytes()
+        {
+            byte[] nameBuffer = Converter.StringToBytes(name);
+            byte[] bonesBuffer = Converter.StringsToBytes(bones);
+            byte[] meshBuffer = mesh.ToBytes();
+            byte[] countBuffer = Converter.IntToBytes(poseCount);
+            List<Byte[]> subBindBufferList = new List<byte[]>();
+            for (int i = 0; i < poseCount; i++)
+            {
+                subBindBufferList.Add(Converter.MatrixToBytes(bindposes[i]));
+            }
+            byte[] bindBuffer = Converter.ConcatenateBuffers(subBindBufferList);
+            byte[] rootBoneBuffer = Converter.StringToBytes(rootBone);
+            byte[] vertexCountBuffer = Converter.IntToBytes(vertexCount);
+            byte[] boneIndexesBuffer = Converter.IntsToBytes(boneIndexes);
+            byte[] boneWeigtsBuffer = Converter.FloatsToBytes(boneWeigts);
+            byte[] centerBuffer = Converter.Vector3ToBytes(boundsCenter);
+            byte[] extendBuffer = Converter.Vector3ToBytes(boundsExtend);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>
+            {
+                nameBuffer, bonesBuffer, meshBuffer, countBuffer, bindBuffer, rootBoneBuffer, vertexCountBuffer, bonesPerVert, boneIndexesBuffer, boneWeigtsBuffer, centerBuffer, extendBuffer
+            });
+            return bytes;
+        }
+
+        private string GetPathToRoot(Transform root, Transform target)
+        {
+            if (root != target.parent && null != root && null != target)
+            {
+                return GetPathToRoot(root, target.parent) + "/" + target.name;
+            }
+            else
+            {
+                return target.name;
+            }
+        }
+    }
 
     public class ObjectData : IBlob
     {
@@ -451,6 +581,7 @@ namespace VRtist.Serialization
         public Vector3 scale;
 
         // Mesh
+        public bool isSkinMesh;
         public string meshPath;
         public bool isImported;
 
@@ -475,6 +606,7 @@ namespace VRtist.Serialization
             rotation = Converter.GetQuaternion(bytes, ref index);
             scale = Converter.GetVector3(bytes, ref index);
 
+            isSkinMesh = Converter.GetBool(bytes, ref index);
             meshPath = Converter.GetString(bytes, ref index);
             isImported = Converter.GetBool(bytes, ref index);
 
@@ -504,6 +636,7 @@ namespace VRtist.Serialization
             byte[] rotationBuffer = Converter.QuaternionToBytes(rotation);
             byte[] scaleBuffer = Converter.Vector3ToBytes(scale);
 
+            byte[] skinMeshBuffer = Converter.BoolToBytes(isSkinMesh);
             byte[] meshPathBuffer = Converter.StringToBytes(meshPath);
             byte[] isImportedBuffer = Converter.BoolToBytes(isImported);
 
@@ -531,6 +664,7 @@ namespace VRtist.Serialization
                 rotationBuffer,
                 scaleBuffer,
 
+                skinMeshBuffer,
                 meshPathBuffer,
                 isImportedBuffer,
 
@@ -676,6 +810,7 @@ namespace VRtist.Serialization
         }
     }
 
+
     public class ShotData : IBlob
     {
         public string name;
@@ -718,16 +853,22 @@ namespace VRtist.Serialization
         public int frame;
         public float value;
         public Interpolation interpolation;
+        public Vector2 inTangent;
+        public Vector2 outTangent;
 
         public byte[] ToBytes()
         {
             byte[] frameBuffer = Converter.IntToBytes(frame);
             byte[] valueBuffer = Converter.FloatToBytes(value);
             byte[] interpolationBuffer = Converter.IntToBytes((int)interpolation);
+            byte[] inTanBuffer = Converter.Vector2ToBytes(inTangent);
+            byte[] outTanBuffer = Converter.Vector2ToBytes(outTangent);
             return Converter.ConcatenateBuffers(new List<byte[]> {
                 frameBuffer,
                 valueBuffer,
-                interpolationBuffer
+                interpolationBuffer,
+                inTanBuffer,
+                outTanBuffer
             });
         }
 
@@ -736,6 +877,8 @@ namespace VRtist.Serialization
             frame = Converter.GetInt(buffer, ref index);
             value = Converter.GetFloat(buffer, ref index);
             interpolation = (Interpolation)Converter.GetInt(buffer, ref index);
+            inTangent = Converter.GetVector2(buffer, ref index);
+            outTangent = Converter.GetVector2(buffer, ref index);
         }
     }
 
@@ -844,6 +987,45 @@ namespace VRtist.Serialization
         }
     }
 
+    public class RigData : IBlob
+    {
+        public string ObjectName;
+        public string meshPath;
+
+        public RigData() { }
+
+        public RigData(RigController controller)
+        {
+            ObjectName = controller.name;
+            meshPath = GetPathToRoot(controller.transform, controller.SkinMesh.transform);
+        }
+
+        public void FromBytes(byte[] bytes, ref int index)
+        {
+            ObjectName = Converter.GetString(bytes, ref index);
+            meshPath = Converter.GetString(bytes, ref index);
+        }
+
+        public byte[] ToBytes()
+        {
+            byte[] nameBuffer = Converter.StringToBytes(ObjectName);
+            byte[] pathBuffer = Converter.StringToBytes(meshPath);
+            byte[] bytes = Converter.ConcatenateBuffers(new List<byte[]>() { nameBuffer, pathBuffer });
+            return bytes;
+        }
+
+        private string GetPathToRoot(Transform root, Transform target)
+        {
+            if (root != target.parent && null != root && null != target)
+            {
+                return GetPathToRoot(root, target.parent) + "/" + target.name;
+            }
+            else
+            {
+                return target.name;
+            }
+        }
+    }
 
     public class PlayerData : IBlob
     {
@@ -895,6 +1077,8 @@ namespace VRtist.Serialization
         public List<ShotData> shots = new List<ShotData>();
         public List<AnimationData> animations = new List<AnimationData>();
 
+        public List<RigData> rigs = new List<RigData>();
+
         private readonly byte[] headerBuffer = new byte[6] { (byte)'V', (byte)'R', (byte)'t', (byte)'i', (byte)'s', (byte)'t' };
         public static int version = 1;
         public static int fileVersion;
@@ -916,6 +1100,8 @@ namespace VRtist.Serialization
             lights.Clear();
             cameras.Clear();
             shots.Clear();
+            rigs.Clear();
+            animations.Clear();
         }
 
         public void FromBytes(byte[] buffer, ref int index)
@@ -973,6 +1159,14 @@ namespace VRtist.Serialization
                 AnimationData data = new AnimationData();
                 data.FromBytes(buffer, ref index);
                 animations.Add(data);
+            }
+
+            int rigCount = Converter.GetInt(buffer, ref index);
+            for (int i = 0; i < rigCount; i++)
+            {
+                RigData data = new RigData();
+                data.FromBytes(buffer, ref index);
+                rigs.Add(data);
             }
 
             fps = Converter.GetFloat(buffer, ref index);
@@ -1040,6 +1234,14 @@ namespace VRtist.Serialization
             }
             byte[] animationsBuffer = Converter.ConcatenateBuffers(animationsBufferList);
 
+            byte[] rigCountBuffer = Converter.IntToBytes(rigs.Count);
+            List<byte[]> rigBufferList = new List<byte[]>();
+            foreach (RigData data in rigs)
+            {
+                rigBufferList.Add(data.ToBytes());
+            }
+            byte[] rigsBuffer = Converter.ConcatenateBuffers(rigBufferList);
+
             byte[] fpsBuffer = Converter.FloatToBytes(fps);
             byte[] startFrameBuffer = Converter.IntToBytes(startFrame);
             byte[] endFrameBuffer = Converter.IntToBytes(endFrame);
@@ -1082,6 +1284,10 @@ namespace VRtist.Serialization
 
                 animationsCountBuffer,
                 animationsBuffer,
+
+                rigCountBuffer,
+                rigsBuffer,
+
                 fpsBuffer,
                 startFrameBuffer,
                 endFrameBuffer,

@@ -1,6 +1,8 @@
 ﻿/* MIT License
  *
  * Copyright (c) 2021 Ubisoft
+ * &
+ * Université de Rennes 1 / Invictus Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -186,6 +188,7 @@ namespace VRtist
                     GlobalState.Animation.onAddAnimation.AddListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onRemoveAnimation.AddListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onChangeCurve.AddListener(OnCurveUpdated);
+                    GlobalState.Animation.onStartOffsetChanged.AddListener(UpdateKeyframesPosition);
                     UpdateSelectionChanged();
                 }
             }
@@ -203,6 +206,7 @@ namespace VRtist
                     GlobalState.Animation.onAddAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onRemoveAnimation.RemoveListener(UpdateCurrentObjectAnimation);
                     GlobalState.Animation.onChangeCurve.RemoveListener(OnCurveUpdated);
+                    GlobalState.Animation.onStartOffsetChanged.RemoveListener(UpdateKeyframesPosition);
                 }
             }
             listenerAdded = enable;
@@ -263,22 +267,28 @@ namespace VRtist
             Clear();
 
             AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(gObject);
-            if (null == animationSet)
+            if (!gObject.TryGetComponent<RigController>(out RigController controller))
             {
-                UpdateTrackName();
-                return;
-            }
-
-            // Take only one curve (the first one) to add keys
-            foreach (AnimationKey key in animationSet.curves[0].keys)
-            {
-                if (!keys.TryGetValue(key.frame, out List<AnimKey> keyList))
+                if (null == animationSet)
                 {
-                    keyList = new List<AnimKey>();
-                    keys[key.frame] = keyList;
+                    UpdateTrackName();
+                    return;
                 }
 
-                keyList.Add(new AnimKey(key.value, key.interpolation));
+                // Take only one curve (the first one) to add keys
+                foreach (AnimationKey key in animationSet.curves[0].keys)
+                {
+                    if (!keys.TryGetValue(key.frame, out List<AnimKey> keyList))
+                    {
+                        keyList = new List<AnimKey>();
+                        keys[key.frame] = keyList;
+                    }
+                    keyList.Add(new AnimKey(key.value, key.interpolation));
+                }
+            }
+            else
+            {
+                controller.GetKeyList(keys);
             }
 
             UpdateTrackName();
@@ -488,7 +498,7 @@ namespace VRtist
             {
                 foreach (GameObject item in Selection.SelectedObjects)
                 {
-                    new CommandAddKeyframes(item).Submit();
+                    new CommandAddKeyframes(item, false).Submit();
                 }
             }
             finally
@@ -504,9 +514,16 @@ namespace VRtist
             {
                 foreach (GameObject gObject in Selection.SelectedObjects)
                 {
-                    if (GlobalState.Animation.ObjectHasKeyframeAt(gObject, GlobalState.Animation.CurrentFrame))
+                    if (gObject.TryGetComponent<RigController>(out RigController controller) && ToolsManager.CurrentToolName() != "Animation")
                     {
-                        new CommandRemoveKeyframes(gObject).Submit();
+                        new CommandRemoveRecursiveKeyframes(gObject).Submit();
+                    }
+                    else
+                    {
+                        if (GlobalState.Animation.ObjectHasKeyframeAt(gObject, GlobalState.Animation.CurrentFrame))
+                        {
+                            new CommandRemoveKeyframes(gObject).Submit();
+                        }
                     }
                 }
             }
@@ -523,7 +540,14 @@ namespace VRtist
             {
                 foreach (GameObject gObject in Selection.SelectedObjects)
                 {
-                    new CommandClearAnimations(gObject).Submit();
+                    if (gObject.TryGetComponent<RigController>(out RigController controller))
+                    {
+                        new CommandClearRecursiveAnimations(gObject).Submit();
+                    }
+                    else
+                    {
+                        new CommandClearAnimations(gObject).Submit();
+                    }
                 }
             }
             finally
@@ -531,6 +555,7 @@ namespace VRtist
                 group.Submit();
             }
         }
+
 
         public void OnEnableAutoKey(bool value)
         {
@@ -542,5 +567,38 @@ namespace VRtist
             return GlobalState.Animation.autoKeyEnabled;
         }
 
+        public void OnSetStartOffset()
+        {
+            new CommandStartFrame(currentObject, GlobalState.Animation.CurrentFrame).Submit();
+        }
+
+        private void UpdateKeyframesPosition(GameObject gObject)
+        {
+            if (gObject == currentObject)
+            {
+                AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(currentObject);
+                if (null == animationSet) return;
+                keys.Clear();
+                if (!currentObject.TryGetComponent<RigController>(out RigController controller))
+                {
+                    foreach (AnimationKey key in animationSet.curves[0].keys)
+                    {
+                        if (!keys.TryGetValue(key.frame, out List<AnimKey> keyList))
+                        {
+                            keyList = new List<AnimKey>();
+                            keys[key.frame] = keyList;
+                        }
+                        keyList.Add(new AnimKey(key.value, key.interpolation));
+                    }
+                }
+                else
+                {
+                    controller.GetKeyList(keys);
+                }
+                UpdateKeyframes();
+            }
+        }
     }
+
 }
+

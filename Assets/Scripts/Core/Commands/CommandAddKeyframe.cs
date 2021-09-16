@@ -34,12 +34,14 @@ namespace VRtist
         readonly AnimatableProperty property;
         readonly AnimationKey oldAnimationKey = null;
         readonly AnimationKey newAnimationKey = null;
+        readonly bool updateCurve = true;
 
-        public CommandAddKeyframe(GameObject obj, AnimatableProperty property, int frame, float value, Interpolation interpolation)
+        public CommandAddKeyframe(GameObject obj, AnimatableProperty property, int frame, float value, Interpolation interpolation, bool updateCurve = true)
         {
             gObject = obj;
             this.property = property;
             newAnimationKey = new AnimationKey(frame, value, interpolation);
+            this.updateCurve = updateCurve;
 
             AnimationSet animationSet = GlobalState.Animation.GetObjectAnimation(obj);
             if (null == animationSet)
@@ -54,17 +56,17 @@ namespace VRtist
 
         public override void Undo()
         {
-            SceneManager.RemoveKeyframe(gObject, property, newAnimationKey);
+            SceneManager.RemoveKeyframe(gObject, property, newAnimationKey, updateCurve);
 
             if (null != oldAnimationKey)
             {
-                SceneManager.AddObjectKeyframe(gObject, property, oldAnimationKey);
+                SceneManager.AddObjectKeyframe(gObject, property, new AnimationKey(oldAnimationKey), updateCurve);
             }
         }
 
         public override void Redo()
         {
-            SceneManager.AddObjectKeyframe(gObject, property, newAnimationKey);
+            SceneManager.AddObjectKeyframe(gObject, property, new AnimationKey(newAnimationKey), updateCurve);
         }
 
         public override void Submit()

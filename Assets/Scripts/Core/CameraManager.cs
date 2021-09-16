@@ -358,10 +358,10 @@ namespace VRtist
                 return;
             }
 
-            if (!GlobalState.Animation.IsAnimating() && null == hoveredCamera && null == selectedCamera)
-            {
-                ActiveCamera = null;
-            }
+            //if (!GlobalState.Animation.IsAnimating() && null == hoveredCamera && null == selectedCamera)
+            //{
+            //    ActiveCamera = null;
+            //}
         }
 
         void OnSelectionChanged(HashSet<GameObject> previousSelection, HashSet<GameObject> currentSelection)
