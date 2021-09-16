@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Selection &mdash; VRtist v0.1.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/VrTist_logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Painting" href="Painting.html" />
+    <link rel="prev" title="Palette" href="Palette.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> VRtist
+            <img src="../_static/VrTist_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Start/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Start/Link.html">Live Link with Blender</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Basics</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Basics/Basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basics/Movements.html">Movements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basics/Settings.html">Settings</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">tools</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Palette.html">Palette</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Selection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#select-panel">Select panel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transform-panel">Transform panel</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Painting.html">Painting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Lighting.html">Lighting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Camera.html">Camera</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Material.html">Material</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AssetBank.html">AssetBank</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Skybox.html">Skybox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Gun.html">Gun</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Advanced/Animation.html">Animation Engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Advanced/Montage.html">Camera Montage &amp; Editing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Script References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ScriptReferences/Script.html">Script References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VRtist</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Selection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="selection">
+<h1>Selection<a class="headerlink" href="#selection" title="Permalink to this headline"></a></h1>
+<img alt="../_images/paletteSelection.png" class="no-scaled-link align-center" src="../_images/paletteSelection.png" style="width: 300px;" />
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line">The selection panel is used to select or unselect objects.</div>
+<div class="line">To select an object, move the secondary controller inside an object and press the trigger.</div>
+<div class="line">To unselect an item, press the trigger in an empty space.</div>
+</div>
+<section id="select-panel">
+<h2>Select panel<a class="headerlink" href="#select-panel" title="Permalink to this headline"></a></h2>
+<div class="line-block">
+<div class="line">The first sub panel displays information about the selection, and different options.</div>
+<div class="line">To use the selection tool, click on the lower <img alt="SelectIcon" class="no-scaled-link" src="../_images/select.png" style="width: 23px;" /> icon. This is the default tool. When the selection tool is active the mouthpiece will be blue.</div>
+<div class="line">To use the deletion tool click the <img alt="EraserIcon" class="no-scaled-link" src="../_images/eraser.png" style="width: 23px;" /> icon and select an object. When the deletion tool is active the mouthpiece will be red.</div>
+<div class="line">Delete all selected items with the “Delete Selection” button.</div>
+<div class="line">To deform an item, after ticking the “Deform the selected items” checkbox, move the secondary controller to one side of the object’s selection box, and press the trigger to drag that side. To deform the object uniformly along all sides, tick the “Uniform scale” checkbox.</div>
+<div class="line">Ticking Snap will make the selection box of moved objects stick to the selection box of a close object. The snapping detection can be limited to surfaces facing upwards with the “snap to ground only” checkbox.</div>
+</div>
+</section>
+<section id="transform-panel">
+<h2>Transform panel<a class="headerlink" href="#transform-panel" title="Permalink to this headline"></a></h2>
+<img alt="../_images/paletteSelection1.png" class="no-scaled-link align-center" src="../_images/paletteSelection1.png" style="width: 300px;" />
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line">The second sub panel displays the transform of the object, and allows edits.</div>
+<div class="line">Values can be edited by clicking on the number label.</div>
+<div class="line">To reset a position, rotation or scale to its default value, use the <img alt="ResetIcon" class="no-scaled-link" src="../_images/reset.png" style="width: 23px;" /> icon on the corresponding parameter. For position and rotation, the default value is 0, for scale the value is 1.</div>
+<div class="line">To lock a parameter, click on the <img alt="LockIcon" class="no-scaled-link" src="../_images/locked.png" style="width: 23px;" /> icon.</div>
+</div>
+<div class="line-block">
+<div class="line">To add a parent or a “look at” constraint to an object, click on the <img alt="DofIcon" class="no-scaled-link" src="../_images/dof.png" style="width: 23px;" /> icon in front of the desired constraint, and select the constraining object.</div>
+<div class="line">The name of the constraining object will appear next to the constraint.</div>
+<div class="line">To remove a constraint, click on the <img alt="TrashIcon" class="no-scaled-link" src="../_images/trash.png" style="width: 23px;" /> icon next to it.</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Palette.html" class="btn btn-neutral float-left" title="Palette" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Painting.html" class="btn btn-neutral float-right" title="Painting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ubisoft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
