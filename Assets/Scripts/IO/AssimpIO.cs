@@ -41,6 +41,12 @@ namespace VRtist
         private List<Material> materials = new List<Material>();
         private List<SubMeshComponent> meshes = new List<SubMeshComponent>();
         private Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
+        private Dictionary<string, Transform> bones = new Dictionary<string, Transform>();
+        private Dictionary<Assimp.Node, GameObject> delayedMesh = new Dictionary<Assimp.Node, GameObject>();
+
+
+        private Transform rootBone;
+        private bool isHuman;
 
         // We consider that half of the total time is spent inside the assimp engine
         // A quarter of the total time is necessary to create meshes
@@ -205,6 +211,9 @@ namespace VRtist
             scene = null;
             materials = new List<Material>();
             meshes = new List<SubMeshComponent>();
+            bones = new Dictionary<string, Transform>();
+            delayedMesh = new Dictionary<Assimp.Node, GameObject>();
+
             //textures = new Dictionary<string, Texture2D>();   
         }
 
@@ -329,15 +338,27 @@ namespace VRtist
             int i = 0;
             foreach (Assimp.Mesh assimpMesh in scene.Meshes)
             {
+                if (assimpMesh.HasBones) isHuman = true;
+
                 SubMeshComponent subMeshComponent = ImportMesh(assimpMesh);
+
                 meshes.Add(subMeshComponent);
                 i++;
 
                 progress += 0.25f / scene.MeshCount;
 
+                if (isHuman)
+                {
+                    foreach (Assimp.Bone bone in assimpMesh.Bones)
+                    {
+                        if (!bones.ContainsKey(bone.Name)) bones.Add(bone.Name, null);
+                    }
+                }
+
                 if (!blocking)
                     yield return null;
             }
+
         }
 
         private Texture2D GetOrCreateTextureFromFile(string filename)
@@ -411,7 +432,16 @@ namespace VRtist
                     }
                     else
                     {
-                        Debug.LogError("File not found : " + tslot.FilePath);
+                        List<Assimp.EmbeddedTexture> texts = scene.Textures;
+                        if (texts.Count > 0)
+                        {
+                            byte[] data = texts[0].CompressedData;
+                            Texture2D tex = new Texture2D(1, 1);
+                            tex.LoadImage(data);
+                            material.SetFloat("_UseColorMap", 1f);
+                            material.SetTexture("_ColorMap", tex);
+                        }
+
                     }
                 }
                 i++;
@@ -421,16 +451,19 @@ namespace VRtist
             }
         }
 
+
         private void AssignMeshes(Assimp.Node node, GameObject parent)
         {
             if (node.MeshIndices.Count == 0)
                 return;
 
-            MeshFilter meshFilter = parent.AddComponent<MeshFilter>();
-            MeshRenderer meshRenderer = parent.AddComponent<MeshRenderer>();
+            if (scene.Meshes[node.MeshIndices[0]].HasBones)
+            {
+                delayedMesh.Add(node, parent);
+                return;
+            }
 
             Material[] mats = new Material[node.MeshIndices.Count];
-
             CombineInstance[] combine = new CombineInstance[node.MeshIndices.Count];
 
             int i = 0;
@@ -441,6 +474,128 @@ namespace VRtist
                 mats[i] = materials[meshes[indice].materialIndex];
                 i++;
             }
+            AddNormalMesh(node, parent, mats, combine);
+
+            progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
+        }
+
+        private void AssignSkinnedMeshes(Assimp.Node node, GameObject parent)
+        {
+            Material[] mats = new Material[node.MeshIndices.Count];
+            CombineInstance[] combine = new CombineInstance[node.MeshIndices.Count];
+
+            int i = 0;
+            foreach (int indice in node.MeshIndices)
+            {
+                combine[i].mesh = meshes[indice].mesh;
+                combine[i].transform = Matrix4x4.identity;
+                mats[i] = materials[meshes[indice].materialIndex];
+                i++;
+            }
+            AddSkinnedMesh(node, parent, mats, combine);
+            progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
+        }
+
+        private void AddSkinnedMesh(Assimp.Node node, GameObject parent, Material[] mats, CombineInstance[] combine)
+        {
+            SkinnedMeshRenderer meshRenderer = parent.AddComponent<SkinnedMeshRenderer>();
+            List<List<Assimp.Bone>> meshBones = new List<List<Assimp.Bone>>();
+            List<Transform[]> bonesArray = new List<Transform[]>();
+            List<Matrix4x4[]> bindPoses = new List<Matrix4x4[]>();
+            List<BoneWeight[]> bonesWeights = new List<BoneWeight[]>();
+
+            for (int iMesh = 0; iMesh < node.MeshIndices.Count; iMesh++)
+            {
+                Assimp.Mesh currentMesh = scene.Meshes[node.MeshIndices[iMesh]];
+                meshBones.Add(currentMesh.Bones);
+                bonesArray.Add(new Transform[currentMesh.BoneCount]);
+                bindPoses.Add(new Matrix4x4[currentMesh.BoneCount]);
+                bonesWeights.Add(new BoneWeight[currentMesh.VertexCount]);
+
+                for (int iBone = 0; iBone < bonesArray[iMesh].Length; iBone++)
+                {
+                    if (!bones.ContainsKey(meshBones[iMesh][iBone].Name))
+                    {
+                        Debug.Log("missing bone " + meshBones[iMesh][iBone].Name);
+                        continue;
+                    }
+                    bonesArray[iMesh][iBone] = bones[meshBones[iMesh][iBone].Name];
+                    bindPoses[iMesh][iBone] = bonesArray[iMesh][iBone].worldToLocalMatrix;
+
+                    for (int iVertex = 0; iVertex < meshBones[iMesh][iBone].VertexWeightCount; iVertex++)
+                    {
+                        int vertexIndex = meshBones[iMesh][iBone].VertexWeights[iVertex].VertexID;
+                        float weight = meshBones[iMesh][iBone].VertexWeights[iVertex].Weight;
+                        if (bonesWeights[iMesh][vertexIndex].weight0 <= weight)
+                        {
+                            bonesWeights[iMesh][vertexIndex].boneIndex1 = bonesWeights[iMesh][vertexIndex].boneIndex0;
+                            bonesWeights[iMesh][vertexIndex].weight1 = bonesWeights[iMesh][vertexIndex].weight0;
+                            bonesWeights[iMesh][vertexIndex].boneIndex0 = iBone;
+                            bonesWeights[iMesh][vertexIndex].weight0 = weight;
+                            continue;
+                        }
+                        if (bonesWeights[iMesh][vertexIndex].weight1 <= weight)
+                        {
+                            bonesWeights[iMesh][vertexIndex].boneIndex2 = bonesWeights[iMesh][vertexIndex].boneIndex1;
+                            bonesWeights[iMesh][vertexIndex].weight2 = bonesWeights[iMesh][vertexIndex].weight1;
+                            bonesWeights[iMesh][vertexIndex].boneIndex1 = iBone;
+                            bonesWeights[iMesh][vertexIndex].weight1 = weight;
+                            continue;
+                        }
+                        if (bonesWeights[iMesh][vertexIndex].weight2 <= weight)
+                        {
+                            bonesWeights[iMesh][vertexIndex].boneIndex3 = bonesWeights[iMesh][vertexIndex].boneIndex2;
+                            bonesWeights[iMesh][vertexIndex].weight3 = bonesWeights[iMesh][vertexIndex].weight2;
+                            bonesWeights[iMesh][vertexIndex].boneIndex2 = iBone;
+                            bonesWeights[iMesh][vertexIndex].weight2 = weight;
+                            continue;
+                        }
+                        if (bonesWeights[iMesh][vertexIndex].weight3 == 0)
+                        {
+                            bonesWeights[iMesh][vertexIndex].boneIndex3 = iBone;
+                            bonesWeights[iMesh][vertexIndex].weight3 = weight;
+                            continue;
+                        }
+                        else
+                        {
+                            Debug.Log("A vertices has more than 4 bones weight");
+                            break;
+                        }
+                    }
+                }
+                for (int vert = 0; vert < bonesWeights[iMesh].Length; vert++)
+                {
+                    float totalWeight = bonesWeights[iMesh][vert].weight0 + bonesWeights[iMesh][vert].weight1 + bonesWeights[iMesh][vert].weight2 + bonesWeights[iMesh][vert].weight3;
+                    if (totalWeight != 1)
+                    {
+                        bonesWeights[iMesh][vert].weight0 += (1 - totalWeight);
+                    }
+                }
+            }
+
+            List<Assimp.Bone> meshBonesFlat = new List<Assimp.Bone>();
+            meshBones.ForEach(x => meshBonesFlat.AddRange(x));
+            List<Transform> bonesArrayFlat = new List<Transform>();
+            bonesArray.ForEach(x => bonesArrayFlat.AddRange(x));
+            List<Matrix4x4> bindPosesFlat = new List<Matrix4x4>();
+            bindPoses.ForEach(x => bindPosesFlat.AddRange(x));
+            List<BoneWeight> bonesWeightsFlat = new List<BoneWeight>();
+            bonesWeights.ForEach(x => bonesWeightsFlat.AddRange(x));
+
+            meshRenderer.bones = bonesArrayFlat.ToArray();
+            meshRenderer.sharedMesh = new Mesh();
+            meshRenderer.sharedMesh.bindposes = bindPosesFlat.ToArray();
+            meshRenderer.sharedMesh.CombineMeshes(combine, false);
+            meshRenderer.sharedMesh.boneWeights = bonesWeightsFlat.ToArray();
+            meshRenderer.sharedMesh.name = meshes[node.MeshIndices[0]].name;
+            meshRenderer.sharedMaterials = mats;
+            meshRenderer.rootBone = rootBone;
+        }
+
+        private void AddNormalMesh(Assimp.Node node, GameObject parent, Material[] mats, CombineInstance[] combine)
+        {
+            MeshFilter meshFilter = parent.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = parent.AddComponent<MeshRenderer>();
 
             meshFilter.mesh = new Mesh();
             meshFilter.mesh.CombineMeshes(combine, false);
@@ -448,14 +603,14 @@ namespace VRtist
             meshFilter.mesh.name = meshFilter.name;
             meshRenderer.sharedMaterials = mats;
             MeshCollider collider = parent.AddComponent<MeshCollider>();
-
-            progress += (0.25f * node.MeshIndices.Count) / scene.MeshCount;
         }
+
 
         private IEnumerator ImportHierarchy(Assimp.Node node, Transform parent, GameObject go)
         {
             if (parent != null && parent != go.transform)
                 go.transform.parent = parent;
+
 
             // Do not use Assimp Decompose function, it does not work properly
             // use unity decomposition instead
@@ -477,8 +632,29 @@ namespace VRtist
                 go.transform.localPosition = position;
                 go.transform.localRotation = rotation;
                 go.transform.localScale = scale;
-                go.name = Utils.CreateUniqueName(node.Name);
+                go.name = isHuman ? node.Name : Utils.CreateUniqueName(node.Name);
+                if (isHuman)
+                {
+                    if (bones.ContainsKey(node.Name))
+                    {
+                        bones[node.Name] = go.transform;
+                    }
+                    if (node.Name.Contains("Hips")) rootBone = go.transform;
+                }
             }
+
+            if (scene.HasAnimations)
+            {
+                if (blocking)
+                {
+                    ImportAnimation(node, go).MoveNext();
+                }
+                else
+                {
+                    yield return StartCoroutine(ImportAnimation(node, go));
+                }
+            }
+
 
             foreach (Assimp.Node assimpChild in node.Children)
             {
@@ -488,6 +664,46 @@ namespace VRtist
                     ImportHierarchy(assimpChild, go.transform, child).MoveNext();
                 else
                     yield return StartCoroutine(ImportHierarchy(assimpChild, go.transform, child));
+            }
+
+        }
+
+        private IEnumerator ImportAnimation(Assimp.Node node, GameObject go)
+        {
+            Assimp.Animation animation = scene.Animations[0];
+            Assimp.NodeAnimationChannel nodeChannel = animation.NodeAnimationChannels.Find(x => x.NodeName == node.Name);
+            if (null != nodeChannel)
+            {
+
+                AnimationSet animationSet = new AnimationSet(go);
+                animationSet.ComputeCache();
+                foreach (Assimp.VectorKey vectorKey in nodeChannel.PositionKeys)
+                {
+                    int frame = Mathf.CeilToInt((float)vectorKey.Time * GlobalState.Animation.fps / (float)animation.TicksPerSecond) + 1;
+                    animationSet.curves[AnimatableProperty.PositionX].AddKey(new AnimationKey(frame, vectorKey.Value.X));
+                    animationSet.curves[AnimatableProperty.PositionY].AddKey(new AnimationKey(frame, vectorKey.Value.Y));
+                    animationSet.curves[AnimatableProperty.PositionZ].AddKey(new AnimationKey(frame, vectorKey.Value.Z));
+                }
+                Vector3 previousRotation = Vector3.zero;
+                foreach (Assimp.QuaternionKey quaternionKey in nodeChannel.RotationKeys)
+                {
+                    int frame = Mathf.RoundToInt((float)quaternionKey.Time * GlobalState.Animation.fps / (float)animation.TicksPerSecond) + 1;
+                    Quaternion uQuaternion = new Quaternion(quaternionKey.Value.X, quaternionKey.Value.Y, quaternionKey.Value.Z, quaternionKey.Value.W);
+                    Vector3 eulerValue = uQuaternion.eulerAngles;
+                    eulerValue.x = previousRotation.x + Mathf.DeltaAngle(previousRotation.x, eulerValue.x);
+                    eulerValue.y = previousRotation.y + Mathf.DeltaAngle(previousRotation.y, eulerValue.y);
+                    eulerValue.z = previousRotation.z + Mathf.DeltaAngle(previousRotation.z, eulerValue.z);
+                    animationSet.curves[AnimatableProperty.RotationX].AddKey(new AnimationKey(frame, eulerValue.x));
+                    animationSet.curves[AnimatableProperty.RotationY].AddKey(new AnimationKey(frame, eulerValue.y));
+                    animationSet.curves[AnimatableProperty.RotationZ].AddKey(new AnimationKey(frame, eulerValue.z));
+                    previousRotation = eulerValue;
+                }
+
+                GlobalState.Animation.SetObjectAnimations(go, animationSet);
+                if (!blocking)
+                {
+                    yield return null;
+                }
             }
         }
 
