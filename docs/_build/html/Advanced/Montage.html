@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camera Montage &amp; Editing &mdash; VRtist v0.1.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/VrTist_logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Script References" href="../ScriptReferences/Script.html" />
+    <link rel="prev" title="Animation Engine" href="Animation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> VRtist
+            <img src="../_static/VrTist_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Start/GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Start/Link.html">Live Link with Blender</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Basics</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Basics/Basics.html">Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basics/Movements.html">Movements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basics/Settings.html">Settings</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tools</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Palette.html">Palette</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Selection.html">Selection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Painting.html">Painting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Lighting.html">Lighting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Camera.html">Camera</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Material.html">Material</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/AssetBank.html">AssetBank</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Skybox.html">Skybox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tools/Gun.html">Gun</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Advanced Features</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Animation.html">Animation Engine</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Camera Montage &amp; Editing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Script References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ScriptReferences/Script.html">Script References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VRtist</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Camera Montage &amp; Editing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="camera-montage-editing">
+<h1>Camera Montage &amp; Editing<a class="headerlink" href="#camera-montage-editing" title="Permalink to this headline"></a></h1>
+<img alt="../_images/ShotManager.png" class="no-scaled-link align-center" src="../_images/ShotManager.png" style="width: 300px;" />
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line">The camera tool can also be used to create a sequence of shots.</div>
+<div class="line"><br /></div>
+<div class="line">To create a sequence of shots you will need multiple cameras in the scene.</div>
+<div class="line">Start by creating one camera for each shot. These cameras can be animated if needed.</div>
+<div class="line">Then open the camera panel, and tick the shot Manager checkbox to open the shot manager panel. Opening the Animation editor will help the process.</div>
+<div class="line"><br /></div>
+<div class="line">Select a camera in the scene, then add it to the shot manager by clicking the <img alt="AddIcon" class="no-scaled-link" src="../_images/add.png" style="width: 23px;" /> icon.</div>
+<div class="line">Set the start frame of this shot by moving to the desired frame on the timeline, then clicking the left arrow (facing right) on the shot line. Set the end frame of the shot in the same way with the right arrow.</div>
+<div class="line">Repeat this process for each camera used in the montage.</div>
+<div class="line">Select a camera and use the up and down arrow at the top of the panel to reorder it.</div>
+<div class="line">To duplicate a shot, select the shot line, and click the <img alt="DuplicateIcon" class="no-scaled-link" src="../_images/duplicate.png" style="width: 23px;" /> icon.</div>
+<div class="line">To deactivate a shot, uncheck the box at the beginning.</div>
+<div class="line">To remove a shot, select the line, and click the <img alt="RemoveIcon" class="no-scaled-link" src="../_images/remove.png" style="width: 23px;" /> icon.</div>
+<div class="line"><br /></div>
+<div class="line">To preview the result, tick the “montage” checkbox, open the Camera preview window in the camera panel and play the timeline.</div>
+<div class="line">The shot manager will go to the first frame of the first shot, play until the last frame of the shot, then jump to the first frame of the next shot to play. This will be repeated for each shot.</div>
+<div class="line">Click the <img alt="RecordVideoIcon" class="no-scaled-link" src="../_images/record_video.png" style="width: 23px;" /> icon in the shot manager panel to create and export a video of the result.</div>
+<div class="line"><br /></div>
+</div>
+<div style="position: relative; padding-bottom: 45%; height: 0; overflow: hidden; max-width: 80%; border:solid 0.1em; border-color:#4d4d4d; align=center; margin: auto;">
+   <iframe width="560" height="315" src="https://www.youtube.com/watch?v=ZQ0laZvyUQg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+<br />
+<br /></section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Animation.html" class="btn btn-neutral float-left" title="Animation Engine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../ScriptReferences/Script.html" class="btn btn-neutral float-right" title="Script References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Ubisoft.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
