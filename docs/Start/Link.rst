@@ -1,8 +1,8 @@
-.. Link:
-
+======================
 Live Link with Blender
 ======================
 
+.. Link:
 
 | It's possible to sync a Blender scene with a VRtist one via the Mixer add-on. A typical use case is to have a working Blender scene and to explore and modify it in VR with VRtist.
 | 

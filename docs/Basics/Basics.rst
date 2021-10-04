@@ -1,7 +1,8 @@
-.. Basics:
-
+======
 Basics
 ======
+
+.. Basics:
 
 Controllers
 -----------
