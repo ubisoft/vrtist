@@ -6,8 +6,8 @@
 
 .. include:: Introduction.rst
 
-Getting Started
-===============
+:ref:`Getting Started`
+======================
 
 | Download, Install, and get everything ready
 
@@ -19,10 +19,10 @@ Getting Started
    /Start/GettingStarted
    /Start/Link
 
-Basics
-======
+:ref:`Basics`
+================
 
-| Starting a scene, and moving around
+| Starting a scene, and moving around 
 
 .. toctree::
    :maxdepth: 2
@@ -33,8 +33,8 @@ Basics
    /Basics/Movements
    /Basics/Settings
 
-Tools
-===============
+:ref:`Tools <Palette>`
+=======================
 
 | Every tool in VRtist
 
@@ -53,8 +53,8 @@ Tools
    /Tools/Skybox
    /Tools/Gun
 
-Advanced Features
-=================
+:ref:`Advanced Features <Animation>`
+====================================
 
 | More complexe features
 
@@ -66,8 +66,8 @@ Advanced Features
    /Advanced/Animation
    /Advanced/Montage
 
-Script References
-=================
+:ref:`Script References <Script>`
+=================================
 
 | How VRtist works
 

@@ -1,8 +1,9 @@
+.. _Animation:
+
 ================
 Animation Engine
 ================
 
-.. Animation:
 .. include:: /Refs.rst
 
 

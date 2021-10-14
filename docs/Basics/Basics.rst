@@ -1,8 +1,9 @@
+.. _Basics:
+
 ======
 Basics
 ======
 
-.. Basics:
 
 Controllers
 -----------

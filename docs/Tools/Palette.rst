@@ -1,7 +1,8 @@
+.. _Palette:
+
 Palette
 =======
 
-.. Palette:
 .. include:: /Refs.rst
 
 | The palette contains all the tools available to the user. To open it, use the trigger on the primary controller.

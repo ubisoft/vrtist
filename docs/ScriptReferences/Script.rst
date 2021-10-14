@@ -1,8 +1,9 @@
+.. _Script:
+
 =================
 Script References
 =================
 
-.. Script:
 .. include:: /Refs.rst
 
 Overview

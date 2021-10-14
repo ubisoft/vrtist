@@ -1,8 +1,9 @@
+.. _Getting Started:
+
 ===============
 Getting Started
 ===============
 
-.. GettingStarted:
 
 Download project
 ----------------
