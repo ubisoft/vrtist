@@ -8,6 +8,11 @@ VRtist is a Virtual Reality tool for storytelling.
 
 Directors and artists can setup a 3D scene being immersed into the virtual world. That will allow them to have a better understanding of the 3D scene.
 
+## Documentation
+
+User documentation: https://ubisoft-vrtist.readthedocs.io/en/latest/#
+Youtube channel: https://www.youtube.com/channel/UCD4bfXzGNI7prl01Z2BfFfw
+
 ## Main Features
 
 - Set dressing: import 3D objects and compose the virtual set.
