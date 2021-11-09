@@ -53,7 +53,7 @@ On Windows OS, VRtist writes settings, logs and saves to the %userprofile%/AppDa
 
 ## Asset Bank
 
-VRtist is ditributed with a predefined set of 3D objects.
+VRtist is distributed with a predefined set of 3D objects.
 It also supports FBX files import from a specified directory (default: D:\VRtistData). This can be overriden in the advanced settings.
 FBX files may be exported from Blender using the following options:
 
