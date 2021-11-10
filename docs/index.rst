@@ -56,7 +56,7 @@
 :ref:`Advanced Features <Animation>`
 ====================================
 
-| More complexe features
+| More complex features
 
 .. toctree::
    :maxdepth: 2
