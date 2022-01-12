@@ -1,6 +1,6 @@
 # VRtist
 
-**Disclaimer**: This project is in alpha state and actively developed. Do not use it to edit your production assets without a backup or you might break them.
+**Disclaimer**: This project is in alpha state and no longer developed. Do not use it to edit your production assets without a backup or you might break them.
 
 ## Introduction
 
