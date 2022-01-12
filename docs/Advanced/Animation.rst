@@ -12,7 +12,7 @@ Animation Engine
 | The creation and edition of animations are done by selecting an object or a group of objects and using the dopesheet panel.
 |
 
-.. image:: /img/Dopesheet.png
+.. image:: /docs/img/Dopesheet.png
     :align: center
     :width: 300
     :class: no-scaled-link
@@ -43,7 +43,7 @@ Animation Engine
 | To change the displayed keyframes drag the start or end circles on the slider over the timeline. The gap can then be dragged along the slider to change the section displayed.
 | 
 
-.. image:: /img/TimelineSlider.png
+.. image:: /docs/img/TimelineSlider.png
     :align: center
     :width: 300
     :class: no-scaled-link
