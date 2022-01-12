@@ -5,7 +5,7 @@ Camera Montage & Editing
 .. Montage:
 .. include:: /Refs.rst
 
-.. image:: /img/ShotManager.png
+.. image:: /docs/img/ShotManager.png
     :align: center
     :width: 300
     :class: no-scaled-link
