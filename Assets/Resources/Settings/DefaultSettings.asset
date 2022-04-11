@@ -24,9 +24,8 @@ MonoBehaviour:
   uiVolume: 0
   rightHanded: 1
   forcePaletteOpen: 0
-  palettePositionOffset: {x: 0.0000036917627, y: 0.0000032652051, z: -0.0000013517699}
-  paletteRotationOffset: {x: 0.00000005310592, y: -0.00000013361385, z: 0.00000013721645,
-    w: 1.0000002}
+  palettePositionOffset: {x: -0.0000007338822, y: -0.0000005625079, z: 0.00000022152594}
+  paletteRotationOffset: {x: 0, y: 0, z: 0, w: 1.0000002}
   pinnedPalette: 0
   dopeSheetPosition: {x: 0.6597982, y: 1.7439083, z: 0.058858953}
   dopeSheetRotation: {x: -0.10360992, y: 0.7397863, z: 0.06656705, w: 0.6614756}
