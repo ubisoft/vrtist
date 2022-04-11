@@ -57,8 +57,8 @@ namespace VRtist
                 collider.isTrigger = true;
                 RigGoalController controller = transform.gameObject.AddComponent<RigGoalController>();
                 controller.SetPathToRoot(rootController, path);
-                controller.stiffness = joint.stiffness;
                 controller.IsGoal = joint.isGoal;
+                controller.stiffness = joint.stiffness;
                 controller.ShowCurve = joint.showCurve;
                 controller.LowerAngleBound = joint.LowerAngleBound;
                 controller.UpperAngleBound = joint.UpperAngleBound;

@@ -1,5 +1,16 @@
 # VRtist
 
+This is an extended version of VRtist by Université de Rennes 1.
+We aim to add animation tools to help creating and edditing animations.
+
+In this project you will find an animation tool (currently replacing the gun tool in the palette).
+This tool give options to move a character joints and eddit animation curves.
+Currently only characters from Mixamo.com are meant to be imported.
+
+**Known issues**: 
+- If all mixamo characters can be imported with animation, some will not be editable. 
+- Some textures might not be identical between runs.
+
 **Disclaimer**: This project is in alpha state and actively developed. Do not use it to edit your production assets without a backup or you might break them.
 
 ## Introduction
@@ -19,7 +30,8 @@ Directors and artists can setup a 3D scene being immersed into the virtual world
 
 ## Supported VR Devices
 
-For now, VRtist has only been tested with the Oculus Rift S and Oculus Quest devices.
+For now, VRtist has been tested with the Valve Index, HP Reverb G2, Oculus Quest 2, Oculus Rift S and Oculus Quest devices.
+HTC vive wand controllers will not be supported.
 
 ## How to Install & Launch
 
