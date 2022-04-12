@@ -1,10 +1,10 @@
 # VRtist
 
 This is an extended version of VRtist by Université de Rennes 1.
-We aim to add animation tools to help creating and edditing animations.
+We aim to add animation tools to help creating and editing animations.
 
 In this project you will find an animation tool (currently replacing the gun tool in the palette).
-This tool give options to move a character joints and eddit animation curves.
+This tool give options to move a character joints and edit animation curves.
 Currently only characters from Mixamo.com are meant to be imported.
 
 **Known issues**: 
