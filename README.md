@@ -39,7 +39,7 @@ Just unzip the release file. Then launch the VRtist.exe and put your headset.
 
 ## How to Build
 
-VRtist is using Unity version: 2020.2.1f1
+VRtist is using Unity version: 2020.3.33
 
 For now, VRtist has been tested on Windows 64bit only. Build the "Main" scene in the Unity editor:
 
