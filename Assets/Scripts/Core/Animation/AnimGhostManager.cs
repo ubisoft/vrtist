@@ -69,6 +69,7 @@ namespace VRtist
                 else
                     Sphere = new GameObject();
 
+                Sphere.layer = 5;
                 Sphere.transform.parent = parentNode;
                 Sphere.transform.SetPositionAndRotation(worldPosition, objectRotation);
                 Sphere.transform.localScale = Vector3.one * scale;
@@ -81,6 +82,7 @@ namespace VRtist
                     Link.transform.localPosition = Sphere.transform.localPosition / 2f;
                     Link.transform.up = Sphere.transform.position - parentNode.position;
                     Link.transform.localScale = new Vector3(scale, Sphere.transform.localPosition.magnitude / 2f, scale);
+                    Link.layer = 5;
                 }
 
                 if (targetObject.transform.childCount > 3) scale = 0.5f;

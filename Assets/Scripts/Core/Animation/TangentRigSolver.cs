@@ -266,7 +266,7 @@ namespace VRtist
         public bool Compute()
         {
             double targetW = 20;
-            double continuityW = tangentContinuity;
+            double continuityW = tangentContinuity * 10;
             double stiffnessW = 50;
 
             double[,] Js = ThetaFromJob(paramCount);

@@ -102,6 +102,8 @@ namespace VRtist
         {
             string layerName = LayerMask.LayerToName(gObject.layer);
 
+            bool isSkinMesh = gObject.TryGetComponent<SkinnedMeshRenderer>(out SkinnedMeshRenderer mesh);
+
             //
             // SELECT
             //
@@ -109,14 +111,14 @@ namespace VRtist
             {
                 if (layerName == "Default")
                 {
-                    if (isChild && !Selection.IsSelected(gObject))
+                    if (isChild && !Selection.IsSelected(gObject) && !isSkinMesh)
                         layerName = "SelectionChild";
                     else
                         layerName = "Selection";
                 }
                 else if (layerName == "Hover" || layerName == "HoverChild")
                 {
-                    if (isChild && !Selection.IsSelected(gObject))
+                    if (isChild && !Selection.IsSelected(gObject) && !isSkinMesh)
                         layerName = "SelectionChild";
                     else
                         layerName = "Selection";
@@ -131,14 +133,14 @@ namespace VRtist
             {
                 if (layerName == "Default")
                 {
-                    if (isChild && !Selection.IsSelected(gObject))
+                    if (isChild && !Selection.IsSelected(gObject) && !isSkinMesh)
                         layerName = "HoverChild";
                     else
                         layerName = "Hover";
                 }
                 else if (layerName == "Selection" || layerName == "SelectionChild")
                 {
-                    if (isChild && !Selection.IsSelected(gObject))
+                    if (isChild && !Selection.IsSelected(gObject) && !isSkinMesh)
                         layerName = "HoverChild";
                     else
                         layerName = "Hover";
