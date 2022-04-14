@@ -169,6 +169,7 @@ namespace VRtist
 
         private void DragHuman(Matrix4x4 transformation)
         {
+            if (manipulationMode == AnimationTool.CurveEditMode.AddKeyframe || manipulationMode == AnimationTool.CurveEditMode.Zone) return;
             if (humanData.Solver == null)
                 CreateSolver(transformation);
             else if (!humanData.Solver.NextStep())
@@ -287,6 +288,8 @@ namespace VRtist
 
         private void ReleaseHuman()
         {
+            if (manipulationMode == AnimationTool.CurveEditMode.AddKeyframe || manipulationMode == AnimationTool.CurveEditMode.Zone) return;
+
             List<GameObject> objectList = new List<GameObject>();
             List<Dictionary<AnimatableProperty, List<AnimationKey>>> keyframesLists = new List<Dictionary<AnimatableProperty, List<AnimationKey>>>();
 

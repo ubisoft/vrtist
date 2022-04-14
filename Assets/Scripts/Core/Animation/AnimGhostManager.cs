@@ -47,8 +47,8 @@ namespace VRtist
             {
                 Childrens.ForEach(x => x.ClearNode());
                 Childrens.Clear();
-                Destroy(Sphere);
-                Destroy(Link);
+                if (null != Sphere) Destroy(Sphere);
+                if (null != Link) Destroy(Link);
             }
 
             public Node(GameObject targetObject, int frame, Transform parentNode, Matrix4x4 parentMatrix, float scale = 1f)
@@ -128,7 +128,7 @@ namespace VRtist
                 }
                 else
                 {
-                    Childrens.ForEach(x => ClearNode());
+                    Childrens.ForEach(x => x.ClearNode());
                     Childrens.Clear();
                     foreach (Transform child in targetObject.transform)
                     {
@@ -318,7 +318,15 @@ namespace VRtist
             }
             else
             {
-                HoverGhost.RetargetNode(controller.RootObject.gameObject, frame, controller.transform.parent.localToWorldMatrix * rootMatrix, controller.transform.localScale.magnitude * 5);
+                if (HoverGhost.Target == controller.RootObject.gameObject)
+                {
+                    HoverGhost.RetargetNode(controller.RootObject.gameObject, frame, controller.transform.parent.localToWorldMatrix * rootMatrix, controller.transform.localScale.magnitude * 5);
+                }
+                else
+                {
+                    HoverGhost.ClearNode();
+                    HoverGhost = new Node(controller.RootObject.gameObject, frame, GhostParent, controller.transform.parent.localToWorldMatrix * rootMatrix, controller.transform.localScale.magnitude * 5);
+                }
                 HoverGhost.ShowNode(true);
             }
             Vector3 forwardVector = (controller.transform.forward * controller.transform.localScale.x) * currentOffset;

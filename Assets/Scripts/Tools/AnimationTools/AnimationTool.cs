@@ -215,6 +215,8 @@ namespace VRtist
             zoneSize = Mathf.RoundToInt(ZoneSlider.GetComponent<UISlider>().Value);
             Offsetvalue = GlobalState.Settings.CurveForwardOffset;
             SkeletonDisplay.GetComponent<UICheckbox>().Checked = GlobalState.Settings.DisplaySkeletons;
+
+            SetTangentMode();
         }
 
         protected override void OnEnable()
