@@ -68,9 +68,15 @@ namespace VRtist
                     controller.gameObject.layer = 21;
                     controller.goalCollider = collider;
                     controller.tag = "Goal";
-                    MeshFilter filter = transform.gameObject.AddComponent<MeshFilter>();
+                    if (!transform.TryGetComponent<MeshFilter>(out MeshFilter filter))
+                    {
+                        filter = transform.gameObject.AddComponent<MeshFilter>();
+                    }
                     filter.mesh = mesh;
-                    MeshRenderer renderer = transform.gameObject.AddComponent<MeshRenderer>();
+                    if (!transform.TryGetComponent(out MeshRenderer renderer))
+                    {
+                        renderer = transform.gameObject.AddComponent<MeshRenderer>();
+                    }
                     renderer.material = new Material(material);
                     controller.MeshRenderer = renderer;
 

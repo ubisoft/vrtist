@@ -488,7 +488,6 @@ namespace VRtist.Serialization
             for (int i = 0; i < bones.Length; i++)
             {
                 bonesTransform[i] = parent.Find(bones[i]);
-                Debug.Log(bonesTransform[i]);
             }
             renderer.bones = bonesTransform;
             renderer.sharedMesh = mesh.CreateMesh();
