@@ -555,7 +555,7 @@ namespace VRtist.Serialization
 
         private string GetPathToRoot(Transform root, Transform target)
         {
-            if (root != target.parent && null != root && null != target)
+            if (null != root && null != target && root != target.parent)
             {
                 return GetPathToRoot(root, target.parent) + "/" + target.name;
             }

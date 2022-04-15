@@ -521,7 +521,6 @@ namespace VRtist.Serialization
                 data.isImported = false;
                 if (trans.TryGetComponent<SkinnedMeshRenderer>(out SkinnedMeshRenderer skinRenderer))
                 {
-                    Debug.Log("saved skin mesh " + skinRenderer.name);
                     foreach (Material material in skinRenderer.materials)
                     {
                         string materialId = trans.name + "_" + material.name;

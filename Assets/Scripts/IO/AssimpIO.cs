@@ -806,7 +806,6 @@ namespace VRtist
                 {
                     int frame = Mathf.RoundToInt((float)quaternionKey.Time * GlobalState.Animation.fps / (float)animation.TicksPerSecond) + 1;
                     Quaternion uQuaternion = new Quaternion(quaternionKey.Value.X, quaternionKey.Value.Y, quaternionKey.Value.Z, quaternionKey.Value.W);
-
                     uQuaternion = cumulRotation * uQuaternion * Quaternion.Inverse(cumulRotation);
 
                     Vector3 eulerValue = uQuaternion.eulerAngles;
